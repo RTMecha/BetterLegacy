@@ -72,7 +72,8 @@ namespace BetterLegacy.Configs
 
         void UpdateSettings(object sender, EventArgs e)
         {
-            EventManager.inst?.updateEvents();
+            if (EventManager.inst)
+                EventManager.inst.updateEvents();
         }
 
         public override string ToString() => "Events Config";
