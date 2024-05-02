@@ -165,6 +165,8 @@ namespace BetterLegacy.Editor.Managers
             {
                 CoreHelper.LogError($"{ex}");
             }
+
+            StartCoroutine(RTEditor.inst.LoadThemes());
         }
 
         public GameObject themePopupPanelPrefab;
