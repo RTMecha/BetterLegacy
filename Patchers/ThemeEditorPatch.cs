@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Editor.Managers;
 using HarmonyLib;
 using System.Collections;
@@ -26,10 +27,7 @@ namespace BetterLegacy.Patchers
                 return false;
             }
 
-            Debug.Log($"{className}" +
-                $"---------------------------------------------------------------------\n" +
-                $"---------------------------- INITIALIZED ----------------------------\n" +
-                $"---------------------------------------------------------------------\n");
+            CoreHelper.LogInit(className);
 
             Destroy(GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/right/theme/themes/viewport/content").GetComponent<VerticalLayoutGroup>());
 

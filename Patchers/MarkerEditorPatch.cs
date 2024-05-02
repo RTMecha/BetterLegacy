@@ -37,10 +37,7 @@ namespace BetterLegacy.Patchers
                 return false;
             }
 
-            Debug.Log($"{className}" +
-                $"---------------------------------------------------------------------\n" +
-                $"---------------------------- INITIALIZED ----------------------------\n" +
-                $"---------------------------------------------------------------------\n");
+            CoreHelper.LogInit(className);
 
             Instance.StartCoroutine(Wait());
             return false;

@@ -30,10 +30,7 @@ namespace BetterLegacy.Patchers
 
             __instance.className = "[<color=#65B6F7>CheckpointEditor</color>] \n";
 
-            Debug.Log($"{__instance.className}" +
-                $"---------------------------------------------------------------------\n" +
-                $"---------------------------- INITIALIZED ----------------------------\n" +
-                $"---------------------------------------------------------------------\n");
+            CoreHelper.LogInit(__instance.className);
 
             return false;
         }

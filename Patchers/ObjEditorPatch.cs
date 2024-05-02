@@ -45,10 +45,7 @@ namespace BetterLegacy.Patchers
                     return false;
                 }
 
-                Debug.Log($"{__instance.className}" +
-                    $"---------------------------------------------------------------------\n" +
-                    $"---------------------------- INITIALIZED ----------------------------\n" +
-                    $"---------------------------------------------------------------------\n");
+                CoreHelper.LogInit(__instance.className);
 
                 __instance.timelineKeyframes.Add(new List<GameObject>());
                 __instance.timelineKeyframes.Add(new List<GameObject>());

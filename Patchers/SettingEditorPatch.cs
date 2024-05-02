@@ -39,10 +39,7 @@ namespace BetterLegacy.Patchers
                 return false;
             }
 
-            Debug.Log($"{__instance.className}" +
-                $"---------------------------------------------------------------------\n" +
-                $"---------------------------- INITIALIZED ----------------------------\n" +
-                $"---------------------------------------------------------------------\n");
+            CoreHelper.LogInit(__instance.className);
 
             var transform = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/SettingsDialog").transform;
 

@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Managers;
 using HarmonyLib;
@@ -29,10 +30,7 @@ namespace BetterLegacy.Patchers
                 return false;
             }
 
-            Debug.Log($"{__instance.className}" +
-                $"---------------------------------------------------------------------\n" +
-                $"---------------------------- INITIALIZED ----------------------------\n" +
-                $"---------------------------------------------------------------------\n");
+            CoreHelper.LogInit(__instance.className);
 
             for (int i = 0; i < 9; i++)
             {

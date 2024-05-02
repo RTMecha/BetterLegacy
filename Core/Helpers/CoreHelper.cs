@@ -144,6 +144,11 @@ namespace BetterLegacy.Core.Helpers
 		/// <param name="message">The message to log.</param>
 		public static void LogError(string message) => Debug.LogError($"{LegacyPlugin.className}{message}");
 
+		public static void LogInit(string className) => Debug.Log($"{className}" +
+				$"---------------------------------------------------------------------\n" +
+				$"---------------------------- INITIALIZED ----------------------------\n" +
+				$"---------------------------------------------------------------------\n");
+
         #endregion
 
         #region Color

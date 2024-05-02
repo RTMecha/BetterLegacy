@@ -33,10 +33,7 @@ namespace BetterLegacy.Patchers
                 return false;
             }
 
-            Debug.Log($"{__instance.className}" +
-                $"---------------------------------------------------------------------\n" +
-                $"---------------------------- INITIALIZED ----------------------------\n" +
-                $"---------------------------------------------------------------------\n");
+            CoreHelper.LogInit(__instance.className);
 
             BackgroundEditorManager.Init(__instance);
 

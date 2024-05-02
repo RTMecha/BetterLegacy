@@ -44,10 +44,7 @@ namespace BetterLegacy.Patchers
                 return false;
             }
 
-            Debug.Log($"{__instance.className}" +
-                $"---------------------------------------------------------------------\n" +
-                $"---------------------------- INITIALIZED ----------------------------\n" +
-                $"---------------------------------------------------------------------\n");
+            CoreHelper.LogInit(__instance.className);
 
             FontManager.inst.ChangeAllFontsInEditor();
 
@@ -464,7 +461,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool OpenDiscordPrefix()
         {
-            Application.OpenURL("https://discord.gg/KrGrpBwYgs");
+            Application.OpenURL("https://discord.gg/3FECF6Jx7P");
             Instance.DisplayNotification("Modders' Discord will open in your browser!", 2f, EditorManager.NotificationType.Success);
             return false;
         }
