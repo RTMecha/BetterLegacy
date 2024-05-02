@@ -1535,7 +1535,7 @@ namespace BetterLegacy.Example
 					if (x.button != PointerEventData.InputButton.Left)
 						return;
 
-					StopAnimations(x => x.name == "End Drag Example" || x.name == "Drag Example");
+					StopAnimations(x => x.name == "End Drag Example" || x.name == "Drag Example" || x.name.ToLower().Contains("movement"));
 
 					startMousePos = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f) * CoreHelper.ScreenScaleInverse;
 					startDragPos = new Vector2(TotalPosition.x, TotalPosition.y);
@@ -3292,6 +3292,41 @@ namespace BetterLegacy.Example
 			audioSource.Play();
 
 			inst.StartCoroutine(AudioManager.inst.DestroyWithDelay(audioSource, clip.length));
+		}
+
+		public void BrowsRaise()
+        {
+			float tbrowLeft = -15f;
+			if (browLeft.localRotation.eulerAngles.z > 180f)
+				tbrowLeft = 345f;
+
+			float tbrowRight = 15f;
+			if (browRight.localRotation.eulerAngles.z > 180f)
+				tbrowRight = 345f;
+
+			var animation = new RTAnimation("Brows");
+			animation.animationHandlers = new List<AnimationHandlerBase>
+			{
+				// Brows
+				new AnimationHandler<float>(new List<IKeyframe<float>>
+				{
+					new FloatKeyframe(0f, browLeft.localRotation.eulerAngles.z, Ease.Linear),
+					new FloatKeyframe(0.3f, tbrowLeft, Ease.SineOut),
+				}, delegate (float x)
+				{
+					browLeft.localRotation = Quaternion.Euler(0f, 0f, x);
+				}),
+				new AnimationHandler<float>(new List<IKeyframe<float>>
+				{
+					new FloatKeyframe(0f, browRight.localRotation.eulerAngles.z, Ease.Linear),
+					new FloatKeyframe(0.3f, tbrowRight, Ease.SineOut),
+				}, delegate (float x)
+				{
+					browRight.localRotation = Quaternion.Euler(0f, 0f, x);
+				}),
+			};
+
+			PlayOnce(animation, true, x => x.playing && !x.name.Contains("DIALOGUE: ") && !x.name.ToLower().Contains("movement"));
 		}
 
         #endregion
