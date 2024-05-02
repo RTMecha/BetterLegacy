@@ -445,7 +445,7 @@ namespace BetterLegacy.Example
 
 		public Vector3 lastPos;
 
-		public float dragDelay = 0.2f;
+		public float dragDelay = 0.3f;
 
 		#endregion
 
