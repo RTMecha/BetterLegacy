@@ -68,6 +68,7 @@ namespace BetterLegacy.Configs
             EventKeyframesRenderBinColor = Config.Bind("Timeline", "Event Keyframes Use Bin Color", true, "If the Event Keyframes should use the bin color when not selected or not.");
             ObjectKeyframesRenderBinColor = Config.Bind("Timeline", "Object Keyframes Use Bin Color", true, "If the Object Keyframes should use the bin color when not selected or not.");
             WaveformGenerate = Config.Bind("Timeline", "Waveform Generate", true, "Allows the timeline waveform to generate. (Waveform might not show on some devices and will increase level load times)");
+            WaveformSaves = Config.Bind("Timeline", "Waveform Saves", true, "Turn off if you don't want the timeline waveform to save.");
             WaveformRerender = Config.Bind("Timeline", "Waveform Re-render", false, "If the timeline waveform should update when a value is changed.");
             WaveformMode = Config.Bind("Timeline", "Waveform Mode", WaveformType.Legacy, "The mode of the timeline waveform.");
             WaveformBGColor = Config.Bind("Timeline", "Waveform BG Color", Color.clear, "Color of the background for the waveform.");
@@ -1194,6 +1195,7 @@ namespace BetterLegacy.Configs
         public ConfigEntry<bool> EventKeyframesRenderBinColor { get; set; }
         public ConfigEntry<bool> ObjectKeyframesRenderBinColor { get; set; }
         public ConfigEntry<bool> WaveformGenerate { get; set; }
+        public ConfigEntry<bool> WaveformSaves { get; set; }
         public ConfigEntry<bool> WaveformRerender { get; set; }
         public ConfigEntry<WaveformType> WaveformMode { get; set; }
         public ConfigEntry<Color> WaveformBGColor { get; set; }
