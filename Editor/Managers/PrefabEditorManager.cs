@@ -5,6 +5,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
+using BetterLegacy.Example;
 using LSFunctions;
 using SimpleJSON;
 using System;
@@ -856,29 +857,30 @@ namespace BetterLegacy.Editor.Managers
 
         public void ExpandCurrentPrefab()
         {
-            if (ObjectEditor.inst.CurrentSelection.IsPrefabObject)
+            if (!ObjectEditor.inst.CurrentSelection.IsPrefabObject)
             {
-                var prefabObject = ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>();
-                string id = prefabObject.ID;
-
-                EditorManager.inst.ClearDialogs();
-
-                Debug.Log($"{PrefabEditor.inst.className}Expanding Prefab Object.");
-                StartCoroutine(AddExpandedPrefabToLevel(prefabObject));
-
-                Debug.Log($"{PrefabEditor.inst.className}Removing Prefab Object's spawned objects.");
-                Updater.UpdatePrefab(prefabObject, false);
-
-                RTEditor.inst.RemoveTimelineObject(RTEditor.inst.timelineObjects.Find(x => x.ID == id));
-
-                DataManager.inst.gameData.prefabObjects.RemoveAll(x => x.ID == id);
-                DataManager.inst.gameData.beatmapObjects.RemoveAll(x => x.prefabInstanceID == id && x.fromPrefab);
-                ObjectEditor.inst.DeselectAllObjects();
-
-                ObjectEditor.inst.RenderTimelineObjects();
-            }
-            else
                 EditorManager.inst.DisplayNotification("Can't expand non-prefab!", 2f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            var prefabObject = ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>();
+            string id = prefabObject.ID;
+
+            EditorManager.inst.ClearDialogs();
+
+            Debug.Log($"{PrefabEditor.inst.className}Expanding Prefab Object.");
+            StartCoroutine(AddExpandedPrefabToLevel(prefabObject));
+
+            Debug.Log($"{PrefabEditor.inst.className}Removing Prefab Object's spawned objects.");
+            Updater.UpdatePrefab(prefabObject, false);
+
+            RTEditor.inst.RemoveTimelineObject(RTEditor.inst.timelineObjects.Find(x => x.ID == id));
+
+            DataManager.inst.gameData.prefabObjects.RemoveAll(x => x.ID == id);
+            DataManager.inst.gameData.beatmapObjects.RemoveAll(x => x.prefabInstanceID == id && x.fromPrefab);
+            ObjectEditor.inst.DeselectAllObjects();
+
+            ObjectEditor.inst.RenderTimelineObjects();
         }
 
         public void AddPrefabObjectToLevel(BasePrefab prefab)
@@ -898,13 +900,21 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < prefabObject.events.Count; i++)
                 prefabObject.events[i] = new EventKeyframe(prefabObject.events[i]);
 
+            // Set default scale
+            prefabObject.events[1].eventValues[0] = 1f;
+            prefabObject.events[1].eventValues[1] = 1f;
+
             DataManager.inst.gameData.prefabObjects.Add(prefabObject);
 
             Updater.AddPrefabToLevel(prefabObject);
 
             var timelineObject = new TimelineObject(prefabObject);
             ObjectEditor.inst.SetCurrentObject(timelineObject);
-            //ObjectEditor.inst.RenderTimelineObject(timelineObject);
+
+            if (prefab.Name.Contains("Example") && ExampleManager.inst && ExampleManager.inst.Visible)
+            {
+                ExampleManager.inst.Say("Hey, it's me!");
+            }
         }
 
         public IEnumerator AddExpandedPrefabToLevel(PrefabObject prefabObject)
@@ -2122,8 +2132,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 delete.onClick.AddListener(delegate ()
                 {
-                    EditorManager.inst.ShowDialog("Warning Popup");
-                    RTEditor.inst.RefreshWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", delegate ()
+                    RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", delegate ()
                     {
                         PrefabEditor.inst.DeleteInternalPrefab(index);
                         EditorManager.inst.HideDialog("Warning Popup");
@@ -2193,8 +2202,7 @@ namespace BetterLegacy.Editor.Managers
 
                 delete.onClick.AddListener(delegate ()
                 {
-                    EditorManager.inst.ShowDialog("Warning Popup");
-                    RTEditor.inst.RefreshWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", delegate ()
+                    RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", delegate ()
                     {
                         DeleteExternalPrefab(prefabPanel);
                         EditorManager.inst.HideDialog("Warning Popup");
