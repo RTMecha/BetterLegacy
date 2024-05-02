@@ -156,24 +156,9 @@ namespace BetterLegacy.Core.Managers
             AudioManager.inst.SetPitch(GameManager.inst.getPitch());
             GameManager.inst.songLength = level.music.length;
 
-            Debug.Log($"{className}Setting Camera sizes...");
+            yield return RTVideoManager.inst.Setup(level.path);
 
-            if (RTFile.FileExists(level.path + "bg.mp4") && CoreConfig.Instance.EnableVideoBackground.Value)
-            {
-                RTVideoManager.inst.Play(level.path + "bg.mp4", 1f);
-                while (!RTVideoManager.inst.videoPlayer.isPrepared)
-                    yield return null;
-            }
-            else if (RTFile.FileExists(level.path + "bg.mov") && CoreConfig.Instance.EnableVideoBackground.Value)
-            {
-                RTVideoManager.inst.Play(level.path + "bg.mov", 1f);
-                while (!RTVideoManager.inst.videoPlayer.isPrepared)
-                    yield return null;
-            }
-            else
-            {
-                RTVideoManager.inst.Stop();
-            }
+            Debug.Log($"{className}Setting Camera sizes...");
 
             EventManager.inst.cam.rect = new Rect(0f, 0f, 1f, 1f);
             EventManager.inst.camPer.rect = new Rect(0f, 0f, 1f, 1f);
