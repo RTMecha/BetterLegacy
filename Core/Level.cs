@@ -73,14 +73,14 @@ namespace BetterLegacy.Core
         {
             if (RTFile.FileExists(path + "level.ogg") && !music)
             {
-                CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip("file://" + path + "level.ogg", AudioType.OGGVORBIS, delegate (AudioClip audioClip)
+                CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + path + "level.ogg", AudioType.OGGVORBIS, delegate (AudioClip audioClip)
                 {
                     music = audioClip;
                 }));
             }
             else if (RTFile.FileExists(path + "level.wav") && !music)
             {
-                CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip("file://" + path + "level.wav", AudioType.WAV, delegate (AudioClip audioClip)
+                CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + path + "level.wav", AudioType.WAV, delegate (AudioClip audioClip)
                 {
                     music = audioClip;
                 }));
@@ -91,14 +91,14 @@ namespace BetterLegacy.Core
             }
             else if (RTFile.FileExists(path + "audio.ogg") && !music)
             {
-                CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip("file://" + path + "audio.ogg", AudioType.OGGVORBIS, delegate (AudioClip audioClip)
+                CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + path + "audio.ogg", AudioType.OGGVORBIS, delegate (AudioClip audioClip)
                 {
                     music = audioClip;
                 }));
             }
             else if (RTFile.FileExists(path + "audio.wav") && !music)
             {
-                CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip("file://" + path + "audio.wav", AudioType.WAV, delegate (AudioClip audioClip)
+                CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + path + "audio.wav", AudioType.WAV, delegate (AudioClip audioClip)
                 {
                     music = audioClip;
                 }));
@@ -113,14 +113,14 @@ namespace BetterLegacy.Core
         {
             if (RTFile.FileExists(path + "level.ogg") && !music)
             {
-                yield return CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip("file://" + path + "level.ogg", AudioType.OGGVORBIS, delegate (AudioClip audioClip)
+                yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + path + "level.ogg", AudioType.OGGVORBIS, delegate (AudioClip audioClip)
                 {
                     music = audioClip;
                 }));
             }
             else if (RTFile.FileExists(path + "level.wav") && !music)
             {
-                yield return CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip("file://" + path + "level.wav", AudioType.WAV, delegate (AudioClip audioClip)
+                yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + path + "level.wav", AudioType.WAV, delegate (AudioClip audioClip)
                 {
                     music = audioClip;
                 }));
@@ -131,14 +131,14 @@ namespace BetterLegacy.Core
             }
             else if (RTFile.FileExists(path + "audio.ogg") && !music)
             {
-                yield return CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip("file://" + path + "audio.ogg", AudioType.OGGVORBIS, delegate (AudioClip audioClip)
+                yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + path + "audio.ogg", AudioType.OGGVORBIS, delegate (AudioClip audioClip)
                 {
                     music = audioClip;
                 }));
             }
             else if (RTFile.FileExists(path + "audio.wav") && !music)
             {
-                yield return CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip("file://" + path + "audio.wav", AudioType.WAV, delegate (AudioClip audioClip)
+                yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + path + "audio.wav", AudioType.WAV, delegate (AudioClip audioClip)
                 {
                     music = audioClip;
                 }));
