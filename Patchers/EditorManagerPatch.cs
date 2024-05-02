@@ -44,6 +44,9 @@ namespace BetterLegacy.Patchers
                 return false;
             }
 
+            __instance.hasLoadedLevel = false;
+            __instance.loading = false;
+
             CoreHelper.LogInit(__instance.className);
 
             FontManager.inst.ChangeAllFontsInEditor();
@@ -198,9 +201,6 @@ namespace BetterLegacy.Patchers
             EditorThemeManager.AddScrollbar(parentSelectorPopup.transform.Find("Scrollbar").GetComponent<Scrollbar>(), scrollbarRoundedSide: SpriteManager.RoundedSide.Bottom_Right_I);
 
             EditorThemeManager.AddInputField(parentSelectorPopup.transform.Find("search-box/search").GetComponent<InputField>(), ThemeGroup.Search_Field_1, 1, SpriteManager.RoundedSide.Bottom);
-
-            __instance.hasLoadedLevel = false;
-            __instance.loading = false;
 
             var levelButtonPrefab = __instance.folderButtonPrefab.Duplicate(__instance.transform, __instance.folderButtonPrefab.name);
             var levelButtonPrefabStorage = levelButtonPrefab.AddComponent<FunctionButtonStorage>();
