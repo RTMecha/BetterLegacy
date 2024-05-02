@@ -16,6 +16,7 @@ using BetterLegacy.Components;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Menus;
 
 namespace BetterLegacy.Arcade
 {
@@ -1180,9 +1181,9 @@ namespace BetterLegacy.Arcade
                 AnimationManager.inst.RemoveID(animation.id);
                 animating = false;
 
-                if (ModCompatibility.sharedFunctions.ContainsKey("PageCreatorMenuMusic") && ModCompatibility.sharedFunctions.ContainsKey("PageCreatorMenuMusicFile"))
+                if (MenuManager.inst)
                 {
-                    AudioManager.inst.PlayMusic((string)ModCompatibility.sharedFunctions["PageCreatorMenuMusicFile"], (AudioClip)ModCompatibility.sharedFunctions["PageCreatorMenuMusic"]);
+                    AudioManager.inst.PlayMusic(MenuManager.inst.currentMenuMusicName, MenuManager.inst.currentMenuMusic);
                 }
 
                 ArcadeMenuManager.inst.OpenedLocalLevel = false;

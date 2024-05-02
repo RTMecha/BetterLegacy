@@ -33,6 +33,7 @@ using BetterLegacy.Components;
 using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Menus;
 
 #pragma warning disable CS0618 // Type or member is obsolete
 namespace BetterLegacy.Arcade
@@ -777,9 +778,9 @@ namespace BetterLegacy.Arcade
             yield return StartCoroutine(DeleteComponents());
             UpdateTheme();
 
-            if (ModCompatibility.sharedFunctions.ContainsKey("PageCreatorMenuMusic") && ModCompatibility.sharedFunctions.ContainsKey("PageCreatorMenuMusicFile"))
+            if (MenuManager.inst)
             {
-                AudioManager.inst.PlayMusic((string)ModCompatibility.sharedFunctions["PageCreatorMenuMusicFile"], (AudioClip)ModCompatibility.sharedFunctions["PageCreatorMenuMusic"]);
+                AudioManager.inst.PlayMusic(MenuManager.inst.currentMenuMusicName, MenuManager.inst.currentMenuMusic);
             }
 
             LevelManager.current = 0;
