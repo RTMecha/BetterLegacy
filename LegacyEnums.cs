@@ -20,6 +20,22 @@ namespace BetterLegacy
         Void
     }
 
+    public enum EditorFont
+    {
+        Inconsolata_Variable,
+        Fredoka_One,
+        Pusab,
+        Revue,
+        Transformers_Movie,
+        Ancient_Autobot,
+        Determination_Mono,
+        Flow_Circular,
+        Arrhythmia,
+        Angsana,
+        About_Friend,
+        VAG_Rounded,
+    }
+
     public enum LevelSort
     {
         Cover,
