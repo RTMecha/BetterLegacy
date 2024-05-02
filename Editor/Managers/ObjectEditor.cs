@@ -6,6 +6,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
+using BetterLegacy.Example;
 using BetterLegacy.Patchers;
 using Crosstales.FB;
 using HarmonyLib;
@@ -1045,13 +1046,26 @@ namespace BetterLegacy.Editor.Managers
 
             var timelineObject = new TimelineObject(beatmapObject);
 
-            RenderTimelineObject(timelineObject);
-            Updater.UpdateProcessor(beatmapObject);
-
             AudioManager.inst.SetMusicTime(AllowTimeExactlyAtStart ? AudioManager.inst.CurrentAudioSource.time : AudioManager.inst.CurrentAudioSource.time + 0.001f);
 
             if (_select)
                 SetCurrentObject(timelineObject);
+
+            if (ExampleManager.inst && ExampleManager.inst.Visible)
+            {
+                string[] sayings = new string[]
+                {
+                    "Ooh, a new object! What will this become?",
+                    "What's that gonna be?",
+                    "Hello new object!",
+                    "What will this object be for?",
+                    "Hey, it's a new object!",
+                    $"What are you gonna use this for, {CoreConfig.Instance.DisplayName.Value}?",
+                    "Look at that new object, isn't it cute?",
+                };
+
+                ExampleManager.inst.Say(sayings[UnityEngine.Random.Range(0, sayings.Length)]);
+            }
 
             return timelineObject;
         }
