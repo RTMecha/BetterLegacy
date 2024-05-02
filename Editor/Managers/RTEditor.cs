@@ -9919,7 +9919,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.autosaves.RemoveAt(0);
             }
 
-            EditorManager.inst.StartCoroutine(ProjectData.Writer.SaveData(autosavePath, GameData.Current));
+            this.StartCoroutineAsync(ProjectData.Writer.SaveData(autosavePath, GameData.Current));
 
             EditorManager.inst.DisplayNotification("Autosaved backup!", 2f, EditorManager.NotificationType.Success);
 
