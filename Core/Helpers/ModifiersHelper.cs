@@ -31,12 +31,12 @@ namespace BetterLegacy.Core.Helpers
 {
     public static class ModifiersHelper
     {
-        public static bool Trigger(BeatmapObject.Modifier modifier)
+        public static bool Trigger(Modifier<BeatmapObject> modifier)
         {
             if (!modifier.verified)
             {
                 modifier.verified = true;
-                CoreHelper.VerifyModifier(modifier);
+                modifier.VerifyModifier(ModifiersManager.modifierTypes);
             }
 
             if (!modifier.IsValid(ModifiersManager.modifierTypes))
@@ -50,7 +50,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "playerCollide":
                     {
-                        return modifier.modifierObject.IsTouchingPlayer();
+                        return modifier.reference.IsTouchingPlayer();
                     }
                 case "playerHealthEquals":
                     {
@@ -94,7 +94,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "playerBoosting":
                     {
-                        if (modifier.modifierObject != null && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject.GameObject)
+                        if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                         {
                             var orderedList = PlayerManager.Players
                                 .Where(x => x.Player)
@@ -112,7 +112,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "playerAlive":
                     {
-                        if (int.TryParse(modifier.value, out int hit) && modifier.modifierObject != null && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject.GameObject)
+                        if (int.TryParse(modifier.value, out int hit) && modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                         {
                             if (PlayerManager.Players.Count > hit)
                             {
@@ -148,7 +148,7 @@ namespace BetterLegacy.Core.Helpers
                     {
                         for (int i = 0; i < GameManager.inst.players.transform.childCount; i++)
                         {
-                            if (GameManager.inst.players.transform.Find(string.Format("Player {0}", i + 1)) && modifier.modifierObject != null && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject.GameObject && float.TryParse(modifier.value, out float num))
+                            if (GameManager.inst.players.transform.Find(string.Format("Player {0}", i + 1)) && modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject && float.TryParse(modifier.value, out float num))
                             {
                                 var player = GameManager.inst.players.transform.Find(string.Format("Player {0}/Player", i + 1));
                                 return Vector2.Distance(player.transform.position, levelObject.visualObject.GameObject.transform.position) > num;
@@ -161,7 +161,7 @@ namespace BetterLegacy.Core.Helpers
                     {
                         for (int i = 0; i < GameManager.inst.players.transform.childCount; i++)
                         {
-                            if (GameManager.inst.players.transform.Find(string.Format("Player {0}", i + 1)) && modifier.modifierObject != null && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject.GameObject && float.TryParse(modifier.value, out float num))
+                            if (GameManager.inst.players.transform.Find(string.Format("Player {0}", i + 1)) && modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject && float.TryParse(modifier.value, out float num))
                             {
                                 var player = GameManager.inst.players.transform.Find(string.Format("Player {0}/Player", i + 1));
                                 return Vector2.Distance(player.transform.position, levelObject.visualObject.GameObject.transform.position) < num;
@@ -216,37 +216,37 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "mouseOver":
                     {
-                        if (modifier.modifierObject != null && modifier.modifierObject.levelObject && modifier.modifierObject.levelObject.visualObject != null && modifier.modifierObject.levelObject.visualObject.GameObject)
+                        if (modifier.reference != null && modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null && modifier.reference.levelObject.visualObject.GameObject)
                         {
-                            if (!modifier.modifierObject.detector)
+                            if (!modifier.reference.detector)
                             {
-                                var gameObject = modifier.modifierObject.levelObject.visualObject.GameObject;
+                                var gameObject = modifier.reference.levelObject.visualObject.GameObject;
                                 var op = gameObject.GetComponent<Detector>() ?? gameObject.AddComponent<Detector>();
-                                op.beatmapObject = modifier.modifierObject;
-                                modifier.modifierObject.detector = op;
+                                op.beatmapObject = modifier.reference;
+                                modifier.reference.detector = op;
                             }
 
-                            if (modifier.modifierObject.detector)
-                                return modifier.modifierObject.detector.hovered;
+                            if (modifier.reference.detector)
+                                return modifier.reference.detector.hovered;
                         }
                         break;
                     }
                 case "mouseOverSignalModifier":
                     {
                         var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
-                        if (modifier.modifierObject != null && modifier.modifierObject.levelObject && modifier.modifierObject.levelObject.visualObject != null && modifier.modifierObject.levelObject.visualObject.GameObject)
+                        if (modifier.reference != null && modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null && modifier.reference.levelObject.visualObject.GameObject)
                         {
-                            if (!modifier.modifierObject.detector)
+                            if (!modifier.reference.detector)
                             {
-                                var gameObject = modifier.modifierObject.levelObject.visualObject.GameObject;
+                                var gameObject = modifier.reference.levelObject.visualObject.GameObject;
                                 var op = gameObject.GetComponent<Detector>() ?? gameObject.AddComponent<Detector>();
-                                op.beatmapObject = modifier.modifierObject;
-                                modifier.modifierObject.detector = op;
+                                op.beatmapObject = modifier.reference;
+                                modifier.reference.detector = op;
                             }
 
-                            if (modifier.modifierObject.detector)
+                            if (modifier.reference.detector)
                             {
-                                if (modifier.modifierObject.detector.hovered && list.Count() > 0)
+                                if (modifier.reference.detector.hovered && list.Count() > 0)
                                 {
                                     foreach (var bm in list)
                                     {
@@ -254,7 +254,7 @@ namespace BetterLegacy.Core.Helpers
                                     }
                                 }
 
-                                if (modifier.modifierObject.detector.hovered)
+                                if (modifier.reference.detector.hovered)
                                     return true;
                             }
                         }
@@ -262,23 +262,23 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "bulletCollide":
                     {
-                        if (modifier.modifierObject != null && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
+                        if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
                         {
-                            if (!modifier.modifierObject.detector)
+                            if (!modifier.reference.detector)
                             {
                                 var op = levelObject.visualObject.GameObject.GetComponent<Detector>() ?? levelObject.visualObject.GameObject.AddComponent<Detector>();
-                                op.beatmapObject = modifier.modifierObject;
-                                modifier.modifierObject.detector = op;
+                                op.beatmapObject = modifier.reference;
+                                modifier.reference.detector = op;
                             }
 
-                            if (modifier.modifierObject.detector)
-                                return modifier.modifierObject.detector.bulletOver;
+                            if (modifier.reference.detector)
+                                return modifier.reference.detector.bulletOver;
                         }
                         break;
                     }
                 case "objectCollide":
                     {
-                        if (Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.Collider)
+                        if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.Collider)
                         {
                             var list = DataManager.inst.gameData.beatmapObjects.Where(x => ((BeatmapObject)x).tags.Contains(modifier.value) && ((BeatmapObject)x).levelObject && ((BeatmapObject)x).levelObject.visualObject != null && ((BeatmapObject)x).levelObject.visualObject.Collider);
                             return list.Count() > 0 && list.Any(x => ((BeatmapObject)x).levelObject.visualObject.Collider.IsTouching(levelObject.visualObject.Collider));
@@ -396,29 +396,29 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "variableEquals":
                     {
-                        return int.TryParse(modifier.value, out int num) && modifier.modifierObject && modifier.modifierObject.integerVariable == num;
+                        return int.TryParse(modifier.value, out int num) && modifier.reference && modifier.reference.integerVariable == num;
                     }
                 case "variableLesserEquals":
                     {
-                        return int.TryParse(modifier.value, out int num) && modifier.modifierObject && modifier.modifierObject.integerVariable <= num;
+                        return int.TryParse(modifier.value, out int num) && modifier.reference && modifier.reference.integerVariable <= num;
                     }
                 case "variableGreaterEquals":
                     {
-                        return int.TryParse(modifier.value, out int num) && modifier.modifierObject && modifier.modifierObject.integerVariable >= num;
+                        return int.TryParse(modifier.value, out int num) && modifier.reference && modifier.reference.integerVariable >= num;
                     }
                 case "variableLesser":
                     {
-                        return int.TryParse(modifier.value, out int num) && modifier.modifierObject && modifier.modifierObject.integerVariable < num;
+                        return int.TryParse(modifier.value, out int num) && modifier.reference && modifier.reference.integerVariable < num;
                     }
                 case "variableGreater":
                     {
-                        return int.TryParse(modifier.value, out int num) && modifier.modifierObject && modifier.modifierObject.integerVariable > num;
+                        return int.TryParse(modifier.value, out int num) && modifier.reference && modifier.reference.integerVariable > num;
                     }
                 case "variableOtherEquals":
                     {
                         return
                             int.TryParse(modifier.value, out int num) &&
-                            modifier.modifierObject &&
+                            modifier.reference &&
                             !string.IsNullOrEmpty(modifier.commands[1]) &&
                             DataManager.inst.gameData.beatmapObjects.Any(x => ((BeatmapObject)x).tags.Contains(modifier.commands[1]) && ((BeatmapObject)x).integerVariable == num);
                     }
@@ -426,7 +426,7 @@ namespace BetterLegacy.Core.Helpers
                     {
                         return
                             int.TryParse(modifier.value, out int num) &&
-                            modifier.modifierObject &&
+                            modifier.reference &&
                             !string.IsNullOrEmpty(modifier.commands[1]) &&
                             DataManager.inst.gameData.beatmapObjects.Any(x => ((BeatmapObject)x).tags.Contains(modifier.commands[1]) && ((BeatmapObject)x).integerVariable <= num);
                     }
@@ -434,7 +434,7 @@ namespace BetterLegacy.Core.Helpers
                     {
                         return
                             int.TryParse(modifier.value, out int num) &&
-                            modifier.modifierObject &&
+                            modifier.reference &&
                             !string.IsNullOrEmpty(modifier.commands[1]) &&
                             DataManager.inst.gameData.beatmapObjects.Any(x => ((BeatmapObject)x).tags.Contains(modifier.commands[1]) && ((BeatmapObject)x).integerVariable >= num);
                     }
@@ -442,7 +442,7 @@ namespace BetterLegacy.Core.Helpers
                     {
                         return
                             int.TryParse(modifier.value, out int num) &&
-                            modifier.modifierObject &&
+                            modifier.reference &&
                             !string.IsNullOrEmpty(modifier.commands[1]) &&
                             DataManager.inst.gameData.beatmapObjects.Any(x => ((BeatmapObject)x).tags.Contains(modifier.commands[1]) && ((BeatmapObject)x).integerVariable < num);
                     }
@@ -450,7 +450,7 @@ namespace BetterLegacy.Core.Helpers
                     {
                         return
                             int.TryParse(modifier.value, out int num) &&
-                            modifier.modifierObject &&
+                            modifier.reference &&
                             !string.IsNullOrEmpty(modifier.commands[1]) &&
                             DataManager.inst.gameData.beatmapObjects.Any(x => ((BeatmapObject)x).tags.Contains(modifier.commands[1]) && ((BeatmapObject)x).integerVariable > num);
                     }
@@ -482,7 +482,7 @@ namespace BetterLegacy.Core.Helpers
                         }
 
                         if (modifier.Result is List<int>)
-                            if (modifier.modifierObject != null && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject.GameObject)
+                            if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                             {
                                 var result = modifier.Result as List<int>;
 
@@ -1295,14 +1295,14 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
 
-        public static void Action(BeatmapObject.Modifier modifier)
+        public static void Action(Modifier<BeatmapObject> modifier)
         {
             modifier.hasChanged = false;
 
             if (!modifier.verified)
             {
                 modifier.verified = true;
-                CoreHelper.VerifyModifier(modifier);
+                modifier.VerifyModifier(ModifiersManager.modifierTypes);
             }
 
             if (!modifier.IsValid(ModifiersManager.modifierTypes))
@@ -1336,31 +1336,31 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "setMusicTimeStartTime":
                     {
-                        AudioManager.inst.SetMusicTime(modifier.modifierObject.StartTime);
+                        AudioManager.inst.SetMusicTime(modifier.reference.StartTime);
                         break;
                     }
                 case "setMusicTimeAutokill":
                     {
-                        AudioManager.inst.SetMusicTime(modifier.modifierObject.StartTime + modifier.modifierObject.GetObjectLifeLength(_oldStyle: true));
+                        AudioManager.inst.SetMusicTime(modifier.reference.StartTime + modifier.reference.GetObjectLifeLength(_oldStyle: true));
                         break;
                     }
                 case "playSound":
                     {
                         if (bool.TryParse(modifier.commands[1], out bool global) && float.TryParse(modifier.commands[2], out float pitch) && float.TryParse(modifier.commands[3], out float vol) && bool.TryParse(modifier.commands[4], out bool loop))
-                            ModifiersManager.GetSoundPath(modifier.modifierObject.id, modifier.value, global, pitch, vol, loop);
+                            ModifiersManager.GetSoundPath(modifier.reference.id, modifier.value, global, pitch, vol, loop);
 
                         break;
                     }
                 case "playSoundOnline":
                     {
                         if (bool.TryParse(modifier.commands[1], out bool global) && float.TryParse(modifier.commands[2], out float pitch) && float.TryParse(modifier.commands[3], out float vol) && bool.TryParse(modifier.commands[4], out bool loop) && !string.IsNullOrEmpty(modifier.value))
-                            ModifiersManager.DownloadSoundAndPlay(modifier.modifierObject.id, modifier.value, pitch, vol, loop);
+                            ModifiersManager.DownloadSoundAndPlay(modifier.reference.id, modifier.value, pitch, vol, loop);
 
                         break;
                     }
                 case "audioSource":
                     {
-                        if (Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject != null &&
+                        if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null &&
                             levelObject.visualObject.GameObject != null && bool.TryParse(modifier.commands[1], out bool global))
                         {
                             if (modifier.Result != null)
@@ -1386,7 +1386,7 @@ namespace BetterLegacy.Core.Helpers
                             if (text.Contains(".mp3"))
                             {
                                 modifier.Result = levelObject.visualObject.GameObject.AddComponent<AudioModifier>();
-                                ((AudioModifier)modifier.Result).Init(LSAudio.CreateAudioClipUsingMP3File(text), modifier.modifierObject, modifier);
+                                ((AudioModifier)modifier.Result).Init(LSAudio.CreateAudioClipUsingMP3File(text), modifier.reference, modifier);
                                 break;
                             }
 
@@ -1394,7 +1394,7 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 audioClip.name = modifier.value;
                                 modifier.Result = levelObject.visualObject.GameObject.AddComponent<AudioModifier>();
-                                ((AudioModifier)modifier.Result).Init(audioClip, modifier.modifierObject, modifier);
+                                ((AudioModifier)modifier.Result).Init(audioClip, modifier.reference, modifier);
                             }));
                         }
 
@@ -1570,9 +1570,9 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "blur":
                     {
-                        if (modifier.modifierObject &&
-                            modifier.modifierObject.objectType != BeatmapObject.ObjectType.Empty &&
-                            Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) &&
+                        if (modifier.reference &&
+                            modifier.reference.objectType != BeatmapObject.ObjectType.Empty &&
+                            Updater.TryGetObject(modifier.reference, out LevelObject levelObject) &&
                             levelObject.visualObject.Renderer &&
                             float.TryParse(modifier.value, out float num))
                         {
@@ -1589,7 +1589,7 @@ namespace BetterLegacy.Core.Helpers
                                 rend.material = LegacyPlugin.blur;
                             }
                             if (modifier.commands.Count > 1 && bool.TryParse(modifier.commands[1], out bool r) && r)
-                                rend.material.SetFloat("_blurSizeXY", -(modifier.modifierObject.Interpolate(3, 1) - 1f) * num);
+                                rend.material.SetFloat("_blurSizeXY", -(modifier.reference.Interpolate(3, 1) - 1f) * num);
                             else
                                 rend.material.SetFloat("_blurSizeXY", num);
                         }
@@ -1628,9 +1628,9 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "blurVariable":
                     {
-                        if (modifier.modifierObject &&
-                            modifier.modifierObject.objectType != BeatmapObject.ObjectType.Empty &&
-                            Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) &&
+                        if (modifier.reference &&
+                            modifier.reference.objectType != BeatmapObject.ObjectType.Empty &&
+                            Updater.TryGetObject(modifier.reference, out LevelObject levelObject) &&
                             levelObject.visualObject.Renderer &&
                             float.TryParse(modifier.value, out float num))
                         {
@@ -1646,7 +1646,7 @@ namespace BetterLegacy.Core.Helpers
                                 modifier.Result = levelObject.visualObject.GameObject;
                                 rend.material = LegacyPlugin.blur;
                             }
-                            rend.material.SetFloat("_blurSizeXY", modifier.modifierObject.integerVariable * num);
+                            rend.material.SetFloat("_blurSizeXY", modifier.reference.integerVariable * num);
                         }
                         break;
                     }
@@ -1682,9 +1682,9 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "blurColored":
                     {
-                        if (modifier.modifierObject &&
-                            modifier.modifierObject.objectType != BeatmapObject.ObjectType.Empty &&
-                            Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) &&
+                        if (modifier.reference &&
+                            modifier.reference.objectType != BeatmapObject.ObjectType.Empty &&
+                            Updater.TryGetObject(modifier.reference, out LevelObject levelObject) &&
                             levelObject.visualObject.Renderer &&
                             float.TryParse(modifier.value, out float num))
                         {
@@ -1702,7 +1702,7 @@ namespace BetterLegacy.Core.Helpers
                             }
 
                             if (modifier.commands.Count > 1 && bool.TryParse(modifier.commands[1], out bool r) && r)
-                                rend.material.SetFloat("_Size", -(modifier.modifierObject.Interpolate(3, 1) - 1f) * num);
+                                rend.material.SetFloat("_Size", -(modifier.reference.Interpolate(3, 1) - 1f) * num);
                             else
                                 rend.material.SetFloat("_Size", num);
                         }
@@ -1741,14 +1741,14 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "particleSystem":
                     {
-                        if (modifier.modifierObject != null && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject.GameObject)
+                        if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                         {
                             var mod = levelObject.visualObject.GameObject;
 
-                            if (!modifier.modifierObject.particleSystem && !mod.GetComponent<ParticleSystem>())
+                            if (!modifier.reference.particleSystem && !mod.GetComponent<ParticleSystem>())
                             {
-                                modifier.modifierObject.particleSystem = mod.AddComponent<ParticleSystem>();
-                                var ps = modifier.modifierObject.particleSystem;
+                                modifier.reference.particleSystem = mod.AddComponent<ParticleSystem>();
+                                var ps = modifier.reference.particleSystem;
 
                                 var mat = mod.GetComponent<ParticleSystemRenderer>();
                                 mat.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
@@ -1838,10 +1838,10 @@ namespace BetterLegacy.Core.Helpers
 
                                 sizeOverLifetime.size = ssss;
                             }
-                            else if (!modifier.modifierObject.particleSystem)
+                            else if (!modifier.reference.particleSystem)
                             {
-                                modifier.modifierObject.particleSystem = mod.GetComponent<ParticleSystem>();
-                                var ps = modifier.modifierObject.particleSystem;
+                                modifier.reference.particleSystem = mod.GetComponent<ParticleSystem>();
+                                var ps = modifier.reference.particleSystem;
 
                                 var mat = mod.GetComponent<ParticleSystemRenderer>();
                                 mat.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
@@ -1932,9 +1932,9 @@ namespace BetterLegacy.Core.Helpers
                                 sizeOverLifetime.size = ssss;
                             }
 
-                            if (modifier.modifierObject.particleSystem)
+                            if (modifier.reference.particleSystem)
                             {
-                                var ps = modifier.modifierObject.particleSystem;
+                                var ps = modifier.reference.particleSystem;
                                 var psMain = ps.main;
                                 var psEmission = ps.emission;
 
@@ -1954,27 +1954,27 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "trailRenderer":
                     {
-                        if (modifier.modifierObject != null && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject.GameObject)
+                        if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                         {
                             var mod = levelObject.visualObject.GameObject;
 
-                            if (!modifier.modifierObject.trailRenderer && !mod.GetComponent<TrailRenderer>())
+                            if (!modifier.reference.trailRenderer && !mod.GetComponent<TrailRenderer>())
                             {
-                                modifier.modifierObject.trailRenderer = mod.AddComponent<TrailRenderer>();
+                                modifier.reference.trailRenderer = mod.AddComponent<TrailRenderer>();
 
-                                modifier.modifierObject.trailRenderer.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
-                                modifier.modifierObject.trailRenderer.material.color = Color.white;
+                                modifier.reference.trailRenderer.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
+                                modifier.reference.trailRenderer.material.color = Color.white;
                             }
-                            else if (!modifier.modifierObject.trailRenderer)
+                            else if (!modifier.reference.trailRenderer)
                             {
-                                modifier.modifierObject.trailRenderer = mod.GetComponent<TrailRenderer>();
+                                modifier.reference.trailRenderer = mod.GetComponent<TrailRenderer>();
 
-                                modifier.modifierObject.trailRenderer.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
-                                modifier.modifierObject.trailRenderer.material.color = Color.white;
+                                modifier.reference.trailRenderer.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
+                                modifier.reference.trailRenderer.material.color = Color.white;
                             }
                             else
                             {
-                                var tr = modifier.modifierObject.trailRenderer;
+                                var tr = modifier.reference.trailRenderer;
 
                                 if (float.TryParse(modifier.value, out float time))
                                 {
@@ -2031,7 +2031,7 @@ namespace BetterLegacy.Core.Helpers
                     {
                         if ((EditorManager.inst == null && DataManager.inst.GetSettingEnum("ArcadeDifficulty", 1) != 0 || !EditorManager.inst.isEditing) && !modifier.constant)
                         {
-                            if (Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject && int.TryParse(modifier.value, out int hit))
+                            if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject && int.TryParse(modifier.value, out int hit))
                             {
                                 var orderedList = PlayerManager.Players
                                     .Where(x => x.Player)
@@ -2067,7 +2067,7 @@ namespace BetterLegacy.Core.Helpers
                 case "playerHeal":
                     {
                         if ((EditorManager.inst == null && DataManager.inst.GetSettingEnum("ArcadeDifficulty", 1) != 0 || !EditorManager.inst.isEditing) && !modifier.constant)
-                            if (modifier.modifierObject != null && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject.GameObject && int.TryParse(modifier.value, out int hit))
+                            if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject && int.TryParse(modifier.value, out int hit))
                             {
                                 var orderedList = PlayerManager.Players
                                     .Where(x => x.Player)
@@ -2095,7 +2095,7 @@ namespace BetterLegacy.Core.Helpers
                 case "playerKill":
                     {
                         if ((EditorManager.inst == null || !EditorManager.inst.isEditing) && DataManager.inst.GetSettingEnum("ArcadeDifficulty", 1) != 0 && !modifier.constant)
-                            if (modifier.modifierObject != null && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject.GameObject)
+                            if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                             {
                                 var orderedList = PlayerManager.Players
                                     .Where(x => x.Player)
@@ -2125,7 +2125,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "playerMove":
                     {
-                        if (modifier.modifierObject != null && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject.GameObject)
+                        if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                         {
                             var vector = modifier.value.Split(new char[] { ',' });
 
@@ -2173,7 +2173,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "playerMoveX":
                     {
-                        if (modifier.modifierObject && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject.GameObject)
+                        if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                         {
                             var orderedList = PlayerManager.Players
                                 .Where(x => x.Player)
@@ -2225,7 +2225,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "playerMoveY":
                     {
-                        if (modifier.modifierObject && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject.GameObject)
+                        if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                         {
                             var orderedList = PlayerManager.Players
                                 .Where(x => x.Player)
@@ -2277,7 +2277,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "playerRotate":
                     {
-                        if (modifier.modifierObject && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject.GameObject)
+                        if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                         {
                             var orderedList = PlayerManager.Players
                                 .Where(x => x.Player)
@@ -2327,7 +2327,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "playerBoost":
                     {
-                        if (modifier.modifierObject && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject.GameObject && !modifier.constant)
+                        if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject && !modifier.constant)
                         {
                             var orderedList = PlayerManager.Players
                                 .Where(x => x.Player)
@@ -2354,7 +2354,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "playerDisableBoost":
                     {
-                        if (modifier.modifierObject && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject.GameObject)
+                        if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                         {
                             var orderedList = PlayerManager.Players
                                 .Where(x => x.Player)
@@ -2382,7 +2382,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "playerEnableBoost":
                     {
-                        if (modifier.modifierObject && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject.GameObject)
+                        if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                         {
                             var orderedList = PlayerManager.Players
                                 .Where(x => x.Player)
@@ -2542,7 +2542,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "enableObject":
                     {
-                        if (Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
+                        if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
                         {
                             levelObject.transformChain[0].gameObject.SetActive(true);
                         }
@@ -2555,7 +2555,7 @@ namespace BetterLegacy.Core.Helpers
 
                         if (modifier.Result == null)
                         {
-                            var beatmapObject = Parser.TryParse(modifier.value, true) ? modifier.modifierObject : modifier.modifierObject.GetParentChain().Last();
+                            var beatmapObject = Parser.TryParse(modifier.value, true) ? modifier.reference : modifier.reference.GetParentChain().Last();
 
                             modifier.Result = beatmapObject.GetChildChain();
                         }
@@ -2578,7 +2578,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "disableObject":
                     {
-                        if (Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
+                        if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
                         {
                             levelObject.transformChain[0].gameObject.SetActive(false);
                         }
@@ -2591,7 +2591,7 @@ namespace BetterLegacy.Core.Helpers
 
                         if (modifier.Result == null)
                         {
-                            var beatmapObject = Parser.TryParse(modifier.value, true) ? modifier.modifierObject : modifier.modifierObject.GetParentChain().Last();
+                            var beatmapObject = Parser.TryParse(modifier.value, true) ? modifier.reference : modifier.reference.GetParentChain().Last();
 
                             modifier.Result = beatmapObject.GetChildChain();
                         }
@@ -2628,7 +2628,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "saveText":
                     {
-                        if ((EditorManager.inst == null || !EditorManager.inst.isEditing) && modifier.modifierObject != null && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject)
+                        if ((EditorManager.inst == null || !EditorManager.inst.isEditing) && modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject)
                             && levelObject.visualObject is TextObject textObject)
                             ModifiersManager.SaveProgress(modifier.commands[1], modifier.commands[2], modifier.commands[3], textObject.Text);
 
@@ -2637,13 +2637,13 @@ namespace BetterLegacy.Core.Helpers
                 case "saveVariable":
                     {
                         if (EditorManager.inst == null || !EditorManager.inst.isEditing)
-                            ModifiersManager.SaveProgress(modifier.commands[1], modifier.commands[2], modifier.commands[3], modifier.modifierObject.integerVariable);
+                            ModifiersManager.SaveProgress(modifier.commands[1], modifier.commands[2], modifier.commands[3], modifier.reference.integerVariable);
 
                         break;
                     }
                 case "reactivePos":
                     {
-                        if (modifier.modifierObject && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject.GameObject
+                        if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject
                             && int.TryParse(modifier.commands[1], out int sampleX) && float.TryParse(modifier.commands[3], out float intensityX)
                             && int.TryParse(modifier.commands[2], out int sampleY) && float.TryParse(modifier.commands[4], out float intensityY)
                             && float.TryParse(modifier.value, out float val))
@@ -2658,10 +2658,10 @@ namespace BetterLegacy.Core.Helpers
                             float reactivePositionX = samples[sampleX] * intensityX * val;
                             float reactivePositionY = samples[sampleY] * intensityY * val;
 
-                            var x = modifier.modifierObject.origin.x;
-                            var y = modifier.modifierObject.origin.y;
+                            var x = modifier.reference.origin.x;
+                            var y = modifier.reference.origin.y;
 
-                            levelObject.visualObject.GameObject.transform.localPosition = new Vector3(x + reactivePositionX, y + reactivePositionY, modifier.modifierObject.depth * 0.1f);
+                            levelObject.visualObject.GameObject.transform.localPosition = new Vector3(x + reactivePositionX, y + reactivePositionY, modifier.reference.depth * 0.1f);
 
                             samples = null;
                         }
@@ -2669,7 +2669,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "reactiveSca":
                     {
-                        if (modifier.modifierObject && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject.GameObject
+                        if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject
                             && int.TryParse(modifier.commands[1], out int sampleX) && float.TryParse(modifier.commands[3], out float intensityX)
                             && int.TryParse(modifier.commands[2], out int sampleY) && float.TryParse(modifier.commands[4], out float intensityY)
                             && float.TryParse(modifier.value, out float val))
@@ -2692,7 +2692,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "reactiveRot":
                     {
-                        if (modifier.modifierObject && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject.GameObject
+                        if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject
                             && int.TryParse(modifier.commands[1], out int sample) && float.TryParse(modifier.value, out float val))
                         {
                             float[] samples = new float[256];
@@ -2711,7 +2711,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "reactiveCol":
                     {
-                        if (modifier.modifierObject && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject.Renderer
+                        if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer
                             && int.TryParse(modifier.commands[1], out int sample) && float.TryParse(modifier.value, out float val))
                         {
                             float[] samples = new float[256];
@@ -2731,7 +2731,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "reactiveColLerp":
                     {
-                        if (modifier.modifierObject && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject.Renderer
+                        if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer
                             && int.TryParse(modifier.commands[1], out int sample) && float.TryParse(modifier.value, out float val))
                         {
                             float[] samples = new float[256];
@@ -2751,7 +2751,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "reactivePosChain":
                     {
-                        if (modifier.modifierObject
+                        if (modifier.reference
                             && int.TryParse(modifier.commands[1], out int sampleX) && float.TryParse(modifier.commands[3], out float intensityX)
                             && int.TryParse(modifier.commands[2], out int sampleY) && float.TryParse(modifier.commands[4], out float intensityY)
                             && float.TryParse(modifier.value, out float val))
@@ -2766,7 +2766,7 @@ namespace BetterLegacy.Core.Helpers
                             float reactivePositionX = samples[sampleX] * intensityX * val;
                             float reactivePositionY = samples[sampleY] * intensityY * val;
 
-                            modifier.modifierObject.reactivePositionOffset = new Vector3(reactivePositionX, reactivePositionY);
+                            modifier.reference.reactivePositionOffset = new Vector3(reactivePositionX, reactivePositionY);
 
                             samples = null;
                         }
@@ -2775,7 +2775,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "reactiveScaChain":
                     {
-                        if (modifier.modifierObject
+                        if (modifier.reference
                             && int.TryParse(modifier.commands[1], out int sampleX) && float.TryParse(modifier.commands[3], out float intensityX)
                             && int.TryParse(modifier.commands[2], out int sampleY) && float.TryParse(modifier.commands[4], out float intensityY)
                             && float.TryParse(modifier.value, out float val))
@@ -2790,7 +2790,7 @@ namespace BetterLegacy.Core.Helpers
                             float reactiveScaleX = samples[sampleX] * intensityX * val;
                             float reactiveScaleY = samples[sampleY] * intensityY * val;
 
-                            modifier.modifierObject.reactiveScaleOffset = new Vector3(reactiveScaleX, reactiveScaleY, 1f);
+                            modifier.reference.reactiveScaleOffset = new Vector3(reactiveScaleX, reactiveScaleY, 1f);
 
                             samples = null;
                         }
@@ -2799,7 +2799,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "reactiveRotChain":
                     {
-                        if (modifier.modifierObject && int.TryParse(modifier.commands[1], out int sample) && float.TryParse(modifier.value, out float val))
+                        if (modifier.reference && int.TryParse(modifier.commands[1], out int sample) && float.TryParse(modifier.value, out float val))
                         {
                             float[] samples = new float[256];
 
@@ -2809,7 +2809,7 @@ namespace BetterLegacy.Core.Helpers
 
                             float reactiveRotation = samples[sample] * val;
 
-                            modifier.modifierObject.reactiveRotationOffset = reactiveRotation;
+                            modifier.reference.reactiveRotationOffset = reactiveRotation;
 
                             samples = null;
                         }
@@ -2856,7 +2856,7 @@ namespace BetterLegacy.Core.Helpers
                             var indexValue = Parser.TryParse(modifier.commands[2], 0);
 
                             if (indexArray < list.Count && indexValue < list[indexArray].Count)
-                                list[indexArray][indexValue] = modifier.modifierObject.integerVariable * Parser.TryParse(modifier.value, 1f);
+                                list[indexArray][indexValue] = modifier.reference.integerVariable * Parser.TryParse(modifier.value, 1f);
 
                             ModCompatibility.sharedFunctions["EventsCoreEventOffsets"] = list;
                         }
@@ -2921,8 +2921,8 @@ namespace BetterLegacy.Core.Helpers
                         {
                             var time = AudioManager.inst.CurrentAudioSource.time;
 
-                            fromType = Mathf.Clamp(fromType, 0, modifier.modifierObject.events.Count - 1);
-                            fromAxis = Mathf.Clamp(fromAxis, 0, modifier.modifierObject.events[fromType][0].eventValues.Length - 1);
+                            fromType = Mathf.Clamp(fromType, 0, modifier.reference.events.Count - 1);
+                            fromAxis = Mathf.Clamp(fromAxis, 0, modifier.reference.events[fromType][0].eventValues.Length - 1);
                             toType = Mathf.Clamp(toType, 0, list.Count - 1);
                             toAxis = Mathf.Clamp(toAxis, 0, list[toType].Count - 1);
 
@@ -2930,7 +2930,7 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 if (fromType == 0)
                                 {
-                                    var sequence = Updater.levelProcessor.converter.cachedSequences[modifier.modifierObject.id].Position3DSequence.Interpolate(time - modifier.modifierObject.StartTime - delay);
+                                    var sequence = Updater.levelProcessor.converter.cachedSequences[modifier.reference.id].Position3DSequence.Interpolate(time - modifier.reference.StartTime - delay);
                                     float value = ((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) - offset) * multiply % loop;
 
                                     list[toType][toAxis] = Mathf.Clamp(value, min, max);
@@ -2939,7 +2939,7 @@ namespace BetterLegacy.Core.Helpers
 
                                 if (fromType == 1)
                                 {
-                                    var sequence = Updater.levelProcessor.converter.cachedSequences[modifier.modifierObject.id].ScaleSequence.Interpolate(time - modifier.modifierObject.StartTime - delay);
+                                    var sequence = Updater.levelProcessor.converter.cachedSequences[modifier.reference.id].ScaleSequence.Interpolate(time - modifier.reference.StartTime - delay);
                                     float value = ((fromAxis == 0 ? sequence.x : sequence.y) - offset) * multiply % loop;
 
                                     list[toType][toAxis] = Mathf.Clamp(value, min, max);
@@ -2948,13 +2948,13 @@ namespace BetterLegacy.Core.Helpers
 
                                 if (fromType == 2)
                                 {
-                                    var sequence = (Updater.levelProcessor.converter.cachedSequences[modifier.modifierObject.id].RotationSequence.Interpolate(time - modifier.modifierObject.StartTime - delay) - offset) * multiply % loop;
+                                    var sequence = (Updater.levelProcessor.converter.cachedSequences[modifier.reference.id].RotationSequence.Interpolate(time - modifier.reference.StartTime - delay) - offset) * multiply % loop;
 
                                     list[toType][toAxis] = Mathf.Clamp(sequence, min, max);
                                     ModCompatibility.sharedFunctions["EventsCoreEventOffsets"] = list;
                                 }
                             }
-                            else if (Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
+                            else if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
                             {
                                 var transform = levelObject.visualObject.GameObject.transform;
 
@@ -3036,7 +3036,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "legacyTail":
                     {
-                        if (modifier.modifierObject && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject &&
+                        if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject &&
                             modifier.commands.Count > 1 && DataManager.inst.gameData is GameData gameData)
                         {
                             var totalTime = Parser.TryParse(modifier.value, 200f);
@@ -3045,7 +3045,7 @@ namespace BetterLegacy.Core.Helpers
 
                             if (modifier.Result == null)
                             {
-                                list.Add(new LegacyTracker(modifier.modifierObject, Vector3.zero, Vector3.zero, Quaternion.identity, 0f, 0f));
+                                list.Add(new LegacyTracker(modifier.reference, Vector3.zero, Vector3.zero, Quaternion.identity, 0f, 0f));
 
                                 for (int i = 1; i < modifier.commands.Count; i += 3)
                                 {
@@ -3099,7 +3099,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "blackHole":
                     {
-                        if (modifier.modifierObject != null && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject.GameObject)
+                        if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                         {
                             var gm = levelObject.visualObject.GameObject;
 
@@ -3124,7 +3124,7 @@ namespace BetterLegacy.Core.Helpers
                                     float num = Parser.TryParse(modifier.value, 0.01f);
 
                                     if (modifier.commands.Count > 1 && bool.TryParse(modifier.commands[1], out bool r) && r)
-                                        num = -(modifier.modifierObject.Interpolate(3, 1) - 1f) * num;
+                                        num = -(modifier.reference.Interpolate(3, 1) - 1f) * num;
 
                                     float moveDelay = 1f - Mathf.Pow(1f - Mathf.Clamp(num, 0.001f, 1f), p);
 
@@ -3140,7 +3140,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "addColor":
                     {
-                        if (modifier.modifierObject != null && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject.Renderer && int.TryParse(modifier.commands[1], out int index) && float.TryParse(modifier.value, out float num))
+                        if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer && int.TryParse(modifier.commands[1], out int index) && float.TryParse(modifier.value, out float num))
                         {
                             index = Mathf.Clamp(index, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
 
@@ -3169,7 +3169,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "lerpColor":
                     {
-                        if (modifier.modifierObject != null && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject.Renderer && int.TryParse(modifier.commands[1], out int index) && float.TryParse(modifier.value, out float num))
+                        if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer && int.TryParse(modifier.commands[1], out int index) && float.TryParse(modifier.value, out float num))
                         {
                             index = Mathf.Clamp(index, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
 
@@ -3200,7 +3200,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "addColorPlayerDistance":
                     {
-                        if (modifier.modifierObject != null && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject.GameObject && levelObject.visualObject.Renderer && int.TryParse(modifier.commands[1], out int index) && float.TryParse(modifier.value, out float num))
+                        if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject && levelObject.visualObject.Renderer && int.TryParse(modifier.commands[1], out int index) && float.TryParse(modifier.value, out float num))
                         {
                             var i = RTExtensions.ClosestPlayer(levelObject.visualObject.GameObject);
 
@@ -3217,7 +3217,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "setAlpha":
                     {
-                        if (modifier.modifierObject != null && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.visualObject.Renderer && float.TryParse(modifier.value, out float num))
+                        if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer && float.TryParse(modifier.value, out float num))
                         {
                             if (levelObject.visualObject is not TextObject)
                                 levelObject.visualObject.Renderer.material.color = LSFunctions.LSColors.fadeColor(levelObject.visualObject.Renderer.material.color, num);
@@ -3256,7 +3256,7 @@ namespace BetterLegacy.Core.Helpers
 
                         if (Updater.TryGetObject(beatmapObject, out LevelObject otherLevelObject) &&
                             otherLevelObject.visualObject.Renderer &&
-                            Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) &&
+                            Updater.TryGetObject(modifier.reference, out LevelObject levelObject) &&
                             levelObject.visualObject.Renderer)
                         {
                             levelObject.visualObject.Renderer.material.color = otherLevelObject.visualObject.Renderer.material.color;
@@ -3273,7 +3273,7 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 if (Updater.TryGetObject(bm, out LevelObject otherLevelObject) &&
                                     otherLevelObject.visualObject.Renderer &&
-                                    Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) &&
+                                    Updater.TryGetObject(modifier.reference, out LevelObject levelObject) &&
                                     levelObject.visualObject.Renderer)
                                 {
                                     otherLevelObject.visualObject.Renderer.material.color = levelObject.visualObject.Renderer.material.color;
@@ -3319,8 +3319,8 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "setImage":
                     {
-                        if (modifier.modifierObject.shape == 6 && modifier.modifierObject.levelObject && modifier.modifierObject.levelObject.visualObject != null &&
-                            modifier.modifierObject.levelObject.visualObject is ImageObject imageObject)
+                        if (modifier.reference.shape == 6 && modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null &&
+                            modifier.reference.levelObject.visualObject is ImageObject imageObject)
                         {
                             if (!modifier.constant)
                             {
@@ -3379,13 +3379,13 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "setText":
                     {
-                        if (modifier.modifierObject.shape == 4 && modifier.modifierObject.levelObject && modifier.modifierObject.levelObject.visualObject != null &&
-                            modifier.modifierObject.levelObject.visualObject is TextObject)
+                        if (modifier.reference.shape == 4 && modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null &&
+                            modifier.reference.levelObject.visualObject is TextObject)
                         {
                             if (modifier.constant)
-                                ((TextObject)modifier.modifierObject.levelObject.visualObject).SetText(modifier.value);
+                                ((TextObject)modifier.reference.levelObject.visualObject).SetText(modifier.value);
                             else
-                                ((TextObject)modifier.modifierObject.levelObject.visualObject).Text = modifier.value;
+                                ((TextObject)modifier.reference.levelObject.visualObject).Text = modifier.value;
                         }
                         break;
                     }
@@ -3412,10 +3412,10 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "addText":
                     {
-                        if (modifier.modifierObject.shape == 4 && modifier.modifierObject.levelObject && modifier.modifierObject.levelObject.visualObject != null &&
-                            modifier.modifierObject.levelObject.visualObject is TextObject)
+                        if (modifier.reference.shape == 4 && modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null &&
+                            modifier.reference.levelObject.visualObject is TextObject)
                         {
-                            ((TextObject)modifier.modifierObject.levelObject.visualObject).Text += modifier.value;
+                            ((TextObject)modifier.reference.levelObject.visualObject).Text += modifier.value;
                         }
                         break;
                     }
@@ -3439,10 +3439,10 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "removeText":
                     {
-                        if (modifier.modifierObject.shape == 4 && modifier.modifierObject.levelObject && modifier.modifierObject.levelObject.visualObject != null &&
-                            modifier.modifierObject.levelObject.visualObject is TextObject && int.TryParse(modifier.value, out int remove))
+                        if (modifier.reference.shape == 4 && modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null &&
+                            modifier.reference.levelObject.visualObject is TextObject && int.TryParse(modifier.value, out int remove))
                         {
-                            var visualObject = (TextObject)modifier.modifierObject.levelObject.visualObject;
+                            var visualObject = (TextObject)modifier.reference.levelObject.visualObject;
                             string text = string.IsNullOrEmpty(visualObject.TextMeshPro.text) ? "" :
                                 visualObject.TextMeshPro.text.Substring(0, visualObject.TextMeshPro.text.Length - Mathf.Clamp(remove, 0, visualObject.TextMeshPro.text.Length - 1));
 
@@ -3478,10 +3478,10 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "removeTextAt":
                     {
-                        if (modifier.modifierObject.shape == 4 && modifier.modifierObject.levelObject && modifier.modifierObject.levelObject.visualObject != null &&
-                            modifier.modifierObject.levelObject.visualObject is TextObject && int.TryParse(modifier.value, out int remove))
+                        if (modifier.reference.shape == 4 && modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null &&
+                            modifier.reference.levelObject.visualObject is TextObject && int.TryParse(modifier.value, out int remove))
                         {
-                            var visualObject = (TextObject)modifier.modifierObject.levelObject.visualObject;
+                            var visualObject = (TextObject)modifier.reference.levelObject.visualObject;
                             string text = string.IsNullOrEmpty(visualObject.TextMeshPro.text) ? "" : visualObject.TextMeshPro.text.Length > remove ?
                                 visualObject.TextMeshPro.text.Remove(remove, 1) : "";
 
@@ -3517,7 +3517,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "clampVariable":
                     {
-                        modifier.modifierObject.integerVariable = Mathf.Clamp(modifier.modifierObject.integerVariable, Parser.TryParse(modifier.commands.Count > 1 ? modifier.commands[1] : "1", 0), Parser.TryParse(modifier.commands.Count > 2 ? modifier.commands[2] : "1", 1));
+                        modifier.reference.integerVariable = Mathf.Clamp(modifier.reference.integerVariable, Parser.TryParse(modifier.commands.Count > 1 ? modifier.commands[1] : "1", 0), Parser.TryParse(modifier.commands.Count > 2 ? modifier.commands[2] : "1", 1));
                         break;
                     }
                 case "clampVariableOther":
@@ -3546,11 +3546,11 @@ namespace BetterLegacy.Core.Helpers
 
                             Vector3 vector;
                             if (type == 0)
-                                vector = modifier.modifierObject.positionOffset;
+                                vector = modifier.reference.positionOffset;
                             else if (type == 1)
-                                vector = modifier.modifierObject.scaleOffset;
+                                vector = modifier.reference.scaleOffset;
                             else
-                                vector = modifier.modifierObject.rotationOffset;
+                                vector = modifier.reference.rotationOffset;
 
                             var setVector = new Vector3(x, y, z) + (relative ? vector : Vector3.zero);
 
@@ -3569,11 +3569,11 @@ namespace BetterLegacy.Core.Helpers
                                     }, delegate (Vector3 vector3)
                                     {
                                         if (type == 0)
-                                            modifier.modifierObject.positionOffset = vector3;
+                                            modifier.reference.positionOffset = vector3;
                                         else if (type == 1)
-                                            modifier.modifierObject.scaleOffset = vector3;
+                                            modifier.reference.scaleOffset = vector3;
                                         else
-                                            modifier.modifierObject.rotationOffset = vector3;
+                                            modifier.reference.rotationOffset = vector3;
                                     }),
                                 };
                                 animation.onComplete = delegate ()
@@ -3585,11 +3585,11 @@ namespace BetterLegacy.Core.Helpers
                             else
                             {
                                 if (type == 0)
-                                    modifier.modifierObject.positionOffset = setVector;
+                                    modifier.reference.positionOffset = setVector;
                                 else if (type == 1)
-                                    modifier.modifierObject.scaleOffset = setVector;
+                                    modifier.reference.scaleOffset = setVector;
                                 else
-                                    modifier.modifierObject.rotationOffset = setVector;
+                                    modifier.reference.rotationOffset = setVector;
                             }
                         }
 
@@ -3673,8 +3673,8 @@ namespace BetterLegacy.Core.Helpers
 
                                 foreach (var bm in list)
                                 {
-                                    if ((bm as BeatmapObject).modifiers.Count > 0 && (bm as BeatmapObject).modifiers.Where(x => x.commands[0] == "requireSignal" && x.type == BeatmapObject.Modifier.Type.Trigger).Count() > 0 &&
-                                        (bm as BeatmapObject).modifiers.TryFind(x => x.commands[0] == "requireSignal" && x.type == BeatmapObject.Modifier.Type.Trigger, out BeatmapObject.Modifier m))
+                                    if ((bm as BeatmapObject).modifiers.Count > 0 && (bm as BeatmapObject).modifiers.Where(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger).Count() > 0 &&
+                                        (bm as BeatmapObject).modifiers.TryFind(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> m))
                                     {
                                         m.Result = null;
                                     }
@@ -3687,11 +3687,11 @@ namespace BetterLegacy.Core.Helpers
 
                             Vector3 vector;
                             if (type == 0)
-                                vector = modifier.modifierObject.positionOffset;
+                                vector = modifier.reference.positionOffset;
                             else if (type == 1)
-                                vector = modifier.modifierObject.scaleOffset;
+                                vector = modifier.reference.scaleOffset;
                             else
-                                vector = modifier.modifierObject.rotationOffset;
+                                vector = modifier.reference.rotationOffset;
 
                             var setVector = new Vector3(x, y, z) + (relative ? vector : Vector3.zero);
 
@@ -3710,11 +3710,11 @@ namespace BetterLegacy.Core.Helpers
                                     }, delegate (Vector3 vector3)
                                     {
                                         if (type == 0)
-                                            modifier.modifierObject.positionOffset = vector3;
+                                            modifier.reference.positionOffset = vector3;
                                         else if (type == 1)
-                                            modifier.modifierObject.scaleOffset = vector3;
+                                            modifier.reference.scaleOffset = vector3;
                                         else
-                                            modifier.modifierObject.rotationOffset = vector3;
+                                            modifier.reference.rotationOffset = vector3;
                                     }),
                                 };
                                 animation.onComplete = delegate ()
@@ -3733,11 +3733,11 @@ namespace BetterLegacy.Core.Helpers
                             else
                             {
                                 if (type == 0)
-                                    modifier.modifierObject.positionOffset = setVector;
+                                    modifier.reference.positionOffset = setVector;
                                 else if (type == 1)
-                                    modifier.modifierObject.scaleOffset = setVector;
+                                    modifier.reference.scaleOffset = setVector;
                                 else
-                                    modifier.modifierObject.rotationOffset = setVector;
+                                    modifier.reference.rotationOffset = setVector;
                             }
                         }
 
@@ -3757,8 +3757,8 @@ namespace BetterLegacy.Core.Helpers
 
                                 foreach (var bm in list2)
                                 {
-                                    if ((bm as BeatmapObject).modifiers.Count > 0 && (bm as BeatmapObject).modifiers.Where(x => x.commands[0] == "requireSignal" && x.type == BeatmapObject.Modifier.Type.Trigger).Count() > 0 &&
-                                        (bm as BeatmapObject).modifiers.TryFind(x => x.commands[0] == "requireSignal" && x.type == BeatmapObject.Modifier.Type.Trigger, out BeatmapObject.Modifier m))
+                                    if ((bm as BeatmapObject).modifiers.Count > 0 && (bm as BeatmapObject).modifiers.Where(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger).Count() > 0 &&
+                                        (bm as BeatmapObject).modifiers.TryFind(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> m))
                                     {
                                         m.Result = null;
                                     }
@@ -3832,23 +3832,23 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "rigidbody":
                     {
-                        if (modifier.modifierObject.levelObject && modifier.modifierObject.levelObject.visualObject != null
+                        if (modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null
                             && float.TryParse(modifier.commands[1], out float gravity)
                             && int.TryParse(modifier.commands[2], out int collisionMode)
                             && float.TryParse(modifier.commands[3], out float drag)
                             && float.TryParse(modifier.commands[4], out float velocityX)
                             && float.TryParse(modifier.commands[5], out float velocityY))
                         {
-                            modifier.modifierObject.components.RemoveAll(x => x == null);
+                            modifier.reference.components.RemoveAll(x => x == null);
 
-                            if (!modifier.modifierObject.components.Has(x => x is Rigidbody2D))
+                            if (!modifier.reference.components.Has(x => x is Rigidbody2D))
                             {
-                                var rigidbody = modifier.modifierObject.levelObject.visualObject.GameObject.GetComponent<Rigidbody2D>();
+                                var rigidbody = modifier.reference.levelObject.visualObject.GameObject.GetComponent<Rigidbody2D>();
 
                                 if (!rigidbody)
-                                    rigidbody = modifier.modifierObject.levelObject.visualObject.GameObject.AddComponent<Rigidbody2D>();
+                                    rigidbody = modifier.reference.levelObject.visualObject.GameObject.AddComponent<Rigidbody2D>();
 
-                                modifier.modifierObject.components.Add(rigidbody);
+                                modifier.reference.components.Add(rigidbody);
 
                                 rigidbody.gravityScale = gravity;
                                 rigidbody.collisionDetectionMode = (CollisionDetectionMode2D)Mathf.Clamp(collisionMode, 0, 1);
@@ -3862,9 +3862,9 @@ namespace BetterLegacy.Core.Helpers
                                 rigidbody.velocity = velocity;
                             }
 
-                            if (!modifier.constant && modifier.modifierObject.components.Has(x => x is Rigidbody2D))
+                            if (!modifier.constant && modifier.reference.components.Has(x => x is Rigidbody2D))
                             {
-                                var rigidbody = (Rigidbody2D)modifier.modifierObject.components.Find(x => x is Rigidbody2D);
+                                var rigidbody = (Rigidbody2D)modifier.reference.components.Find(x => x is Rigidbody2D);
 
                                 rigidbody.gravityScale = gravity;
                                 rigidbody.collisionDetectionMode = (CollisionDetectionMode2D)Mathf.Clamp(collisionMode, 0, 1);
@@ -3920,12 +3920,12 @@ namespace BetterLegacy.Core.Helpers
                         //    modifier.commands.Add("0.1");
 
                         if (float.TryParse(modifier.commands[1], out float gravityX) && float.TryParse(modifier.commands[2], out float gravityY)
-                            && modifier.modifierObject && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject))
+                            && modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject))
                         {
                             //modifier.Result = (float)modifier.Result + Parser.TryParse(modifier.commands[3], 0.1f);
 
-                            //modifier.modifierObject.positionOffset.x += RTMath.Lerp(0f, 0.001f * gravityX, (float)modifier.Result);
-                            //modifier.modifierObject.positionOffset.y += RTMath.Lerp(0f, 0.001f * gravityY, (float)modifier.Result);
+                            //modifier.reference.positionOffset.x += RTMath.Lerp(0f, 0.001f * gravityX, (float)modifier.Result);
+                            //modifier.reference.positionOffset.y += RTMath.Lerp(0f, 0.001f * gravityY, (float)modifier.Result);
 
                             var list = levelObject.parentObjects;
                             float rotation = 0f;
@@ -3946,7 +3946,7 @@ namespace BetterLegacy.Core.Helpers
                                 modifier.Result = f;
                             }
 
-                            modifier.modifierObject.positionOffset = RTMath.Rotate((Vector2)modifier.Result, (list[0].Transform.localRotation.eulerAngles.z - rotation));
+                            modifier.reference.positionOffset = RTMath.Rotate((Vector2)modifier.Result, (list[0].Transform.localRotation.eulerAngles.z - rotation));
                         }
 
                         break;
@@ -3974,8 +3974,8 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     //modifier.Result = (float)modifier.Result + Parser.TryParse(modifier.commands[3], 0.1f);
 
-                                    //modifier.modifierObject.positionOffset.x += RTMath.Lerp(0f, 0.001f * gravityX, (float)modifier.Result);
-                                    //modifier.modifierObject.positionOffset.y += RTMath.Lerp(0f, 0.001f * gravityY, (float)modifier.Result);
+                                    //modifier.reference.positionOffset.x += RTMath.Lerp(0f, 0.001f * gravityX, (float)modifier.Result);
+                                    //modifier.reference.positionOffset.y += RTMath.Lerp(0f, 0.001f * gravityY, (float)modifier.Result);
 
                                     var list = levelObject.parentObjects;
                                     float rotation = 0f;
@@ -4057,7 +4057,7 @@ namespace BetterLegacy.Core.Helpers
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].Position3DSequence.Interpolate(time - bm.StartTime - delay);
                                     float value = ((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) - offset) * multiply % loop;
 
-                                    modifier.modifierObject.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
+                                    modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                 }
 
                                 if (toType >= 0 && toType < 3 && fromType == 1)
@@ -4065,23 +4065,23 @@ namespace BetterLegacy.Core.Helpers
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].ScaleSequence.Interpolate(time - bm.StartTime - delay);
                                     float value = ((fromAxis == 0 ? sequence.x : sequence.y) - offset) * multiply % loop;
 
-                                    modifier.modifierObject.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
+                                    modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                 }
 
                                 if (toType >= 0 && toType < 3 && fromType == 2)
                                 {
                                     var sequence = (Updater.levelProcessor.converter.cachedSequences[bm.id].RotationSequence.Interpolate(time - bm.StartTime - delay) - offset) * multiply % loop;
 
-                                    modifier.modifierObject.SetTransform(toType, toAxis, Mathf.Clamp(sequence, min, max));
+                                    modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(sequence, min, max));
                                 }
 
                                 if (toType == 3 && toAxis == 0 && fromType == 3 && Updater.levelProcessor.converter.cachedSequences[bm.id].ColorSequence != null &&
-                                    modifier.modifierObject.levelObject && modifier.modifierObject.levelObject.visualObject != null &&
-                                    modifier.modifierObject.levelObject.visualObject.Renderer)
+                                    modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null &&
+                                    modifier.reference.levelObject.visualObject.Renderer)
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].ColorSequence.Interpolate(time - bm.StartTime - delay);
 
-                                    var renderer = modifier.modifierObject.levelObject.visualObject.Renderer;
+                                    var renderer = modifier.reference.levelObject.visualObject.Renderer;
 
                                     renderer.material.color = RTMath.Lerp(renderer.material.color, sequence, multiply);
                                 }
@@ -4095,7 +4095,7 @@ namespace BetterLegacy.Core.Helpers
                                     var sequence = transform.position;
                                     float value = ((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) - offset) * multiply % loop;
 
-                                    modifier.modifierObject.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
+                                    modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                 }
 
                                 if (toType >= 0 && toType < 3 && fromType == 1)
@@ -4103,7 +4103,7 @@ namespace BetterLegacy.Core.Helpers
                                     var sequence = transform.lossyScale;
                                     float value = ((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) - offset) * multiply % loop;
 
-                                    modifier.modifierObject.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
+                                    modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                 }
 
                                 if (toType >= 0 && toType < 3 && fromType == 2)
@@ -4111,7 +4111,7 @@ namespace BetterLegacy.Core.Helpers
                                     var sequence = transform.rotation.eulerAngles;
                                     float value = ((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) - offset) * multiply % loop;
 
-                                    modifier.modifierObject.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
+                                    modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                 }
                             }
                         }
@@ -4147,7 +4147,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = rb.localPosition;
 
-                                    modifier.modifierObject.positionOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) * multiply - offset, min, max);
+                                    modifier.reference.positionOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) * multiply - offset, min, max);
                                 }
 
                                 // To Type Position
@@ -4157,7 +4157,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = rb.localPosition;
 
-                                    modifier.modifierObject.positionOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) * multiply - offset, min, max);
+                                    modifier.reference.positionOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) * multiply - offset, min, max);
                                 }
 
                                 // To Type Position
@@ -4167,7 +4167,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = rb.localPosition;
 
-                                    modifier.modifierObject.positionOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) * multiply - offset, min, max);
+                                    modifier.reference.positionOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) * multiply - offset, min, max);
                                 }
 
                                 // To Type Position
@@ -4177,7 +4177,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = rb.localScale;
 
-                                    modifier.modifierObject.positionOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x : sequence.y) * multiply - offset, min, max);
+                                    modifier.reference.positionOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x : sequence.y) * multiply - offset, min, max);
                                 }
 
                                 // To Type Position
@@ -4187,7 +4187,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = rb.localScale;
 
-                                    modifier.modifierObject.positionOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x : sequence.y) * multiply - offset, min, max);
+                                    modifier.reference.positionOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x : sequence.y) * multiply - offset, min, max);
                                 }
 
                                 // To Type Position
@@ -4197,7 +4197,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = rb.localScale;
 
-                                    modifier.modifierObject.positionOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x : sequence.y) * multiply - offset, min, max);
+                                    modifier.reference.positionOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x : sequence.y) * multiply - offset, min, max);
                                 }
 
                                 // To Type Position
@@ -4207,7 +4207,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = rb.localRotation.eulerAngles.z * multiply;
 
-                                    modifier.modifierObject.positionOffset.x = Mathf.Clamp(sequence - offset, min, max);
+                                    modifier.reference.positionOffset.x = Mathf.Clamp(sequence - offset, min, max);
                                 }
 
                                 // To Type Position
@@ -4217,7 +4217,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = rb.localRotation.eulerAngles.z * multiply;
 
-                                    modifier.modifierObject.positionOffset.y = Mathf.Clamp(sequence - offset, min, max);
+                                    modifier.reference.positionOffset.y = Mathf.Clamp(sequence - offset, min, max);
                                 }
 
                                 // To Type Position
@@ -4227,7 +4227,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = rb.localRotation.eulerAngles.z * multiply;
 
-                                    modifier.modifierObject.positionOffset.z = Mathf.Clamp(sequence - offset, min, max);
+                                    modifier.reference.positionOffset.z = Mathf.Clamp(sequence - offset, min, max);
                                 }
 
                                 // To Type Scale
@@ -4237,7 +4237,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = rb.localPosition;
 
-                                    modifier.modifierObject.scaleOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) * multiply - offset, min, max);
+                                    modifier.reference.scaleOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) * multiply - offset, min, max);
                                 }
 
                                 // To Type Scale
@@ -4247,7 +4247,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = rb.localPosition;
 
-                                    modifier.modifierObject.scaleOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) * multiply - offset, min, max);
+                                    modifier.reference.scaleOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) * multiply - offset, min, max);
                                 }
 
                                 // To Type Scale
@@ -4257,7 +4257,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = rb.localPosition;
 
-                                    modifier.modifierObject.scaleOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) * multiply - offset, min, max);
+                                    modifier.reference.scaleOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) * multiply - offset, min, max);
                                 }
 
                                 // To Type Scale
@@ -4267,7 +4267,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = rb.localScale;
 
-                                    modifier.modifierObject.scaleOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x : sequence.y) * multiply - offset, min, max);
+                                    modifier.reference.scaleOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x : sequence.y) * multiply - offset, min, max);
                                 }
 
                                 // To Type Scale
@@ -4277,7 +4277,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = rb.localScale;
 
-                                    modifier.modifierObject.scaleOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x : sequence.y) * multiply - offset, min, max);
+                                    modifier.reference.scaleOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x : sequence.y) * multiply - offset, min, max);
                                 }
 
                                 // To Type Scale
@@ -4287,7 +4287,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = rb.localScale;
 
-                                    modifier.modifierObject.scaleOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x : sequence.y) * multiply - offset, min, max);
+                                    modifier.reference.scaleOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x : sequence.y) * multiply - offset, min, max);
                                 }
 
                                 // To Type Scale
@@ -4297,7 +4297,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = rb.localRotation.eulerAngles.z;
 
-                                    modifier.modifierObject.scaleOffset.x = Mathf.Clamp(sequence * multiply - offset, min, max);
+                                    modifier.reference.scaleOffset.x = Mathf.Clamp(sequence * multiply - offset, min, max);
                                 }
 
                                 // To Type Scale
@@ -4307,7 +4307,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = rb.localRotation.eulerAngles.z;
 
-                                    modifier.modifierObject.scaleOffset.y = Mathf.Clamp(sequence * multiply - offset, min, max);
+                                    modifier.reference.scaleOffset.y = Mathf.Clamp(sequence * multiply - offset, min, max);
                                 }
 
                                 // To Type Scale
@@ -4317,7 +4317,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = rb.localRotation.eulerAngles.z;
 
-                                    modifier.modifierObject.scaleOffset.z = Mathf.Clamp(sequence * multiply - offset, min, max);
+                                    modifier.reference.scaleOffset.z = Mathf.Clamp(sequence * multiply - offset, min, max);
                                 }
 
                                 // To Type Rotation
@@ -4327,7 +4327,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = rb.localPosition;
 
-                                    modifier.modifierObject.rotationOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) * multiply - offset, min, max);
+                                    modifier.reference.rotationOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) * multiply - offset, min, max);
                                 }
 
                                 // To Type Rotation
@@ -4337,7 +4337,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = rb.localPosition;
 
-                                    modifier.modifierObject.rotationOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) * multiply - offset, min, max);
+                                    modifier.reference.rotationOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) * multiply - offset, min, max);
                                 }
 
                                 // To Type Rotation
@@ -4347,7 +4347,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = rb.localPosition;
 
-                                    modifier.modifierObject.rotationOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) * multiply - offset, min, max);
+                                    modifier.reference.rotationOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) * multiply - offset, min, max);
                                 }
 
                                 // To Type Rotation
@@ -4357,7 +4357,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = rb.localScale;
 
-                                    modifier.modifierObject.rotationOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x : sequence.y) * multiply - offset, min, max);
+                                    modifier.reference.rotationOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x : sequence.y) * multiply - offset, min, max);
                                 }
 
                                 // To Type Rotation
@@ -4367,7 +4367,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = rb.localScale;
 
-                                    modifier.modifierObject.rotationOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x : sequence.y) * multiply - offset, min, max);
+                                    modifier.reference.rotationOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x : sequence.y) * multiply - offset, min, max);
                                 }
 
                                 // To Type Rotation
@@ -4377,7 +4377,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = rb.localScale;
 
-                                    modifier.modifierObject.rotationOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x : sequence.y) * multiply - offset, min, max);
+                                    modifier.reference.rotationOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x : sequence.y) * multiply - offset, min, max);
                                 }
 
                                 // To Type Rotation
@@ -4387,7 +4387,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = rb.localRotation.eulerAngles.z;
 
-                                    modifier.modifierObject.rotationOffset.x = Mathf.Clamp(sequence * multiply - offset, min, max);
+                                    modifier.reference.rotationOffset.x = Mathf.Clamp(sequence * multiply - offset, min, max);
                                 }
 
                                 // To Type Rotation
@@ -4397,7 +4397,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = rb.localRotation.eulerAngles.z;
 
-                                    modifier.modifierObject.rotationOffset.y = Mathf.Clamp(sequence * multiply - offset, min, max);
+                                    modifier.reference.rotationOffset.y = Mathf.Clamp(sequence * multiply - offset, min, max);
                                 }
 
                                 // To Type Rotation
@@ -4407,7 +4407,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = rb.localRotation.eulerAngles.z;
 
-                                    modifier.modifierObject.rotationOffset.z = Mathf.Clamp(sequence * multiply - offset, min, max);
+                                    modifier.reference.rotationOffset.z = Mathf.Clamp(sequence * multiply - offset, min, max);
                                 }
                             }
                         }
@@ -4521,8 +4521,8 @@ namespace BetterLegacy.Core.Helpers
                     //case "code":
                     //    {
                     //        string id = "a";
-                    //        if (modifier.modifierObject)
-                    //            id = modifier.modifierObject.id;
+                    //        if (modifier.reference)
+                    //            id = modifier.reference.id;
 
                     //        string codeToInclude = $"var refID = \"{id}\";";
 
@@ -4534,12 +4534,12 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void Inactive(BeatmapObject.Modifier modifier)
+        public static void Inactive(Modifier<BeatmapObject> modifier)
         {
             if (!modifier.verified)
             {
                 modifier.verified = true;
-                CoreHelper.VerifyModifier(modifier);
+                modifier.VerifyModifier(ModifiersManager.modifierTypes);
             }
 
             if (!modifier.IsValid(ModifiersManager.modifierTypes))
@@ -4551,9 +4551,9 @@ namespace BetterLegacy.Core.Helpers
                 case "blurOther":
                 case "blurVariableOther":
                     {
-                        if (modifier.Result != null && modifier.modifierObject &&
-                            modifier.modifierObject.objectType != BeatmapObject.ObjectType.Empty &&
-                            Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) &&
+                        if (modifier.Result != null && modifier.reference &&
+                            modifier.reference.objectType != BeatmapObject.ObjectType.Empty &&
+                            Updater.TryGetObject(modifier.reference, out LevelObject levelObject) &&
                             levelObject.visualObject.Renderer && levelObject.visualObject is SolidObject &&
                             modifier.commands.Count > 2 && bool.TryParse(modifier.commands[2], out bool setNormal) && setNormal)
                         {
@@ -4568,9 +4568,9 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "blurVariable":
                     {
-                        if (modifier.Result != null && modifier.modifierObject &&
-                            modifier.modifierObject.objectType != BeatmapObject.ObjectType.Empty &&
-                            Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) &&
+                        if (modifier.Result != null && modifier.reference &&
+                            modifier.reference.objectType != BeatmapObject.ObjectType.Empty &&
+                            Updater.TryGetObject(modifier.reference, out LevelObject levelObject) &&
                             levelObject.visualObject.Renderer && levelObject.visualObject is SolidObject &&
                             modifier.commands.Count > 1 && bool.TryParse(modifier.commands[1], out bool setNormal) && setNormal)
                         {
@@ -4597,7 +4597,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "enableObject":
                     {
-                        if (Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
+                        if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
                         {
                             levelObject.transformChain[0].gameObject.SetActive(false);
                         }
@@ -4613,7 +4613,7 @@ namespace BetterLegacy.Core.Helpers
 
                         //    if (Parser.TryParse(modifier.value, true))
                         //    {
-                        //        foreach (var cc in modifier.modifierObject.GetChildChain())
+                        //        foreach (var cc in modifier.reference.GetChildChain())
                         //        {
                         //            for (int o = 0; o < cc.Count; o++)
                         //            {
@@ -4627,7 +4627,7 @@ namespace BetterLegacy.Core.Helpers
                         //        break;
                         //    }
 
-                        //    var parentChain = modifier.modifierObject.GetParentChain();
+                        //    var parentChain = modifier.reference.GetParentChain();
 
                         //    foreach (var cc in parentChain[parentChain.Count - 1].GetChildChain())
                         //    {
@@ -4646,7 +4646,7 @@ namespace BetterLegacy.Core.Helpers
 
                         if (modifier.Result == null)
                         {
-                            var beatmapObject = Parser.TryParse(modifier.value, true) ? modifier.modifierObject : modifier.modifierObject.GetParentChain().Last();
+                            var beatmapObject = Parser.TryParse(modifier.value, true) ? modifier.reference : modifier.reference.GetParentChain().Last();
 
                             modifier.Result = beatmapObject.GetChildChain();
                         }
@@ -4669,7 +4669,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "disableObject":
                     {
-                        if (!modifier.hasChanged && modifier.modifierObject != null && Updater.TryGetObject(modifier.modifierObject, out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
+                        if (!modifier.hasChanged && modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
                         {
                             levelObject.transformChain[0].gameObject.SetActive(true);
                             modifier.hasChanged = true;
@@ -4688,7 +4688,7 @@ namespace BetterLegacy.Core.Helpers
 
                             if (Parser.TryParse(modifier.value, true))
                             {
-                                foreach (var cc in modifier.modifierObject.GetChildChain())
+                                foreach (var cc in modifier.reference.GetChildChain())
                                 {
                                     for (int o = 0; o < cc.Count; o++)
                                     {
@@ -4702,7 +4702,7 @@ namespace BetterLegacy.Core.Helpers
                                 break;
                             }
 
-                            var parentChain = modifier.modifierObject.GetParentChain();
+                            var parentChain = modifier.reference.GetParentChain();
 
                             foreach (var cc in parentChain[parentChain.Count - 1].GetChildChain())
                             {
@@ -4718,19 +4718,19 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "reactivePosChain":
                     {
-                        modifier.modifierObject.reactivePositionOffset = Vector3.zero;
+                        modifier.reference.reactivePositionOffset = Vector3.zero;
 
                         break;
                     }
                 case "reactiveScaChain":
                     {
-                        modifier.modifierObject.reactiveScaleOffset = Vector3.zero;
+                        modifier.reference.reactiveScaleOffset = Vector3.zero;
 
                         break;
                     }
                 case "reactiveRotChain":
                     {
-                        modifier.modifierObject.reactiveRotationOffset = 0f;
+                        modifier.reference.reactiveRotationOffset = 0f;
 
                         break;
                     }
@@ -4742,8 +4742,8 @@ namespace BetterLegacy.Core.Helpers
                         if (list.Count() > 0)
                             foreach (var bm in list)
                             {
-                                if ((bm as BeatmapObject).modifiers.Count > 0 && (bm as BeatmapObject).modifiers.Where(x => x.commands[0] == "requireSignal" && x.type == BeatmapObject.Modifier.Type.Trigger).Count() > 0 &&
-                                    (bm as BeatmapObject).modifiers.TryFind(x => x.commands[0] == "requireSignal" && x.type == BeatmapObject.Modifier.Type.Trigger, out BeatmapObject.Modifier m))
+                                if ((bm as BeatmapObject).modifiers.Count > 0 && (bm as BeatmapObject).modifiers.Where(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger).Count() > 0 &&
+                                    (bm as BeatmapObject).modifiers.TryFind(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> m))
                                 {
                                     m.Result = null;
                                 }
@@ -4762,8 +4762,8 @@ namespace BetterLegacy.Core.Helpers
                         if (list.Count() > 0 && !modifier.constant)
                             foreach (var bm in list)
                             {
-                                if ((bm as BeatmapObject).modifiers.Count > 0 && (bm as BeatmapObject).modifiers.Where(x => x.commands[0] == "requireSignal" && x.type == BeatmapObject.Modifier.Type.Trigger).Count() > 0 &&
-                                    (bm as BeatmapObject).modifiers.TryFind(x => x.commands[0] == "requireSignal" && x.type == BeatmapObject.Modifier.Type.Trigger, out BeatmapObject.Modifier m))
+                                if ((bm as BeatmapObject).modifiers.Count > 0 && (bm as BeatmapObject).modifiers.Where(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger).Count() > 0 &&
+                                    (bm as BeatmapObject).modifiers.TryFind(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> m))
                                 {
                                     m.Result = null;
                                 }
@@ -4782,9 +4782,9 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "setText":
                     {
-                        if (modifier.constant && modifier.modifierObject.shape == 4 && modifier.modifierObject.levelObject && modifier.modifierObject.levelObject.visualObject != null &&
-                            modifier.modifierObject.levelObject.visualObject is TextObject textObject)
-                            textObject.Text = modifier.modifierObject.text;
+                        if (modifier.constant && modifier.reference.shape == 4 && modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null &&
+                            modifier.reference.levelObject.visualObject is TextObject textObject)
+                            textObject.Text = modifier.reference.text;
                         break;
                     }
                 case "setTextOther":
@@ -4805,8 +4805,17 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static bool BGTrigger(BeatmapObject.Modifier modifier)
+        public static bool BGTrigger(Modifier<BackgroundObject> modifier)
         {
+            if (!modifier.verified)
+            {
+                modifier.verified = true;
+                modifier.VerifyModifier(ModifiersManager.bgModifierTypes);
+            }
+
+            if (!modifier.IsValid(ModifiersManager.bgModifierTypes))
+                return false;
+
             switch (modifier.commands[0])
             {
                 case "timeLesserEquals":
@@ -4830,15 +4839,24 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
 
-        public static void BGAction(BeatmapObject.Modifier modifier)
+        public static void BGAction(Modifier<BackgroundObject> modifier)
         {
+            if (!modifier.verified)
+            {
+                modifier.verified = true;
+                modifier.VerifyModifier(ModifiersManager.bgModifierTypes);
+            }
+
+            if (!modifier.IsValid(ModifiersManager.bgModifierTypes))
+                return;
+
             modifier.hasChanged = false;
             switch (modifier.commands[0])
             {
                 case "setActive":
                     {
                         if (bool.TryParse(modifier.value, out bool active))
-                            modifier.bgModifierObject.Enabled = active;
+                            modifier.reference.Enabled = active;
 
                         break;
                     }
@@ -4854,11 +4872,11 @@ namespace BetterLegacy.Core.Helpers
 
                             Vector3 vector;
                             if (type == 0)
-                                vector = modifier.bgModifierObject.positionOffset;
+                                vector = modifier.reference.positionOffset;
                             else if (type == 1)
-                                vector = modifier.bgModifierObject.scaleOffset;
+                                vector = modifier.reference.scaleOffset;
                             else
-                                vector = modifier.bgModifierObject.rotationOffset;
+                                vector = modifier.reference.rotationOffset;
 
                             var setVector = new Vector3(x, y, z) + (relative ? vector : Vector3.zero);
 
@@ -4877,11 +4895,11 @@ namespace BetterLegacy.Core.Helpers
                                     }, delegate (Vector3 vector3)
                                     {
                                         if (type == 0)
-                                            modifier.bgModifierObject.positionOffset = vector3;
+                                            modifier.reference.positionOffset = vector3;
                                         else if (type == 1)
-                                            modifier.bgModifierObject.scaleOffset = vector3;
+                                            modifier.reference.scaleOffset = vector3;
                                         else
-                                            modifier.bgModifierObject.rotationOffset = vector3;
+                                            modifier.reference.rotationOffset = vector3;
                                     }),
                                 };
                                 animation.onComplete = delegate ()
@@ -4893,11 +4911,11 @@ namespace BetterLegacy.Core.Helpers
                             else
                             {
                                 if (type == 0)
-                                    modifier.bgModifierObject.positionOffset = setVector;
+                                    modifier.reference.positionOffset = setVector;
                                 else if (type == 1)
-                                    modifier.bgModifierObject.scaleOffset = setVector;
+                                    modifier.reference.scaleOffset = setVector;
                                 else
-                                    modifier.bgModifierObject.rotationOffset = setVector;
+                                    modifier.reference.rotationOffset = setVector;
                             }
                         }
 
@@ -4955,7 +4973,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].Position3DSequence.Interpolate(time - bm.StartTime - delay);
 
-                                    modifier.bgModifierObject.positionOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : fromAxis == 1 ? sequence.y % loop : sequence.z % loop) * multiply - offset, min, max);
+                                    modifier.reference.positionOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : fromAxis == 1 ? sequence.y % loop : sequence.z % loop) * multiply - offset, min, max);
                                 }
 
                                 // To Type Position
@@ -4965,7 +4983,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].Position3DSequence.Interpolate(time - bm.StartTime - delay);
 
-                                    modifier.bgModifierObject.positionOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : fromAxis == 1 ? sequence.y % loop : sequence.z % loop) * multiply - offset, min, max);
+                                    modifier.reference.positionOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : fromAxis == 1 ? sequence.y % loop : sequence.z % loop) * multiply - offset, min, max);
                                 }
 
                                 // To Type Position
@@ -4975,7 +4993,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].Position3DSequence.Interpolate(time - bm.StartTime - delay);
 
-                                    modifier.bgModifierObject.positionOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : fromAxis == 1 ? sequence.y % loop : sequence.z % loop) * multiply - offset, min, max);
+                                    modifier.reference.positionOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : fromAxis == 1 ? sequence.y % loop : sequence.z % loop) * multiply - offset, min, max);
                                 }
 
                                 // To Type Position
@@ -4985,7 +5003,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].ScaleSequence.Interpolate(time - bm.StartTime - delay);
 
-                                    modifier.bgModifierObject.positionOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : sequence.y % loop) * multiply - offset, min, max);
+                                    modifier.reference.positionOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : sequence.y % loop) * multiply - offset, min, max);
                                 }
 
                                 // To Type Position
@@ -4995,7 +5013,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].ScaleSequence.Interpolate(time - bm.StartTime - delay);
 
-                                    modifier.bgModifierObject.positionOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : sequence.y % loop) * multiply - offset, min, max);
+                                    modifier.reference.positionOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : sequence.y % loop) * multiply - offset, min, max);
                                 }
 
                                 // To Type Position
@@ -5005,7 +5023,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].ScaleSequence.Interpolate(time - bm.StartTime - delay);
 
-                                    modifier.bgModifierObject.positionOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : sequence.y % loop) * multiply - offset, min, max);
+                                    modifier.reference.positionOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : sequence.y % loop) * multiply - offset, min, max);
                                 }
 
                                 // To Type Position
@@ -5015,7 +5033,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].RotationSequence.Interpolate(time - bm.StartTime - delay) * multiply;
 
-                                    modifier.bgModifierObject.positionOffset.x = Mathf.Clamp((sequence % loop) - offset, min, max);
+                                    modifier.reference.positionOffset.x = Mathf.Clamp((sequence % loop) - offset, min, max);
                                 }
 
                                 // To Type Position
@@ -5025,7 +5043,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].RotationSequence.Interpolate(time - bm.StartTime - delay) * multiply;
 
-                                    modifier.bgModifierObject.positionOffset.y = Mathf.Clamp((sequence % loop) - offset, min, max);
+                                    modifier.reference.positionOffset.y = Mathf.Clamp((sequence % loop) - offset, min, max);
                                 }
 
                                 // To Type Position
@@ -5035,7 +5053,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].RotationSequence.Interpolate(time - bm.StartTime - delay) * multiply;
 
-                                    modifier.bgModifierObject.positionOffset.z = Mathf.Clamp((sequence % loop) - offset, min, max);
+                                    modifier.reference.positionOffset.z = Mathf.Clamp((sequence % loop) - offset, min, max);
                                 }
 
                                 // To Type Scale
@@ -5045,7 +5063,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].Position3DSequence.Interpolate(time - bm.StartTime - delay);
 
-                                    modifier.bgModifierObject.scaleOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : fromAxis == 1 ? sequence.y % loop : sequence.z % loop) * multiply - offset, min, max);
+                                    modifier.reference.scaleOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : fromAxis == 1 ? sequence.y % loop : sequence.z % loop) * multiply - offset, min, max);
                                 }
 
                                 // To Type Scale
@@ -5055,7 +5073,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].Position3DSequence.Interpolate(time - bm.StartTime - delay);
 
-                                    modifier.bgModifierObject.scaleOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : fromAxis == 1 ? sequence.y % loop : sequence.z % loop) * multiply - offset, min, max);
+                                    modifier.reference.scaleOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : fromAxis == 1 ? sequence.y % loop : sequence.z % loop) * multiply - offset, min, max);
                                 }
 
                                 // To Type Scale
@@ -5065,7 +5083,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].Position3DSequence.Interpolate(time - bm.StartTime - delay);
 
-                                    modifier.bgModifierObject.scaleOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : fromAxis == 1 ? sequence.y % loop : sequence.z % loop) * multiply - offset, min, max);
+                                    modifier.reference.scaleOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : fromAxis == 1 ? sequence.y % loop : sequence.z % loop) * multiply - offset, min, max);
                                 }
 
                                 // To Type Scale
@@ -5075,7 +5093,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].ScaleSequence.Interpolate(time - bm.StartTime - delay);
 
-                                    modifier.bgModifierObject.scaleOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : sequence.y % loop) * multiply - offset, min, max);
+                                    modifier.reference.scaleOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : sequence.y % loop) * multiply - offset, min, max);
                                 }
 
                                 // To Type Scale
@@ -5085,7 +5103,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].ScaleSequence.Interpolate(time - bm.StartTime - delay);
 
-                                    modifier.bgModifierObject.scaleOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : sequence.y % loop) * multiply - offset, min, max);
+                                    modifier.reference.scaleOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : sequence.y % loop) * multiply - offset, min, max);
                                 }
 
                                 // To Type Scale
@@ -5095,7 +5113,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].ScaleSequence.Interpolate(time - bm.StartTime - delay);
 
-                                    modifier.bgModifierObject.scaleOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : sequence.y % loop) * multiply - offset, min, max);
+                                    modifier.reference.scaleOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : sequence.y % loop) * multiply - offset, min, max);
                                 }
 
                                 // To Type Scale
@@ -5105,7 +5123,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].RotationSequence.Interpolate(time - bm.StartTime - delay);
 
-                                    modifier.bgModifierObject.scaleOffset.x = Mathf.Clamp((sequence % loop) * multiply - offset, min, max);
+                                    modifier.reference.scaleOffset.x = Mathf.Clamp((sequence % loop) * multiply - offset, min, max);
                                 }
 
                                 // To Type Scale
@@ -5115,7 +5133,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].RotationSequence.Interpolate(time - bm.StartTime - delay);
 
-                                    modifier.bgModifierObject.scaleOffset.y = Mathf.Clamp((sequence % loop) * multiply - offset, min, max);
+                                    modifier.reference.scaleOffset.y = Mathf.Clamp((sequence % loop) * multiply - offset, min, max);
                                 }
 
                                 // To Type Scale
@@ -5125,7 +5143,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].RotationSequence.Interpolate(time - bm.StartTime - delay);
 
-                                    modifier.bgModifierObject.scaleOffset.z = Mathf.Clamp((sequence % loop) * multiply - offset, min, max);
+                                    modifier.reference.scaleOffset.z = Mathf.Clamp((sequence % loop) * multiply - offset, min, max);
                                 }
 
                                 // To Type Rotation
@@ -5135,7 +5153,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].Position3DSequence.Interpolate(time - bm.StartTime - delay);
 
-                                    modifier.bgModifierObject.rotationOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : fromAxis == 1 ? sequence.y % loop : sequence.z % loop) * multiply - offset, min, max);
+                                    modifier.reference.rotationOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : fromAxis == 1 ? sequence.y % loop : sequence.z % loop) * multiply - offset, min, max);
                                 }
 
                                 // To Type Rotation
@@ -5145,7 +5163,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].Position3DSequence.Interpolate(time - bm.StartTime - delay);
 
-                                    modifier.bgModifierObject.rotationOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : fromAxis == 1 ? sequence.y % loop : sequence.z % loop) * multiply - offset, min, max);
+                                    modifier.reference.rotationOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : fromAxis == 1 ? sequence.y % loop : sequence.z % loop) * multiply - offset, min, max);
                                 }
 
                                 // To Type Rotation
@@ -5155,7 +5173,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].Position3DSequence.Interpolate(time - bm.StartTime - delay);
 
-                                    modifier.bgModifierObject.rotationOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : fromAxis == 1 ? sequence.y % loop : sequence.z % loop) * multiply - offset, min, max);
+                                    modifier.reference.rotationOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : fromAxis == 1 ? sequence.y % loop : sequence.z % loop) * multiply - offset, min, max);
                                 }
 
                                 // To Type Rotation
@@ -5165,7 +5183,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].ScaleSequence.Interpolate(time - bm.StartTime - delay);
 
-                                    modifier.bgModifierObject.rotationOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : sequence.y % loop) * multiply - offset, min, max);
+                                    modifier.reference.rotationOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : sequence.y % loop) * multiply - offset, min, max);
                                 }
 
                                 // To Type Rotation
@@ -5175,7 +5193,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].ScaleSequence.Interpolate(time - bm.StartTime - delay);
 
-                                    modifier.bgModifierObject.rotationOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : sequence.y % loop) * multiply - offset, min, max);
+                                    modifier.reference.rotationOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : sequence.y % loop) * multiply - offset, min, max);
                                 }
 
                                 // To Type Rotation
@@ -5185,7 +5203,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].ScaleSequence.Interpolate(time - bm.StartTime - delay);
 
-                                    modifier.bgModifierObject.rotationOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : sequence.y % loop) * multiply - offset, min, max);
+                                    modifier.reference.rotationOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : sequence.y % loop) * multiply - offset, min, max);
                                 }
 
                                 // To Type Rotation
@@ -5195,7 +5213,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].RotationSequence.Interpolate(time - bm.StartTime - delay);
 
-                                    modifier.bgModifierObject.rotationOffset.x = Mathf.Clamp((sequence % loop) * multiply - offset, min, max);
+                                    modifier.reference.rotationOffset.x = Mathf.Clamp((sequence % loop) * multiply - offset, min, max);
                                 }
 
                                 // To Type Rotation
@@ -5205,7 +5223,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].RotationSequence.Interpolate(time - bm.StartTime - delay);
 
-                                    modifier.bgModifierObject.rotationOffset.y = Mathf.Clamp((sequence % loop) * multiply - offset, min, max);
+                                    modifier.reference.rotationOffset.y = Mathf.Clamp((sequence % loop) * multiply - offset, min, max);
                                 }
 
                                 // To Type Rotation
@@ -5215,7 +5233,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].RotationSequence.Interpolate(time - bm.StartTime - delay);
 
-                                    modifier.bgModifierObject.rotationOffset.z = Mathf.Clamp((sequence % loop) * multiply - offset, min, max);
+                                    modifier.reference.rotationOffset.z = Mathf.Clamp((sequence % loop) * multiply - offset, min, max);
                                 }
                             }
                         }
@@ -5225,9 +5243,16 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void BGInactive(BeatmapObject.Modifier modifier)
+        public static void BGInactive(Modifier<BackgroundObject> modifier)
         {
+            if (!modifier.verified)
+            {
+                modifier.verified = true;
+                modifier.VerifyModifier(ModifiersManager.bgModifierTypes);
+            }
 
+            if (!modifier.IsValid(ModifiersManager.bgModifierTypes))
+                return;
         }
     }
 }

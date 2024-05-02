@@ -807,7 +807,7 @@ namespace BetterLegacy.Editor.Managers
                     });
                     EditorThemeManager.ApplyToggle(toggle);
 
-                    if (modifier.type == BeatmapObject.Modifier.Type.Trigger)
+                    if (modifier.type == ModifierBase.Type.Trigger)
                     {
                         var not = booleanBar.Duplicate(layout, "Not");
                         not.transform.localScale = Vector3.one;
@@ -1050,6 +1050,18 @@ namespace BetterLegacy.Editor.Managers
                         EditorThemeManager.ApplyDropdown(d);
                     };
 
+                    if (!modifier.verified)
+                    {
+                        modifier.verified = true;
+                        modifier.VerifyModifier(ModifiersManager.bgModifierTypes);
+                    }
+
+                    if (!modifier.IsValid(ModifiersManager.bgModifierTypes))
+                    {
+                        EditorManager.inst.DisplayNotification("Modifier does not have a command name and is lacking values.", 2f, EditorManager.NotificationType.Error);
+                        continue;
+                    }
+
                     var cmd = modifier.commands[0];
                     switch (cmd)
                     {
@@ -1132,7 +1144,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void AddBlock(BackgroundObject backgroundObject)
         {
-            backgroundObject.modifiers.Add(new List<BeatmapObject.Modifier>());
+            backgroundObject.modifiers.Add(new List<Modifier<BackgroundObject>>());
             currentPage = backgroundObject.modifiers.Count - 1;
             StartCoroutine(RenderModifiers(backgroundObject));
         }
@@ -1144,7 +1156,7 @@ namespace BetterLegacy.Editor.Managers
             StartCoroutine(RenderModifiers(backgroundObject));
         }
 
-        public void SetObjectColors(Toggle[] toggles, int index, int i, BeatmapObject.Modifier modifier)
+        public void SetObjectColors(Toggle[] toggles, int index, int i, Modifier<BackgroundObject> modifier)
         {
             modifier.commands[index] = i.ToString();
 
@@ -1193,8 +1205,7 @@ namespace BetterLegacy.Editor.Managers
         public string searchTerm;
         public void RefreshDefaultModifiersList(BackgroundObject backgroundObject)
         {
-            if (ModCompatibility.sharedFunctions.ContainsKey("DefaultBGModifierList"))
-                defaultModifiers = (List<BeatmapObject.Modifier>)ModCompatibility.sharedFunctions["DefaultBGModifierList"];
+            defaultModifiers = ModifiersManager.bgModifierTypes;
 
             var dialog = EditorManager.inst.GetDialog("Default Background Modifiers Popup").Dialog.gameObject;
 
@@ -1220,8 +1231,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var cmd = defaultModifiers[tmpIndex].commands[0];
 
-                        var modifier = BeatmapObject.Modifier.DeepCopy(defaultModifiers[tmpIndex]);
-                        modifier.bgModifierObject = backgroundObject;
+                        var modifier = Modifier<BackgroundObject>.DeepCopy(defaultModifiers[tmpIndex], backgroundObject);
                         backgroundObject.modifiers[currentPage].Add(modifier);
                         StartCoroutine(RenderModifiers(backgroundObject));
                         EditorManager.inst.HideDialog("Default Background Modifiers Popup");
@@ -1233,7 +1243,7 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public List<BeatmapObject.Modifier> defaultModifiers = new List<BeatmapObject.Modifier>();
+        public List<Modifier<BackgroundObject>> defaultModifiers = new List<Modifier<BackgroundObject>>();
 
         #endregion
 

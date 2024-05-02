@@ -4857,7 +4857,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 var bm = timelineObject.GetData<BeatmapObject>();
 
-                                bm.modifiers.AddRange(beatmapObject.modifiers.Select(x => BeatmapObject.Modifier.DeepCopy(x, bm)));
+                                bm.modifiers.AddRange(beatmapObject.modifiers.Select(x => Modifier<BeatmapObject>.DeepCopy(x, bm)));
 
                                 Updater.UpdateProcessor(bm);
                             }

@@ -28,15 +28,15 @@ namespace BetterLegacy.Core.Managers
                 {
                     var beatmapObject = order[i];
 
-                    beatmapObject.modifiers.Where(x => x.Action == null || x.Trigger == null || x.Inactive == null).ToList().ForEach(delegate (BeatmapObject.Modifier modifier)
+                    beatmapObject.modifiers.Where(x => x.Action == null || x.Trigger == null || x.Inactive == null).ToList().ForEach(delegate (Modifier<BeatmapObject> modifier)
                     {
                         modifier.Action = ModifiersHelper.Action;
                         modifier.Trigger = ModifiersHelper.Trigger;
                         modifier.Inactive = ModifiersHelper.Inactive;
                     });
 
-                    var actions = beatmapObject.modifiers.Where(x => x.type == BeatmapObject.Modifier.Type.Action);
-                    var triggers = beatmapObject.modifiers.Where(x => x.type == BeatmapObject.Modifier.Type.Trigger);
+                    var actions = beatmapObject.modifiers.Where(x => x.type == ModifierBase.Type.Action);
+                    var triggers = beatmapObject.modifiers.Where(x => x.type == ModifierBase.Type.Trigger);
 
                     if (beatmapObject.ignoreLifespan || beatmapObject.TimeWithinLifespan())
                     {
@@ -134,7 +134,7 @@ namespace BetterLegacy.Core.Managers
             var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
             for (int i = 0; i < jn["modifiers"].Count; i++)
-                modifierTypes.Add(BeatmapObject.Modifier.Parse(jn["modifiers"][i]));
+                modifierTypes.Add(Modifier<BeatmapObject>.Parse(jn["modifiers"][i]));
         }
 
         public static void DeleteKey(string id, AudioSource audioSource)
@@ -301,7 +301,7 @@ namespace BetterLegacy.Core.Managers
         {
             yield return new WaitForSeconds(delay);
 
-            if (beatmapObject.modifiers.TryFind(x => x.commands[0] == "requireSignal" && x.type == BeatmapObject.Modifier.Type.Trigger, out BeatmapObject.Modifier modifier))
+            if (beatmapObject.modifiers.TryFind(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> modifier))
             {
                 modifier.Result = "death hd";
             }
@@ -309,13 +309,13 @@ namespace BetterLegacy.Core.Managers
 
         #endregion
 
-        public static List<BeatmapObject.Modifier> modifierTypes = new List<BeatmapObject.Modifier>();
+        public static List<Modifier<BeatmapObject>> modifierTypes = new List<Modifier<BeatmapObject>>();
 
-        public static List<BeatmapObject.Modifier> bgModifierTypes = new List<BeatmapObject.Modifier>
+        public static List<Modifier<BackgroundObject>> bgModifierTypes = new List<Modifier<BackgroundObject>>
         {
-            new BeatmapObject.Modifier
+            new Modifier<BackgroundObject>
             {
-                type = BeatmapObject.Modifier.Type.Action,
+                type = ModifierBase.Type.Action,
                 constant = true,
                 commands = new List<string>
                 {
@@ -323,9 +323,9 @@ namespace BetterLegacy.Core.Managers
                 },
                 value = "False"
             }, //setActive
-            new BeatmapObject.Modifier
+            new Modifier<BackgroundObject>
             {
-                type = BeatmapObject.Modifier.Type.Action,
+                type = ModifierBase.Type.Action,
                 constant = true,
                 commands = new List<string>
                 {
@@ -339,9 +339,9 @@ namespace BetterLegacy.Core.Managers
                 },
                 value = "1"
             }, //animateObject
-            new BeatmapObject.Modifier
+            new Modifier<BackgroundObject>
             {
-                type = BeatmapObject.Modifier.Type.Action,
+                type = ModifierBase.Type.Action,
                 constant = true,
                 commands = new List<string>
                 {
@@ -359,9 +359,9 @@ namespace BetterLegacy.Core.Managers
                 },
                 value = "Object Group"
             }, //copyAxis
-            new BeatmapObject.Modifier
+            new Modifier<BackgroundObject>
             {
-                type = BeatmapObject.Modifier.Type.Trigger,
+                type = ModifierBase.Type.Trigger,
                 constant = true,
                 commands = new List<string>
                 {
@@ -369,9 +369,9 @@ namespace BetterLegacy.Core.Managers
                 },
                 value = "0"
             }, //timeLesserEquals
-            new BeatmapObject.Modifier
+            new Modifier<BackgroundObject>
             {
-                type = BeatmapObject.Modifier.Type.Trigger,
+                type = ModifierBase.Type.Trigger,
                 constant = true,
                 commands = new List<string>
                 {
@@ -379,9 +379,9 @@ namespace BetterLegacy.Core.Managers
                 },
                 value = "0"
             }, //timeGreaterEquals
-            new BeatmapObject.Modifier
+            new Modifier<BackgroundObject>
             {
-                type = BeatmapObject.Modifier.Type.Trigger,
+                type = ModifierBase.Type.Trigger,
                 constant = true,
                 commands = new List<string>
                 {
@@ -389,9 +389,9 @@ namespace BetterLegacy.Core.Managers
                 },
                 value = "0"
             }, //timeLesser
-            new BeatmapObject.Modifier
+            new Modifier<BackgroundObject>
             {
-                type = BeatmapObject.Modifier.Type.Trigger,
+                type = ModifierBase.Type.Trigger,
                 constant = true,
                 commands = new List<string>
                 {

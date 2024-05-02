@@ -235,7 +235,7 @@ namespace BetterLegacy.Editor.Managers
             dropdownBar = Dropdown();
         }
 
-        public static BeatmapObject.Modifier copiedModifier;
+        public static Modifier<BeatmapObject> copiedModifier;
         public IEnumerator RenderModifiers(BeatmapObject beatmapObject)
         {
             ignoreToggle.onValueChanged.ClearAll();
@@ -288,7 +288,7 @@ namespace BetterLegacy.Editor.Managers
                 copy.button.onClick.ClearAll();
                 copy.button.onClick.AddListener(delegate ()
                 {
-                    copiedModifier = BeatmapObject.Modifier.DeepCopy(modifier, beatmapObject);
+                    copiedModifier = Modifier<BeatmapObject>.DeepCopy(modifier, beatmapObject);
                     StartCoroutine(RenderModifiers(beatmapObject));
                     EditorManager.inst.DisplayNotification("Copied Modifier!", 1.5f, EditorManager.NotificationType.Success);
                 });
@@ -315,7 +315,7 @@ namespace BetterLegacy.Editor.Managers
                 });
                 EditorThemeManager.ApplyToggle(toggle);
 
-                if (modifier.type == BeatmapObject.Modifier.Type.Trigger)
+                if (modifier.type == ModifierBase.Type.Trigger)
                 {
                     var not = booleanBar.Duplicate(layout, "Not");
                     not.transform.localScale = Vector3.one;
@@ -563,10 +563,10 @@ namespace BetterLegacy.Editor.Managers
                 if (!modifier.verified)
                 {
                     modifier.verified = true;
-                    CoreHelper.VerifyModifier(modifier);
+                    modifier.VerifyModifier(ModifiersManager.modifierTypes);
                 }
 
-                if (modifier.commands.Count < 1)
+                if (!modifier.IsValid(ModifiersManager.modifierTypes))
                 {
                     EditorManager.inst.DisplayNotification("Modifier does not have a command name and is lacking values.", 2f, EditorManager.NotificationType.Error);
                     continue;
@@ -1854,7 +1854,7 @@ namespace BetterLegacy.Editor.Managers
                 buttonStorage.button.onClick.ClearAll();
                 buttonStorage.button.onClick.AddListener(delegate ()
                 {
-                    beatmapObject.modifiers.Add(BeatmapObject.Modifier.DeepCopy(copiedModifier, beatmapObject));
+                    beatmapObject.modifiers.Add(Modifier<BeatmapObject>.DeepCopy(copiedModifier, beatmapObject));
                     StartCoroutine(RenderModifiers(beatmapObject));
                     EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
                 });
@@ -1866,7 +1866,7 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
-        public void SetObjectColors(Toggle[] toggles, int index, int i, BeatmapObject.Modifier modifier)
+        public void SetObjectColors(Toggle[] toggles, int index, int i, Modifier<BeatmapObject> modifier)
         {
             modifier.commands[index] = i.ToString();
 
@@ -1948,8 +1948,7 @@ namespace BetterLegacy.Editor.Managers
                             return;
                         }
 
-                        var modifier = BeatmapObject.Modifier.DeepCopy(defaultModifiers[tmpIndex]);
-                        modifier.modifierObject = beatmapObject;
+                        var modifier = Modifier<BeatmapObject>.DeepCopy(defaultModifiers[tmpIndex], beatmapObject);
                         beatmapObject.modifiers.Add(modifier);
                         RTEditor.inst.StartCoroutine(ObjectEditor.RefreshObjectGUI(beatmapObject));
                         EditorManager.inst.HideDialog("Default Modifiers Popup");
@@ -1961,7 +1960,7 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public List<BeatmapObject.Modifier> defaultModifiers = new List<BeatmapObject.Modifier>();
+        public List<Modifier<BeatmapObject>> defaultModifiers = new List<Modifier<BeatmapObject>>();
 
         #endregion
 

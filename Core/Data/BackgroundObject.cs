@@ -100,7 +100,7 @@ namespace BetterLegacy.Core.Data
 		public Vector3 scaleOffset;
 		public Vector3 rotationOffset;
 
-		public List<List<BeatmapObject.Modifier>> modifiers = new List<List<BeatmapObject.Modifier>>();
+		public List<List<Modifier<BackgroundObject>>> modifiers = new List<List<Modifier<BackgroundObject>>>();
 
 		public bool Enabled { get; set; } = true;
 
@@ -144,11 +144,10 @@ namespace BetterLegacy.Core.Data
 
 			for (int i = 0; i < bg.modifiers.Count; i++)
             {
-				b.modifiers.Add(new List<BeatmapObject.Modifier>());
+				b.modifiers.Add(new List<Modifier<BackgroundObject>>());
 				for (int j = 0; j < bg.modifiers[i].Count; j++)
                 {
-					var modifier = BeatmapObject.Modifier.DeepCopy(bg.modifiers[i][j]);
-					modifier.bgModifierObject = b;
+					var modifier = Modifier<BackgroundObject>.DeepCopy(bg.modifiers[i][j], b);
 					b.modifiers[i].Add(modifier);
                 }
             }
@@ -318,11 +317,10 @@ namespace BetterLegacy.Core.Data
 
 			for (int i = 0; i < jn["modifiers"].Count; i++)
 			{
-				bg.modifiers.Add(new List<BeatmapObject.Modifier>());
+				bg.modifiers.Add(new List<Modifier<BackgroundObject>>());
 				for (int j = 0; j < jn["modifiers"][i].Count; j++)
 				{
-					var modifier = BeatmapObject.Modifier.Parse(jn["modifiers"][i][j]);
-					modifier.bgModifierObject = bg;
+					var modifier = Modifier<BackgroundObject>.Parse(jn["modifiers"][i][j], bg);
 					bg.modifiers[i].Add(modifier);
 				}
 			}

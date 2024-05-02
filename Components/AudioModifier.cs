@@ -16,7 +16,7 @@ namespace BetterLegacy.Components
             AudioSource.loop = true;
         }
 
-        public void Init(AudioClip audioClip, BeatmapObject beatmapObject, BeatmapObject.Modifier modifier)
+        public void Init(AudioClip audioClip, BeatmapObject beatmapObject, Modifier<BeatmapObject> modifier)
         {
             AudioClip = audioClip;
             BeatmapObject = beatmapObject;
@@ -58,6 +58,6 @@ namespace BetterLegacy.Components
         public AudioClip AudioClip { get; set; }
 
         public BeatmapObject BeatmapObject { get; set; }
-        public BeatmapObject.Modifier Modifier { get; set; }
+        public Modifier<BeatmapObject> Modifier { get; set; }
     }
 }

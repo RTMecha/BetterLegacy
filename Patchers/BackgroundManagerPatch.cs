@@ -33,15 +33,15 @@ namespace BetterLegacy.Patchers
 					{
 						var modifiers = backgroundObject.modifiers[j];
 
-						modifiers.Where(x => x.Action == null || x.Trigger == null || x.Inactive == null).ToList().ForEach(delegate (BeatmapObject.Modifier modifier)
+						modifiers.Where(x => x.Action == null || x.Trigger == null || x.Inactive == null).ToList().ForEach(delegate (Modifier<BackgroundObject> modifier)
 						{
 							modifier.Action = ModifiersHelper.BGAction;
 							modifier.Trigger = ModifiersHelper.BGTrigger;
 							modifier.Inactive = ModifiersHelper.BGInactive;
 						});
 
-						var actions = modifiers.Where(x => x.type == BeatmapObject.Modifier.Type.Action);
-						var triggers = modifiers.Where(x => x.type == BeatmapObject.Modifier.Type.Trigger);
+						var actions = modifiers.Where(x => x.type == ModifierBase.Type.Action);
+						var triggers = modifiers.Where(x => x.type == ModifierBase.Type.Trigger);
 
 						if (triggers.Count() > 0)
 						{

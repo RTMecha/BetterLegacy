@@ -16,6 +16,6 @@ namespace BetterLegacy.Components
                 Modifier.Result = null;
         }
 
-        public BeatmapObject.Modifier Modifier { get; set; }
+        public Modifier<BeatmapObject> Modifier { get; set; }
     }
 }

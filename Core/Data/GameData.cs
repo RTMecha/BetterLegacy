@@ -15,7 +15,6 @@ using BaseBeatmapObject = DataManager.GameData.BeatmapObject;
 using BaseBeatmapTheme = DataManager.BeatmapTheme;
 using BaseEventKeyframe = DataManager.GameData.EventKeyframe;
 using BaseGameData = DataManager.GameData;
-using Modifier = BetterLegacy.Core.Data.BeatmapObject.Modifier;
 
 namespace BetterLegacy.Core.Data
 {
@@ -37,18 +36,18 @@ namespace BetterLegacy.Core.Data
 		/// </summary>
 		public class LevelModifier
         {
-			public Modifier TriggerModifier { get; set; }
-			public Modifier ActionModifier { get; set; }
+			public Modifier<GameData> TriggerModifier { get; set; }
+			public Modifier<GameData> ActionModifier { get; set; }
 
 			public int retriggerAmount = -1;
 			[NonSerialized]
 			public int current;
 
-			public void AssignModifier(Modifier.Type type, int i)
+			public void AssignModifier(ModifierBase.Type type, int i)
 			{
-				if (type == Modifier.Type.Trigger)
+				if (type == ModifierBase.Type.Trigger)
 					AssignTrigger(i);
-				if (type == Modifier.Type.Action)
+				if (type == ModifierBase.Type.Action)
 					AssignAction(i);
             }
 
@@ -192,11 +191,11 @@ namespace BetterLegacy.Core.Data
 				}
             }
 
-			public static Modifier[] DefaultTriggers => new Modifier[]
+			public static Modifier<GameData>[] DefaultTriggers => new Modifier<GameData>[]
 			{
-				new Modifier
-                {
-					type = Modifier.Type.Trigger,
+				new Modifier<GameData>
+				{
+					type = ModifierBase.Type.Trigger,
 					constant = true,
 					commands = new List<string>
 					{
@@ -206,9 +205,9 @@ namespace BetterLegacy.Core.Data
 					},
 					value = "",
 				}, // time
-				new Modifier
-                {
-					type = Modifier.Type.Trigger,
+				new Modifier<GameData>
+				{
+					type = ModifierBase.Type.Trigger,
 					constant = false,
 					commands = new List<string>
 					{
@@ -218,9 +217,9 @@ namespace BetterLegacy.Core.Data
 					},
 					value = "",
 				}, // playerHit
-				new Modifier
-                {
-					type = Modifier.Type.Trigger,
+				new Modifier<GameData>
+				{
+					type = ModifierBase.Type.Trigger,
 					constant = false,
 					commands = new List<string>
 					{
@@ -230,9 +229,9 @@ namespace BetterLegacy.Core.Data
 					},
 					value = "",
 				}, // playerDeath
-				new Modifier
-                {
-					type = Modifier.Type.Trigger,
+				new Modifier<GameData>
+				{
+					type = ModifierBase.Type.Trigger,
 					constant = false,
 					commands = new List<string>
 					{
@@ -243,11 +242,11 @@ namespace BetterLegacy.Core.Data
 					value = "",
 				}, // levelStart
 			};
-			public static Modifier[] DefaultActions => new Modifier[]
+			public static Modifier<GameData>[] DefaultActions => new Modifier<GameData>[]
 			{
-				new Modifier
-                {
-					type = Modifier.Type.Action,
+				new Modifier<GameData>
+				{
+					type = ModifierBase.Type.Action,
 					constant = false,
 					commands = new List<string>
                     {
@@ -255,9 +254,9 @@ namespace BetterLegacy.Core.Data
                     },
 					value = "",
                 }, // vnInk
-				new Modifier
+				new Modifier<GameData>
                 {
-					type = Modifier.Type.Action,
+					type = ModifierBase.Type.Action,
 					constant = false,
 					commands = new List<string>
                     {
@@ -265,9 +264,9 @@ namespace BetterLegacy.Core.Data
                     },
 					value = "",
 				}, // vnTimeline
-				new Modifier
-                {
-					type = Modifier.Type.Action,
+				new Modifier<GameData>
+				{
+					type = ModifierBase.Type.Action,
 					constant = false,
 					commands = new List<string>
                     {
@@ -277,9 +276,9 @@ namespace BetterLegacy.Core.Data
                     },
 					value = "",
 				}, // playerBubble (Probably won't have support for this yet)
-				new Modifier
-                {
-					type = Modifier.Type.Action,
+				new Modifier<GameData>
+				{
+					type = ModifierBase.Type.Action,
 					constant = false,
 					commands = new List<string>
                     {
@@ -290,9 +289,9 @@ namespace BetterLegacy.Core.Data
                     },
 					value = "",
 				}, // playerLocation
-				new Modifier
-                {
-					type = Modifier.Type.Action,
+				new Modifier<GameData>
+				{
+					type = ModifierBase.Type.Action,
 					constant = false,
 					commands = new List<string>
                     {
@@ -807,8 +806,8 @@ namespace BetterLegacy.Core.Data
 
 				var levelModifier = new LevelModifier();
 
-				levelModifier.ActionModifier = Modifier.Parse(modifier["action"]);
-				levelModifier.TriggerModifier = Modifier.Parse(modifier["trigger"]);
+				levelModifier.ActionModifier = Modifier<GameData>.Parse(modifier["action"], gameData);
+				levelModifier.TriggerModifier = Modifier<GameData>.Parse(modifier["trigger"], gameData);
 				levelModifier.retriggerAmount = modifier["retrigger"].AsInt;
 
 				gameData.levelModifiers.Add(levelModifier);

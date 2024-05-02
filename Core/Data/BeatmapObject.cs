@@ -58,7 +58,7 @@ namespace BetterLegacy.Core.Data
 			events = beatmapObject.events.Clone();
 		}
 
-		public BeatmapObject(BaseBeatmapObject beatmapObject, bool ldm, List<Modifier> modifiers)
+		public BeatmapObject(BaseBeatmapObject beatmapObject, bool ldm, List<Modifier<BeatmapObject>> modifiers)
 		{
 			id = beatmapObject.id;
 			parent = beatmapObject.parent;
@@ -117,7 +117,7 @@ namespace BetterLegacy.Core.Data
 
 		public bool desync = false;
 
-		public List<Modifier> modifiers = new List<Modifier>();
+		public List<Modifier<BeatmapObject>> modifiers = new List<Modifier<BeatmapObject>>();
         public List<Component> components = new List<Component>();
 
 		public ParticleSystem particleSystem;
@@ -174,124 +174,6 @@ namespace BetterLegacy.Core.Data
 				return result;
             }
         }
-
-        public class Modifier
-        {
-            public Modifier()
-            {
-            }
-
-            public Modifier(Type type, string value)
-            {
-                this.type = type;
-				this.value = value;
-            }
-
-            public Modifier(Type type, string command, string value, BeatmapObject beatmapObject)
-            {
-                commands[0] = command;
-                this.type = type;
-				this.value = value;
-                modifierObject = beatmapObject;
-            }
-
-            public Modifier(BeatmapObject beatmapObject)
-            {
-                modifierObject = beatmapObject;
-            }
-
-			public bool IsValid(List<Modifier> modifiers) => commands.Count > 0 && modifiers.Has(x => x.commands[0] == commands[0]);
-			public bool verified = false;
-
-            public BeatmapObject modifierObject;
-			public BackgroundObject bgModifierObject;
-
-            public bool constant = true;
-
-            public enum Type
-            {
-                Trigger,
-                Action
-            }
-
-            public Type type = Type.Action;
-            public string value;
-            public bool active = false;
-            public List<string> commands = new List<string>
-            {
-				""
-            };
-
-            public bool not = false;
-
-            public Action<Modifier> Action { get; set; }
-            public Patchers.PrefixMethod<Modifier> Trigger { get; set; }
-
-			public Action<Modifier> Inactive { get; set; }
-
-            public object Result { get; set; }
-
-			public bool hasChanged;
-
-			#region Methods
-
-			public static Modifier DeepCopy(Modifier orig, BeatmapObject beatmapObject = null)
-			{
-				var modifier = new Modifier();
-				modifier.type = orig.type;
-				modifier.commands = new List<string>();
-				foreach (var l in orig.commands)
-				{
-					modifier.commands.Add(l);
-				}
-				modifier.value = orig.value;
-				modifier.modifierObject = beatmapObject ?? orig.modifierObject;
-				modifier.not = orig.not;
-				modifier.constant = orig.constant;
-
-				return modifier;
-			}
-
-			public static Modifier Parse(JSONNode jn)
-            {
-				var modifier = new Modifier();
-				modifier.type = (Type)jn["type"].AsInt;
-				modifier.not = jn["not"].AsBool;
-
-				modifier.commands.Clear();
-				for (int i = 0; i < jn["commands"].Count; i++)
-					modifier.commands.Add(jn["commands"][i]);
-
-				modifier.constant = jn["const"].AsBool;
-				if (!string.IsNullOrEmpty(jn["value"]))
-					modifier.value = jn["value"];
-				else
-					modifier.value = "";
-
-				return modifier;
-            }
-
-			public JSONNode ToJSON()
-            {
-				var jn = JSON.Parse("{}");
-
-				jn["type"] = (int)type;
-
-				if (not)
-					jn["not"] = not.ToString();
-
-				for (int j = 0; j < commands.Count; j++)
-					jn["commands"][j] = commands[j];
-
-				jn["value"] = value;
-
-				jn["const"] = constant.ToString();
-
-				return jn;
-			}
-
-			#endregion
-		}
 
 		public new ObjectType objectType;
 
@@ -363,7 +245,8 @@ namespace BetterLegacy.Core.Data
 				beatmapObject.events[i].AddRange(orig.events[i].Select(x => EventKeyframe.DeepCopy((EventKeyframe)x)));
             }
 
-			beatmapObject.modifiers = orig.modifiers.Count > 0 ? orig.modifiers.Select(x => Modifier.DeepCopy(x, beatmapObject)).ToList() : new List<Modifier>();
+			beatmapObject.modifiers = new List<Modifier<BeatmapObject>>();
+			beatmapObject.modifiers = orig.modifiers.Count > 0 ? orig.modifiers.Select(x => Modifier<BeatmapObject>.DeepCopy(x, beatmapObject)).ToList() : new List<Modifier<BeatmapObject>>();
 			return beatmapObject;
 		}
 
@@ -846,8 +729,7 @@ namespace BetterLegacy.Core.Data
 
 			for (int i = 0; i < jn["modifiers"].Count; i++)
 			{
-				var modifier = Modifier.Parse(jn["modifiers"][i]);
-				modifier.modifierObject = beatmapObject;
+				var modifier = Modifier<BeatmapObject>.Parse(jn["modifiers"][i], beatmapObject);
 				beatmapObject.modifiers.Add(modifier);
 			}
 
