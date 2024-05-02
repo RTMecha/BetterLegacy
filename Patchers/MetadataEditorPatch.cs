@@ -173,7 +173,8 @@ namespace BetterLegacy.Patchers
             convert.transform.AsRT().anchoredPosition = new Vector2(-240f, 0f);
             convert.transform.AsRT().sizeDelta = new Vector2(230f, 48f);
             var convertText = convert.transform.Find("Text").GetComponent<Text>();
-            convertText.fontSize = 18;
+            convertText.resizeTextForBestFit = false;
+            convertText.fontSize = 22;
             convertText.text = "Convert to VG Format";
 
             var upload = convert.Duplicate(submitBase, "upload");
@@ -181,7 +182,8 @@ namespace BetterLegacy.Patchers
             upload.transform.AsRT().anchoredPosition = new Vector2(0f, 0f);
             upload.transform.AsRT().sizeDelta = new Vector2(230f, 48f);
             var uploadText = upload.transform.Find("Text").GetComponent<Text>();
-            uploadText.fontSize = 18;
+            uploadText.resizeTextForBestFit = false;
+            uploadText.fontSize = 22;
             uploadText.text = "Upload to Server";
 
             var zip = convert.Duplicate(submitBase, "zip");
@@ -189,7 +191,8 @@ namespace BetterLegacy.Patchers
             zip.transform.AsRT().anchoredPosition = new Vector2(240f, 0f);
             zip.transform.AsRT().sizeDelta = new Vector2(230f, 48f);
             var zipText = zip.transform.Find("Text").GetComponent<Text>();
-            zipText.fontSize = 18;
+            zipText.resizeTextForBestFit = false;
+            zipText.fontSize = 22;
             zipText.text = "ZIP Level";
 
             content.Find("id").gameObject.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0f);
