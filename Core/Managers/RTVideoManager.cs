@@ -1,6 +1,6 @@
 ﻿using BetterLegacy.Configs;
 using System;
-
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Video;
 
@@ -100,6 +100,29 @@ namespace BetterLegacy.Core.Managers
 		public string currentURL;
 		public float currentAlpha;
 		public bool didntPlay = false;
+
+		public IEnumerator Setup(string fullPath)
+		{
+			if (!CoreConfig.Instance.EnableVideoBackground.Value || !RTFile.FileExists(fullPath + "/bg.mp4") || !RTFile.FileExists(fullPath + "/bg.mov"))
+			{
+				Stop();
+				yield break;
+			}
+
+			if (RTFile.FileExists(fullPath + "/bg.mp4"))
+			{
+				Play(fullPath + "/bg.mp4", 1f);
+				while (!videoPlayer.isPrepared)
+					yield return null;
+			}
+			else if (RTFile.FileExists(fullPath + "/bg.mov"))
+			{
+				Play(fullPath + "/bg.mov", 1f);
+				while (!videoPlayer.isPrepared)
+					yield return null;
+			}
+
+		}
 
 		public void Play(string url, float alpha)
 		{
