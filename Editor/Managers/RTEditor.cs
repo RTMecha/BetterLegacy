@@ -40,7 +40,7 @@ using ObjectType = DataManager.GameData.BeatmapObject.ObjectType;
 namespace BetterLegacy.Editor.Managers
 {
     /// <summary>
-    /// Editor
+    /// Base modded editor manager.
     /// </summary>
     public class RTEditor : MonoBehaviour
     {
