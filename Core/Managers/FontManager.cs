@@ -30,13 +30,20 @@ namespace BetterLegacy.Core.Managers
         public Dictionary<string, TMP_FontAsset> allFontAssets = new Dictionary<string, TMP_FontAsset>();
         public bool loadedFiles = false;
 
-        public Font Inconsolata
+        public string defaultFont = "Inconsolata Variable";
+
+        public Font DefaultFont
         {
             get
             {
-                if (allFonts.ContainsKey("Inconsolata Variable"))
-                    return allFonts["Inconsolata Variable"];
-                Debug.Log($"{className}Inconsolata Font doesn't exist for some reason.");
+                var key = EditorConfig.Instance.EditorFont.Value.ToString().Replace("_", " ");
+                if (allFonts.ContainsKey(key))
+                    return allFonts[key];
+
+                if (allFonts.ContainsKey(defaultFont))
+                    return allFonts[defaultFont];
+
+                Debug.Log($"{className}Font doesn't exist.");
                 return Font.GetDefault();
             }
         }
@@ -535,14 +542,16 @@ namespace BetterLegacy.Core.Managers
 
         public void ChangeAllFontsInEditor()
         {
-            var fonts = (from x in Resources.FindObjectsOfTypeAll<Text>()
-                         where x.font.name == "Inconsolata-Regular"
-                         select x).ToList();
+            if (!EditorManager.inst)
+                return;
 
-            var inconsolata = Inconsolata;
-            foreach (var font in fonts)
+            var fonts = Resources.FindObjectsOfTypeAll<Text>().Where(x => x.font.name == "Inconsolata-Regular").ToArray();
+
+            var defaultFont = DefaultFont;
+
+            for (int i = 0; i < fonts.Length; i++)
             {
-                font.font = inconsolata;
+                fonts[i].font = defaultFont;
             }
         }
 
