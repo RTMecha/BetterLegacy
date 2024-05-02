@@ -74,7 +74,7 @@ namespace BetterLegacy.Patchers
             rtindex.sizeDelta = Vector2.zero;
 
             ttindex.text = "Index: 0";
-            ttindex.font = FontManager.inst.Inconsolata;
+            ttindex.font = FontManager.inst.DefaultFont;
             ttindex.color = new Color(0.9f, 0.9f, 0.9f);
             ttindex.alignment = TextAnchor.MiddleLeft;
             ttindex.fontSize = 20;

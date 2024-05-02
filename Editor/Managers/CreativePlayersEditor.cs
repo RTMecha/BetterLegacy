@@ -63,7 +63,7 @@ namespace BetterLegacy.Editor.Managers
         {
             inst = this;
 
-            editorFont = FontManager.inst.Inconsolata;
+            editorFont = FontManager.inst.DefaultFont;
 
             editorDialogObject = Instantiate(EditorManager.inst.GetDialog("Multi Keyframe Editor (Object)").Dialog.gameObject);
             editorDialogTransform = editorDialogObject.transform;

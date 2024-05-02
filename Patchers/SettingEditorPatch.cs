@@ -164,7 +164,7 @@ namespace BetterLegacy.Patchers
                 title.AddComponent<RectTransform>();
 
                 var titleText = title.AddComponent<Text>();
-                titleText.font = FontManager.inst.Inconsolata;
+                titleText.font = FontManager.inst.DefaultFont;
                 titleText.fontSize = 19;
                 titleText.alignment = TextAnchor.MiddleLeft;
                 titleText.text = "  " + array[i];
@@ -177,7 +177,7 @@ namespace BetterLegacy.Patchers
                 infoGO.AddComponent<RectTransform>();
 
                 var infoText = infoGO.AddComponent<Text>();
-                infoText.font = FontManager.inst.Inconsolata;
+                infoText.font = FontManager.inst.DefaultFont;
                 infoText.fontSize = 19;
                 infoText.alignment = TextAnchor.MiddleRight;
                 infoText.text = "[ 0 ]";

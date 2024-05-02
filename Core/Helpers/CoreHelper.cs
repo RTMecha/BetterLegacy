@@ -416,7 +416,7 @@ namespace BetterLegacy.Core.Helpers
 			textRT.sizeDelta = new Vector2(590f, 250f);
 
 			var text = textObj.AddComponent<Text>();
-			text.font = FontManager.inst.Inconsolata;
+			text.font = FontManager.inst.DefaultFont;
 			text.text = dialogue;
 			text.fontSize = 20;
 			text.alignment = TextAnchor.MiddleCenter;
@@ -442,7 +442,7 @@ namespace BetterLegacy.Core.Helpers
 
 			var titleText = titleTextObj.AddComponent<Text>();
 			titleText.alignment = TextAnchor.MiddleLeft;
-			titleText.font = FontManager.inst.Inconsolata;
+			titleText.font = FontManager.inst.DefaultFont;
 			titleText.fontSize = 20;
 			titleText.text = title;
 			titleText.color = InvertColorHue(InvertColorValue(bar));
@@ -540,7 +540,7 @@ namespace BetterLegacy.Core.Helpers
 			textRT.sizeDelta = new Vector2(200f, 100f);
 
 			var text = textObj.AddComponent<Text>();
-			text.font = FontManager.inst.Inconsolata;
+			text.font = FontManager.inst.DefaultFont;
 			text.text = "Took Screenshot!";
 
 			var animation = new RTAnimation("Screenshot Notification");

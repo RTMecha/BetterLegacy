@@ -174,7 +174,7 @@ namespace BetterLegacy.Editor.Managers
             var mcpTextText = mcpText.AddComponent<Text>();
             mcpTextText.alignment = TextAnchor.MiddleLeft;
             mcpTextText.horizontalOverflow = HorizontalWrapMode.Overflow;
-            mcpTextText.font = FontManager.inst.Inconsolata;
+            mcpTextText.font = FontManager.inst.DefaultFont;
             mcpTextText.fontSize = 19;
             mcpTextText.color = new Color(0.9373f, 0.9216f, 0.9373f);
 
@@ -2000,7 +2000,7 @@ namespace BetterLegacy.Editor.Managers
 
             var textText = text.AddComponent<Text>();
             textText.alignment = TextAnchor.MiddleLeft;
-            textText.font = FontManager.inst.Inconsolata;
+            textText.font = FontManager.inst.DefaultFont;
             textText.fontSize = 19;
             textText.color = new Color(0.9373f, 0.9216f, 0.9373f);
 
