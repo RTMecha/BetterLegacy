@@ -12,6 +12,7 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Optimization.Objects;
+using CielaSpike;
 using Crosstales.FB;
 using HarmonyLib;
 using LSFunctions;
@@ -858,6 +859,8 @@ namespace BetterLegacy.Editor.Managers
         {
             var config = EditorConfig.Instance;
 
+            SetTimelineSprite(null);
+
             if ((!EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading && !RTFile.FileExists($"{RTFile.ApplicationDirectory}settings/waveform-{config.WaveformMode.Value.ToString().ToLower()}.png") ||
                 !RTFile.FileExists(GameManager.inst.basePath + $"waveform-{config.WaveformMode.Value.ToString().ToLower()}.png")) && !config.WaveformRerender.Value || config.WaveformRerender.Value)
             {
@@ -865,44 +868,59 @@ namespace BetterLegacy.Editor.Managers
                 Texture2D waveform = null;
 
                 if (config.WaveformMode.Value == WaveformType.Legacy)
-                    StartCoroutine(Legacy(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, config.WaveformBottomColor.Value, delegate (Texture2D _tex) { waveform = _tex; }));
+                    yield return this.StartCoroutineAsync(Legacy(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, config.WaveformBottomColor.Value, delegate (Texture2D _tex) { waveform = _tex; }));
                 if (config.WaveformMode.Value == WaveformType.Beta)
-                    StartCoroutine(Beta(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, delegate (Texture2D _tex) { waveform = _tex; }));
+                    yield return this.StartCoroutineAsync(Beta(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, delegate (Texture2D _tex) { waveform = _tex; }));
                 if (config.WaveformMode.Value == WaveformType.BetaFast)
-                    StartCoroutine(BetaFast(AudioManager.inst.CurrentAudioSource.clip, 1f, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, delegate (Texture2D _tex) { waveform = _tex; }));
+                    yield return this.StartCoroutineAsync(BetaFast(AudioManager.inst.CurrentAudioSource.clip, 1f, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, delegate (Texture2D _tex) { waveform = _tex; }));
                 if (config.WaveformMode.Value == WaveformType.LegacyFast)
-                    StartCoroutine(LegacyFast(AudioManager.inst.CurrentAudioSource.clip, 1f, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, config.WaveformBottomColor.Value, delegate (Texture2D _tex) { waveform = _tex; }));
+                    yield return this.StartCoroutineAsync(LegacyFast(AudioManager.inst.CurrentAudioSource.clip, 1f, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, config.WaveformBottomColor.Value, delegate (Texture2D _tex) { waveform = _tex; }));
 
                 while (waveform == null)
                     yield return null;
 
                 var waveSprite = Sprite.Create(waveform, new Rect(0f, 0f, (float)num, 300f), new Vector2(0.5f, 0.5f), 100f);
-                TimelineImage.sprite = waveSprite;
-                TimelineOverlayImage.sprite = TimelineImage.sprite;
+                SetTimelineSprite(waveSprite);
+
+                if (config.WaveformSaves.Value)
+                    this.StartCoroutineAsync(SaveWaveform(config));
             }
             else
             {
-                var waveSprite = SpriteManager.LoadSprite(!EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading ?
-                    $"{RTFile.ApplicationDirectory}settings/waveform-{config.WaveformMode.Value.ToString().ToLower()}.png" :
-                    GameManager.inst.basePath + $"waveform-{config.WaveformMode.Value.ToString().ToLower()}.png");
-                TimelineImage.sprite = waveSprite;
-                TimelineOverlayImage.sprite = TimelineImage.sprite;
+                this.StartCoroutineAsync(AlephNetworkManager.DownloadImageTexture("file://" + (!EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading ?
+                $"{RTFile.ApplicationDirectory}settings/waveform-{config.WaveformMode.Value.ToString().ToLower()}.png" :
+                GameManager.inst.basePath + $"waveform-{config.WaveformMode.Value.ToString().ToLower()}.png"), delegate (Texture2D texture2D)
+                {
+                    SetTimelineSprite(SpriteManager.CreateSprite(texture2D));
+                }));
             }
-
-            TimelineImage.sprite.Save(!EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading ?
-                    $"{RTFile.ApplicationDirectory}settings/waveform-{config.WaveformMode.Value.ToString().ToLower()}.png" :
-                    GameManager.inst.basePath + $"waveform-{config.WaveformMode.Value.ToString().ToLower()}.png");
 
             SetTimelineGridSize();
 
             yield break;
         }
 
+        public IEnumerator SaveWaveform(EditorConfig config)
+        {
+            TimelineImage.sprite.Save(!EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading ?
+                    $"{RTFile.ApplicationDirectory}settings/waveform-{config.WaveformMode.Value.ToString().ToLower()}.png" :
+                    GameManager.inst.basePath + $"waveform-{config.WaveformMode.Value.ToString().ToLower()}.png");
+            yield break;
+        }
+
+        public void SetTimelineSprite(Sprite sprite)
+        {
+            TimelineImage.sprite = sprite;
+            TimelineOverlayImage.sprite = TimelineImage.sprite;
+        }
+
         public IEnumerator Beta(AudioClip clip, int textureWidth, int textureHeight, Color background, Color waveform, Action<Texture2D> action)
         {
+            yield return Ninja.JumpToUnity;
             CoreHelper.Log("Generating Beta Waveform");
             int num = 100;
             var texture2D = new Texture2D(textureWidth, textureHeight, EditorConfig.Instance.WaveformTextureFormat.Value, false);
+            yield return Ninja.JumpBack;
             var array = new Color[texture2D.width * texture2D.height];
             for (int i = 0; i < array.Length; i++)
             {
@@ -931,6 +949,7 @@ namespace BetterLegacy.Editor.Managers
                     num2++;
                 }
             }
+            yield return Ninja.JumpToUnity;
             texture2D.wrapMode = TextureWrapMode.Clamp;
             texture2D.filterMode = FilterMode.Point;
             texture2D.Apply();
@@ -940,15 +959,18 @@ namespace BetterLegacy.Editor.Managers
 
         public IEnumerator Legacy(AudioClip clip, int textureWidth, int textureHeight, Color background, Color _top, Color _bottom, Action<Texture2D> action)
         {
+            yield return Ninja.JumpToUnity;
             CoreHelper.Log("Generating Legacy Waveform");
             int num = 160;
             num = clip.frequency / num;
             var texture2D = new Texture2D(textureWidth, textureHeight, EditorConfig.Instance.WaveformTextureFormat.Value, false);
+            yield return Ninja.JumpBack;
             Color[] array = new Color[texture2D.width * texture2D.height];
             for (int i = 0; i < array.Length; i++)
             {
                 array[i] = background;
             }
+
             texture2D.SetPixels(array);
             float[] array3 = new float[clip.samples];
             float[] array4 = new float[clip.samples];
@@ -1006,17 +1028,21 @@ namespace BetterLegacy.Editor.Managers
                     num4++;
                 }
             }
+            yield return Ninja.JumpToUnity;
             texture2D.wrapMode = TextureWrapMode.Clamp;
             texture2D.filterMode = FilterMode.Point;
             texture2D.Apply();
-            action(texture2D);
+            action?.Invoke(texture2D);
             yield break;
         }
 
         public IEnumerator BetaFast(AudioClip audio, float saturation, int width, int height, Color background, Color col, Action<Texture2D> action)
         {
+            yield return Ninja.JumpToUnity;
             CoreHelper.Log("Generating Beta Waveform (Fast)");
             var tex = new Texture2D(width, height, EditorConfig.Instance.WaveformTextureFormat.Value, false);
+            yield return Ninja.JumpBack;
+
             float[] samples = new float[audio.samples * audio.channels];
             float[] waveform = new float[width];
             audio.GetData(samples, 0);
@@ -1044,16 +1070,19 @@ namespace BetterLegacy.Editor.Managers
                     tex.SetPixel(x, (height / 2) - y, col);
                 }
             }
+            yield return Ninja.JumpToUnity;
             tex.Apply();
 
-            action(tex);
+            action?.Invoke(tex);
             yield break;
         }
 
         public IEnumerator LegacyFast(AudioClip audio, float saturation, int width, int height, Color background, Color colTop, Color colBot, Action<Texture2D> action)
         {
+            yield return Ninja.JumpToUnity;
             CoreHelper.Log("Generating Legacy Waveform (Fast)");
             var tex = new Texture2D(width, height, EditorConfig.Instance.WaveformTextureFormat.Value, false);
+            yield return Ninja.JumpBack;
 
             float[] samples = new float[audio.samples * audio.channels];
             float[] waveform = new float[width];
@@ -1083,9 +1112,10 @@ namespace BetterLegacy.Editor.Managers
                     tex.SetPixel(x, y, tex.GetPixel(x, y) == colTop ? MixColors(new List<Color> { colTop, colBot }) : colBot);
                 }
             }
+            yield return Ninja.JumpToUnity;
             tex.Apply();
 
-            action(tex);
+            action?.Invoke(tex);
             yield break;
         }
 
@@ -9011,7 +9041,13 @@ namespace BetterLegacy.Editor.Managers
 
         #region Saving / Loading
 
-        public void SetFileInfo(string text) => fileInfoText?.SetText(text);
+        public void SetFileInfo(string text)
+        {
+            if (EditorConfig.Instance.Debug.Value)
+                CoreHelper.Log(text);
+
+            fileInfoText?.SetText(text);
+        }
 
         public bool themesLoading = false;
 
@@ -9329,10 +9365,9 @@ namespace BetterLegacy.Editor.Managers
 
             if (EditorManager.inst.hasLoadedLevel && EditorConfig.Instance.BackupPreviousLoadedLevel.Value && RTFile.DirectoryExists(GameManager.inst.path.Replace("/level.lsb", "")))
             {
-                CoreHelper.Log($"Backing up previous level {Path.GetFileName(GameManager.inst.path.Replace("/level.lsb", ""))}...");
                 SetFileInfo($"Backing up previous level [ {Path.GetFileName(GameManager.inst.path.Replace("/level.lsb", ""))} ]");
 
-                yield return StartCoroutine(ProjectData.Writer.SaveData(GameManager.inst.path.Replace("level.lsb", "level-open-backup.lsb"), GameData.Current));
+                this.StartCoroutineAsync(ProjectData.Writer.SaveData(GameManager.inst.path.Replace("level.lsb", "level-open-backup.lsb"), GameData.Current));
             }
 
             SetFileInfo($"Loading Level Data for [ {name} ]");
@@ -9354,14 +9389,13 @@ namespace BetterLegacy.Editor.Managers
 
             string errorMessage = "";
             bool hadError = false;
-            CoreHelper.Log($"Loading audio for {name}...");
             if (RTFile.FileExists(fullPath + "/level.ogg"))
             {
-                yield return StartCoroutine(AlephNetworkManager.DownloadAudioClip("file://" + fullPath + "/level.ogg", AudioType.OGGVORBIS, x => song = x, delegate (string onError) { hadError = true; errorMessage = onError; }));
+                yield return this.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip($"file://{fullPath}/level.ogg", AudioType.OGGVORBIS, x => song = x, onError => { hadError = true; errorMessage = onError; }));
             }
             else if (RTFile.FileExists(fullPath + "/level.wav"))
             {
-                yield return StartCoroutine(AlephNetworkManager.DownloadAudioClip("file://" + fullPath + "/level.wav", AudioType.WAV, x => song = x, delegate (string onError) { hadError = true; errorMessage = onError; }));
+                yield return this.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + fullPath + "/level.wav", AudioType.WAV, x => song = x, delegate (string onError) { hadError = true; errorMessage = onError; }));
             }
             else if (RTFile.FileExists(fullPath + "/level.mp3"))
             {
@@ -9391,22 +9425,7 @@ namespace BetterLegacy.Editor.Managers
                 yield break;
             }
 
-            if (RTFile.FileExists(fullPath + "/bg.mp4") && CoreConfig.Instance.EnableVideoBackground.Value)
-            {
-                RTVideoManager.inst.Play(fullPath + "/bg.mp4", 1f);
-                while (!RTVideoManager.inst.videoPlayer.isPrepared)
-                    yield return null;
-            }
-            else if (RTFile.FileExists(fullPath + "/bg.mov") && CoreConfig.Instance.EnableVideoBackground.Value)
-            {
-                RTVideoManager.inst.Play(fullPath + "/bg.mov", 1f);
-                while (!RTVideoManager.inst.videoPlayer.isPrepared)
-                    yield return null;
-            }
-            else
-            {
-                RTVideoManager.inst.Stop();
-            }
+            yield return StartCoroutine(RTVideoManager.inst.Setup(fullPath));
 
             GameManager.inst.gameState = GameManager.State.Parsing;
             SetFileInfo($"Parsing Level Data for [ {name} ]");
@@ -9460,11 +9479,6 @@ namespace BetterLegacy.Editor.Managers
             PlayerManager.LoadIndexes();
             PlayerManager.RespawnPlayers();
 
-            SetFileInfo($"Loading Themes for [ {name} ]");
-            StartCoroutine(LoadThemes());
-
-            CoreHelper.Log($"Music is null: {song == null}");
-
             SetFileInfo($"Playing Music for [ {name} ]\n\nIf it doesn't, then something went wrong!");
             AudioManager.inst.PlayMusic(null, song, true, 0f, true);
             StartCoroutine(EditorManager.inst.SpawnPlayersWithDelay(0.2f));
@@ -9476,8 +9490,7 @@ namespace BetterLegacy.Editor.Managers
             else
             {
                 SetFileInfo($"Skipping Waveform Textures for [ {name} ]");
-                TimelineImage.sprite = null;
-                TimelineOverlayImage.sprite = null;
+                SetTimelineSprite(null);
             }
 
             SetFileInfo($"Updating Timeline for [ {name} ]");
@@ -9498,10 +9511,7 @@ namespace BetterLegacy.Editor.Managers
             MarkerEditor.inst.CreateMarkers();
             EventManager.inst.updateEvents();
 
-            if (ModCompatibility.sharedFunctions.ContainsKey("EventsCoreResetOffsets"))
-            {
-                ((Action)ModCompatibility.sharedFunctions["EventsCoreResetOffsets"])?.Invoke();
-            }
+            RTEventManager.inst.SetResetOffsets();
 
             SetFileInfo($"Setting first object of [ {name} ]");
             StartCoroutine(ObjectEditor.inst.ICreateTimelineObjects());
@@ -9547,6 +9557,10 @@ namespace BetterLegacy.Editor.Managers
                 yield break;
 
             themesLoading = true;
+
+            while (!EventEditor.inst || DataManager.inst.gameData is not GameData)
+                yield return null;
+
             DataManager.inst.CustomBeatmapThemes.Clear();
             DataManager.inst.BeatmapThemeIDToIndex.Clear();
             DataManager.inst.BeatmapThemeIndexToID.Clear();
@@ -12246,6 +12260,7 @@ namespace BetterLegacy.Editor.Managers
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.EventLabelsRenderLeft),
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.EventKeyframesRenderBinColor),
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.WaveformGenerate),
+            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.WaveformSaves),
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.WaveformRerender),
             new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.WaveformMode),
             new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.WaveformBGColor),
