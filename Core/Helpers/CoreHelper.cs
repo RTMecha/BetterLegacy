@@ -14,6 +14,7 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.UI;
+using CielaSpike;
 
 namespace BetterLegacy.Core.Helpers
 {
@@ -76,6 +77,7 @@ namespace BetterLegacy.Core.Helpers
 			UnityEngine.Object.Destroy(obj, t);
         }
 		public static Coroutine StartCoroutine(IEnumerator routine) => LegacyPlugin.inst.StartCoroutine(routine);
+		public static Coroutine StartCoroutineAsync(IEnumerator routine) => LegacyPlugin.inst.StartCoroutineAsync(routine);
 
         #endregion
 
