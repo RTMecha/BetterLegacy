@@ -39,6 +39,9 @@ using ObjectType = DataManager.GameData.BeatmapObject.ObjectType;
 
 namespace BetterLegacy.Editor.Managers
 {
+    /// <summary>
+    /// Editor
+    /// </summary>
     public class RTEditor : MonoBehaviour
     {
         public static RTEditor inst;
