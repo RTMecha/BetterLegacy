@@ -727,8 +727,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void DeleteThemeDelegate(DataManager.BeatmapTheme themeTmp)
         {
-            EditorManager.inst.ShowDialog("Warning Popup");
-            RTEditor.inst.RefreshWarningPopup("Are you sure you want to delete this theme?", delegate ()
+            RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this theme?", delegate ()
             {
                 ThemeEditor.inst.DeleteTheme(themeTmp);
                 EventEditor.inst.previewTheme.id = null;
@@ -784,8 +783,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 shuffle.onClick.AddListener(delegate ()
                 {
-                    EditorManager.inst.ShowDialog("Warning Popup");
-                    RTEditor.inst.RefreshWarningPopup("Are you sure you want to shuffle the theme ID? Any levels that use this theme will need to have their theme keyframes reassigned.", delegate ()
+                    RTEditor.inst.ShowWarningPopup("Are you sure you want to shuffle the theme ID? Any levels that use this theme will need to have their theme keyframes reassigned.", delegate ()
                     {
                         PreviewTheme.id = LSText.randomNumString(BeatmapTheme.IDLength);
                         EditorManager.inst.HideDialog("Warning Popup");

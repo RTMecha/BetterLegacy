@@ -63,8 +63,7 @@ namespace BetterLegacy.Patchers
             {
                 if (DataManager.inst.gameData.backgroundObjects.Count > 1)
                 {
-                    EditorManager.inst.ShowDialog("Warning Popup");
-                    RTEditor.inst.RefreshWarningPopup("Are you sure you want to delete all backgrounds?", delegate ()
+                    RTEditor.inst.ShowWarningPopup("Are you sure you want to delete all backgrounds?", delegate ()
                     {
                         BackgroundEditorManager.inst.DeleteAllBackgrounds();
                         EditorManager.inst.HideDialog("Warning Popup");

@@ -922,8 +922,7 @@ namespace BetterLegacy.Patchers
                 return false;
             }
 
-            EditorManager.inst.ShowDialog("Warning Popup");
-            RTEditor.inst.RefreshWarningPopup("Are you sure you want to quit to the main menu? Any unsaved progress will be lost!", delegate ()
+            RTEditor.inst.ShowWarningPopup("Are you sure you want to quit to the main menu? Any unsaved progress will be lost!", delegate ()
             {
                 if (Instance.savingBeatmap)
                 {
@@ -958,8 +957,8 @@ namespace BetterLegacy.Patchers
                 Instance.DisplayNotification("Please wait until the beatmap finishes saving!", 2f, EditorManager.NotificationType.Error, false);
                 return false;
             }
-            EditorManager.inst.ShowDialog("Warning Popup");
-            RTEditor.inst.RefreshWarningPopup("Are you sure you want to quit the game? Any unsaved progress will be lost!", delegate ()
+
+            RTEditor.inst.ShowWarningPopup("Are you sure you want to quit the game? Any unsaved progress will be lost!", delegate ()
             {
                 if (Instance.savingBeatmap)
                 {

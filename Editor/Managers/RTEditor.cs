@@ -12,6 +12,7 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Optimization.Objects;
+using BetterLegacy.Example;
 using CielaSpike;
 using Crosstales.FB;
 using HarmonyLib;
@@ -2405,8 +2406,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorHelper.AddEditorDropdown("Quit to Arcade", "", "File", titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, delegate ()
             {
-                EditorManager.inst.ShowDialog("Warning Popup");
-                RefreshWarningPopup("Are you sure you want to quit to the arcade? Any unsaved progress will be lost!", delegate ()
+                ShowWarningPopup("Are you sure you want to quit to the arcade? Any unsaved progress will be lost!", delegate ()
                 {
                     DG.Tweening.DOTween.Clear();
                     Updater.UpdateObjects(false);
@@ -2428,8 +2428,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 if (EditorManager.inst.hasLoadedLevel)
                 {
-                    EditorManager.inst.ShowDialog("Warning Popup");
-                    RefreshWarningPopup("Are you sure you want to switch to Arcade Mode? Any unsaved progress will be lost!", delegate ()
+                    ShowWarningPopup("Are you sure you want to switch to Arcade Mode? Any unsaved progress will be lost!", delegate ()
                     {
                         LevelManager.OnLevelEnd = delegate ()
                         {
@@ -2541,8 +2540,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                     else if (_val.Replace("\\", "/").Contains("/level.lsb"))
                     {
-                        EditorManager.inst.ShowDialog("Warning Popup");
-                        RefreshWarningPopup("Warning! Selecting a level will copy all of its contents to your editor, are you sure you want to do this?", delegate ()
+                        ShowWarningPopup("Warning! Selecting a level will copy all of its contents to your editor, are you sure you want to do this?", delegate ()
                         {
                             var path = _val.Replace("\\", "/").Replace("/level.lsb", "");
 
@@ -6239,7 +6237,7 @@ namespace BetterLegacy.Editor.Managers
                     textRectTransform.anchoredPosition = Vector2.zero;
                     textText.text = name;
                     textText.alignment = TextAnchor.MiddleCenter;
-                    textText.font = FontManager.inst.Inconsolata;
+                    textText.font = FontManager.inst.DefaultFont;
                     textText.fontSize = 20;
 
                     gameObject.AddComponent<ContrastColors>().Init(textText, gameObject.GetComponent<Image>());
@@ -9245,8 +9243,7 @@ namespace BetterLegacy.Editor.Managers
                     deleteButton.onClick.ClearAll();
                     deleteButton.onClick.AddListener(delegate ()
                     {
-                        EditorManager.inst.ShowDialog("Warning Popup");
-                        RefreshWarningPopup("Are you sure you want to delete this level? (It will be moved to a recycling folder)", delegate ()
+                        ShowWarningPopup("Are you sure you want to delete this level? (It will be moved to a recycling folder)", delegate ()
                         {
                             DeleteLevelFunction(levelName);
                             EditorManager.inst.DisplayNotification("Deleted level!", 2f, EditorManager.NotificationType.Success);
@@ -10215,6 +10212,21 @@ namespace BetterLegacy.Editor.Managers
         {
             EditorManager.inst.ShowDialog("Warning Popup");
             RefreshWarningPopup(warning, confirmDelegate, cancelDelegate, confirm, cancel);
+
+            if (ExampleManager.inst && ExampleManager.inst.Visible)
+            {
+                var warningPopup = EditorManager.inst.GetDialog("Warning Popup").Dialog.GetChild(0);
+                ExampleManager.inst.Move(
+                    new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0.4f, warningPopup.localPosition.x + 120f, Ease.SineOut),
+                        new FloatKeyframe(0.6f, warningPopup.localPosition.x + 140f, Ease.SineInOut),
+                    }, new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0.5f, warningPopup.localPosition.y + 200f, Ease.SineInOut),
+                    });
+                ExampleManager.inst.BrowsRaise();
+            }
         }
 
         public void RefreshWarningPopup(string warning, UnityAction confirmDelegate, UnityAction cancelDelegate, string confirm = "Yes", string cancel = "No")
@@ -12195,8 +12207,7 @@ namespace BetterLegacy.Editor.Managers
             new EditorProperty("Reset to Defaults", EditorProperty.ValueType.Function, EditorProperty.EditorPropCategory.General,
                 delegate ()
                 {
-                    EditorManager.inst.ShowDialog("Warning Popup");
-                    inst.RefreshWarningPopup("Are you sure you want to revert every config? THIS CANNOT BE UNDONE!",
+                    inst.ShowWarningPopup("Are you sure you want to revert every config? THIS CANNOT BE UNDONE!",
                         delegate ()
                         {
                             var list = EditorProperties.Where(x => x.configEntry != null).ToList();
@@ -12310,6 +12321,7 @@ namespace BetterLegacy.Editor.Managers
 
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.DragUI),
             new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.EditorTheme),
+            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.EditorFont),
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.RoundedUI),
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ShowModdedFeaturesInEditor),
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.HoverUIPlaySound),
