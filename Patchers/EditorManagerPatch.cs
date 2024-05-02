@@ -1172,11 +1172,43 @@ namespace BetterLegacy.Patchers
             yield break;
         }
 
+        [HarmonyPatch("SetMainTimelineZoom")]
+        [HarmonyPrefix]
+        static bool SetMainTimelineZoomPrefix(float __0, bool __1 = true)
+        {
+            if (__1)
+                Instance.RenderTimeline();
+
+            Instance.timelineScrollRectBar.value = AudioManager.inst.CurrentAudioSource.time / AudioManager.inst.CurrentAudioSource.clip.length;
+            Debug.LogFormat("{0}Set Timeline Zoom -> [{1}]", new object[] { Instance.className, Instance.Zoom });
+            return false;
+        }
+
         [HarmonyPatch("OpenedLevel", MethodType.Getter)]
         [HarmonyPrefix]
         static bool OpenedLevelPrefix(EditorManager __instance, ref bool __result)
         {
             __result = __instance.wasOpenLevel && __instance.hasLoadedLevel;
+            return false;
+        }
+
+        [HarmonyPatch("Zoom", MethodType.Setter)]
+        [HarmonyPrefix]
+        static bool ZoomSetterPrefix(EditorManager __instance, ref float value)
+        {
+            float num = __instance.zoomFloat;
+            __instance.zoomFloat = Mathf.Clamp01(value);
+            __instance.zoomVal = LSMath.InterpolateOverCurve(__instance.ZoomCurve, __instance.zoomBounds.x, __instance.zoomBounds.y, __instance.zoomFloat);
+            if (__instance.zoomFloat != num)
+            {
+                __instance.SetMainTimelineZoom(__instance.zoomVal, true, __instance.timelineScrollRectBar.value);
+            }
+            __instance.zoomSlider.onValueChanged.ClearAll();
+            __instance.zoomSlider.value = __instance.zoomFloat;
+            __instance.zoomSlider.onValueChanged.AddListener(delegate (float _val)
+            {
+                __instance.Zoom = _val;
+            });
             return false;
         }
     }
