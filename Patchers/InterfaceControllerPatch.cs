@@ -82,10 +82,8 @@ namespace BetterLegacy.Patchers
 				LoadInterface(__instance, null);
 			}
 
-			if (GameManager.inst == null)
-			{
+			if (!GameManager.inst)
 				MenuManager.inst.PlayMusic(__instance);
-            }
 
             return false;
 		}
@@ -124,180 +122,187 @@ namespace BetterLegacy.Patchers
 			{
 				__instance.SwitchBranch(__instance.interfaceSettings.returnBranch);
 			}
+
 			int num = 0;
-			foreach (GameObject gameObject in __instance.buttons)
+			foreach (var gameObject in __instance.buttons)
 			{
 				if (__instance.buttonSettings.Count > num && __instance.buttonSettings[num] != null && gameObject == EventSystem.current.currentSelectedGameObject)
 				{
-					if (__instance.buttonSettings[num].type == ButtonType.Int)
-					{
-						int num2 = DataManager.inst.GetSettingInt(__instance.buttonSettings[num].setting);
-						if (InputDataManager.inst.menuActions.Left.WasPressed)
-						{
-							num2 -= __instance.buttonSettings[num].value;
-							if (num2 < __instance.buttonSettings[num].min)
+					switch (__instance.buttonSettings[num].type)
+                    {
+						case ButtonType.Int:
 							{
-								AudioManager.inst.PlaySound("Block");
-								num2 = __instance.buttonSettings[num].min;
-							}
-							else
-							{
-								AudioManager.inst.PlaySound("LeftRight");
-								Debug.Log(string.Concat(new object[]
+								int num2 = DataManager.inst.GetSettingInt(__instance.buttonSettings[num].setting);
+								if (InputDataManager.inst.menuActions.Left.WasPressed)
 								{
+									num2 -= __instance.buttonSettings[num].value;
+									if (num2 < __instance.buttonSettings[num].min)
+									{
+										AudioManager.inst.PlaySound("Block");
+										num2 = __instance.buttonSettings[num].min;
+									}
+									else
+									{
+										AudioManager.inst.PlaySound("LeftRight");
+										Debug.Log(string.Concat(new object[]
+										{
 									"Subtract : ",
 									num2,
 									" : ",
 									__instance.buttonSettings[num].setting
-								}));
-								DataManager.inst.UpdateSettingInt(__instance.buttonSettings[num].setting, num2);
-							}
-						}
-						if (InputDataManager.inst.menuActions.Right.WasPressed)
-						{
-							num2 += __instance.buttonSettings[num].value;
-							if (num2 > __instance.buttonSettings[num].max)
-							{
-								AudioManager.inst.PlaySound("Block");
-								num2 = __instance.buttonSettings[num].max;
-							}
-							else
-							{
-								AudioManager.inst.PlaySound("LeftRight");
-								Debug.Log(string.Concat(new object[]
+										}));
+										DataManager.inst.UpdateSettingInt(__instance.buttonSettings[num].setting, num2);
+									}
+								}
+								if (InputDataManager.inst.menuActions.Right.WasPressed)
 								{
+									num2 += __instance.buttonSettings[num].value;
+									if (num2 > __instance.buttonSettings[num].max)
+									{
+										AudioManager.inst.PlaySound("Block");
+										num2 = __instance.buttonSettings[num].max;
+									}
+									else
+									{
+										AudioManager.inst.PlaySound("LeftRight");
+										Debug.Log(string.Concat(new object[]
+										{
 									"Add : ",
 									num2,
 									" : ",
 									__instance.buttonSettings[num].setting
-								}));
-								DataManager.inst.UpdateSettingInt(__instance.buttonSettings[num].setting, num2);
-							}
-						}
-					}
-					else if (__instance.buttonSettings[num].type == ButtonType.Bool)
-					{
-						bool flag = DataManager.inst.GetSettingBool(__instance.buttonSettings[num].setting);
-						if (InputDataManager.inst.menuActions.Left.WasPressed || InputDataManager.inst.menuActions.Right.WasPressed)
-						{
-							flag = !flag;
-							AudioManager.inst.PlaySound("LeftRight");
-							DataManager.inst.UpdateSettingBool(__instance.buttonSettings[num].setting, flag);
-						}
-					}
-					else if (__instance.buttonSettings[num].type == ButtonType.Vector2)
-					{
-						int num3 = DataManager.inst.GetSettingVector2DIndex(__instance.buttonSettings[num].setting);
-						if (InputDataManager.inst.menuActions.Left.WasPressed)
-						{
-							num3 -= __instance.buttonSettings[num].value;
-							if (num3 < __instance.buttonSettings[num].min)
-							{
-								AudioManager.inst.PlaySound("Block");
-								num3 = __instance.buttonSettings[num].min;
-							}
-							else
-							{
-								AudioManager.inst.PlaySound("LeftRight");
-								DataManager.inst.UpdateSettingVector2D(__instance.buttonSettings[num].setting, num3, DataManager.inst.resolutions.ToArray());
-							}
-						}
-						if (InputDataManager.inst.menuActions.Right.WasPressed)
-						{
-							num3 += __instance.buttonSettings[num].value;
-							if (num3 > __instance.buttonSettings[num].max)
-							{
-								AudioManager.inst.PlaySound("Block");
-								num3 = __instance.buttonSettings[num].max;
-							}
-							else
-							{
-								AudioManager.inst.PlaySound("LeftRight");
-								DataManager.inst.UpdateSettingVector2D(__instance.buttonSettings[num].setting, num3, DataManager.inst.resolutions.ToArray());
-							}
-						}
-					}
-					else if (__instance.buttonSettings[num].type == ButtonType.String)
-					{
-						DataManager.inst.GetSettingEnumName(__instance.buttonSettings[num].setting, 0);
-						int num4 = DataManager.inst.GetSettingEnum(__instance.buttonSettings[num].setting, 0);
-						if (__instance.buttonSettings[num].setting == "Language")
-						{
-							num4 = DataManager.inst.GetSettingInt(__instance.buttonSettings[num].setting + "_i");
-							DataManager.inst.GetSettingString(__instance.buttonSettings[num].setting);
-						}
-						if (InputDataManager.inst.menuActions.Left.WasPressed)
-						{
-							if (__instance.buttonSettings[num].setting == "Language")
-							{
-								num4 -= __instance.buttonSettings[num].value;
-								if (num4 < __instance.buttonSettings[num].min)
-								{
-									AudioManager.inst.PlaySound("Block");
-									num4 = __instance.buttonSettings[num].min;
-								}
-								else
-								{
-									AudioManager.inst.PlaySound("LeftRight");
-									DataManager.inst.UpdateSettingInt(__instance.buttonSettings[num].setting + "_i", num4);
-								}
-							}
-							else
-							{
-								num4--;
-								if (num4 < 0)
-								{
-									AudioManager.inst.PlaySound("Block");
-								}
-								else
-								{
-									AudioManager.inst.PlaySound("LeftRight");
-									DataManager.inst.UpdateSettingEnum(__instance.buttonSettings[num].setting, num4);
-									string settingEnumFunctionCall = DataManager.inst.GetSettingEnumFunctionCall(__instance.buttonSettings[num].setting, num4);
-									if (!string.IsNullOrEmpty(settingEnumFunctionCall))
-									{
-										__instance.StartCoroutine(handleEvent(__instance, null, settingEnumFunctionCall, true));
+										}));
+										DataManager.inst.UpdateSettingInt(__instance.buttonSettings[num].setting, num2);
 									}
 								}
-							}
-						}
-						if (InputDataManager.inst.menuActions.Right.WasPressed)
-						{
-							if (__instance.buttonSettings[num].setting == "Language")
+
+								break;
+                            }
+						case ButtonType.Bool:
 							{
-								num4 += __instance.buttonSettings[num].value;
-								if (num4 > __instance.buttonSettings[num].max)
+								bool enabled = DataManager.inst.GetSettingBool(__instance.buttonSettings[num].setting);
+								if (InputDataManager.inst.menuActions.Left.WasPressed || InputDataManager.inst.menuActions.Right.WasPressed)
 								{
-									AudioManager.inst.PlaySound("Block");
-									num4 = __instance.buttonSettings[num].max;
-								}
-								else
-								{
+									enabled = !enabled;
 									AudioManager.inst.PlaySound("LeftRight");
-									DataManager.inst.UpdateSettingInt(__instance.buttonSettings[num].setting + "_i", num4);
+									DataManager.inst.UpdateSettingBool(__instance.buttonSettings[num].setting, enabled);
 								}
-							}
-							else
+								break;
+                            }
+						case ButtonType.Vector2:
 							{
-								num4++;
-								if (num4 >= DataManager.inst.GetSettingEnumCount(__instance.buttonSettings[num].setting))
+								int vector2Index = DataManager.inst.GetSettingVector2DIndex(__instance.buttonSettings[num].setting);
+								if (InputDataManager.inst.menuActions.Left.WasPressed)
 								{
-									AudioManager.inst.PlaySound("Block");
-								}
-								else
-								{
-									AudioManager.inst.PlaySound("LeftRight");
-									DataManager.inst.UpdateSettingEnum(__instance.buttonSettings[num].setting, num4);
-									string settingEnumFunctionCall2 = DataManager.inst.GetSettingEnumFunctionCall(__instance.buttonSettings[num].setting, num4);
-									if (!string.IsNullOrEmpty(settingEnumFunctionCall2))
+									vector2Index -= __instance.buttonSettings[num].value;
+									if (vector2Index < __instance.buttonSettings[num].min)
 									{
-										__instance.StartCoroutine(handleEvent(__instance, null, settingEnumFunctionCall2, true));
+										AudioManager.inst.PlaySound("Block");
+										vector2Index = __instance.buttonSettings[num].min;
+									}
+									else
+									{
+										AudioManager.inst.PlaySound("LeftRight");
+										DataManager.inst.UpdateSettingVector2D(__instance.buttonSettings[num].setting, vector2Index, DataManager.inst.resolutions.ToArray());
 									}
 								}
-							}
-						}
+								if (InputDataManager.inst.menuActions.Right.WasPressed)
+								{
+									vector2Index += __instance.buttonSettings[num].value;
+									if (vector2Index > __instance.buttonSettings[num].max)
+									{
+										AudioManager.inst.PlaySound("Block");
+										vector2Index = __instance.buttonSettings[num].max;
+									}
+									else
+									{
+										AudioManager.inst.PlaySound("LeftRight");
+										DataManager.inst.UpdateSettingVector2D(__instance.buttonSettings[num].setting, vector2Index, DataManager.inst.resolutions.ToArray());
+									}
+								}
+								break;
+                            }
+						case ButtonType.String:
+							{
+								int enumIndex = DataManager.inst.GetSettingEnum(__instance.buttonSettings[num].setting, 0);
+								if (__instance.buttonSettings[num].setting == "Language")
+								{
+									enumIndex = DataManager.inst.GetSettingInt(__instance.buttonSettings[num].setting + "_i");
+									DataManager.inst.GetSettingString(__instance.buttonSettings[num].setting);
+								}
+								if (InputDataManager.inst.menuActions.Left.WasPressed)
+								{
+									if (__instance.buttonSettings[num].setting == "Language")
+									{
+										enumIndex -= __instance.buttonSettings[num].value;
+										if (enumIndex < __instance.buttonSettings[num].min)
+										{
+											AudioManager.inst.PlaySound("Block");
+											enumIndex = __instance.buttonSettings[num].min;
+										}
+										else
+										{
+											AudioManager.inst.PlaySound("LeftRight");
+											DataManager.inst.UpdateSettingInt(__instance.buttonSettings[num].setting + "_i", enumIndex);
+										}
+										break;
+									}
+
+									enumIndex--;
+									if (enumIndex < 0)
+									{
+										AudioManager.inst.PlaySound("Block");
+									}
+									else
+									{
+										AudioManager.inst.PlaySound("LeftRight");
+										DataManager.inst.UpdateSettingEnum(__instance.buttonSettings[num].setting, enumIndex);
+										string settingEnumFunctionCall = DataManager.inst.GetSettingEnumFunctionCall(__instance.buttonSettings[num].setting, enumIndex);
+										if (!string.IsNullOrEmpty(settingEnumFunctionCall))
+										{
+											__instance.StartCoroutine(handleEvent(__instance, null, settingEnumFunctionCall, true));
+										}
+									}
+								}
+								if (InputDataManager.inst.menuActions.Right.WasPressed)
+								{
+									if (__instance.buttonSettings[num].setting == "Language")
+									{
+										enumIndex += __instance.buttonSettings[num].value;
+										if (enumIndex > __instance.buttonSettings[num].max)
+										{
+											AudioManager.inst.PlaySound("Block");
+											enumIndex = __instance.buttonSettings[num].max;
+										}
+										else
+										{
+											AudioManager.inst.PlaySound("LeftRight");
+											DataManager.inst.UpdateSettingInt(__instance.buttonSettings[num].setting + "_i", enumIndex);
+										}
+										break;
+									}
+
+									enumIndex++;
+									if (enumIndex >= DataManager.inst.GetSettingEnumCount(__instance.buttonSettings[num].setting))
+									{
+										AudioManager.inst.PlaySound("Block");
+									}
+									else
+									{
+										AudioManager.inst.PlaySound("LeftRight");
+										DataManager.inst.UpdateSettingEnum(__instance.buttonSettings[num].setting, enumIndex);
+										string settingEnumFunctionCall2 = DataManager.inst.GetSettingEnumFunctionCall(__instance.buttonSettings[num].setting, enumIndex);
+										if (!string.IsNullOrEmpty(settingEnumFunctionCall2))
+										{
+											__instance.StartCoroutine(handleEvent(__instance, null, settingEnumFunctionCall2, true));
+										}
+									}
+								}
+								break;
+                            }
 					}
 				}
+
 				if (gameObject == EventSystem.current.currentSelectedGameObject)
 				{
 					gameObject.transform.Find("bg").GetComponent<Image>().color = __instance.interfaceSettings.borderHighlightColor;
@@ -373,79 +378,82 @@ namespace BetterLegacy.Patchers
 				}
 				if (!__instance.screenGlitch)
 				{
-					if (__instance.buttonSettings[num].type == ButtonType.Int)
-					{
-						int num5 = DataManager.inst.GetSettingInt(__instance.buttonSettings[num].setting);
-						num5 = Mathf.Clamp(num5, 0, 9);
-						if (gameObject.transform.Find("float").GetComponent<TextMeshProUGUI>())
-						{
-							gameObject.transform.Find("float").GetComponent<TextMeshProUGUI>().text = "< [         ] >";
-							gameObject.transform.Find("float").GetComponent<TextMeshProUGUI>().text = gameObject.transform.Find("float").GetComponent<TextMeshProUGUI>().text.Insert(num5 + 3, "■");
-						}
-						if (gameObject.transform.Find("float").GetComponent<TextMeshPro>())
-						{
-							gameObject.transform.Find("float").GetComponent<TextMeshPro>().text = "< [         ] >";
-							gameObject.transform.Find("float").GetComponent<TextMeshPro>().text = gameObject.transform.Find("float").GetComponent<TextMeshPro>().text.Insert(num5 + 3, "■");
-						}
-					}
-					else if (__instance.buttonSettings[num].type == ButtonType.Bool)
-					{
-						bool settingBool = DataManager.inst.GetSettingBool(__instance.buttonSettings[num].setting);
-						if (gameObject.transform.Find("float").GetComponent<TextMeshProUGUI>())
-							gameObject.transform.Find("float").GetComponent<TextMeshProUGUI>().text = "< [ " + (settingBool ? "true" : "false") + " ] >";
-						if (gameObject.transform.Find("float").GetComponent<TextMeshPro>())
-							gameObject.transform.Find("float").GetComponent<TextMeshPro>().text = "< [ " + (settingBool ? "true" : "false") + " ] >";
-					}
-					else if (__instance.buttonSettings[num].type == ButtonType.Vector2)
-					{
-						Vector2 settingVector2D = DataManager.inst.GetSettingVector2D(__instance.buttonSettings[num].setting);
-						if (gameObject.transform.Find("vector2").GetComponent<TextMeshProUGUI>())
-							gameObject.transform.Find("vector2").GetComponent<TextMeshProUGUI>().text = string.Concat(new object[]
+					switch (__instance.buttonSettings[num].type)
+                    {
+						case ButtonType.Int:
 							{
-								"< [ ",
-								settingVector2D.x,
-								", ",
-								settingVector2D.y,
-								" ] >"
-							});
-						if (gameObject.transform.Find("vector2").GetComponent<TextMeshPro>())
-							gameObject.transform.Find("vector2").GetComponent<TextMeshPro>().text = string.Concat(new object[]
+								int integer = DataManager.inst.GetSettingInt(__instance.buttonSettings[num].setting);
+								integer = Mathf.Clamp(integer, 0, 9);
+
+								var textMeshProUGUI = gameObject.transform.Find("float").GetComponent<TextMeshProUGUI>();
+								var textMeshPro = gameObject.transform.Find("float").GetComponent<TextMeshPro>();
+
+								if (textMeshProUGUI)
+									textMeshProUGUI.text = "< [         ] >".Insert(integer + 3, "■");
+
+								if (textMeshPro)
+									textMeshPro.text = "< [         ] >".Insert(integer + 3, "■");
+
+								break;
+                            }
+						case ButtonType.Bool:
 							{
-								"< [ ",
-								settingVector2D.x,
-								", ",
-								settingVector2D.y,
-								" ] >"
-							});
-					}
-					else if (__instance.buttonSettings[num].type == ButtonType.String)
-					{
-						string str;
-						if (__instance.buttonSettings[num].setting == "Language")
-						{
-							str = DataManager.inst.GetLanguage(DataManager.inst.GetSettingInt(__instance.buttonSettings[num].setting + "_i", 0));
-						}
-						else
-						{
-							str = DataManager.inst.GetSettingEnumName(__instance.buttonSettings[num].setting, 0);
-						}
-						if (gameObject.transform.Find("float").GetComponent<TextMeshProUGUI>())
-							gameObject.transform.Find("float").GetComponent<TextMeshProUGUI>().text = "< [ " + str + " ] >";
-						if (gameObject.transform.Find("float").GetComponent<TextMeshPro>())
-							gameObject.transform.Find("float").GetComponent<TextMeshPro>().text = "< [ " + str + " ] >";
+								var textMeshProUGUI = gameObject.transform.Find("float").GetComponent<TextMeshProUGUI>();
+								var textMeshPro = gameObject.transform.Find("float").GetComponent<TextMeshPro>();
+
+								bool settingBool = DataManager.inst.GetSettingBool(__instance.buttonSettings[num].setting);
+								if (textMeshProUGUI)
+									textMeshProUGUI.text = "< [ " + (settingBool ? "true" : "false") + " ] >";
+								if (textMeshPro)
+									textMeshPro.text = "< [ " + (settingBool ? "true" : "false") + " ] >";
+
+								break;
+                            }
+						case ButtonType.Vector2:
+							{
+								var textMeshProUGUI = gameObject.transform.Find("vector2").GetComponent<TextMeshProUGUI>();
+								var textMeshPro = gameObject.transform.Find("vector2").GetComponent<TextMeshPro>();
+
+								Vector2 settingVector2D = DataManager.inst.GetSettingVector2D(__instance.buttonSettings[num].setting);
+								if (textMeshProUGUI)
+									textMeshProUGUI.text = $"< [ {settingVector2D.x}, {settingVector2D.y} ] >";
+								if (textMeshPro)
+									textMeshPro.text = $"< [ {settingVector2D.x}, {settingVector2D.y} ] >";
+
+								break;
+                            }
+						case ButtonType.String:
+							{
+								var textMeshProUGUI = gameObject.transform.Find("float").GetComponent<TextMeshProUGUI>();
+								var textMeshPro = gameObject.transform.Find("float").GetComponent<TextMeshPro>();
+
+								string str = __instance.buttonSettings[num].setting == "Language" ?
+									DataManager.inst.GetLanguage(DataManager.inst.GetSettingInt(__instance.buttonSettings[num].setting + "_i", 0)) :
+									DataManager.inst.GetSettingEnumName(__instance.buttonSettings[num].setting, 0);
+
+								if (textMeshProUGUI)
+									textMeshProUGUI.text = "< [ " + str + " ] >";
+								if (textMeshPro)
+									textMeshPro.text = "< [ " + str + " ] >";
+
+								break;
+                            }
 					}
 				}
 				num++;
 			}
+
 			__instance.SpeedUp = InputDataManager.inst.menuActions.Submit.IsPressed;
 			if (EventSystem.current.currentSelectedGameObject == null && __instance.buttonsActive)
 			{
 				EventSystem.current.SetSelectedGameObject(___lastSelectedObj);
 			}
+
 			if (___lastSelectedObj != EventSystem.current.currentSelectedGameObject && __instance.screenDone)
 			{
 				AudioManager.inst.PlaySound("UpDown");
 			}
+
 			___lastSelectedObj = EventSystem.current.currentSelectedGameObject;
 			return false;
 		}
@@ -935,25 +943,16 @@ namespace BetterLegacy.Patchers
 			{
 				case ElementType.Text:
 					{
-						string text5;
-						if (_element.data.Count > 0)
-						{
-							text5 = _element.data[0];
-						}
-						else
-						{
-							text5 = " ";
-							Debug.Log(_element.branch + " - " + childCount);
-						}
-						string dataText2 = ((_element.data.Count > __instance.interfaceSettings.language) ? _element.data[__instance.interfaceSettings.language] : text5);
-						var gameObject = Instantiate(__instance.TextPrefab, Vector3.zero, Quaternion.identity);
-						gameObject.name = "button";
-						gameObject.transform.SetParent(__instance.MainPanel);
+						string text5 = _element.data.Count > 0 ? _element.data[0] : " ";
+
+						string dataText2 = (_element.data.Count > __instance.interfaceSettings.language) ? _element.data[__instance.interfaceSettings.language] : text5;
+						var gameObject = __instance.TextPrefab.Duplicate(__instance.MainPanel, $"[{childCount}] Text");
 						gameObject.transform.localScale = Vector3.one;
-						gameObject.name = string.Format("[{0}] Text", childCount);
 
 						var gameObject3 = gameObject.transform.Find("bg").gameObject;
 						var text = gameObject.transform.Find("text").gameObject;
+
+						var textMeshProUGUI = text.GetComponent<TextMeshProUGUI>();
 
 						if (_element.settings.ContainsKey("reactiveScale"))
 						{
@@ -969,14 +968,15 @@ namespace BetterLegacy.Patchers
 								0
 							};
 
-							if (_element.settings.ContainsKey("reativeScaleIntensityX"))
-								audio.intensity[0] = float.Parse(_element.settings["reactiveScaleIntensityX"]);
-							if (_element.settings.ContainsKey("reactiveScaleIntensityY"))
-								audio.intensity[1] = float.Parse(_element.settings["reactiveScaleIntensityY"]);
-							if (_element.settings.ContainsKey("reactiveScaleChannelX"))
-								audio.channels[0] = int.Parse(_element.settings["reactiveScaleChannelX"]);
-							if (_element.settings.ContainsKey("reactiveScaleChannelY"))
-								audio.channels[1] = int.Parse(_element.settings["reactiveScaleChannelY"]);
+							if (_element.settings.ContainsKey("reativeScaleIntensityX") && float.TryParse(_element.settings["reactiveScaleIntensityX"], out float reativeScaleIntensityX))
+								audio.intensity[0] = reativeScaleIntensityX;
+							if (_element.settings.ContainsKey("reactiveScaleIntensityY") && float.TryParse(_element.settings["reactiveScaleIntensityY"], out float reativeScaleIntensityY))
+								audio.intensity[1] = reativeScaleIntensityY;
+
+							if (_element.settings.ContainsKey("reactiveScaleChannelX") && int.TryParse(_element.settings["reactiveScaleChannelX"], out int reactiveScaleChannelX))
+								audio.channels[0] = reactiveScaleChannelX;
+							if (_element.settings.ContainsKey("reactiveScaleChannelY") && int.TryParse(_element.settings["reactiveScaleChannelY"], out int reactiveScaleChannelY))
+								audio.channels[1] = reactiveScaleChannelY;
 						}
 
 						if (_element.settings.ContainsKey("bg-color"))
@@ -998,16 +998,16 @@ namespace BetterLegacy.Patchers
 						{
 							if (_element.settings["text-color"] == "bg-color")
 							{
-								text.GetComponent<TextMeshProUGUI>().color = __instance.interfaceSettings.bgColor;
+								textMeshProUGUI.color = __instance.interfaceSettings.bgColor;
 							}
 							else
 							{
-								text.GetComponent<TextMeshProUGUI>().color = LSColors.HexToColor(_element.settings["text-color"]);
+								textMeshProUGUI.color = LSColors.HexToColor(_element.settings["text-color"]);
 							}
 						}
 						else
 						{
-							text.GetComponent<TextMeshProUGUI>().color = __instance.interfaceSettings.textColor;
+							textMeshProUGUI.color = __instance.interfaceSettings.textColor;
 						}
 
 						if (string.IsNullOrEmpty(dataText2))
@@ -1022,57 +1022,57 @@ namespace BetterLegacy.Patchers
 								case "left":
 									if (!_element.settings.ContainsKey("valignment"))
 									{
-										text.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.MidlineLeft;
+										textMeshProUGUI.alignment = TextAlignmentOptions.MidlineLeft;
 										break;
 									}
 									switch (_element.settings["valignment"])
 									{
 										case "top":
-											text.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.TopLeft;
+											textMeshProUGUI.alignment = TextAlignmentOptions.TopLeft;
 											break;
 										case "center":
-											text.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.MidlineLeft;
+											textMeshProUGUI.alignment = TextAlignmentOptions.MidlineLeft;
 											break;
 										case "bottom":
-											text.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.BottomLeft;
+											textMeshProUGUI.alignment = TextAlignmentOptions.BottomLeft;
 											break;
 									}
 									break;
 								case "center":
 									if (!_element.settings.ContainsKey("valignment"))
 									{
-										text.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.Midline;
+										textMeshProUGUI.alignment = TextAlignmentOptions.Midline;
 										break;
 									}
 									switch (_element.settings["valignment"])
 									{
 										case "top":
-											text.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.Top;
+											textMeshProUGUI.alignment = TextAlignmentOptions.Top;
 											break;
 										case "center":
-											text.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.Midline;
+											textMeshProUGUI.alignment = TextAlignmentOptions.Midline;
 											break;
 										case "bottom":
-											text.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.Bottom;
+											textMeshProUGUI.alignment = TextAlignmentOptions.Bottom;
 											break;
 									}
 									break;
 								case "right":
 									if (!_element.settings.ContainsKey("valignment"))
 									{
-										text.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.MidlineRight;
+										textMeshProUGUI.alignment = TextAlignmentOptions.MidlineRight;
 										break;
 									}
 									switch (_element.settings["valignment"])
 									{
 										case "top":
-											text.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.TopRight;
+											textMeshProUGUI.alignment = TextAlignmentOptions.TopRight;
 											break;
 										case "center":
-											text.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.MidlineRight;
+											textMeshProUGUI.alignment = TextAlignmentOptions.MidlineRight;
 											break;
 										case "bottom":
-											text.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.BottomRight;
+											textMeshProUGUI.alignment = TextAlignmentOptions.BottomRight;
 											break;
 									}
 									break;
@@ -1083,13 +1083,13 @@ namespace BetterLegacy.Patchers
 							switch (_element.settings["valignment"])
 							{
 								case "top":
-									text.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.TopLeft;
+									textMeshProUGUI.alignment = TextAlignmentOptions.TopLeft;
 									break;
 								case "center":
-									text.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.MidlineLeft;
+									textMeshProUGUI.alignment = TextAlignmentOptions.MidlineLeft;
 									break;
 								case "bottom":
-									text.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.BottomLeft;
+									textMeshProUGUI.alignment = TextAlignmentOptions.BottomLeft;
 									break;
 							}
 						}
@@ -1113,48 +1113,42 @@ namespace BetterLegacy.Patchers
 							if (text != null)
 							{
 								tempText = tempText + words[i] + " ";
-								text.GetComponent<TextMeshProUGUI>().text = tempText + ((i % 2 == 0) ? "▓▒░" : "▒░░");
+								textMeshProUGUI.text = tempText + ((i % 2 == 0) ? "▓▒░" : "▒░░");
 							}
 							yield return new WaitForSeconds(seconds);
 						}
-						if (_element.settings.ContainsKey("font-style") && text != null)
+
+						if (_element.settings.ContainsKey("font-style"))
 						{
 							switch (_element.settings["font-style"])
 							{
 								case "light":
-									text.GetComponent<TextMeshProUGUI>().fontStyle = FontStyles.Italic;
+									textMeshProUGUI.fontStyle = FontStyles.Italic;
 									break;
 								case "normal":
-									text.GetComponent<TextMeshProUGUI>().fontStyle = FontStyles.Normal;
+									textMeshProUGUI.fontStyle = FontStyles.Normal;
 									break;
 								case "bold":
-									text.GetComponent<TextMeshProUGUI>().fontStyle = FontStyles.Bold;
+									textMeshProUGUI.fontStyle = FontStyles.Bold;
 									break;
 							}
 						}
-						else if (text != null)
+						else
 						{
-							text.GetComponent<TextMeshProUGUI>().fontStyle = FontStyles.Normal;
+							textMeshProUGUI.fontStyle = FontStyles.Normal;
 						}
-						if (text != null)
-						{
-							text.GetComponent<TextMeshProUGUI>().text = dataText2;
-						}
+
+						textMeshProUGUI.text = dataText2;
 						break;
 					}
 				case ElementType.Buttons:
 					{
-						GameObject gameObject = Instantiate(__instance.ButtonElementPrefab, Vector3.zero, Quaternion.identity);
-						gameObject.name = "button";
-						gameObject.transform.SetParent(__instance.MainPanel);
+						var gameObject = __instance.ButtonElementPrefab.Duplicate(__instance.MainPanel, $"[{childCount} Button Holder]");
 						gameObject.transform.localScale = Vector3.one;
-						gameObject.name = string.Format("[{0}] Button Holder", childCount);
+
 						if (_element.settings.ContainsKey("width"))
-						{
-							float result = 0.5f;
-							float.TryParse(_element.settings["width"], out result);
-							gameObject.GetComponent<LayoutElement>().preferredWidth = result * 1792f;
-						}
+							gameObject.GetComponent<LayoutElement>().preferredWidth = Parser.TryParse(_element.settings["width"], 0.5f) * 1792f;
+
 						if (_element.settings.ContainsKey("orientation"))
 						{
 							if (_element.settings["orientation"] == "horizontal")
@@ -1171,29 +1165,28 @@ namespace BetterLegacy.Patchers
 								DestroyImmediate(gameObject.GetComponent<VerticalLayoutGroup>());
 								var gridLayoutGroup = gameObject.AddComponent<GridLayoutGroup>();
 								gridLayoutGroup.spacing = new Vector2(16f, 16f);
-								float result2 = 1f;
+
+								float gridH = 1f;
 								if (_element.settings.ContainsKey("grid_h"))
-								{
-									float.TryParse(_element.settings["grid_h"], out result2);
-								}
-								int result3 = 0;
+									float.TryParse(_element.settings["grid_h"], out gridH);
+
+								int gridCorner = 0;
 								if (_element.settings.ContainsKey("grid_corner"))
-								{
-									int.TryParse(_element.settings["grid_corner"], out result3);
-								}
-								float result4 = 1f;
+									int.TryParse(_element.settings["grid_corner"], out gridCorner);
+
+								float gridV = 1f;
 								if (_element.settings.ContainsKey("grid_v"))
-								{
-									float.TryParse(_element.settings["grid_v"], out result4);
-								}
-								gridLayoutGroup.cellSize = new Vector2((1792f - 16f * (result2 - 1f)) / result2, result4 * 54f);
-								gridLayoutGroup.childAlignment = (TextAnchor)result3;
+									float.TryParse(_element.settings["grid_v"], out gridV);
+
+								gridLayoutGroup.cellSize = new Vector2((1792f - 16f * (gridH - 1f)) / gridH, gridV * 54f);
+								gridLayoutGroup.childAlignment = (TextAnchor)gridCorner;
 							}
 						}
 						else
 						{
 							gameObject.GetComponent<HorizontalLayoutGroup>().enabled = false;
 						}
+
 						string[] array = ((_element.data.Count > __instance.interfaceSettings.language) ? _element.data[__instance.interfaceSettings.language] : _element.data[0]).Split(new string[1] { "&&" }, StringSplitOptions.RemoveEmptyEntries);
 						__instance.buttonSettings.Clear();
 						if (_element.settings.ContainsKey("buttons"))
@@ -1282,9 +1275,12 @@ namespace BetterLegacy.Patchers
 								gameObject2 = Instantiate(__instance.ButtonPrefab, Vector3.zero, Quaternion.identity);
 								gameObject2.name = "button";
 							}
+
 							gameObject2.transform.SetParent(gameObject.transform);
 							gameObject2.transform.localScale = Vector3.one;
 							gameObject2.name = string.Format("[{0}][{1}] Button", childCount, m);
+
+							var textMeshProUGUI = gameObject2.transform.Find("text").GetComponent<TextMeshProUGUI>();
 
 							if (_element.settings.ContainsKey("reactiveScale"))
 							{
@@ -1300,14 +1296,15 @@ namespace BetterLegacy.Patchers
 									0
 								};
 
-								if (_element.settings.ContainsKey("reactiveScaleIntensityX"))
-									audio.intensity[0] = float.Parse(_element.settings["reactiveScaleIntensityX"]);
-								if (_element.settings.ContainsKey("reactiveScaleIntensityY"))
-									audio.intensity[1] = float.Parse(_element.settings["reactiveScaleIntensityY"]);
-								if (_element.settings.ContainsKey("reactiveScaleChannelX"))
-									audio.channels[0] = int.Parse(_element.settings["reactiveScaleChannelX"]);
-								if (_element.settings.ContainsKey("reactiveScaleChannelY"))
-									audio.channels[1] = int.Parse(_element.settings["reactiveScaleChannelY"]);
+								if (_element.settings.ContainsKey("reativeScaleIntensityX") && float.TryParse(_element.settings["reactiveScaleIntensityX"], out float reativeScaleIntensityX))
+									audio.intensity[0] = reativeScaleIntensityX;
+								if (_element.settings.ContainsKey("reactiveScaleIntensityY") && float.TryParse(_element.settings["reactiveScaleIntensityY"], out float reativeScaleIntensityY))
+									audio.intensity[1] = reativeScaleIntensityY;
+
+								if (_element.settings.ContainsKey("reactiveScaleChannelX") && int.TryParse(_element.settings["reactiveScaleChannelX"], out int reactiveScaleChannelX))
+									audio.channels[0] = reactiveScaleChannelX;
+								if (_element.settings.ContainsKey("reactiveScaleChannelY") && int.TryParse(_element.settings["reactiveScaleChannelY"], out int reactiveScaleChannelY))
+									audio.channels[1] = reactiveScaleChannelY;
 							}
 
 							if (_element.settings.ContainsKey("alignment"))
@@ -1317,57 +1314,57 @@ namespace BetterLegacy.Patchers
 									case "left":
 										if (!_element.settings.ContainsKey("valignment"))
 										{
-											gameObject2.transform.GetChild(1).GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.MidlineLeft;
+											textMeshProUGUI.alignment = TextAlignmentOptions.MidlineLeft;
 											break;
 										}
 										switch (_element.settings["valignment"])
 										{
 											case "top":
-												gameObject2.transform.GetChild(1).GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.TopLeft;
+												textMeshProUGUI.alignment = TextAlignmentOptions.TopLeft;
 												break;
 											case "center":
-												gameObject2.transform.GetChild(1).GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.MidlineLeft;
+												textMeshProUGUI.alignment = TextAlignmentOptions.MidlineLeft;
 												break;
 											case "bottom":
-												gameObject2.transform.GetChild(1).GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.BottomLeft;
+												textMeshProUGUI.alignment = TextAlignmentOptions.BottomLeft;
 												break;
 										}
 										break;
 									case "center":
 										if (!_element.settings.ContainsKey("valignment"))
 										{
-											gameObject2.transform.GetChild(1).GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.Midline;
+											textMeshProUGUI.alignment = TextAlignmentOptions.Midline;
 											break;
 										}
 										switch (_element.settings["valignment"])
 										{
 											case "top":
-												gameObject2.transform.GetChild(1).GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.Top;
+												textMeshProUGUI.alignment = TextAlignmentOptions.Top;
 												break;
 											case "center":
-												gameObject2.transform.GetChild(1).GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.Midline;
+												textMeshProUGUI.alignment = TextAlignmentOptions.Midline;
 												break;
 											case "bottom":
-												gameObject2.transform.GetChild(1).GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.Bottom;
+												textMeshProUGUI.alignment = TextAlignmentOptions.Bottom;
 												break;
 										}
 										break;
 									case "right":
 										if (!_element.settings.ContainsKey("valignment"))
 										{
-											gameObject2.transform.GetChild(1).GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.MidlineRight;
+											textMeshProUGUI.alignment = TextAlignmentOptions.MidlineRight;
 											break;
 										}
 										switch (_element.settings["valignment"])
 										{
 											case "top":
-												gameObject2.transform.GetChild(1).GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.TopRight;
+												textMeshProUGUI.alignment = TextAlignmentOptions.TopRight;
 												break;
 											case "center":
-												gameObject2.transform.GetChild(1).GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.MidlineRight;
+												textMeshProUGUI.alignment = TextAlignmentOptions.MidlineRight;
 												break;
 											case "bottom":
-												gameObject2.transform.GetChild(1).GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.BottomRight;
+												textMeshProUGUI.alignment = TextAlignmentOptions.BottomRight;
 												break;
 										}
 										break;
@@ -1378,13 +1375,13 @@ namespace BetterLegacy.Patchers
 								switch (_element.settings["valignment"])
 								{
 									case "top":
-										gameObject2.transform.GetChild(1).GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.TopLeft;
+										textMeshProUGUI.alignment = TextAlignmentOptions.TopLeft;
 										break;
 									case "center":
-										gameObject2.transform.GetChild(1).GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.Left;
+										textMeshProUGUI.alignment = TextAlignmentOptions.Left;
 										break;
 									case "bottom":
-										gameObject2.transform.GetChild(1).GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.BottomLeft;
+										textMeshProUGUI.alignment = TextAlignmentOptions.BottomLeft;
 										break;
 								}
 							}
@@ -1393,10 +1390,11 @@ namespace BetterLegacy.Patchers
 							{
 								EventSystem.current.SetSelectedGameObject(gameObject2);
 							}
-							gameObject2.transform.Find("text").GetComponent<TextMeshProUGUI>().text = __instance.ParseText(array6[0]);
+
+							textMeshProUGUI.text = __instance.ParseText(array6[0]);
 							if (array6[0] == "")
 							{
-								Navigation navigation = default(Navigation);
+								Navigation navigation = default;
 								navigation.mode = Navigation.Mode.None;
 								gameObject2.GetComponent<Button>().navigation = navigation;
 								gameObject2.transform.Find("bg").GetComponent<Image>().enabled = false;
