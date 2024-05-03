@@ -92,8 +92,8 @@ namespace BetterLegacy.Configs
 
         void MusicChanged(object sender, EventArgs e)
         {
-            if (!EditorManager.inst && ArcadeManager.inst && ArcadeManager.inst.ic)
-                MenuManager.inst.PlayMusic(ArcadeManager.inst.ic);
+            if (!EditorManager.inst && MenuManager.inst.ic)
+                MenuManager.inst.PlayMusic();
         }
     }
 }
