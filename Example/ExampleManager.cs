@@ -166,11 +166,30 @@ namespace BetterLegacy.Example
 
 		public Dictionary<string, Dialogue> dialogueDictionary = new Dictionary<string, Dialogue>
 		{
-			{ "LoadedLevel", new Dialogue(new string[] { "Level has loaded! Have fun building.", "Have fun!", "I hope you enjoy the building process.", "Whatcha building today?" }, SayAnyways, delegate () { }) },
-			{ "OnPreview", new Dialogue(new string[] { "This looks amazing so far! :3", "I think it could use a little more something...", "Huh?", "This just needs more work... I think..." }, HasLoadedLevel, delegate ()
-			{
-
-			}) },
+			{ "LoadedLevel", new Dialogue(new string[]
+				{
+					"Level has loaded! Have fun building.",
+					"Have fun!",
+					"I hope you enjoy the building process!",
+					"What are you building today?",
+					"Huh?",
+				}, SayAnyways, delegate () { })
+			},
+			{ "LoadedNewLevel", new Dialogue(new string[]
+				{
+					"Yay, a new level!",
+					"Oh, it's a new level?",
+					"What's this level gonna be?",
+				}, SayAnyways, delegate () { })
+			},
+			{ "OnPreview", new Dialogue(new string[]
+				{
+					"This looks amazing so far! :3",
+					"I think it could use a little more something...",
+					"Huh?",
+					"This just needs more work... I think..."
+				}, HasLoadedLevel, delegate () { })
+			},
 		};
 
 		public List<Dialogue> occasionalDialogues = new List<Dialogue>
@@ -230,11 +249,21 @@ namespace BetterLegacy.Example
 			new Dialogue("Are you there?", ApplicationNotFocused),
 			new Dialogue("Uhhh...", ApplicationNotFocused),
 			new Dialogue("Where'd you go?", ApplicationNotFocused),
+			new Dialogue("Super rare dialogue", () => UnityEngine.Random.Range(0, 10000) > 9990),
 		};
 
 		float repeat = 60f;
 		bool said = false;
 		public bool canSayThing = false;
+
+		public void SayDialogue(string dialogueName)
+        {
+			if (!dialogueDictionary.ContainsKey(dialogueName))
+				return;
+
+			var dialogues = dialogueDictionary[dialogueName].dialogues;
+			Say(dialogues[UnityEngine.Random.Range(0, dialogues.Length)]);
+		}
 
 		public static bool CanSay() => inst.canSayThing;
 
@@ -279,18 +308,17 @@ namespace BetterLegacy.Example
 				float t = time % repeat;
 				if (t > repeat - 1f)
 				{
-					if (!said)
+					if (said)
+						return;
+
+					said = true;
+					int random = UnityEngine.Random.Range(0, occasionalDialogues.Count - 1);
+
+					if (occasionalDialogues[random].CanSay)
 					{
-						said = true;
-						int random = UnityEngine.Random.Range(0, occasionalDialogues.Count - 1);
-
-						if (occasionalDialogues[random].CanSay)
-                        {
-							Say(occasionalDialogues[random].text);
-							occasionalDialogues[random].Action();
-                        }
+						Say(occasionalDialogues[random].text);
+						occasionalDialogues[random].Action();
 					}
-
 				}
 				else
 					said = false;
@@ -620,8 +648,6 @@ namespace BetterLegacy.Example
 
 		public bool talking = false;
 
-		public static bool addedOnLevelLoad = false;
-
 		public bool downloadMode = false;
 
 		/// <summary>
@@ -671,6 +697,17 @@ namespace BetterLegacy.Example
 
 			if (Input.GetKeyDown(ExampleConfig.Instance.ExampleVisiblityToggle.Value) && !LSHelpers.IsUsingInputField())
 				ExampleConfig.Instance.ExampleVisible.Value = !ExampleConfig.Instance.ExampleVisible.Value;
+
+			if (ProjectPlannerManager.inst && animations.Where(x => x.name.Contains("DIALOGUE: ") && x.playing).Count() < 1)
+				foreach (var schedule in ProjectPlannerManager.inst.planners.Where(x => x.PlannerType == ProjectPlannerManager.PlannerItem.Type.Schedule).Select(x => x as ProjectPlannerManager.ScheduleItem))
+				{
+					if (!schedule.hasBeenChecked && schedule.IsActive)
+					{
+						schedule.hasBeenChecked = true;
+						Say($"Reminding you about your schedule \"{schedule.Description}\" at {schedule.DateTime}");
+						ProjectPlannerManager.inst.SaveSchedules();
+					}
+				}
 
 			update?.Invoke();
 
@@ -749,18 +786,6 @@ namespace BetterLegacy.Example
 					baseCanvas.SetActive(ExampleConfig.Instance.EnabledInMenus.Value);
 
 				canvas.scaleFactor = CoreHelper.ScreenScale;
-			}
-
-			if (!addedOnLevelLoad && ModCompatibility.sharedFunctions.ContainsKey("EditorOnLoadLevel"))
-			{
-				addedOnLevelLoad = true;
-				Action action = (Action)ModCompatibility.sharedFunctions["EditorOnLoadLevel"];
-				action += delegate ()
-				{
-					var dialogues = dialogueDictionary["LoadedLevel"].dialogues;
-					Say(dialogues[dialogues.Length - 1]);
-				};
-				ModCompatibility.sharedFunctions["EditorOnLoadLevel"] = action;
 			}
 		}
 
@@ -2935,6 +2960,7 @@ namespace BetterLegacy.Example
 				return;
 			}
 
+			CoreHelper.Log($"Example says: {dialogue}");
 			var animation = new RTAnimation("DIALOGUE: " + dialogue);
 
 			var ogMouth = mouthLower.localScale.y;
