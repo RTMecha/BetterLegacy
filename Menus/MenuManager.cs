@@ -309,9 +309,9 @@ namespace BetterLegacy.Menus
 						}
 					}
 
-					int num = 1;
+					int loop = 1;
 					if (settings.ContainsKey("loop"))
-						num = Parser.TryParse(settings["loop"], 1);
+						loop = Parser.TryParse(settings["loop"], 1);
 
 					if (jnbranch[i]["elements"][j]["data"] != null)
 					{
@@ -321,20 +321,54 @@ namespace BetterLegacy.Menus
 					else
 						CoreHelper.LogError($"Couldn't load data for branch [{i}] element [{j}]");
 
+					if (list.Has(x => x.Contains("listlevels")) && type == ElementType.Buttons)
+					{
+						string[] data = list.Find(x => x.Contains("listlevels")).Split(new string[1] { "::" }, 5, StringSplitOptions.None);
+
+						if (data.Length > 1)
+                        {
+							var path = data[1];
+
+							if (RTFile.DirectoryExists(RTFile.ApplicationDirectory + path))
+							{
+								list.Clear();
+
+								var str = "";
+								var dataStr = "";
+								var directories = Directory.GetDirectories(RTFile.ApplicationDirectory + path, data.Length > 2 ? data[2] : "*", SearchOption.TopDirectoryOnly);
+								for (int k = 0; k < directories.Length; k++)
+								{
+									var p = directories[k].Replace("\\", "/");
+
+									if (!RTFile.FileExists(p + "/level.lsb"))
+										continue;
+
+									str += "event|loadlevel|" + p.Replace(RTFile.ApplicationDirectory, "") + "|True";
+									dataStr += $" [{Path.GetFileName(p)}]:";
+
+									if (k != directories.Length - 1)
+									{
+										str += ":";
+										dataStr += "&&";
+									}
+								}
+
+								if (!settings.ContainsKey("buttons"))
+									settings.Add("buttons", str);
+								list.Add(dataStr);
+							}
+                        }
+					}
+
 					if (settings.Count > 0)
 					{
-						for (int k = 0; k < num; k++)
-						{
+						for (int k = 0; k < loop; k++)
 							ic.interfaceBranches[i].elements.Add(new Element(jnbranch[i]["name"], type, settings, list));
-						}
+						continue;
 					}
-					else
-					{
-						for (int l = 0; l < num; l++)
-						{
-							ic.interfaceBranches[i].elements.Add(new Element(jnbranch[i]["name"], type, list));
-						}
-					}
+
+					for (int k = 0; k < loop; k++)
+						ic.interfaceBranches[i].elements.Add(new Element(jnbranch[i]["name"], type, list));
 				}
 			}
 
