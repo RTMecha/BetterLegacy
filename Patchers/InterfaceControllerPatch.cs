@@ -144,79 +144,68 @@ namespace BetterLegacy.Patchers
 				if (__instance.buttonSettings.Count > num && __instance.buttonSettings[num] != null && gameObject == EventSystem.current.currentSelectedGameObject)
 					MenuManager.inst.UpdateSetting(__instance.buttonSettings[num], InputDataManager.inst.menuActions.Left.WasPressed, InputDataManager.inst.menuActions.Right.WasPressed);
 
-				if (gameObject == EventSystem.current.currentSelectedGameObject)
+				var selected = gameObject == EventSystem.current.currentSelectedGameObject;
+				// Handle Selected
 				{
-					gameObject.transform.Find("bg").GetComponent<Image>().color = __instance.interfaceSettings.borderHighlightColor;
-					if (gameObject.transform.Find("text").GetComponent<TextMeshProUGUI>())
-						gameObject.transform.Find("text").GetComponent<TextMeshProUGUI>().color = __instance.interfaceSettings.textHighlightColor;
-					if (gameObject.transform.Find("text").GetComponent<TextMeshPro>())
-						gameObject.transform.Find("text").GetComponent<TextMeshPro>().color = __instance.interfaceSettings.textHighlightColor;
+					gameObject.transform.Find("bg").GetComponent<Image>().color = selected ? __instance.interfaceSettings.borderHighlightColor : __instance.interfaceSettings.borderColor;
+
+					var textMeshProUGUI = gameObject.transform.Find("text").GetComponent<TextMeshProUGUI>();
+					var textMeshPro = gameObject.transform.Find("text").GetComponent<TextMeshPro>();
+					var textColor = selected ? __instance.interfaceSettings.textHighlightColor : __instance.interfaceSettings.textColor;
+
+					if (textMeshProUGUI)
+						textMeshProUGUI.color = textColor;
+					if (textMeshPro)
+						textMeshPro.color = textColor;
+
 					if (gameObject.transform.Find("float"))
 					{
-						if (gameObject.transform.Find("float").GetComponent<TextMeshProUGUI>())
-							gameObject.transform.Find("float").GetComponent<TextMeshProUGUI>().color = __instance.interfaceSettings.textHighlightColor;
-						if (gameObject.transform.Find("float").GetComponent<TextMeshPro>())
-							gameObject.transform.Find("float").GetComponent<TextMeshPro>().color = __instance.interfaceSettings.textHighlightColor;
+						var otherTextMeshProUGUI = gameObject.transform.Find("float").GetComponent<TextMeshProUGUI>();
+						var otherTextMeshPro = gameObject.transform.Find("float").GetComponent<TextMeshPro>();
+
+						if (otherTextMeshProUGUI)
+							otherTextMeshProUGUI.color = textColor;
+						if (otherTextMeshPro)
+							otherTextMeshPro.color = textColor;
 					}
+
 					if (gameObject.transform.Find("bool"))
 					{
-						if (gameObject.transform.Find("bool").GetComponent<TextMeshProUGUI>())
-							gameObject.transform.Find("bool").GetComponent<TextMeshProUGUI>().color = __instance.interfaceSettings.textHighlightColor;
-						if (gameObject.transform.Find("bool").GetComponent<TextMeshPro>())
-							gameObject.transform.Find("bool").GetComponent<TextMeshPro>().color = __instance.interfaceSettings.textHighlightColor;
+						var otherTextMeshProUGUI = gameObject.transform.Find("bool").GetComponent<TextMeshProUGUI>();
+						var otherTextMeshPro = gameObject.transform.Find("bool").GetComponent<TextMeshPro>();
+
+						if (otherTextMeshProUGUI)
+							otherTextMeshProUGUI.color = textColor;
+						if (otherTextMeshPro)
+							otherTextMeshPro.color = textColor;
 					}
+
 					if (gameObject.transform.Find("vector2"))
 					{
-						if (gameObject.transform.Find("vector2").GetComponent<TextMeshProUGUI>())
-							gameObject.transform.Find("vector2").GetComponent<TextMeshProUGUI>().color = __instance.interfaceSettings.textHighlightColor;
-						if (gameObject.transform.Find("vector2").GetComponent<TextMeshPro>())
-							gameObject.transform.Find("vector2").GetComponent<TextMeshPro>().color = __instance.interfaceSettings.textHighlightColor;
+						var otherTextMeshProUGUI = gameObject.transform.Find("vector2").GetComponent<TextMeshProUGUI>();
+						var otherTextMeshPro = gameObject.transform.Find("vector2").GetComponent<TextMeshPro>();
+
+						if (otherTextMeshProUGUI)
+							otherTextMeshProUGUI.color = textColor;
+						if (otherTextMeshPro)
+							otherTextMeshPro.color = textColor;
 					}
+
 					if (gameObject.transform.Find("string"))
 					{
-						if (gameObject.transform.Find("string").GetComponent<TextMeshProUGUI>())
-							gameObject.transform.Find("string").GetComponent<TextMeshProUGUI>().color = __instance.interfaceSettings.textHighlightColor;
-						if (gameObject.transform.Find("string").GetComponent<TextMeshPro>())
-							gameObject.transform.Find("string").GetComponent<TextMeshPro>().color = __instance.interfaceSettings.textHighlightColor;
+						var otherTextMeshProUGUI = gameObject.transform.Find("vector2").GetComponent<TextMeshProUGUI>();
+						var otherTextMeshPro = gameObject.transform.Find("vector2").GetComponent<TextMeshPro>();
+
+						if (otherTextMeshProUGUI)
+							otherTextMeshProUGUI.color = textColor;
+						if (otherTextMeshPro)
+							otherTextMeshPro.color = textColor;
 					}
+				}
+
+				if (selected)
 					__instance.currHoveredButton = gameObject;
-				}
-				else
-				{
-					gameObject.transform.Find("bg").GetComponent<Image>().color = __instance.interfaceSettings.borderColor;
-					if (gameObject.transform.Find("text").GetComponent<TextMeshProUGUI>())
-						gameObject.transform.Find("text").GetComponent<TextMeshProUGUI>().color = __instance.interfaceSettings.textColor;
-					if (gameObject.transform.Find("text").GetComponent<TextMeshPro>())
-						gameObject.transform.Find("text").GetComponent<TextMeshPro>().color = __instance.interfaceSettings.textColor;
-					if (gameObject.transform.Find("float"))
-					{
-						if (gameObject.transform.Find("float").GetComponent<TextMeshProUGUI>())
-							gameObject.transform.Find("float").GetComponent<TextMeshProUGUI>().color = __instance.interfaceSettings.textColor;
-						if (gameObject.transform.Find("float").GetComponent<TextMeshPro>())
-							gameObject.transform.Find("float").GetComponent<TextMeshPro>().color = __instance.interfaceSettings.textColor;
-					}
-					if (gameObject.transform.Find("bool"))
-					{
-						if (gameObject.transform.Find("bool").GetComponent<TextMeshProUGUI>())
-							gameObject.transform.Find("bool").GetComponent<TextMeshProUGUI>().color = __instance.interfaceSettings.textColor;
-						if (gameObject.transform.Find("bool").GetComponent<TextMeshPro>())
-							gameObject.transform.Find("bool").GetComponent<TextMeshPro>().color = __instance.interfaceSettings.textColor;
-					}
-					if (gameObject.transform.Find("vector2"))
-					{
-						if (gameObject.transform.Find("vector2").GetComponent<TextMeshProUGUI>())
-							gameObject.transform.Find("vector2").GetComponent<TextMeshProUGUI>().color = __instance.interfaceSettings.textColor;
-						if (gameObject.transform.Find("vector2").GetComponent<TextMeshPro>())
-							gameObject.transform.Find("vector2").GetComponent<TextMeshPro>().color = __instance.interfaceSettings.textColor;
-					}
-					if (gameObject.transform.Find("string"))
-					{
-						if (gameObject.transform.Find("string").GetComponent<TextMeshProUGUI>())
-							gameObject.transform.Find("string").GetComponent<TextMeshProUGUI>().color = __instance.interfaceSettings.textColor;
-						if (gameObject.transform.Find("string").GetComponent<TextMeshPro>())
-							gameObject.transform.Find("string").GetComponent<TextMeshPro>().color = __instance.interfaceSettings.textColor;
-					}
-				}
+
 				if (!__instance.screenGlitch)
 				{
 					switch (__instance.buttonSettings[num].type)
