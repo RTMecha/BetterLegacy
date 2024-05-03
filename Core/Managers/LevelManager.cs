@@ -196,7 +196,7 @@ namespace BetterLegacy.Core.Managers
 
             yield return inst.StartCoroutine(Updater.IUpdateObjects(true));
 
-            //ObjectManager.inst.updateObjects();
+            LSHelpers.HideCursor();
 
             Debug.Log($"{className}Done!");
 
