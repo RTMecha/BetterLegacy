@@ -5,6 +5,7 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
 using LSFunctions;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -19,6 +20,8 @@ namespace BetterLegacy.Configs
         public static CoreConfig Instance { get; set; }
 
         public override ConfigFile Config { get; set; }
+
+		public Dictionary<string, ConfigEntryBase> defaultSettings = new Dictionary<string, ConfigEntryBase>();
 
         public CoreConfig(ConfigFile config) : base(config)
         {
@@ -93,7 +96,15 @@ namespace BetterLegacy.Configs
 
 			#endregion
 
-            Updater.UseNewUpdateMethod = UseNewUpdateMethod.Value;
+			defaultSettings.Add("FullScreen", Fullscreen);
+			defaultSettings.Add("Resolution", Resolution);
+			defaultSettings.Add("MasterVolume", MasterVol);
+			defaultSettings.Add("MusicVolume", MusicVol);
+			defaultSettings.Add("EffectsVolume", SFXVol);
+			defaultSettings.Add("ControllerVibrate", ControllerRumble);
+
+
+			Updater.UseNewUpdateMethod = UseNewUpdateMethod.Value;
 
 			SetupSettingChanged();
 		}

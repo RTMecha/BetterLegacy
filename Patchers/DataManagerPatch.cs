@@ -20,6 +20,8 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Menus;
+using BetterLegacy.Configs;
+using BepInEx.Configuration;
 
 namespace BetterLegacy.Patchers
 {
@@ -530,6 +532,12 @@ namespace BetterLegacy.Patchers
         static bool UpdateSettingIntPrefix(string __0, int __1)
         {
             ModCompatibility.sharedFunctions.AddSet(Instance.settingPrefix + __0, __1);
+
+            if (CoreConfig.Instance.defaultSettings.ContainsKey(__0))
+            {
+                ((ConfigEntry<int>)CoreConfig.Instance.defaultSettings[__0]).Value = __1;
+            }
+
             return false;
         }
 
@@ -602,6 +610,12 @@ namespace BetterLegacy.Patchers
         static bool UpdateSettingBoolPrefix(string __0, bool __1)
         {
             ModCompatibility.sharedFunctions.AddSet(Instance.settingPrefix + __0, __1);
+
+            if (CoreConfig.Instance.defaultSettings.ContainsKey(__0))
+            {
+                ((ConfigEntry<bool>)CoreConfig.Instance.defaultSettings[__0]).Value = __1;
+            }
+
             return false;
         }
 
