@@ -1,6 +1,7 @@
 ﻿using BetterLegacy.Components;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Prefabs;
 using LSFunctions;
 using System;
 using System.Collections.Generic;

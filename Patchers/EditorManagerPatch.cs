@@ -6,6 +6,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Core.Optimization;
+using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor;
 using BetterLegacy.Editor.Managers;
 using BetterLegacy.Example;
@@ -43,9 +44,6 @@ namespace BetterLegacy.Patchers
                 Destroy(__instance.gameObject);
                 return false;
             }
-
-            __instance.hasLoadedLevel = false;
-            __instance.loading = false;
 
             CoreHelper.LogInit(__instance.className);
 
@@ -224,6 +222,9 @@ namespace BetterLegacy.Patchers
 
             // New Level Name input field contains text but newLevelName does not, so people might end up making an empty named level if they don't name it anything else.
             __instance.newLevelName = "New Awesome Beatmap";
+
+            __instance.hasLoadedLevel = false;
+            __instance.loading = false;
 
             ExampleManager.onEditorAwake?.Invoke(__instance);
 

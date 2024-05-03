@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace BetterLegacy.Editor
+namespace BetterLegacy.Core.Prefabs
 {
     public class EditorPrefabHolder
     {

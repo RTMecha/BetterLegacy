@@ -3,6 +3,7 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor;
 using BetterLegacy.Editor.Managers;
 using HarmonyLib;

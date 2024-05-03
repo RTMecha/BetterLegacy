@@ -12,6 +12,7 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Optimization.Objects;
+using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Example;
 using CielaSpike;
 using Crosstales.FB;
@@ -906,9 +907,13 @@ namespace BetterLegacy.Editor.Managers
 
         public IEnumerator SaveWaveform(EditorConfig config)
         {
-            TimelineImage.sprite.Save(!EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading ?
+            var path = !EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading ?
                     $"{RTFile.ApplicationDirectory}settings/waveform-{config.WaveformMode.Value.ToString().ToLower()}.png" :
-                    GameManager.inst.basePath + $"waveform-{config.WaveformMode.Value.ToString().ToLower()}.png");
+                    GameManager.inst.basePath + $"waveform-{config.WaveformMode.Value.ToString().ToLower()}.png";
+            var bytes = TimelineImage.sprite.texture.EncodeToPNG();
+
+            File.WriteAllBytes(path, bytes);
+
             yield break;
         }
 
@@ -3121,8 +3126,6 @@ namespace BetterLegacy.Editor.Managers
                 if (RTFile.FileExists(refreshImage))
                     levelListRButton.image.sprite = SpriteManager.LoadSprite(refreshImage);
             }
-
-            ModCompatibility.sharedFunctions.AddSet("EditorOnLoadLevel", (Action)delegate () { });
         }
 
         void SetupFileBrowser()
@@ -9542,10 +9545,13 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.UpdatePlayButton();
             }
 
-            if (ModCompatibility.sharedFunctions.ContainsKey("EditorOnLoadLevel"))
-                ((Action)ModCompatibility.sharedFunctions["EditorOnLoadLevel"])();
+            if (ExampleManager.inst && ExampleManager.inst.Visible)
+            {
+                ExampleManager.inst.SayDialogue(fromNewLevel ? "LoadedNewLevel" : "LoadedLevel");
+            }
 
             EditorManager.inst.loading = false;
+            fromNewLevel = false;
 
             yield break;
         }
@@ -9558,12 +9564,13 @@ namespace BetterLegacy.Editor.Managers
 
             themesLoading = true;
 
-            while (!EventEditor.inst || DataManager.inst.gameData is not GameData)
+            while (!EventEditor.inst || !EventEditor.inst.dialogRight || DataManager.inst.gameData is not GameData)
                 yield return null;
 
             DataManager.inst.CustomBeatmapThemes.Clear();
             DataManager.inst.BeatmapThemeIDToIndex.Clear();
             DataManager.inst.BeatmapThemeIndexToID.Clear();
+
             if (DataManager.inst.gameData is GameData)
                 GameData.Current.beatmapThemes.Clear();
 
@@ -9931,6 +9938,8 @@ namespace BetterLegacy.Editor.Managers
 
         public static float timeSinceAutosaved;
 
+        public bool fromNewLevel;
+
         public void CreateNewLevel()
         {
             if (string.IsNullOrEmpty(EditorManager.inst.newAudioFile))
@@ -10001,6 +10010,7 @@ namespace BetterLegacy.Editor.Managers
 
             DataManager.inst.metaData = metaData;
 
+            fromNewLevel = true;
             DataManager.inst.SaveMetadata(RTFile.ApplicationDirectory + editorListSlash + EditorManager.inst.newLevelName + "/metadata.lsb");
             StartCoroutine(LoadLevel(RTFile.ApplicationDirectory + editorListSlash + EditorManager.inst.newLevelName));
             EditorManager.inst.HideDialog("New File Popup");
@@ -14258,7 +14268,7 @@ namespace BetterLegacy.Editor.Managers
                 name = _configEntry.Definition.Key;
                 valueType = _valueType;
 
-                var p = PropCategories.FindIndex(x => x.ToString() == _configEntry.Definition.Section.Replace(" ", "").Replace("Editor - ", ""));
+                var p = PropCategories.FindIndex(x => x.ToString() == _configEntry.Definition.Section.Replace("Editor - ", "").Replace(" ", ""));
 
                 propCategory = p >= 0 ? PropCategories[p] : EditorPropCategory.General;
                 configEntry = _configEntry;

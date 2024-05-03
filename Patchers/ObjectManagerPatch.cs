@@ -10,6 +10,7 @@ using TMPro;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core;
+using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Patchers
 {
@@ -61,6 +62,7 @@ namespace BetterLegacy.Patchers
 		static bool UpdatePrefix()
 		{
 			LevelTick?.Invoke();
+
 			return false;
 		}
 

@@ -16,6 +16,7 @@ using BetterLegacy.Editor.Managers;
 using LSFunctions;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Prefabs;
 
 namespace BetterLegacy
 {
@@ -40,6 +41,7 @@ namespace BetterLegacy
 		static PlayerConfig playerConfig;
 		static ExampleConfig exampleConfig;
 		static EditorPrefabHolder editorPrefabHolder;
+		static CorePrefabHolder corePrefabHolder;
 
 		public static Material blur;
 		public static Material GetBlur()
@@ -100,6 +102,7 @@ namespace BetterLegacy
 			try
 			{
 				editorPrefabHolder = new EditorPrefabHolder();
+				corePrefabHolder = new CorePrefabHolder();
 			}
 			catch (Exception ex)
 			{

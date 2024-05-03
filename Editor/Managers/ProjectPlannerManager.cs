@@ -4,6 +4,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
+using BetterLegacy.Core.Prefabs;
 using Crosstales.FB;
 using LSFunctions;
 using SimpleJSON;
@@ -2329,6 +2330,8 @@ namespace BetterLegacy.Editor.Managers
                 var schedule = list[i];
                 jn["schedules"][i]["date"] = schedule.Date;
                 jn["schedules"][i]["desc"] = schedule.Description;
+                if (schedule.hasBeenChecked)
+                    jn["schedules"][i]["checked"] = schedule.hasBeenChecked;
             }
 
             RTFile.WriteToFile(path + "/schedules.lsn", jn.ToString(3));
@@ -2347,6 +2350,11 @@ namespace BetterLegacy.Editor.Managers
                 var schedule = new ScheduleItem();
                 schedule.Date = jn["schedules"][i]["date"];
                 schedule.Description = jn["schedules"][i]["desc"];
+                if (jn["schedules"][i]["checked"] != null)
+                    schedule.hasBeenChecked = jn["schedules"][i]["checked"].AsBool;
+
+                if (DateTime.TryParse(schedule.Date, out DateTime dateTime))
+                    schedule.DateTime = dateTime;
 
                 GenerateSchedule(schedule);
 
@@ -2906,6 +2914,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 schedule.Description = _val;
                 schedule.TextUI.text = schedule.Text;
+                schedule.hasBeenChecked = false;
             });
             scheduleEditorDescription.onEndEdit.ClearAll();
             scheduleEditorDescription.onEndEdit.AddListener(delegate (string _val)
@@ -2925,6 +2934,7 @@ namespace BetterLegacy.Editor.Managers
 
                     schedule.Date = schedule.DateTime.ToString("g");
                     schedule.TextUI.text = schedule.Text;
+                    schedule.hasBeenChecked = false;
 
                     SaveSchedules();
                 }
@@ -2940,6 +2950,7 @@ namespace BetterLegacy.Editor.Managers
 
                 schedule.Date = schedule.DateTime.ToString("g");
                 schedule.TextUI.text = schedule.Text;
+                schedule.hasBeenChecked = false;
 
                 SaveSchedules();
             });
@@ -2956,6 +2967,7 @@ namespace BetterLegacy.Editor.Managers
 
                     schedule.Date = schedule.DateTime.ToString("g");
                     schedule.TextUI.text = schedule.Text;
+                    schedule.hasBeenChecked = false;
 
                     SaveSchedules();
                 }
@@ -2975,6 +2987,7 @@ namespace BetterLegacy.Editor.Managers
 
                     schedule.Date = schedule.DateTime.ToString("g");
                     schedule.TextUI.text = schedule.Text;
+                    schedule.hasBeenChecked = false;
 
                     SaveSchedules();
                 }
@@ -2992,6 +3005,7 @@ namespace BetterLegacy.Editor.Managers
 
                     schedule.Date = schedule.DateTime.ToString("g");
                     schedule.TextUI.text = schedule.Text;
+                    schedule.hasBeenChecked = false;
 
                     SaveSchedules();
                 }
@@ -4146,6 +4160,9 @@ namespace BetterLegacy.Editor.Managers
             public string DateFormat => $"{DateTime.Day}/{(DateTime.Month < 10 ? "0" + DateTime.Month.ToString() : DateTime.Month.ToString())}/{DateTime.Year} {(DateTime.Hour > 12 ? DateTime.Hour - 12 : DateTime.Hour)}:{DateTime.Minute} {(DateTime.Hour > 12 ? "PM" : "AM")}";
             public DateTime DateTime { get; set; } = DateTime.Now.AddDays(1);
             public string Description { get; set; }
+
+            public bool IsActive => DateTime.Day == DateTime.Now.Day && DateTime.Month == DateTime.Now.Month && DateTime.Year == DateTime.Now.Year;
+            public bool hasBeenChecked;
         }
 
         public class NoteItem : PlannerItem

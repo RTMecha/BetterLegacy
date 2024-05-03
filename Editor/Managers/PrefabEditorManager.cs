@@ -5,6 +5,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
+using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Example;
 using LSFunctions;
 using SimpleJSON;
