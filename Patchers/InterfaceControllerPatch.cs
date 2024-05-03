@@ -38,6 +38,8 @@ namespace BetterLegacy.Patchers
     [HarmonyPatch(typeof(InterfaceController))]
     public class InterfaceControllerPatch : MonoBehaviour
     {
+		public static bool fromMainMenu;
+
 		[HarmonyPatch("Start")]
 		[HarmonyPrefix]
 		static bool StartPrefix(InterfaceController __instance)
@@ -45,7 +47,16 @@ namespace BetterLegacy.Patchers
 			if (EditorManager.inst)
 				__instance.gameObject.SetActive(false);
 
-            try
+			if (CoreHelper.UseNewInterface && __instance.gameObject.scene.name == "Main Menu" && CoreHelper.CurrentSceneType == SceneType.Interface)
+            {
+				fromMainMenu = true;
+				SceneManager.inst.LoadScene("Interface");
+				return false;
+            }
+
+			fromMainMenu = false;
+
+			try
 			{
 				Destroy(GameObject.Find("EventSystem").GetComponent<InControlInputModule>());
 				Destroy(GameObject.Find("EventSystem").GetComponent<BaseInput>());
@@ -100,6 +111,9 @@ namespace BetterLegacy.Patchers
 		[HarmonyPrefix]
 		static bool UpdatePrefix(InterfaceController __instance, ref GameObject ___lastSelectedObj)
 		{
+			if (SceneManagerPatch.loading)
+				return false;
+
 			if (InputDataManager.inst.menuActions.Cancel.WasPressed && __instance.screenDone && __instance.currentBranch != "main_menu" && __instance.interfaceBranches[__instance.CurrentBranchIndex].type == BranchType.Menu)
 			{
 				if (__instance.branchChain.Count > 1)
@@ -1554,6 +1568,9 @@ namespace BetterLegacy.Patchers
 					}
 				}
 			}
+
+			if (CoreHelper.UseNewInterface && __instance.gameObject.scene.name == "Main Menu")
+				return;
 
 			CoreHelper.Log($"Parsed interface with [{jn["branches"].Count}] branches");
 

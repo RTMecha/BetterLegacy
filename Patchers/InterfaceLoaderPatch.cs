@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Core;
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Menus;
 using HarmonyLib;
 using LSFunctions;
@@ -21,12 +22,12 @@ namespace BetterLegacy.Patchers
         static bool InterfaceLoaderPrefix(InterfaceLoader __instance)
         {
             string text = "";
+            string fileName = "";
             if (string.IsNullOrEmpty(__instance.file))
             {
                 text = SaveManager.inst.CurrentStoryLevel.BeatmapJson.text;
-                DiscordController.inst.OnDetailsChange("Playing Story");
-                DiscordController.inst.OnStateChange("Level: " + SaveManager.inst.CurrentStoryLevel.SongName);
-                DiscordController.inst.OnIconChange("arcade");
+
+                CoreHelper.UpdateDiscordStatus("Level: " + SaveManager.inst.CurrentStoryLevel.SongName, "Playing Story", "arcade");
             }
             else
             {
@@ -37,8 +38,9 @@ namespace BetterLegacy.Patchers
                     text = new SerializerBuilder().JsonCompatible().Build().Serialize(graph);
                     LSText.CopyToClipboard(text);
                 }
-                else if (__instance.gameObject.scene.name == "Main Menu" && (RTFile.FileExists(RTFile.ApplicationDirectory + "beatmaps/menus/main/menu.lsm") || RTFile.FileExists(RTFile.ApplicationDirectory + "beatmaps/menus/main.lsm")))
+                else if (InterfaceControllerPatch.fromMainMenu && __instance.gameObject.scene.name == "Interface" && (RTFile.FileExists(RTFile.ApplicationDirectory + "beatmaps/menus/main/menu.lsm") || RTFile.FileExists(RTFile.ApplicationDirectory + "beatmaps/menus/main.lsm")))
                 {
+                    fileName = "Main Menu";
                     if (RTFile.FileExists(RTFile.ApplicationDirectory + "beatmaps/menus/main.lsm"))
                     {
                         text = FileManager.inst.LoadJSONFileRaw(RTFile.ApplicationDirectory + "beatmaps/menus/main.lsm");
@@ -65,6 +67,7 @@ namespace BetterLegacy.Patchers
                 }
                 else if (__instance.gameObject.scene.name == "Interface" && RTFile.FileExists(RTFile.ApplicationDirectory + "beatmaps/menus/story_mode.lsm"))
                 {
+                    fileName = "Interface";
                     if (RTFile.FileExists(RTFile.ApplicationDirectory + "beatmaps/menus/story_mode.lsm"))
                     {
                         text = FileManager.inst.LoadJSONFileRaw(RTFile.ApplicationDirectory + "beatmaps/menus/story_mode.lsm");
@@ -76,9 +79,7 @@ namespace BetterLegacy.Patchers
                     text = (Resources.Load("terminal/" + __instance.location + "/" + __instance.file) as TextAsset).text;
                 }
 
-                DiscordController.inst.OnDetailsChange("In Menu");
-                DiscordController.inst.OnStateChange("");
-                DiscordController.inst.OnIconChange("");
+                CoreHelper.UpdateDiscordStatus($"Navigating {fileName}", "In Menu", "menu");
             }
 
             __instance.terminal.GetComponent<InterfaceController>().ParseLilScript(text);
