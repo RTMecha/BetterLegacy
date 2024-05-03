@@ -23,6 +23,8 @@ namespace BetterLegacy.Configs
             Config = config;
 
             ReloadMainMenu = Config.Bind("Menu - General", "Reload Main Menu key", KeyCode.F6, "The key to reload the main menu for easy reloading of modified menu file.");
+            LoadPageEditor = Config.Bind("Menu - General", "Load Page Editor key", KeyCode.F10, "The key to load the Page Editor.");
+            SelectFirstButton = Config.Bind("Menu - General", "Select First Button", KeyCode.G, "The key to select the first menu button. This is for cases where menu selection disappears.");
 
             PlayCustomMusic = Config.Bind("Menu - Music", "Play Custom Music", true, "If a custom song should play instead of the normal internal menu music.");
             MusicLoadMode = Config.Bind("Menu - Music", "Load Directory", MenuMusicLoadMode.Settings, "Where the music loads from. Settings path: Project Arrhythmia/settings/menus.");
@@ -38,6 +40,16 @@ namespace BetterLegacy.Configs
         /// The key to reload the main menu for easy reloading of modified menu file.
         /// </summary>
         public ConfigEntry<KeyCode> ReloadMainMenu { get; set; }
+
+        /// <summary>
+        /// The key to load the Page Editor.
+        /// </summary>
+        public ConfigEntry<KeyCode> LoadPageEditor { get; set; }
+
+        /// <summary>
+        /// The key to select the first menu button. This is for cases where menu selection disappears.
+        /// </summary>
+        public ConfigEntry<KeyCode> SelectFirstButton { get; set; }
 
         #endregion
 

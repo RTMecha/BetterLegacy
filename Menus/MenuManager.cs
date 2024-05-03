@@ -1,7 +1,10 @@
 ﻿using BetterLegacy.Configs;
 using BetterLegacy.Core;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Editor.Managers;
 using BetterLegacy.Patchers;
+using LSFunctions;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -31,22 +34,61 @@ namespace BetterLegacy.Menus
 
         void Update()
         {
-            if (ArcadeManager.inst.ic && ArcadeManager.inst.ic.gameObject.scene.name == "Main Menu" && Input.GetKeyDown(MenuConfig.Instance.ReloadMainMenu.Value))
-            {
-                SceneManager.inst.LoadScene("Main Menu");
-            }
+            if (LSHelpers.IsUsingInputField())
+                return;
 
-            // For resetting menu selection, due to UnityExplorer.
-            if (Input.GetKeyDown(KeyCode.G) && ArcadeManager.inst.ic && ArcadeManager.inst.ic.buttons != null && ArcadeManager.inst.ic.buttons.Count > 0)
+            // For loading the Main Menu scene when you make a change to the menus.
+            if (Input.GetKeyDown(MenuConfig.Instance.ReloadMainMenu.Value) && ArcadeManager.inst.ic && ArcadeManager.inst.ic.gameObject.scene.name == "Main Menu")
+                SceneManager.inst.LoadScene("Main Menu");
+
+            // For loading the Interface scene when you make a change to the menus.
+            if (Input.GetKeyDown(MenuConfig.Instance.ReloadMainMenu.Value) && ArcadeManager.inst.ic && ArcadeManager.inst.ic.gameObject.scene.name == "Interface")
+                SceneManager.inst.LoadScene("Interface");
+
+            // For resetting menu selection, due to UnityExplorer removing the menu selection.
+            if (Input.GetKeyDown(MenuConfig.Instance.SelectFirstButton.Value) && ArcadeManager.inst.ic && ArcadeManager.inst.ic.buttons != null && ArcadeManager.inst.ic.buttons.Count > 0)
             {
                 ArcadeManager.inst.ic.currHoveredButton = ArcadeManager.inst.ic.buttons[0];
                 UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(ArcadeManager.inst.ic.buttons[0]);
             }
-        }
 
-        public static void SetupPageEditor()
-        {
-            PageEditor.Init();
+            if (!Input.GetKeyDown(MenuConfig.Instance.LoadPageEditor.Value))
+                return;
+
+            if (GameManager.inst && !EditorManager.inst)
+            {
+                CoreHelper.LogWarning("Cannot enter Page Editor while in-game.");
+                return;
+            }
+
+            if (!EditorManager.inst)
+            {
+                PageEditor.Init();
+                return;
+            }
+
+            RTEditor.inst.ShowWarningPopup("Are you sure you want to load the Page Editor? Any unsaved changes will be lost!", delegate ()
+            {
+                if (EditorManager.inst.savingBeatmap)
+                {
+                    EditorManager.inst.DisplayNotification("Please wait until the beatmap finishes saving!", 2f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                DG.Tweening.DOTween.KillAll();
+                DG.Tweening.DOTween.Clear(true);
+                EditorManager.inst.loadedLevels.Clear();
+                DataManager.inst.gameData = null;
+                DataManager.inst.gameData = new GameData();
+                DiscordController.inst.OnIconChange("");
+                DiscordController.inst.OnStateChange("");
+                CoreHelper.Log($"Quit to Main Menu");
+                InputDataManager.inst.players.Clear();
+                SceneManager.inst.LoadScene("Main Menu");
+            }, delegate ()
+            {
+                EditorManager.inst.HideDialog("Warning Popup");
+            });
         }
 
         public static string prevScene = "Main Menu";
@@ -159,7 +201,8 @@ namespace BetterLegacy.Menus
                 AudioManager.inst.PlayMusic(musicName, 0f);
                 return;
             }
-            if (__instance.interfaceSettings.music != null && __instance.interfaceSettings.music != "")
+
+            if (!string.IsNullOrEmpty(__instance.interfaceSettings.music))
             {
                 AudioManager.inst.PlayMusic(__instance.interfaceSettings.music, 0f);
             }
@@ -167,7 +210,6 @@ namespace BetterLegacy.Menus
 
         public string currentMenuMusicName;
         public AudioClip currentMenuMusic;
-
 
         public static IEnumerator ReturnToMenu()
         {
@@ -182,6 +224,5 @@ namespace BetterLegacy.Menus
                 ArcadeManager.inst.ic.SwitchBranch(prevBranch);
             }
         }
-
     }
 }
