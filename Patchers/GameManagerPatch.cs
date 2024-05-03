@@ -45,13 +45,10 @@ namespace BetterLegacy.Patchers
         static void AwakePostfix(GameManager __instance)
         {
             if (!GameObject.Find("Game Systems/EffectsManager").GetComponent<RTEffectsManager>())
-            {
                 GameObject.Find("Game Systems/EffectsManager").AddComponent<RTEffectsManager>();
-            }
+
             if (!GameObject.Find("Game Systems/EventManager").GetComponent<RTEventManager>())
-            {
                 GameObject.Find("Game Systems/EventManager").AddComponent<RTEventManager>();
-            }
 
             var camBase = new GameObject("Camera Base");
 
