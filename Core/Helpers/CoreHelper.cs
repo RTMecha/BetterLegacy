@@ -22,7 +22,19 @@ namespace BetterLegacy.Core.Helpers
     {
         #region Properties
 
+		/// <summary>
+		/// The current scene PA is in.
+		/// </summary>
+		public static SceneType CurrentSceneType { get; set; }
+
+		/// <summary>
+		/// The multiplied screen scale, multiplied by a base resolution of 1920. To be used for fixing UI scale issues.
+		/// </summary>
         public static float ScreenScale => Screen.width / 1920f;
+
+		/// <summary>
+		/// Inverses the Screen Scale.
+		/// </summary>
         public static float ScreenScaleInverse => 1f / ScreenScale;
 
         public static bool InEditor => EditorManager.inst;

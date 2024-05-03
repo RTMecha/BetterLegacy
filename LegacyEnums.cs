@@ -36,6 +36,13 @@ namespace BetterLegacy
         VAG_Rounded,
     }
 
+    public enum SceneType
+    {
+        Interface,
+        Game,
+        Editor,
+    }
+
     public enum LevelSort
     {
         Cover,

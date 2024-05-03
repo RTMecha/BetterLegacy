@@ -42,8 +42,11 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch(typeof(GameManager), "Awake")]
         [HarmonyPrefix]
-        static void AwakePostfix(GameManager __instance)
+        static void AwakePrefix(GameManager __instance)
         {
+            CoreHelper.Log($"Current scene type: {CoreHelper.CurrentSceneType}\nCurrent scene name: {__instance.gameObject.scene.name}");
+            CoreHelper.LogInit(__instance.className);
+
             if (!GameObject.Find("Game Systems/EffectsManager").GetComponent<RTEffectsManager>())
                 GameObject.Find("Game Systems/EffectsManager").AddComponent<RTEffectsManager>();
 
