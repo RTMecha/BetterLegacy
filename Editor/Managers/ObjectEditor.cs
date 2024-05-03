@@ -1051,7 +1051,7 @@ namespace BetterLegacy.Editor.Managers
             if (_select)
                 SetCurrentObject(timelineObject);
 
-            if (ExampleManager.inst && ExampleManager.inst.Visible)
+            if (ExampleManager.inst && ExampleManager.inst.Visible && UnityEngine.Random.Range(0, 100) > 80)
             {
                 string[] sayings = new string[]
                 {
