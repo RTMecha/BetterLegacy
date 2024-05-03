@@ -1894,7 +1894,7 @@ namespace BetterLegacy.Menus
 						{
 							inter.branches[i].elements.Add(new Element(jnbranch[i]["name"], type, dictionary, list));
 						}
-						return;
+						continue;
 					}
 
 					for (int l = 0; l < num; l++)

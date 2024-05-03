@@ -44,12 +44,12 @@ namespace BetterLegacy.Patchers
                     if (RTFile.FileExists(RTFile.ApplicationDirectory + "beatmaps/menus/main.lsm"))
                     {
                         text = FileManager.inst.LoadJSONFileRaw(RTFile.ApplicationDirectory + "beatmaps/menus/main.lsm");
-                        MenuManager.prevInterface = "beatmaps/menus/main.lsm";
+                        MenuManager.currentInterface = "beatmaps/menus/main.lsm";
                     }
                     else if (RTFile.FileExists(RTFile.ApplicationDirectory + "beatmaps/menus/main/menu.lsm"))
                     {
                         text = FileManager.inst.LoadJSONFileRaw(RTFile.ApplicationDirectory + "beatmaps/menus/main/menu.lsm");
-                        MenuManager.prevInterface = "beatmaps/menus/main/menu.lsm";
+                        MenuManager.currentInterface = "beatmaps/menus/main/menu.lsm";
                     }
                 }
                 else if (__instance.gameObject.scene.name == "Game" && (RTFile.FileExists(RTFile.ApplicationDirectory + "beatmaps/menus/pause/menu.lsm") || RTFile.FileExists(RTFile.ApplicationDirectory + "beatmaps/menus/pause.lsm")))
@@ -57,12 +57,12 @@ namespace BetterLegacy.Patchers
                     if (RTFile.FileExists(RTFile.ApplicationDirectory + "beatmaps/menus/pause.lsm"))
                     {
                         text = FileManager.inst.LoadJSONFileRaw(RTFile.ApplicationDirectory + "beatmaps/menus/pause.lsm");
-                        MenuManager.prevInterface = "beatmaps/menus/pause.lsm";
+                        MenuManager.currentInterface = "beatmaps/menus/pause.lsm";
                     }
                     else if (RTFile.FileExists(RTFile.ApplicationDirectory + "beatmaps/menus/pause/menu.lsm"))
                     {
                         text = FileManager.inst.LoadJSONFileRaw(RTFile.ApplicationDirectory + "beatmaps/menus/pause/menu.lsm");
-                        MenuManager.prevInterface = "beatmaps/menus/pause/menu.lsm";
+                        MenuManager.currentInterface = "beatmaps/menus/pause/menu.lsm";
                     }
                 }
                 else if (__instance.gameObject.scene.name == "Interface" && RTFile.FileExists(RTFile.ApplicationDirectory + "beatmaps/menus/story_mode.lsm"))
@@ -71,7 +71,7 @@ namespace BetterLegacy.Patchers
                     if (RTFile.FileExists(RTFile.ApplicationDirectory + "beatmaps/menus/story_mode.lsm"))
                     {
                         text = FileManager.inst.LoadJSONFileRaw(RTFile.ApplicationDirectory + "beatmaps/menus/story_mode.lsm");
-                        MenuManager.prevInterface = "beatmaps/menus/story_mode.lsm";
+                        MenuManager.currentInterface = "beatmaps/menus/story_mode.lsm";
                     }
                 }
                 else
@@ -82,7 +82,16 @@ namespace BetterLegacy.Patchers
                 CoreHelper.UpdateDiscordStatus($"Navigating {fileName}", "In Menu", "menu");
             }
 
-            __instance.terminal.GetComponent<InterfaceController>().ParseLilScript(text);
+            if (!MenuManager.fromPageLevel || string.IsNullOrEmpty(MenuManager.prevBranch))
+            {
+                CoreHelper.Log($"Loading from InterfaceLoader.\nFrom Page Loaded Level: {!MenuManager.fromPageLevel}\nPrevious Branch exists: {string.IsNullOrEmpty(MenuManager.prevBranch)}");
+                MenuManager.inst.loadingFromInterfaceLoader = true;
+                __instance.terminal.GetComponent<InterfaceController>().ParseLilScript(text);
+            }
+
+            if (CoreHelper.CurrentSceneType == SceneType.Interface)
+                MenuManager.fromPageLevel = false;
+
             InputDataManager.inst.playersCanJoin = __instance.playersCanJoin;
             return false;
         }
