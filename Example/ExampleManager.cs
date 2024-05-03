@@ -744,7 +744,7 @@ namespace BetterLegacy.Example
 				if (EditorManager.inst && EditorManager.inst.isEditing)
 					baseCanvas.SetActive(ExampleConfig.Instance.EnabledInEditor.Value);
 				else if (GameManager.inst)
-					baseCanvas.SetActive(ExampleConfig.Instance.EnabledInArcade.Value);
+					baseCanvas.SetActive(ExampleConfig.Instance.EnabledInGame.Value);
 				else if (ArcadeManager.inst.ic)
 					baseCanvas.SetActive(ExampleConfig.Instance.EnabledInMenus.Value);
 

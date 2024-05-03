@@ -14258,7 +14258,7 @@ namespace BetterLegacy.Editor.Managers
                 name = _configEntry.Definition.Key;
                 valueType = _valueType;
 
-                var p = PropCategories.FindIndex(x => x.ToString() == _configEntry.Definition.Section.Replace(" ", ""));
+                var p = PropCategories.FindIndex(x => x.ToString() == _configEntry.Definition.Section.Replace(" ", "").Replace("Editor - ", ""));
 
                 propCategory = p >= 0 ? PropCategories[p] : EditorPropCategory.General;
                 configEntry = _configEntry;

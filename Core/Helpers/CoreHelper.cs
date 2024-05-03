@@ -79,22 +79,7 @@ namespace BetterLegacy.Core.Helpers
 		public static Coroutine StartCoroutine(IEnumerator routine) => LegacyPlugin.inst.StartCoroutine(routine);
 		public static Coroutine StartCoroutineAsync(IEnumerator routine) => LegacyPlugin.inst.StartCoroutineAsync(routine);
 
-        #endregion
-
-        /// <summary>
-        /// Compares given values and invokes a method if they are not the same.
-        /// </summary>
-        /// <param name="prev">The previous value.</param>
-        /// <param name="current">The current value.</param>
-        /// <param name="action">The method to invoke if the parameters are not the same.</param>
-        /// <returns>Returns true if previous value is not equal to current value, otherwise returns false.</returns>
-        public static bool UpdateValue(bool prev, bool current, Action<bool> action)
-        {
-			bool value = prev != current;
-			if (value)
-				action?.Invoke(current);
-			return value;
-		}
+		#endregion
 
 		/// <summary>
 		/// Compares given values and invokes a method if they are not the same.
@@ -103,28 +88,13 @@ namespace BetterLegacy.Core.Helpers
 		/// <param name="current">The current value.</param>
 		/// <param name="action">The method to invoke if the parameters are not the same.</param>
 		/// <returns>Returns true if previous value is not equal to current value, otherwise returns false.</returns>
-		public static bool UpdateValue(float prev, float current, Action<float> action)
+		public static bool UpdateValue<T>(T prev, T current, Action<T> action)
         {
-			bool value = prev != current;
+			bool value = !prev.Equals(current);
 			if (value)
 				action?.Invoke(current);
 			return value;
-		}
-
-		/// <summary>
-		/// Compares given values and invokes a method if they are not the same.
-		/// </summary>
-		/// <param name="prev">The previous value.</param>
-		/// <param name="current">The current value.</param>
-		/// <param name="action">The method to invoke if the parameters are not the same.</param>
-		/// <returns>Returns true if previous value is not equal to current value, otherwise returns false.</returns>
-		public static bool UpdateValue(int prev, int current, Action<int> action)
-        {
-			bool value = prev != current;
-			if (value)
-				action?.Invoke(current);
-			return value;
-		}
+        }
 
         #region Logging
 

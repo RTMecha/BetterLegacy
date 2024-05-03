@@ -9,6 +9,9 @@ using UnityEngine;
 
 namespace BetterLegacy.Configs
 {
+    /// <summary>
+    /// Menu Config for PA Legacy. Based on the PageCreator mod.
+    /// </summary>
     public class MenuConfig : BaseConfig
     {
         public static MenuConfig Instance { get; set; }
@@ -19,47 +22,61 @@ namespace BetterLegacy.Configs
             Instance = this;
             Config = config;
 
-            PlayCustomMusic = Config.Bind("Music", "Play Custom Music", true, "Allows you to load any number of songs from settings/menus.");
-            MusicLoadMode = Config.Bind("Music", "Load Directory", MenuMusicLoadMode.Settings, "Where the music loads from. Settings path: Project Arrhythmia/settings/menus.");
-            MusicIndex = Config.Bind("Music", "File Index", -1, "If number is less than 0 or higher than the song file count, it will play a random song. Otherwise it will use the specified index.");
-            MusicGlobalPath = Config.Bind("Music", "Global Path", "C:/", "Set this path to whatever path you want if you're using Global Load Directory.");
+            ReloadMainMenu = Config.Bind("Menu - General", "Reload Main Menu key", KeyCode.F6, "The key to reload the main menu for easy reloading of modified menu file.");
 
-            ReloadMainMenu = Config.Bind("Menu", "Reload Main Menu key", KeyCode.F5, "The key to reload the main menu for easy reloading of modified menu file.");
-
-            prevPlayCustomMusic = PlayCustomMusic.Value;
-            prevMusicLoadMode = MusicLoadMode.Value;
-            prevMusicIndex = MusicIndex.Value;
+            PlayCustomMusic = Config.Bind("Menu - Music", "Play Custom Music", true, "If a custom song should play instead of the normal internal menu music.");
+            MusicLoadMode = Config.Bind("Menu - Music", "Load Directory", MenuMusicLoadMode.Settings, "Where the music loads from. Settings path: Project Arrhythmia/settings/menus.");
+            MusicIndex = Config.Bind("Menu - Music", "File Index", -1, "If number is less than 0 or higher than the song file count, it will play a random song. Otherwise it will use the specified index.");
+            MusicGlobalPath = Config.Bind("Menu - Music", "Global Path", "C:/", "Set this path to whatever path you want if you're using Global Load Directory.");
 
             SetupSettingChanged();
         }
 
-        public ConfigEntry<bool> PlayCustomMusic { get; set; }
-        public ConfigEntry<MenuMusicLoadMode> MusicLoadMode { get; set; }
-        public ConfigEntry<int> MusicIndex { get; set; }
+        #region General
 
-        public ConfigEntry<string> MusicGlobalPath { get; set; }
-
+        /// <summary>
+        /// The key to reload the main menu for easy reloading of modified menu file.
+        /// </summary>
         public ConfigEntry<KeyCode> ReloadMainMenu { get; set; }
 
-        static bool prevPlayCustomMusic;
-        static MenuMusicLoadMode prevMusicLoadMode;
-        static int prevMusicIndex;
+        #endregion
+
+        #region Music
+
+        /// <summary>
+        /// If a custom song should play instead of the normal internal menu music.
+        /// </summary>
+        public ConfigEntry<bool> PlayCustomMusic { get; set; }
+
+        /// <summary>
+        /// Where the music loads from. Settings path: Project Arrhythmia/settings/menus.
+        /// </summary>
+        public ConfigEntry<MenuMusicLoadMode> MusicLoadMode { get; set; }
+
+        /// <summary>
+        /// If number is less than 0 or higher than the song file count, it will play a random song. Otherwise it will use the specified index.
+        /// </summary>
+        public ConfigEntry<int> MusicIndex { get; set; }
+
+        /// <summary>
+        /// Set this path to whatever path you want if you're using Global Load Directory.
+        /// </summary>
+        public ConfigEntry<string> MusicGlobalPath { get; set; }
+
+        #endregion
 
         public override void SetupSettingChanged()
         {
-            Config.SettingChanged += new EventHandler<SettingChangedEventArgs>(UpdateSettings);
+            PlayCustomMusic.SettingChanged += MusicChanged;
+            MusicLoadMode.SettingChanged += MusicChanged;
+            MusicIndex.SettingChanged += MusicChanged;
+            MusicGlobalPath.SettingChanged += MusicChanged;
         }
 
-        void UpdateSettings(object sender, EventArgs e)
+        void MusicChanged(object sender, EventArgs e)
         {
-            if (EditorManager.inst == null && ArcadeManager.inst != null && ArcadeManager.inst.ic != null && (prevPlayCustomMusic != PlayCustomMusic.Value || prevMusicLoadMode != MusicLoadMode.Value || prevMusicIndex != MusicIndex.Value))
-            {
-                prevPlayCustomMusic = PlayCustomMusic.Value;
-                prevMusicLoadMode = MusicLoadMode.Value;
-                prevMusicIndex = MusicIndex.Value;
-
+            if (!EditorManager.inst && ArcadeManager.inst && ArcadeManager.inst.ic)
                 MenuManager.inst.PlayMusic(ArcadeManager.inst.ic);
-            }
         }
     }
 }

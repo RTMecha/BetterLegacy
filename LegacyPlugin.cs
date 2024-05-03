@@ -15,9 +15,13 @@ using BetterLegacy.Editor;
 using BetterLegacy.Editor.Managers;
 using LSFunctions;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Data;
 
 namespace BetterLegacy
 {
+	/// <summary>
+	/// Core plugin class.
+	/// </summary>
 	[BepInPlugin("com.mecha.betterlegacy", "Better Legacy", "1.0.0")]
 	[BepInProcess("Project Arrhythmia.exe")]
 	public class LegacyPlugin : BaseUnityPlugin
@@ -40,10 +44,10 @@ namespace BetterLegacy
 		public static Material blur;
 		public static Material GetBlur()
 		{
-			var assetBundle = AssetBundle.LoadFromFile(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/objectmaterials.asset");
-			var assetToLoad = assetBundle.LoadAsset<Material>("blur.mat");
-			var blurMat = Instantiate(assetToLoad);
-			assetBundle.Unload(false);
+			var assetBundle = AssetBundle.LoadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}objectmaterials.asset"); // Get AssetBundle from assets folder.
+			var assetToLoad = assetBundle.LoadAsset<Material>("blur.mat"); // Load asset
+			var blurMat = Instantiate(assetToLoad); // Instantiate so we can keep the material
+			assetBundle.Unload(false); // Unloads AssetBundle
 
 			return blurMat;
 		}
@@ -60,9 +64,9 @@ namespace BetterLegacy
 			}
 			catch (Exception ex)
 			{
-				CoreHelper.LogError($"Patching failed.\n{ex}");
+				CoreHelper.LogError($"Patching failed.\n{ex}"); // Catch for cases where patchers fail to work.
 				throw;
-			}
+			} // Patch initialization
 
             try
 			{
@@ -79,7 +83,7 @@ namespace BetterLegacy
             {
 				CoreHelper.LogError($"Configs failed to load.\n{ex}");
 				throw;
-            }
+            } // Config initializations
 
 			try
 			{
@@ -91,7 +95,7 @@ namespace BetterLegacy
 			catch (Exception ex)
 			{
 				CoreHelper.LogError($"Blur materials failed to load.\n{ex}");
-			}
+			} // Asset handling
 
 			try
 			{
@@ -100,7 +104,7 @@ namespace BetterLegacy
 			catch (Exception ex)
 			{
 				CoreHelper.LogError($"Failed to initialize Unity Prefab Holder.\n{ex}");
-			}
+			} // Prefab Holder initializations
 
 			try
 			{
@@ -126,7 +130,7 @@ namespace BetterLegacy
 			{
 				CoreHelper.LogError($"Failed to initialize Editor Themes.\n{ex}");
 				throw;
-			}
+			} // Editor themes loading
 
 			// Hooks
 			{
@@ -139,65 +143,52 @@ namespace BetterLegacy
 
             try
 			{
-				System.Windows.Forms.Application.ApplicationExit += delegate (object sender, EventArgs e)
+				Application.quitting += delegate ()
 				{
-					if (EditorManager.inst && EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading)
+					if (EditorManager.inst && EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading && DataManager.inst.gameData is GameData)
 					{
 						string str = RTFile.BasePath;
 						string modBackup = str + "level-quit-backup.lsb";
 						if (RTFile.FileExists(modBackup))
 							File.Delete(modBackup);
 
-						StartCoroutine(DataManager.inst.SaveData(modBackup));
-					}
-				};
-
-				Application.quitting += delegate ()
-				{
-					if (EditorManager.inst && EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading)
-					{
-						string str = RTFile.BasePath;
-						string modBackup = str + "level-quit-unity-backup.lsb";
-						if (RTFile.FileExists(modBackup))
-							File.Delete(modBackup);
-
-						StartCoroutine(DataManager.inst.SaveData(modBackup));
+						CoreHelper.StartCoroutine(ProjectData.Writer.SaveData(modBackup, GameData.Current));
 					}
 				};
 			}
             catch (Exception ex)
             {
-				CoreHelper.LogError($"On Exit mehtods failed to set.{ex}");
-            }
+				CoreHelper.LogError($"On Exit methods failed to set.{ex}");
+            } // Quit saves backup
 
 			Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_NAME} is loaded!");
 		}
 
 		void Update()
-        {
-			EditorThemeManager.Update();
+		{
+			EditorThemeManager.Update(); // Checks if editor scene has been exited, if it has it'll clear the editor theme elements.
 
-			if (Input.GetKeyDown(EventsConfig.Instance.EditorCamToggle.Value) && !LSHelpers.IsUsingInputField())
-				EventsConfig.Instance.EditorCamEnabled.Value = !EventsConfig.Instance.EditorCamEnabled.Value;
-
-			if (Input.GetKeyDown(EventsConfig.Instance.ShowGUIToggle.Value) && !LSHelpers.IsUsingInputField())
-				EventsConfig.Instance.ShowGUI.Value = !EventsConfig.Instance.ShowGUI.Value;
-
-			Application.runInBackground = CoreConfig.Instance.RunInBackground.Value;
-
-			if (!LSHelpers.IsUsingInputField())
-			{
-				if (Input.GetKeyDown(CoreConfig.Instance.OpenPAFolder.Value))
-					RTFile.OpenInFileBrowser.Open(RTFile.ApplicationDirectory);
-
-				if (Input.GetKeyDown(CoreConfig.Instance.OpenPAPersistentFolder.Value))
-					RTFile.OpenInFileBrowser.Open(RTFile.PersistentApplicationDirectory);
-
-				if (Input.GetKeyDown(CoreConfig.Instance.DebugInfoToggleKey.Value))
-					CoreConfig.Instance.DebugInfo.Value = !CoreConfig.Instance.DebugInfo.Value;
-			}
+			Application.runInBackground = CoreConfig.Instance.RunInBackground.Value; // If the game should continue playing in the background while you don't have the app focused.
 
 			RTDebugger.Update();
+
+			if (LSHelpers.IsUsingInputField())
+				return;
+
+			if (Input.GetKeyDown(EventsConfig.Instance.EditorCamToggle.Value))
+				EventsConfig.Instance.EditorCamEnabled.Value = !EventsConfig.Instance.EditorCamEnabled.Value; // Enables / disables editor camera via the custom keybind.
+
+			if (Input.GetKeyDown(EventsConfig.Instance.ShowGUIToggle.Value))
+				EventsConfig.Instance.ShowGUI.Value = !EventsConfig.Instance.ShowGUI.Value; // Enabled / disables the Players / GUI via the custom keybind.
+
+			if (Input.GetKeyDown(CoreConfig.Instance.OpenPAFolder.Value))
+				RTFile.OpenInFileBrowser.Open(RTFile.ApplicationDirectory); // Opens the PA Application folder via the custom keybind.
+
+			if (Input.GetKeyDown(CoreConfig.Instance.OpenPAPersistentFolder.Value))
+				RTFile.OpenInFileBrowser.Open(RTFile.PersistentApplicationDirectory); // Opens the PA LocalLow folder via the custom keybind.
+
+			if (Input.GetKeyDown(CoreConfig.Instance.DebugInfoToggleKey.Value))
+				CoreConfig.Instance.DebugInfo.Value = !CoreConfig.Instance.DebugInfo.Value; // Enables / disables the debug info via the custom keybind.
 		}
 
 		#region Profile
