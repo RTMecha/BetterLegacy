@@ -390,7 +390,7 @@ namespace BetterLegacy.Core.Managers
 
             if (Playable)
             {
-                if (CoreConfig.Instance.ControllerRumble.Value)
+                if (CoreConfig.Instance.ControllerRumble.Value && EventsConfig.Instance.ShakeAffectsController.Value)
                     InputDataManager.inst.SetAllControllerRumble(EventManager.inst.shakeMultiplier);
 
                 if (Optimization.Updater.UseNewUpdateMethod)
