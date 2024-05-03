@@ -2928,6 +2928,13 @@ namespace BetterLegacy.Example
 
 			lastDialogue = dialogue;
 
+			if (!ExampleConfig.Instance.ExampleSpeaks.Value)
+			{
+				onComplete?.Invoke();
+				dialogueBase.transform.localScale = new Vector3(0f, 0f, 1f);
+				return;
+			}
+
 			var animation = new RTAnimation("DIALOGUE: " + dialogue);
 
 			var ogMouth = mouthLower.localScale.y;
