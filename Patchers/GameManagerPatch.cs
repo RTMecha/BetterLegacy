@@ -407,11 +407,13 @@ namespace BetterLegacy.Patchers
         {
             if (__instance.gameState == GameManager.State.Playing)
             {
+                LSHelpers.ShowCursor();
                 __instance.menuUI.GetComponent<InterfaceController>().SwitchBranch("main");
                 __instance.menuUI.GetComponentInChildren<Image>().enabled = true;
                 AudioManager.inst.CurrentAudioSource.Pause();
                 InputDataManager.inst.SetAllControllerRumble(0f);
                 __instance.gameState = GameManager.State.Paused;
+                ArcadeHelper.endedLevel = false;
             }
             return false;
         }
@@ -422,6 +424,7 @@ namespace BetterLegacy.Patchers
         {
             if (__instance.gameState == GameManager.State.Paused)
             {
+                LSHelpers.HideCursor();
                 __instance.menuUI.GetComponent<InterfaceController>().SwitchBranch("empty");
                 __instance.menuUI.GetComponentInChildren<Image>().enabled = false;
                 AudioManager.inst.CurrentAudioSource.UnPause();

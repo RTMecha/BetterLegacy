@@ -795,10 +795,29 @@ namespace BetterLegacy.Menus
 					{
 						if (GameManager.inst)
 						{
+							if (ArcadeHelper.endedLevel)
+                            {
+								LevelManager.current -= 1;
+								AudioManager.inst.SetMusicTime(0f);
+								GameManager.inst.hits.Clear();
+								GameManager.inst.deaths.Clear();
+								ArcadeHelper.endedLevel = false;
+
+								LSHelpers.HideCursor();
+								ic.SwitchBranch("empty");
+								GameManager.inst.menuUI.GetComponentInChildren<Image>().enabled = false;
+								AudioManager.inst.CurrentAudioSource.UnPause();
+								GameManager.inst.gameState = GameManager.State.Playing;
+								LevelManager.LevelEnded = false;
+
+								break;
+                            }
+
 							AudioManager.inst.SetMusicTime(0f);
 							GameManager.inst.hits.Clear();
 							GameManager.inst.deaths.Clear();
 							GameManager.inst.UnPause();
+							ArcadeHelper.endedLevel = false;
 						}
 						break;
 					}

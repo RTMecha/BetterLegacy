@@ -12,15 +12,18 @@ namespace BetterLegacy.Core.Helpers
     public static class ArcadeHelper
 	{
 		public static GameObject buttonPrefab;
+		public static bool endedLevel;
 
 		public static void EndOfLevel()
 		{
+			endedLevel = true;
 			var __instance = GameManager.inst;
 			GameManager.inst.players.SetActive(false);
 			InputDataManager.inst.SetAllControllerRumble(0f);
 
 			__instance.timeline.gameObject.SetActive(false);
 			__instance.menuUI.GetComponentInChildren<Image>().enabled = true;
+			LSHelpers.ShowCursor();
 
 			var ic = __instance.menuUI.GetComponent<InterfaceController>();
 
@@ -28,7 +31,7 @@ namespace BetterLegacy.Core.Helpers
 
 			if (DataManager.inst.GetSettingBool("IsArcade", false))
 			{
-				CoreHelper.Log($"{__instance.className}Setting Player Data");
+				CoreHelper.Log($"Setting Player Data");
 				int prevHits = LevelManager.CurrentLevel.playerData != null ? LevelManager.CurrentLevel.playerData.Hits : -1;
 
 				LevelManager.PlayedLevelCount++;
@@ -67,7 +70,7 @@ namespace BetterLegacy.Core.Helpers
 
 				LevelManager.SaveProgress();
 
-				CoreHelper.Log($"{__instance.className}Setting More Info");
+				CoreHelper.Log($"Setting More Info");
 				//More Info
 				{
 					var moreInfo = ic.interfaceBranches.Find(x => x.name == "end_of_level_more_info");
@@ -90,7 +93,7 @@ namespace BetterLegacy.Core.Helpers
 					hitsNormalized[num5]++;
 				}
 
-				CoreHelper.Log($"{__instance.className}Setting Level Ranks");
+				CoreHelper.Log($"Setting Level Ranks");
 				var levelRank = DataManager.inst.levelRanks.Find(x => hitsNormalized.Sum() >= x.minHits && hitsNormalized.Sum() <= x.maxHits);
 				var newLevelRank = DataManager.inst.levelRanks.Find(x => prevHits >= x.minHits && prevHits <= x.maxHits);
 
@@ -100,13 +103,13 @@ namespace BetterLegacy.Core.Helpers
 					newLevelRank = null;
 				}
 
-				CoreHelper.Log($"{__instance.className}Setting Achievements");
+				CoreHelper.Log($"Setting Achievements");
 				if (levelRank.name == "SS")
 					SteamWrapper.inst.achievements.SetAchievement("SS_RANK");
 				else if (levelRank.name == "F")
 					SteamWrapper.inst.achievements.SetAchievement("F_RANK");
 
-				CoreHelper.Log($"{__instance.className}Setting End UI");
+				CoreHelper.Log($"Setting End UI");
 				var sayings = LSText.WordWrap(levelRank.sayings[Random.Range(0, levelRank.sayings.Length)], 32);
 				string easy = LSColors.GetThemeColorHex("easy");
 				string normal = LSColors.GetThemeColorHex("normal");
@@ -201,11 +204,11 @@ namespace BetterLegacy.Core.Helpers
 				{
 					CoreHelper.Log($"Selecting next Arcade level in queue [{LevelManager.current + 1} / {LevelManager.ArcadeQueue.Count}]");
 					LevelManager.CurrentLevel = LevelManager.ArcadeQueue[LevelManager.current];
-					buttons = new InterfaceController.InterfaceElement(InterfaceController.InterfaceElement.Type.Buttons, (metadata.artist.getUrl() != null) ? "[NEXT]:next&&[TO ARCADE]:toarcade&&[MORE INFO]:end_of_level_more_info&&[GET SONG]:getsong" : "[NEXT]:next&&[TO ARCADE]:toarcade&&[MORE INFO]:end_of_level_more_info");
+					buttons = new InterfaceController.InterfaceElement(InterfaceController.InterfaceElement.Type.Buttons, (metadata.artist.getUrl() != null) ? "[NEXT]:next&&[TO ARCADE]:toarcade&&[REPLAY]:replay&&[MORE INFO]:end_of_level_more_info&&[GET SONG]:getsong" : "[NEXT]:next&&[TO ARCADE]:toarcade&&[REPLAY]:replay&&[MORE INFO]:end_of_level_more_info");
 				}
 				else
 				{
-					buttons = new InterfaceController.InterfaceElement(InterfaceController.InterfaceElement.Type.Buttons, (metadata.artist.getUrl() != null) ? "[TO ARCADE]:toarcade&&[MORE INFO]:end_of_level_more_info&&[GET SONG]:getsong" : "[TO ARCADE]:toarcade&&[MORE INFO]:end_of_level_more_info");
+					buttons = new InterfaceController.InterfaceElement(InterfaceController.InterfaceElement.Type.Buttons, (metadata.artist.getUrl() != null) ? "[TO ARCADE]:toarcade&&[REPLAY]:replay&&[MORE INFO]:end_of_level_more_info&&[GET SONG]:getsong" : "[TO ARCADE]:toarcade&&[REPLAY]:replay&&[MORE INFO]:end_of_level_more_info");
 				}
 
 				buttons.settings.Add("alignment", "center");
@@ -222,6 +225,10 @@ namespace BetterLegacy.Core.Helpers
 				var interfaceBranch = new InterfaceController.InterfaceBranch("next");
 				interfaceBranch.elements.Add(new InterfaceController.InterfaceElement(InterfaceController.InterfaceElement.Type.Event, "loadscene::Game::true", "next"));
 				ic.interfaceBranches.Add(interfaceBranch);
+
+				var interfaceBranch2 = new InterfaceController.InterfaceBranch("replay");
+				interfaceBranch2.elements.Add(new InterfaceController.InterfaceElement(InterfaceController.InterfaceElement.Type.Event, "restartlevel", "replay"));
+				ic.interfaceBranches.Add(interfaceBranch2);
 			}
 			ic.SwitchBranch("end_of_level");
 		}
