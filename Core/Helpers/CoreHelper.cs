@@ -15,6 +15,7 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.UI;
 using CielaSpike;
+using BetterLegacy.Menus;
 
 namespace BetterLegacy.Core.Helpers
 {
@@ -42,13 +43,59 @@ namespace BetterLegacy.Core.Helpers
 		/// </summary>
         public static float ScreenScaleInverse => 1f / ScreenScale;
 
-        public static bool InEditor => EditorManager.inst;
-        public static bool InGame => GameManager.inst;
-        public static bool InMenu => ArcadeManager.inst.ic;
+		/// <summary>
+		/// For checking if the user is in the editor preview or in game.
+		/// </summary>
+		public static bool InEditorPreview => !EditorManager.inst || !EditorManager.inst.isEditing;
 
-		public static bool Paused => GameManager.inst && GameManager.inst.gameState == GameManager.State.Paused;
+		/// <summary>
+		/// If the user is in the editor.
+		/// </summary>
+        public static bool InEditor => EditorManager.inst;
+
+		/// <summary>
+		/// If the user is in game. Can include editor or arcade.
+		/// </summary>
+        public static bool InGame => GameManager.inst;
+
+		/// <summary>
+		/// If InterfaceController exists.
+		/// </summary>
+        public static bool InMenu => MenuManager.inst.ic;
+
+		/// <summary>
+		/// If the game is loading.
+		/// </summary>
+		public static bool Loading => GameManager.inst && GameManager.inst.gameState == GameManager.State.Loading;
+
+		/// <summary>
+		/// If the game is parsing.
+		/// </summary>
+		public static bool Parsing => GameManager.inst && GameManager.inst.gameState == GameManager.State.Parsing;
+
+		/// <summary>
+		/// If the game is playing.
+		/// </summary>
 		public static bool Playing => GameManager.inst && GameManager.inst.gameState == GameManager.State.Playing;
 
+		/// <summary>
+		/// If the game is reversing to checkpoint.
+		/// </summary>
+		public static bool Reversing => GameManager.inst && GameManager.inst.gameState == GameManager.State.Reversing;
+
+		/// <summary>
+		/// If the game is paused.
+		/// </summary>
+		public static bool Paused => GameManager.inst && GameManager.inst.gameState == GameManager.State.Paused;
+
+		/// <summary>
+		/// If the game is finished.
+		/// </summary>
+		public static bool Finished => GameManager.inst && GameManager.inst.gameState == GameManager.State.Finish;
+
+		/// <summary>
+		/// Takes the current pitch and always makes sure it's a valid value to be used for DelayTracker components.
+		/// </summary>
 		public static float ForwardPitch
         {
             get
@@ -64,17 +111,39 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static float Pitch => EditorManager.inst != null ? 1f : new List<float>
+		/// <summary>
+		/// The current pitch setting.
+		/// </summary>
+        public static float Pitch => InEditor ? 1f : new List<float>
             { 0.1f, 0.5f, 0.8f, 1f, 1.2f, 1.5f, 2f, 3f, }[Mathf.Clamp(DataManager.inst.GetSettingEnum("ArcadeGameSpeed", 2), 0, 7)];
 
-        public static Data.BeatmapTheme CurrentBeatmapTheme => EditorManager.inst && EventEditor.inst.showTheme ? (Data.BeatmapTheme)EventEditor.inst.previewTheme : (Data.BeatmapTheme)GameManager.inst?.LiveTheme;
+		/// <summary>
+		/// Gets the current interpolated theme or if the user is in the theme editor, the preview theme.
+		/// </summary>
+        public static BeatmapTheme CurrentBeatmapTheme => InEditor && EventEditor.inst.showTheme ? (BeatmapTheme)EventEditor.inst.previewTheme : (BeatmapTheme)GameManager.inst?.LiveTheme;
 
-		public static bool AprilFools => System.DateTime.Now.ToString("M") == "1 April" || System.DateTime.Now.ToString("M") == "April 1";
+		/// <summary>
+		/// jokes on you, I FIXED THE BUG
+		/// </summary>
+		public static bool AprilFools => DateTime.Now.ToString("M") == "1 April" || System.DateTime.Now.ToString("M") == "April 1";
 
+		/// <summary>
+		/// Gets the current resolution as a Vector2Int based on Core Config's resolution value.
+		/// </summary>
 		public static Vector2Int CurrentResolution => GetResolution((int)CoreConfig.Instance.Resolution.Value);
 
+		/// <summary>
+		/// Gets a resolution from the resolution list.
+		/// </summary>
+		/// <param name="resolution">The resolution index.</param>
+		/// <returns>Returns a Vector2Int representing a resolution.</returns>
 		public static Vector2Int GetResolution(int resolution) => new Vector2Int((int)DataManager.inst.resolutions[resolution].x, (int)DataManager.inst.resolutions[resolution].y);
 
+		/// <summary>
+		/// Gets a difficulty from the difficulty list.
+		/// </summary>
+		/// <param name="difficulty">The difficulty index.</param>
+		/// <returns>Returns a known difficulty if the index is in the range of the difficulty list. If it isn't, it'll return an unknown difficulty.</returns>
 		public static DataManager.Difficulty GetDifficulty(int difficulty)
 			=> difficulty >= 0 && difficulty < DataManager.inst.difficulties.Count ?
 			DataManager.inst.difficulties[difficulty] : new DataManager.Difficulty("Unknown Difficulty", LSColors.HexToColor("424242"));
@@ -83,6 +152,12 @@ namespace BetterLegacy.Core.Helpers
 
 		#region Unity
 
+		/// <summary>
+		/// Destroys a Unity Object from anywhere, includes instant and delay time.
+		/// </summary>
+		/// <param name="obj">Unity Object to destroy.</param>
+		/// <param name="instant">If object should destroy instantly.</param>
+		/// <param name="t">The delay to destroy the object at if instant is off.</param>
 		public static void Destroy(UnityEngine.Object obj, bool instant = false, float t = 0f)
         {
 			if (instant)
@@ -93,7 +168,19 @@ namespace BetterLegacy.Core.Helpers
 
 			UnityEngine.Object.Destroy(obj, t);
         }
+
+		/// <summary>
+		/// Starts a coroutine from anywhere.
+		/// </summary>
+		/// <param name="routine">Routine to start.</param>
+		/// <returns>Returns a generated Coroutine.</returns>
 		public static Coroutine StartCoroutine(IEnumerator routine) => LegacyPlugin.inst.StartCoroutine(routine);
+
+		/// <summary>
+		/// Starts a coroutine from anywhere asynchronously.
+		/// </summary>
+		/// <param name="routine">Routine to start.</param>
+		/// <returns>Returns a generated Coroutine.</returns>
 		public static Coroutine StartCoroutineAsync(IEnumerator routine) => LegacyPlugin.inst.StartCoroutineAsync(routine);
 
 		#endregion
@@ -133,6 +220,10 @@ namespace BetterLegacy.Core.Helpers
 		/// <param name="message">The message to log.</param>
 		public static void LogError(string message) => Debug.LogError($"{LegacyPlugin.className}{message}");
 
+		/// <summary>
+		/// Logs the initialization of an object with a provided class name.
+		/// </summary>
+		/// <param name="className">Class name to log.</param>
 		public static void LogInit(string className) => Debug.Log($"{className}" +
 				$"---------------------------------------------------------------------\n" +
 				$"---------------------------- INITIALIZED ----------------------------\n" +
@@ -142,69 +233,59 @@ namespace BetterLegacy.Core.Helpers
 
         #region Color
 
+		/// <summary>
+		/// Converts all color channels (including alpha) to a hex number.
+		/// </summary>
+		/// <param name="color">Color to convert.</param>
+		/// <returns>Returns a hex code from the color provided.</returns>
         public static string ColorToHex(Color32 color) => color.r.ToString("X2") + color.g.ToString("X2") + color.b.ToString("X2") + color.a.ToString("X2");
 
+		/// <summary>
+		/// Changes the hue, saturation and value of a color.
+		/// </summary>
+		/// <param name="color">Color to change.</param>
+		/// <param name="hue">Hue offset.</param>
+		/// <param name="sat">Saturation offset.</param>
+		/// <param name="val">Value offset.</param>
+		/// <returns>Returns a changed color based on the hue / sat / val offset values.</returns>
         public static Color ChangeColorHSV(Color color, float hue, float sat, float val)
         {
-            double num;
-            double saturation;
-            double value;
-            LSColors.ColorToHSV(color, out num, out saturation, out value);
+            LSColors.ColorToHSV(color, out double num, out double saturation, out double value);
             return LSColors.ColorFromHSV(num + hue, saturation + sat, value + val);
         }
 
+		/// <summary>
+		/// Inverts a color.
+		/// </summary>
+		/// <param name="color">Color to invert.</param>
+		/// <returns>Returns an inverted color.</returns>
+		public static Color InvertColor(Color color) => InvertColorHue(InvertColorValue(color));
+
+		/// <summary>
+		/// Inverts a colors' hue.
+		/// </summary>
+		/// <param name="color">Color to invert.</param>
+		/// <returns>Returns an inverted color.</returns>
         public static Color InvertColorHue(Color color)
         {
-            double num;
-            double saturation;
-            double value;
-            LSColors.ColorToHSV(color, out num, out saturation, out value);
-            return LSColors.ColorFromHSV(num - 180.0, saturation, value);
+            LSColors.ColorToHSV(color, out double hue, out double saturation, out double value);
+            return LSColors.ColorFromHSV(hue - 180.0, saturation, value);
         }
 
-        public static Color InvertColorValue(Color color)
+		/// <summary>
+		/// Inverts a colors' value.
+		/// </summary>
+		/// <param name="color">Color to invert.</param>
+		/// <returns>Returns an inverted color.</returns>
+		public static Color InvertColorValue(Color color)
         {
-            double num;
-            double sat;
-            double val;
-            LSColors.ColorToHSV(color, out num, out sat, out val);
-
-            if (val < 0.5)
-            {
-                val = -val + 1;
-            }
-            else
-            {
-                val = -(val - 1);
-            }
-
-            return LSColors.ColorFromHSV(num, sat, val);
+            LSColors.ColorToHSV(color, out double hue, out double sat, out double val);
+            return LSColors.ColorFromHSV(hue, sat, val < 0.5 ? -val + 1 : -(val - 1));
         }
 
         #endregion
 
         #region Strings
-
-        public static float TimeCodeToFloat(string str)
-        {
-            if (RegexMatch(str, new Regex(@"([0-9]+):([0-9]+):([0-9.]+)"), out Match match1))
-            {
-                var hours = float.Parse(match1.Groups[1].ToString()) * 3600f;
-                var minutes = float.Parse(match1.Groups[2].ToString()) * 60f;
-                var seconds = float.Parse(match1.Groups[3].ToString());
-
-                return hours + minutes + seconds;
-            }
-            else if (RegexMatch(str, new Regex(@"([0-9]+):([0-9.]+)"), out Match match2))
-            {
-                var minutes = float.Parse(match2.Groups[1].ToString()) * 60f;
-                var seconds = float.Parse(match2.Groups[2].ToString());
-
-                return minutes + seconds;
-            }
-
-            return 0f;
-        }
 
         public static bool RegexMatch(string str, Regex regex, out Match match)
         {
