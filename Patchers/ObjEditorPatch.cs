@@ -1330,8 +1330,6 @@ namespace BetterLegacy.Patchers
 
             multiKeyframeEditor.GetChild(1).gameObject.SetActive(false);
 
-            //multiKeyframeEditor.Find("Text").AsRT().sizeDelta = new Vector2(765f, 120f);
-
             // Label
             {
                 var label = labelToCopy.Duplicate(multiKeyframeEditor, "time_label");
