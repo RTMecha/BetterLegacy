@@ -95,7 +95,7 @@ namespace BetterLegacy.Core.Animation.Keyframe
                 x.x += Flee ? -(vector.x - Value.x) * po : (vector.x - Value.x) * po;
                 Value = x;
             }
-            
+
             if ((MinRange == 0f && MaxRange == 0f || MinRange > MaxRange || Vector2.Distance(vector.Y(), Value.Y()) > MinRange && Vector2.Distance(vector.Y(), Value.Y()) < MaxRange) && Axis == AxisMode.YOnly)
             {
                 var x = Value;

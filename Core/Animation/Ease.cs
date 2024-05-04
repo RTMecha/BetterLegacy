@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace BetterLegacy.Core.Animation
 {
-	public delegate float EaseFunction(float t);
+    public delegate float EaseFunction(float t);
 
     /// <summary>
     /// Static class with useful easer functions that can be used by Tweens.
@@ -122,7 +122,7 @@ namespace BetterLegacy.Core.Animation
         /// </summary>
         /// <param name="t">Time elapsed.</param>
         /// <returns>Eased timescale.</returns>
-        public static float ElasticOut(float t) => t == 1 ? 1 : (Mathf.Sin(-13 * PI2* (t + 1)) * Mathf.Pow(2, -10 * t) + 1);
+        public static float ElasticOut(float t) => t == 1 ? 1 : (Mathf.Sin(-13 * PI2 * (t + 1)) * Mathf.Pow(2, -10 * t) + 1);
 
         /// <summary>
         /// Elastic in and out.

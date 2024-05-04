@@ -1,14 +1,10 @@
-﻿using System.Collections.Generic;
-
+﻿using BetterLegacy.Components;
+using BetterLegacy.Core;
+using BetterLegacy.Core.Data;
+using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-
-using TMPro;
-
-using BetterLegacy.Components;
-using BetterLegacy.Core.Data;
-using BetterLegacy.Core;
-
 using BaseBeatmapObject = DataManager.GameData.BeatmapObject;
 using BasePrefabObject = DataManager.GameData.PrefabObject;
 
@@ -31,7 +27,7 @@ namespace BetterLegacy.Editor
             GameObject = gameObject;
             Image = image;
         }
-        
+
         public TimelineObject(object data, int type, GameObject gameObject, Image image)
         {
             Data = data;

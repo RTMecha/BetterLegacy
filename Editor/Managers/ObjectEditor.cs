@@ -8,7 +8,6 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Example;
-using BetterLegacy.Patchers;
 using Crosstales.FB;
 using HarmonyLib;
 using LSFunctions;
@@ -23,7 +22,6 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using AutoKillType = DataManager.GameData.BeatmapObject.AutoKillType;
 using BaseEventKeyframe = DataManager.GameData.EventKeyframe;
-using BasePrefab = DataManager.GameData.Prefab;
 using ObjectType = BetterLegacy.Core.Data.BeatmapObject.ObjectType;
 
 namespace BetterLegacy.Editor.Managers

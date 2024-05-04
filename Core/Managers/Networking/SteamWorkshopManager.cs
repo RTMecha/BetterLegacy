@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-using LSFunctions;
+﻿using LSFunctions;
 using SteamworksFacepunch;
 using SteamworksFacepunch.Data;
 using SteamworksFacepunch.Ugc;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.Networking;
-using UnityEngine.UI;
 
 namespace BetterLegacy.Core.Managers.Networking
 {
@@ -72,7 +67,7 @@ namespace BetterLegacy.Core.Managers.Networking
             if (Initialized)
                 SteamClient.Shutdown();
         }
-        
+
         public bool hasLoaded;
 
         public bool loading;
@@ -126,7 +121,7 @@ namespace BetterLegacy.Core.Managers.Networking
                     yield break;
 
                 var level = new Level(pchFolder + "/");
-                
+
                 if (level.InvalidID)
                 {
                     try

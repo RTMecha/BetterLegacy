@@ -8,7 +8,7 @@ namespace BetterLegacy.Core
     /// Parsing helper.
     /// </summary>
     public static class Parser
-	{
+    {
         /// <summary>
         /// Tries to parse a string into an integer.
         /// </summary>
@@ -17,9 +17,9 @@ namespace BetterLegacy.Core
         /// <returns>If parse was successful, return the parsed integer. Otherwise, return assigned default value.</returns>
 		public static int TryParse(string input, int defaultValue)
         {
-			if (int.TryParse(input, out int num))
-				return num;
-			return defaultValue;
+            if (int.TryParse(input, out int num))
+                return num;
+            return defaultValue;
         }
 
         /// <summary>
@@ -30,9 +30,9 @@ namespace BetterLegacy.Core
         /// <returns>If parse was successful, return the parsed floating point number. Otherwise, return assigned default value.</returns>
         public static float TryParse(string input, float defaultValue)
         {
-			if (float.TryParse(input, out float num))
-				return num;
-			return defaultValue;
+            if (float.TryParse(input, out float num))
+                return num;
+            return defaultValue;
         }
 
         /// <summary>
@@ -43,9 +43,9 @@ namespace BetterLegacy.Core
         /// <returns>If parse was successful, return the parsed boolean. Otherwise, return assigned default value.</returns>
         public static bool TryParse(string input, bool defaultValue)
         {
-			if (bool.TryParse(input, out bool result))
-				return result;
-			return defaultValue;
+            if (bool.TryParse(input, out bool result))
+                return result;
+            return defaultValue;
         }
 
         /// <summary>
@@ -57,9 +57,9 @@ namespace BetterLegacy.Core
         /// <returns>If parse was successful, return the parsed enum. Otherwise, return assigned default value.</returns>
         public static T TryParse<T>(string input, T defaultValue) where T : struct
         {
-			if (Enum.TryParse(input, out T result))
-				return result;
-			return defaultValue;
+            if (Enum.TryParse(input, out T result))
+                return result;
+            return defaultValue;
         }
 
         /// <summary>

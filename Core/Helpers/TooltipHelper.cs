@@ -1,7 +1,6 @@
 ﻿using BetterLegacy.Components.Editor;
 using System.Collections.Generic;
 using UnityEngine;
-using Language = BetterLegacy.Language;
 
 namespace BetterLegacy.Core.Helpers
 {

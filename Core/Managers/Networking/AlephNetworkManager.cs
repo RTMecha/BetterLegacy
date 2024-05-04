@@ -92,7 +92,7 @@ namespace BetterLegacy.Core.Managers.Networking
             else
                 Debug.Log($"{className}Form upload complete! {www.downloadHandler.text}");
         }
-        
+
         public static IEnumerator UploadBytes(string url, byte[] bytes, Action<string> onComplete)
         {
             var form = new WWWForm();
@@ -108,7 +108,7 @@ namespace BetterLegacy.Core.Managers.Networking
             else
                 onComplete?.Invoke(www.downloadHandler.text);
         }
-        
+
         public static IEnumerator UploadBytes(string url, byte[] bytes, Action<string> onComplete, Action<string> onError)
         {
             var form = new WWWForm();
@@ -124,7 +124,7 @@ namespace BetterLegacy.Core.Managers.Networking
             else
                 onComplete?.Invoke(www.downloadHandler.text);
         }
-        
+
         public static IEnumerator UploadBytes(string url, byte[] bytes, Action<float> percentage, Action<string> onComplete, Action<string> onError)
         {
             var form = new WWWForm();
@@ -147,7 +147,7 @@ namespace BetterLegacy.Core.Managers.Networking
             else
                 onComplete?.Invoke(www.downloadHandler.text);
         }
-        
+
         public static IEnumerator UploadString(string url, string str)
         {
             using var www = UnityWebRequest.Post(url, str);
@@ -197,7 +197,7 @@ namespace BetterLegacy.Core.Managers.Networking
             }
             else
                 callback?.Invoke(www.downloadHandler.text);
-            
+
         }
 
         public static IEnumerator DownloadJSONFile(string path, Action<string> callback)

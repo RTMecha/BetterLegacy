@@ -128,7 +128,7 @@ namespace BetterLegacy.Core.Animation.Keyframe
             //{
             //    PlayerSide = Side.Left;
             //}
-            
+
             //if (Target.x > PositionSequence.Value.x && vector.y < PositionSequence.Value.y && PlayerSide != Side.Right)
             //{
             //    PlayerSide = Side.Right;
@@ -180,14 +180,14 @@ namespace BetterLegacy.Core.Animation.Keyframe
                 if (vector.y > PositionSequence.Value.y && AngleDegrees < angle)
                     Angle360 -= 360f;
             }
-            
+
             if ((Target.x > vector.x || Position.x < PositionSequence.Value.x) && vector.x < PositionSequence.Value.x && PlayerSide != Side.Left)
             {
                 PlayerSide = Side.Left;
                 if (vector.y > PositionSequence.Value.y && AngleDegrees > angle)
                     Angle360 += 360f;
             }
-            
+
             AngleDegrees = angle;
             Angle = angle + Angle360;
             Target = Player?.localPosition ?? Vector3.zero;

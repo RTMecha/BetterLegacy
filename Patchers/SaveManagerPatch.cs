@@ -1,10 +1,8 @@
-﻿using UnityEngine;
-
-using HarmonyLib;
-
-using SimpleJSON;
-using BetterLegacy.Configs;
+﻿using BetterLegacy.Configs;
 using BetterLegacy.Core;
+using HarmonyLib;
+using SimpleJSON;
+using UnityEngine;
 
 namespace BetterLegacy.Patchers
 {

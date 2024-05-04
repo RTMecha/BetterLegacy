@@ -1,6 +1,5 @@
 ﻿using LSFunctions;
 using SimpleJSON;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -14,12 +13,12 @@ namespace BetterLegacy.Core.Data
         {
             id = LSText.randomNumString(8);
         }
-        
+
         public EventKeyframe(float[] eventValues, float[] eventRandomValues, int random = 0) : base(eventValues, eventRandomValues, random)
         {
             id = LSText.randomNumString(8);
         }
-        
+
         public EventKeyframe(float eventTime, float[] eventValues, float[] eventRandomValues, int random = 0) : base(eventTime, eventValues, eventRandomValues, random)
         {
             id = LSText.randomNumString(8);
@@ -193,7 +192,7 @@ namespace BetterLegacy.Core.Data
             "y5",
             "z5",
         };
-        
+
         static readonly string[] raxis = new string[]
         {
             "rx",

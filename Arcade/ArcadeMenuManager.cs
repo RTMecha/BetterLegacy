@@ -1,39 +1,30 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Reflection;
-
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.EventSystems;
-using UnityEngine.Video;
-
-using LSFunctions;
-using DG.Tweening;
-using InControl;
-using TMPro;
-
-using Ease = BetterLegacy.Core.Animation.Ease;
-using SimpleJSON;
-using System.IO;
-using System.IO.Compression;
-using Crosstales.FB;
-using System.Windows.Forms;
-using Cursor = UnityEngine.Cursor;
-using Screen = UnityEngine.Screen;
-using BetterLegacy.Core.Managers;
+﻿using BetterLegacy.Components;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
-using BetterLegacy.Components;
-using BetterLegacy.Core.Managers.Networking;
-using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Menus;
+using Crosstales.FB;
+using InControl;
+using LSFunctions;
+using SimpleJSON;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using TMPro;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+using Cursor = UnityEngine.Cursor;
+using Ease = BetterLegacy.Core.Animation.Ease;
+using Screen = UnityEngine.Screen;
 
 #pragma warning disable CS0618 // Type or member is obsolete
 namespace BetterLegacy.Arcade
@@ -690,7 +681,7 @@ namespace BetterLegacy.Arcade
             {
                 Settings[CurrentTab][selected.x].Clickable.onClick?.Invoke(null);
             }
-            
+
             if (actions.Submit.WasPressed && selected.y == 2 && CurrentTab == 1)
             {
                 Settings[CurrentTab][selected.x].Clickable.onClick?.Invoke(null);
@@ -835,7 +826,7 @@ namespace BetterLegacy.Arcade
             playLevelMenu.background = playLevelMenuImage;
 
             StartCoroutine(playLevelMenu.SetupPlayLevelMenu());
-            
+
             var downloadLevelMenuBase = new GameObject("Download Level Menu");
             downloadLevelMenuBase.transform.SetParent(inter.transform);
             downloadLevelMenuBase.transform.localScale = Vector3.one;
@@ -851,7 +842,7 @@ namespace BetterLegacy.Arcade
             downloadLevelMenu.background = downloadLevelMenuImage;
 
             StartCoroutine(downloadLevelMenu.SetupDownloadLevelMenu());
-            
+
             var steamLevelMenuBase = new GameObject("Steam Level Menu");
             steamLevelMenuBase.transform.SetParent(inter.transform);
             steamLevelMenuBase.transform.localScale = Vector3.one;
@@ -1874,7 +1865,7 @@ namespace BetterLegacy.Arcade
                         Text = clearText.GetObject<TextMeshProUGUI>(),
                         Position = new Vector2Int(3, 1),
                     });
-                    
+
                     var copy = UIManager.GenerateUIImage("Copy", localSettingsBar.GetObject<RectTransform>());
                     UIManager.SetRectTransform(copy.GetObject<RectTransform>(), new Vector2(170f, 0f), ZeroFive, ZeroFive, ZeroFive, new Vector2(160f, 64f));
 
@@ -1917,7 +1908,7 @@ namespace BetterLegacy.Arcade
                         Text = copyText.GetObject<TextMeshProUGUI>(),
                         Position = new Vector2Int(4, 1),
                     });
-                    
+
                     var paste = UIManager.GenerateUIImage("Paste", localSettingsBar.GetObject<RectTransform>());
                     UIManager.SetRectTransform(paste.GetObject<RectTransform>(), new Vector2(350f, 0f), ZeroFive, ZeroFive, ZeroFive, new Vector2(180f, 64f));
 
@@ -2200,7 +2191,7 @@ namespace BetterLegacy.Arcade
                         Text = reloadText.GetObject<TextMeshProUGUI>(),
                         Position = new Vector2Int(0, 1),
                     });
-                    
+
                     var viewType = UIManager.GenerateUIImage("View Type", localSettingsBar.GetObject<RectTransform>());
                     UIManager.SetRectTransform(viewType.GetObject<RectTransform>(), new Vector2(-350f, 0f), ZeroFive, ZeroFive, ZeroFive, new Vector2(230f, 64f));
 
@@ -2229,7 +2220,7 @@ namespace BetterLegacy.Arcade
                         Text = viewTypeText.GetObject<TextMeshProUGUI>(),
                         Position = new Vector2Int(1, 1),
                     });
-                    
+
                     var prevPage = UIManager.GenerateUIImage("Previous", localSettingsBar.GetObject<RectTransform>());
                     UIManager.SetRectTransform(prevPage.GetObject<RectTransform>(), new Vector2(500f, 0f), ZeroFive, ZeroFive, ZeroFive, new Vector2(80f, 64f));
 
@@ -2332,7 +2323,7 @@ namespace BetterLegacy.Arcade
                         steamViewType = SteamViewType.Subscribed;
                         StartCoroutine(SetSteamSearch());
                     };
-                    
+
                     viewTypeClickable.onEnter = delegate (PointerEventData pointerEventData)
                     {
                         if (!CanSelect)

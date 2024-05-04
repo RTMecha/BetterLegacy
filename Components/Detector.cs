@@ -12,61 +12,61 @@ namespace BetterLegacy.Components
 
         public bool hovered;
 
-		public bool bulletOver;
+        public bool bulletOver;
 
-		List<Collider2D> colliders = new List<Collider2D>();
+        List<Collider2D> colliders = new List<Collider2D>();
 
-		void Update() => bulletOver = false;
+        void Update() => bulletOver = false;
 
         void OnMouseEnter() => hovered = true;
 
         void OnMouseExit() => hovered = false;
 
-		bool CheckCollider(Collider other) => other.tag != "Player" && other.gameObject.name.Contains("bullet (Player");
-		bool CheckCollider(Collider2D other) => other.tag != "Player" && other.gameObject.name.Contains("bullet (Player") && !colliders.Contains(other);
+        bool CheckCollider(Collider other) => other.tag != "Player" && other.gameObject.name.Contains("bullet (Player");
+        bool CheckCollider(Collider2D other) => other.tag != "Player" && other.gameObject.name.Contains("bullet (Player") && !colliders.Contains(other);
 
-		void OnTriggerEnter2D(Collider2D other)
-		{
-			if (CheckCollider(other))
+        void OnTriggerEnter2D(Collider2D other)
+        {
+            if (CheckCollider(other))
             {
-				bulletOver = true;
-				if (!colliders.Contains(other))
-					colliders.Add(other);
-			}
-		}
+                bulletOver = true;
+                if (!colliders.Contains(other))
+                    colliders.Add(other);
+            }
+        }
 
-		void OnTriggerEnter(Collider other)
-		{
-			if (CheckCollider(other))
-				bulletOver = true;
-		}
+        void OnTriggerEnter(Collider other)
+        {
+            if (CheckCollider(other))
+                bulletOver = true;
+        }
 
-		void OnTriggerExit2D(Collider2D other)
-		{
-			if (CheckCollider(other))
-			{
-				bulletOver = false;
-				if (colliders.Contains(other))
-					colliders.Remove(other);
-			}
-		}
+        void OnTriggerExit2D(Collider2D other)
+        {
+            if (CheckCollider(other))
+            {
+                bulletOver = false;
+                if (colliders.Contains(other))
+                    colliders.Remove(other);
+            }
+        }
 
-		void OnTriggerExit(Collider other)
-		{
-			if (CheckCollider(other))
-				bulletOver = false;
-		}
+        void OnTriggerExit(Collider other)
+        {
+            if (CheckCollider(other))
+                bulletOver = false;
+        }
 
-		void OnTriggerStay2D(Collider2D other)
-		{
-			if (CheckCollider(other))
-				bulletOver = true;
-		}
+        void OnTriggerStay2D(Collider2D other)
+        {
+            if (CheckCollider(other))
+                bulletOver = true;
+        }
 
-		void OnTriggerStay(Collider other)
-		{
-			if (CheckCollider(other))
-				bulletOver = true;
-		}
-	}
+        void OnTriggerStay(Collider other)
+        {
+            if (CheckCollider(other))
+                bulletOver = true;
+        }
+    }
 }

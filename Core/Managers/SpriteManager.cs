@@ -1,8 +1,7 @@
-﻿using System.IO;
-using System.Collections.Generic;
-
-using UnityEngine;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Text.RegularExpressions;
+using UnityEngine;
 
 namespace BetterLegacy.Core.Managers
 {
@@ -34,7 +33,7 @@ namespace BetterLegacy.Core.Managers
                     var name = allAssetNames[i].Replace(Path.GetDirectoryName(allAssetNames[i]).Replace("\\", "/") + "/", "");
 
                     var sprite = assetBundle.LoadAsset<Sprite>(name);
-                    
+
                     var regex = new Regex("square_([1-5])_");
 
                     var match = regex.Match(name);

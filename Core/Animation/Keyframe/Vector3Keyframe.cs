@@ -22,7 +22,7 @@ namespace BetterLegacy.Core.Animation.Keyframe
             Active = false;
             PreviousKeyframe = previousKeyframe;
         }
-        
+
         public void Start()
         {
 

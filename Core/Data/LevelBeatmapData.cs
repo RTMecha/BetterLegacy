@@ -1,75 +1,74 @@
 ﻿using SimpleJSON;
-using System;
 using System.Collections.Generic;
 using BaseBeatmapData = DataManager.GameData.BeatmapData;
 
 namespace BetterLegacy.Core.Data
 {
-	public class LevelBeatmapData : BaseBeatmapData
+    public class LevelBeatmapData : BaseBeatmapData
     {
         public LevelBeatmapData()
         {
 
         }
 
-		public static LevelBeatmapData ParseVG(JSONNode jn)
+        public static LevelBeatmapData ParseVG(JSONNode jn)
         {
-			var beatmapData = new LevelBeatmapData();
+            var beatmapData = new LevelBeatmapData();
 
-			beatmapData.editorData = new LevelEditorData();
+            beatmapData.editorData = new LevelEditorData();
 
-			beatmapData.markers = new List<Marker>();
+            beatmapData.markers = new List<Marker>();
 
-			for (int i = 0; i < jn["markers"].Count; i++)
+            for (int i = 0; i < jn["markers"].Count; i++)
             {
-				var jnmarker = jn["markers"][i];
+                var jnmarker = jn["markers"][i];
 
-				var name = jnmarker["n"] == null ? "Marker" : (string)jnmarker["n"];
+                var name = jnmarker["n"] == null ? "Marker" : (string)jnmarker["n"];
 
-				var desc = jnmarker["d"] == null ? "" : (string)jnmarker["d"];
+                var desc = jnmarker["d"] == null ? "" : (string)jnmarker["d"];
 
-				var col = jnmarker["c"].AsInt;
+                var col = jnmarker["c"].AsInt;
 
-				var time = jnmarker["t"].AsFloat;
+                var time = jnmarker["t"].AsFloat;
 
-				beatmapData.markers.Add(new Marker(true, name, desc, col, time));
-			}
-			return beatmapData;
+                beatmapData.markers.Add(new Marker(true, name, desc, col, time));
+            }
+            return beatmapData;
         }
 
         public static LevelBeatmapData Parse(JSONNode jn)
         {
             var beatmapData = new LevelBeatmapData();
 
-			beatmapData.levelData = Data.LevelData.Parse(jn["level_data"]);
+            beatmapData.levelData = Data.LevelData.Parse(jn["level_data"]);
             beatmapData.editorData = LevelEditorData.Parse(jn["ed"]);
 
-			beatmapData.markers = new List<Marker>();
-			for (int i = 0; i < jn["ed"]["markers"].Count; i++)
-			{
-				bool asBool = jn["ed"]["markers"][i]["active"].AsBool;
-				string name = "Marker";
-				if (jn["ed"]["markers"][i]["name"] != null)
-				{
-					name = jn["ed"]["markers"][i]["name"];
-				}
-				string desc = "";
-				if (jn["ed"]["markers"][i]["desc"] != null)
-				{
-					desc = jn["ed"]["markers"][i]["desc"];
-				}
-				float asFloat = jn["ed"]["markers"][i]["t"].AsFloat;
-				int color = 0;
-				if (jn["ed"]["markers"][i]["col"] != null)
-				{
-					color = jn["ed"]["markers"][i]["col"].AsInt;
-				}
-				beatmapData.markers.Add(new Marker(asBool, name, desc, color, asFloat));
-			}
-			return beatmapData;
+            beatmapData.markers = new List<Marker>();
+            for (int i = 0; i < jn["ed"]["markers"].Count; i++)
+            {
+                bool asBool = jn["ed"]["markers"][i]["active"].AsBool;
+                string name = "Marker";
+                if (jn["ed"]["markers"][i]["name"] != null)
+                {
+                    name = jn["ed"]["markers"][i]["name"];
+                }
+                string desc = "";
+                if (jn["ed"]["markers"][i]["desc"] != null)
+                {
+                    desc = jn["ed"]["markers"][i]["desc"];
+                }
+                float asFloat = jn["ed"]["markers"][i]["t"].AsFloat;
+                int color = 0;
+                if (jn["ed"]["markers"][i]["col"] != null)
+                {
+                    color = jn["ed"]["markers"][i]["col"].AsInt;
+                }
+                beatmapData.markers.Add(new Marker(asBool, name, desc, color, asFloat));
+            }
+            return beatmapData;
         }
 
-		public Data.LevelData ModLevelData => (Data.LevelData)levelData;
-		public LevelEditorData ModEditorData => (LevelEditorData)editorData;
-	}
+        public Data.LevelData ModLevelData => (Data.LevelData)levelData;
+        public LevelEditorData ModEditorData => (LevelEditorData)editorData;
+    }
 }

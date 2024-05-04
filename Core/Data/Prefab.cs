@@ -1,13 +1,12 @@
-﻿using LSFunctions;
+﻿using BetterLegacy.Core.Managers;
+using LSFunctions;
 using SimpleJSON;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using BetterLegacy.Core.Managers;
 using BaseBeatmapObject = DataManager.GameData.BeatmapObject;
 using BasePrefab = DataManager.GameData.Prefab;
 using BasePrefabObject = DataManager.GameData.PrefabObject;
-using System;
 
 namespace BetterLegacy.Core.Data
 {
@@ -182,7 +181,7 @@ namespace BetterLegacy.Core.Data
 
             if (prefabObjects != null && prefabObjects.Count > 0)
                 for (int i = 0; i < prefabObjects.Count; i++)
-                        jn["prefab_objects"][i] = ((PrefabObject)prefabObjects[i]).ToJSON();
+                    jn["prefab_objects"][i] = ((PrefabObject)prefabObjects[i]).ToJSON();
 
             var spriteAssets = new Dictionary<string, Sprite>();
 

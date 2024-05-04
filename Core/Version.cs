@@ -155,7 +155,7 @@ namespace BetterLegacy.Core
 
             return false;
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(Version a, Version b)
         {
@@ -170,7 +170,7 @@ namespace BetterLegacy.Core
 
             return false;
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(Version a, Version b)
         {
@@ -185,7 +185,7 @@ namespace BetterLegacy.Core
 
             return false;
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator >=(Version a, Version b)
         {
@@ -200,7 +200,7 @@ namespace BetterLegacy.Core
 
             return false;
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator <=(Version a, Version b)
         {

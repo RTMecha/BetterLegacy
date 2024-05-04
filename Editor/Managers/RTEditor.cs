@@ -8692,7 +8692,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     Inspect(EditorManager.inst);
                 });
-            
+
             GenerateDebugButton(
                 "Inspect RTEditor",
                 "EditorManager handles the main modded editor related things.",
@@ -8700,7 +8700,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     Inspect(inst);
                 });
-            
+
             GenerateDebugButton(
                 "Inspect ObjEditor",
                 "ObjEditor is the component that handles regular object editor stuff.",
@@ -8708,7 +8708,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     Inspect(ObjEditor.inst);
                 });
-            
+
             GenerateDebugButton(
                 "Inspect ObjectEditor",
                 "ObjectEditor is the component that handles modded object editor stuff.",
@@ -8716,7 +8716,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     Inspect(ObjectEditor.inst);
                 });
-            
+
             GenerateDebugButton(
                 "Inspect ObjectManager",
                 "ObjectManager is the component that handles regular object stuff.",
@@ -8724,7 +8724,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     Inspect(ObjectManager.inst);
                 });
-            
+
             GenerateDebugButton(
                 "Inspect GameManager",
                 "GameManager normally handles all the level loading, however now it's handled by LevelManager.",
@@ -8732,7 +8732,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     Inspect(GameManager.inst);
                 });
-            
+
             GenerateDebugButton(
                 "Inspect Object Editor UI",
                 "Take a closer look at the Object Editor UI since the parent tree for it is pretty deep.",
@@ -8740,7 +8740,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     Inspect(ObjEditor.inst.ObjectView);
                 });
-            
+
             GenerateDebugButton(
                 "Inspect LevelProcessor",
                 "LevelProcessor is the main handler for updating object animation and spawning / despawning objects.",
@@ -8748,7 +8748,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     Inspect(Updater.levelProcessor);
                 });
-            
+
             GenerateDebugButton(
                 "Inspect GameData",
                 "GameData stores all the main level data.",
@@ -8756,7 +8756,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     Inspect(GameData.Current);
                 });
-            
+
             GenerateDebugButton(
                 "Current Event Keyframe",
                 "The current selected Event Keyframe. Based on the type and index number.",
@@ -9160,7 +9160,7 @@ namespace BetterLegacy.Editor.Managers
                             EditorManager.inst.DisplayNotification($"Level template name is empty. Name it something unique via the input field in the Level Template editor.", 3f, EditorManager.NotificationType.Error);
                             return;
                         }
-                        
+
                         if (nameInput.text[nameInput.text.Length - 1] == '/' || nameInput.text[nameInput.text.Length - 1] == '\\')
                         {
                             EditorManager.inst.DisplayNotification($"Name cannot end with a / or a \\.", 3f, EditorManager.NotificationType.Error);

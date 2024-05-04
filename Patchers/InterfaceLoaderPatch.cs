@@ -3,12 +3,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Menus;
 using HarmonyLib;
 using LSFunctions;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using YamlDotNet.Serialization;
 

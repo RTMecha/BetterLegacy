@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using BetterLegacy.Core.Helpers;
+using System.Collections.Generic;
 using UnityEngine;
-using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Core.Animation.Keyframe
 {

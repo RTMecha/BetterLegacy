@@ -57,7 +57,7 @@ namespace BetterLegacy.Components
             editorCameraController.SpeedUp.AddDefaultBinding(InputControlType.RightBumper);
             editorCameraController.SlowDown.AddDefaultBinding(InputControlType.LeftTrigger);
             editorCameraController.SlowDown.AddDefaultBinding(InputControlType.LeftBumper);
-            
+
             editorCameraController.RotateAdd.AddDefaultBinding(InputControlType.DPadLeft);
             editorCameraController.RotateSub.AddDefaultBinding(InputControlType.DPadRight);
 
@@ -78,7 +78,7 @@ namespace BetterLegacy.Components
 
         public PlayerAction RotateAdd;
         public PlayerAction RotateSub;
-        
+
         public PlayerAction RotateUp;
         public PlayerAction RotateDown;
         public PlayerAction RotateLeft;

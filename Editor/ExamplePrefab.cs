@@ -1,5 +1,5 @@
-﻿using BetterLegacy.Editor.Managers;
-using BetterLegacy.Core.Data;
+﻿using BetterLegacy.Core.Data;
+using BetterLegacy.Editor.Managers;
 using System.Collections.Generic;
 using UnityEngine;
 using AutoKillType = DataManager.GameData.BeatmapObject.AutoKillType;

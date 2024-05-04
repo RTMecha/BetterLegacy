@@ -534,7 +534,7 @@ namespace BetterLegacy.Core
 
             return null;
         }
-        
+
         public static void InvokeEmpty(this CompiledMethod compiledMethod)
         {
             object ret = null;

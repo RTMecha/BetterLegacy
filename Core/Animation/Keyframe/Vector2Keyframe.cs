@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using BetterLegacy.Core;
 
 namespace BetterLegacy.Core.Animation.Keyframe
 {

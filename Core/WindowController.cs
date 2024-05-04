@@ -2,7 +2,6 @@
 using BetterLegacy.Core.Data;
 using System;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
 
 namespace BetterLegacy.Core
 {

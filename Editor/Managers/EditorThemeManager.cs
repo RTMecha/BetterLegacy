@@ -10,7 +10,6 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using ThemeSetting = BetterLegacy.EditorTheme;
 
 namespace BetterLegacy.Editor.Managers
 {

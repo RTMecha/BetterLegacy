@@ -1,22 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-using UnityEngine;
-using LSFunctions;
-
-using UnityEngine.UI;
-using System.Collections;
-using TMPro;
-using UnityEngine.EventSystems;
-using BetterLegacy.Core;
-using BetterLegacy.Core.Managers;
+﻿using BetterLegacy.Components;
 using BetterLegacy.Configs;
-using BetterLegacy.Components;
+using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus;
+using LSFunctions;
+using System.Collections;
+using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace BetterLegacy.Arcade
 {
@@ -160,7 +156,7 @@ namespace BetterLegacy.Arcade
                 (inSettings ? Settings : Buttons)[selected.y][selected.x].Clickable?.onClick?.Invoke(null);
             }
         }
-        
+
         public IEnumerator SetupPlayLevelMenu()
         {
             SelectionLimit.Add(1);
@@ -239,7 +235,7 @@ namespace BetterLegacy.Arcade
 
                 SelectionLimit[1]++;
             }
-            
+
             // Add to Queue
             {
                 var play = GenerateButton(1, rectTransform, Buttons);
@@ -276,7 +272,7 @@ namespace BetterLegacy.Arcade
 
                 SelectionLimit[1]++;
             }
-            
+
             // Visit Artist
             {
                 var play = GenerateButton(1, rectTransform, Buttons);
@@ -308,7 +304,7 @@ namespace BetterLegacy.Arcade
 
                 SelectionLimit[1]++;
             }
-            
+
             // Get Song
             {
                 var play = GenerateButton(1, rectTransform, Buttons);
@@ -340,7 +336,7 @@ namespace BetterLegacy.Arcade
 
                 SelectionLimit[1]++;
             }
-            
+
             // Settings
             {
                 var play = GenerateButton(1, rectTransform, Buttons);
@@ -382,7 +378,7 @@ namespace BetterLegacy.Arcade
             UIManager.SetRectTransform(coverBase1.GetObject<RectTransform>(), new Vector2(-600f, 64f), ArcadeMenuManager.ZeroFive, ArcadeMenuManager.ZeroFive, ArcadeMenuManager.ZeroFive, new Vector2(512f, 512f));
             coverBase = coverBase1.GetObject<Image>();
             coverBase1.GetObject<GameObject>().AddComponent<Mask>();
-            
+
             var coverBase2 = UIManager.GenerateUIImage($"Cover", coverBase1.GetObject<RectTransform>());
             UIManager.SetRectTransform(coverBase2.GetObject<RectTransform>(), Vector2.zero, ArcadeMenuManager.ZeroFive, ArcadeMenuManager.ZeroFive, ArcadeMenuManager.ZeroFive, new Vector2(512f, 512f));
             cover = coverBase2.GetObject<Image>();
@@ -393,22 +389,22 @@ namespace BetterLegacy.Arcade
             title.fontSize = 48;
             title.fontStyle = FontStyles.Bold;
             title.overflowMode = TextOverflowModes.Truncate;
-            
+
             var artistBase = UIManager.GenerateUITextMeshPro("Artist", rectTransform);
             UIManager.SetRectTransform(artistBase.GetObject<RectTransform>(), new Vector2(200f, 200f), ArcadeMenuManager.ZeroFive, ArcadeMenuManager.ZeroFive, ArcadeMenuManager.ZeroFive, new Vector2(1000f, 100f));
             artist = artistBase.GetObject<TextMeshProUGUI>();
             artist.overflowMode = TextOverflowModes.Truncate;
-            
+
             var creatorBase = UIManager.GenerateUITextMeshPro("Creator", rectTransform);
             UIManager.SetRectTransform(creatorBase.GetObject<RectTransform>(), new Vector2(200f, 160f), ArcadeMenuManager.ZeroFive, ArcadeMenuManager.ZeroFive, ArcadeMenuManager.ZeroFive, new Vector2(1000f, 100f));
             creator = creatorBase.GetObject<TextMeshProUGUI>();
             creator.overflowMode = TextOverflowModes.Truncate;
-            
+
             var difficultyBase = UIManager.GenerateUITextMeshPro("Difficulty", rectTransform);
             UIManager.SetRectTransform(difficultyBase.GetObject<RectTransform>(), new Vector2(200f, 120f), ArcadeMenuManager.ZeroFive, ArcadeMenuManager.ZeroFive, ArcadeMenuManager.ZeroFive, new Vector2(1000f, 100f));
             difficulty = difficultyBase.GetObject<TextMeshProUGUI>();
             difficulty.overflowMode = TextOverflowModes.Truncate;
-            
+
             var descriptionBase = UIManager.GenerateUITextMeshPro("Description", rectTransform);
             UIManager.SetRectTransform(descriptionBase.GetObject<RectTransform>(), new Vector2(200f, -50f), ArcadeMenuManager.ZeroFive, ArcadeMenuManager.ZeroFive, ArcadeMenuManager.ZeroFive, new Vector2(1000f, 300f));
             description = descriptionBase.GetObject<TextMeshProUGUI>();
@@ -456,7 +452,7 @@ namespace BetterLegacy.Arcade
                 };
 
                 SettingsSelectionLimit[0]++;
-                
+
                 var speed1 = GenerateButton(0, settings, Settings);
                 speed1.RectTransform.anchoredPosition = new Vector2(74f, 170f);
                 speed1.RectTransform.sizeDelta = new Vector2(140f, 48f);
@@ -691,7 +687,7 @@ namespace BetterLegacy.Arcade
                 };
 
                 SettingsSelectionLimit[5]++;
-                
+
                 Settings.Add(new List<ArcadeMenuManager.Tab>());
                 SettingsSelectionLimit.Add(0);
 
@@ -714,7 +710,7 @@ namespace BetterLegacy.Arcade
                 };
 
                 SettingsSelectionLimit[6]++;
-                
+
                 Settings.Add(new List<ArcadeMenuManager.Tab>());
                 SettingsSelectionLimit.Add(0);
 
@@ -1048,7 +1044,7 @@ namespace BetterLegacy.Arcade
             {
                 AnimationManager.inst.RemoveID(openID);
             }
-            
+
             if (closeID != null)
             {
                 AnimationManager.inst.RemoveID(closeID);

@@ -1,48 +1,43 @@
 ﻿using BetterLegacy.Core.Managers;
 using HarmonyLib;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BetterLegacy.Patchers
 {
-	[HarmonyPatch(typeof(AudioManager))]
+    [HarmonyPatch(typeof(AudioManager))]
     public class AudioManagerPatch
-	{
-		[HarmonyPatch("Update")]
-		[HarmonyPrefix]
-		static bool AudioUpdatePrefix(AudioManager __instance)
-		{
-			float masterVol = (float)DataManager.inst.GetSettingInt("MasterVolume", 9) / 9f;
+    {
+        [HarmonyPatch("Update")]
+        [HarmonyPrefix]
+        static bool AudioUpdatePrefix(AudioManager __instance)
+        {
+            float masterVol = (float)DataManager.inst.GetSettingInt("MasterVolume", 9) / 9f;
 
-			if (RTEventManager.inst != null)
-				__instance.masterVol = masterVol * RTEventManager.inst.audioVolume;
-			else
-				__instance.masterVol = masterVol;
+            if (RTEventManager.inst != null)
+                __instance.masterVol = masterVol * RTEventManager.inst.audioVolume;
+            else
+                __instance.masterVol = masterVol;
 
-			__instance.musicVol = (float)DataManager.inst.GetSettingInt("MusicVolume", 9) / 9f * __instance.masterVol;
-			__instance.sfxVol = (float)DataManager.inst.GetSettingInt("EffectsVolume", 9) / 9f * __instance.masterVol;
-			if (!__instance.isFading)
-			{
-				__instance.musicSources[__instance.activeMusicSourceIndex].volume = __instance.musicVol;
-			}
-			__instance.musicSources[__instance.activeMusicSourceIndex].pitch = __instance.pitch;
+            __instance.musicVol = (float)DataManager.inst.GetSettingInt("MusicVolume", 9) / 9f * __instance.masterVol;
+            __instance.sfxVol = (float)DataManager.inst.GetSettingInt("EffectsVolume", 9) / 9f * __instance.masterVol;
+            if (!__instance.isFading)
+            {
+                __instance.musicSources[__instance.activeMusicSourceIndex].volume = __instance.musicVol;
+            }
+            __instance.musicSources[__instance.activeMusicSourceIndex].pitch = __instance.pitch;
 
-			return false;
-		}
+            return false;
+        }
 
-		[HarmonyPatch("SetPitch")]
-		[HarmonyPrefix]
-		static bool SetPitchPrefix(AudioManager __instance, float __0)
-		{
-			if (RTEventManager.inst != null)
-				RTEventManager.inst.pitchOffset = __0;
-			else
-				__instance.pitch = __0;
+        [HarmonyPatch("SetPitch")]
+        [HarmonyPrefix]
+        static bool SetPitchPrefix(AudioManager __instance, float __0)
+        {
+            if (RTEventManager.inst != null)
+                RTEventManager.inst.pitchOffset = __0;
+            else
+                __instance.pitch = __0;
 
-			return false;
-		}
-	}
+            return false;
+        }
+    }
 }

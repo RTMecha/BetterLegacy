@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using BetterLegacy.Core.Managers.Networking;
+﻿using BetterLegacy.Core.Managers.Networking;
 using HarmonyLib;
 
 using UnityEngine;

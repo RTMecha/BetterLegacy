@@ -1,5 +1,4 @@
 ﻿using SimpleJSON;
-using System;
 using BaseEditorData = DataManager.GameData.BeatmapData.EditorData;
 
 namespace BetterLegacy.Core.Data
@@ -13,12 +12,12 @@ namespace BetterLegacy.Core.Data
 
         public static LevelEditorData Parse(JSONNode jn, bool add = true)
         {
-			var editorData = new LevelEditorData();
+            var editorData = new LevelEditorData();
 
-			if (!string.IsNullOrEmpty(jn["timeline_pos"]))
-				editorData.timelinePos = jn["timeline_pos"].AsFloat;
-			else
-				editorData.timelinePos = 0f;
+            if (!string.IsNullOrEmpty(jn["timeline_pos"]))
+                editorData.timelinePos = jn["timeline_pos"].AsFloat;
+            else
+                editorData.timelinePos = 0f;
 
             if (!string.IsNullOrEmpty(jn["timeline_zoom"]))
                 editorData.mainTimelineZoom = jn["timeline_zoom"].AsFloat;
@@ -27,7 +26,7 @@ namespace BetterLegacy.Core.Data
                 editorData.openAmount++;
 
             return editorData;
-		}
+        }
 
         public JSONNode ToJSON()
         {

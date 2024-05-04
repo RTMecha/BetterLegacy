@@ -7,7 +7,6 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Editor;
 using BetterLegacy.Editor.Managers;
 using BetterLegacy.Example;
 using CielaSpike;

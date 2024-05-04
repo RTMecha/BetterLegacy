@@ -42,7 +42,7 @@ namespace BetterLegacy.Core.Managers
                         allQuickElements.Add(qe.Key, qe.Value);
                     }
                 }
-                
+
                 foreach (var qe in customQuickElements)
                 {
                     if (!allQuickElements.ContainsKey(qe.Key))

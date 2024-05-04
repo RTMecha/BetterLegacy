@@ -1,14 +1,12 @@
-﻿using System;
-using System.Linq;
-
-using UnityEngine;
-using UnityEngine.UI;
-using LSFunctions;
-using TMPro;
-using BetterLegacy.Components;
-using BetterLegacy.Core.Helpers;
+﻿using BetterLegacy.Components;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Helpers;
+using System;
+using System.Linq;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace BetterLegacy.Core.Managers
 {

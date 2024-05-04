@@ -2,10 +2,6 @@
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Menus;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace BetterLegacy.Configs
@@ -38,7 +34,7 @@ namespace BetterLegacy.Configs
         }
 
         #region General
-        
+
         public ConfigEntry<bool> UseNewInterface { get; set; }
 
         /// <summary>

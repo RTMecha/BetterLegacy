@@ -1,28 +1,23 @@
-﻿using System;
+﻿using BepInEx.Configuration;
+using BetterLegacy.Configs;
+using BetterLegacy.Core;
+using BetterLegacy.Core.Animation;
+using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Managers.Networking;
+using BetterLegacy.Menus;
+using HarmonyLib;
+using LSFunctions;
+using SimpleJSON;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-
-using HarmonyLib;
-
 using UnityEngine;
-
-using LSFunctions;
-
-using SimpleJSON;
-
 using BeatmapObject = DataManager.GameData.BeatmapObject;
-using Prefab = DataManager.GameData.Prefab;
 using BeatmapTheme = DataManager.BeatmapTheme;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
-using BetterLegacy.Core;
-using BetterLegacy.Core.Animation;
-using BetterLegacy.Core.Managers.Networking;
-using BetterLegacy.Menus;
-using BetterLegacy.Configs;
-using BepInEx.Configuration;
-using BetterLegacy.Core.Data;
+using Prefab = DataManager.GameData.Prefab;
 
 namespace BetterLegacy.Patchers
 {
@@ -488,7 +483,7 @@ namespace BetterLegacy.Patchers
             __result = ModCompatibility.sharedFunctions.ContainsKey(Instance.settingPrefix + __0);
             return false;
         }
-        
+
         [HarmonyPatch("SettingHasKey")]
         [HarmonyPrefix]
         static bool SettingHasKeyPrefix(ref bool __result, string __0)
@@ -540,7 +535,7 @@ namespace BetterLegacy.Patchers
             __result = "";
             return false;
         }
-        
+
         [HarmonyPatch("GetSettingString", new Type[] { typeof(string), typeof(string) })]
         [HarmonyPrefix]
         static bool GetSettingStringPrefix2(ref string __result, string __0, string __1)
@@ -632,7 +627,7 @@ namespace BetterLegacy.Patchers
             __result = __1;
             return false;
         }
-        
+
         [HarmonyPatch("UpdateSettingBool")]
         [HarmonyPrefix]
         static bool UpdateSettingBoolPrefix(string __0, bool __1)
@@ -1002,7 +997,7 @@ namespace BetterLegacy.Patchers
             prefab.Type = __0.Type;
             prefab.Offset = __0.Offset;
             prefab.objects = new List<BeatmapObject>((from obj in __0.objects
-                                                                           select BeatmapObject.DeepCopy(obj, false)).ToList());
+                                                      select BeatmapObject.DeepCopy(obj, false)).ToList());
 
             prefab.prefabObjects = new List<DataManager.GameData.PrefabObject>((from obj in __0.prefabObjects
                                                                                 select DataManager.GameData.PrefabObject.DeepCopy(obj, false)).ToList());

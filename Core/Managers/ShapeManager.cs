@@ -4,7 +4,6 @@ using SimpleJSON;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using UnityEngine;
 
 namespace BetterLegacy.Core.Managers
@@ -306,7 +305,7 @@ namespace BetterLegacy.Core.Managers
             get => shapes;
             set => shapes = value;
         }
-        
+
         public List<List<Shape>> Shapes3D { get; set; }
 
         public Shape GetShape(int shape, int shapeOption)

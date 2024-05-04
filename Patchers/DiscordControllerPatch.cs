@@ -1,8 +1,6 @@
-﻿using HarmonyLib;
-
+﻿using BetterLegacy.Configs;
+using HarmonyLib;
 using UnityEngine;
-
-using BetterLegacy.Configs;
 
 namespace BetterLegacy.Patchers
 {
@@ -15,46 +13,46 @@ namespace BetterLegacy.Patchers
         {
             __instance.applicationId = CoreConfig.Instance.DiscordRichPresenceID.Value;
         }
-		
+
         [HarmonyPatch("Awake")]
         [HarmonyPostfix]
         static void AwakePostfix(DiscordController __instance)
         {
-			__instance.OnArtChange("pa_logo_white");
-		}
+            __instance.OnArtChange("pa_logo_white");
+        }
 
-		[HarmonyPatch("OnArtChange")]
-		[HarmonyPrefix]
-		static bool OnArtChangePrefix(DiscordController __instance, string _art)
-		{
-			__instance.presence.largeImageKey = _art;
-			return false;
-		}
+        [HarmonyPatch("OnArtChange")]
+        [HarmonyPrefix]
+        static bool OnArtChangePrefix(DiscordController __instance, string _art)
+        {
+            __instance.presence.largeImageKey = _art;
+            return false;
+        }
 
-		[HarmonyPatch("OnIconChange")]
-		[HarmonyPrefix]
-		static bool OnIconChangePrefix(DiscordController __instance, string _icon)
-		{
-			__instance.presence.smallImageKey = _icon;
-			return false;
-		}
+        [HarmonyPatch("OnIconChange")]
+        [HarmonyPrefix]
+        static bool OnIconChangePrefix(DiscordController __instance, string _icon)
+        {
+            __instance.presence.smallImageKey = _icon;
+            return false;
+        }
 
-		[HarmonyPatch("OnStateChange")]
-		[HarmonyPrefix]
-		static bool OnStateChangePrefix(DiscordController __instance, string _state)
-		{
-			__instance.presence.state = _state;
-			DiscordRpc.UpdatePresence(__instance.presence);
-			return false;
-		}
+        [HarmonyPatch("OnStateChange")]
+        [HarmonyPrefix]
+        static bool OnStateChangePrefix(DiscordController __instance, string _state)
+        {
+            __instance.presence.state = _state;
+            DiscordRpc.UpdatePresence(__instance.presence);
+            return false;
+        }
 
-		[HarmonyPatch("OnDetailsChange")]
-		[HarmonyPrefix]
-		static bool OnDetailsChangePrefix(DiscordController __instance, string _details)
-		{
-			__instance.presence.details = _details;
-			DiscordRpc.UpdatePresence(__instance.presence);
-			return false;
-		}
-	}
+        [HarmonyPatch("OnDetailsChange")]
+        [HarmonyPrefix]
+        static bool OnDetailsChangePrefix(DiscordController __instance, string _details)
+        {
+            __instance.presence.details = _details;
+            DiscordRpc.UpdatePresence(__instance.presence);
+            return false;
+        }
+    }
 }

@@ -5,7 +5,6 @@ using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using LSFunctions;
 using SimpleJSON;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;

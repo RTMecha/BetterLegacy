@@ -470,7 +470,7 @@ namespace BetterLegacy.Core.Managers
 
                             str = str.Replace("<levelRank>", $"<color=#{LSColors.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>");
                         }
-                        
+
                         if (beatmapObject.text.Contains("<levelRankName>"))
                         {
                             DataManager.LevelRank levelRank = null;
@@ -486,7 +486,7 @@ namespace BetterLegacy.Core.Managers
 
                             str = str.Replace("<levelRankName>", levelRank.name);
                         }
-                        
+
                         if (beatmapObject.text.Contains("<levelRankColor>"))
                         {
                             DataManager.LevelRank levelRank = null;
@@ -521,7 +521,7 @@ namespace BetterLegacy.Core.Managers
                                 str = str.Replace("<modifierVariable=" + match.Groups[1].ToString() + ">", ((BeatmapObject)other).integerVariable.ToString());
                             }
                         }
-                        
+
                         {
                             var regex = new Regex(@"<modifierVariableID=(.*?)>");
                             var match = regex.Match(beatmapObject.text);

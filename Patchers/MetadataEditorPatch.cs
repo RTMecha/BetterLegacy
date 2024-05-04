@@ -6,7 +6,6 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Core.Prefabs;
-using BetterLegacy.Editor;
 using BetterLegacy.Editor.Managers;
 using HarmonyLib;
 using LSFunctions;
@@ -84,7 +83,7 @@ namespace BetterLegacy.Patchers
 
             if (!content.Find("creator/link"))
                 content.Find("artist/link").gameObject.Duplicate(content.Find("creator"), "link", 3);
-            
+
             if (!content.Find("song/link"))
                 content.Find("artist/link").gameObject.Duplicate(content.Find("song"), "link", 2);
 

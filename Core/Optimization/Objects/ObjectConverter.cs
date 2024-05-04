@@ -41,7 +41,7 @@ namespace BetterLegacy.Core.Optimization.Objects
         public Dictionary<string, BeatmapObject> beatmapObjects = new Dictionary<string, BeatmapObject>();
 
         public static bool ShowEmpties { get; set; } = false;
-        
+
         public static bool ShowDamagable { get; set; } = false;
 
         readonly GameData gameData;
@@ -296,7 +296,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             levelObject.SetActive(false);
 
             beatmapObject.levelObject = levelObject;
-            
+
             return levelObject;
         }
 
@@ -572,9 +572,9 @@ namespace BetterLegacy.Core.Optimization.Objects
             switch (_floatEvent.random)
             {
                 case 1:
-                        result = _floatEvent.eventRandomValues.Length > 2 && _floatEvent.eventRandomValues[2] != 0f ?
-                            RTMath.roundToNearest(UnityEngine.Random.Range(_floatEvent.eventValues[index], _floatEvent.eventRandomValues[0]), _floatEvent.eventRandomValues[2]) : 
-                            UnityEngine.Random.Range(_floatEvent.eventValues[index], _floatEvent.eventRandomValues[0]);
+                    result = _floatEvent.eventRandomValues.Length > 2 && _floatEvent.eventRandomValues[2] != 0f ?
+                        RTMath.roundToNearest(UnityEngine.Random.Range(_floatEvent.eventValues[index], _floatEvent.eventRandomValues[0]), _floatEvent.eventRandomValues[2]) :
+                        UnityEngine.Random.Range(_floatEvent.eventValues[index], _floatEvent.eventRandomValues[0]);
                     break;
                 case 2:
                     result = Mathf.Round(UnityEngine.Random.Range(_floatEvent.eventValues[index], _floatEvent.eventRandomValues[0]));

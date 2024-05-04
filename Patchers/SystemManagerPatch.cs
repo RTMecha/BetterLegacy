@@ -3,37 +3,32 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Example;
 using HarmonyLib;
 using LSFunctions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace BetterLegacy.Patchers
 {
-	[HarmonyPatch(typeof(SystemManager))]
+    [HarmonyPatch(typeof(SystemManager))]
     public class SystemManagerPatch
-	{
-		[HarmonyPatch("Awake")]
-		[HarmonyPostfix]
-		static void AwakePostfix()
-		{
-			Debug.unityLogger.logEnabled = CoreConfig.Instance.DebugsOn.Value;
-			ExampleManager.Init();
-		}
+    {
+        [HarmonyPatch("Awake")]
+        [HarmonyPostfix]
+        static void AwakePostfix()
+        {
+            Debug.unityLogger.logEnabled = CoreConfig.Instance.DebugsOn.Value;
+            ExampleManager.Init();
+        }
 
-		[HarmonyPatch(typeof(SystemManager), "Update")]
-		[HarmonyPrefix]
-		static bool SystemManagerUpdatePrefix()
-		{
-			if (Input.GetKeyDown(CoreConfig.Instance.ScreenshotKey.Value) && !LSHelpers.IsUsingInputField())
-				CoreHelper.TakeScreenshot();
+        [HarmonyPatch(typeof(SystemManager), "Update")]
+        [HarmonyPrefix]
+        static bool SystemManagerUpdatePrefix()
+        {
+            if (Input.GetKeyDown(CoreConfig.Instance.ScreenshotKey.Value) && !LSHelpers.IsUsingInputField())
+                CoreHelper.TakeScreenshot();
 
-			if (Input.GetKeyDown(KeyCode.F11) && !LSHelpers.IsUsingInputField())
-				CoreConfig.Instance.Fullscreen.Value = !CoreConfig.Instance.Fullscreen.Value;
+            if (Input.GetKeyDown(KeyCode.F11) && !LSHelpers.IsUsingInputField())
+                CoreConfig.Instance.Fullscreen.Value = !CoreConfig.Instance.Fullscreen.Value;
 
-			return false;
-		}
-	}
+            return false;
+        }
+    }
 }

@@ -1,16 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BetterLegacy.Components
+﻿namespace BetterLegacy.Components
 {
     using System;
     using System.Collections.Generic;
-    using TMPro;
     using UnityEngine;
-    using UnityEngine.UI;
 
     /// <summary>
     /// FPS Counter component from https://forum.unity.com/threads/fps-counter.505495/

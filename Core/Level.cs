@@ -1,15 +1,12 @@
-﻿using UnityEngine;
-
-using SimpleJSON;
-
-using System.Collections;
-using System;
-
+﻿using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
-using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
-using BetterLegacy.Configs;
+using SimpleJSON;
+using System;
+using System.Collections;
+using UnityEngine;
 
 namespace BetterLegacy.Core
 {
@@ -108,7 +105,7 @@ namespace BetterLegacy.Core
                 music = LSFunctions.LSAudio.CreateAudioClipUsingMP3File(path + "audio.mp3");
             }
         }
-        
+
         public IEnumerator LoadAudioClipRoutine(Action onComplete = null)
         {
             if (RTFile.FileExists(path + "level.ogg") && !music)

@@ -1,20 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-using UnityEngine;
-using LSFunctions;
-
-using UnityEngine.UI;
-using System.Collections;
-using TMPro;
-using UnityEngine.EventSystems;
-using BetterLegacy.Core.Managers;
-using BetterLegacy.Components;
+﻿using BetterLegacy.Components;
 using BetterLegacy.Configs;
-using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
+using LSFunctions;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace BetterLegacy.Arcade
 {
@@ -131,7 +128,7 @@ namespace BetterLegacy.Arcade
                 Buttons[selected.y][selected.x].Clickable?.onClick?.Invoke(null);
             }
         }
-        
+
         public IEnumerator SetupDownloadLevelMenu()
         {
             SelectionLimit.Add(1);
@@ -193,12 +190,12 @@ namespace BetterLegacy.Arcade
 
                 SelectionLimit[1]++;
             }
-            
+
             var coverBase1 = UIManager.GenerateUIImage($"Cover Base", rectTransform);
             UIManager.SetRectTransform(coverBase1.GetObject<RectTransform>(), new Vector2(-600f, 64f), ArcadeMenuManager.ZeroFive, ArcadeMenuManager.ZeroFive, ArcadeMenuManager.ZeroFive, new Vector2(512f, 512f));
             coverBase = coverBase1.GetObject<Image>();
             coverBase1.GetObject<GameObject>().AddComponent<Mask>();
-            
+
             var coverBase2 = UIManager.GenerateUIImage($"Cover", coverBase1.GetObject<RectTransform>());
             UIManager.SetRectTransform(coverBase2.GetObject<RectTransform>(), Vector2.zero, ArcadeMenuManager.ZeroFive, ArcadeMenuManager.ZeroFive, ArcadeMenuManager.ZeroFive, new Vector2(512f, 512f));
             cover = coverBase2.GetObject<Image>();
@@ -209,22 +206,22 @@ namespace BetterLegacy.Arcade
             title.fontSize = 48;
             title.fontStyle = FontStyles.Bold;
             title.overflowMode = TextOverflowModes.Truncate;
-            
+
             var artistBase = UIManager.GenerateUITextMeshPro("Artist", rectTransform);
             UIManager.SetRectTransform(artistBase.GetObject<RectTransform>(), new Vector2(200f, 200f), ArcadeMenuManager.ZeroFive, ArcadeMenuManager.ZeroFive, ArcadeMenuManager.ZeroFive, new Vector2(1000f, 100f));
             artist = artistBase.GetObject<TextMeshProUGUI>();
             artist.overflowMode = TextOverflowModes.Truncate;
-            
+
             var creatorBase = UIManager.GenerateUITextMeshPro("Creator", rectTransform);
             UIManager.SetRectTransform(creatorBase.GetObject<RectTransform>(), new Vector2(200f, 160f), ArcadeMenuManager.ZeroFive, ArcadeMenuManager.ZeroFive, ArcadeMenuManager.ZeroFive, new Vector2(1000f, 100f));
             creator = creatorBase.GetObject<TextMeshProUGUI>();
             creator.overflowMode = TextOverflowModes.Truncate;
-            
+
             var difficultyBase = UIManager.GenerateUITextMeshPro("Difficulty", rectTransform);
             UIManager.SetRectTransform(difficultyBase.GetObject<RectTransform>(), new Vector2(200f, 120f), ArcadeMenuManager.ZeroFive, ArcadeMenuManager.ZeroFive, ArcadeMenuManager.ZeroFive, new Vector2(1000f, 100f));
             difficulty = difficultyBase.GetObject<TextMeshProUGUI>();
             difficulty.overflowMode = TextOverflowModes.Truncate;
-            
+
             var descriptionBase = UIManager.GenerateUITextMeshPro("Description", rectTransform);
             UIManager.SetRectTransform(descriptionBase.GetObject<RectTransform>(), new Vector2(200f, -50f), ArcadeMenuManager.ZeroFive, ArcadeMenuManager.ZeroFive, ArcadeMenuManager.ZeroFive, new Vector2(1000f, 300f));
             description = descriptionBase.GetObject<TextMeshProUGUI>();

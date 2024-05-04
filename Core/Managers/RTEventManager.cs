@@ -1,28 +1,21 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-
-using UnityEngine;
-using UnityEngine.EventSystems;
-
-using LSFunctions;
-
-using DG.Tweening;
-using DG.Tweening.Core;
-
-using DOSequence = DG.Tweening.Sequence;
-using Ease = BetterLegacy.Core.Animation.Ease;
-using EaseFunction = BetterLegacy.Core.Animation.EaseFunction;
-using Random = UnityEngine.Random;
-using BetterLegacy.Components;
+﻿using BetterLegacy.Components;
+using BetterLegacy.Components.Player;
 using BetterLegacy.Configs;
+using BetterLegacy.Core.Animation;
+using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Patchers;
-using BetterLegacy.Components.Player;
-using BetterLegacy.Core.Animation.Keyframe;
-using BetterLegacy.Core.Animation;
+using DG.Tweening;
+using LSFunctions;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+using Ease = BetterLegacy.Core.Animation.Ease;
+using EaseFunction = BetterLegacy.Core.Animation.EaseFunction;
+using Random = UnityEngine.Random;
 
 namespace BetterLegacy.Core.Managers
 {
@@ -699,7 +692,7 @@ namespace BetterLegacy.Core.Managers
             if (finalKF.eventValues.Length > valueIndex)
                 next = (int)finalKF.eventValues[valueIndex];
         }
-        
+
         void FindColor(float time, List<List<DataManager.GameData.EventKeyframe>> allEvents, ref int prev1, ref int next1, ref int prev2, ref int next2, int type, int valueIndex1, int valueIndex2)
         {
             if (allEvents.Count <= type || allEvents[type].Count <= 0)
@@ -755,7 +748,7 @@ namespace BetterLegacy.Core.Managers
 
             return Color.Lerp(prevColor, nextColor, t);
         }
-        
+
         static Color LerpColor(int prev, int next, float t, Color defaultColor, Color defaultColor2)
         {
             Color prevColor = CoreHelper.CurrentBeatmapTheme.effectColors.Count > prev && prev > -1 ? CoreHelper.CurrentBeatmapTheme.effectColors[prev] : prev == 19 ? defaultColor : defaultColor2;

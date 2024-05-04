@@ -2264,30 +2264,30 @@ namespace BetterLegacy.Editor.Managers
                         //Bloom Intensity
                         SetFloatInputField(dialogTmp, "bloom/x", 0, max: 1280f, allowNegative: false);
 
-                            RTEditor.SetActive(dialogTmp.Find("diffusion").gameObject, RTEditor.ShowModdedUI);
-                            RTEditor.SetActive(dialogTmp.Find("threshold").gameObject, RTEditor.ShowModdedUI);
-                            RTEditor.SetActive(dialogTmp.Find("anamorphic ratio").gameObject, RTEditor.ShowModdedUI);
-                            RTEditor.SetActive(dialogTmp.Find("colors").gameObject, RTEditor.ShowModdedUI);
+                        RTEditor.SetActive(dialogTmp.Find("diffusion").gameObject, RTEditor.ShowModdedUI);
+                        RTEditor.SetActive(dialogTmp.Find("threshold").gameObject, RTEditor.ShowModdedUI);
+                        RTEditor.SetActive(dialogTmp.Find("anamorphic ratio").gameObject, RTEditor.ShowModdedUI);
+                        RTEditor.SetActive(dialogTmp.Find("colors").gameObject, RTEditor.ShowModdedUI);
 
-                            if (!RTEditor.ShowModdedUI)
-                                break;
+                        if (!RTEditor.ShowModdedUI)
+                            break;
 
-                            // Bloom Diffusion
-                            SetFloatInputField(dialogTmp, "diffusion/x", 1, min: 1f, max: float.PositiveInfinity, allowNegative: false);
+                        // Bloom Diffusion
+                        SetFloatInputField(dialogTmp, "diffusion/x", 1, min: 1f, max: float.PositiveInfinity, allowNegative: false);
 
-                            // Bloom Threshold
-                            SetFloatInputField(dialogTmp, "threshold/x", 2, min: 0f, max: 1.4f, allowNegative: false);
+                        // Bloom Threshold
+                        SetFloatInputField(dialogTmp, "threshold/x", 2, min: 0f, max: 1.4f, allowNegative: false);
 
-                            // Bloom Anamorphic Ratio
-                            SetFloatInputField(dialogTmp, "anamorphic ratio/x", 3, min: -1f, max: 1f);
+                        // Bloom Anamorphic Ratio
+                        SetFloatInputField(dialogTmp, "anamorphic ratio/x", 3, min: -1f, max: 1f);
 
-                            // Bloom Color
-                            SetListColor((int)currentKeyframe.eventValues[4], 4, bloomColorButtons, Color.white, Color.black);
+                        // Bloom Color
+                        SetListColor((int)currentKeyframe.eventValues[4], 4, bloomColorButtons, Color.white, Color.black);
 
-                            // Bloom Color Shift
-                            SetFloatInputField(dialogTmp, "colorshift/x", 5);
-                            SetFloatInputField(dialogTmp, "colorshift/y", 6);
-                            SetFloatInputField(dialogTmp, "colorshift/z", 7);
+                        // Bloom Color Shift
+                        SetFloatInputField(dialogTmp, "colorshift/x", 5);
+                        SetFloatInputField(dialogTmp, "colorshift/y", 6);
+                        SetFloatInputField(dialogTmp, "colorshift/z", 7);
                         break;
                     }
                 case 7: // Vignette

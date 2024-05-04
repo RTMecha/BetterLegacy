@@ -1,7 +1,6 @@
-﻿using UnityEngine;
+﻿using SimpleJSON;
+using UnityEngine;
 using UnityEngine.UI;
-
-using SimpleJSON;
 
 namespace BetterLegacy.Core
 {

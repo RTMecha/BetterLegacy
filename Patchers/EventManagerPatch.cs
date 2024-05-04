@@ -1,54 +1,50 @@
 ﻿using BetterLegacy.Core.Managers;
 using HarmonyLib;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BetterLegacy.Patchers
 {
-	[HarmonyPatch(typeof(EventManager))]
-	class EventManagerPatch
-	{
-		[HarmonyPatch("Update")]
-		[HarmonyPrefix]
-		static bool EventManagerUpdatePrefix()
-		{
-			return false;
-		}
+    [HarmonyPatch(typeof(EventManager))]
+    class EventManagerPatch
+    {
+        [HarmonyPatch("Update")]
+        [HarmonyPrefix]
+        static bool EventManagerUpdatePrefix()
+        {
+            return false;
+        }
 
-		[HarmonyPatch("LateUpdate")]
-		[HarmonyPrefix]
-		static bool EventManagerLateUpdatePrefix()
-		{
-			return false;
-		}
+        [HarmonyPatch("LateUpdate")]
+        [HarmonyPrefix]
+        static bool EventManagerLateUpdatePrefix()
+        {
+            return false;
+        }
 
-		[HarmonyPatch(typeof(EventManager), "updateShake")]
-		[HarmonyPrefix]
-		static bool EventManagerShakePrefix()
-		{
-			RTEventManager.inst.updateShake();
-			return false;
-		}
+        [HarmonyPatch(typeof(EventManager), "updateShake")]
+        [HarmonyPrefix]
+        static bool EventManagerShakePrefix()
+        {
+            RTEventManager.inst.updateShake();
+            return false;
+        }
 
-		[HarmonyPatch(typeof(EventManager), "updateEvents", new[] { typeof(int) })]
-		[HarmonyPrefix]
-		static bool EventManagerUpdateEventsPrefix1(int __0)
-		{
-			RTEventManager.inst.updateEvents(__0);
-			return false;
-		}
+        [HarmonyPatch(typeof(EventManager), "updateEvents", new[] { typeof(int) })]
+        [HarmonyPrefix]
+        static bool EventManagerUpdateEventsPrefix1(int __0)
+        {
+            RTEventManager.inst.updateEvents(__0);
+            return false;
+        }
 
-		[HarmonyPatch(typeof(EventManager), "updateEvents", new Type[] { })]
-		[HarmonyPrefix]
-		static bool EventManagerUpdateEventsPrefix2(EventManager __instance)
-		{
-			__instance.StartCoroutine(RTEventManager.inst.updateEvents());
+        [HarmonyPatch(typeof(EventManager), "updateEvents", new Type[] { })]
+        [HarmonyPrefix]
+        static bool EventManagerUpdateEventsPrefix2(EventManager __instance)
+        {
+            __instance.StartCoroutine(RTEventManager.inst.updateEvents());
 
-			return false;
-		}
+            return false;
+        }
 
-	}
+    }
 }

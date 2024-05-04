@@ -1,16 +1,15 @@
-﻿using BetterLegacy.Editor.Managers;
-using LSFunctions;
+﻿using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Optimization;
+using BetterLegacy.Editor;
+using BetterLegacy.Editor.Managers;
+using LSFunctions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using BetterLegacy.Configs;
-using BetterLegacy.Editor;
-using BetterLegacy.Core.Optimization;
-using BetterLegacy.Patchers;
 
 namespace BetterLegacy.Core.Helpers
 {

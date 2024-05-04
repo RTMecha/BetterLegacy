@@ -1,16 +1,16 @@
 ﻿using BepInEx.Configuration;
+using BetterLegacy.Components;
+using BetterLegacy.Components.Editor;
+using BetterLegacy.Components.Player;
+using BetterLegacy.Core;
+using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
+using BetterLegacy.Editor.Managers;
 using LSFunctions;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
-using System;
-using BetterLegacy.Editor.Managers;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Data;
-using BetterLegacy.Core;
-using BetterLegacy.Components.Player;
-using BetterLegacy.Components.Editor;
-using BetterLegacy.Core.Managers;
-using BetterLegacy.Components;
 
 namespace BetterLegacy.Configs
 {

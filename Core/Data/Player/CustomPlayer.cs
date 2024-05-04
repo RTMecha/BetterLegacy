@@ -29,57 +29,57 @@ namespace BetterLegacy.Core.Data.Player
 
         public new PlayerIndex GetPlayerIndex(int _index) => (PlayerIndex)_index;
 
-		public new void ControllerDisconnected(InputDevice __0)
-		{
-			if (__0.SortOrder == SortOrder && GetDeviceModel(__0.Name) == deviceModel)
-			{
-				if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Input Select")
-				{
-					InputManager.OnDeviceAttached -= ControllerConnected;
-					InputManager.OnDeviceDetached -= ControllerDisconnected;
-					InputDataManager.inst.players.RemoveAt(index);
-					int num = 0;
-					foreach (var customPlayer in InputDataManager.inst.players)
-					{
-						InputDataManager.inst.players[num].index = num;
-						InputDataManager.inst.players[num].playerIndex = GetPlayerIndex(InputDataManager.inst.players[num].index);
-						num++;
-					}
-				}
-				controllerConnected = false;
-				device = null;
-				if (Player)
-					Player.Actions = null;
-				HarmonyLib.AccessTools.Field(typeof(InputDataManager), "playerDisconnectedEvent").SetValue(InputDataManager.inst, this);
-				Debug.LogFormat("{0}Disconnected Controler Was Attached to player. Controller [{1}] [{2}] -/- Player [{3}]", InputDataManager.className, __0.Name, __0.SortOrder, index);
-			}
-		}
+        public new void ControllerDisconnected(InputDevice __0)
+        {
+            if (__0.SortOrder == SortOrder && GetDeviceModel(__0.Name) == deviceModel)
+            {
+                if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Input Select")
+                {
+                    InputManager.OnDeviceAttached -= ControllerConnected;
+                    InputManager.OnDeviceDetached -= ControllerDisconnected;
+                    InputDataManager.inst.players.RemoveAt(index);
+                    int num = 0;
+                    foreach (var customPlayer in InputDataManager.inst.players)
+                    {
+                        InputDataManager.inst.players[num].index = num;
+                        InputDataManager.inst.players[num].playerIndex = GetPlayerIndex(InputDataManager.inst.players[num].index);
+                        num++;
+                    }
+                }
+                controllerConnected = false;
+                device = null;
+                if (Player)
+                    Player.Actions = null;
+                HarmonyLib.AccessTools.Field(typeof(InputDataManager), "playerDisconnectedEvent").SetValue(InputDataManager.inst, this);
+                Debug.LogFormat("{0}Disconnected Controler Was Attached to player. Controller [{1}] [{2}] -/- Player [{3}]", InputDataManager.className, __0.Name, __0.SortOrder, index);
+            }
+        }
 
-		public new void ControllerConnected(InputDevice __0)
-		{
-			if (__0.SortOrder == SortOrder && GetDeviceModel(__0.Name) == deviceModel)
-			{
-				InputDataManager.inst.ThereIsNoPlayerUsingJoystick(__0);
-				controllerConnected = true;
-				device = __0;
-				HarmonyLib.AccessTools.Field(typeof(InputDataManager), "playerReconnectedEvent").SetValue(InputDataManager.inst, this);
-				var myGameActions = MyGameActions.CreateWithJoystickBindings();
-				myGameActions.Device = __0;
-				if (Player)
-					Player.Actions = myGameActions;
-				Debug.LogFormat("{0}Connected Controller Exists in players. Controller [{1}] [{2}] -> Player [{3}]", InputDataManager.className, __0.Name, __0.SortOrder, index);
-			}
-		}
+        public new void ControllerConnected(InputDevice __0)
+        {
+            if (__0.SortOrder == SortOrder && GetDeviceModel(__0.Name) == deviceModel)
+            {
+                InputDataManager.inst.ThereIsNoPlayerUsingJoystick(__0);
+                controllerConnected = true;
+                device = __0;
+                HarmonyLib.AccessTools.Field(typeof(InputDataManager), "playerReconnectedEvent").SetValue(InputDataManager.inst, this);
+                var myGameActions = MyGameActions.CreateWithJoystickBindings();
+                myGameActions.Device = __0;
+                if (Player)
+                    Player.Actions = myGameActions;
+                Debug.LogFormat("{0}Connected Controller Exists in players. Controller [{1}] [{2}] -> Player [{3}]", InputDataManager.className, __0.Name, __0.SortOrder, index);
+            }
+        }
 
-		public new void ReconnectController(InputDevice __0)
-		{
-			var myGameActions = MyGameActions.CreateWithJoystickBindings();
-			myGameActions.Device = device;
-			if (Player)
-				Player.Actions = myGameActions;
-		}
+        public new void ReconnectController(InputDevice __0)
+        {
+            var myGameActions = MyGameActions.CreateWithJoystickBindings();
+            myGameActions.Device = device;
+            if (Player)
+                Player.Actions = myGameActions;
+        }
 
-		public int Health
+        public int Health
         {
             get => health;
             set

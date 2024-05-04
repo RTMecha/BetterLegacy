@@ -1,5 +1,4 @@
 ﻿using SimpleJSON;
-using System;
 using BaseLevelData = DataManager.GameData.BeatmapData.LevelData;
 
 namespace BetterLegacy.Core.Data

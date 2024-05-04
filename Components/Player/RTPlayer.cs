@@ -1,6 +1,11 @@
-﻿using DG.Tweening;
-using LSFunctions;
+﻿using BetterLegacy.Components.Editor;
+using BetterLegacy.Configs;
+using BetterLegacy.Core;
 using BetterLegacy.Core.Data.Player;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
+using DG.Tweening;
+using LSFunctions;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,11 +14,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using XInputDotNetPure;
-using BetterLegacy.Core;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
-using BetterLegacy.Configs;
-using BetterLegacy.Components.Editor;
 
 namespace BetterLegacy.Components.Player
 {
@@ -2115,7 +2115,7 @@ namespace BetterLegacy.Components.Player
                             PlayerDelayTracker.scaleParent = (bool)customObj.values["Parent Scale Active"];
                             PlayerDelayTracker.rotationParent = (bool)customObj.values["Parent Rotation Active"];
                             PlayerDelayTracker.player = this;
-                            
+
                             switch ((int)customObj.values["Parent"])
                             {
                                 case 0:
@@ -2473,7 +2473,7 @@ namespace BetterLegacy.Components.Player
         public Color GetColor(int col, float alpha, string hex)
             => LSColors.fadeColor(col >= 0 && col < 4 ? CoreHelper.CurrentBeatmapTheme.playerColors[col] : col == 4 ? CoreHelper.CurrentBeatmapTheme.guiColor : col > 4 && col < 23 ? CoreHelper.CurrentBeatmapTheme.objectColors[col - 5] :
                 col == 23 ? CoreHelper.CurrentBeatmapTheme.playerColors[playerIndex % 4] : col == 24 ? LSColors.HexToColor(hex) : col == 25 ? CoreHelper.CurrentBeatmapTheme.guiAccentColor : LSColors.pink500, alpha);
-        
+
         #endregion
 
         #region Actions
@@ -2834,106 +2834,106 @@ namespace BetterLegacy.Components.Player
                     RTCode.Evaluate($"{def}{cs}");
             }
         }
-        
+
         #endregion
 
         public KeyCode GetKeyCode(int key)
         {
             if (key < 91)
-            switch (key)
-            {
-                case 0: return KeyCode.None;
-                case 1: return KeyCode.Backspace;
-                case 2: return KeyCode.Tab;
-                case 3: return KeyCode.Clear;
-                case 4: return KeyCode.Return;
-                case 5: return KeyCode.Pause;
-                case 6: return KeyCode.Escape;
-                case 7: return KeyCode.Space;
-                case 8: return KeyCode.Quote;
-                case 9: return KeyCode.Comma;
-                case 10: return KeyCode.Minus;
-                case 11: return KeyCode.Period;
-                case 12: return KeyCode.Slash;
-                case 13: return KeyCode.Alpha0;
-                case 14: return KeyCode.Alpha1;
-                case 15: return KeyCode.Alpha2;
-                case 16: return KeyCode.Alpha3;
-                case 17: return KeyCode.Alpha4;
-                case 18: return KeyCode.Alpha5;
-                case 19: return KeyCode.Alpha6;
-                case 20: return KeyCode.Alpha7;
-                case 21: return KeyCode.Alpha8;
-                case 22: return KeyCode.Alpha9;
-                case 23: return KeyCode.Semicolon;
-                case 24: return KeyCode.Equals;
-                case 25: return KeyCode.LeftBracket;
-                case 26: return KeyCode.RightBracket;
-                case 27: return KeyCode.Backslash;
-                case 28: return KeyCode.A;
-                case 29: return KeyCode.B;
-                case 30: return KeyCode.C;
-                case 31: return KeyCode.D;
-                case 32: return KeyCode.E;
-                case 33: return KeyCode.F;
-                case 34: return KeyCode.G;
-                case 35: return KeyCode.H;
-                case 36: return KeyCode.I;
-                case 37: return KeyCode.J;
-                case 38: return KeyCode.K;
-                case 39: return KeyCode.L;
-                case 40: return KeyCode.M;
-                case 41: return KeyCode.N;
-                case 42: return KeyCode.O;
-                case 43: return KeyCode.P;
-                case 44: return KeyCode.Q;
-                case 45: return KeyCode.R;
-                case 46: return KeyCode.S;
-                case 47: return KeyCode.T;
-                case 48: return KeyCode.U;
-                case 49: return KeyCode.V;
-                case 50: return KeyCode.W;
-                case 51: return KeyCode.X;
-                case 52: return KeyCode.Y;
-                case 53: return KeyCode.Z;
-                case 54: return KeyCode.Keypad0;
-                case 55: return KeyCode.Keypad1;
-                case 56: return KeyCode.Keypad2;
-                case 57: return KeyCode.Keypad3;
-                case 58: return KeyCode.Keypad4;
-                case 59: return KeyCode.Keypad5;
-                case 60: return KeyCode.Keypad6;
-                case 61: return KeyCode.Keypad7;
-                case 62: return KeyCode.Keypad8;
-                case 63: return KeyCode.Keypad9;
-                case 64: return KeyCode.KeypadDivide;
-                case 65: return KeyCode.KeypadMultiply;
-                case 66: return KeyCode.KeypadMinus;
-                case 67: return KeyCode.KeypadPlus;
-                case 68: return KeyCode.KeypadEnter;
-                case 69: return KeyCode.UpArrow;
-                case 70: return KeyCode.DownArrow;
-                case 71: return KeyCode.RightArrow;
-                case 72: return KeyCode.LeftArrow;
-                case 73: return KeyCode.Insert;
-                case 74: return KeyCode.Home;
-                case 75: return KeyCode.End;
-                case 76: return KeyCode.PageUp;
-                case 77: return KeyCode.PageDown;
-                case 78: return KeyCode.RightShift;
-                case 79: return KeyCode.LeftShift;
-                case 80: return KeyCode.RightControl;
-                case 81: return KeyCode.LeftControl;
-                case 82: return KeyCode.RightAlt;
-                case 83: return KeyCode.LeftAlt;
-                case 84: return KeyCode.Mouse0;
-                case 85: return KeyCode.Mouse1;
-                case 86: return KeyCode.Mouse2;
-                case 87: return KeyCode.Mouse3;
-                case 88: return KeyCode.Mouse4;
-                case 89: return KeyCode.Mouse5;
-                case 90: return KeyCode.Mouse6;
-            }
+                switch (key)
+                {
+                    case 0: return KeyCode.None;
+                    case 1: return KeyCode.Backspace;
+                    case 2: return KeyCode.Tab;
+                    case 3: return KeyCode.Clear;
+                    case 4: return KeyCode.Return;
+                    case 5: return KeyCode.Pause;
+                    case 6: return KeyCode.Escape;
+                    case 7: return KeyCode.Space;
+                    case 8: return KeyCode.Quote;
+                    case 9: return KeyCode.Comma;
+                    case 10: return KeyCode.Minus;
+                    case 11: return KeyCode.Period;
+                    case 12: return KeyCode.Slash;
+                    case 13: return KeyCode.Alpha0;
+                    case 14: return KeyCode.Alpha1;
+                    case 15: return KeyCode.Alpha2;
+                    case 16: return KeyCode.Alpha3;
+                    case 17: return KeyCode.Alpha4;
+                    case 18: return KeyCode.Alpha5;
+                    case 19: return KeyCode.Alpha6;
+                    case 20: return KeyCode.Alpha7;
+                    case 21: return KeyCode.Alpha8;
+                    case 22: return KeyCode.Alpha9;
+                    case 23: return KeyCode.Semicolon;
+                    case 24: return KeyCode.Equals;
+                    case 25: return KeyCode.LeftBracket;
+                    case 26: return KeyCode.RightBracket;
+                    case 27: return KeyCode.Backslash;
+                    case 28: return KeyCode.A;
+                    case 29: return KeyCode.B;
+                    case 30: return KeyCode.C;
+                    case 31: return KeyCode.D;
+                    case 32: return KeyCode.E;
+                    case 33: return KeyCode.F;
+                    case 34: return KeyCode.G;
+                    case 35: return KeyCode.H;
+                    case 36: return KeyCode.I;
+                    case 37: return KeyCode.J;
+                    case 38: return KeyCode.K;
+                    case 39: return KeyCode.L;
+                    case 40: return KeyCode.M;
+                    case 41: return KeyCode.N;
+                    case 42: return KeyCode.O;
+                    case 43: return KeyCode.P;
+                    case 44: return KeyCode.Q;
+                    case 45: return KeyCode.R;
+                    case 46: return KeyCode.S;
+                    case 47: return KeyCode.T;
+                    case 48: return KeyCode.U;
+                    case 49: return KeyCode.V;
+                    case 50: return KeyCode.W;
+                    case 51: return KeyCode.X;
+                    case 52: return KeyCode.Y;
+                    case 53: return KeyCode.Z;
+                    case 54: return KeyCode.Keypad0;
+                    case 55: return KeyCode.Keypad1;
+                    case 56: return KeyCode.Keypad2;
+                    case 57: return KeyCode.Keypad3;
+                    case 58: return KeyCode.Keypad4;
+                    case 59: return KeyCode.Keypad5;
+                    case 60: return KeyCode.Keypad6;
+                    case 61: return KeyCode.Keypad7;
+                    case 62: return KeyCode.Keypad8;
+                    case 63: return KeyCode.Keypad9;
+                    case 64: return KeyCode.KeypadDivide;
+                    case 65: return KeyCode.KeypadMultiply;
+                    case 66: return KeyCode.KeypadMinus;
+                    case 67: return KeyCode.KeypadPlus;
+                    case 68: return KeyCode.KeypadEnter;
+                    case 69: return KeyCode.UpArrow;
+                    case 70: return KeyCode.DownArrow;
+                    case 71: return KeyCode.RightArrow;
+                    case 72: return KeyCode.LeftArrow;
+                    case 73: return KeyCode.Insert;
+                    case 74: return KeyCode.Home;
+                    case 75: return KeyCode.End;
+                    case 76: return KeyCode.PageUp;
+                    case 77: return KeyCode.PageDown;
+                    case 78: return KeyCode.RightShift;
+                    case 79: return KeyCode.LeftShift;
+                    case 80: return KeyCode.RightControl;
+                    case 81: return KeyCode.LeftControl;
+                    case 82: return KeyCode.RightAlt;
+                    case 83: return KeyCode.LeftAlt;
+                    case 84: return KeyCode.Mouse0;
+                    case 85: return KeyCode.Mouse1;
+                    case 86: return KeyCode.Mouse2;
+                    case 87: return KeyCode.Mouse3;
+                    case 88: return KeyCode.Mouse4;
+                    case 89: return KeyCode.Mouse5;
+                    case 90: return KeyCode.Mouse6;
+                }
 
             if (key > 90)
             {

@@ -41,35 +41,35 @@ namespace BetterLegacy.Core.Managers
                 return (Image)dictionary["Image"];
             return null;
         }
-        
+
         public static Text GetText(Dictionary<string, object> dictionary)
         {
             if (dictionary.ContainsKey("Text"))
                 return (Text)dictionary["Text"];
             return null;
         }
-        
+
         public static RectTransform GetRectTransform(Dictionary<string, object> dictionary)
         {
             if (dictionary.ContainsKey("RectTransform"))
                 return (RectTransform)dictionary["RectTransform"];
             return null;
         }
-        
+
         public static InputField GetInputField(Dictionary<string, object> dictionary)
         {
             if (dictionary.ContainsKey("InputField"))
                 return (InputField)dictionary["InputField"];
             return null;
         }
-        
+
         public static Button GetButton(Dictionary<string, object> dictionary)
         {
             if (dictionary.ContainsKey("Button"))
                 return (Button)dictionary["Button"];
             return null;
         }
-        
+
         public static Toggle GetToggle(Dictionary<string, object> dictionary)
         {
             if (dictionary.ContainsKey("Toggle"))

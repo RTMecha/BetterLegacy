@@ -1,5 +1,4 @@
-﻿using BetterLegacy.Core.Managers;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace BetterLegacy.Core.Optimization.Objects.Visual
 {

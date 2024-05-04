@@ -1844,7 +1844,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
                 EditorThemeManager.ApplyLightText(gameObject.transform.GetChild(0).GetComponent<Text>());
             }
-            
+
             // Paste Modifier
             if (copiedModifier != null)
             {

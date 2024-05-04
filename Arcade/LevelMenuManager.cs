@@ -1,24 +1,19 @@
-﻿using System;
+﻿using BetterLegacy.Configs;
+using BetterLegacy.Core;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
+using DG.Tweening;
+using InControl;
+using LSFunctions;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Reflection;
-
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.EventSystems;
-using UnityEngine.Video;
-
-using LSFunctions;
-using DG.Tweening;
-using InControl;
 using TMPro;
-using BetterLegacy.Core.Helpers;
-using BetterLegacy.Core.Managers;
-using BetterLegacy.Core;
-using BetterLegacy.Configs;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+using UnityEngine.Video;
 
 namespace BetterLegacy.Arcade
 {
@@ -1167,7 +1162,7 @@ namespace BetterLegacy.Arcade
             GetImage(arrowImage, "BepInEx/plugins/Assets/editor_gui_left.png");
             ((GameObject)arrow["GameObject"]).transform.rotation = Quaternion.Euler(0f, 0f, 90f);
 
-            SetRectTransform((RectTransform)label["RectTransform"], new Vector2(-15.3f, 0f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-46.6f, 0f));  
+            SetRectTransform((RectTransform)label["RectTransform"], new Vector2(-15.3f, 0f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-46.6f, 0f));
             SetRectTransform((RectTransform)arrow["RectTransform"], new Vector2(-2f, -0.5f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(0.5f, 0f), new Vector2(32f, 32f));
 
             var template = GenerateUIImage("Template", ((GameObject)dropdownBase["GameObject"]).transform);

@@ -1,20 +1,17 @@
-﻿using System.Reflection;
+﻿using BetterLegacy.Configs;
+using BetterLegacy.Core;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
+using InControl;
+using LSFunctions;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-
-using UnityEngine;
-using UnityEngine.UI;
-
-using InControl;
-using UnityEngine.EventSystems;
+using System.Reflection;
 using TMPro;
-
-using LSFunctions;
-using BetterLegacy.Core;
-using BetterLegacy.Core.Managers;
-using BetterLegacy.Configs;
-using BetterLegacy.Core.Helpers;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace BetterLegacy.Arcade
 {
@@ -210,7 +207,7 @@ namespace BetterLegacy.Arcade
                 Destroy(GameObject.Find("folder"));
                 Destroy(LevelMenuManager.inst.gameObject);
             }
-            
+
             if (ArcadeMenuManager.inst)
             {
                 Destroy(ArcadeMenuManager.inst.menuUI);
@@ -223,7 +220,7 @@ namespace BetterLegacy.Arcade
         public void UpdateInfo(Sprite sprite, string status, int num, bool logError = false)
         {
             float e = (float)num / (float)totalLevelCount;
-            
+
             loadingBar.sizeDelta = new Vector2(600f * e, 32f);
 
             loadImage.sprite = sprite;
