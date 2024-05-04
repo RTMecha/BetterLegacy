@@ -22,6 +22,7 @@ using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Menus;
 using BetterLegacy.Configs;
 using BepInEx.Configuration;
+using BetterLegacy.Core.Data;
 
 namespace BetterLegacy.Patchers
 {
@@ -364,6 +365,33 @@ namespace BetterLegacy.Patchers
             }
 
             MenuManager.Init();
+
+            try
+            {
+                int num = 0;
+                while (Instance.PrefabTypes.Count < 20)
+                {
+                    var prefabType = new DataManager.PrefabType
+                    {
+                        Color = Color.white,
+                        Name = "NewType " + num.ToString()
+                    };
+
+                    Instance.PrefabTypes.Add(prefabType);
+                    num++;
+                }
+
+                for (int i = 0; i < Instance.PrefabTypes.Count; i++)
+                {
+                    var p = Instance.PrefabTypes[i];
+                    var prefabType = new PrefabType(p.Name, p.Color);
+                    Instance.PrefabTypes[i] = prefabType;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Log(ex.ToString());
+            }
         }
 
         [HarmonyPatch("SaveData", typeof(string), typeof(DataManager.GameData))]
