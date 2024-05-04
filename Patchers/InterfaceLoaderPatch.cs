@@ -82,9 +82,8 @@ namespace BetterLegacy.Patchers
                 CoreHelper.UpdateDiscordStatus($"Navigating {fileName}", "In Menu", "menu");
             }
 
-            if (!MenuManager.fromPageLevel || string.IsNullOrEmpty(MenuManager.prevBranch))
+            if (CoreHelper.CurrentSceneType == SceneType.Editor || !MenuManager.fromPageLevel || string.IsNullOrEmpty(MenuManager.prevBranch))
             {
-                CoreHelper.Log($"Loading from InterfaceLoader.\nFrom Page Loaded Level: {!MenuManager.fromPageLevel}\nPrevious Branch exists: {string.IsNullOrEmpty(MenuManager.prevBranch)}");
                 MenuManager.inst.loadingFromInterfaceLoader = true;
                 __instance.terminal.GetComponent<InterfaceController>().ParseLilScript(text);
             }

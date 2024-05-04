@@ -33,7 +33,7 @@ namespace BetterLegacy.Patchers
 		{
             try
 			{
-				loadingText.text = "<b>Loading : " + _value + "</b>";
+				loadingText.text = $"<b>Loading : {_value}</b>";
 			}
             catch
             {
@@ -44,7 +44,7 @@ namespace BetterLegacy.Patchers
 
 		[HarmonyPatch("DisplayLoadingScreen")]
 		[HarmonyPrefix]
-		static void DisplayLoadingScreenPrefix(ref IEnumerator __result, string __0, bool __1 = true)
+		static bool DisplayLoadingScreenPrefix(ref IEnumerator __result, string __0, bool __1 = true)
 		{
 			ExampleManager.onSceneLoad?.Invoke(__0);
 
@@ -52,6 +52,7 @@ namespace BetterLegacy.Patchers
 			CoreHelper.Log($"Set Scene\nType: {CoreHelper.CurrentSceneType}\nName: {__0}");
 
 			__result = DisplayLoadingScreen(__0, __1);
+			return false;
 		}
 
 		public static void SetActive(bool active)
@@ -97,6 +98,7 @@ namespace BetterLegacy.Patchers
 			if (!GameManager.inst)
 			{
 				SetActive(false);
+				loading = false;
 				yield break;
 			}
 
