@@ -2275,6 +2275,8 @@ namespace BetterLegacy.Configs
 
         public override void SetupSettingChanged()
         {
+            Config.SettingChanged += new EventHandler<SettingChangedEventArgs>(UpdateSettings);
+
             TimelineGridEnabled.SettingChanged += TimelineGridChanged;
             TimelineGridThickness.SettingChanged += TimelineGridChanged;
             TimelineGridColor.SettingChanged += TimelineGridChanged;
@@ -2479,7 +2481,7 @@ namespace BetterLegacy.Configs
 
         public static Action AdjustPositionInputsChanged { get; set; }
 
-        void UpdateEditorManagementConfigs(object sender, SettingChangedEventArgs e)
+        void UpdateSettings(object sender, SettingChangedEventArgs e)
         {
             SetPreviewConfig();
 
