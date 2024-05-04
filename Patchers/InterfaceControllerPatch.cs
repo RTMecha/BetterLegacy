@@ -20,21 +20,12 @@ namespace BetterLegacy.Patchers
     [HarmonyPatch(typeof(InterfaceController))]
     public class InterfaceControllerPatch : MonoBehaviour
     {
-        public static bool fromMainMenu;
-
         [HarmonyPatch("Start")]
         [HarmonyPrefix]
         static bool StartPrefix(InterfaceController __instance)
         {
             if (EditorManager.inst)
                 __instance.gameObject.SetActive(false);
-
-            if (CoreHelper.UseNewInterface && __instance.gameObject.scene.name == "Main Menu" && CoreHelper.CurrentSceneType == SceneType.Interface)
-            {
-                fromMainMenu = true;
-                SceneManager.inst.LoadScene("Interface");
-                return false;
-            }
 
             MenuManager.inst.ic = __instance;
 
@@ -94,9 +85,6 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdatePrefix(InterfaceController __instance)
         {
-            if (SceneManagerPatch.loading)
-                return false;
-
             if (InputDataManager.inst.menuActions.Cancel.WasPressed && __instance.screenDone && __instance.currentBranch != "main_menu" && __instance.interfaceBranches[__instance.CurrentBranchIndex].type == BranchType.Menu)
             {
                 if (__instance.branchChain.Count > 1)

@@ -33,7 +33,7 @@ namespace BetterLegacy.Patchers
                     text = new SerializerBuilder().JsonCompatible().Build().Serialize(graph);
                     LSText.CopyToClipboard(text);
                 }
-                else if (InterfaceControllerPatch.fromMainMenu && __instance.gameObject.scene.name == "Interface" && (RTFile.FileExists(RTFile.ApplicationDirectory + "beatmaps/menus/main/menu.lsm") || RTFile.FileExists(RTFile.ApplicationDirectory + "beatmaps/menus/main.lsm")))
+                else if (__instance.gameObject.scene.name == "Main Menu" && (RTFile.FileExists(RTFile.ApplicationDirectory + "beatmaps/menus/main/menu.lsm") || RTFile.FileExists(RTFile.ApplicationDirectory + "beatmaps/menus/main.lsm")))
                 {
                     fileName = "Main Menu";
                     if (RTFile.FileExists(RTFile.ApplicationDirectory + "beatmaps/menus/main.lsm"))

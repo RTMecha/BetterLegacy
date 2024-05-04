@@ -28,14 +28,30 @@ namespace BetterLegacy.Patchers
         {
             try
             {
-                loadingText.text = $"<b>Loading : {_value}</b>";
+                if (loadingText.isActiveAndEnabled)
+                    loadingText.text = $"<b>Loading : {_value}</b>";
             }
             catch
             {
 
             }
+
             return false;
         }
+
+        [HarmonyPatch("DisplayLoadingScreen")]
+        [HarmonyPrefix]
+        static void DisplayLoadingScreenPrefix(string __0)
+        {
+            ExampleManager.onSceneLoad?.Invoke(__0);
+            CoreHelper.CurrentSceneType = __0 == "Editor" ? SceneType.Editor : __0 == "Game" ? SceneType.Game : SceneType.Interface;
+            CoreHelper.Log($"Set Scene\nType: {CoreHelper.CurrentSceneType}\nName: {__0}");
+            loading = true;
+        }
+
+        [HarmonyPatch("DisplayLoadingScreen")]
+        [HarmonyPostfix]
+        static void DisplayLoadingScreenPostfix() => loading = false;
 
         [HarmonyPatch("DisplayLoadingScreen")]
         [HarmonyPrefix]

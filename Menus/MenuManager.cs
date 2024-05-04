@@ -228,7 +228,7 @@ namespace BetterLegacy.Menus
         {
             SceneManager.inst.LoadScene(prevScene);
 
-            while (!ic || loadingFromInterfaceLoader || CoreHelper.CurrentSceneType != SceneType.Interface || SceneManagerPatch.loading || ic.gameObject.scene.name != prevScene)
+            while (!ic || loadingFromInterfaceLoader || CoreHelper.CurrentSceneType != SceneType.Interface || ic.gameObject.scene.name != prevScene)
                 yield return null;
 
             if (!string.IsNullOrEmpty(prevBranch))
@@ -239,7 +239,7 @@ namespace BetterLegacy.Menus
 
                 InterfaceControllerPatch.LoadInterface(prevInterface, false);
 
-                while (loadingInterface || loadingFromInterfaceLoader || CoreHelper.CurrentSceneType != SceneType.Interface || SceneManagerPatch.loading)
+                while (loadingInterface || loadingFromInterfaceLoader || CoreHelper.CurrentSceneType != SceneType.Interface)
                     yield return null;
 
                 ic.SwitchBranch(prevBranch);
@@ -338,7 +338,7 @@ namespace BetterLegacy.Menus
                                         continue;
 
                                     str += "event|loadlevel|" + p.Replace(RTFile.ApplicationDirectory, "") + "|True";
-                                    dataStr += $" [{Path.GetFileName(p)}]:";
+                                    dataStr += $"      [{Path.GetFileName(p)}]:";
 
                                     if (k != directories.Length - 1)
                                     {
@@ -368,8 +368,6 @@ namespace BetterLegacy.Menus
 
             loadingInterface = false;
             loadingFromInterfaceLoader = false;
-            if (CoreHelper.UseNewInterface && ic.gameObject.scene.name == "Main Menu")
-                return;
 
             CoreHelper.Log($"Parsed interface with [{jn["branches"].Count}] branches");
 
@@ -1370,6 +1368,34 @@ namespace BetterLegacy.Menus
                             gameObject2.transform.SetParent(gameObject.transform);
                             gameObject2.transform.localScale = Vector3.one;
                             gameObject2.name = string.Format("[{0}][{1}] Button", childCount, i);
+
+                            if (ic.buttonSettings.Count > i && ic.buttonSettings[i].setting != null &&
+                                ic.buttonSettings[i].type == ButtonType.Event && ic.buttonSettings[i].setting.Contains("loadlevel") &&
+                                gameObject2.transform.Find("img"))
+                            {
+                                var image = gameObject2.transform.Find("img").GetComponent<Image>();
+
+                                var loadLevelArray = ic.buttonSettings[i].setting.Split(new string[1] { "|" }, StringSplitOptions.None);
+
+                                var path = $"{RTFile.ApplicationDirectory}{loadLevelArray[1]}/level.jpg";
+                                if (RTFile.FileExists(path))
+                                {
+                                    StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{path}", delegate (Texture2D texture2D)
+                                    {
+                                        image.sprite = SpriteManager.CreateSprite(texture2D);
+                                        image.color = Color.white;
+                                    }, delegate (string onError)
+                                    {
+                                        image.sprite = SteamWorkshop.inst.defaultSteamImageSprite;
+                                        image.color = Color.white;
+                                    }));
+                                }
+                                else
+                                {
+                                    image.sprite = SteamWorkshop.inst.defaultSteamImageSprite;
+                                    image.color = Color.white;
+                                }
+                            }
 
                             var textMeshProUGUI = gameObject2.transform.Find("text").GetComponent<TextMeshProUGUI>();
 

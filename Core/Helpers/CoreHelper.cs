@@ -29,11 +29,6 @@ namespace BetterLegacy.Core.Helpers
         public static SceneType CurrentSceneType { get; set; }
 
         /// <summary>
-        /// For using the updated interface.
-        /// </summary>
-        public static bool UseNewInterface { get; set; }
-
-        /// <summary>
         /// The multiplied screen scale, multiplied by a base resolution of 1920. To be used for fixing UI scale issues.
         /// </summary>
         public static float ScreenScale => Screen.width / 1920f;

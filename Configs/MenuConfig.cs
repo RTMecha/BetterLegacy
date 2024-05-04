@@ -19,7 +19,6 @@ namespace BetterLegacy.Configs
             Instance = this;
             Config = config;
 
-            UseNewInterface = Config.Bind("Menu - General", "Use New Interface", true, "If the game should use the new interface. Requires restart to take effect.");
             ReloadMainMenu = Config.Bind("Menu - General", "Reload Main Menu key", KeyCode.F6, "The key to reload the main menu for easy reloading of modified menu file.");
             LoadPageEditor = Config.Bind("Menu - General", "Load Page Editor key", KeyCode.F10, "The key to load the Page Editor.");
             SelectFirstButton = Config.Bind("Menu - General", "Select First Button", KeyCode.G, "The key to select the first menu button. This is for cases where menu selection disappears.");
@@ -29,13 +28,10 @@ namespace BetterLegacy.Configs
             MusicIndex = Config.Bind("Menu - Music", "File Index", -1, "If number is less than 0 or higher than the song file count, it will play a random song. Otherwise it will use the specified index.");
             MusicGlobalPath = Config.Bind("Menu - Music", "Global Path", "C:/", "Set this path to whatever path you want if you're using Global Load Directory.");
 
-            CoreHelper.UseNewInterface = UseNewInterface.Value;
             SetupSettingChanged();
         }
 
         #region General
-
-        public ConfigEntry<bool> UseNewInterface { get; set; }
 
         /// <summary>
         /// The key to reload the main menu for easy reloading of modified menu file.
