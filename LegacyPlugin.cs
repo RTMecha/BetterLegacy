@@ -54,6 +54,19 @@ namespace BetterLegacy
 
         public static Shader blurColored;
 
+        public static Shader analogGlitchShader;
+        public static Material analogGlitchMaterial;
+        public static Shader digitalGlitchShader;
+        public static Material digitalGlitchMaterial;
+        public static void GetKinoGlitch()
+        {
+            var assetBundle = AssetBundle.LoadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}effects.asset"); // Get AssetBundle from assets folder.
+            analogGlitchMaterial = assetBundle.LoadAsset<Material>("analogglitchmaterial.mat"); // Load asset
+            digitalGlitchMaterial = assetBundle.LoadAsset<Material>("digitalglitchmaterial.mat"); // Load asset
+            analogGlitchShader = assetBundle.LoadAsset<Shader>("analogglitch.shader"); // Load asset
+            digitalGlitchShader = assetBundle.LoadAsset<Shader>("digitalglitch.shader"); // Load asset
+        }
+
         void Awake()
         {
             inst = this;
@@ -91,6 +104,7 @@ namespace BetterLegacy
                 var assetBundle = AssetBundle.LoadFromFile(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/shadercolored.asset");
                 blurColored = assetBundle.LoadAsset<Shader>("simpleblur.shader");
                 assetBundle.Unload(false);
+                GetKinoGlitch();
             }
             catch (Exception ex)
             {

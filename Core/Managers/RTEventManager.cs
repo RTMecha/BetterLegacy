@@ -27,6 +27,10 @@ namespace BetterLegacy.Core.Managers
 
         public EditorCameraController editorCamera;
 
+        public Camera glitchCam;
+        public AnalogGlitch analogGlitch;
+        public DigitalGlitch digitalGlitch;
+
         void Awake()
         {
             if (inst == null)
@@ -43,6 +47,29 @@ namespace BetterLegacy.Core.Managers
                 ModCompatibility.sharedFunctions["EventsCoreResetOffsets"] = (Action)SetResetOffsets;
 
             editorCamera = EditorCameraController.Bind();
+
+            // Create a new camera since putting the glitch effects on the Main Camera make the objects disappear.
+            var glitchCamera = new GameObject("Glitch Camera");
+            glitchCamera.transform.SetParent(EventManager.inst.cam.transform);
+            glitchCamera.transform.localPosition = Vector3.zero;
+            glitchCamera.transform.localScale = Vector3.one;
+
+            glitchCam = glitchCamera.AddComponent<Camera>();
+            glitchCam.allowMSAA = false;
+            glitchCam.clearFlags = CameraClearFlags.Depth;
+            glitchCam.cullingMask = 310;
+            glitchCam.depth = 2f;
+            glitchCam.farClipPlane = 10000f;
+            glitchCam.forceIntoRenderTexture = true;
+            glitchCam.nearClipPlane = 9999.9f;
+            glitchCam.orthographic = true;
+            glitchCam.rect = new Rect(0.001f, 0.001f, 0.999f, 0.999f);
+
+            digitalGlitch = glitchCamera.AddComponent<DigitalGlitch>();
+            digitalGlitch._shader = LegacyPlugin.digitalGlitchShader;
+
+            analogGlitch = glitchCamera.AddComponent<AnalogGlitch>();
+            analogGlitch._shader = LegacyPlugin.analogGlitchShader;
         }
 
         public void SetResetOffsets()
@@ -1490,6 +1517,56 @@ namespace BetterLegacy.Core.Managers
 
         #endregion
 
+        #region Analog Glitch - 38
+
+        // 38 - 0
+        public static void updateAnalogGlitchEnabled(float x)
+        {
+            if (inst.analogGlitch)
+                inst.analogGlitch.enabled = (int)x == 1;
+        }
+
+        // 38 - 1
+        public static void updateAnalogGlitchColorDrift(float x)
+        {
+            if (inst.analogGlitch)
+                inst.analogGlitch.colorDrift = x;
+        }
+
+        // 38 - 2
+        public static void updateAnalogGlitchHorizontalShake(float x)
+        {
+            if (inst.analogGlitch)
+                inst.analogGlitch.horizontalShake = x;
+        }
+
+        // 38 - 3
+        public static void updateAnalogGlitchScanLineJitter(float x)
+        {
+            if (inst.analogGlitch)
+                inst.analogGlitch.scanLineJitter = x;
+        }
+
+        // 38 - 4
+        public static void updateAnalogGlitchVerticalJump(float x)
+        {
+            if (inst.analogGlitch)
+                inst.analogGlitch.verticalJump = x;
+        }
+
+        #endregion
+
+        #region Digital Glitch - 39
+
+        // 39 - 0
+        public static void updateDigitalGlitchIntensity(float x)
+        {
+            if (inst.digitalGlitch)
+                inst.digitalGlitch.intensity = x;
+        }
+
+        #endregion
+
         #endregion
 
         #region Variables
@@ -1931,7 +2008,19 @@ namespace BetterLegacy.Core.Managers
                 {
                     0f, // Player Force X
                     0f, // Player Force Y
-                },
+                }, // Player Force
+                new List<float>
+                {
+                    0f,
+                    0f,
+                    0f,
+                    0f,
+                    0f,
+                }, // Analog Glitch
+                new List<float>
+                {
+                    0f,
+                }, // Digital Glitch
             };
         }
 
@@ -1943,7 +2032,7 @@ namespace BetterLegacy.Core.Managers
 
         public delegate void KFDelegate(float t);
 
-        public KFDelegate[][] events = new KFDelegate[38][]
+        public KFDelegate[][] events = new KFDelegate[40][]
         {
             new KFDelegate[]
             {
@@ -2213,6 +2302,18 @@ namespace BetterLegacy.Core.Managers
             {
                 updateCameraMosaic
             }, // Mosaic
+            new KFDelegate[]
+            {
+                updateAnalogGlitchEnabled,
+                updateAnalogGlitchColorDrift,
+                updateAnalogGlitchHorizontalShake,
+                updateAnalogGlitchScanLineJitter,
+                updateAnalogGlitchVerticalJump,
+            }, // Analog Glitch
+            new KFDelegate[]
+            {
+                updateDigitalGlitchIntensity,
+            }, // Digital Glitch
         };
 
         public float shakeSpeed = 1f;

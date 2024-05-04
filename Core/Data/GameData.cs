@@ -1349,6 +1349,8 @@ namespace BetterLegacy.Core.Data
 			"winposy", // 35
 			"playerforce", // 36
 			"mosaic", // 37
+			"analog_glitch", // 38
+			"digital_glitch", // 39
 		};
 
         public static List<BaseEventKeyframe> DefaultKeyframes = new List<BaseEventKeyframe>
@@ -1747,6 +1749,28 @@ namespace BetterLegacy.Core.Data
                 },
                 id = LSText.randomNumString(8),
             }, // Mosaic
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[5]
+                {
+                    0f, // Enabled
+                    0f, // ColorDrift
+                    0f, // HorizontalShake
+                    0f, // ScanLineJitter
+                    0f, // VerticalJump
+                },
+                id = LSText.randomNumString(8),
+            }, // Analog Glitch
+			new Data.EventKeyframe
+            {
+                eventTime = 0f,
+                eventValues = new float[1]
+                {
+                    0f, // Intensity
+                },
+                id = LSText.randomNumString(8),
+            }, // Digital Glitch
 		};
 
         public static bool SaveOpacityToThemes { get; set; } = false;

@@ -86,60 +86,8 @@ namespace BetterLegacy.Editor.Managers
             "Window Position Y",
             "Player Force",
             "Mosaic",
-        };
-
-        public static Dictionary<string, Color> EventTitles => new Dictionary<string, Color>()
-        {
-			#region Layer 1
-			{ "- Move Editor -", new Color(0.3372549f, 0.2941177f, 0.4156863f, 1f) }, // 1
-			{ "- Zoom Editor -", new Color(0.254902f, 0.2705882f, 0.372549f, 1f) }, // 2
-			{ "- Rotation Editor -", new Color(0.2705882f, 0.3843138f, 0.4784314f, 1f) }, // 3
-			{ "- Shake Editor -", new Color(0.1960784f, 0.3607843f, 0.4313726f, 1f) }, // 4
-			{ "- Theme Editor -", new Color(0.2470588f, 0.427451f, 0.4509804f, 1f) }, // 5
-			{ "- Chromatic Editor -", new Color(0.1882353f, 0.3372549f, 0.3254902f, 1f) }, // 6
-			{ "- Bloom Editor -", new Color(0.3137255f, 0.4117647f, 0.3176471f, 1f) }, // 7
-			{ "- Vignette Editor -", new Color(0.3176471f, 0.3686275f, 0.2588235f, 1f) }, // 8
-			{ "- Lens Distort Editor -", new Color(0.4039216f, 0.4117647f, 0.2745098f, 1f) }, // 9
-			{ "- Grain Editor -", new Color(0.4470589f, 0.3882353f, 0.2117647f, 1f) }, // 10
-			{ "- Color Grading Editor -", new Color(1f, 0.5960785f, 0f, 1f) }, // 11
-			{ "- Ripples Editor -", new Color(1f, 0.3490196f, 0f, 1f) }, // 12
-			{ "- Radial Blur Editor -", new Color(1f, 0.1490196f, 0.03529412f, 1f) }, // 13
-			{ "- Color Split Editor -", new Color(1f, 0.05882353f, 0.05882353f, 1f) }, // 14
-			#endregion
-			
-			#region Layer 2
-			{ "- Camera Offset Editor -", new Color(0.3372549f, 0.2941177f, 0.4156863f, 1f) }, // 1
-			{ "- Gradient Editor -", new Color(0.254902f, 0.2705882f, 0.372549f, 1f) }, // 2
-			{ "- Double Vision Editor -", new Color(0.2705882f, 0.3843138f, 0.4784314f, 1f) }, // 3
-			{ "- Scan Lines Editor -", new Color(0.1960784f, 0.3607843f, 0.4313726f, 1f) }, // 4
-			{ "- Blur Editor -", new Color(0.2470588f, 0.427451f, 0.4509804f, 1f) }, // 5
-			{ "- Pixelize Editor -", new Color(0.1882353f, 0.3372549f, 0.3254902f, 1f) }, // 6
-			{ "- BG Editor -", new Color(0.3137255f, 0.4117647f, 0.3176471f, 1f) }, // 7
-			{ "- Invert Editor -", new Color(0.3176471f, 0.3686275f, 0.2588235f, 1f) }, // 8
-			{ "- Timeline Editor -", new Color(0.4039216f, 0.4117647f, 0.2745098f, 1f) }, // 9
-			{ "- Player Event Editor -", new Color(0.4470589f, 0.3882353f, 0.2117647f, 1f) }, // 10
-			{ "- Follow Player Editor -", new Color(1f, 0.5960785f, 0f, 1f) }, // 11
-			{ "- Audio Editor -", new Color(1f, 0.3490196f, 0f, 1f) }, // 12
-			{ "- Video BG Parent Editor -", new Color(1f, 0.1490196f, 0.03529412f, 1f) }, // 13
-			{ "- Video BG Editor -", new Color(1f, 0.05882353f, 0.05882353f, 1f) }, // 14
-			#endregion
-			
-			#region Layer 3
-			{ "- Sharpen Editor -", new Color(0.3372549f, 0.2941177f, 0.4156863f, 1f) }, // 1
-			{ "- Bars Editor -", new Color(0.254902f, 0.2705882f, 0.372549f, 1f) }, // 2
-			{ "- Danger Editor -", new Color(0.2705882f, 0.3843138f, 0.4784314f, 1f) }, // 3
-			{ "- 3D Rotation Editor -", new Color(0.1960784f, 0.3607843f, 0.4313726f, 1f) }, // 4
-			{ "- Camera Depth Editor -", new Color(0.2470588f, 0.427451f, 0.4509804f, 1f) }, // 5
-			{ "- Window Base Editor -", new Color(0.1882353f, 0.3372549f, 0.3254902f, 1f) }, // 6
-			{ "- Window Position X Editor -", new Color(0.3137255f, 0.4117647f, 0.3176471f, 1f) }, // 7
-			{ "- Window Position Y Editor -", new Color(0.3176471f, 0.3686275f, 0.2588235f, 1f) }, // 8
-			{ "- Player Force Editor -", new Color(0.4039216f, 0.4117647f, 0.2745098f, 1f) }, // 9
-			{ "- Mosaic Editor -", new Color(0.4470589f, 0.3882353f, 0.2117647f, 1f) }, // 10
-			{ "- ??? 1 Editor -", new Color(1f, 0.5960785f, 0f, 1f) }, // 11
-			{ "- ??? 2 Editor -", new Color(1f, 0.3490196f, 0f, 1f) }, // 12
-			{ "- ??? 3 Editor -", new Color(1f, 0.1490196f, 0.03529412f, 1f) }, // 13
-			{ "- ??? 4 Editor -", new Color(1f, 0.05882353f, 0.05882353f, 1f) }, // 14
-			#endregion
+            "Analog Glitch",
+            "Digital Glitch",
         };
 
         public static List<Color> EventLayerColors => new List<Color>
@@ -159,22 +107,6 @@ namespace BetterLegacy.Editor.Managers
 			LSColors.HexToColorAlpha("FF25097F"), // 13
 			LSColors.HexToColorAlpha("FF0F0F7F"), // 14
 			LSColors.HexToColorAlpha("64B4F67F"), // 15
-
-			//new Color(0.4039216f, 0.227451f, 0.7176471f, 0.5f),
-			//new Color(0.2470588f, 0.3176471f, 0.7098039f, 0.5f),
-			//new Color(0.1294118f, 0.5882353f, 0.9529412f, 0.5f),
-			//new Color(0.01176471f, 0.6627451f, 0.9568628f, 0.5f),
-			//new Color(0f, 0.7372549f, 0.8313726f, 0.5f),
-			//new Color(0f, 0.5882353f, 0.5333334f, 0.5f),
-			//new Color(0.2980392f, 0.6862745f, 0.3137255f, 0.5f),
-			//new Color(0.4862745f, 0.7019608f, 0.2588235f, 0.5f),
-			//new Color(0.6862745f, 0.7058824f, 0.1686275f, 0.5f),
-			//new Color(1f, 0.7568628f, 0.02745098f, 0.5f),
-			//new Color(1f, 0.5960785f, 0f, 0.5f),
-			//new Color(0.7267f, 0.3796f, 0f, 0.5f),
-			//new Color(0.6980392f, 0.1411765f, 0.06666667f, 0.5f),
-			//new Color(0.6980392f, 0.145098f, 0.145098f, 0.5f),
-			//new Color(0.3921569f, 0.7098039f, 0.9647059f, 0.5f),
 		};
 
         public Transform eventCopies;
@@ -1526,6 +1458,34 @@ namespace BetterLegacy.Editor.Managers
             var mosaic = GenerateEventDialog("mosaic");
             {
                 var amount = GenerateUIElement("amount", "Single", mosaic.transform, 8, "Amount");
+                EditorThemeManager.AddInputFields(amount["UI"], true, "Event Editor");
+            }
+
+            var analogGlitch = GenerateEventDialog("analogglitch");
+            {
+                var enabled = GenerateUIElement("enabled", "Bool", analogGlitch.transform, 8, "Effect Enabled");
+                var enabledText = enabled["UI"].transform.Find("Text").GetComponent<Text>();
+                enabledText.text = "Enabled";
+
+                var colorDrift = GenerateUIElement("colordrift", "Single", analogGlitch.transform, 10, "Color Drift");
+                EditorThemeManager.AddInputFields(colorDrift["UI"], true, "Event Editor");
+
+                var horizontalShake = GenerateUIElement("horizontalshake", "Single", analogGlitch.transform, 12, "Horizontal Shake");
+                EditorThemeManager.AddInputFields(horizontalShake["UI"], true, "Event Editor");
+
+                var scanLineJitter = GenerateUIElement("scanlinejitter", "Single", analogGlitch.transform, 14, "Scan Line Jitter");
+                EditorThemeManager.AddInputFields(scanLineJitter["UI"], true, "Event Editor");
+
+                var verticalJump = GenerateUIElement("verticaljump", "Single", analogGlitch.transform, 16, "Vertical Jump");
+                EditorThemeManager.AddInputFields(verticalJump["UI"], true, "Event Editor");
+
+                EditorThemeManager.AddToggle(enabled["UI"].GetComponent<Toggle>(), graphic: enabledText);
+            }
+
+            var digitalGlitch = GenerateEventDialog("digitalglitch");
+            {
+                var intensity = GenerateUIElement("intensity", "Single", digitalGlitch.transform, 8, "Intensity");
+                EditorThemeManager.AddInputFields(intensity["UI"], true, "Event Editor");
             }
 
             #region Multi Event Keyframe Editor
@@ -2736,6 +2696,22 @@ namespace BetterLegacy.Editor.Managers
                 case 37: // Mosaic
                     {
                         SetFloatInputField(dialogTmp, "amount/x", 0);
+
+                        break;
+                    }
+                case 38: // Analog Glitch
+                    {
+                        SetToggle(dialogTmp, "enabled", 0, 1, 0);
+                        SetFloatInputField(dialogTmp, "colordrift/x", 1);
+                        SetFloatInputField(dialogTmp, "horizontalshake/x", 2);
+                        SetFloatInputField(dialogTmp, "scanlinejitter/x", 3);
+                        SetFloatInputField(dialogTmp, "verticaljump/x", 4);
+
+                        break;
+                    }
+                case 39: // Digital Glitch
+                    {
+                        SetFloatInputField(dialogTmp, "intensity/x", 0);
 
                         break;
                     }
