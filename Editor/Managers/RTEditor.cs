@@ -3273,20 +3273,20 @@ namespace BetterLegacy.Editor.Managers
         public List<Image> checkpointImages = new List<Image>();
         public void UpdateTimeline()
         {
-            if (timelinePreview && AudioManager.inst.CurrentAudioSource.clip != null && DataManager.inst.gameData.beatmapData != null)
+            if (!timelinePreview || !AudioManager.inst.CurrentAudioSource.clip || DataManager.inst.gameData.beatmapData == null)
+                return;
+
+            checkpointImages.Clear();
+            LSHelpers.DeleteChildren(timelinePreview.Find("elements"), true);
+            foreach (var checkpoint in DataManager.inst.gameData.beatmapData.checkpoints)
             {
-                checkpointImages.Clear();
-                LSHelpers.DeleteChildren(timelinePreview.Find("elements"), true);
-                foreach (var checkpoint in DataManager.inst.gameData.beatmapData.checkpoints)
-                {
-                    if (checkpoint.time > 0.5f)
-                    {
-                        var gameObject = GameManager.inst.checkpointPrefab.Duplicate(timelinePreview.Find("elements"), $"Checkpoint [{checkpoint.name}] - [{checkpoint.time}]");
-                        float num = checkpoint.time * 400f / AudioManager.inst.CurrentAudioSource.clip.length;
-                        gameObject.transform.AsRT().anchoredPosition = new Vector2(num, 0f);
-                        checkpointImages.Add(gameObject.GetComponent<Image>());
-                    }
-                }
+                if (checkpoint.time <= 0.5f)
+                    continue;
+
+                var gameObject = GameManager.inst.checkpointPrefab.Duplicate(timelinePreview.Find("elements"), $"Checkpoint [{checkpoint.name}] - [{checkpoint.time}]");
+                float num = checkpoint.time * 400f / AudioManager.inst.CurrentAudioSource.clip.length;
+                gameObject.transform.AsRT().anchoredPosition = new Vector2(num, 0f);
+                checkpointImages.Add(gameObject.GetComponent<Image>());
             }
         }
 

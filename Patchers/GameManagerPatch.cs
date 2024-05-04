@@ -20,6 +20,8 @@ using BetterLegacy.Core;
 using BetterLegacy.Components;
 using System;
 using BetterLegacy.Example;
+using BetterLegacy.Menus;
+using BetterLegacy.Editor.Managers;
 
 namespace BetterLegacy.Patchers
 {
@@ -123,7 +125,7 @@ namespace BetterLegacy.Patchers
                 },
             };
 
-            (EditorManager.inst != null || PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value ? (Action)PlayerManager.LoadGlobalModels : PlayerManager.LoadLocalModels).Invoke();
+            (CoreHelper.InEditor || PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value ? (Action)PlayerManager.LoadGlobalModels : PlayerManager.LoadLocalModels).Invoke();
 
             PlayerManager.SetupImages(__instance);
 
@@ -143,19 +145,19 @@ namespace BetterLegacy.Patchers
             if (!LevelManager.finished)
                 LevelManager.timeInLevel = Time.time - LevelManager.timeInLevelOffset;
 
-            if (__instance.gameState == GameManager.State.Paused && !LevelManager.LevelEnded && InputDataManager.inst.menuActions.Cancel.WasPressed)
+            if (CoreHelper.Paused && !LevelManager.LevelEnded && InputDataManager.inst.menuActions.Cancel.WasPressed)
             {
                 __instance.menuUI?.GetComponent<InterfaceController>()?.SwitchBranch("unpause");
             }
 
-            if (__instance.gameState == GameManager.State.Playing)
+            if (CoreHelper.Playing)
             {
                 for (int i = 0; i < GameData.Current.levelModifiers.Count; i++)
                 {
                     GameData.Current.levelModifiers[i].Activate();
                 }
 
-                if (EditorManager.inst == null)
+                if (!CoreHelper.InEditor)
                 {
                     foreach (var player in PlayerManager.Players)
                     {
@@ -163,7 +165,11 @@ namespace BetterLegacy.Patchers
                             __instance.Pause();
                     }
                 }
-                if (__instance.checkpointsActivated != null && __instance.checkpointsActivated.Length != 0 && AudioManager.inst.CurrentAudioSource.time >= (double)__instance.UpcomingCheckpoint.time && !__instance.playingCheckpointAnimation && __instance.UpcomingCheckpointIndex != -1 && !__instance.checkpointsActivated[__instance.UpcomingCheckpointIndex] && (EditorManager.inst != null && !EditorManager.inst.isEditing || EditorManager.inst == null))
+
+                if (__instance.checkpointsActivated != null && __instance.checkpointsActivated.Length != 0 &&
+                    AudioManager.inst.CurrentAudioSource.time >= (double)__instance.UpcomingCheckpoint.time && !__instance.playingCheckpointAnimation &&
+                    __instance.UpcomingCheckpointIndex != -1 && !__instance.checkpointsActivated[__instance.UpcomingCheckpointIndex] &&
+                    CoreHelper.InEditorPreview)
                 {
                     __instance.playingCheckpointAnimation = true;
                     __instance.SpawnPlayers(__instance.UpcomingCheckpoint.pos);
@@ -171,29 +177,29 @@ namespace BetterLegacy.Patchers
                 }
             }
 
-            if (__instance.gameState == GameManager.State.Reversing && !__instance.isReversing)
+            if (CoreHelper.Reversing && !__instance.isReversing)
             {
                 __instance.StartCoroutine(ReverseToCheckpointLoop(__instance));
             }
-            else if (__instance.gameState == GameManager.State.Playing)
+            else if (CoreHelper.Playing)
             {
-                if (AudioManager.inst.CurrentAudioSource.clip != null && EditorManager.inst == null
-                    && AudioManager.inst.CurrentAudioSource.time /*+ 0.1f*/ >= __instance.songLength - 0.1f)
+                if (AudioManager.inst.CurrentAudioSource.clip && !EditorManager.inst
+                    && AudioManager.inst.CurrentAudioSource.time >= __instance.songLength - 0.1f)
                     if (!LevelManager.LevelEnded)
                         __instance.GoToNextLevel();
             }
-            else if (__instance.gameState == GameManager.State.Finish)
+            else if (CoreHelper.Finished)
             {
-                if (AudioManager.inst.CurrentAudioSource.clip != null && EditorManager.inst == null
-                    && AudioManager.inst.CurrentAudioSource.time /*+ 0.1f*/ >= __instance.songLength - 0.1f
+                if (AudioManager.inst.CurrentAudioSource.clip && !EditorManager.inst
+                    && AudioManager.inst.CurrentAudioSource.time >= __instance.songLength - 0.1f
                     && CoreConfig.Instance.ReplayLevel.Value && LevelManager.LevelEnded)
                     AudioManager.inst.SetMusicTime(0f);
             }
 
-            if (__instance.gameState == GameManager.State.Playing || __instance.gameState == GameManager.State.Reversing)
+            if (CoreHelper.Playing || CoreHelper.Reversing)
                 __instance.UpdateEventSequenceTime();
 
-            if (AudioManager.inst.CurrentAudioSource.clip != null)
+            if (AudioManager.inst.CurrentAudioSource.clip)
                 __instance.prevAudioTime = AudioManager.inst.CurrentAudioSource.time;
 
             return false;
@@ -267,11 +273,11 @@ namespace BetterLegacy.Patchers
         static bool FixedUpdatePrefix()
         {
             if (DataManager.inst && DataManager.inst.gameData != null && DataManager.inst.gameData.beatmapData != null && DataManager.inst.gameData.beatmapData.checkpoints != null &&
-                DataManager.inst.gameData.beatmapData.checkpoints.Count > 0 && Instance.gameState == GameManager.State.Playing)
+                DataManager.inst.gameData.beatmapData.checkpoints.Count > 0 && CoreHelper.Playing)
             {
                 Instance.UpcomingCheckpoint = Instance.GetClosestIndex(DataManager.inst.gameData.beatmapData.checkpoints, AudioManager.inst.CurrentAudioSource.time);
                 Instance.UpcomingCheckpointIndex = DataManager.inst.gameData.beatmapData.checkpoints.FindIndex(x => x == Instance.UpcomingCheckpoint);
-                if (Instance.timeline && AudioManager.inst.CurrentAudioSource.clip != null && Instance.gameState == GameManager.State.Playing)
+                if (Instance.timeline && AudioManager.inst.CurrentAudioSource.clip != null)
                 {
                     float num = AudioManager.inst.CurrentAudioSource.time * 400f / AudioManager.inst.CurrentAudioSource.clip.length;
                     if (Instance.timeline.transform.Find("Base/position"))
@@ -281,7 +287,7 @@ namespace BetterLegacy.Patchers
                 }
                 Instance.lastCheckpointState = DataManager.inst.gameData.beatmapData.GetWhichCheckpointBasedOnTime(AudioManager.inst.CurrentAudioSource.time);
             }
-            Instance.playerGUI.SetActive((EditorManager.inst && !EditorManager.inst.isEditing) || !EditorManager.inst);
+            Instance.playerGUI.SetActive(CoreHelper.InEditorPreview);
             return false;
         }
 
@@ -317,8 +323,6 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdateThemePrefix(GameManager __instance)
         {
-            var beatmapTheme = CoreHelper.CurrentBeatmapTheme;
-
             BackgroundManagerPatch.bgColorToLerp = bgColorToLerp;
 
             if (GameStorageManager.inst)
@@ -336,7 +340,7 @@ namespace BetterLegacy.Patchers
                 GameStorageManager.inst.timelineLine.color = timelineColorToLerp;
             }
 
-            if (EditorManager.inst == null && AudioManager.inst.CurrentAudioSource.time < 15f)
+            if (!CoreHelper.InEditor && AudioManager.inst.CurrentAudioSource.time < 15f)
             {
                 if (__instance.introTitle.color != timelineColorToLerp)
                     __instance.introTitle.color = timelineColorToLerp;
@@ -386,7 +390,7 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch("SpawnPlayers")]
         [HarmonyPrefix]
-        static bool SpawnPlayersPrefix(GameManager __instance, Vector3 __0)
+        static bool SpawnPlayersPrefix(Vector3 __0)
         {
             foreach (var customPlayer in InputDataManager.inst.players.Select(x => x as CustomPlayer))
             {
@@ -405,10 +409,10 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool PausePrefix(GameManager __instance)
         {
-            if (__instance.gameState == GameManager.State.Playing)
+            if (CoreHelper.Playing)
             {
                 LSHelpers.ShowCursor();
-                __instance.menuUI.GetComponent<InterfaceController>().SwitchBranch("main");
+                MenuManager.inst.ic.SwitchBranch("main");
                 __instance.menuUI.GetComponentInChildren<Image>().enabled = true;
                 AudioManager.inst.CurrentAudioSource.Pause();
                 InputDataManager.inst.SetAllControllerRumble(0f);
@@ -422,10 +426,10 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UnPausePrefix(GameManager __instance)
         {
-            if (__instance.gameState == GameManager.State.Paused)
+            if (CoreHelper.Paused)
             {
                 LSHelpers.HideCursor();
-                __instance.menuUI.GetComponent<InterfaceController>().SwitchBranch("empty");
+                MenuManager.inst.ic.SwitchBranch("empty");
                 __instance.menuUI.GetComponentInChildren<Image>().enabled = false;
                 AudioManager.inst.CurrentAudioSource.UnPause();
                 __instance.gameState = GameManager.State.Playing;
@@ -437,26 +441,27 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdateTimelinePrefix()
         {
-            if (Instance.timeline && AudioManager.inst.CurrentAudioSource.clip != null && DataManager.inst.gameData.beatmapData != null)
-            {
-                if (GameStorageManager.inst)
-                    GameStorageManager.inst.checkpointImages.Clear();
+            RTEditor.inst?.UpdateTimeline();
 
-                LSHelpers.DeleteChildren(Instance.timeline.transform.Find("elements"), true);
-                foreach (var checkpoint in DataManager.inst.gameData.beatmapData.checkpoints)
-                {
-                    if (checkpoint.time > 0.5f)
-                    {
-                        var gameObject = Instantiate(Instance.checkpointPrefab);
-                        gameObject.name = string.Concat(new object[] { "Checkpoint [", checkpoint.name, "] - [", checkpoint.time, "]" });
-                        gameObject.transform.SetParent(Instance.timeline.transform.Find("elements"));
-                        float num = checkpoint.time * 400f / AudioManager.inst.CurrentAudioSource.clip.length;
-                        gameObject.transform.AsRT().anchoredPosition = new Vector2(num, 0f);
-                        if (GameStorageManager.inst)
-                            GameStorageManager.inst.checkpointImages.Add(gameObject.GetComponent<Image>());
-                    }
-                }
+            if (!Instance.timeline || !AudioManager.inst.CurrentAudioSource.clip || DataManager.inst.gameData.beatmapData == null)
+                return false;
+
+            if (GameStorageManager.inst)
+                GameStorageManager.inst.checkpointImages.Clear();
+            var parent = Instance.timeline.transform.Find("elements");
+            LSHelpers.DeleteChildren(parent, true);
+            foreach (var checkpoint in DataManager.inst.gameData.beatmapData.checkpoints)
+            {
+                if (checkpoint.time <= 0.5f)
+                    continue;
+
+                var gameObject = Instance.checkpointPrefab.Duplicate(parent, $"Checkpoint [{checkpoint.name}] - [{checkpoint.time}]");
+                float num = checkpoint.time * 400f / AudioManager.inst.CurrentAudioSource.clip.length;
+                gameObject.transform.AsRT().anchoredPosition = new Vector2(num, 0f);
+                if (GameStorageManager.inst)
+                    GameStorageManager.inst.checkpointImages.Add(gameObject.GetComponent<Image>());
             }
+
             return false;
         }
     }
