@@ -1,4 +1,6 @@
-﻿namespace BetterLegacy.Core
+﻿using System;
+
+namespace BetterLegacy.Core
 {
     public static class Parser
 	{
@@ -19,6 +21,13 @@
 		public static bool TryParse(string input, bool defaultValue)
         {
 			if (bool.TryParse(input, out bool result))
+				return result;
+			return defaultValue;
+        }
+
+		public static T TryParseEnum<T>(string input, T defaultValue) where T : struct
+        {
+			if (Enum.TryParse(input, out T result))
 				return result;
 			return defaultValue;
         }
