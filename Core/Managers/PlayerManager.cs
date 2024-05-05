@@ -100,7 +100,7 @@ namespace BetterLegacy.Core.Managers
 
         public static void LoadLocalModels()
         {
-            if (!PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
+            if (PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
                 inst.StartCoroutine(ILoadGlobalModels());
             else
                 inst.StartCoroutine(ILoadLocalModels());
@@ -179,7 +179,7 @@ namespace BetterLegacy.Core.Managers
                     RTFile.WriteToFile(RTFile.ApplicationDirectory + "beatmaps/players/" + model.Value.basePart.name.ToLower().Replace(" ", "_") + ".lspl", model.Value.ToJSON().ToString(3));
                 }
             }
-            if (EditorManager.inst != null)
+            if (EditorManager.inst)
                 EditorManager.inst.DisplayNotification("Saved Player Models!", 1f, EditorManager.NotificationType.Success);
         }
 
@@ -190,12 +190,11 @@ namespace BetterLegacy.Core.Managers
 
         public static IEnumerator ILoadGlobalModels()
         {
-            if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/players"))
-            {
-                Directory.CreateDirectory(RTFile.ApplicationDirectory + "beatmaps/players");
-            }
+            var fullPath = RTFile.ApplicationDirectory + "beatmaps/players";
+            if (!RTFile.DirectoryExists(fullPath))
+                Directory.CreateDirectory(fullPath);
 
-            var files = Directory.GetFiles(RTFile.ApplicationDirectory + "beatmaps/players");
+            var files = Directory.GetFiles(fullPath);
 
             if (files.Length > 0)
             {
@@ -203,10 +202,7 @@ namespace BetterLegacy.Core.Managers
                 for (int i = 0; i < PlayerModels.Count; i++)
                 {
                     if (!PlayerModel.DefaultModels.Any(x => x.basePart.id == PlayerModels.ElementAt(i).Key))
-                    {
                         list.Add(PlayerModels.ElementAt(i).Key);
-
-                    }
                 }
 
                 foreach (var str in list)
@@ -217,27 +213,21 @@ namespace BetterLegacy.Core.Managers
                 for (int i = 0; i < GameManager.inst.PlayerPrefabs.Length; i++)
                 {
                     if (GameManager.inst.PlayerPrefabs[i].name.Contains("Clone"))
-                    {
                         Destroy(GameManager.inst.PlayerPrefabs[i]);
-                    }
                 }
 
                 foreach (var file in files)
                 {
-                    if (Path.GetFileName(file).Contains(".lspl") && Path.GetFileName(file) != "regular.lspl" && Path.GetFileName(file) != "circle.lspl")
-                    {
-                        var filename = Path.GetFileName(file).Replace(".lspl", "");
+                    if (!Path.GetFileName(file).Contains(".lspl") || Path.GetFileName(file) == "regular.lspl" || Path.GetFileName(file) == "circle.lspl")
+                        continue;
 
-                        var model = PlayerModel.Parse(JSON.Parse(RTFile.ReadFromFile(file)));
-                        string id = model.basePart.id;
-                        if (!PlayerModels.ContainsKey(id))
-                        {
-                            PlayerModels.Add(id, model);
-                        }
-                    }
+                    var model = PlayerModel.Parse(JSON.Parse(RTFile.ReadFromFile(file)));
+                    string id = model.basePart.id;
+                    if (!PlayerModels.ContainsKey(id))
+                        PlayerModels.Add(id, model);
                 }
 
-                if (EditorManager.inst == null && !PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
+                if (EditorManager.inst || !PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
                     LoadIndexes();
                 else if (PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
                 {
@@ -310,14 +300,14 @@ namespace BetterLegacy.Core.Managers
 
         public static void SetPlayerModel(int index, string id)
         {
-            if (PlayerModels.ContainsKey(id))
+            if (!PlayerModels.ContainsKey(id))
+                return;
+
+            PlayerModelsIndex[index] = id;
+            if (Players.Count > index && Players[index])
             {
-                PlayerModelsIndex[index] = id;
-                if (Players.Count > index && Players[index])
-                {
-                    Players[index].CurrentPlayerModel = id;
-                    Players[index].Player?.UpdatePlayer();
-                }
+                Players[index].CurrentPlayerModel = id;
+                Players[index].Player?.UpdatePlayer();
             }
         }
 
