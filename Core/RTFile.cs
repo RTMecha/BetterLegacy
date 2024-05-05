@@ -357,6 +357,8 @@ namespace BetterLegacy.Core
                 OpenInWin(path);
                 OpenInMac(path);
             }
+
+            public static void OpenFile(string path) => Process.Start(path);
         }
 
         // Implemented from https://stackoverflow.com/questions/35228767/noisy-audio-clip-after-decoding-from-base64/68965193#68965193
