@@ -620,6 +620,8 @@ namespace BetterLegacy.Core.Managers
             if (CoreConfig.Instance.DebugInfoStartup.Value)
                 RTDebugger.Init();
 
+            loadedFiles = true;
+
             yield break;
         }
 
