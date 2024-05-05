@@ -43,6 +43,8 @@ namespace BetterLegacy.Core
         public Toggle Toggle { get; set; }
         public GameObject GameObject { get; set; }
 
+        public Vector2Int Vector => new Vector2Int(Type, Option);
+
         public int Type
         {
             get => Mathf.Clamp(type, 0, maxShapes.Length - 1);
@@ -60,6 +62,7 @@ namespace BetterLegacy.Core
             RegularObject,
             TextObject,
             ImageObject,
+            PlayerObject,
         }
 
         public Property SpecialProperty { get; set; }
@@ -124,16 +127,14 @@ namespace BetterLegacy.Core
 
             var vertices = new Vector3[jn["verts"].Count];
             for (int i = 0; i < jn["verts"].Count; i++)
-            {
                 vertices[i] = new Vector3(jn["verts"][i]["x"].AsFloat, jn["verts"][i]["y"].AsFloat, jn["verts"][i]["z"].AsFloat);
-            }
+
             shape.mesh.vertices = vertices;
 
             var triangles = new int[jn["tris"].Count];
             for (int i = 0; i < jn["tris"].Count; i++)
-            {
                 triangles[i] = jn["tris"][i].AsInt;
-            }
+
             shape.mesh.triangles = triangles;
 
             return shape;

@@ -19,7 +19,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPostfix]
         static void AwakePatch(ObjectManager __instance)
         {
-            ShapeManager.inst.Load();
+            ShapeManager.inst.SetupShapes();
 
             // This is here for debug purposes.
             if (debugOpacity)

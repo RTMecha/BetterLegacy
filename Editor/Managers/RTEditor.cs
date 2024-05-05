@@ -9439,13 +9439,10 @@ namespace BetterLegacy.Editor.Managers
                     DataManager.inst.metaData = MetaData.Parse(JSON.Parse(rawMetadataJSON));
 
                     if (MetaData.Current.arcadeID == null || MetaData.Current.arcadeID == "0" || MetaData.Current.arcadeID == "-1")
-                    {
                         MetaData.Current.arcadeID = LSText.randomNumString(16);
-                        DataManager.inst.SaveMetadata(fullPath + "/metadata.lsb");
-                    }
 
                     if (DataManager.inst.metaData.beatmap.game_version != "4.1.16" && DataManager.inst.metaData.beatmap.game_version != "20.4.4")
-                        rawJSON = DataManager.inst.gameData.UpdateBeatmap(rawJSON, DataManager.inst.metaData.beatmap.game_version);
+                        rawJSON = LevelManager.UpdateBeatmap(rawJSON, DataManager.inst.metaData.beatmap.game_version);
 
                     DataManager.inst.gameData = GameData.Parse(JSON.Parse(rawJSON), false);
                 }

@@ -499,7 +499,11 @@ namespace BetterLegacy.Editor.Managers
                 backgroundObject.reactiveScaIntensity = new Vector2(UnityEngine.Random.Range(0, 100) > 45 ? UnityEngine.Random.Range(0f, 1f) : 0f, UnityEngine.Random.Range(0, 100) > 45 ? UnityEngine.Random.Range(0f, 1f) : 0f);
                 backgroundObject.reactiveRotIntensity = UnityEngine.Random.Range(0, 100) > 45 ? UnityEngine.Random.Range(0f, 1f) : 0f;
                 backgroundObject.reactiveCol = UnityEngine.Random.Range(1, 6);
-                backgroundObject.shape = ShapeManager.Shapes[UnityEngine.Random.Range(0, ShapeManager.Shapes.Count - 1)];
+
+                var randomShape = UnityEngine.Random.Range(0, ShapeManager.inst.Shapes3D.Count);
+                var randomShapeOption = UnityEngine.Random.Range(0, ShapeManager.inst.Shapes3D[randomShape].Count);
+
+                backgroundObject.shape = ShapeManager.inst.Shapes3D[randomShape][randomShapeOption];
 
                 DataManager.inst.gameData.backgroundObjects.Add(backgroundObject);
             }
