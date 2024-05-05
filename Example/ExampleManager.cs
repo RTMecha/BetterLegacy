@@ -2075,6 +2075,9 @@ namespace BetterLegacy.Example
 
         IEnumerator SpawnOptions()
         {
+            while (!FontManager.inst || !FontManager.inst.loadedFiles)
+                yield return null;
+
             var optionsBase = Creator.NewUIObject("Options Base", baseCanvas.transform);
 
             this.optionsBase = optionsBase.transform;
@@ -2085,6 +2088,7 @@ namespace BetterLegacy.Example
             var optionsImage = options.AddComponent<Image>();
             optionsImage.rectTransform.anchoredPosition = Vector2.zero;
             optionsImage.rectTransform.sizeDelta = new Vector2(200f, 250f);
+
             EditorThemeManager.ApplyGraphic(optionsImage, ThemeGroup.Background_2, true);
 
             var optionsLayout = Creator.NewUIObject("Layout", options.transform);
@@ -2094,9 +2098,6 @@ namespace BetterLegacy.Example
             optionsVLG.childForceExpandHeight = false;
             optionsVLG.spacing = 4f;
             UIManager.SetRectTransform(optionsLayout.transform.AsRT(), Vector2.zero, new Vector2(0.95f, 0.95f), new Vector2(0.05f, 0.05f), new Vector2(0.5f, 0.5f), Vector2.zero);
-
-            while (!FontManager.inst || !FontManager.inst.loadedFiles)
-                yield return null;
 
             try
             {
@@ -2134,15 +2135,18 @@ namespace BetterLegacy.Example
             yield break;
         }
 
-        public void SetupOptionButton(string name, UnityAction action)
+        public void SetupOptionButton(string name, UnityAction action, int index = -1)
         {
             var buttonObject = Creator.NewUIObject(name, optionsLayout);
+            if (index >= 0 && index < optionsLayout.childCount)
+                buttonObject.transform.SetSiblingIndex(index);
+
             var buttonImage = buttonObject.AddComponent<Image>();
             buttonImage.rectTransform.sizeDelta = new Vector2(180f, 32f);
 
             var button = buttonObject.AddComponent<Button>();
             button.onClick.AddListener(action);
-            EditorThemeManager.ApplySelectable(button, ThemeGroup.Function_2);
+            button.image = buttonImage;
 
             var textObject = Creator.NewUIObject("Text", buttonObject.transform);
             var text = textObject.AddComponent<Text>();
@@ -2152,6 +2156,7 @@ namespace BetterLegacy.Example
             text.text = name;
             UIManager.SetRectTransform(text.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
 
+            EditorThemeManager.ApplySelectable(button, ThemeGroup.Function_2);
             EditorThemeManager.ApplyGraphic(text, ThemeGroup.Function_2_Text);
         }
 
