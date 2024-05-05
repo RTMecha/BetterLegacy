@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BetterLegacy.Core.Helpers;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -399,5 +400,56 @@ namespace BetterLegacy.Core.Managers
                 tex = (Texture2D)null;
             }
         }
+
+        public static UICanvas GenerateUICanvas(string name, Transform parent, bool dontDestroy = false)
+        {
+            var gameObject = new GameObject("Canvas");
+            if (dontDestroy)
+                DontDestroyOnLoad(gameObject);
+
+            gameObject.transform.localScale = Vector3.one * CoreHelper.ScreenScale;
+            var rectTransform = gameObject.AddComponent<RectTransform>();
+            rectTransform.anchoredPosition = new Vector2(960f, 540f);
+            rectTransform.sizeDelta = new Vector2(1920f, 1080f);
+            rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            rectTransform.anchorMin = Vector2.zero;
+            rectTransform.anchorMax = Vector2.zero;
+
+            var canvas = gameObject.AddComponent<Canvas>();
+            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.None;
+            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.TexCoord1;
+            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.Tangent;
+            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.Normal;
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.scaleFactor = CoreHelper.ScreenScale;
+            canvas.sortingOrder = 10000;
+
+            var canvasGroup = gameObject.AddComponent<CanvasGroup>();
+
+            var canvasScaler = gameObject.AddComponent<CanvasScaler>();
+            canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            canvasScaler.referenceResolution = new Vector2(Screen.width, Screen.height);
+
+            gameObject.AddComponent<GraphicRaycaster>();
+
+            CoreHelper.Log($"Canvas Scale Factor: {canvas.scaleFactor}\nResoultion: {new Vector2(Screen.width, Screen.height)}");
+            return new UICanvas(gameObject, canvas, canvasGroup, canvasScaler);
+        }
+    }
+
+    public class UICanvas
+    {
+        public UICanvas(GameObject gameObject, Canvas canvas, CanvasGroup canvasGroup, CanvasScaler canvasScaler)
+        {
+            GameObject = gameObject;
+            Canvas = canvas;
+            CanvasGroup = canvasGroup;
+            CanvasScaler = canvasScaler;
+        }
+
+        public GameObject GameObject { get; set; }
+        public Canvas Canvas { get; set; }
+        public CanvasGroup CanvasGroup { get; set; }
+        public CanvasScaler CanvasScaler { get; set; }
     }
 }
