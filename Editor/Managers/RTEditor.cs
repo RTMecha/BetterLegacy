@@ -2692,14 +2692,10 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.DisplayNotification("Event Offsets have been reset.", 1.4f, EditorManager.NotificationType.Success);
             });
 
-            //if (ModCompatibility.mods.ContainsKey("ExampleCompanion"))
-            //{
-            //    EditorHelper.AddEditorDropdown("Get Example", "", "View", null, delegate ()
-            //    {
-            //        if (ModCompatibility.mods["ExampleCompanion"].Methods.ContainsKey("InitExample"))
-            //            ModCompatibility.mods["ExampleCompanion"].Invoke("InitExample", new object[] { });
-            //    }, 4);
-            //}
+            EditorHelper.AddEditorDropdown("Get Example", "", "View", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_example-white.png"), delegate ()
+            {
+                ExampleManager.Init();
+            });
 
             titleBar.Find("Help/Help Dropdown/Join Discord/Text").GetComponent<Text>().text = "Modder's Discord";
             titleBar.Find("Help/Help Dropdown/Watch Tutorials/Text").AsRT().sizeDelta = new Vector2(200f, 0f);
