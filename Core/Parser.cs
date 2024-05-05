@@ -63,6 +63,19 @@ namespace BetterLegacy.Core
         }
 
         /// <summary>
+        /// Tries to parse a string into a Version.
+        /// </summary>
+        /// <param name="input">String to parse.</param>
+        /// <param name="defaultValue">Default value.</param>
+        /// <returns>If parse was successful, return the parsed Version. Otherwise, return assigned default value.</returns>
+        public static Version TryParse(string input, Version defaultValue)
+        {
+            if (Version.TryParse(input, out Version result))
+                return result;
+            return defaultValue;
+        }
+
+        /// <summary>
         /// Tries to parse a timecode string into a number.
         /// </summary>
         /// <param name="input">String to parse.</param>

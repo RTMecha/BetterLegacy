@@ -1,8 +1,9 @@
-﻿using System;
+﻿using BetterLegacy.Core.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-
+using System.Text.RegularExpressions;
 using VersionComparison = DataManager.VersionComparison;
 
 namespace BetterLegacy.Core
@@ -87,14 +88,7 @@ namespace BetterLegacy.Core
         public override int GetHashCode() => base.GetHashCode();
 
         public VersionComparison CompareVersions(Version other)
-        {
-            if (other > this)
-                return VersionComparison.GreaterThan;
-            if (other < this)
-                return VersionComparison.LessThan;
-
-            return VersionComparison.GreaterThan;
-        }
+            => other > this ? VersionComparison.GreaterThan : other< this ? VersionComparison.LessThan : VersionComparison.EqualTo;
 
         public static Version DeepCopy(Version other) => new Version
         {
@@ -103,6 +97,34 @@ namespace BetterLegacy.Core
             Patch = other.Patch,
             Iteration = other.Iteration
         };
+
+        public static bool TryParse(string ver, out Version result)
+        {
+            if (CoreHelper.RegexMatch(ver, new Regex(@"([0-9]+).([0-9]+).([0-9]+)([a-z]+)"), out Match match))
+            {
+                var major = int.Parse(match.Groups[1].ToString());
+                var minor = int.Parse(match.Groups[2].ToString());
+                var patch = int.Parse(match.Groups[3].ToString());
+
+                string iteration = match.Groups[4].ToString();
+
+                result = new Version(major, minor, patch, iteration);
+                return true;
+            }
+
+            if (CoreHelper.RegexMatch(ver, new Regex(@"([0-9]+).([0-9]+).([0-9]+)"), out Match match2))
+            {
+                var major = int.Parse(match2.Groups[1].ToString());
+                var minor = int.Parse(match2.Groups[2].ToString());
+                var patch = int.Parse(match2.Groups[3].ToString());
+
+                result = new Version(major, minor, patch);
+                return true;
+            }
+
+            result = default;
+            return false;
+        }
 
         public static Version Parse(string ver)
         {
