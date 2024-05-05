@@ -971,6 +971,26 @@ namespace BetterLegacy.Core.Managers
                     {
                         return "Determination Wingdings";
                     }
+                case "pixellet.ttf":
+                    {
+                        return "Pixellet";
+                    }
+                case "filedeletion-yw6m5.ttf":
+                    {
+                        return "File Deletion";
+                    }
+                case "sans mita aprilia.ttf":
+                    {
+                        return "Sans Sans";
+                    }
+                case "monomaniacone-regular.ttf":
+                    {
+                        return "Monomaniac One";
+                    }
+                case "rocknrollone-regular.ttf":
+                    {
+                        return "RocknRoll One";
+                    }
             }
             return _name1;
         }
