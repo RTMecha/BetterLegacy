@@ -341,6 +341,9 @@ namespace BetterLegacy.Editor.Managers
                 EventBins.Add(child.GetComponent<Image>());
                 EventLabels.Add(child.GetChild(0).GetComponent<Text>());
             }
+
+            for (int i = 0; i < GameData.DefaultKeyframes.Count; i++)
+                copiedKeyframeDatas.Add(null);
         }
 
         #region Deleting
@@ -561,8 +564,9 @@ namespace BetterLegacy.Editor.Managers
             if (!_add)
                 DeselectAllKeyframes();
 
-            list.Where(x => RTMath.RectTransformToScreenSpace(EditorManager.inst.SelectionBoxImage.rectTransform)
-            .Overlaps(RTMath.RectTransformToScreenSpace(x.Image.rectTransform))).ToList().ForEach(delegate (TimelineObject x)
+            list.Where(x => (x.Type / EventLimit) == RTEditor.inst.Layer && RTEditor.inst.layerType == RTEditor.LayerType.Events &&
+            RTMath.RectTransformToScreenSpace(EditorManager.inst.SelectionBoxImage.rectTransform).Overlaps(RTMath.RectTransformToScreenSpace(x.Image.rectTransform))).ToList()
+            .ForEach(delegate (TimelineObject x)
             {
                 x.selected = true;
                 x.timeOffset = 0f;
@@ -580,48 +584,43 @@ namespace BetterLegacy.Editor.Managers
                     timelineObject.selected = false;
         }
 
-        public void CreateNewEventObject(int _kind = 0)
-        {
-            CreateNewEventObject(EditorManager.inst.CurrentAudioPos, _kind);
-        }
+        public void CreateNewEventObject(int type = 0) => CreateNewEventObject(EditorManager.inst.CurrentAudioPos, type);
 
-        public void CreateNewEventObject(float __0, int __1)
+        public void CreateNewEventObject(float time, int type)
         {
             BaseEventKeyframe eventKeyframe = null;
 
-            if (AllEvents[__1].Count != 0)
+            if (SettingEditor.inst.SnapActive)
+                time = RTEditor.SnapToBPM(time);
+
+            if (AllEvents[type].Count != 0)
             {
-                int num = DataManager.inst.gameData.eventObjects.allEvents[__1].FindLastIndex(x => x.eventTime <= __0);
-                eventKeyframe = EventKeyframe.DeepCopy((EventKeyframe)DataManager.inst.gameData.eventObjects.allEvents[__1][num]);
+                int num = AllEvents[type].FindLastIndex(x => x.eventTime <= time);
+                eventKeyframe = EventKeyframe.DeepCopy((EventKeyframe)AllEvents[type][num]);
+                eventKeyframe.eventTime = time;
             }
             else
             {
-                eventKeyframe = new EventKeyframe
-                { eventTime = AudioManager.inst.CurrentAudioSource.time, eventValues = new float[9] };
+                eventKeyframe = EventKeyframe.DeepCopy((EventKeyframe)GameData.DefaultKeyframes[type]);
+                eventKeyframe.eventTime = 0f;
             }
 
-
-            if (SettingEditor.inst.SnapActive)
-                __0 = RTEditor.SnapToBPM(__0);
-
-
-            eventKeyframe.eventTime = __0;
-            if (__1 == 2 && ResetRotation)
+            if (type == 2 && ResetRotation)
                 eventKeyframe.SetEventValues(new float[1]);
 
-            DataManager.inst.gameData.eventObjects.allEvents[__1].Add(eventKeyframe);
+            AllEvents[type].Add(eventKeyframe);
 
             UpdateEventOrder();
 
             EventManager.inst.updateEvents();
             CreateEventObjects();
-            SetCurrentEvent(__1, DataManager.inst.gameData.eventObjects.allEvents[__1].IndexOf(eventKeyframe));
+            SetCurrentEvent(type, AllEvents[type].IndexOf(eventKeyframe));
         }
 
         public float NewKeyframeOffset { get; set; } = /*-0.1f*/0f;
-        public void NewKeyframeFromTimeline(int _type)
+        public void NewKeyframeFromTimeline(int type)
         {
-            if (!(DataManager.inst.gameData.eventObjects.allEvents.Count > _type))
+            if (!(AllEvents.Count > type))
             {
                 EditorManager.inst.DisplayNotification("Keyframe type doesn't exist!", 4f, EditorManager.NotificationType.Warning);
                 return;
@@ -632,32 +631,32 @@ namespace BetterLegacy.Editor.Managers
             if (SettingEditor.inst.SnapActive)
                 timeTmp = RTEditor.SnapToBPM(timeTmp);
 
-            int num = DataManager.inst.gameData.eventObjects.allEvents[_type].FindLastIndex(x => x.eventTime <= timeTmp);
+            int num = AllEvents[type].FindLastIndex(x => x.eventTime <= timeTmp);
             Debug.Log($"{EventEditor.inst.className}Prior Index: {num}");
 
             EventKeyframe eventKeyframe;
 
             if (num < 0)
             {
-                eventKeyframe = EventKeyframe.DeepCopy((EventKeyframe)GameData.DefaultKeyframes[_type]);
+                eventKeyframe = EventKeyframe.DeepCopy((EventKeyframe)GameData.DefaultKeyframes[type]);
                 eventKeyframe.eventTime = 0f;
             }
             else
             {
-                eventKeyframe = EventKeyframe.DeepCopy((EventKeyframe)DataManager.inst.gameData.eventObjects.allEvents[_type][num], true);
+                eventKeyframe = EventKeyframe.DeepCopy((EventKeyframe)AllEvents[type][num], true);
                 eventKeyframe.eventTime = timeTmp;
 
-                if (_type == 2 && ResetRotation)
+                if (type == 2 && ResetRotation)
                     eventKeyframe.SetEventValues(new float[1]);
             }
 
-            DataManager.inst.gameData.eventObjects.allEvents[_type].Add(eventKeyframe);
+            AllEvents[type].Add(eventKeyframe);
 
             UpdateEventOrder();
 
             EventManager.inst.updateEvents();
             CreateEventObjects();
-            SetCurrentEvent(_type, DataManager.inst.gameData.eventObjects.allEvents[_type].IndexOf(eventKeyframe));
+            SetCurrentEvent(type, AllEvents[type].IndexOf(eventKeyframe));
         }
 
         public void AddSelectedEvent(int type, int index)
@@ -666,10 +665,8 @@ namespace BetterLegacy.Editor.Managers
                 CreateEventObjects();
 
             var kf = RTEditor.inst.timelineKeyframes.Find(x => x.Type == type && x.Index == index);
-            if (SelectedKeyframes.Count > 1)
-                kf.selected = !kf.selected;
-            else
-                kf.selected = true;
+
+            kf.selected = SelectedKeyframes.Count <= 1 || !kf.selected;
 
             EventEditor.inst.currentEventType = type;
             EventEditor.inst.currentEvent = index;
@@ -681,15 +678,11 @@ namespace BetterLegacy.Editor.Managers
         {
             DeselectAllKeyframes();
             AddSelectedEvent(type, index);
-            EventEditor.inst.currentEventType = type;
-            EventEditor.inst.currentEvent = index;
         }
 
         #endregion
 
         #region Timeline Objects
-
-        int lastLayer;
 
         public void ClearEventObjects()
         {
@@ -704,11 +697,9 @@ namespace BetterLegacy.Editor.Managers
 
         public void CreateEventObjects()
         {
-            var eventEditor = EventEditor.inst;
-
             ClearEventObjects();
 
-            eventEditor.eventDrag = false;
+            EventEditor.inst.eventDrag = false;
 
             for (int type = 0; type < AllEvents.Count; type++)
             {
@@ -719,8 +710,6 @@ namespace BetterLegacy.Editor.Managers
                     RTEditor.inst.timelineKeyframes.Add(kf);
                 }
             }
-
-            lastLayer = RTEditor.inst.Layer;
 
             RenderEventObjects();
         }
@@ -752,7 +741,6 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderEventObjects()
         {
-            var eventEditor = EventEditor.inst;
             for (int type = 0; type < AllEvents.Count; type++)
             {
                 for (int index = 0; index < AllEvents[type].Count; index++)
@@ -2853,44 +2841,7 @@ namespace BetterLegacy.Editor.Managers
             RenderTitle(__instance.currentEventType);
         }
 
-        public List<EventKeyframe> copiedKeyframeDatas = new List<EventKeyframe>
-        {
-            null, // 0
-			null, // 1
-			null, // 2
-			null, // 3
-			null, // 4
-			null, // 5
-			null, // 6
-			null, // 7
-			null, // 8
-			null, // 9
-			null, // 10
-			null, // 11
-			null, // 12
-			null, // 13
-			null, // 14
-			null, // 15
-			null, // 16
-			null, // 17
-			null, // 18
-			null, // 19
-			null, // 20
-			null, // 21
-			null, // 22
-			null, // 23
-			null, // 24
-			null, // 25
-			null, // 26
-			null, // 27
-			null, // 28
-			null, // 29
-			null, // 30
-			null, // 31
-			null, // 32
-			null, // 34
-			null, // 35
-		};
+        public List<EventKeyframe> copiedKeyframeDatas = new List<EventKeyframe>();
 
         public void SetListColor(int value, int index, List<Toggle> toggles, Color defaultColor, Color secondaryDefaultColor)
         {
