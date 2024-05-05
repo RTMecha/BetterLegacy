@@ -6284,9 +6284,36 @@ namespace BetterLegacy.Editor.Managers
         public Text documentationTitle;
         public string documentationSearch;
         public Transform documentationContent;
-        void CreateDocumentation()
+        public Popup documentationPopup;
+
+        Document GenerateDocument(string name, string description, List<Document.Element> elements)
         {
-            var documentationPopup = GeneratePopup("Documentation Popup", "Documentation", Vector2.zero, new Vector2(600f, 450f), delegate (string _val)
+            var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(documentationPopup.Content, "Document");
+            var documentation = new Document(gameObject, name, description);
+
+            EditorThemeManager.AddSelectable(gameObject.GetComponent<Button>(), ThemeGroup.List_Button_1);
+
+            documentation.elements.AddRange(elements);
+
+            var htt = gameObject.AddComponent<HoverTooltip>();
+            htt.tooltipLangauges.Add(new HoverTooltip.Tooltip
+            {
+                desc = name,
+                hint = description
+            });
+
+            var text = gameObject.transform.GetChild(0).GetComponent<Text>();
+
+            text.text = documentation.Name;
+            EditorThemeManager.AddLightText(text);
+
+            documentations.Add(documentation);
+            return documentation;
+        }
+
+        void CreateDocumentation() // NEED TO UPDATE!
+        {
+            documentationPopup = GeneratePopup("Documentation Popup", "Documentation", Vector2.zero, new Vector2(600f, 450f), delegate (string _val)
             {
                 documentationSearch = _val;
                 RefreshDocumentation();
@@ -6335,2252 +6362,730 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.AddGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
 
-            // Introduction
+            GenerateDocument("Introduction", "Welcome to Project Arrhythmia Legacy.", new List<Document.Element>
             {
-                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(documentationPopup.Content, "Document");
-                var documentation = new Document(gameObject, "Introduction", "Welcome to Project Arrhythmia.");
+                new Document.Element("Welcome to <b>Project Arrhythmia</b>!\nWhether you're new to the game, modding or have been around for a while, I'm sure this " +
+                        "documentation will help massively in understanding the ins and outs of the editor and the game as a whole.", Document.Element.Type.Text),
+                new Document.Element("<b>DOCUMENTATION INFO</b>", Document.Element.Type.Text),
+                new Document.Element("<b>[VANILLA]</b> represents a feature from original Legacy, with very minor tweaks done to it if any.", Document.Element.Type.Text),
+                new Document.Element("<b>[MODDED]</b> represents a feature added by mods. These features will not work in unmodded PA.", Document.Element.Type.Text),
+                new Document.Element("<b>[PATCHED]</b> represents a feature modified by mods. They're either in newer versions of PA or are partially modded, meaning they might not work in regular PA.", Document.Element.Type.Text)
+            });
 
-                EditorThemeManager.AddSelectable(gameObject.GetComponent<Button>(), ThemeGroup.List_Button_1);
-
-                // Intro
-                {
-                    var element = new Document.Element("Welcome to <b>Project Arrhythmia</b>!\nWhether you're new to the game, modding or have been around for a while, I'm sure this " +
-                        "documentation will help massively in understanding the ins and outs of the editor and the game as a whole.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Info
-                {
-                    var element = new Document.Element("<b>DOCUMENTATION INFO</b>", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Vanilla
-                {
-                    var element = new Document.Element("<b>[VANILLA]</b> represents a feature from original Legacy, with very minor tweaks done to it if any.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Modded
-                {
-                    var element = new Document.Element("<b>[MODDED]</b> represents a feature added by mods. These features will not work in unmodded PA.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Patched
-                {
-                    var element = new Document.Element("<b>[PATCHED]</b> represents a feature modified by mods. They're either in newer versions of PA or are partially modded, meaning they might not work in regular PA.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                var htt = gameObject.AddComponent<HoverTooltip>();
-
-                var levelTip = new HoverTooltip.Tooltip();
-
-                levelTip.desc = documentation.Name;
-                levelTip.hint = documentation.Description;
-                htt.tooltipLangauges.Add(levelTip);
-
-                var text = gameObject.transform.GetChild(0).GetComponent<Text>();
-
-                text.text = documentation.Name;
-                EditorThemeManager.AddLightText(text);
-
-                documentations.Add(documentation);
-            }
-
-            // Beatmap Objects
+            GenerateDocument("Credits", "All the people who helped the mod development in some way.", new List<Document.Element>
             {
-                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(documentationPopup.Content, "Document");
-                var documentation = new Document(gameObject, "Beatmap Objects", "The very objects that make up Project Arrhythmia levels.");
-
-                EditorThemeManager.AddSelectable(gameObject.GetComponent<Button>(), ThemeGroup.List_Button_1);
-
-                // Intro
+                new Document.Element("Crafty Font for the Pixellet font.", Document.Element.Type.Text),
+                new Document.Element("Website: https://craftyfont.gumroad.com/", Document.Element.Type.Text)
                 {
-                    var element = new Document.Element("<b>Beatmap Objects</b> are the objects people use to create a variety of things for their levels. " +
-                        "Whether it be backgrounds, characters, attacks, you name it! Below is a list of data Beatmap Objects have.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
+                    Function = delegate ()
+                    {
+                        Application.OpenURL("https://craftyfont.gumroad.com/");
+                    }
                 }
+            });
 
-                // ID
-                {
-                    var element = new Document.Element("<b>ID [PATCHED]</b>\nThe ID is used for specifying a Beatmap Object, otherwise it'd most likely get lost in a sea of other objects! " +
+            GenerateDocument("Beatmap Objects", "The very objects that make up Project Arrhythmia levels.", new List<Document.Element>
+            {
+                new Document.Element("<b>Beatmap Objects</b> are the objects people use to create a variety of things for their levels. " +
+                        "Whether it be backgrounds, characters, attacks, you name it! Below is a list of data Beatmap Objects have.", Document.Element.Type.Text),
+                new Document.Element("<b>ID [PATCHED]</b>\nThe ID is used for specifying a Beatmap Object, otherwise it'd most likely get lost in a sea of other objects! " +
                         "It's mostly used with parenting. This is patched because in unmodded PA, creators aren't able to see the ID of an object unless they look at the level.lsb.\n" +
-                        "Clicking on the ID will copy it to your clipboard.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // LDM
-                {
-                    var element = new Document.Element("<b>LDM (Low Detail Mode) [MODDED]</b>\nLDM is useful for having objects not render for lower end devices. If the option is on and the user has " +
-                        "Low Detail Mode enabled through the RTFunctions mod config, the Beatmap Object will not render.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // ID & LDM Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_id_ldm.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Name
-                {
-                    var element = new Document.Element("<b>Name [VANILLA]</b>\nNaming an object is incredibly helpful for readablility and knowing what an object does at a glance. " +
-                        "Clicking your scroll wheel over it will flip any left / right.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Object Type
-                {
-                    var element = new Document.Element("<b>Object Type [PATCHED]</b>\nThis makes the objects' physics act in different ways." +
-                        "\n<b>[VANILLA]</b> Normal hits the player." +
-                        "\n<b>[VANILLA]</b> Helper is transparent, doesn't hit the player and is a good opacity template to use for warnings." +
-                        "\n<b>[VANILLA]</b> Decoration doesn't hit the player." +
-                        "\n<b>[VANILLA]</b> Empty doesn't render." +
-                        "\n<b>[MODDED]</b> Solid prevents players from passing through itself but doesn't hit them.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Name & Type Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_name_type.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Tags
-                {
-                    var element = new Document.Element("<b>Tags [MODDED]</b>\nBeing able to group objects together or even specify things about an object is possible with Object Tags. This feature " +
-                        "is mostly used by ObjectModifiers, but can be used in other ways such as a \"DontRotate\" tag which prevents Player Shapes from rotating automatically.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Tags Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_tags.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Locked
-                {
-                    var element = new Document.Element("<b>Locked [PATCHED]</b>\nIf on, prevents Beatmap Objects' start time from being changed. It's patched because unmodded PA doesn't " +
-                        "have the toggle UI for this, however you can still use it in unmodded PA via hitting Ctrl + L.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Start Time
-                {
-                    var element = new Document.Element("<b>Start Time [VANILLA]</b>\nUsed for when the Beatmap Object spawns.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Start Time Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_start_time.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Time of Death
-                {
-                    var element = new Document.Element("<b>Time of Death [VANILLA]</b>\nUsed for when the Beatmap Object despawns." +
+                        "Clicking on the ID will copy it to your clipboard.", Document.Element.Type.Text),
+                new Document.Element("<b>LDM (Low Detail Mode) [MODDED]</b>\nLDM is useful for having objects not render for lower end devices. If the option is on and the user has " +
+                        "Low Detail Mode enabled through the RTFunctions mod config, the Beatmap Object will not render.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_id_ldm.png", Document.Element.Type.Image),
+                new Document.Element("<b>Name [VANILLA]</b>\nNaming an object is incredibly helpful for readablility and knowing what an object does at a glance. " +
+                        "Clicking your scroll wheel over it will flip any left / right.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_name_type.png", Document.Element.Type.Image),
+                new Document.Element("<b>Tags [MODDED]</b>\nBeing able to group objects together or even specify things about an object is possible with Object Tags. This feature " +
+                        "is mostly used by ObjectModifiers, but can be used in other ways such as a \"DontRotate\" tag which prevents Player Shapes from rotating automatically.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_tags.png", Document.Element.Type.Image),
+                new Document.Element("<b>Locked [PATCHED]</b>\nIf on, prevents Beatmap Objects' start time from being changed. It's patched because unmodded PA doesn't " +
+                        "have the toggle UI for this, however you can still use it in unmodded PA via hitting Ctrl + L.", Document.Element.Type.Text),
+                new Document.Element("<b>Start Time [VANILLA]</b>\nUsed for when the Beatmap Object spawns.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_start_time.png", Document.Element.Type.Image),
+                new Document.Element("<b>Time of Death [VANILLA]</b>\nUsed for when the Beatmap Object despawns." +
                         "\n<b>[PATCHED]</b> No Autokill - Beatmap Objects never despawn. This option is viable in modded PA due to heavily optimized object code, so don't worry " +
                         "about having a couple of objects with this. Just make sure to only use this when necessary, like for backgrounds or a persistent character." +
                         "\n<b>[VANILLA]</b> Last KF - Beatmap Objects despawn once all animations are finished. This does NOT include parent animations. When the level " +
                         "time reaches after the last keyframe, the object despawns." +
                         "\n<b>[VANILLA]</b> Last KF Offset - Same as above but at an offset." +
                         "\n<b>[VANILLA]</b> Fixed Time - Beatmap Objects despawn at a fixed time, regardless of animations. Fixed time is Beatmap Objects Start Time with an offset added to it." +
-                        "\n<b>[VANILLA]</b> Song Time - Same as above, except it ignores the Beatmap Object Start Time, despawning the object at song time.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Collapse
-                {
-                    var element = new Document.Element("<b>Collapse [VANILLA]</b>\nBeatmap Objects in the editor timeline have their length shortened to the smallest amount if this is on.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Time of Death Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_tod.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Parent Search
-                {
-                    var element = new Document.Element("<b>Parent Search [PATCHED]</b>\nHere you can search for an object to parent the Beatmap Object to. It includes Camera Parenting.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Parent Search Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_parent_search.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Camera Parent
-                {
-                    var element = new Document.Element("<b>Camera Parent [MODDED]</b>\nBeatmap Objects parented to the camera will always follow it, depending on the parent settings. This includes " +
-                        "anything that makes the camera follow the player. This feature does exist in modern PA, but doesn't work the same way this does.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Clear Parent
-                {
-                    var element = new Document.Element("<b>Clear Parent [MODDED]</b>\nClicking this will remove the Beatmap Object from its parent.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Parent Picker
-                {
-                    var element = new Document.Element("<b>Parent Picker [MODDED]</b>\nClicking this will activate a dropper. Right clicking will deactivate the dropper. Clicking on an object " +
-                        "in the timeline will set the current selected Beatmap Objects parent to the selected Timeline Object.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Parent Display
-                {
-                    var element = new Document.Element("<b>Parent Display [VANILLA]</b>\nShows what the Beatmap Object is parented to. Clicking this button selects the parent. " +
-                        "Hovering your mouse over it shows parent chain info in the Hover Info box.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Parent Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_parent.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Parent Settings
-                {
-                    var element = new Document.Element("<b>Parent Settings [PATCHED]</b>\nParent settings can be adjusted here. Each of the below settings refer to both " +
-                        "position / scale / rotation. Position, scale and rotation are the rows and the types of Parent Settings are the columns.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Parent Type
-                {
-                    var element = new Document.Element("<b>Parent Type [VANILLA]</b>\nWhether the Beatmap Object applies this type of animation from the parent. " +
-                        "It is the first column in the Parent Settings UI.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Parent Offset
-                {
-                    var element = new Document.Element("<b>Parent Offset [VANILLA]</b>\nParent animations applied to the Beatmap Objects own parent chain get delayed at this offset. Normally, only " +
-                        "the objects current parent gets delayed. " +
-                        "It is the second column in the Parent Settings UI.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Parent Additive
-                {
-                    var element = new Document.Element("<b>Parent Additive [MODDED]</b>\nForces Parent Offset to apply to every parent chain connected to the Beatmap Object. With this off, it only " +
+                        "\n<b>[VANILLA]</b> Song Time - Same as above, except it ignores the Beatmap Object Start Time, despawning the object at song time.", Document.Element.Type.Text),
+                new Document.Element("<b>Collapse [VANILLA]</b>\nBeatmap Objects in the editor timeline have their length shortened to the smallest amount if this is on.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_tod.png", Document.Element.Type.Image),
+                new Document.Element("<b>Parent Search [PATCHED]</b>\nHere you can search for an object to parent the Beatmap Object to. It includes Camera Parenting.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_parent_search.png", Document.Element.Type.Image),
+                new Document.Element("<b>Camera Parent [MODDED]</b>\nBeatmap Objects parented to the camera will always follow it, depending on the parent settings. This includes " +
+                        "anything that makes the camera follow the player. This feature does exist in modern PA, but doesn't work the same way this does.", Document.Element.Type.Text),
+                new Document.Element("<b>Clear Parent [MODDED]</b>\nClicking this will remove the Beatmap Object from its parent.", Document.Element.Type.Text),
+                new Document.Element("<b>Parent Picker [MODDED]</b>\nClicking this will activate a dropper. Right clicking will deactivate the dropper. Clicking on an object " +
+                        "in the timeline will set the current selected Beatmap Objects parent to the selected Timeline Object.", Document.Element.Type.Text),
+                new Document.Element("<b>Parent Display [VANILLA]</b>\nShows what the Beatmap Object is parented to. Clicking this button selects the parent. " +
+                        "Hovering your mouse over it shows parent chain info in the Hover Info box.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_parent.png", Document.Element.Type.Image),
+                new Document.Element("<b>Parent Settings [PATCHED]</b>\nParent settings can be adjusted here. Each of the below settings refer to both " +
+                        "position / scale / rotation. Position, scale and rotation are the rows and the types of Parent Settings are the columns.", Document.Element.Type.Text),
+                new Document.Element("<b>Parent Type [VANILLA]</b>\nWhether the Beatmap Object applies this type of animation from the parent. " +
+                        "It is the first column in the Parent Settings UI.", Document.Element.Type.Text),
+                new Document.Element("<b>Parent Offset [VANILLA]</b>\nParent animations applied to the Beatmap Objects own parent chain get delayed at this offset. Normally, only " +
+                        "the objects current parent gets delayed. It is the second column in the Parent Settings UI.", Document.Element.Type.Text),
+                new Document.Element("<b>Parent Additive [MODDED]</b>\nForces Parent Offset to apply to every parent chain connected to the Beatmap Object. With this off, it only " +
                         "uses the Beatmap Objects' current parent. For example, say we have objects A, B, C and D. With this on, D delays the animation of every parent. With this off, it delays only C. " +
-                        "It is the third column in the Parent Settings UI.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Parent Parallax
-                {
-                    var element = new Document.Element("<b>Parent Parallax [MODDED]</b>\nParent animations are multiplied by this amount, allowing for a parallax effect. Say the amount was 2 and the parent " +
+                        "It is the third column in the Parent Settings UI.", Document.Element.Type.Text),
+                new Document.Element("<b>Parent Parallax [MODDED]</b>\nParent animations are multiplied by this amount, allowing for a parallax effect. Say the amount was 2 and the parent " +
                         "moves to position X 20, the object would move to 40 due to it being multiplied by 2. " +
-                        "It is the fourth column in the Parent Settings UI.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Parent Advanced Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_parent_more.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Origin
-                {
-                    var element = new Document.Element("<b>Origin [PATCHED]</b>\nOrigin is the offset applied to the visual of the Beatmap Object. Only usable for non-Empty object types. " +
-                        "It's patched because of the number input fields instead of the direction buttons.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Origin Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_origin.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Shape
-                {
-                    var element = new Document.Element("<b>Shape [PATCHED]</b>\nShape is whatever the visual of the Beatmap Object displays as. This doesn't just include actual shapes but stuff " +
-                        "like text, images and player models too. More shape types and options were added. Unmodded PA does not include Image Shape, Pentagon Shape, Misc Shape, Player Shape.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Shape Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_shape.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Render Depth
-                {
-                    var element = new Document.Element("<b>Render Depth [PATCHED]</b>\nDepth is how deep an object is in visual layers. Higher amount of Render Depth means the object is lower " +
+                        "It is the fourth column in the Parent Settings UI.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_parent_more.png", Document.Element.Type.Image),
+                new Document.Element("<b>Origin [PATCHED]</b>\nOrigin is the offset applied to the visual of the Beatmap Object. Only usable for non-Empty object types. " +
+                        "It's patched because of the number input fields instead of the direction buttons.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_origin.png", Document.Element.Type.Image),
+                new Document.Element("<b>Shape [PATCHED]</b>\nShape is whatever the visual of the Beatmap Object displays as. This doesn't just include actual shapes but stuff " +
+                        "like text, images and player models too. More shape types and options were added. Unmodded PA does not include Image Shape, Pentagon Shape, Misc Shape, Player Shape.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_shape.png", Document.Element.Type.Image),
+                new Document.Element("<b>Render Depth [PATCHED]</b>\nDepth is how deep an object is in visual layers. Higher amount of Render Depth means the object is lower " +
                         "in the layers. Unmodded PA Legacy allows from 219 to -98. PA Alpha only allows from 40 to 0. Player is located at -60 depth. Z Axis Position keyframes use depth as a " +
-                        "multiplied offset.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Render Depth Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_depth.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Render Type
-                {
-                    var element = new Document.Element("<b>Render Type [MODDED]</b>\nRender Type is if the visual of the Beatmap Object renders in the 2D layer or the 3D layer, aka Foreground / Background.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Render Type Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_render_type.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Layer
-                {
-                    var element = new Document.Element("<b>Layer [PATCHED]</b>\nLayer is what editor layer the Beatmap Object renders on. It can go as high as 2147483646. " +
-                        "In unmodded PA its limited from layers 1 to 5, though in PA Editor Alpha another layer was introduced.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Bin
-                {
-                    var element = new Document.Element("<b>Bin [VANILLA]</b>\nBin is what row of the timeline the Beatmap Objects' timeline object renders on.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Editor Data Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_editordata.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Object Debug
-                {
-                    var element = new Document.Element("<b>Object Debug [MODDED]</b>\nThis UI element only generates if UnityExplorer is installed. If it is, clicking on either button will inspect " +
-                        "the internal data of the respective item.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Object Debug Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_object_debug.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                {
-                    // Integer Variable
-                    {
-                        var element = new Document.Element("<b>Integer Variable [MODDED]</b>\nEvery object has a whole number stored that ObjectModifiers can use.", Document.Element.Type.Text);
-                        documentation.elements.Add(element);
-                    }
-
-                    // Modifiers
-                    {
-                        var element = new Document.Element("<b>Modifiers [MODDED]</b>\nModifiers come from the ObjectModifiers mod and are made up of two different types: Triggers and Actions. " +
+                        "multiplied offset.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_depth.png", Document.Element.Type.Image),
+                new Document.Element("<b>Render Type [MODDED]</b>\nRender Type is if the visual of the Beatmap Object renders in the 2D layer or the 3D layer, aka Foreground / Background.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_render_type.png", Document.Element.Type.Image),
+                new Document.Element("<b>Layer [PATCHED]</b>\nLayer is what editor layer the Beatmap Object renders on. It can go as high as 2147483646. " +
+                        "In unmodded PA its limited from layers 1 to 5, though in PA Editor Alpha another layer was introduced.", Document.Element.Type.Text),
+                new Document.Element("<b>Bin [VANILLA]</b>\nBin is what row of the timeline the Beatmap Objects' timeline object renders on.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_editordata.png", Document.Element.Type.Image),
+                new Document.Element("<b>Object Debug [MODDED]</b>\nThis UI element only generates if UnityExplorer is installed. If it is, clicking on either button will inspect " +
+                        "the internal data of the respective item.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_object_debug.png", Document.Element.Type.Image),
+                new Document.Element("<b>Integer Variable [MODDED]</b>\nEvery object has a whole number stored that Modifiers can use.", Document.Element.Type.Text),
+                new Document.Element("<b>Modifiers [MODDED]</b>\nModifiers are made up of two different types: Triggers and Actions. " +
                             "Triggers check if a specified thing is happening and Actions do things depending on if any triggers are active or there aren't any. A detailed description of every modifier " +
-                            "can be found in the Modifiers documentation. [WIP]", Document.Element.Type.Text);
-                        documentation.elements.Add(element);
-                    }
+                            "can be found in the Modifiers documentation. [WIP]", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_object_modifiers_edit.png", Document.Element.Type.Image),
+            });
 
-                    // Object Modifiers Image
-                    {
-                        var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_object_modifiers_edit.png", Document.Element.Type.Image);
-                        documentation.elements.Add(element);
-                    }
-                }
-
-                var htt = gameObject.AddComponent<HoverTooltip>();
-
-                var levelTip = new HoverTooltip.Tooltip();
-
-                levelTip.desc = documentation.Name;
-                levelTip.hint = documentation.Description;
-                htt.tooltipLangauges.Add(levelTip);
-
-                var text = gameObject.transform.GetChild(0).GetComponent<Text>();
-
-                text.text = documentation.Name;
-                EditorThemeManager.AddLightText(text);
-
-                documentations.Add(documentation);
-            }
-
-            // Beatmap Object Keyframes
+            GenerateDocument("Beatmap Object Keyframes (WIP)", "The things that animate objects in different ways.", new List<Document.Element>
             {
-                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(documentationPopup.Content, "Document");
-                var documentation = new Document(gameObject, "Beatmap Object Keyframes", "The things that animate objects.");
+                new Document.Element("The keyframes in the Beatmap Objects' keyframe timeline allow animating several aspects of a Beatmap Objects' visual.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pos_none.png", Document.Element.Type.Image),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pos_normal.png", Document.Element.Type.Image),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pos_toggle.png", Document.Element.Type.Image),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pos_scale.png", Document.Element.Type.Image),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pos_static_homing.png", Document.Element.Type.Image),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pos_dynamic_homing.png", Document.Element.Type.Image),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_sca_none.png", Document.Element.Type.Image),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_sca_normal.png", Document.Element.Type.Image),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_sca_toggle.png", Document.Element.Type.Image),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_sca_scale.png", Document.Element.Type.Image),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_rot_none.png", Document.Element.Type.Image),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_rot_normal.png", Document.Element.Type.Image),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_rot_toggle.png", Document.Element.Type.Image),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_rot_static_homing.png", Document.Element.Type.Image),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_rot_dynamic_homing.png", Document.Element.Type.Image),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_col_none.png", Document.Element.Type.Image),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_col_dynamic_homing.png", Document.Element.Type.Image),
+            });
 
-                EditorThemeManager.AddSelectable(gameObject.GetComponent<Button>(), ThemeGroup.List_Button_1);
-
-                // Intro
-                {
-                    var element = new Document.Element("The keyframes in the Beatmap Objects' keyframe timeline allow animating several aspects of a Beatmap Objects' visual.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // None Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pos_none.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Normal Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pos_normal.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Toggle Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pos_toggle.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Scale Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pos_scale.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Static Homing Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pos_static_homing.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Dynamic Homing Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pos_dynamic_homing.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // None Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_sca_none.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Normal Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_sca_normal.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Toggle Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_sca_toggle.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Scale Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_sca_scale.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // None Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_rot_none.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Normal Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_rot_normal.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Toggle Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_rot_toggle.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Static Homing Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_rot_static_homing.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Dynamic Homing Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_rot_dynamic_homing.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // None Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_col_none.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Dynamic Homing Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_col_dynamic_homing.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                var htt = gameObject.AddComponent<HoverTooltip>();
-
-                var levelTip = new HoverTooltip.Tooltip();
-
-                levelTip.desc = documentation.Name;
-                levelTip.hint = documentation.Description;
-                htt.tooltipLangauges.Add(levelTip);
-
-                var text = gameObject.transform.GetChild(0).GetComponent<Text>();
-
-                text.text = documentation.Name;
-                EditorThemeManager.AddLightText(text);
-
-                documentations.Add(documentation);
-            }
-
-            // Prefabs
+            GenerateDocument("Prefabs", "A package of objects that can be transfered from level to level. They can also be added to the level as a Prefab Object.", new List<Document.Element>
             {
-                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(documentationPopup.Content, "Document");
-                var documentation = new Document(gameObject, "Prefabs", "A package of objects that can be transfered to another level. They can also be added to the level as a Prefab Object.");
+                    new Document.Element("Prefabs are collections of objects grouped together for easy transfering from level to level.", Document.Element.Type.Text),
+                    new Document.Element("<b>Name [VANILLA]</b>\nThe name of the Prefab. External prefabs gets saved with this as its file name, but all lowercase and " +
+                        "spaces replaced with underscores.", Document.Element.Type.Text),
+                    new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pc_name.png", Document.Element.Type.Image),
+                    new Document.Element("<b>Offset [VANILLA]</b>\nThe delay set to every Prefab Objects' spawned objects related to this Prefab.", Document.Element.Type.Text),
+                    new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pc_offset.png", Document.Element.Type.Image),
+                    new Document.Element("<b>Type [PATCHED]</b>\nThe group name and color of the Prefab. Good for color coding what a Prefab does at a glance.", Document.Element.Type.Text),
+                    new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pc_type.png", Document.Element.Type.Image),
+                    new Document.Element("<b>Description [MODDED]</b>\nA good way to tell you and others what the Prefab does or contains in great detail.", Document.Element.Type.Text),
+                    new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pc_description.png", Document.Element.Type.Image),
+                    new Document.Element("<b>Seletion List [PATCHED]</b>\nShows every object, you can toggle the selection on any of them to add them to the prefab. All selected " +
+                        "objects will be copied into the Prefab. This is patched because the UI and the code for it already existed in Legacy, it was just unused.", Document.Element.Type.Text),
+                    new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pc_search.png", Document.Element.Type.Image),
+                    new Document.Element("<b>Create [MODDED]</b>\nApplies all data and copies all selected objects to a new Prefab.", Document.Element.Type.Text),
+                    new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pc_create.png", Document.Element.Type.Image),
 
-                EditorThemeManager.AddSelectable(gameObject.GetComponent<Button>(), ThemeGroup.List_Button_1);
+            });
 
-                // Intro
-                {
-                    var element = new Document.Element("Prefabs are collections of objects grouped together for easy transfering from level to level.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Name
-                {
-                    var element = new Document.Element("<b>Name [VANILLA]</b>\nThe name of the Prefab. External prefabs gets saved with this as its file name, but all lowercase and " +
-                        "spaces replaced with underscores.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Name Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pc_name.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Offset
-                {
-                    var element = new Document.Element("<b>Offset [VANILLA]</b>\nThe delay set to every Prefab Objects' spawned objects related to this Prefab.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Offset Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pc_offset.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Type
-                {
-                    var element = new Document.Element("<b>Type [PATCHED]</b>\nThe group name and color of the Prefab. Good for color coding what a Prefab does at a glance.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Type Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pc_type.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Description
-                {
-                    var element = new Document.Element("<b>Description [MODDED]</b>\nA good way to tell you and others what the Prefab does or contains in great detail.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Description Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pc_description.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Seletion List
-                {
-                    var element = new Document.Element("<b>Seletion List [PATCHED]</b>\nShows every object, you can toggle the selection on any of them to add them to the prefab. All selected " +
-                        "objects will be copied into the Prefab. This is patched because the UI and the code for it already existed in Legacy, it was just unused.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Seletion List Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pc_search.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Create
-                {
-                    var element = new Document.Element("<b>Create [MODDED]</b>\nApplies all data and copies all selected objects to a new Prefab.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Create Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pc_create.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                var htt = gameObject.AddComponent<HoverTooltip>();
-
-                var levelTip = new HoverTooltip.Tooltip();
-
-                levelTip.desc = documentation.Name;
-                levelTip.hint = documentation.Description;
-                htt.tooltipLangauges.Add(levelTip);
-
-                var text = gameObject.transform.GetChild(0).GetComponent<Text>();
-
-                text.text = documentation.Name;
-                EditorThemeManager.AddLightText(text);
-
-                documentations.Add(documentation);
-            }
-
-            // Prefab Objects
+            GenerateDocument("Prefab Objects", "Individual instances of prefabs that spawn the packed objects at specified offsets.", new List<Document.Element>
             {
-                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(documentationPopup.Content, "Document");
-                var documentation = new Document(gameObject, "Prefab Objects", "Individual instances of prefabs.");
+                new Document.Element("Prefab Objects are a copied version of the original prefab, placed into the level. They take all the objects stored in the original prefab " +
+                    "and add them to the level, meaning you can have multiple copies of the same group of objects. Editing the objects of the prefab by expanding it applies all changes to " +
+                    "the prefab, updating every Prefab Object (once collapsed back into a Prefab Object).", Document.Element.Type.Text),
+                new Document.Element("<b>Expand [VANILLA]</b>\nExpands all the objects contained within the original prefab into the level and deletes the Prefab Object.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_expand.png", Document.Element.Type.Image),
+                new Document.Element("<b>Layer [PATCHED]</b>\nWhat Editor Layer the Prefab Object displays on. Can go from 1 to 2147483646. In unmodded Legacy its 1 to 5.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_layer.png", Document.Element.Type.Image),
+                new Document.Element("<b>Time of Death [MODDED]</b>\nTime of Death allows every object spawned from the Prefab Object still alive at a certain point to despawn." +
+                    "\nRegular - Just how the game handles Prefab Objects kill time normally." +
+                    "\nStart Offset - Kill time is offset plus the Prefab Object start time." +
+                    "\nSong Time - Kill time is song time, so no matter where you change the start time to the kill time remains the same.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_tod.png", Document.Element.Type.Image),
+                new Document.Element("<b>Locked [PATCHED]</b>\nIf on, prevents Prefab Objects' start time from being changed. It's patched because unmodded PA doesn't " +
+                    "have the toggle UI for this, however you can still use it in unmodded PA via hitting Ctrl + L.", Document.Element.Type.Text),
+                new Document.Element("<b>Collapse [PATCHED]</b>\nIf on, collapses the Prefab Objects' timeline object. This is patched because it literally doesn't " +
+                    "work in unmodded PA.", Document.Element.Type.Text),
+                new Document.Element("<b>Start Time [VANILLA]</b>\nWhere the objects spawned from the Prefab Object start.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_time.png", Document.Element.Type.Image),
+                new Document.Element("<b>Position Offset [PATCHED]</b>\nEvery objects' top-most-parent has its position set to this offset. Unmodded PA technically has this " +
+                    "feature, but it's not editable in the editor.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_pos_offset.png", Document.Element.Type.Image),
+                new Document.Element("<b>Scale Offset [PATCHED]</b>\nEvery objects' top-most-parent has its scale set to this offset. Unmodded PA technically has this " +
+                    "feature, but it's not editable in the editor.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_sca_offset.png", Document.Element.Type.Image),
+                new Document.Element("<b>Rotation Offset [PATCHED]</b>\nEvery objects' top-most-parent has its rotation set to this offset. Unmodded PA technically has this " +
+                    "feature, but it's not editable in the editor.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_rot_offset.png", Document.Element.Type.Image),
+                new Document.Element("<b>Repeat [MODDED]</b>\nWhen spawning the objects from the Prefab Object, every object gets repeated a set amount of times" +
+                    "with their start offset added onto each time they repeat depending on the Repeat Offset Time set. The data for Repeat Count and Repeat Offset Time " +
+                    "already existed in unmodded PA, it just went completely unused.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_repeat.png", Document.Element.Type.Image),
+                new Document.Element("<b>Speed [MODDED]</b>\nHow fast each object spawned from the Prefab Object spawns and is animated.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_speed.png", Document.Element.Type.Image),
+                new Document.Element("<b>Lead Time / Offset [VANILLA]</b>\nEvery Prefab Object starts at an added offset from the Offset amount. I have no idea why " +
+                    "it's called Lead Time here even though its Offset everywhere else.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_lead.png", Document.Element.Type.Image),
+                new Document.Element("<b>Name [MODDED]</b>\nChanges the name of the original Prefab related to the Prefab Object. This is modded because you couldn't " +
+                    "change this in the Prefab Object editor.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_name.png", Document.Element.Type.Image),
+                new Document.Element("<b>Type [MODDED]</b>\nChanges the Type of the original Prefab related to the Prefab Object. This is modded because you couldn't " +
+                    "change this in the Prefab Object editor. (You can scroll-wheel over the input field to change the type easily)", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_type.png", Document.Element.Type.Image),
+                new Document.Element("<b>Save [MODDED]</b>\nSaves all changes made to the original Prefab to any External Prefab with a matching name.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_save.png", Document.Element.Type.Image),
+                new Document.Element("<b>Count [MODDED]</b>\nTells how many objects are in the original Prefab and how many Prefab Objects there are in the timeline " +
+                    "for the Prefab. The Prefab Object Count goes unused for now...", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_counts.png", Document.Element.Type.Image),
+            });
 
-                EditorThemeManager.AddSelectable(gameObject.GetComponent<Button>(), ThemeGroup.List_Button_1);
-
-                // Intro
-                {
-                    var element = new Document.Element("Prefab Objects are a copied version of the original prefab, placed into the level. They take all the objects stored in the original prefab " +
-                        "and add them to the level, meaning you can have multiple copies of the same group of objects. Editing the objects of the prefab by expanding it applies all changes to " +
-                        "the prefab, updating every Prefab Object (once collapsed back into a Prefab Object).", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Expand
-                {
-                    var element = new Document.Element("<b>Expand [VANILLA]</b>\nExpands all the objects contained within the original prefab into the level and deletes the Prefab Object.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Expand Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_expand.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Layer
-                {
-                    var element = new Document.Element("<b>Layer [PATCHED]</b>\nWhat Editor Layer the Prefab Object displays on. Can go from 1 to 2147483646. In unmodded Legacy its 1 to 5.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Layer Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_layer.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Time of Death
-                {
-                    var element = new Document.Element("<b>Time of Death [MODDED]</b>\nTime of Death allows every object spawned from the Prefab Object still alive at a certain point to despawn." +
-                        "\nRegular - Just how the game handles Prefab Objects kill time normally." +
-                        "\nStart Offset - Kill time is offset plus the Prefab Object start time." +
-                        "\nSong Time - Kill time is song time, so no matter where you change the start time to the kill time remains the same.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Time of Death Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_tod.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Locked
-                {
-                    var element = new Document.Element("<b>Locked [PATCHED]</b>\nIf on, prevents Prefab Objects' start time from being changed. It's patched because unmodded PA doesn't " +
-                        "have the toggle UI for this, however you can still use it in unmodded PA via hitting Ctrl + L.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Collapse
-                {
-                    var element = new Document.Element("<b>Collapse [PATCHED]</b>\nIf on, collapses the Prefab Objects' timeline object. This is patched because it literally doesn't " +
-                        "work in unmodded PA.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Start Time
-                {
-                    var element = new Document.Element("<b>Start Time [VANILLA]</b>\nWhere the objects spawned from the Prefab Object start.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Time Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_time.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Position Offset
-                {
-                    var element = new Document.Element("<b>Position Offset [PATCHED]</b>\nEvery objects' top-most-parent has its position set to this offset. Unmodded PA technically has this " +
-                        "feature, but it's not editable in the editor.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Position Offset Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_pos_offset.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Scale Offset
-                {
-                    var element = new Document.Element("<b>Scale Offset [PATCHED]</b>\nEvery objects' top-most-parent has its scale set to this offset. Unmodded PA technically has this " +
-                        "feature, but it's not editable in the editor.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Scale Offset Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_sca_offset.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Rotation Offset
-                {
-                    var element = new Document.Element("<b>Rotation Offset [PATCHED]</b>\nEvery objects' top-most-parent has its rotation set to this offset. Unmodded PA technically has this " +
-                        "feature, but it's not editable in the editor.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Rotation Offset Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_rot_offset.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Repeat
-                {
-                    var element = new Document.Element("<b>Repeat [MODDED]</b>\nWhen spawning the objects from the Prefab Object, every object gets repeated a set amount of times" +
-                        "with their start offset added onto each time they repeat depending on the Repeat Offset Time set. The data for Repeat Count and Repeat Offset Time " +
-                        "already existed in unmodded PA, it just went completely unused.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Repeat Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_repeat.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Speed
-                {
-                    var element = new Document.Element("<b>Speed [MODDED]</b>\nHow fast each object spawned from the Prefab Object spawns and is animated.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Speed Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_speed.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Lead Time / Offset
-                {
-                    var element = new Document.Element("<b>Lead Time / Offset [VANILLA]</b>\nEvery Prefab Object starts at an added offset from the Offset amount. I have no idea why " +
-                        "it's called Lead Time here even though its Offset everywhere else.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Lead Time / Offset Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_lead.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Name
-                {
-                    var element = new Document.Element("<b>Name [MODDED]</b>\nChanges the name of the original Prefab related to the Prefab Object. This is modded because you couldn't " +
-                        "change this in the Prefab Object editor.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Name Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_name.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Type
-                {
-                    var element = new Document.Element("<b>Type [MODDED]</b>\nChanges the Type of the original Prefab related to the Prefab Object. This is modded because you couldn't " +
-                        "change this in the Prefab Object editor. (You can scroll-wheel over the input field to change the type easily)", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Type Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_type.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Save
-                {
-                    var element = new Document.Element("<b>Save [MODDED]</b>\nSaves all changes made to the original Prefab to any External Prefab with a matching name.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Save Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_save.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Count
-                {
-                    var element = new Document.Element("<b>Count [MODDED]</b>\nTells how many objects are in the original Prefab and how many Prefab Objects there are in the timeline " +
-                        "for the Prefab. The Prefab Object Count goes unused for now...", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Count Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_counts.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                var htt = gameObject.AddComponent<HoverTooltip>();
-
-                var levelTip = new HoverTooltip.Tooltip();
-
-                levelTip.desc = documentation.Name;
-                levelTip.hint = documentation.Description;
-                htt.tooltipLangauges.Add(levelTip);
-
-                var text = gameObject.transform.GetChild(0).GetComponent<Text>();
-
-                text.text = documentation.Name;
-                EditorThemeManager.AddLightText(text);
-
-                documentations.Add(documentation);
-            }
-
-            // Background Object
+            GenerateDocument("Background Objects (WIP)", "The classic 3D style backgrounds.", new List<Document.Element>
             {
-                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(documentationPopup.Content, "Document");
-                var documentation = new Document(gameObject, "Background Object", "Make classic 3D style backgrounds.");
+                new Document.Element("Background Object intro.", Document.Element.Type.Text),
+            });
 
-                EditorThemeManager.AddSelectable(gameObject.GetComponent<Button>(), ThemeGroup.List_Button_1);
-
-                // Intro
-                {
-                    var element = new Document.Element("Background Object intro.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                var htt = gameObject.AddComponent<HoverTooltip>();
-
-                var levelTip = new HoverTooltip.Tooltip();
-
-                levelTip.desc = documentation.Name;
-                levelTip.hint = documentation.Description;
-                htt.tooltipLangauges.Add(levelTip);
-
-                var text = gameObject.transform.GetChild(0).GetComponent<Text>();
-
-                text.text = documentation.Name;
-                EditorThemeManager.AddLightText(text);
-
-                documentations.Add(documentation);
-            }
-
-            // Events
+            GenerateDocument("Events (WIP)", "Effects to make your level pretty.", new List<Document.Element>
             {
-                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(documentationPopup.Content, "Document");
-                var documentation = new Document(gameObject, "Events", "Effects to make your level pretty.");
+                new Document.Element("Events intro.", Document.Element.Type.Text),
+            });
 
-                EditorThemeManager.AddSelectable(gameObject.GetComponent<Button>(), ThemeGroup.List_Button_1);
-
-                // Intro
-                {
-                    var element = new Document.Element("Events intro.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                var htt = gameObject.AddComponent<HoverTooltip>();
-
-                var levelTip = new HoverTooltip.Tooltip();
-
-                levelTip.desc = documentation.Name;
-                levelTip.hint = documentation.Description;
-                htt.tooltipLangauges.Add(levelTip);
-
-                var text = gameObject.transform.GetChild(0).GetComponent<Text>();
-
-                text.text = documentation.Name;
-                EditorThemeManager.AddLightText(text);
-
-                documentations.Add(documentation);
-            }
-
-            // Text Objects
+            GenerateDocument("Text Objects", "Flavor your levels with text!", new List<Document.Element>
             {
-                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(documentationPopup.Content, "Document");
-                var documentation = new Document(gameObject, "Text Objects", "Flavor your levels with text!");
-
-                EditorThemeManager.AddSelectable(gameObject.GetComponent<Button>(), ThemeGroup.List_Button_1);
-
-                // Intro
+                new Document.Element("Text Objects can be used in extensive ways, from conveying character dialogue to decoration. This document is for showcasing usable " +
+                    "fonts and formats Text Objects can use. Also do note to ignore the spaces in the formattings as the UI text will just make the text like <b>this</b>.", Document.Element.Type.Text),
+                new Document.Element("<b>- FORMATTING -</b>", Document.Element.Type.Text),
+                new Document.Element("<b>[VANILLA]</b> < b> - For making text <b>BOLD</b>. Use </ b> to clear.", Document.Element.Type.Text),
+                new Document.Element("<b>[VANILLA]</b> < i> - For making text <i>italic</i>. Use </ i> to clear.", Document.Element.Type.Text),
+                new Document.Element("<b>- FONTS -</b>", Document.Element.Type.Text),
+                new Document.Element(RTFile.BepInExAssetsPath + "Documentation/doc_fonts.png", Document.Element.Type.Image)
+                { Function = delegate () {
+                    RTFile.OpenInFileBrowser.OpenFile(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "Documentation/doc_fonts.png");
+                }},
+                new Document.Element("To use a font, do <font=Font Name>. To clear, do </font>. Click on one of the fonts below to copy the <font=Font Name> to your clipboard. " +
+                    "Click on the image above to open the folder to the documentation assets folder where a higher resolution screenshot is located.", Document.Element.Type.Text),
+                new Document.Element("<b>[MODDED]</b> Adam Warren Pro Bold - A comic style font.", Document.Element.Type.Text)
+                { Function = delegate () {
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard("<font=Adam Warren Pro Bold>");
+                }},
+                new Document.Element("<b>[MODDED]</b> Adam Warren Pro BoldItalic - A comic style font.", Document.Element.Type.Text)
+                { Function = delegate () {
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard("<font=Adam Warren Pro BoldItalic>");
+                }},
+                new Document.Element("<b>[MODDED]</b> Adam Warren Pro - A comic style font.", Document.Element.Type.Text)
+                { Function = delegate () {
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard("<font=Adam Warren Pro>");
+                }},
+                new Document.Element("<b>[MODDED]</b> Arrhythmia - The font from the earliest builds of Project Arrhythmia.", Document.Element.Type.Text)
+                { Function = delegate () {
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard("<font=Arrhythmia>");
+                }},
+                new Document.Element("<b>[MODDED]</b> BadaBoom BB - A comic style font.", Document.Element.Type.Text)
+                { Function = delegate () {
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard("<font=BadaBoom BB>");
+                }},
+                new Document.Element("<b>[MODDED]</b> Matoran Language 1 - The language used by the Matoran in the BIONICLE series.", Document.Element.Type.Text)
+                { Function = delegate () {
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard("<font=Matoran Language 1>");
+                }},
+                new Document.Element("<b>[MODDED]</b> Matoran Language 2 - The language used by the Matoran in the BIONICLE series.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    var element = new Document.Element("Text Objects can be used in extensive ways, from conveying character dialogue to decoration. This document is for showcasing usable " +
-                        "fonts and formats Text Objects can use. Also do note to ignore the spaces in the formattings as the UI text will just make the text like <b>this</b>.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // FORMATTING
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard("<font=Matoran Language 2>");
+                }},
+                new Document.Element("<b>[MODDED]</b> Determination Mono - The font UNDERTALE/deltarune uses for its interfaces.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    var element = new Document.Element("<b>- FORMATTING -</b>", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Bold
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard("<font=Determination Mono>");
+                }},
+                new Document.Element("<b>[MODDED]</b> determination sans - sans undertale.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    var element = new Document.Element("<b>[VANILLA]</b> < b> - For making text <b>BOLD</b>. Use </ b> to clear.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Italic
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard("<font=determination sans>");
+                }},
+                new Document.Element($"<b>[MODDED]</b> Determination Wingdings - Beware the man who speaks in hands.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    var element = new Document.Element("<b>[VANILLA]</b> < i> - For making text <i>italic</i>. Use </ i> to clear.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // FONTS
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard($"<font=Determination Wingdings>");
+                }},
+                new Document.Element("<b>[MODDED]</b> Flow Circular - A fun line font suggested by ManIsLiS.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    var element = new Document.Element("<b>- FONTS -</b>", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // FONTS IMAGE
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard("<font=Flow Circular>");
+                }},
+                new Document.Element("<b>[MODDED]</b> Fredoka One - The font from the Vitamin Games website.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_fonts.png", Document.Element.Type.Image);
-                    element.Function = delegate ()
-                    {
-                        RTFile.OpenInFileBrowser.Open(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/Documentation");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Info
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard("<font=Fredoka One>");
+                }},
+                new Document.Element("<b>[MODDED]</b> Ancient Autobot - The launguage used by ancient Autobots in the original Transformers cartoon.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    var element = new Document.Element("To use a font, do <font=Font Name>. To clear, do </font>. Click on one of the fonts below to copy the <font=Font Name> to your clipboard. " +
-                        "Click on the image above to open the folder to the documentation assets folder where a higher resolution screenshot is located.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Adam Warren Pro Bold
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard("<font=Ancient Autobot>");
+                }},
+                new Document.Element("<b>[MODDED]</b> Hachicro - The font used by UNDERTALE's hit text.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    var element = new Document.Element("<b>[MODDED]</b> Adam Warren Pro Bold - A comic style font.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard("<font=Adam Warren Pro Bold>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Adam Warren Pro BoldItalic
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard("<font=Hachicro>");
+                }},
+                new Document.Element($"<b>[MODDED]</b> Inconsolata Variable - The default PA font.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    var element = new Document.Element("<b>[MODDED]</b> Adam Warren Pro BoldItalic - A comic style font.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard("<font=Adam Warren Pro BoldItalic>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Adam Warren Pro
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard($"<font=Inconsolata Variable>");
+                }},
+                new Document.Element($"<b>[VANILLA]</b> LiberationSans SDF - An extra font unmodded Legacy has.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    var element = new Document.Element("<b>[MODDED]</b> Adam Warren Pro - A comic style font.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard("<font=Adam Warren Pro>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Arrhythmia
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard($"<font=LiberationSans SDF>");
+                }},
+                new Document.Element($"<b>[MODDED]</b> Komika Hand - A comic style font.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    var element = new Document.Element("<b>[MODDED]</b> Arrhythmia - The font from the earliest builds of Project Arrhythmia.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard("<font=Arrhythmia>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // BadaBoom BB
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard($"<font=font>");
+                }},
+                new Document.Element($"<b>[MODDED]</b> Komika Hand Bold - A comic style font.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    var element = new Document.Element("<b>[MODDED]</b> BadaBoom BB - A comic style font.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard("<font=BadaBoom BB>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Matoran Language 1
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard($"<font=Komika Hand Bold>");
+                }},
+                new Document.Element($"<b>[MODDED]</b> Komika Slick - A comic style font.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    var element = new Document.Element("<b>[MODDED]</b> Matoran Language 1 - The language used by the Matoran in the BIONICLE series.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard("<font=Matoran Language 1>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Matoran Language 2
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard($"<font=Komika Slick>");
+                }},
+                new Document.Element($"<b>[MODDED]</b> Komika Slim - A comic style font.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    var element = new Document.Element("<b>[MODDED]</b> Matoran Language 2 - The language used by the Matoran in the BIONICLE series.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard("<font=Matoran Language 2>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Determination Mono
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard($"<font=Komika Slim>");
+                }},
+                new Document.Element($"<b>[MODDED]</b> Komika Hand BoldItalic - A comic style font.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    var element = new Document.Element("<b>[MODDED]</b> Determination Mono - The font UNDERTALE/deltarune uses for its interfaces.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard("<font=Determination Mono>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // determination sans
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard($"<font=Komika Hand BoldItalic>");
+                }},
+                new Document.Element($"<b>[MODDED]</b> Komika Hand Italic - A comic style font.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    var element = new Document.Element("<b>[MODDED]</b> determination sans - sans undertale.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard("<font=determination sans>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Determination Wingdings
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard($"<font=Komika Hand Italic>");
+                }},
+                new Document.Element($"<b>[MODDED]</b> Komika Jam - A comic style font.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    string font = "Determination Wingdings";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - Beware the man who speaks in hands.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Flow Circular
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard($"<font=Komika Jam>");
+                }},
+                new Document.Element($"<b>[MODDED]</b> Komika Jam Italic - A comic style font.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    var element = new Document.Element("<b>[MODDED]</b> Flow Circular - A fun line font suggested by ManIsLiS.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard("<font=Flow Circular>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Fredoka One
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard($"<font=Komika Jam Italic>");
+                }},
+                new Document.Element($"<b>[MODDED]</b> Komika Slick Italic - A comic style font.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    var element = new Document.Element("<b>[MODDED]</b> Fredoka One - The font from the Vitamin Games website.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard("<font=Fredoka One>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Ancient Autobot
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard($"<font=Komika Slick Italic>");
+                }},
+                new Document.Element($"<b>[MODDED]</b> Komika Slim Italic - A comic style font.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    var element = new Document.Element("<b>[MODDED]</b> Ancient Autobot - The launguage used by ancient Autobots in the original Transformers cartoon.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard("<font=Ancient Autobot>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Hachicro
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard($"<font=Komika Slim Italic>");
+                }},
+                new Document.Element($"<b>[MODDED]</b> Minecraft Text Bold - The font used for the text UI in Minecraft.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    var element = new Document.Element("<b>[MODDED]</b> Hachicro - The font used by UNDERTALE's hit text.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard("<font=Hachicro>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Inconsolata Variable
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard($"<font=Minecraft Text Bold>");
+                }},
+                new Document.Element($"<b>[MODDED]</b> font - The font used for the text UI in Minecraft.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    string font = "Inconsolata Variable";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - The default PA font.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // LiberationSans SDF
+                    EditorManager.inst.DisplayNotification($"Copied Minecraft Text BoldItalic!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard($"<font=Minecraft Text BoldItalic>");
+                }},
+                new Document.Element($"<b>[MODDED]</b> Minecraft Text Italic - The font used for the text UI in Minecraft.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    string font = "LiberationSans SDF";
-                    var element = new Document.Element($"<b>[VANILLA]</b> {font} - An extra font unmodded Legacy has.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Komika Hand
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard($"<font=Minecraft Text Italic>");
+                }},
+                new Document.Element($"<b>[MODDED]</b> Minecraft Text - The font used for the text UI in Minecraft.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    string font = "Komika Hand";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - A comic style font.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Komika Hand Bold
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard($"<font=Minecraft Text>");
+                }},
+                new Document.Element($"<b>[MODDED]</b> Minecraftory - Geometry Dash font mainly used in Geometry Dash SubZero.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    string font = "Komika Hand Bold";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - A comic style font.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Komika Slick
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard($"<font=Minecraftory>");
+                }},
+                new Document.Element($"<b>[MODDED]</b> Monster Friend Back - A font based on UNDERTALE's title.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    string font = "Komika Slick";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - A comic style font.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Komika Slim
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard($"<font=Monster Friend Back>");
+                }},
+                new Document.Element($"<b>[MODDED]</b> Monster Friend Fore - A font based on UNDERTALE's title.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    string font = "Komika Slim";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - A comic style font.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Komika Hand BoldItalic
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard($"<font=Monster Friend Fore>");
+                }},
+                new Document.Element($"<b>[MODDED]</b> About Friend - A font suggested by Ama.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    string font = "Komika Hand BoldItalic";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - A comic style font.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Komika Hand Italic
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard($"<font=About Friend>");
+                }},
+                new Document.Element("<b>[MODDED]</b> Oxygene - The font from the title of Geometry Dash.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    string font = "Komika Hand Italic";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - A comic style font.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Komika Jam
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard("<font=Oxygene>");
+                }},
+                new Document.Element($"<b>[MODDED]</b> Piraka Theory - The language used by the Piraka in the BIONICLE series.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    string font = "Komika Jam";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - A comic style font.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Komika Jam Italic
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard($"<font=Piraka Theory>");
+                }},
+                new Document.Element($"<b>[MODDED]</b> Piraka - The language used by the Piraka in the BIONICLE series.", Document.Element.Type.Text)
+                { Function = delegate ()
                 {
-                    string font = "Komika Jam Italic";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - A comic style font.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Komika Slick Italic
+                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                    LSText.CopyToClipboard($"<font=Piraka>");
+                }},
+                new Document.Element("<b>[MODDED]</b> Pusab - The font from the hit game Geometry Dash. And yes, it is the right one.", Document.Element.Type.Text)
                 {
-                    string font = "Komika Slick Italic";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - A comic style font.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Komika Slim Italic
-                {
-                    string font = "Komika Slim Italic";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - A comic style font.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Minecraft Text Bold
-                {
-                    string font = "Minecraft Text Bold";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - The font used for the text UI in Minecraft.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Minecraft Text BoldItalic
-                {
-                    string font = "Minecraft Text BoldItalic";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - The font used for the text UI in Minecraft.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Minecraft Text Italic
-                {
-                    string font = "Minecraft Text Italic";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - The font used for the text UI in Minecraft.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Minecraft Text
-                {
-                    string font = "Minecraft Text";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - The font used for the text UI in Minecraft.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Minecraftory
-                {
-                    string font = "Minecraftory";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - Geometry Dash font mainly used in Geometry Dash SubZero.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Monster Friend Back
-                {
-                    string font = "Monster Friend Back";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - A font based on UNDERTALE's title.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Monster Friend Fore
-                {
-                    string font = "Monster Friend Fore";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - A font based on UNDERTALE's title.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // About Friend
-                {
-                    string font = "About Friend";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - A font suggested by Ama.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Oxygene
-                {
-                    var element = new Document.Element("<b>[MODDED]</b> Oxygene - The font from the title of Geometry Dash.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard("<font=Oxygene>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Piraka Theory
-                {
-                    string font = "Piraka Theory";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - The language used by the Piraka in the BIONICLE series.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Piraka
-                {
-                    string font = "Piraka";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - The language used by the Piraka in the BIONICLE series.", Document.Element.Type.Text);
-                    element.Function = delegate ()
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Pusab
-                {
-                    var element = new Document.Element("<b>[MODDED]</b> Pusab - The font from the hit game Geometry Dash. And yes, it is the right one.", Document.Element.Type.Text);
-                    element.Function = delegate ()
+                    Function = delegate ()
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                         LSText.CopyToClipboard("<font=Pusab>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Rahkshi
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> Rahkshi - The font used for promoting the Rahkshi sets in the BIONICLE series.", Document.Element.Type.Text)
                 {
-                    string font = "Rahkshi";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - The font used for promoting the Rahkshi sets in the BIONICLE series.", Document.Element.Type.Text);
-                    element.Function = delegate ()
+                    Function = delegate ()
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Revue
+                        LSText.CopyToClipboard($"<font=Rahkshi>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> Revue - The font used early 2000s Transformers titles.", Document.Element.Type.Text)
                 {
-                    string font = "Revue";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - The font used early 2000s Transformers titles.", Document.Element.Type.Text);
-                    element.Function = delegate ()
+                    Function = delegate ()
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Transdings
+                        LSText.CopyToClipboard($"<font=Revue>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> Transdings - A font that contains a ton of Transformer insignias / logos. Below is an image featuring each letter " +
+                    $"of the alphabet.", Document.Element.Type.Text)
                 {
-                    string font = "Transdings";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - A font that contains a ton of Transformer insignias / logos. Below is an image featuring each letter " +
-                        $"of the alphabet.", Document.Element.Type.Text);
-                    element.Function = delegate ()
+                    Function = delegate ()
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Transdings IMAGE
+                        LSText.CopyToClipboard($"<font=Transdings>");
+                    }
+                },
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_tf.png", Document.Element.Type.Image),
+                new Document.Element($"<b>[MODDED]</b> Transformers Movie - A font based on the Transformers movies title font.", Document.Element.Type.Text)
                 {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_tf.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Transformers Movie
-                {
-                    string font = "Transformers Movie";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - A font based on the Transformers movies title font.", Document.Element.Type.Text);
-                    element.Function = delegate ()
+                    Function = delegate ()
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Nexa Book
+                        LSText.CopyToClipboard($"<font=Transformers Movie>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> Nexa Book - A font suggested by CubeCube.", Document.Element.Type.Text)
                 {
-                    string font = "Nexa Book";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - A font suggested by CubeCube.", Document.Element.Type.Text);
-                    element.Function = delegate ()
+                    Function = delegate ()
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Nexa Bold
+                        LSText.CopyToClipboard($"<font=Nexa Book>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> Nexa Bold - A font suggested by CubeCube.", Document.Element.Type.Text)
                 {
-                    string font = "Nexa Bold";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - A font suggested by CubeCube.", Document.Element.Type.Text);
-                    element.Function = delegate ()
+                    Function = delegate ()
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Angsana
+                        LSText.CopyToClipboard($"<font=Nexa Bold>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> Angsana - A font suggested by KarasuTori. Supports non-English languages like Thai.", Document.Element.Type.Text)
                 {
-                    string font = "Angsana";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - A font suggested by KarasuTori. Supports non-English languages like Thai.", Document.Element.Type.Text);
-                    element.Function = delegate ()
+                    Function = delegate ()
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Angsana Bold
+                        LSText.CopyToClipboard($"<font=Angsana>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> Angsana Bold - A font suggested by KarasuTori. Supports non-English languages like Thai.", Document.Element.Type.Text)
                 {
-                    string font = "Angsana Bold";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - A font suggested by KarasuTori. Supports non-English languages like Thai.", Document.Element.Type.Text);
-                    element.Function = delegate ()
+                    Function = delegate ()
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Angsana Italic
+                        LSText.CopyToClipboard($"<font=Angsana Bold>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> Angsana Italic - A font suggested by KarasuTori. Supports non-English languages like Thai.", Document.Element.Type.Text)
                 {
-                    string font = "Angsana Italic";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - A font suggested by KarasuTori. Supports non-English languages like Thai.", Document.Element.Type.Text);
-                    element.Function = delegate ()
+                    Function = delegate ()
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Angsana Bold Italic
+                        LSText.CopyToClipboard($"<font=Angsana Italic>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> Angsana Bold Italic - A font suggested by KarasuTori. Supports non-English languages like Thai.", Document.Element.Type.Text)
                 {
-                    string font = "Angsana Bold Italic";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - A font suggested by KarasuTori. Supports non-English languages like Thai.", Document.Element.Type.Text);
-                    element.Function = delegate ()
+                    Function = delegate ()
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // VAG Rounded
+                        LSText.CopyToClipboard($"<font=Angsana Bold Italic>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> VAG Rounded - A font suggested by KarasuTori. Supports non-English languages like Russian.", Document.Element.Type.Text)
                 {
-                    string font = "VAG Rounded";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - A font suggested by KarasuTori. Supports non-English languages like Russian.", Document.Element.Type.Text);
-                    element.Function = delegate ()
+                    Function = delegate ()
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Comic Sans
+                        LSText.CopyToClipboard($"<font=VAG Rounded>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> Comic Sans - You know the font.", Document.Element.Type.Text)
                 {
-                    string font = "Comic Sans";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - You know the font.", Document.Element.Type.Text);
-                    element.Function = delegate ()
+                    Function = delegate ()
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Comic Sans Bold
+                        LSText.CopyToClipboard($"<font=Comic Sans>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> Comic Sans Bold - You know the font.", Document.Element.Type.Text)
                 {
-                    string font = "Comic Sans Bold";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - You know the font.", Document.Element.Type.Text);
-                    element.Function = delegate ()
+                    Function = delegate ()
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Comic Sans Hairline
+                        LSText.CopyToClipboard($"<font=Comic Sans Bold>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> Comic Sans Hairline - You know the font.", Document.Element.Type.Text)
                 {
-                    string font = "Comic Sans Hairline";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - You know the font.", Document.Element.Type.Text);
-                    element.Function = delegate ()
+                    Function = delegate ()
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
-
-                // Comic Sans Light
+                        LSText.CopyToClipboard($"<font=Comic Sans Hairline>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> Comic Sans Light - You know the font.", Document.Element.Type.Text)
                 {
-                    string font = "Comic Sans Light";
-                    var element = new Document.Element($"<b>[MODDED]</b> {font} - You know the font.", Document.Element.Type.Text);
-                    element.Function = delegate ()
+                    Function = delegate ()
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font={font}>");
-                    };
-                    documentation.elements.Add(element);
-                }
+                        LSText.CopyToClipboard($"<font=Comic Sans Light>");
+                    }
+                },
+            });
 
-                var htt = gameObject.AddComponent<HoverTooltip>();
-
-                var levelTip = new HoverTooltip.Tooltip();
-
-                levelTip.desc = documentation.Name;
-                levelTip.hint = documentation.Description;
-                htt.tooltipLangauges.Add(levelTip);
-
-                var text = gameObject.transform.GetChild(0).GetComponent<Text>();
-
-                text.text = documentation.Name;
-                EditorThemeManager.AddLightText(text);
-
-                documentations.Add(documentation);
-            }
-
-            // Markers
+            GenerateDocument("Markers", "Organize and remember details about a level.", new List<Document.Element>
             {
-                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(documentationPopup.Content, "Document");
-                var documentation = new Document(gameObject, "Markers", "Organize and remember details about a level.");
+                new Document.Element("Markers can organize certain parts of your level or help with aligning objects to a specific time.", Document.Element.Type.Text),
+                new Document.Element("In the image below is two types of markers. The blue marker is the Audio Marker and the marker with a circle on the top is just a Marker. " +
+                    "Left clicking on the Marker's circle knob moves the Audio Marker to the regular Marker. Right clicking the Marker's circle knob deletes it.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_marker_timeline.png", Document.Element.Type.Image),
+                new Document.Element("<b>Name [VANILLA]</b>\nThe name of the Marker. This renders next to the Marker's circle knob in the timeline.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_marker_name.png", Document.Element.Type.Image),
+                new Document.Element("<b>Time [VANILLA]</b>\nThe time the Marker renders at in the timeline.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_marker_time.png", Document.Element.Type.Image),
+                new Document.Element("<b>Description [PATCHED]</b>\nDescription helps you remember details about specific parts of a song or even stuff about the level you're " +
+                    "editing. Typing setLayer(1) will set the editor layer to 1 when the Marker is selected. You can also have it be setLayer(events), setLayer(objects), setLayer(toggle), which " +
+                    "sets the layer type to those respective types (toggle switches between Events and Objects layer types). Fun fact, the title for description in the UI in unmodded Legacy " +
+                    "said \"Name\" lol.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_marker_description.png", Document.Element.Type.Image),
+                new Document.Element("<b>Colors [PATCHED]</b>\nWhat color the marker displays as. You can customize the colors in the Settings window.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_marker_colors.png", Document.Element.Type.Image),
+                new Document.Element("<b>Index [MODDED]</b>\nThe number of the Marker in the list.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_marker_index.png", Document.Element.Type.Image),
+                new Document.Element("On the right-hand-side of the Marker Editor window is a list of markers. At the top is a Search field and a Delete Markers button. " +
+                    "Delete Markers clears every marker in the level and closes the Marker Editor.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_marker_delete.png", Document.Element.Type.Image),
+            });
 
-                EditorThemeManager.AddSelectable(gameObject.GetComponent<Button>(), ThemeGroup.List_Button_1);
-
-                // Intro
-                {
-                    var element = new Document.Element("Markers can organize certain parts of your level or help with aligning objects to a specific time.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Marker Timeline
-                {
-                    var element = new Document.Element("In the image below is two types of markers. The blue marker is the Audio Marker and the marker with a circle on the top is just a Marker. " +
-                        "Left clicking on the Marker's circle knob moves the Audio Marker to the regular Marker. Right clicking the Marker's circle knob deletes it.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Marker Timeline Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_marker_timeline.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Marker Name
-                {
-                    var element = new Document.Element("<b>Name [VANILLA]</b>\nThe name of the Marker. This renders next to the Marker's circle knob in the timeline.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Marker Name Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_marker_name.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Marker Time
-                {
-                    var element = new Document.Element("<b>Time [VANILLA]</b>\nThe time the Marker renders at in the timeline.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Marker Time Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_marker_time.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Marker Description
-                {
-                    var element = new Document.Element("<b>Description [PATCHED]</b>\nDescription helps you remember details about specific parts of a song or even stuff about the level you're " +
-                        "editing. Typing setLayer(1) will set the editor layer to 1 when the Marker is selected. You can also have it be setLayer(events), setLayer(objects), setLayer(toggle), which " +
-                        "sets the layer type to those respective types (toggle switches between Events and Objects layer types). Fun fact, the title for description in the UI in unmodded Legacy " +
-                        "said \"Name\" lol.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Marker Description Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_marker_description.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Marker Colors
-                {
-                    var element = new Document.Element("<b>Colors [PATCHED]</b>\nWhat color the marker displays as. You can customize the colors in the Settings window.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Marker Colors Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_marker_colors.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Marker Index
-                {
-                    var element = new Document.Element("<b>Index [MODDED]</b>\nThe number of the Marker in the list.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Marker Index Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_marker_index.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Marker Delete
-                {
-                    var element = new Document.Element("On the right-hand-side of the Marker Editor window is a list of markers. At the top is a Search field and a Delete Markers button. " +
-                        "Delete Markers clears every marker in the level and closes the Marker Editor.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Marker Delete Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_marker_delete.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                var htt = gameObject.AddComponent<HoverTooltip>();
-
-                var levelTip = new HoverTooltip.Tooltip();
-
-                levelTip.desc = documentation.Name;
-                levelTip.hint = documentation.Description;
-                htt.tooltipLangauges.Add(levelTip);
-
-                var text = gameObject.transform.GetChild(0).GetComponent<Text>();
-
-                text.text = documentation.Name;
-                EditorThemeManager.AddLightText(text);
-
-                documentations.Add(documentation);
-            }
-
-            // Title Bar
+            GenerateDocument("Title Bar", "The thing at the top of the editor UI with dropdowns.", new List<Document.Element>
             {
-                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(documentationPopup.Content, "Document");
-                var documentation = new Document(gameObject, "Title Bar", "The thing at the top with dropdowns.");
+                new Document.Element("Title Bar has the main functions for loading, saving and editing.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_td.png", Document.Element.Type.Image),
+                new Document.Element("<b>File [PATCHED]</b>" +
+                    "\nPowerful functions related to the application or files." +
+                    "\n<b>[VANILLA]</b> New Level - Creates a new level." +
+                    "\n<b>[VANILLA]</b> Open Level - Opens the level list popup, where you can search and select a level to load." +
+                    "\n<b>[VANILLA]</b> Open Level Folder - Opens the current loaded level's folder in your local file explorer." +
+                    "\n<b>[MODDED]</b> Open Level Browser - Opens a built-in browser to open a level from anywhere on your computer." +
+                    "\n<b>[MODDED]</b> Level Combiner - Combines multiple levels together." +
+                    "\n<b>[VANILLA]</b> Save - Saves the current level." +
+                    "\n<b>[PATCHED]</b> Save As - Saves a copy of the current level." +
+                    "\n<b>[VANILLA]</b> Toggle Play Mode - Opens preview mode." +
+                    "\n<b>[MODDED]</b> Switch to Arcade Mode - Switches to the handling of level loading in Arcade." +
+                    "\n<b>[MODDED]</b> Quit to Arcade - Opens the Input Select scene just before loading arcade levels." +
+                    "\n<b>[VANILLA]</b> Quit to Main Menu - Exits to the main menu." +
+                    "\n<b>[VANILLA]</b> Quit Game - Quits the game.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_td_file.png", Document.Element.Type.Image),
+                new Document.Element("<b>Edit [PATCHED]</b>" +
+                    "\nHow far can you edit in a modded editor?" +
+                    "\n<b>[PATCHED]</b> Undo - Undoes the most recent action. Still heavily WIP. (sorry)" +
+                    "\n<b>[PATCHED]</b> Redo - Same as above but goes back to the recent action when undone." +
+                    "\n<b>[MODDED]</b> Search Objects - Search for specific objects by name or index. Hold Left Control to take yourself to the object in the timeline." +
+                    "\n<b>[MODDED]</b> Preferences - Modify editor specific mod configs directly in the editor. Also known as Editor Properties." +
+                    "\n<b>[MODDED]</b> Player Editor - Only shows if you have CreativePlayers installed. Opens the Player Editor." +
+                    "\n<b>[MODDED]</b> View Keybinds - Customize the keybinds of the editor in any way you want.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_td_edit.png", Document.Element.Type.Image),
+                new Document.Element("<b>View [PATCHED]</b>" +
+                    "\nView specific things." +
+                    "\n<b>[MODDED]</b> Get Example - Only shows if you have ExampleCompanion installed. It summons Example to the scene." +
+                    "\n<b>[VANILLA]</b> Show Help - Toggles the Info box.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_td_view.png", Document.Element.Type.Image),
+                new Document.Element("<b>Steam [VANILLA]</b>" +
+                    "\nView Steam related things... even though modded PA doesn't use Steam anymore lol" +
+                    "\n<b>[VANILLA]</b> Open Workshop - Opens a link to the Steam workshop." +
+                    "\n<b>[VANILLA]</b> Publish / Update Level - Opens the Metadata Editor / Level Uploader.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_td_steam.png", Document.Element.Type.Image),
+                new Document.Element("<b>Help [PATCHED]</b>" +
+                    "\nGet some help." +
+                    "\n<b>[MODDED]</b> Modder's Discord - Opens a link to the mod creator's Discord server." +
+                    "\n<b>[MODDED]</b> Watch PA History - Since there are no <i>modded</i> guides yet, this just takes you to the System Error BTS PA History playlist." +
+                    "\n<b>[MODDED]</b> Wiki / Documentation - In-editor documentation of everything the game has to offer. You're reading it right now!", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_td_help.png", Document.Element.Type.Image),
+            });
 
-                EditorThemeManager.AddSelectable(gameObject.GetComponent<Button>(), ThemeGroup.List_Button_1);
-
-                // Intro
-                {
-                    var element = new Document.Element("Title Bar has the main functions for loading, saving and editing.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Title Bar Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_td.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // File
-                {
-                    var element = new Document.Element("<b>File [PATCHED]</b>" +
-                        "\nPowerful functions related to the application or files." +
-                        "\n<b>[VANILLA]</b> New Level - Creates a new level." +
-                        "\n<b>[VANILLA]</b> Open Level - Opens the level list popup, where you can search and select a level to load." +
-                        "\n<b>[VANILLA]</b> Open Level Folder - Opens the current loaded level's folder in your local file explorer." +
-                        "\n<b>[MODDED]</b> Open Level Browser - Opens a built-in browser to open a level from anywhere on your computer." +
-                        "\n<b>[MODDED]</b> Level Combiner - Combines multiple levels together." +
-                        "\n<b>[VANILLA]</b> Save - Saves the current level." +
-                        "\n<b>[PATCHED]</b> Save As - Saves a copy of the current level." +
-                        "\n<b>[VANILLA]</b> Toggle Play Mode - Opens preview mode." +
-                        "\n<b>[MODDED]</b> Switch to Arcade Mode - Switches to the handling of level loading in Arcade." +
-                        "\n<b>[MODDED]</b> Quit to Arcade - Opens the Input Select scene just before loading arcade levels." +
-                        "\n<b>[VANILLA]</b> Quit to Main Menu - Exits to the main menu." +
-                        "\n<b>[VANILLA]</b> Quit Game - Quits the game.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // File Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_td_file.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Edit
-                {
-                    var element = new Document.Element("<b>Edit [PATCHED]</b>" +
-                        "\nHow far can you edit in a modded editor?" +
-                        "\n<b>[PATCHED]</b> Undo - Undoes the most recent action. Still heavily WIP. (sorry)" +
-                        "\n<b>[PATCHED]</b> Redo - Same as above but goes back to the recent action when undone." +
-                        "\n<b>[MODDED]</b> Search Objects - Search for specific objects by name or index. Hold Left Control to take yourself to the object in the timeline." +
-                        "\n<b>[MODDED]</b> Preferences - Modify editor specific mod configs directly in the editor. Also known as Editor Properties." +
-                        "\n<b>[MODDED]</b> Player Editor - Only shows if you have CreativePlayers installed. Opens the Player Editor." +
-                        "\n<b>[MODDED]</b> View Keybinds - Customize the keybinds of the editor in any way you want.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Edit Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_td_edit.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // View
-                {
-                    var element = new Document.Element("<b>View [PATCHED]</b>" +
-                        "\nView specific things." +
-                        "\n<b>[MODDED]</b> Get Example - Only shows if you have ExampleCompanion installed. It summons Example to the scene." +
-                        "\n<b>[VANILLA]</b> Show Help - Toggles the Info box.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // View Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_td_view.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Steam
-                {
-                    var element = new Document.Element("<b>Steam [VANILLA]</b>" +
-                        "\nView Steam related things... even though modded PA doesn't use Steam anymore lol" +
-                        "\n<b>[VANILLA]</b> Open Workshop - Opens a link to the Steam workshop." +
-                        "\n<b>[VANILLA]</b> Publish / Update Level - Opens the Metadata Editor / Level Uploader.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Steam Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_td_steam.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Help
-                {
-                    var element = new Document.Element("<b>Help [PATCHED]</b>" +
-                        "\nGet some help." +
-                        "\n<b>[MODDED]</b> Modder's Discord - Opens a link to the mod creator's Discord server." +
-                        "\n<b>[MODDED]</b> Watch PA History - Since there are no <i>modded</i> guides yet, this just takes you to the System Error BTS PA History playlist." +
-                        "\n<b>[MODDED]</b> Wiki / Documentation - In-editor documentation of everything the game has to offer. You're reading it right now!", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Help Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_td_help.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                var htt = gameObject.AddComponent<HoverTooltip>();
-
-                var levelTip = new HoverTooltip.Tooltip();
-
-                levelTip.desc = documentation.Name;
-                levelTip.hint = documentation.Description;
-                htt.tooltipLangauges.Add(levelTip);
-
-                var text = gameObject.transform.GetChild(0).GetComponent<Text>();
-
-                text.text = documentation.Name;
-                EditorThemeManager.AddLightText(text);
-
-                documentations.Add(documentation);
-            }
-
-            // Timeline Bar
+            GenerateDocument("Timeline Bar", "The main toolbar used for editing main editor things such as audio time, editor layers, etc.", new List<Document.Element>
             {
-                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(documentationPopup.Content, "Document");
-                var documentation = new Document(gameObject, "Timeline Bar", "Modify stuff like audio and editor layer.");
+                new Document.Element("The Timeline Bar is where you can see and edit general game and editor info.", Document.Element.Type.Text),
+                new Document.Element("<b>Audio Time (Precise) [MODDED]</b>\nText shows the precise audio time. This can be edited to set a specific time for the audio.", Document.Element.Type.Text),
+                new Document.Element("<b>Audio Time (Formatted) [VANILLA]</b>\nText shows the audio time formatted like \"minutes.seconds.milliseconds\". Clicking this sets the " +
+                    "audio time to 0.", Document.Element.Type.Text),
+                new Document.Element("<b>Pause / Play [VANILLA]</b>\nPressing this toggles if the song is playing or not.", Document.Element.Type.Text),
+                new Document.Element("<b>Pitch [PATCHED]</b>\nThe speed of the song. Clicking the buttons adjust the pitch by 0.1, depending on the direction the button is facing.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_tb_audio.png", Document.Element.Type.Image),
+                new Document.Element("<b>Editor Layer [PATCHED]</b>\nEditor Layer is what objects show in the timeline, depending on their own Editor Layer. " +
+                    "It can go as high as 2147483646. In unmodded PA its limited from layers 1 to 5, though in PA Editor Alpha another layer was introduced.", Document.Element.Type.Text),
+                new Document.Element("<b>Editor Layer Type [MODDED]</b>\nWhether the timeline shows objects or event keyframes / checkpoints.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_tb_layer.png", Document.Element.Type.Image),
+                new Document.Element("<b>Prefab [VANILLA]</b>\nOpens the Prefab list popups (Internal & External).", Document.Element.Type.Text),
+                new Document.Element("<b>Object [PATCHED]</b>\nOpens a popup featuring different object templates such as Decoration, Empty, etc. It's patched because " +
+                    "Persistent was replaced with No Autokill.", Document.Element.Type.Text),
+                new Document.Element("<b>Marker [VANILLA]</b>\nCreates a Marker.", Document.Element.Type.Text),
+                new Document.Element("<b>BG [VANILLA]</b>\nOpens a popup to open the BG editor or create a new BG.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_tb_create.png", Document.Element.Type.Image),
+                new Document.Element("<b>Preview Mode [VANILLA]</b>\nSwitches the game to Preview Mode.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_tb_preview_mode.png", Document.Element.Type.Image),
+            });
 
-                EditorThemeManager.AddSelectable(gameObject.GetComponent<Button>(), ThemeGroup.List_Button_1);
-
-                // Intro
-                {
-                    var element = new Document.Element("The Timeline Bar is where you can see and edit general game and editor info.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Audio Time (Precise)
-                {
-                    var element = new Document.Element("<b>Audio Time (Precise) [MODDED]</b>\nText shows the precise audio time. This can be edited to set a specific time for the audio.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Audio Time (Formatted)
-                {
-                    var element = new Document.Element("<b>Audio Time (Formatted) [VANILLA]</b>\nText shows the audio time formatted like \"minutes.seconds.milliseconds\". Clicking this sets the " +
-                        "audio time to 0.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Pause / Play
-                {
-                    var element = new Document.Element("<b>Pause / Play [VANILLA]</b>\nPressing this toggles if the song is playing or not.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Pitch
-                {
-                    var element = new Document.Element("<b>Pitch [PATCHED]</b>\nThe speed of the song. Clicking the buttons adjust the pitch by 0.1, depending on the direction the button is facing.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Audio Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_tb_audio.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Editor Layer
-                {
-                    var element = new Document.Element("<b>Editor Layer [PATCHED]</b>\nEditor Layer is what objects show in the timeline, depending on their own Editor Layer. " +
-                        "It can go as high as 2147483646. In unmodded PA its limited from layers 1 to 5, though in PA Editor Alpha another layer was introduced.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Editor Layer Type
-                {
-                    var element = new Document.Element("<b>Editor Layer Type [MODDED]</b>\nWhether the timeline shows objects or event keyframes / checkpoints.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Layer Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_tb_layer.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Prefab
-                {
-                    var element = new Document.Element("<b>Prefab [VANILLA]</b>\nOpens the Prefab list popups (Internal & External).", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Object
-                {
-                    var element = new Document.Element("<b>Object [PATCHED]</b>\nOpens a popup featuring different object templates such as Decoration, Empty, etc. It's patched because " +
-                        "Persistent was replaced with No Autokill.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Marker
-                {
-                    var element = new Document.Element("<b>Marker [VANILLA]</b>\nCreates a Marker.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // BG
-                {
-                    var element = new Document.Element("<b>BG [VANILLA]</b>\nOpens a popup to open the BG editor or create a new BG.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Create Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_tb_create.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Preview Mode
-                {
-                    var element = new Document.Element("<b>Preview Mode [VANILLA]</b>\nSwitches the game to Preview Mode.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Preview Mode Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_tb_preview_mode.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                var htt = gameObject.AddComponent<HoverTooltip>();
-
-                var levelTip = new HoverTooltip.Tooltip();
-
-                levelTip.desc = documentation.Name;
-                levelTip.hint = documentation.Description;
-                htt.tooltipLangauges.Add(levelTip);
-
-                var text = gameObject.transform.GetChild(0).GetComponent<Text>();
-
-                text.text = documentation.Name;
-                EditorThemeManager.AddLightText(text);
-
-                documentations.Add(documentation);
-            }
-
-            // Keybinds
+            GenerateDocument("Keybinds (WIP)", "Perform specific actions when pressing set keys.", new List<Document.Element>
             {
-                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(documentationPopup.Content, "Document");
-                var documentation = new Document(gameObject, "Keybinds", "Perform specific actions when pressing set keys.");
+                new Document.Element("Keybinds intro.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_keybind_list.png", Document.Element.Type.Image),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_keybind_editor.png", Document.Element.Type.Image),
+            });
 
-                EditorThemeManager.AddSelectable(gameObject.GetComponent<Button>(), ThemeGroup.List_Button_1);
-
-                // Intro
-                {
-                    var element = new Document.Element("Keybinds intro.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Keybinds List Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_keybind_list.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Keybinds Editor Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_keybind_editor.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                var htt = gameObject.AddComponent<HoverTooltip>();
-
-                var levelTip = new HoverTooltip.Tooltip();
-
-                levelTip.desc = documentation.Name;
-                levelTip.hint = documentation.Description;
-                htt.tooltipLangauges.Add(levelTip);
-
-                var text = gameObject.transform.GetChild(0).GetComponent<Text>();
-
-                text.text = documentation.Name;
-                EditorThemeManager.AddLightText(text);
-
-                documentations.Add(documentation);
-            }
-
-            // Editor Properties
+            GenerateDocument("Editor Properties (WIP)", "Configure the editor!", new List<Document.Element>
             {
-                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(documentationPopup.Content, "Document");
-                var documentation = new Document(gameObject, "Editor Properties", "Configure the editor!");
+                new Document.Element("Editor Properties intro.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_editor_properties.png", Document.Element.Type.Image),
+            });
 
-                EditorThemeManager.AddSelectable(gameObject.GetComponent<Button>(), ThemeGroup.List_Button_1);
-
-                // Intro
-                {
-                    var element = new Document.Element("Editor Properties intro.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Editor Properties Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_editor_properties.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                var htt = gameObject.AddComponent<HoverTooltip>();
-
-                var levelTip = new HoverTooltip.Tooltip();
-
-                levelTip.desc = documentation.Name;
-                levelTip.hint = documentation.Description;
-                htt.tooltipLangauges.Add(levelTip);
-
-                var text = gameObject.transform.GetChild(0).GetComponent<Text>();
-
-                text.text = documentation.Name;
-                EditorThemeManager.AddLightText(text);
-
-                documentations.Add(documentation);
-            }
-
-            // Misc
+            GenerateDocument("Misc", "The stuff that didn't fit in a document of its own.", new List<Document.Element>
             {
-                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(documentationPopup.Content, "Document");
-                var documentation = new Document(gameObject, "Misc", "The stuff that didn't fit in a document of its own.");
+                new Document.Element("<b>Editor Level Path [MODDED]</b>\nThe path within the Project Arrhythmia/beatmaps directory that is used for the editor level list.", Document.Element.Type.Text),
+                new Document.Element("<b>Refresh [MODDED]</b>\nRefreshes the editor level list.", Document.Element.Type.Text),
+                new Document.Element("<b>Descending [MODDED]</b>\nIf the editor level list should be descending or ascending.", Document.Element.Type.Text),
+                new Document.Element("<b>Order [MODDED]</b>\nHow the editor level list should be ordered." +
+                    "\nCover - Order by if the level has a cover or not." +
+                    "\nArtist - Order by Artist Name." +
+                    "\nCreator - Order by Creator Name." +
+                    "\nFolder - Order by Folder Name." +
+                    "\nTitle - Order by Song Title." +
+                    "\nDifficulty - Order by (Easy, Normal, Hard, Expert, Expert+, Master, Animation)" +
+                    "\nDate Edited - Order by last saved time, so recently edited levels appear at one side and older levels appear at the other.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_open_level_top.png", Document.Element.Type.Image),
+                new Document.Element("<b>Loading Autosaves [MODDED]</b>\nHolding shift when you click on a level in the level list will open an Autosave popup instead of " +
+                    "loading the level. This allows you to load any autosaved file so you don't need to go into the level folder and change one of the autosaves to the level.lsb.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_autosaves.png", Document.Element.Type.Image),
+            });
 
-                EditorThemeManager.AddSelectable(gameObject.GetComponent<Button>(), ThemeGroup.List_Button_1);
-
-                // Editor Level Path
-                {
-                    var element = new Document.Element("<b>Editor Level Path [MODDED]</b>\nThe path within the Project Arrhythmia/beatmaps directory that is used for the editor level list.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Refresh
-                {
-                    var element = new Document.Element("<b>Refresh [MODDED]</b>\nRefreshes the editor level list.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Descending
-                {
-                    var element = new Document.Element("<b>Descending [MODDED]</b>\nIf the editor level list should be descending or ascending.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Order
-                {
-                    var element = new Document.Element("<b>Order [MODDED]</b>\nHow the editor level list should be ordered." +
-                        "\nCover - Order by if the level has a cover or not." +
-                        "\nArtist - Order by Artist Name." +
-                        "\nCreator - Order by Creator Name." +
-                        "\nFolder - Order by Folder Name." +
-                        "\nTitle - Order by Song Title." +
-                        "\nDifficulty - Order by (Easy, Normal, Hard, Expert, Expert+, Master, Animation)" +
-                        "\nDate Edited - Order by last saved time, so recently edited levels appear at one side and older levels appear at the other.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Open Level Top Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_open_level_top.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                // Loading Autosaves
-                {
-                    var element = new Document.Element("<b>Loading Autosaves [MODDED]</b>\nHolding shift when you click on a level in the level list will open an Autosave popup instead of " +
-                        "loading the level. This allows you to load any autosaved file so you don't need to go into the level folder and change one of the autosaves to the level.lsb.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // Loading Autosaves Image
-                {
-                    var element = new Document.Element("BepInEx/plugins/Assets/Documentation/doc_autosaves.png", Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
-
-                var htt = gameObject.AddComponent<HoverTooltip>();
-
-                var levelTip = new HoverTooltip.Tooltip();
-
-                levelTip.desc = documentation.Name;
-                levelTip.hint = documentation.Description;
-                htt.tooltipLangauges.Add(levelTip);
-
-                var text = gameObject.transform.GetChild(0).GetComponent<Text>();
-
-                text.text = documentation.Name;
-                EditorThemeManager.AddLightText(text);
-
-                documentations.Add(documentation);
-            }
-
-            // Modifiers
+            GenerateDocument("Object Modifiers", "Make your levels dynamic!", new List<Document.Element>
             {
-                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(documentationPopup.Content, "Document");
-                var documentation = new Document(gameObject, "Object Modifiers", "Make your levels dynamic!");
-
-                EditorThemeManager.AddSelectable(gameObject.GetComponent<Button>(), ThemeGroup.List_Button_1);
-
-                // Intro
-                {
-                    var element = new Document.Element("ObjectModifiers adds a trigger / action based system to Beatmap Objects called \"Modifiers\". " +
-                        "Modifiers have two types: Triggers check if something is happening and if it is, it activates any Action type modifiers. If there are no Triggers, then the Action modifiers " +
-                        "activates. This document is heavily WIP and will be added to over time.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // setPitch
-                {
-                    var element = new Document.Element("<b>setPitch</b> - Modifies the speed of the game and the pitch of the audio. If you have EventsCore installed, it sets a multiplied offset from the " +
-                        "audio keyframe's pitch value. However unlike that, setPitch can go into the negatives allowing for reversed audio.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // addPitch
-                {
-                    var element = new Document.Element("<b>addPitch</b> - Does the same as above, except adds to the pitch offset.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // setMusicTime
-                {
-                    var element = new Document.Element("<b>setMusicTime</b> - Sets the Audio Time to go to any point in the song, allowing for skipping specific sections of a song.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // playSound
-                {
-                    var element = new Document.Element("<b>playSound</b> - Plays an external sound. The following details what each value in the modifier does." +
-                        "\nPath - If global is on, path should be set to something within beatmaps/soundlibrary directory. If global is off, then the path should be set to something within the level " +
-                        "folder that has level.lsb and metadata.lsb." +
-                        "\nGlobal - Affects the above setting in the way described." +
-                        "\nPitch - The speed of the sound played." +
-                        "\nVolume - How loud the sound is." +
-                        "\nLoop - If the sound should loop while the Modifier is active.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // playSoundOnline
-                {
-                    var element = new Document.Element("<b>playSoundOnline</b> - Same as above except plays from a link. The global toggle does nothing here.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // loadLevel
-                {
-                    var element = new Document.Element("<b>loadLevel</b> - Loads a level from the current level folder path.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                // loadLevelInternal
-                {
-                    var element = new Document.Element("<b>loadLevelInternal</b> - Same as above, except it always loads from the current levels own path.", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
-
-                var htt = gameObject.AddComponent<HoverTooltip>();
-
-                var levelTip = new HoverTooltip.Tooltip();
-
-                levelTip.desc = documentation.Name;
-                levelTip.hint = documentation.Description;
-                htt.tooltipLangauges.Add(levelTip);
-
-                var text = gameObject.transform.GetChild(0).GetComponent<Text>();
-
-                text.text = documentation.Name;
-                EditorThemeManager.AddLightText(text);
-
-                documentations.Add(documentation);
-            }
+                new Document.Element("ObjectModifiers adds a trigger / action based system to Beatmap Objects called \"Modifiers\". " +
+                    "Modifiers have two types: Triggers check if something is happening and if it is, it activates any Action type modifiers. If there are no Triggers, then the Action modifiers " +
+                    "activates. This document is heavily WIP and will be added to over time.", Document.Element.Type.Text),
+                new Document.Element("<b>setPitch</b> - Modifies the speed of the game and the pitch of the audio. If you have EventsCore installed, it sets a multiplied offset from the " +
+                    "audio keyframe's pitch value. However unlike that, setPitch can go into the negatives allowing for reversed audio.", Document.Element.Type.Text),
+                new Document.Element("<b>addPitch</b> - Does the same as above, except adds to the pitch offset.", Document.Element.Type.Text),
+                new Document.Element("<b>setMusicTime</b> - Sets the Audio Time to go to any point in the song, allowing for skipping specific sections of a song.", Document.Element.Type.Text),
+                new Document.Element("<b>playSound</b> - Plays an external sound. The following details what each value in the modifier does." +
+                    "\nPath - If global is on, path should be set to something within beatmaps/soundlibrary directory. If global is off, then the path should be set to something within the level " +
+                    "folder that has level.lsb and metadata.lsb." +
+                    "\nGlobal - Affects the above setting in the way described." +
+                    "\nPitch - The speed of the sound played." +
+                    "\nVolume - How loud the sound is." +
+                    "\nLoop - If the sound should loop while the Modifier is active.", Document.Element.Type.Text),
+                new Document.Element("<b>playSoundOnline</b> - Same as above except plays from a link. The global toggle does nothing here.", Document.Element.Type.Text),
+                new Document.Element("<b>loadLevel</b> - Loads a level from the current level folder path.", Document.Element.Type.Text),
+                new Document.Element("<b>loadLevelInternal</b> - Same as above, except it always loads from the current levels own path.", Document.Element.Type.Text),
+            });
 
             if (CoreHelper.AprilFools)
             {
-                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(documentationPopup.Content, "Document");
-                var documentation = new Document(gameObject, "April fools!", "fol.");
+                var elements = new List<Document.Element>();
 
-                EditorThemeManager.AddSelectable(gameObject.GetComponent<Button>(), ThemeGroup.List_Button_1);
-
-                // Intro
-                {
-                    var element = new Document.Element("oops, i spilled my images everywhere...", Document.Element.Type.Text);
-                    documentation.elements.Add(element);
-                }
+                elements.Add(new Document.Element("oops, i spilled my images everywhere...", Document.Element.Type.Text));
 
                 var dir = Directory.GetFiles(RTFile.ApplicationDirectory, "*.png", SearchOption.AllDirectories);
 
                 for (int i = 0; i < UnityEngine.Random.Range(0, Mathf.Clamp(dir.Length, 0, 20)); i++)
-                {
-                    var element = new Document.Element(dir[UnityEngine.Random.Range(0, dir.Length)].Replace("\\", "/").Replace(RTFile.ApplicationDirectory, ""), Document.Element.Type.Image);
-                    documentation.elements.Add(element);
-                }
+                    elements.Add(new Document.Element(dir[UnityEngine.Random.Range(0, dir.Length)].Replace("\\", "/").Replace(RTFile.ApplicationDirectory, ""), Document.Element.Type.Image));
 
-                var htt = gameObject.AddComponent<HoverTooltip>();
-
-                var levelTip = new HoverTooltip.Tooltip();
-
-                levelTip.desc = documentation.Name;
-                levelTip.hint = documentation.Description;
-                htt.tooltipLangauges.Add(levelTip);
-
-                var text = gameObject.transform.GetChild(0).GetComponent<Text>();
-
-                text.text = documentation.Name;
-                EditorThemeManager.AddLightText(text);
-
-                documentations.Add(documentation);
-            }
-
-            // Create level tutorial
-            {
-                //var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(documentationPopup.Content, "Document");
-                //var documentation = new Document(gameObject, "Creating a new level", "Description.");
-
-                //var htt = gameObject.AddComponent<HoverTooltip>();
-
-                //var levelTip = new HoverTooltip.Tooltip();
-
-                //levelTip.desc = documentation.Name;
-                //levelTip.hint = documentation.Description;
-                //htt.tooltipLangauges.Add(levelTip);
-
-                //var text = gameObject.transform.GetChild(0).GetComponent<Text>();
-
-                //text.text = documentation.Name;
-
-                //documentations.Add(documentation);
+                GenerateDocument("April Fools!", "fol.", elements);
             }
         }
 
