@@ -89,10 +89,8 @@ namespace BetterLegacy.Core.Managers
             LoadingFromHere = true;
             LevelEnded = false;
 
-            if (level.playerData == null && Saves.Has(x => x.ID == level.id))
-            {
-                level.playerData = Saves.Find(x => x.ID == level.id);
-            }
+            if (level.playerData == null && Saves.TryFind(x => x.ID == level.id, out PlayerData playerData))
+                level.playerData = playerData;
 
             CurrentLevel = level;
 
@@ -107,14 +105,8 @@ namespace BetterLegacy.Core.Managers
             if (!level.music)
                 level.LoadAudioClip();
 
-            if (ShapeManager.inst.loadedShapes)
-                ShapeManager.inst.Load();
-
-            if (CoreHelper.InEditor || !CoreHelper.InGame || !ShapeManager.inst.loadedShapes)
-            {
-                while (CoreHelper.InEditor || !CoreHelper.InGame || !ShapeManager.inst.loadedShapes)
-                    yield return null;
-            }
+            while (CoreHelper.InEditor || !CoreHelper.InGame || !ShapeManager.inst.loadedShapes)
+                yield return null;
 
             WindowController.ResetResolution();
             WindowController.ResetTitle();
@@ -126,7 +118,9 @@ namespace BetterLegacy.Core.Managers
             Debug.Log($"{className}Level Mode: {levelMode}...");
 
             var rawJSON = RTFile.ReadFromFile(level.path + levelMode);
-            rawJSON = UpdateBeatmap(rawJSON, level.metadata.beatmap.game_version);
+            if (level.metadata.beatmap.game_version != "4.1.16" && level.metadata.beatmap.game_version != "20.4.4")
+                rawJSON = UpdateBeatmap(rawJSON, level.metadata.beatmap.game_version);
+
             DataManager.inst.gameData = levelMode.Contains(".vgd") ? GameData.ParseVG(JSON.Parse(rawJSON)) : GameData.Parse(JSONNode.Parse(rawJSON));
 
             Debug.Log($"{className}Setting paths...");
@@ -210,26 +204,29 @@ namespace BetterLegacy.Core.Managers
         /// <param name="path"></param>
         public static void Load(string path, bool setLevelEnd = true)
         {
-            if (RTFile.FileExists(path))
+            if (!RTFile.FileExists(path))
             {
-                Debug.Log($"{className}Loading level from {path}");
-
-                if (setLevelEnd)
-                    OnLevelEnd = delegate ()
-                    {
-                        Clear();
-                        Updater.OnLevelEnd();
-                        SceneManager.inst.LoadScene("Main Menu");
-                    };
-
-                var level = new Level(path.Replace("level.lsb", "").Replace("level.vgd", ""));
-                inst.StartCoroutine(Play(level));
+                Debug.LogError($"{className}Couldn't load level from {path} as it doesn't exist.");
                 return;
             }
 
-            Debug.LogError($"{className}Couldn't load level from {path} as it doesn't exist.");
+            Debug.Log($"{className}Loading level from {path}");
+
+            if (setLevelEnd)
+                OnLevelEnd = delegate ()
+                {
+                    Clear();
+                    Updater.OnLevelEnd();
+                    SceneManager.inst.LoadScene("Main Menu");
+                };
+
+            var level = new Level(path.Replace("level.lsb", "").Replace("level.vgd", ""));
+            inst.StartCoroutine(Play(level));
         }
 
+        /// <summary>
+        /// Clears any left over data.
+        /// </summary>
         public static void Clear()
         {
             DG.Tweening.DOTween.Clear();
@@ -238,6 +235,14 @@ namespace BetterLegacy.Core.Managers
             InputDataManager.inst.SetAllControllerRumble(0f);
         }
 
+        /// <summary>
+        /// Sorts a Level list by a specific order and ascending / descending.
+        /// Orderby 0 = Has icon, 1 = Artist name, 2 = Creator name, 3 = Folder name, 4 = Song title, 5 = Difficulty, 6 = Date edited, 7 = Date created
+        /// </summary>
+        /// <param name="levels">The Level list to sort.</param>
+        /// <param name="orderby">How the Level list should be ordered by.</param>
+        /// <param name="ascend">Whether the list should ascend of descend.</param>
+        /// <returns>Returns a sorted Level list.</returns>
         public static List<Level> SortLevels(List<Level> levels, int orderby, bool ascend)
         {
             switch (orderby)
@@ -270,93 +275,53 @@ namespace BetterLegacy.Core.Managers
                     return
                         (ascend ? levels.OrderBy(x => x.metadata.beatmap.date_edited) :
                         levels.OrderByDescending(x => x.metadata.beatmap.date_edited)).ToList();
+                case 7:
+                    return
+                        (ascend ? levels.OrderBy(x => x.metadata.LevelBeatmap.date_created) :
+                        levels.OrderByDescending(x => x.metadata.LevelBeatmap.date_created)).ToList();
             }
 
             return levels;
         }
 
-        public static void Sort(int orderby, bool ascend)
-        {
-            switch (orderby)
-            {
-                case 0:
-                    {
-                        Levels =
-                            (ascend ? Levels.OrderBy(x => x.icon != SteamWorkshop.inst.defaultSteamImageSprite) :
-                            Levels.OrderByDescending(x => x.icon != SteamWorkshop.inst.defaultSteamImageSprite)).ToList();
-                        break;
-                    }
-                case 1:
-                    {
-                        Levels =
-                            (ascend ? Levels.OrderBy(x => x.metadata.artist.Name) :
-                            Levels.OrderByDescending(x => x.metadata.artist.Name)).ToList();
-                        break;
-                    }
-                case 2:
-                    {
-                        Levels =
-                            (ascend ? Levels.OrderBy(x => x.metadata.creator.steam_name) :
-                            Levels.OrderByDescending(x => x.metadata.creator.steam_name)).ToList();
-                        break;
-                    }
-                case 3:
-                    {
-                        Levels =
-                            (ascend ? Levels.OrderBy(x => System.IO.Path.GetFileName(x.path)) :
-                            Levels.OrderByDescending(x => System.IO.Path.GetFileName(x.path))).ToList();
-                        break;
-                    }
-                case 4:
-                    {
-                        Levels =
-                            (ascend ? Levels.OrderBy(x => x.metadata.song.title) :
-                            Levels.OrderByDescending(x => x.metadata.song.title)).ToList();
-                        break;
-                    }
-                case 5:
-                    {
-                        Levels =
-                            (ascend ? Levels.OrderBy(x => x.metadata.song.difficulty) :
-                            Levels.OrderByDescending(x => x.metadata.song.difficulty)).ToList();
-                        break;
-                    }
-                case 6:
-                    {
-                        Levels =
-                            (ascend ? Levels.OrderBy(x => x.metadata.beatmap.date_edited) :
-                            Levels.OrderByDescending(x => x.metadata.beatmap.date_edited)).ToList();
-                        break;
-                    }
-            }
-        }
+        public static void Sort(int orderby, bool ascend) => Levels = SortLevels(Levels, orderby, ascend);
 
         public static string UpdateBeatmap(string _json, string _version)
         {
             Debug.Log("[ -- Updating Beatmap! -- ] - [" + _version + "]");
-            if (DataManager.GetVersion(_version, 0) <= 3 && DataManager.GetVersion(_version, 1) <= 7 && DataManager.GetVersion(_version, 2) <= 26)
+
+            var version = new Version(_version);
+
+            // 3.7.26
+            if (version.Major <= 3 && version.Minor <= 7 && version.Patch <= 26)
             {
                 Debug.Log("value_x -> x & value_y -> y");
                 _json = _json.Replace("\"value_x\"", "\"x\"");
                 _json = _json.Replace("\"value_y\"", "\"y\"");
             }
-            if (DataManager.GetVersion(_version, 0) <= 3 && DataManager.GetVersion(_version, 1) <= 7 && DataManager.GetVersion(_version, 2) <= 42)
+
+            // 3.7.42
+            if (version.Major <= 3 && version.Minor <= 7 && version.Patch <= 42)
             {
                 Debug.Log("text 4 -> 5");
                 _json = _json.Replace("\"shape\": \"4\"", "\"shape\": \"5\"");
             }
-            if (DataManager.GetVersion(_version, 0) <= 3 && DataManager.GetVersion(_version, 1) <= 8 && DataManager.GetVersion(_version, 2) <= 15)
-            {
+
+            // 3.8.15
+            if (version.Major <= 3 && version.Minor <= 8 && version.Patch <= 15)
                 Debug.Log("Add parent relationship if none");
-            }
-            if (DataManager.GetVersion(_version, 0) <= 3 && DataManager.GetVersion(_version, 1) <= 8 && DataManager.GetVersion(_version, 2) <= 25)
+
+            // 3.8.25
+            if (version.Major <= 3 && version.Minor <= 8 && version.Patch <= 25)
             {
                 Debug.Log("background_objects -> bg_objects");
                 _json = _json.Replace("\"background_objects\"", "\"bg_objects\"");
                 Debug.Log("reactive_settings -> r_set");
                 _json = _json.Replace("\"reactive_settings\"", "\"r_set\"");
             }
-            if (DataManager.GetVersion(_version, 0) <= 3 && DataManager.GetVersion(_version, 1) <= 8 && DataManager.GetVersion(_version, 2) <= 48)
+
+            // 3.8.48
+            if (version.Major <= 3 && version.Minor <= 8 && version.Patch <= 48)
             {
                 Debug.Log("is_random -> r");
                 _json = _json.Replace("\"is_random\":\"False\"", "\"r\":\"0\"").Replace("\"is_random\":\"True\"", "\"r\":\"1\"");
@@ -392,6 +357,7 @@ namespace BetterLegacy.Core.Managers
                 Debug.Log("shape_option -> so");
                 _json = _json.Replace("\"shape_option\"", "\"so\"");
             }
+
             return _json;
         }
 
