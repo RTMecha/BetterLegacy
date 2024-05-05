@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
@@ -34,21 +35,6 @@ namespace BetterLegacy.Example
         public static bool DebugsOn => false;
 
         #region Sprites
-
-        public string speakURL = "https://cdn.discordapp.com/attachments/811214540141363201/1151208881125593108/example_speak.ogg";
-        public string tailURL = "https://media.discordapp.net/attachments/811214540141363201/1151188714769354954/example_tail.png";
-        public string earBottomURL = "https://media.discordapp.net/attachments/811214540141363201/1151188681588211802/example_ear_bottom.png";
-        public string headURL = "https://media.discordapp.net/attachments/811214540141363201/1151188682540323016/example_head.png";
-        public string eyesURL = "https://media.discordapp.net/attachments/811214540141363201/1151188682078961734/example_eyes.png";
-        public string pupilsURL = "https://media.discordapp.net/attachments/811214540141363201/1151188714131832893/example_pupils.png";
-        public string blinkURL = "https://media.discordapp.net/attachments/811214540141363201/1151188681080705094/example_blink.png";
-        public string snoutURL = "https://media.discordapp.net/attachments/811214540141363201/1151188714412843098/example_snout.png";
-        public string mouthURL = "https://media.discordapp.net/attachments/811214540141363201/1151188683056218173/example_mouth.png";
-        public string lipsURL = "https://media.discordapp.net/attachments/811214540141363201/1151188682812965004/example_lips.png";
-        public string noseURL = "https://media.discordapp.net/attachments/811214540141363201/1151188683295297536/example_nose.png";
-        public string browsURL = "https://media.discordapp.net/attachments/811214540141363201/1151188681315598456/example_brow.png";
-        public string earTopURL = "https://media.discordapp.net/attachments/811214540141363201/1151188681835679754/example_ear_top.png";
-        public string handsURL = "https://media.discordapp.net/attachments/811214540141363201/1151188682334797844/example_hand.png";
 
         public string SpeakPath => RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/Example Parts/example speak.ogg";
         public string TailPath => RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/Example Parts/example tail.png";
@@ -613,12 +599,20 @@ namespace BetterLegacy.Example
 
         #endregion
 
+        #region Options
+
+        public Transform optionsLayout;
+        public Transform optionsBase;
+        public static bool optionsActive;
+
+        #endregion
+
         #region Delegates
 
-        public static Action<EditorManager> onEditorAwake = delegate (EditorManager x) { };
-        public static Action<bool> onEditorToggle = delegate (bool x) { };
-        public static Action<string> onSceneLoad = delegate (string x) { };
-        public static Action<GameManager> onGameAwake = delegate (GameManager x) { };
+        public static Action<EditorManager> onEditorAwake;
+        public static Action<bool> onEditorToggle;
+        public static Action<string> onSceneLoad;
+        public static Action<GameManager> onGameAwake;
 
         public static Action onInit = delegate ()
         {
@@ -630,9 +624,7 @@ namespace BetterLegacy.Example
         public Action update;
         public Action fixedUpdate;
         public Action lateUpdate;
-        public Action onSpawnComplete = delegate () { };
-
-        public Action headSpawned = delegate () { };
+        public static Action onSpawnComplete;
 
         #endregion
 
@@ -641,8 +633,6 @@ namespace BetterLegacy.Example
         float timeOffset;
 
         public bool talking = false;
-
-        public bool downloadMode = false;
 
         /// <summary>
         /// Spawns Example.
@@ -839,16 +829,11 @@ namespace BetterLegacy.Example
 
                 dragPos += (target - dragPos) * po;
 
-                parentX.localPosition = new Vector3(dragPos.x, 0f);
-                parentY.localPosition = new Vector3(0f, dragPos.y);
+                parentX.localPosition = new Vector3(Mathf.Clamp(dragPos.x, -970f, 970f), 0f);
+                parentY.localPosition = new Vector3(0f, Mathf.Clamp(dragPos.y, -560f, 560f));
 
                 faceX.localPosition = new Vector3(-((target.x - dragPos.x) * po), 0f);
                 faceY.localPosition = new Vector3(0f, -((target.y - dragPos.y) * po));
-
-                if (Input.GetKeyDown(KeyCode.G))
-                {
-                    chatterBase.gameObject.SetActive(!chatterBase.gameObject.activeSelf);
-                }
             }
 
             if (draggingLeftHand)
@@ -881,12 +866,19 @@ namespace BetterLegacy.Example
                 handRight.localPosition += (target - handRight.localPosition) * po;
             }
 
-            float add = 200f;
+            float addToDialogueY = 200f;
             if (TotalPosition.y > 355f)
-                add = -200f;
+                addToDialogueY = -200f;
 
             if (dialogueBase != null)
-                dialogueBase.localPosition = new Vector3(Mathf.Clamp(TotalPosition.x, -820f, 820f), TotalPosition.y + add, 0f);
+                dialogueBase.localPosition = new Vector3(Mathf.Clamp(TotalPosition.x, -820f, 820f), TotalPosition.y + addToDialogueY, 0f);
+
+            float addToOptionsX = -222f;
+            if (TotalPosition.x < -640f)
+                addToOptionsX = 222f;
+
+            if (optionsBase != null && optionsActive)
+                optionsBase.localPosition = new Vector3(TotalPosition.x + addToOptionsX, TotalPosition.y);
 
             if (canvasGroup != null && ExampleConfig.Instance.ExampleVisible.Value) canvasGroup.alpha = ExampleConfig.Instance.ExampleVisibility.Value;
             else if (canvasGroup != null) canvasGroup.alpha = 1f;
@@ -1123,8 +1115,6 @@ namespace BetterLegacy.Example
             yield break;
         }
 
-        public static IEnumerator headEnumerator;
-
         IEnumerator SpawnExample()
         {
             spawning = true;
@@ -1134,340 +1124,63 @@ namespace BetterLegacy.Example
                 yield return StartCoroutine(RTCode.IEvaluate(RTFile.ReadFromFile("settings/ExampleHooks.cs")));
             }
 
-            if (downloadMode)
+            var p = SpeakPath;
+            StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{SpeakPath}", RTFile.GetAudioType(SpeakPath), delegate (AudioClip audioClip)
             {
-                yield return AlephNetworkManager.DownloadAudioClip(speakURL, RTFile.GetAudioType(speakURL), delegate (AudioClip audioClip)
-                {
-                    speakSound = audioClip;
-                }, delegate (string onError)
-                {
-                    var p = SpeakPath;
-                    StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{p}", RTFile.GetAudioType(p), delegate (AudioClip audioClip)
-                    {
-                        speakSound = audioClip;
-                    }));
-                });
-            }
-            else
-            {
-                var p = SpeakPath;
-                StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{p}", RTFile.GetAudioType(p), delegate (AudioClip audioClip)
-                {
-                    speakSound = audioClip;
-                }));
-            }
-
+                speakSound = audioClip;
+            }));
 
             #region Canvas
 
-            var inter = new GameObject("Canvas");
-            baseCanvas = inter;
-            DontDestroyOnLoad(inter);
-            inter.transform.localScale = Vector3.one * CoreHelper.ScreenScale;
-            var interfaceRT = inter.AddComponent<RectTransform>();
-            interfaceRT.anchoredPosition = new Vector2(960f, 540f);
-            interfaceRT.sizeDelta = new Vector2(1920f, 1080f);
-            interfaceRT.pivot = new Vector2(0.5f, 0.5f);
-            interfaceRT.anchorMin = Vector2.zero;
-            interfaceRT.anchorMax = Vector2.zero;
+            var uiCanvas = UIManager.GenerateUICanvas("Example Canvas", null, true);
 
-            canvas = inter.AddComponent<Canvas>();
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.None;
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.TexCoord1;
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.Tangent;
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.Normal;
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.scaleFactor = CoreHelper.ScreenScale;
-            canvas.sortingOrder = 10000;
-
-            canvasGroup = inter.AddComponent<CanvasGroup>();
-
-            var canvasScaler = inter.AddComponent<CanvasScaler>();
-            canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            canvasScaler.referenceResolution = new Vector2(Screen.width, Screen.height);
-
-            inter.AddComponent<GraphicRaycaster>();
-
-            Debug.LogFormat("{0}Canvas Scale Factor: {1}\nResoultion: {2}", className, canvas.scaleFactor, new Vector2(Screen.width, Screen.height));
+            baseCanvas = uiCanvas.GameObject;
+            canvas = uiCanvas.Canvas;
+            canvasGroup = uiCanvas.CanvasGroup;
 
             #endregion
 
             #region Floating Parent
 
-            var l_floatingParent = new GameObject("Example");
-            l_floatingParent.transform.SetParent(inter.transform);
-            l_floatingParent.transform.localScale = Vector3.one;
-
-            var l_floatingParentRT = l_floatingParent.AddComponent<RectTransform>();
-            l_floatingParentRT.anchoredPosition = Vector2.zero;
+            var l_floatingParent = Creator.NewUIObject("Example", baseCanvas.transform);
+            l_floatingParent.transform.AsRT().anchoredPosition = Vector2.zero;
             floatingParent = l_floatingParent.transform;
 
             #endregion
 
             #region X Parent
 
-            var xparent = new GameObject("Example X");
-            xparent.transform.SetParent(l_floatingParent.transform);
-            xparent.transform.localScale = Vector3.one;
-
-            var xRT = xparent.AddComponent<RectTransform>();
-            xRT.anchoredPosition = Vector2.zero;
+            var xparent = Creator.NewUIObject("Example X", floatingParent);
+            xparent.transform.AsRT().anchoredPosition = Vector2.zero;
             parentX = xparent.transform;
 
             #endregion
 
             #region Y Parent
 
-            var yparent = new GameObject("Example Y");
-            yparent.transform.SetParent(xparent.transform);
-            yparent.transform.localScale = Vector3.one;
-
-            var yRT = yparent.AddComponent<RectTransform>();
-            yRT.anchoredPosition = new Vector2(0f, -1600f);
+            var yparent = Creator.NewUIObject("Example Y", parentX);
+            yparent.transform.AsRT().anchoredPosition = new Vector2(0f, -1600f);
             parentY = yparent.transform;
 
             #endregion
 
             #region Rotscale Parent
 
-            var rotscaleparent = new GameObject("Example Rotscale");
-            rotscaleparent.transform.SetParent(yparent.transform);
-            rotscaleparent.transform.localScale = Vector3.one;
-
-            var rotscaleRT = rotscaleparent.AddComponent<RectTransform>();
-            rotscaleRT.anchoredPosition = Vector3.zero;
+            var rotscaleparent = Creator.NewUIObject("Example Rotscale", parentY);
+            rotscaleparent.transform.AsRT().anchoredPosition = Vector3.zero;
             parentRotscale = rotscaleparent.transform;
 
             #endregion
 
             #region Tail
 
-            var l_tail = new GameObject("Example Tail");
-            l_tail.transform.SetParent(rotscaleparent.transform);
-            l_tail.transform.localScale = Vector3.one;
-
-            var l_tailRT = l_tail.AddComponent<RectTransform>();
-            l_tailRT.anchoredPosition = Vector2.zero;
-            tail = l_tail.transform;
-            {
-                var im = new GameObject("image");
-                im.transform.SetParent(l_tail.transform);
-                im.transform.localScale = Vector3.one;
-
-                var rt = im.AddComponent<RectTransform>();
-                im.AddComponent<CanvasRenderer>();
-                var image = im.AddComponent<Image>();
-
-                rt.anchoredPosition = new Vector2(0f, -58f);
-                rt.sizeDelta = new Vector2(28f, 42f);
-
-                if (downloadMode)
-                {
-                    yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(tailURL, delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}Had http error {1} so trying to get offline file.", className, onError);
-
-                        StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{TailPath}", delegate (Texture2D texture2D)
-                        {
-                            image.sprite = SpriteManager.CreateSprite(texture2D);
-                        }, delegate (string onError)
-                        {
-                            Debug.LogErrorFormat("{0}File does not exist.", className);
-                        }));
-                    }));
-                }
-                else
-                {
-                    StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{TailPath}", delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}File does not exist.", className);
-                    }));
-                }
-
-                var clickable = im.AddComponent<ExampleClickable>();
-                clickable.onClick = delegate (PointerEventData x)
-                {
-                    talking = true;
-                    Say("Please don't touch me there.", new List<IKeyframe<float>> { new FloatKeyframe(0f, parentX.localPosition.x, Ease.Linear) }, new List<IKeyframe<float>> { new FloatKeyframe(0f, parentY.localPosition.y + 200f, Ease.Linear) }, onComplete: delegate () { talking = false; });
-                    Play("Angry", false);
-                };
-            }
-
             #endregion
 
             #region Head
 
-            var l_ears = new GameObject("Example Ears");
-
-            var l_head = new GameObject("Example Head");
-            l_head.transform.SetParent(rotscaleparent.transform);
-            l_head.transform.localScale = Vector3.one;
-
-            l_tail.transform.SetParent(l_head.transform);
-            l_tail.transform.localScale = Vector3.one;
-            l_tailRT.anchoredPosition = Vector2.zero;
-
-            l_ears.transform.SetParent(l_head.transform);
-            l_ears.transform.localScale = Vector3.one;
-
-            var l_earsRT = l_ears.AddComponent<RectTransform>();
-            l_earsRT.anchoredPosition = Vector2.zero;
-            ears = l_ears.transform;
-
-            var l_headRT = l_head.AddComponent<RectTransform>();
-            l_headRT.anchoredPosition = Vector2.zero;
+            var l_head = Creator.NewUIObject("Example Head", parentRotscale);
+            l_head.transform.AsRT().anchoredPosition = Vector2.zero;
             head = l_head.transform;
-
-            if (headEnumerator != null)
-            {
-                yield return StartCoroutine(headEnumerator);
-            }
-
-            headSpawned();
-
-            #endregion
-
-            #region Ears
-
-            var l_earbottomleft = new GameObject("Example Ear Bottom Left");
-            l_earbottomleft.transform.SetParent(l_ears.transform);
-            l_earbottomleft.transform.localScale = Vector3.one;
-
-            var l_earbottomleftRT = l_earbottomleft.AddComponent<RectTransform>();
-            l_earbottomleftRT.anchoredPosition = new Vector2(25f, 35f);
-            l_earbottomleftRT.localRotation = Quaternion.Euler(new Vector3(0f, 0f, -30f));
-            earBottomLeft = l_earbottomleft.transform;
-            {
-                var im = new GameObject("image");
-                im.transform.SetParent(l_earbottomleft.transform);
-                im.transform.localScale = Vector3.one;
-                im.transform.localRotation = Quaternion.identity;
-
-                var rt = im.AddComponent<RectTransform>();
-                im.AddComponent<CanvasRenderer>();
-                var image = im.AddComponent<Image>();
-
-                rt.anchoredPosition = Vector2.zero;
-                rt.pivot = new Vector2(0.5f, 0.2f);
-                rt.sizeDelta = new Vector2(44f, 52f);
-
-                //yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(earBottomURL, delegate (Texture2D texture2D)
-                //{
-                //	image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //}, delegate (string onError)
-                //{
-                //	StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarBottomPath}", delegate (Texture2D texture2D)
-                //	{
-                //		image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //	}, delegate (string str)
-                //	{
-
-                //	}));
-                //}));
-
-                if (downloadMode)
-                {
-                    yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(earBottomURL, delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}Had http error {1} so trying to get offline file.", className, onError);
-                        StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarBottomPath}", delegate (Texture2D texture2D)
-                        {
-                            image.sprite = SpriteManager.CreateSprite(texture2D);
-                        }, delegate (string onError)
-                        {
-                            Debug.LogErrorFormat("{0}File does not exist.", className);
-                        }));
-                    }));
-                }
-                else
-                {
-                    StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarBottomPath}", delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}File does not exist.", className);
-                    }));
-                }
-            }
-
-            var l_earbottomright = new GameObject("Example Ear Bottom Right");
-            l_earbottomright.transform.SetParent(l_ears.transform);
-            l_earbottomright.transform.localScale = Vector3.one;
-
-            var l_earbottomrightRT = l_earbottomright.AddComponent<RectTransform>();
-            l_earbottomrightRT.anchoredPosition = new Vector2(-25f, 35f);
-            l_earbottomrightRT.localRotation = Quaternion.Euler(new Vector3(0f, 0f, 30f));
-            earBottomRight = l_earbottomright.transform;
-            {
-                var im = new GameObject("image");
-                im.transform.SetParent(l_earbottomright.transform);
-                im.transform.localScale = Vector3.one;
-                im.transform.localRotation = Quaternion.identity;
-
-                var rt = im.AddComponent<RectTransform>();
-                im.AddComponent<CanvasRenderer>();
-                var image = im.AddComponent<Image>();
-
-                rt.anchoredPosition = Vector2.zero;
-                rt.pivot = new Vector2(0.5f, 0.2f);
-                rt.sizeDelta = new Vector2(44f, 52f);
-
-                //yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(earBottomURL, delegate (Texture2D texture2D)
-                //{
-                //	image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //}, delegate (string onError)
-                //{
-                //	StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarBottomPath}", delegate (Texture2D texture2D)
-                //	{
-                //		image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //	}, delegate (string str)
-                //	{
-
-                //	}));
-                //}));
-
-                if (downloadMode)
-                {
-                    yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(earBottomURL, delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}Had http error {1} so trying to get offline file.", className, onError);
-                        StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarBottomPath}", delegate (Texture2D texture2D)
-                        {
-                            image.sprite = SpriteManager.CreateSprite(texture2D);
-                        }, delegate (string onError)
-                        {
-                            Debug.LogErrorFormat("{0}File does not exist.", className);
-                        }));
-                    }));
-                }
-                else
-                {
-                    StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarBottomPath}", delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}File does not exist.", className);
-                    }));
-                }
-            }
-
-            #endregion
-
-            //Head
             {
                 var im = new GameObject("image");
                 im.transform.SetParent(l_head.transform);
@@ -1479,74 +1192,21 @@ namespace BetterLegacy.Example
 
                 rt.anchoredPosition = Vector2.zero;
 
-                //StartCoroutine(SpriteManager.LoadImageSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/Example Parts/example head.png", new Vector2Int(540, 540), callback: delegate (Sprite spr)
-                //{
-                //	image.sprite = spr;
-                //}, onError: delegate (string onError)
-                //{
-
-                //}));
-
-                //yield return StartCoroutine(SpriteManager.DownloadSprite("https://media.discordapp.net/attachments/811214540141363201/1151188682540323016/example_head.png", new Vector2Int(540, 540), callback: delegate (Sprite x)
-                //{
-                //	image.sprite = x;
-                //}));
-
-                //yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(headURL, delegate (Texture2D texture2D)
-                //{
-                //	image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //}, delegate (string onError)
-                //{
-                //	StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{HeadPath}", delegate (Texture2D texture2D)
-                //	{
-                //		image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //	}));
-                //}));
-
-                if (downloadMode)
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{HeadPath}", delegate (Texture2D texture2D)
                 {
-                    yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(headURL, delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}Had http error {1} so trying to get offline file.", className, onError);
-                        StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{HeadPath}", delegate (Texture2D texture2D)
-                        {
-                            image.sprite = SpriteManager.CreateSprite(texture2D);
-                        }, delegate (string onError)
-                        {
-                            Debug.LogErrorFormat("{0}File does not exist.", className);
-                        }));
-                    }));
-                }
-                else
+                    image.sprite = SpriteManager.CreateSprite(texture2D);
+                }, delegate (string onError)
                 {
-                    StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{HeadPath}", delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}File does not exist.", className);
-                    }));
-                }
+                    Debug.LogErrorFormat("{0}File does not exist.", className);
+                }));
 
                 var clickable = im.AddComponent<ExampleClickable>();
                 clickable.onClick = delegate (PointerEventData x)
                 {
                     if (x.button == PointerEventData.InputButton.Right)
                     {
-                        faceCanLook = false;
-                        Say("Alright, I'll get out of your way.", new List<IKeyframe<float>> { new FloatKeyframe(0f, parentX.localPosition.x, Ease.Linear) }, new List<IKeyframe<float>> { new FloatKeyframe(0f, parentY.localPosition.y + 200f, Ease.Linear) }, onComplete: delegate ()
-                        {
-                            Kill();
-                        });
-
-                        Play("Get Out", false);
-                        Move(new List<IKeyframe<float>> { new FloatKeyframe(1.5f, parentX.localPosition.x + -400f, Ease.SineInOut) }, new List<IKeyframe<float>> { new FloatKeyframe(1f, parentY.localPosition.y + 80f, Ease.SineOut), new FloatKeyframe(1.5f, parentY.localPosition.y + -1200f, Ease.CircIn) }, false, delegate ()
-                        {
-                            //Kill();
-                        });
+                        optionsActive = !optionsActive;
+                        optionsBase.gameObject.SetActive(optionsActive);
                     }
                 };
                 clickable.onDown = delegate (PointerEventData x)
@@ -1796,34 +1456,120 @@ namespace BetterLegacy.Example
                 };
             }
 
+            var l_tail = Creator.NewUIObject("Example Tail", head);
+            l_tail.transform.AsRT().anchoredPosition = Vector2.zero;
+            tail = l_tail.transform;
+            tail.SetSiblingIndex(0);
+            {
+                var im = new GameObject("image");
+                im.transform.SetParent(l_tail.transform);
+                im.transform.localScale = Vector3.one;
+
+                var rt = im.AddComponent<RectTransform>();
+                im.AddComponent<CanvasRenderer>();
+                var image = im.AddComponent<Image>();
+
+                rt.anchoredPosition = new Vector2(0f, -58f);
+                rt.sizeDelta = new Vector2(28f, 42f);
+
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{TailPath}", delegate (Texture2D texture2D)
+                {
+                    image.sprite = SpriteManager.CreateSprite(texture2D);
+                }, delegate (string onError)
+                {
+                    Debug.LogErrorFormat("{0}File does not exist.", className);
+                }));
+
+                var clickable = im.AddComponent<ExampleClickable>();
+                clickable.onClick = delegate (PointerEventData x)
+                {
+                    talking = true;
+                    Say("Please don't touch me there.", new List<IKeyframe<float>> { new FloatKeyframe(0f, parentX.localPosition.x, Ease.Linear) }, new List<IKeyframe<float>> { new FloatKeyframe(0f, parentY.localPosition.y + 200f, Ease.Linear) }, onComplete: delegate () { talking = false; });
+                    Play("Angry", false);
+                };
+            }
+
+            var l_ears = Creator.NewUIObject("Example Ears", head);
+            l_ears.transform.AsRT().anchoredPosition = Vector2.zero;
+            ears = l_ears.transform;
+            ears.SetSiblingIndex(0);
+
+            #endregion
+
+            #region Ears
+
+            var l_earbottomleft = Creator.NewUIObject("Example Ear Bottom Left", ears);
+            l_earbottomleft.transform.AsRT().anchoredPosition = new Vector2(25f, 35f);
+            l_earbottomleft.transform.localRotation = Quaternion.Euler(new Vector3(0f, 0f, -30f));
+            earBottomLeft = l_earbottomleft.transform;
+            {
+                var im = new GameObject("image");
+                im.transform.SetParent(l_earbottomleft.transform);
+                im.transform.localScale = Vector3.one;
+                im.transform.localRotation = Quaternion.identity;
+
+                var rt = im.AddComponent<RectTransform>();
+                im.AddComponent<CanvasRenderer>();
+                var image = im.AddComponent<Image>();
+
+                rt.anchoredPosition = Vector2.zero;
+                rt.pivot = new Vector2(0.5f, 0.2f);
+                rt.sizeDelta = new Vector2(44f, 52f);
+
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarBottomPath}", delegate (Texture2D texture2D)
+                {
+                    image.sprite = SpriteManager.CreateSprite(texture2D);
+                }, delegate (string onError)
+                {
+                    Debug.LogErrorFormat("{0}File does not exist.", className);
+                }));
+            }
+
+            var l_earbottomright = Creator.NewUIObject("Example Ear Bottom Right", ears);
+            l_earbottomright.transform.AsRT().anchoredPosition = new Vector2(-25f, 35f);
+            l_earbottomright.transform.localRotation = Quaternion.Euler(new Vector3(0f, 0f, 30f));
+            earBottomRight = l_earbottomright.transform;
+            {
+                var im = new GameObject("image");
+                im.transform.SetParent(l_earbottomright.transform);
+                im.transform.localScale = Vector3.one;
+                im.transform.localRotation = Quaternion.identity;
+
+                var rt = im.AddComponent<RectTransform>();
+                im.AddComponent<CanvasRenderer>();
+                var image = im.AddComponent<Image>();
+
+                rt.anchoredPosition = Vector2.zero;
+                rt.pivot = new Vector2(0.5f, 0.2f);
+                rt.sizeDelta = new Vector2(44f, 52f);
+
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarBottomPath}", delegate (Texture2D texture2D)
+                {
+                    image.sprite = SpriteManager.CreateSprite(texture2D);
+                }, delegate (string onError)
+                {
+                    Debug.LogErrorFormat("{0}File does not exist.", className);
+                }));
+            }
+
+            #endregion
+
             #region Face
 
-            var l_faceX = new GameObject("Example Face X");
-            l_faceX.transform.SetParent(l_head.transform);
-            l_faceX.transform.localScale = Vector3.one;
-
-            var l_faceXRT = l_faceX.AddComponent<RectTransform>();
-            l_faceXRT.anchoredPosition = Vector3.zero;
+            var l_faceX = Creator.NewUIObject("Example Face X", head);
+            l_faceX.transform.AsRT().anchoredPosition = Vector3.zero;
             faceX = l_faceX.transform;
 
-            var l_faceY = new GameObject("Example Face Y");
-            l_faceY.transform.SetParent(l_faceX.transform);
-            l_faceY.transform.localScale = Vector3.one;
-
-            var l_faceYRT = l_faceY.AddComponent<RectTransform>();
-            l_faceYRT.anchoredPosition = Vector3.zero;
+            var l_faceY = Creator.NewUIObject("Example Face Y", faceX);
+            l_faceY.transform.AsRT().anchoredPosition = Vector3.zero;
             faceY = l_faceY.transform;
 
             #endregion
 
             #region Eyes
 
-            var l_eyes = new GameObject("Example Eyes");
-            l_eyes.transform.SetParent(l_faceY.transform);
-            l_eyes.transform.localScale = Vector3.one;
-
-            var l_eyesRT = l_eyes.AddComponent<RectTransform>();
-            l_eyesRT.anchoredPosition = Vector2.zero;
+            var l_eyes = Creator.NewUIObject("Example Eyes", faceY);
+            l_eyes.transform.AsRT().anchoredPosition = Vector2.zero;
             eyes = l_eyes.transform;
             {
                 var im = new GameObject("image");
@@ -1837,52 +1583,17 @@ namespace BetterLegacy.Example
                 rt.anchoredPosition = Vector2.zero;
                 rt.sizeDelta = new Vector2(74f, 34f);
 
-                //yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(eyesURL, delegate (Texture2D texture2D)
-                //{
-                //	image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //}, delegate (string onError)
-                //{
-                //	StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EyesPath}", delegate (Texture2D texture2D)
-                //	{
-                //		image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //	}));
-                //}));
-
-                if (downloadMode)
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EyesPath}", delegate (Texture2D texture2D)
                 {
-                    yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(eyesURL, delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}Had http error {1} so trying to get offline file.", className, onError);
-                        StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EyesPath}", delegate (Texture2D texture2D)
-                        {
-                            image.sprite = SpriteManager.CreateSprite(texture2D);
-                        }, delegate (string onError)
-                        {
-                            Debug.LogErrorFormat("{0}File does not exist.", className);
-                        }));
-                    }));
-                }
-                else
+                    image.sprite = SpriteManager.CreateSprite(texture2D);
+                }, delegate (string onError)
                 {
-                    StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EyesPath}", delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}File does not exist.", className);
-                    }));
-                }
+                    Debug.LogErrorFormat("{0}File does not exist.", className);
+                }));
             }
 
-            var l_pupils = new GameObject("Example Pupils");
-            l_pupils.transform.SetParent(l_eyes.transform);
-            l_pupils.transform.localScale = Vector3.one;
-
-            var l_pupilsRT = l_pupils.AddComponent<RectTransform>();
-            l_pupilsRT.anchoredPosition = Vector2.zero;
+            var l_pupils = Creator.NewUIObject("Example Pupils", eyes);
+            l_pupils.transform.AsRT().anchoredPosition = Vector2.zero;
             pupils = l_pupils.transform;
             {
                 var im = new GameObject("image");
@@ -1896,52 +1607,17 @@ namespace BetterLegacy.Example
                 rt.anchoredPosition = Vector2.zero;
                 rt.sizeDelta = new Vector2(47f, 22f);
 
-                //yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(pupilsURL, delegate (Texture2D texture2D)
-                //{
-                //	image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //}, delegate (string onError)
-                //{
-                //	StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{PupilsPath}", delegate (Texture2D texture2D)
-                //	{
-                //		image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //	}));
-                //}));
-
-                if (downloadMode)
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{PupilsPath}", delegate (Texture2D texture2D)
                 {
-                    yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(pupilsURL, delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}Had http error {1} so trying to get offline file.", className, onError);
-                        StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{PupilsPath}", delegate (Texture2D texture2D)
-                        {
-                            image.sprite = SpriteManager.CreateSprite(texture2D);
-                        }, delegate (string onError)
-                        {
-                            Debug.LogErrorFormat("{0}File does not exist.", className);
-                        }));
-                    }));
-                }
-                else
+                    image.sprite = SpriteManager.CreateSprite(texture2D);
+                }, delegate (string onError)
                 {
-                    StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{PupilsPath}", delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}File does not exist.", className);
-                    }));
-                }
+                    Debug.LogErrorFormat("{0}File does not exist.", className);
+                }));
             }
 
-            var l_blink = new GameObject("Example Blink");
-            l_blink.transform.SetParent(l_eyes.transform);
-            l_blink.transform.localScale = Vector3.one;
-
-            var l_blinkRT = l_blink.AddComponent<RectTransform>();
-            l_blinkRT.anchoredPosition = Vector2.zero;
+            var l_blink = Creator.NewUIObject("Example Blink", eyes);
+            l_blink.transform.AsRT().anchoredPosition = Vector2.zero;
             blink = l_blink.transform;
             {
                 var im = new GameObject("image");
@@ -1955,56 +1631,21 @@ namespace BetterLegacy.Example
                 rt.anchoredPosition = Vector2.zero;
                 rt.sizeDelta = new Vector2(74f, 34f);
 
-                //yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(blinkURL, delegate (Texture2D texture2D)
-                //{
-                //	image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //}, delegate (string onError)
-                //{
-                //	StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{BlinkPath}", delegate (Texture2D texture2D)
-                //	{
-                //		image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //	}));
-                //}));
-
-                if (downloadMode)
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{BlinkPath}", delegate (Texture2D texture2D)
                 {
-                    yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(blinkURL, delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}Had http error {1} so trying to get offline file.", className, onError);
-                        StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{BlinkPath}", delegate (Texture2D texture2D)
-                        {
-                            image.sprite = SpriteManager.CreateSprite(texture2D);
-                        }, delegate (string onError)
-                        {
-                            Debug.LogErrorFormat("{0}File does not exist.", className);
-                        }));
-                    }));
-                }
-                else
+                    image.sprite = SpriteManager.CreateSprite(texture2D);
+                }, delegate (string onError)
                 {
-                    StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{BlinkPath}", delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}File does not exist.", className);
-                    }));
-                }
+                    Debug.LogErrorFormat("{0}File does not exist.", className);
+                }));
             }
 
             #endregion
 
             #region Snout
 
-            var l_snout = new GameObject("Example Snout");
-            l_snout.transform.SetParent(l_faceY.transform);
-            l_snout.transform.localScale = Vector3.one;
-
-            var l_snoutRT = l_snout.AddComponent<RectTransform>();
-            l_snoutRT.anchoredPosition = Vector2.zero;
+            var l_snout = Creator.NewUIObject("Example Snout", faceY);
+            l_snout.transform.AsRT().anchoredPosition = Vector2.zero;
             snout = l_snout.transform;
             {
                 var im = new GameObject("image");
@@ -2018,61 +1659,23 @@ namespace BetterLegacy.Example
                 rt.anchoredPosition = new Vector2(0f, -31f);
                 rt.sizeDelta = new Vector2(60f, 31f);
 
-                //yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(snoutURL, delegate (Texture2D texture2D)
-                //{
-                //	image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //}, delegate (string onError)
-                //{
-                //	StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{SnoutPath}", delegate (Texture2D texture2D)
-                //	{
-                //		image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //	}));
-                //}));
-
-                if (downloadMode)
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{SnoutPath}", delegate (Texture2D texture2D)
                 {
-                    yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(snoutURL, delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}Had http error {1} so trying to get offline file.", className, onError);
-                        StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{SnoutPath}", delegate (Texture2D texture2D)
-                        {
-                            image.sprite = SpriteManager.CreateSprite(texture2D);
-                        }, delegate (string onError)
-                        {
-                            Debug.LogErrorFormat("{0}File does not exist.", className);
-                        }));
-                    }));
-                }
-                else
+                    image.sprite = SpriteManager.CreateSprite(texture2D);
+                }, delegate (string onError)
                 {
-                    StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{SnoutPath}", delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}File does not exist.", className);
-                    }));
-                }
+                    Debug.LogErrorFormat("{0}File does not exist.", className);
+                }));
             }
 
-            var l_mouthBase = new GameObject("Example Mouth Base");
-            l_mouthBase.transform.SetParent(l_snout.transform);
-            l_mouthBase.transform.localScale = Vector3.one;
-
-            var l_mouthBaseRT = l_mouthBase.AddComponent<RectTransform>();
-            l_mouthBaseRT.anchoredPosition = new Vector2(0f, -30f);
+            var l_mouthBase = Creator.NewUIObject("Example Mouth Base", snout);
+            l_mouthBase.transform.AsRT().anchoredPosition = new Vector2(0f, -30f);
             mouthBase = l_mouthBase.transform;
 
-            var l_mouthUpper = new GameObject("Example Mouth Upper");
-            l_mouthUpper.transform.SetParent(l_mouthBase.transform);
+            var l_mouthUpper = Creator.NewUIObject("Example Mouth Upper", mouthBase);
             l_mouthUpper.transform.localScale = new Vector3(1f, 0.15f, 1f);
             l_mouthUpper.transform.localRotation = Quaternion.Euler(new Vector3(0f, 0f, 180f));
-
-            var l_mouthUpperRT = l_mouthUpper.AddComponent<RectTransform>();
-            l_mouthUpperRT.anchoredPosition = Vector3.zero;
+            l_mouthUpper.transform.AsRT().anchoredPosition = Vector3.zero;
             mouthUpper = l_mouthUpper.transform;
             {
                 var im = new GameObject("image");
@@ -2088,52 +1691,18 @@ namespace BetterLegacy.Example
                 rt.pivot = new Vector2(0.5f, 1f);
                 rt.sizeDelta = new Vector2(32f, 16f);
 
-                //yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(mouthURL, delegate (Texture2D texture2D)
-                //{
-                //	image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //}, delegate (string onError)
-                //{
-                //	StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{MouthPath}", delegate (Texture2D texture2D)
-                //	{
-                //		image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //	}));
-                //}));
-
-                if (downloadMode)
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{MouthPath}", delegate (Texture2D texture2D)
                 {
-                    yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(mouthURL, delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}Had http error {1} so trying to get offline file.", className, onError);
-                        StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{MouthPath}", delegate (Texture2D texture2D)
-                        {
-                            image.sprite = SpriteManager.CreateSprite(texture2D);
-                        }, delegate (string onError)
-                        {
-                            Debug.LogErrorFormat("{0}File does not exist.", className);
-                        }));
-                    }));
-                }
-                else
+                    image.sprite = SpriteManager.CreateSprite(texture2D);
+                }, delegate (string onError)
                 {
-                    StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{MouthPath}", delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}File does not exist.", className);
-                    }));
-                }
+                    Debug.LogErrorFormat("{0}File does not exist.", className);
+                }));
             }
 
-            var l_mouthLower = new GameObject("Example Mouth Lower");
-            l_mouthLower.transform.SetParent(l_mouthBase.transform);
+            var l_mouthLower = Creator.NewUIObject("Example Mouth Lower", mouthBase);
             l_mouthLower.transform.localScale = new Vector3(1f, 0.5f);
-
-            var l_mouthLowerRT = l_mouthLower.AddComponent<RectTransform>();
-            l_mouthLowerRT.anchoredPosition = Vector3.zero;
+            l_mouthLower.transform.AsRT().anchoredPosition = Vector3.zero;
             mouthLower = l_mouthLower.transform;
             {
                 var im = new GameObject("image");
@@ -2149,52 +1718,17 @@ namespace BetterLegacy.Example
                 rt.pivot = new Vector2(0.5f, 1f);
                 rt.sizeDelta = new Vector2(32f, 16f);
 
-                //yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(mouthURL, delegate (Texture2D texture2D)
-                //{
-                //	image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //}, delegate (string onError)
-                //{
-                //	StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{MouthPath}", delegate (Texture2D texture2D)
-                //	{
-                //		image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //	}));
-                //}));
-
-                if (downloadMode)
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{MouthPath}", delegate (Texture2D texture2D)
                 {
-                    yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(mouthURL, delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}Had http error {1} so trying to get offline file.", className, onError);
-                        StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{MouthPath}", delegate (Texture2D texture2D)
-                        {
-                            image.sprite = SpriteManager.CreateSprite(texture2D);
-                        }, delegate (string onError)
-                        {
-                            Debug.LogErrorFormat("{0}File does not exist.", className);
-                        }));
-                    }));
-                }
-                else
+                    image.sprite = SpriteManager.CreateSprite(texture2D);
+                }, delegate (string onError)
                 {
-                    StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{MouthPath}", delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}File does not exist.", className);
-                    }));
-                }
+                    Debug.LogErrorFormat("{0}File does not exist.", className);
+                }));
             }
 
-            var l_lips = new GameObject("Example Lips");
-            l_lips.transform.SetParent(l_mouthBase.transform);
-            l_lips.transform.localScale = Vector3.one;
-
-            var l_lipsRT = l_lips.AddComponent<RectTransform>();
-            l_lipsRT.anchoredPosition = Vector3.zero;
+            var l_lips = Creator.NewUIObject("Example Lips", mouthBase);
+            l_lips.transform.AsRT().anchoredPosition = Vector3.zero;
             lips = l_lips.transform;
             {
                 var im = new GameObject("image");
@@ -2210,52 +1744,17 @@ namespace BetterLegacy.Example
                 rt.pivot = new Vector2(0.5f, 1f);
                 rt.sizeDelta = new Vector2(32f, 8f);
 
-                //yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(lipsURL, delegate (Texture2D texture2D)
-                //{
-                //	image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //}, delegate (string onError)
-                //{
-                //	StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{LipsPath}", delegate (Texture2D texture2D)
-                //	{
-                //		image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //	}));
-                //}));
-
-                if (downloadMode)
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{LipsPath}", delegate (Texture2D texture2D)
                 {
-                    yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(lipsURL, delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}Had http error {1} so trying to get offline file.", className, onError);
-                        StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{LipsPath}", delegate (Texture2D texture2D)
-                        {
-                            image.sprite = SpriteManager.CreateSprite(texture2D);
-                        }, delegate (string onError)
-                        {
-                            Debug.LogErrorFormat("{0}File does not exist.", className);
-                        }));
-                    }));
-                }
-                else
+                    image.sprite = SpriteManager.CreateSprite(texture2D);
+                }, delegate (string onError)
                 {
-                    StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{LipsPath}", delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}File does not exist.", className);
-                    }));
-                }
+                    Debug.LogErrorFormat("{0}File does not exist.", className);
+                }));
             }
 
-            var l_nose = new GameObject("Example Nose");
-            l_nose.transform.SetParent(l_snout.transform);
-            l_nose.transform.localScale = Vector3.one;
-
-            var l_noseRT = l_nose.AddComponent<RectTransform>();
-            l_noseRT.anchoredPosition = new Vector2(0f, -20f);
+            var l_nose = Creator.NewUIObject("Example Nose", snout);
+            l_nose.transform.AsRT().anchoredPosition = new Vector2(0f, -20f);
             nose = l_nose.transform;
             {
                 var im = new GameObject("image");
@@ -2269,64 +1768,25 @@ namespace BetterLegacy.Example
                 rt.anchoredPosition = new Vector2(0f, 0f);
                 rt.sizeDelta = new Vector2(22f, 8f);
 
-                //yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(noseURL, delegate (Texture2D texture2D)
-                //{
-                //	image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //}, delegate (string onError)
-                //{
-                //	StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{NosePath}", delegate (Texture2D texture2D)
-                //	{
-                //		image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //	}));
-                //}));
-
-                if (downloadMode)
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{NosePath}", delegate (Texture2D texture2D)
                 {
-                    yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(noseURL, delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}Had http error {1} so trying to get offline file.", className, onError);
-                        StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{NosePath}", delegate (Texture2D texture2D)
-                        {
-                            image.sprite = SpriteManager.CreateSprite(texture2D);
-                        }, delegate (string onError)
-                        {
-                            Debug.LogErrorFormat("{0}File does not exist.", className);
-                        }));
-                    }));
-                }
-                else
+                    image.sprite = SpriteManager.CreateSprite(texture2D);
+                }, delegate (string onError)
                 {
-                    StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{NosePath}", delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}File does not exist.", className);
-                    }));
-                }
+                    Debug.LogErrorFormat("{0}File does not exist.", className);
+                }));
             }
 
             #endregion
 
             #region Brows
 
-            var l_browBase = new GameObject("Example Brow Base");
-            l_browBase.transform.SetParent(l_faceY.transform);
-            l_browBase.transform.localScale = Vector3.one;
-
-            var l_browBaseRT = l_browBase.AddComponent<RectTransform>();
-            l_browBaseRT.anchoredPosition = new Vector2(0f, 30f);
+            var l_browBase = Creator.NewUIObject("Example Brow Base", faceY);
+            l_browBase.transform.AsRT().anchoredPosition = new Vector2(0f, 30f);
             browBase = l_browBase.transform;
 
-            var l_browLeft = new GameObject("Example Brow Left");
-            l_browLeft.transform.SetParent(l_browBase.transform);
-            l_browLeft.transform.localScale = Vector3.one;
-
-            var l_browLeftRT = l_browLeft.AddComponent<RectTransform>();
-            l_browLeftRT.anchoredPosition = new Vector2(22f, 0f);
+            var l_browLeft = Creator.NewUIObject("Example Brow Left", browBase);
+            l_browLeft.transform.AsRT().anchoredPosition = new Vector2(22f, 0f);
             browLeft = l_browLeft.transform;
             {
                 var im = new GameObject("image");
@@ -2341,52 +1801,17 @@ namespace BetterLegacy.Example
                 rt.pivot = new Vector2(1.7f, 0.5f);
                 rt.sizeDelta = new Vector2(20f, 6f);
 
-                //yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(browsURL, delegate (Texture2D texture2D)
-                //{
-                //	image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //}, delegate (string onError)
-                //{
-                //	StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{BrowsPath}", delegate (Texture2D texture2D)
-                //	{
-                //		image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //	}));
-                //}));
-
-                if (downloadMode)
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{BrowsPath}", delegate (Texture2D texture2D)
                 {
-                    yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(browsURL, delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}Had http error {1} so trying to get offline file.", className, onError);
-                        StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{BrowsPath}", delegate (Texture2D texture2D)
-                        {
-                            image.sprite = SpriteManager.CreateSprite(texture2D);
-                        }, delegate (string onError)
-                        {
-                            Debug.LogErrorFormat("{0}File does not exist.", className);
-                        }));
-                    }));
-                }
-                else
+                    image.sprite = SpriteManager.CreateSprite(texture2D);
+                }, delegate (string onError)
                 {
-                    StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{BrowsPath}", delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}File does not exist.", className);
-                    }));
-                }
+                    Debug.LogErrorFormat("{0}File does not exist.", className);
+                }));
             }
 
-            var l_browRight = new GameObject("Example Brow Right");
-            l_browRight.transform.SetParent(l_browBase.transform);
-            l_browRight.transform.localScale = Vector3.one;
-
-            var l_browRightRT = l_browRight.AddComponent<RectTransform>();
-            l_browRightRT.anchoredPosition = new Vector2(-22f, 0f);
+            var l_browRight = Creator.NewUIObject("Example Brow Right", browBase);
+            l_browRight.transform.AsRT().anchoredPosition = new Vector2(-22f, 0f);
             browRight = l_browRight.transform;
             {
                 var im = new GameObject("image");
@@ -2401,57 +1826,22 @@ namespace BetterLegacy.Example
                 rt.pivot = new Vector2(-0.7f, 0.5f);
                 rt.sizeDelta = new Vector2(20f, 6f);
 
-                //yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(browsURL, delegate (Texture2D texture2D)
-                //{
-                //	image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //}, delegate (string onError)
-                //{
-                //	StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{BrowsPath}", delegate (Texture2D texture2D)
-                //	{
-                //		image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //	}));
-                //}));
-
-                if (downloadMode)
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{BrowsPath}", delegate (Texture2D texture2D)
                 {
-                    yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(browsURL, delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}Had http error {1} so trying to get offline file.", className, onError);
-                        StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{BrowsPath}", delegate (Texture2D texture2D)
-                        {
-                            image.sprite = SpriteManager.CreateSprite(texture2D);
-                        }, delegate (string onError)
-                        {
-                            Debug.LogErrorFormat("{0}File does not exist.", className);
-                        }));
-                    }));
-                }
-                else
+                    image.sprite = SpriteManager.CreateSprite(texture2D);
+                }, delegate (string onError)
                 {
-                    StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{BrowsPath}", delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}File does not exist.", className);
-                    }));
-                }
+                    Debug.LogErrorFormat("{0}File does not exist.", className);
+                }));
             }
 
             #endregion
 
             #region Top Ears
 
-            var l_earTopLeft = new GameObject("Example Ear Top Left");
-            l_earTopLeft.transform.SetParent(l_earbottomleft.transform);
-            l_earTopLeft.transform.localScale = Vector3.one;
-
-            var l_earTopLeftRT = l_earTopLeft.AddComponent<RectTransform>();
-            l_earTopLeftRT.anchoredPosition = new Vector2(0f, 0f);
-            l_earTopLeftRT.localRotation = Quaternion.identity;
+            var l_earTopLeft = Creator.NewUIObject("Example Ear Top Left", earBottomLeft);
+            l_earTopLeft.transform.AsRT().anchoredPosition = Vector2.zero;
+            l_earTopLeft.transform.localRotation = Quaternion.identity;
             earTopLeft = l_earTopLeft.transform;
             {
                 var im = new GameObject("image");
@@ -2467,44 +1857,13 @@ namespace BetterLegacy.Example
                 rt.pivot = new Vector2(0.5f, 0.275f);
                 rt.sizeDelta = new Vector2(44f, 80f);
 
-                //yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(earTopURL, delegate (Texture2D texture2D)
-                //{
-                //	image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //}, delegate (string onError)
-                //{
-                //	StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarTopPath}", delegate (Texture2D texture2D)
-                //	{
-                //		image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //	}));
-                //}));
-
-                if (downloadMode)
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarTopPath}", delegate (Texture2D texture2D)
                 {
-                    yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(earTopURL, delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}Had http error {1} so trying to get offline file.", className, onError);
-                        StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarTopPath}", delegate (Texture2D texture2D)
-                        {
-                            image.sprite = SpriteManager.CreateSprite(texture2D);
-                        }, delegate (string onError)
-                        {
-                            Debug.LogErrorFormat("{0}File does not exist.", className);
-                        }));
-                    }));
-                }
-                else
+                    image.sprite = SpriteManager.CreateSprite(texture2D);
+                }, delegate (string onError)
                 {
-                    StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarTopPath}", delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}File does not exist.", className);
-                    }));
-                }
+                    Debug.LogErrorFormat("{0}File does not exist.", className);
+                }));
 
                 var clickable = im.AddComponent<ExampleClickable>();
                 clickable.onClick = delegate (PointerEventData x)
@@ -2537,13 +1896,9 @@ namespace BetterLegacy.Example
                 };
             }
 
-            var l_earTopRight = new GameObject("Example Ear Top Right");
-            l_earTopRight.transform.SetParent(l_earbottomright.transform);
-            l_earTopRight.transform.localScale = Vector3.one;
-
-            var l_earTopRightRT = l_earTopRight.AddComponent<RectTransform>();
-            l_earTopRightRT.anchoredPosition = new Vector2(0f, 0f);
-            l_earTopRightRT.localRotation = Quaternion.identity;
+            var l_earTopRight = Creator.NewUIObject("Example Ear Top Right", earBottomRight);
+            l_earTopRight.transform.AsRT().anchoredPosition = Vector2.zero;
+            l_earTopRight.transform.localRotation = Quaternion.identity;
             earTopRight = l_earTopRight.transform;
             {
                 var im = new GameObject("image");
@@ -2559,44 +1914,13 @@ namespace BetterLegacy.Example
                 rt.pivot = new Vector2(0.5f, 0.275f);
                 rt.sizeDelta = new Vector2(44f, 80f);
 
-                //yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(earTopURL, delegate (Texture2D texture2D)
-                //{
-                //	image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //}, delegate (string onError)
-                //{
-                //	StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarTopPath}", delegate (Texture2D texture2D)
-                //	{
-                //		image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //	}));
-                //}));
-
-                if (downloadMode)
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarTopPath}", delegate (Texture2D texture2D)
                 {
-                    yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(earTopURL, delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}Had http error {1} so trying to get offline file.", className, onError);
-                        StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarTopPath}", delegate (Texture2D texture2D)
-                        {
-                            image.sprite = SpriteManager.CreateSprite(texture2D);
-                        }, delegate (string onError)
-                        {
-                            Debug.LogErrorFormat("{0}File does not exist.", className);
-                        }));
-                    }));
-                }
-                else
+                    image.sprite = SpriteManager.CreateSprite(texture2D);
+                }, delegate (string onError)
                 {
-                    StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarTopPath}", delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}File does not exist.", className);
-                    }));
-                }
+                    Debug.LogErrorFormat("{0}File does not exist.", className);
+                }));
 
                 var clickable = im.AddComponent<ExampleClickable>();
                 clickable.onClick = delegate (PointerEventData x)
@@ -2633,20 +1957,12 @@ namespace BetterLegacy.Example
 
             #region Hands
 
-            var l_handsBase = new GameObject("Example Hands Base");
-            l_handsBase.transform.SetParent(rotscaleparent.transform);
-            l_handsBase.transform.localScale = Vector3.one;
-
-            var l_handsBaseRT = l_handsBase.AddComponent<RectTransform>();
-            l_handsBaseRT.anchoredPosition = Vector2.zero;
+            var l_handsBase = Creator.NewUIObject("Example Hands Base", parentRotscale);
+            l_handsBase.transform.AsRT().anchoredPosition = Vector2.zero;
             handsBase = l_handsBase.transform;
 
-            var l_handLeft = new GameObject("Example Hand Left");
-            l_handLeft.transform.SetParent(l_handsBase.transform);
-            l_handLeft.transform.localScale = Vector3.one;
-
-            var l_handLeftRT = l_handLeft.AddComponent<RectTransform>();
-            l_handLeftRT.anchoredPosition = new Vector2(40f, 0f);
+            var l_handLeft = Creator.NewUIObject("Example Hand Left", handsBase);
+            l_handLeft.transform.AsRT().anchoredPosition = new Vector2(40f, 0f);
             handLeft = l_handLeft.transform;
             {
                 var im = new GameObject("image");
@@ -2662,38 +1978,13 @@ namespace BetterLegacy.Example
                 rt.pivot = new Vector2(0.5f, 0.5f);
                 rt.sizeDelta = new Vector2(42f, 42f);
 
-                //yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(handsURL, delegate (Texture2D texture2D)
-                //{
-                //	image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //}));
-
-                if (downloadMode)
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{HandsPath}", delegate (Texture2D texture2D)
                 {
-                    yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(handsURL, delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}Had http error {1} so trying to get offline file.", className, onError);
-                        StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{HandsPath}", delegate (Texture2D texture2D)
-                        {
-                            image.sprite = SpriteManager.CreateSprite(texture2D);
-                        }, delegate (string onError)
-                        {
-                            Debug.LogErrorFormat("{0}File does not exist.", className);
-                        }));
-                    }));
-                }
-                else
+                    image.sprite = SpriteManager.CreateSprite(texture2D);
+                }, delegate (string onError)
                 {
-                    StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{HandsPath}", delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}File does not exist.", className);
-                    }));
-                }
+                    Debug.LogErrorFormat("{0}File does not exist.", className);
+                }));
 
                 var clickable = im.AddComponent<ExampleClickable>();
                 clickable.onDown = delegate (PointerEventData x)
@@ -2720,12 +2011,8 @@ namespace BetterLegacy.Example
                 };
             }
 
-            var l_handRight = new GameObject("Example Hand Right");
-            l_handRight.transform.SetParent(l_handsBase.transform);
-            l_handRight.transform.localScale = Vector3.one;
-
-            var l_handRightRT = l_handRight.AddComponent<RectTransform>();
-            l_handRightRT.anchoredPosition = new Vector2(-40f, 0f);
+            var l_handRight = Creator.NewUIObject("Example Hand Right", handsBase);
+            l_handRight.transform.AsRT().anchoredPosition = new Vector2(-40f, 0f);
             handRight = l_handRight.transform;
             {
                 var im = new GameObject("image");
@@ -2741,38 +2028,13 @@ namespace BetterLegacy.Example
                 rt.pivot = new Vector2(0.5f, 0.5f);
                 rt.sizeDelta = new Vector2(42f, 42f);
 
-                //yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(handsURL, delegate (Texture2D texture2D)
-                //{
-                //	image.sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f), 100f);
-                //}));
-
-                if (downloadMode)
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{HandsPath}", delegate (Texture2D texture2D)
                 {
-                    yield return StartCoroutine(AlephNetworkManager.DownloadImageTexture(handsURL, delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}Had http error {1} so trying to get offline file.", className, onError);
-                        StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{HandsPath}", delegate (Texture2D texture2D)
-                        {
-                            image.sprite = SpriteManager.CreateSprite(texture2D);
-                        }, delegate (string onError)
-                        {
-                            Debug.LogErrorFormat("{0}File does not exist.", className);
-                        }));
-                    }));
-                }
-                else
+                    image.sprite = SpriteManager.CreateSprite(texture2D);
+                }, delegate (string onError)
                 {
-                    StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{HandsPath}", delegate (Texture2D texture2D)
-                    {
-                        image.sprite = SpriteManager.CreateSprite(texture2D);
-                    }, delegate (string onError)
-                    {
-                        Debug.LogErrorFormat("{0}File does not exist.", className);
-                    }));
-                }
+                    Debug.LogErrorFormat("{0}File does not exist.", className);
+                }));
 
                 var clickable = im.AddComponent<ExampleClickable>();
                 clickable.onDown = delegate (PointerEventData x)
@@ -2800,13 +2062,97 @@ namespace BetterLegacy.Example
 
             #endregion
 
+            yield return StartCoroutine(SpawnOptions());
             yield return StartCoroutine(SpawnChatter());
             yield return StartCoroutine(SetupAnimations());
             yield return StartCoroutine(SpawnDialogue());
 
+            onSpawnComplete?.Invoke();
             spawning = false;
 
             yield break;
+        }
+
+        IEnumerator SpawnOptions()
+        {
+            var optionsBase = Creator.NewUIObject("Options Base", baseCanvas.transform);
+
+            this.optionsBase = optionsBase.transform;
+            optionsBase.SetActive(optionsActive);
+
+            var options = Creator.NewUIObject("Options", optionsBase.transform);
+
+            var optionsImage = options.AddComponent<Image>();
+            optionsImage.rectTransform.anchoredPosition = Vector2.zero;
+            optionsImage.rectTransform.sizeDelta = new Vector2(200f, 250f);
+            EditorThemeManager.ApplyGraphic(optionsImage, ThemeGroup.Background_2, true);
+
+            var optionsLayout = Creator.NewUIObject("Layout", options.transform);
+            this.optionsLayout = optionsLayout.transform;
+            var optionsVLG = optionsLayout.AddComponent<VerticalLayoutGroup>();
+            optionsVLG.childControlHeight = false;
+            optionsVLG.childForceExpandHeight = false;
+            optionsVLG.spacing = 4f;
+            UIManager.SetRectTransform(optionsLayout.transform.AsRT(), Vector2.zero, new Vector2(0.95f, 0.95f), new Vector2(0.05f, 0.05f), new Vector2(0.5f, 0.5f), Vector2.zero);
+
+            while (!FontManager.inst || !FontManager.inst.loadedFiles)
+                yield return null;
+
+            try
+            {
+                SetupOptionButton("Chat", delegate ()
+                {
+                    if (!chatterBase.gameObject.activeSelf)
+                        Say("What do you want to talk about?");
+
+                    chatterBase.gameObject.SetActive(!chatterBase.gameObject.activeSelf);
+                });
+                SetupOptionButton("Cya later", delegate ()
+                {
+                    faceCanLook = false;
+                    Say("Alright, I'll get out of your way.", new List<IKeyframe<float>> { new FloatKeyframe(0f, parentX.localPosition.x, Ease.Linear) }, new List<IKeyframe<float>> { new FloatKeyframe(0f, parentY.localPosition.y + 200f, Ease.Linear) }, onComplete: delegate ()
+                    {
+                        Kill();
+                    });
+
+                    Play("Get Out", false);
+                    Move(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(1.5f, parentX.localPosition.x + -400f, Ease.SineInOut)
+                    }, new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(1f, parentY.localPosition.y + 80f, Ease.SineOut),
+                        new FloatKeyframe(1.5f, parentY.localPosition.y + -1200f, Ease.CircIn)
+                    });
+                });
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Had an error in generating buttons {ex}");
+            }
+
+            yield break;
+        }
+
+        public void SetupOptionButton(string name, UnityAction action)
+        {
+            var buttonObject = Creator.NewUIObject(name, optionsLayout);
+            var buttonImage = buttonObject.AddComponent<Image>();
+            buttonImage.rectTransform.sizeDelta = new Vector2(180f, 32f);
+
+            var button = buttonObject.AddComponent<Button>();
+            button.onClick.AddListener(action);
+            EditorThemeManager.ApplySelectable(button, ThemeGroup.Function_2);
+
+            var textObject = Creator.NewUIObject("Text", buttonObject.transform);
+            var text = textObject.AddComponent<Text>();
+            text.alignment = TextAnchor.MiddleCenter;
+            text.fontSize = 16;
+            text.font = FontManager.inst.DefaultFont;
+            text.text = name;
+            UIManager.SetRectTransform(text.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
+
+            EditorThemeManager.ApplyGraphic(text, ThemeGroup.Function_2_Text);
         }
 
         IEnumerator SpawnChatter()
@@ -2875,8 +2221,6 @@ namespace BetterLegacy.Example
             text.color = new Color(0.06f, 0.06f, 0.06f, 1f);
             this.dialogueText = text;
 
-            //this.dialogueBase.localPosition = new Vector3(-800f, -55f, 0f);
-
             talking = true;
             Play("Wave", onComplete: delegate ()
             {
@@ -2887,8 +2231,6 @@ namespace BetterLegacy.Example
             });
 
             Say("Hello, I am Example and this is a test!");
-
-            onSpawnComplete();
 
             Debug.Log($"{className}Spawned!");
 
