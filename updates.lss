@@ -1,0 +1,8 @@
+1.0.0 > [???]
+- Merged all the PA Legacy mods into one new mod called Better Legacy! This merge should make it clear that this version of the game is now a fully different version of PA.
+- Modifier updating now occurs before event updating and object updating.
+- Fixed up loadlevel command and added listlevels::path to interface.
+- Added the glitch effects Analog Glitch and Digital Glitch. While this was added to EventsCore, I added it to BetterLegacy first.
+- Example is now more integrated with the mods than before the merge.
+- Reworked a TON of code to be more readable for anyone interested in helping the modding effort.
+- Optimized a ton of stuff compared to the unmerged versions of the mods.
