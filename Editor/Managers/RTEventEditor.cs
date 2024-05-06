@@ -3332,10 +3332,10 @@ namespace BetterLegacy.Editor.Managers
                     if (i >= num - EventLimit && i < num)
                         text.text = EventTypes[i];
                     else if (i < num)
-                        text.text = NoEventLabel;
+                        text.text = layer == 69 ? "lol" : NoEventLabel;
                 }
                 else
-                    text.text = NoEventLabel;
+                    text.text = layer == 69 ? "lol" : NoEventLabel;
 
                 text.alignment = renderLeft ? TextAnchor.MiddleLeft : TextAnchor.MiddleRight;
 
