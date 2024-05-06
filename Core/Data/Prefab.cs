@@ -30,7 +30,7 @@ namespace BetterLegacy.Core.Data
             for (int i = 0; i < objects.Count; i++)
                 objects[i].StartTime -= num;
             for (int i = 0; i < prefabObjects.Count; i++)
-                prefabObjects[i].StartTime -= num;
+                this.prefabObjects[i].StartTime -= num;
         }
 
         public string filePath;
