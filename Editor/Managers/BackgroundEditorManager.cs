@@ -395,7 +395,6 @@ namespace BetterLegacy.Editor.Managers
                 var etY = reactiveY.gameObject.AddComponent<EventTrigger>();
 
                 etY.triggers.Add(TriggerHelper.ScrollDelta(reactiveY, amount, multiply, multi: true));
-                etY.triggers.Add(TriggerHelper.ScrollDelta(reactiveY, amount, multiply, multi: true));
                 etY.triggers.Add(TriggerHelper.ScrollDeltaVector2(reactiveX, reactiveY, amount, multiply));
             }
 
