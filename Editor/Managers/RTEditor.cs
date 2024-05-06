@@ -1682,7 +1682,7 @@ namespace BetterLegacy.Editor.Managers
         {
             if (isOverMainTimeline && layerType == LayerType.Objects)
             {
-                PasteObject(_offsetTime, _regen);
+                ObjectEditor.inst.PasteObject(_offsetTime, _regen);
             }
 
             if (isOverMainTimeline && layerType == LayerType.Events)
@@ -1729,31 +1729,6 @@ namespace BetterLegacy.Editor.Managers
                 BackgroundEditor.inst.PasteBackground();
                 EditorManager.inst.DisplayNotification("Pasted Background Object", 1f, EditorManager.NotificationType.Success);
             }
-        }
-
-        public void PasteObject(float _offsetTime = 0f, bool _regen = true)
-        {
-            if (!ObjEditor.inst.hasCopiedObject || ObjEditor.inst.beatmapObjCopy == null || (ObjEditor.inst.beatmapObjCopy.prefabObjects.Count <= 0 && ObjEditor.inst.beatmapObjCopy.objects.Count <= 0))
-            {
-                EditorManager.inst.DisplayNotification("No copied object yet!", 1f, EditorManager.NotificationType.Error, false);
-                return;
-            }
-
-            ObjectEditor.inst.DeselectAllObjects();
-            EditorManager.inst.DisplayNotification("Pasting objects, please wait.", 1f, EditorManager.NotificationType.Success);
-
-            Prefab pr = null;
-
-            if (RTFile.FileExists(Application.persistentDataPath + "/copied_objects.lsp"))
-            {
-                var jn = JSON.Parse(RTFile.ReadFromFile(Application.persistentDataPath + "/copied_objects.lsp"));
-
-                pr = Prefab.Parse(jn);
-
-                ObjEditor.inst.hasCopiedObject = true;
-            }
-
-            StartCoroutine(ObjectEditor.inst.AddPrefabExpandedToLevel(pr ?? (Prefab)ObjEditor.inst.beatmapObjCopy, true, _offsetTime, false, _regen));
         }
 
         public void Delete()
