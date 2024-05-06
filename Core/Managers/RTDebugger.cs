@@ -56,10 +56,15 @@ namespace BetterLegacy.Core.Managers
 
         public static TextMeshProUGUI Info { get; set; }
 
+        public static SelectGUI InfoSelection { get; set; }
+
         public static bool init = false;
 
         public static void Init()
         {
+            if (init)
+                return;
+
             var inter = new GameObject("Debug Info");
             UnityEngine.Object.DontDestroyOnLoad(inter);
             inter.transform.localScale = Vector3.one * CoreHelper.ScreenScale;
@@ -97,7 +102,15 @@ namespace BetterLegacy.Core.Managers
 
             FPS = info.AddComponent<FPSCounter>();
 
-            UIManager.SetRectTransform(Info.rectTransform, new Vector2(-960f, 540f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 1f), new Vector2(800f, 200f));
+            UIManager.SetRectTransform(Info.rectTransform, CoreConfig.Instance.DebugPosition.Value, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 1f), new Vector2(800f, 200f));
+
+            InfoSelection = info.AddComponent<SelectGUI>();
+            InfoSelection.OverrideDrag = true;
+            InfoSelection.draggingAction = delegate (Vector2 vector2)
+            {
+                CoreConfig.Instance.DebugPosition.Value = vector2;
+            };
+            InfoSelection.target = Info.rectTransform;
 
             init = true;
         }
@@ -110,6 +123,10 @@ namespace BetterLegacy.Core.Managers
             Info.gameObject.SetActive(CoreConfig.Instance.DebugInfo.Value && GameManager.inst);
 
             if (CoreConfig.Instance.DebugInfo.Value && GameManager.inst && GameManager.inst.gameState == GameManager.State.Playing)
+            {
+                if (!InfoSelection.dragging)
+                    Info.transform.position = CoreConfig.Instance.DebugPosition.Value;
+
                 Info.text = $"<b>FPS:</b> {FPS.Text}<br>" +
                             $"<b>Beatmap Objects Alive:</b> {BeatmapObjectAliveCount()} / {GameData.Current.beatmapObjects.Count}<br>" +
                             $"<b>Main Camera Position: {Camera.main.transform.position}<br>" +
@@ -117,6 +134,7 @@ namespace BetterLegacy.Core.Managers
                             $"<b>Main Camera Rotation: {Camera.main.transform.rotation.eulerAngles}<br>" +
                             $"<b>BG Camera Position: {EventManager.inst.camPer.transform.position}<br>" +
                             $"<b>BG Camera Rotation: {EventManager.inst.camPer.transform.rotation.eulerAngles}<br>";
+            }
         }
     }
 }

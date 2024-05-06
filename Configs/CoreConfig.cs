@@ -32,6 +32,7 @@ namespace BetterLegacy.Configs
             DebugInfo = Config.Bind("Core - Debugging", "Show Debug Info", false, "Shows a helpful info overlay with some information about the current gamestate.");
             DebugInfoStartup = Config.Bind("Core - Debugging", "Create Debug Info", false, "If the Debug Info menu should be created on game start. Requires restart to have this option take affect.");
             DebugInfoToggleKey = Config.Bind("Core - Debugging", "Show Debug Info Toggle Key", KeyCode.F6, "Shows a helpful info overlay with some information about the current gamestate.");
+            DebugPosition = Config.Bind("Core - Debugging", "Debug Info Position", new Vector2(-960f, 540f), "The position the Debug Info menu is at.");
             NotifyREPL = Config.Bind("Core - Debugging", "Notify REPL", false, "If in editor, code ran will have their results be notified.");
 
             #endregion
@@ -130,6 +131,11 @@ namespace BetterLegacy.Configs
         /// Shows a helpful info overlay with some information about the current gamestate.
         /// </summary>
         public ConfigEntry<KeyCode> DebugInfoToggleKey { get; set; }
+
+        /// <summary>
+        /// The position the Debug Info menu is at.
+        /// </summary>
+        public ConfigEntry<Vector2> DebugPosition { get; set; }
 
         /// <summary>
         /// If in editor, code ran will have their results be notified.
@@ -425,8 +431,11 @@ namespace BetterLegacy.Configs
             ControllerRumble.SettingChanged += DefaultSettingsChanged;
             LDM.SettingChanged += LDMChanged;
             DiscordShowLevel.SettingChanged += DiscordChanged;
+            DebugInfoStartup.SettingChanged += DebugInfoChanged;
             Config.SettingChanged += new EventHandler<SettingChangedEventArgs>(UpdateSettings);
         }
+
+        void DebugInfoChanged(object sender, EventArgs e) => RTDebugger.Init();
 
         #region Settings Changed
 
