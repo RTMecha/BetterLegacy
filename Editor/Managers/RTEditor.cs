@@ -6374,14 +6374,109 @@ namespace BetterLegacy.Editor.Managers
 
             GenerateDocument("Credits", "All the people who helped the mod development in some way.", new List<Document.Element>
             {
+                new Document.Element("Reimnop's Catalyst (PA object and animation optimization)", Document.Element.Type.Text),
+                new Document.Element("<b>Source code</b>:\nhttps://github.com/Reimnop/Catalyst", Document.Element.Type.Text)
+                {
+                    Function = delegate ()
+                    {
+                        Application.OpenURL("https://github.com/Reimnop/Catalyst");
+                    }
+                },
+
+                new Document.Element("", Document.Element.Type.Text),
+                new Document.Element("Keijiro Takahashi's KinoGlitch (AnalogGlitch and DigitalGlitch events)", Document.Element.Type.Text),
+                new Document.Element("<b>Source code</b>:\nhttps://github.com/keijiro/KinoGlitch", Document.Element.Type.Text)
+                {
+                    Function = delegate ()
+                    {
+                        Application.OpenURL("https://github.com/keijiro/KinoGlitch");
+                    }
+                },
+
+                new Document.Element("", Document.Element.Type.Text),
+                new Document.Element("WestHillApps' UniBpmAnalyzer", Document.Element.Type.Text),
+                new Document.Element("<b>Source code</b>:\nhttps://github.com/WestHillApps/UniBpmAnalyzer", Document.Element.Type.Text)
+                {
+                    Function = delegate ()
+                    {
+                        Application.OpenURL("https://github.com/WestHillApps/UniBpmAnalyzer");
+                    }
+                },
+
+                new Document.Element("", Document.Element.Type.Text),
+                new Document.Element("Nick Vogt's ColliderCreator (used for creating proper collision for the custom shapes)", Document.Element.Type.Text),
+                new Document.Element("<b>Website</b>:\nhttps://www.h3xed.com/", Document.Element.Type.Text)
+                {
+                    Function = delegate ()
+                    {
+                        Application.OpenURL("https://www.h3xed.com/");
+                    }
+                },
+                new Document.Element("<b>Source code</b>:\nhttps://www.h3xed.com/programming/automatically-create-polygon-collider-2d-from-2d-mesh-in-unity", Document.Element.Type.Text)
+                {
+                    Function = delegate ()
+                    {
+                        Application.OpenURL("https://www.h3xed.com/programming/automatically-create-polygon-collider-2d-from-2d-mesh-in-unity");
+                    }
+                },
+
+                new Document.Element("", Document.Element.Type.Text),
                 new Document.Element("Crafty Font for the Pixellet font.", Document.Element.Type.Text),
-                new Document.Element("Website: https://craftyfont.gumroad.com/", Document.Element.Type.Text)
+                new Document.Element("<b>Website</b>:\nhttps://craftyfont.gumroad.com/", Document.Element.Type.Text)
                 {
                     Function = delegate ()
                     {
                         Application.OpenURL("https://craftyfont.gumroad.com/");
                     }
-                }
+                },
+
+                new Document.Element("", Document.Element.Type.Text),
+                new Document.Element("HAWTPIXEL for the File Deletion font.", Document.Element.Type.Text),
+                new Document.Element("<b>Website</b>:\nhttps://www.hawtpixel.com/", Document.Element.Type.Text)
+                {
+                    Function = delegate ()
+                    {
+                        Application.OpenURL("https://www.hawtpixel.com/");
+                    }
+                },
+
+                new Document.Element("", Document.Element.Type.Text),
+                new Document.Element("Sans Sans font.", Document.Element.Type.Text),
+                new Document.Element("<b>Website</b>:\nhttps://font.download/font/sans", Document.Element.Type.Text)
+                {
+                    Function = delegate ()
+                    {
+                        Application.OpenURL("https://font.download/font/sans");
+                    }
+                },
+
+                new Document.Element("", Document.Element.Type.Text),
+                new Document.Element("Fontworks for the RocknRoll font.", Document.Element.Type.Text),
+                new Document.Element("<b>Website</b>:\nhttps://github.com/fontworks-fonts/RocknRoll", Document.Element.Type.Text)
+                {
+                    Function = delegate ()
+                    {
+                        Application.OpenURL("https://github.com/fontworks-fonts/RocknRoll");
+                    }
+                },
+
+                new Document.Element("", Document.Element.Type.Text),
+                new Document.Element("ManiackersDesign for the Monomaniac One font.", Document.Element.Type.Text),
+                new Document.Element("<b>Website</b>:\nhttps://github.com/ManiackersDesign/monomaniac", Document.Element.Type.Text)
+                {
+                    Function = delegate ()
+                    {
+                        Application.OpenURL("https://github.com/ManiackersDesign/monomaniac");
+                    }
+                },
+
+                new Document.Element("", Document.Element.Type.Text),
+                new Document.Element("<b>SPECIAL THANKS</b>", Document.Element.Type.Text),
+                new Document.Element("Pidge (developer of the game) - Obviously for making the game itself and inspiring some features in the mods.", Document.Element.Type.Text),
+                new Document.Element("enchart - Massively helped RTMecha get into modding in the first place. Without enchart, none of this would have been possible.", Document.Element.Type.Text),
+                new Document.Element("SleepyzGamer - Helped a lot in finding things", Document.Element.Type.Text),
+                new Document.Element("KarasuTori - For motivating RTMecha to keep going and experimenting with modding.", Document.Element.Type.Text),
+                new Document.Element("MoNsTeR and CubeCube for testing the mods, reporting bugs and giving suggestions.", Document.Element.Type.Text),
             });
 
             GenerateDocument("Beatmap Objects", "The very objects that make up Project Arrhythmia levels.", new List<Document.Element>
@@ -6924,6 +7019,46 @@ namespace BetterLegacy.Editor.Managers
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                         LSText.CopyToClipboard($"<font=Comic Sans Light>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> Pixellet - Neat pixel font that supports Thai.", Document.Element.Type.Text)
+                {
+                    Function = delegate ()
+                    {
+                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                        LSText.CopyToClipboard($"<font=Pixellet>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> File Deletion - A font pretty similar to the current PA title font.", Document.Element.Type.Text)
+                {
+                    Function = delegate ()
+                    {
+                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                        LSText.CopyToClipboard($"<font=File Deletion>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> Sans Sans - Sans Sans.", Document.Element.Type.Text)
+                {
+                    Function = delegate ()
+                    {
+                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                        LSText.CopyToClipboard($"<font=Sans Sans>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> Monomaniac One - Japanese support font.", Document.Element.Type.Text)
+                {
+                    Function = delegate ()
+                    {
+                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                        LSText.CopyToClipboard($"<font=Monomaniac One>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> RocknRoll One - Japanese support font.", Document.Element.Type.Text)
+                {
+                    Function = delegate ()
+                    {
+                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                        LSText.CopyToClipboard($"<font=RocknRoll One>");
                     }
                 },
             });
@@ -10170,12 +10305,16 @@ namespace BetterLegacy.Editor.Managers
                             barImage.enabled = true;
                             barImage.fillCenter = true;
 
-                            EditorThemeManager.ApplyGraphic(barImage, ThemeGroup.List_Button_1_Normal, true);
-
                             if (element.Function != null)
                             {
                                 var button = bar.AddComponent<Button>();
                                 button.onClick.AddListener(() => element.Function.Invoke());
+                                button.image = barImage;
+                                EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
+                            }
+                            else
+                            {
+                                EditorThemeManager.ApplyGraphic(barImage, ThemeGroup.List_Button_1_Normal, true);
                             }
 
                             break;
