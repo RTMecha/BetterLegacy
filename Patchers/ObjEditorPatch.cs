@@ -1316,10 +1316,6 @@ namespace BetterLegacy.Patchers
 
             Instance.StartCoroutine(Wait(multiKF, labelToCopy, singleInput));
 
-            ObjectEditor.Init(__instance);
-
-            ObjectEditor.inst.shapeButtonPrefab = __instance.ObjectView.transform.Find("shape/1").gameObject.Duplicate(__instance.transform);
-
             return false;
         }
 
@@ -1805,6 +1801,11 @@ namespace BetterLegacy.Patchers
             }
 
             Instance.zoomBounds = EditorConfig.Instance.KeyframeZoomBounds.Value;
+
+            ObjectEditor.Init(Instance);
+
+            ObjectEditor.inst.shapeButtonPrefab = Instance.ObjectView.transform.Find("shape/1").gameObject.Duplicate(Instance.transform);
+
             return false;
         }
 
