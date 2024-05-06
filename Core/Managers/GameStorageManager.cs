@@ -2,6 +2,7 @@
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Editor;
+using BetterLegacy.Editor.Managers;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -87,9 +88,8 @@ namespace BetterLegacy.Core.Managers
         void Update()
         {
             objectDragger.gameObject.SetActive(EditorManager.inst && EditorManager.inst.isEditing &&
-                ModCompatibility.sharedFunctions.ContainsKey("SelectedObjectCount") && (int)ModCompatibility.sharedFunctions["SelectedObjectCount"] == 1 &&
-                ModCompatibility.sharedFunctions.ContainsKey("CurrentSelection") && ModCompatibility.sharedFunctions["CurrentSelection"] is TimelineObject currentSelection &&
-                (currentSelection.IsBeatmapObject && currentSelection.GetData<BeatmapObject>().objectType != BeatmapObject.ObjectType.Empty || currentSelection.IsPrefabObject) &&
+                ObjectEditor.inst.SelectedObjectCount == 1 &&
+                (ObjectEditor.inst.CurrentSelection.IsBeatmapObject && ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>().objectType != BeatmapObject.ObjectType.Empty || ObjectEditor.inst.CurrentSelection.IsPrefabObject) &&
                 RTObject.Enabled);
 
             if (guiBlur)

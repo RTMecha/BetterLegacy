@@ -123,13 +123,6 @@ namespace BetterLegacy.Editor.Managers
             }));
         }
 
-        void Update()
-        {
-            ModCompatibility.sharedFunctions.AddSet("SelectedObjectCount", SelectedObjectCount);
-            ModCompatibility.sharedFunctions.AddSet("CurrentSelection", CurrentSelection);
-            ModCompatibility.sharedFunctions.AddSet("SelectedObjects", SelectedObjects);
-        }
-
         public IEnumerator Wait()
         {
             while (!PrefabEditor.inst || !RTEditor.inst || !RTEditor.inst.defaultIF)
