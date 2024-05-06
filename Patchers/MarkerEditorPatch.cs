@@ -140,6 +140,14 @@ namespace BetterLegacy.Patchers
 
             EditorThemeManager.AddSelectable(makeNoteStorage.button, ThemeGroup.Function_2);
             EditorThemeManager.AddGraphic(makeNoteStorage.text, ThemeGroup.Function_2_Text);
+
+            var snapToBPM = EditorPrefabHolder.Instance.Function2Button.Duplicate(Instance.left, "snap bpm", 5);
+            var snapToBPMStorage = snapToBPM.GetComponent<FunctionButtonStorage>();
+            snapToBPMStorage.text.text = "Snap BPM";
+            snapToBPMStorage.button.onClick.ClearAll();
+
+            EditorThemeManager.AddSelectable(snapToBPMStorage.button, ThemeGroup.Function_2);
+            EditorThemeManager.AddGraphic(snapToBPMStorage.text, ThemeGroup.Function_2_Text);
         }
 
         [HarmonyPatch("Update")]
@@ -262,6 +270,16 @@ namespace BetterLegacy.Patchers
             {
                 time.text = AudioManager.inst.CurrentAudioSource.time.ToString();
             });
+
+            if (Instance.left.Find("snap bpm"))
+            {
+                var button = Instance.left.Find("snap bpm").GetComponent<Button>();
+                button.onClick.ClearAll();
+                button.onClick.AddListener(delegate ()
+                {
+                    time.text = RTEditor.SnapToBPM(marker.time).ToString();
+                });
+            }
 
             if (Instance.left.Find("convert to note"))
             {
