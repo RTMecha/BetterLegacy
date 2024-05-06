@@ -266,6 +266,25 @@ namespace BetterLegacy.Patchers
 
             var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(tagPrefabRT, "Delete");
             UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(748f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.one, new Vector2(32f, 32f));
+
+            var transform = EditorManager.inst.GetDialog("Settings Editor").Dialog;
+            var analyzeBPM = EditorPrefabHolder.Instance.Function2Button.Duplicate(transform.Find("snap/toggle"), "analyze");
+            analyzeBPM.transform.AsRT().sizeDelta = new Vector2(140f, 32f);
+            var analyzeBPMStorage = analyzeBPM.GetComponent<FunctionButtonStorage>();
+            analyzeBPMStorage.text.text = "Analyze BPM";
+            analyzeBPMStorage.button.onClick.ClearAll();
+            analyzeBPMStorage.button.onClick.AddListener(delegate ()
+            {
+                CoreHelper.StartCoroutineAsync(UniBpmAnalyzer.IAnalyzeBPM(AudioManager.inst.CurrentAudioSource.clip, delegate (int bpm)
+                {
+                    EditorManager.inst.DisplayNotification($"Detected a BPM of {bpm}! Applied it to editor settings.", 2f, EditorManager.NotificationType.Success);
+
+                    transform.Find("snap/bpm/input").GetComponent<InputField>().text = bpm.ToString();
+                }));
+            });
+
+            EditorThemeManager.AddSelectable(analyzeBPMStorage.button, ThemeGroup.Function_2);
+            EditorThemeManager.AddGraphic(analyzeBPMStorage.text, ThemeGroup.Function_2_Text);
         }
 
         [HarmonyPatch("Update")]
