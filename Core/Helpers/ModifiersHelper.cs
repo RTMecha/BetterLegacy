@@ -1983,13 +1983,6 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "spawnPrefab":
                     {
-                        if (modifier.commands.Count < 8)
-                        {
-                            modifier.commands.Add("0");
-                            modifier.commands.Add("0");
-                            modifier.commands.Add("1");
-                        }
-
                         if (!modifier.constant && int.TryParse(modifier.value, out int num) && DataManager.inst.gameData.prefabs.Count > num
                             && float.TryParse(modifier.commands[1], out float posX) && float.TryParse(modifier.commands[2], out float posY)
                             && float.TryParse(modifier.commands[3], out float scaX) && float.TryParse(modifier.commands[4], out float scaY) && float.TryParse(modifier.commands[5], out float rot)
@@ -2461,6 +2454,50 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 var beatmapObject = (BeatmapObject)bm;
                                 beatmapObject.integerVariable = UnityEngine.Random.Range(min, max < 0 ? max - 1 : max + 1);
+                            }
+                        }
+                        break;
+                    }
+                case "loadVariable":
+                    {
+                        if (RTFile.FileExists(RTFile.ApplicationDirectory + "profile/" + modifier.commands[1] + ".ses"))
+                        {
+                            string json = FileManager.inst.LoadJSONFile("profile/" + modifier.commands[1] + ".ses");
+
+                            if (!string.IsNullOrEmpty(json))
+                            {
+                                var jn = JSON.Parse(json);
+
+                                if (!string.IsNullOrEmpty(jn[modifier.commands[2]][modifier.commands[3]]["float"]) &&
+                                    float.TryParse(jn[modifier.commands[2]][modifier.commands[3]]["float"], out float eq))
+                                {
+                                    modifier.reference.integerVariable = (int)eq;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                case "loadVariableOther":
+                    {
+                        if (RTFile.FileExists(RTFile.ApplicationDirectory + "profile/" + modifier.commands[1] + ".ses"))
+                        {
+                            string json = FileManager.inst.LoadJSONFile("profile/" + modifier.commands[1] + ".ses");
+
+                            if (!string.IsNullOrEmpty(json))
+                            {
+                                var jn = JSON.Parse(json);
+
+                                if (!string.IsNullOrEmpty(jn[modifier.commands[2]][modifier.commands[3]]["float"]) &&
+                                    float.TryParse(jn[modifier.commands[2]][modifier.commands[3]]["float"], out float eq))
+                                {
+                                    var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.value));
+
+                                    if (list.Count() > 0)
+                                    {
+                                        foreach (var bm in list)
+                                            ((BeatmapObject)bm).integerVariable = (int)eq;
+                                    }
+                                }
                             }
                         }
                         break;

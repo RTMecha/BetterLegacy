@@ -983,10 +983,10 @@ namespace BetterLegacy.Editor.Managers
                                 d.options.Clear();
 
                                 d.options = new List<Dropdown.OptionData>
-                                    {
-                                        new Dropdown.OptionData("Number"),
-                                        new Dropdown.OptionData("Text"),
-                                    };
+                                {
+                                    new Dropdown.OptionData("Number"),
+                                    new Dropdown.OptionData("Text"),
+                                };
 
                                 d.value = Parser.TryParse(modifier.commands[4], 0);
 
@@ -1000,6 +1000,18 @@ namespace BetterLegacy.Editor.Managers
                                 EditorThemeManager.ApplyLightText(labelText);
                                 EditorThemeManager.ApplyDropdown(d);
                             }
+
+                            break;
+                        }
+                    case "loadVariable":
+                    case "loadVariableOther":
+                        {
+                            stringGenerator("Path", 1);
+                            stringGenerator("JSON 1", 2);
+                            stringGenerator("JSON 2", 3);
+
+                            if (cmd.Contains("Other"))
+                                stringGenerator("Object Group", 0);
 
                             break;
                         }
