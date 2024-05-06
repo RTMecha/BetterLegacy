@@ -103,7 +103,13 @@ namespace BetterLegacy.Core.Data
                 },
                 speed = orig.speed,
                 autoKillOffset = orig.autoKillOffset,
-                autoKillType = orig.autoKillType
+                autoKillType = orig.autoKillType,
+                parent = orig.parent,
+                parentAdditive = orig.parentAdditive,
+                parentOffsets = orig.parentOffsets.Copy(),
+                parentParallax = orig.parentParallax.Copy(),
+                parentType = orig.parentType,
+                desync = orig.desync,
             };
 
             if (prefabObject.events == null)
