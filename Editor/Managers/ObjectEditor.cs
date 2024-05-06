@@ -2,6 +2,7 @@
 using BetterLegacy.Components.Editor;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
+using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
@@ -155,6 +156,8 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        #region Variables
+
         public Scrollbar timelinePosScrollbar;
         public GameObject shapeButtonPrefab;
 
@@ -181,36 +184,56 @@ namespace BetterLegacy.Editor.Managers
 
         public GameObject tagPrefab;
 
-        public void OpenDialog(BeatmapObject beatmapObject)
+        #endregion
+
+        /// <summary>
+        /// Sets the Object Keyframe timeline zoom and position.
+        /// </summary>
+        /// <param name="zoom">The amount to zoom in.</param>
+        /// <param name="position">The position to set the timeline scroll. If the value is less that 0, it will automatically calculate the position to match the audio time.</param>
+        /// <param name="render">If the timeline should render.</param>
+        public void SetTimeline(float zoom, float position = -1f, bool render = true, bool log = true)
         {
-            if (CurrentSelection.IsBeatmapObject)
+            float num = ObjEditor.inst.zoomFloat;
+            ObjEditor.inst.zoomFloat = Mathf.Clamp01(zoom);
+            ObjEditor.inst.zoomVal =
+                LSMath.InterpolateOverCurve(ObjEditor.inst.ZoomCurve, ObjEditor.inst.zoomBounds.x, ObjEditor.inst.zoomBounds.y, ObjEditor.inst.zoomFloat);
+
+            var beatmapObject = CurrentSelection.GetData<BeatmapObject>();
+            if (ObjEditor.inst.zoomFloat != num)
             {
-                if (EditorManager.inst.ActiveDialogs.Count > 2 || !EditorManager.inst.ActiveDialogs.Has(x => x.Name == "Object Editor"))
+                if (render)
                 {
-                    EditorManager.inst.ClearDialogs();
-                    EditorManager.inst.ShowDialog("Object Editor");
+                    ResizeKeyframeTimeline(beatmapObject);
+                    RenderKeyframes(beatmapObject);
                 }
 
-                if (CurrentSelection.ID != beatmapObject.id)
-                    for (int i = 0; i < ObjEditor.inst.TimelineParents.Count; i++)
-                    {
-                        LSHelpers.DeleteChildren(ObjEditor.inst.TimelineParents[i]);
-                    }
+                float timelineCalc = ObjEditor.inst.objTimelineSlider.value;
+                if (AudioManager.inst.CurrentAudioSource.clip != null)
+                {
+                    float time = -beatmapObject.StartTime + AudioManager.inst.CurrentAudioSource.time;
+                    float objectLifeLength = beatmapObject.GetObjectLifeLength(ObjEditor.inst.ObjectLengthOffset);
 
-                StartCoroutine(RefreshObjectGUI(beatmapObject));
-                StartCoroutine(RememberTimeline());
+                    timelineCalc = time / objectLifeLength;
+                }
+
+                timelinePosScrollbar.value =
+                    position >= 0f ? position : timelineCalc;
             }
-            else
-                EditorManager.inst.DisplayNotification("Cannot edit non-object!", 2f, EditorManager.NotificationType.Error);
-        }
 
-        public IEnumerator RememberTimeline()
-        {
-            // Here we remember an object's zoom and timeline position.
-            ObjEditor.inst.Zoom = CurrentSelection.Zoom;
-            yield return new WaitForSeconds(0.001f);
-            timelinePosScrollbar.value = CurrentSelection.TimelinePosition;
-            yield break;
+            ObjEditor.inst.zoomSlider.onValueChanged.ClearAll();
+            ObjEditor.inst.zoomSlider.value = ObjEditor.inst.zoomFloat;
+            ObjEditor.inst.zoomSlider.onValueChanged.AddListener(delegate (float _val)
+            {
+                ObjEditor.inst.Zoom = _val;
+            });
+
+            if (log)
+                CoreHelper.Log($"SET OBJECT ZOOM\n" +
+                    $"ZoomFloat: {ObjEditor.inst.zoomFloat}\n" +
+                    $"ZoomVal: {ObjEditor.inst.zoomVal}\n" +
+                    $"ZoomBounds: {ObjEditor.inst.zoomBounds}\n" +
+                    $"Timeline Position: {timelinePosScrollbar.value}");
         }
 
         public static float TimeTimelineCalc(float _time) => _time * 14f * ObjEditor.inst.zoomVal + 5f;
@@ -1673,6 +1696,38 @@ namespace BetterLegacy.Editor.Managers
 
         public static bool HideVisualElementsWhenObjectIsEmpty { get; set; }
 
+        public IEnumerator RememberTimeline()
+        {
+            // Here we remember an object's zoom and timeline position.
+            ObjEditor.inst.Zoom = CurrentSelection.Zoom;
+            yield return new WaitForSeconds(0.001f);
+            timelinePosScrollbar.value = CurrentSelection.TimelinePosition;
+            yield break;
+        }
+
+        public void OpenDialog(BeatmapObject beatmapObject)
+        {
+            if (!CurrentSelection.IsBeatmapObject)
+            {
+                EditorManager.inst.DisplayNotification("Cannot edit non-object!", 2f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            if (EditorManager.inst.ActiveDialogs.Count > 2 || !EditorManager.inst.ActiveDialogs.Has(x => x.Name == "Object Editor"))
+            {
+                EditorManager.inst.ClearDialogs();
+                EditorManager.inst.ShowDialog("Object Editor");
+            }
+
+            if (CurrentSelection.ID != beatmapObject.id)
+                for (int i = 0; i < ObjEditor.inst.TimelineParents.Count; i++)
+                    LSHelpers.DeleteChildren(ObjEditor.inst.TimelineParents[i]);
+
+            StartCoroutine(RefreshObjectGUI(beatmapObject));
+            //SetTimeline(CurrentSelection.Zoom, CurrentSelection.TimelinePosition, false);
+            StartCoroutine(RememberTimeline());
+        }
+
         /// <summary>
         /// Refreshes the Object Editor to the specified BeatmapObject, allowing for any object to be edited from anywhere.
         /// </summary>
@@ -1680,44 +1735,44 @@ namespace BetterLegacy.Editor.Managers
         /// <returns></returns>
         public static IEnumerator RefreshObjectGUI(BeatmapObject beatmapObject)
         {
-            if (EditorManager.inst.hasLoadedLevel && !string.IsNullOrEmpty(beatmapObject.id))
+            if (!EditorManager.inst.hasLoadedLevel || string.IsNullOrEmpty(beatmapObject.id))
+                yield break;
+
+            inst.CurrentSelection = inst.GetTimelineObject(beatmapObject);
+            inst.CurrentSelection.selected = true;
+
+            inst.RenderIDLDM(beatmapObject);
+            inst.RenderName(beatmapObject);
+            inst.RenderObjectType(beatmapObject);
+
+            inst.RenderStartTime(beatmapObject);
+            inst.RenderAutokill(beatmapObject);
+
+            inst.RenderParent(beatmapObject);
+
+            inst.RenderEmpty(beatmapObject);
+
+            if (!HideVisualElementsWhenObjectIsEmpty || beatmapObject.objectType != ObjectType.Empty)
             {
-                inst.CurrentSelection = inst.GetTimelineObject(beatmapObject);
-                inst.CurrentSelection.selected = true;
-
-                inst.RenderIDLDM(beatmapObject);
-                inst.RenderName(beatmapObject);
-                inst.RenderObjectType(beatmapObject);
-
-                inst.RenderStartTime(beatmapObject);
-                inst.RenderAutokill(beatmapObject);
-
-                inst.RenderParent(beatmapObject);
-
-                inst.RenderEmpty(beatmapObject);
-
-                if (!HideVisualElementsWhenObjectIsEmpty || beatmapObject.objectType != ObjectType.Empty)
-                {
-                    inst.RenderOrigin(beatmapObject);
-                    inst.RenderShape(beatmapObject);
-                    inst.RenderDepth(beatmapObject);
-                }
-
-                inst.RenderLayers(beatmapObject);
-                inst.RenderBin(beatmapObject);
-
-                inst.RenderGameObjectInspector(beatmapObject);
-
-                bool fromPrefab = !string.IsNullOrEmpty(beatmapObject.prefabID);
-                ((GameObject)inst.ObjectUIElements["Collapse Label"]).SetActive(fromPrefab);
-                ((GameObject)inst.ObjectUIElements["Collapse Prefab"]).SetActive(fromPrefab);
-
-                inst.RenderKeyframes(beatmapObject);
-                inst.RenderObjectKeyframesDialog(beatmapObject);
-
-                if (ObjectModifiersEditor.inst)
-                    inst.StartCoroutine(ObjectModifiersEditor.inst.RenderModifiers(beatmapObject));
+                inst.RenderOrigin(beatmapObject);
+                inst.RenderShape(beatmapObject);
+                inst.RenderDepth(beatmapObject);
             }
+
+            inst.RenderLayers(beatmapObject);
+            inst.RenderBin(beatmapObject);
+
+            inst.RenderGameObjectInspector(beatmapObject);
+
+            bool fromPrefab = !string.IsNullOrEmpty(beatmapObject.prefabID);
+            ((GameObject)inst.ObjectUIElements["Collapse Label"]).SetActive(fromPrefab);
+            ((GameObject)inst.ObjectUIElements["Collapse Prefab"]).SetActive(fromPrefab);
+
+            inst.RenderKeyframes(beatmapObject);
+            inst.RenderObjectKeyframesDialog(beatmapObject);
+
+            if (ObjectModifiersEditor.inst)
+                inst.StartCoroutine(ObjectModifiersEditor.inst.RenderModifiers(beatmapObject));
 
             yield break;
         }

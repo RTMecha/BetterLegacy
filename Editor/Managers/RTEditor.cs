@@ -832,6 +832,44 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        /// <summary>
+        /// Sets the main timeline zoom and position.
+        /// </summary>
+        /// <param name="zoom">The amount to zoom in.</param>
+        /// <param name="position">The position to set the timeline scroll. If the value is less that 0, it will automatically calculate the position to match the audio time.</param>
+        /// <param name="render">If the timeline should render.</param>
+        /// <param name="log">If the zoom amount should be logged.</param>
+        public void SetTimeline(float zoom, float position = -1f, bool render = true, bool log = true)
+        {
+            float prevZoom = EditorManager.inst.zoomFloat;
+            EditorManager.inst.zoomFloat = Mathf.Clamp01(zoom);
+            EditorManager.inst.zoomVal =
+                LSMath.InterpolateOverCurve(EditorManager.inst.ZoomCurve, EditorManager.inst.zoomBounds.x, EditorManager.inst.zoomBounds.y, EditorManager.inst.zoomFloat);
+            
+            if (EditorManager.inst.zoomFloat != prevZoom)
+            {
+                if (render)
+                    EditorManager.inst.RenderTimeline();
+
+                EditorManager.inst.timelineScrollRectBar.value =
+                    position >= 0f ? position : AudioManager.inst.CurrentAudioSource.time / AudioManager.inst.CurrentAudioSource.clip.length;
+            }
+
+            EditorManager.inst.zoomSlider.onValueChanged.ClearAll();
+            EditorManager.inst.zoomSlider.value = EditorManager.inst.zoomFloat;
+            EditorManager.inst.zoomSlider.onValueChanged.AddListener(delegate (float _val)
+            {
+                EditorManager.inst.Zoom = _val;
+            });
+
+            if (log)
+                CoreHelper.Log($"SET MAIN ZOOM\n" +
+                    $"ZoomFloat: {EditorManager.inst.zoomFloat}\n" +
+                    $"ZoomVal: {EditorManager.inst.zoomVal}\n" +
+                    $"ZoomBounds: {EditorManager.inst.zoomBounds}\n" +
+                    $"Timeline Position: {EditorManager.inst.timelineScrollRectBar.value}");
+        }
+
         #endregion
 
         #region Timeline Objects

@@ -916,6 +916,21 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
+        [HarmonyPatch("UpdateTimelineSizes")]
+        [HarmonyPrefix]
+        static bool UpdateTimelineSizesPrefix()
+        {
+            if (AudioManager.inst.CurrentAudioSource.clip == null)
+                return false;
+
+            var zoom = Instance.Zoom;
+            Instance.markerTimeline.transform.AsRT().sizeDelta = new Vector2(AudioManager.inst.CurrentAudioSource.clip.length * zoom, Instance.markerTimeline.transform.AsRT().sizeDelta.y);
+            Instance.timeline.transform.AsRT().sizeDelta = new Vector2(AudioManager.inst.CurrentAudioSource.clip.length * zoom, Instance.timeline.transform.AsRT().sizeDelta.y);
+            Instance.timelineWaveformOverlay.transform.AsRT().sizeDelta = new Vector2(AudioManager.inst.CurrentAudioSource.clip.length * zoom, Instance.timeline.transform.AsRT().sizeDelta.y);
+
+            return false;
+        }
+
         [HarmonyPatch("QuitToMenu")]
         [HarmonyPrefix]
         static bool QuitToMenuPrefix()
@@ -1065,22 +1080,6 @@ namespace BetterLegacy.Patchers
                 }
             }
 
-            //foreach (var editorDialog in Instance.EditorDialogs)
-            //{
-            //    if (__0.Length == 0)
-            //    {
-            //        if (editorDialog.Type != EditorManager.EditorDialog.DialogType.Timeline)
-            //        {
-            //            RTEditor.inst.PlayDialogAnimation(editorDialog.Dialog.gameObject, editorDialog.Name, false);
-            //            Instance.ActiveDialogs.Remove(editorDialog);
-            //        }
-            //    }
-            //    else if (__0.Contains(editorDialog.Type))
-            //    {
-            //        RTEditor.inst.PlayDialogAnimation(editorDialog.Dialog.gameObject, editorDialog.Name, false);
-            //        Instance.ActiveDialogs.Remove(editorDialog);
-            //    }
-            //}
             Instance.currentDialog = Instance.ActiveDialogs.Last();
 
             return false;
@@ -1200,6 +1199,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool ZoomSetterPrefix(EditorManager __instance, ref float value)
         {
+            //RTEditor.inst.SetTimeline(value);
+
             float num = __instance.zoomFloat;
             __instance.zoomFloat = Mathf.Clamp01(value);
             __instance.zoomVal = LSMath.InterpolateOverCurve(__instance.ZoomCurve, __instance.zoomBounds.x, __instance.zoomBounds.y, __instance.zoomFloat);

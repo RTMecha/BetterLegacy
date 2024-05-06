@@ -11,6 +11,7 @@ using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor;
 using BetterLegacy.Editor.Managers;
 using HarmonyLib;
+using LSFunctions;
 using SimpleJSON;
 using System;
 using System.Collections;
@@ -2330,5 +2331,27 @@ namespace BetterLegacy.Patchers
             ObjectEditor.inst.CreateNewNoAutokillObject(__0);
             return false;
         }
+
+        //[HarmonyPatch("Zoom", MethodType.Setter)]
+        //[HarmonyPrefix]
+        //static bool ZoomSetterPrefix(EditorManager __instance, ref float value)
+        //{
+        //    //ObjectEditor.inst.SetTimeline(value);
+
+        //    float num = __instance.zoomFloat;
+        //    __instance.zoomFloat = Mathf.Clamp01(value);
+        //    __instance.zoomVal = LSMath.InterpolateOverCurve(__instance.ZoomCurve, __instance.zoomBounds.x, __instance.zoomBounds.y, __instance.zoomFloat);
+        //    if (__instance.zoomFloat != num)
+        //    {
+        //        __instance.SetMainTimelineZoom(__instance.zoomVal, true, __instance.timelineScrollRectBar.value);
+        //    }
+        //    __instance.zoomSlider.onValueChanged.ClearAll();
+        //    __instance.zoomSlider.value = __instance.zoomFloat;
+        //    __instance.zoomSlider.onValueChanged.AddListener(delegate (float _val)
+        //    {
+        //        __instance.Zoom = _val;
+        //    });
+        //    return false;
+        //}
     }
 }
