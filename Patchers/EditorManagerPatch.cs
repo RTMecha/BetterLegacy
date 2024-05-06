@@ -88,7 +88,8 @@ namespace BetterLegacy.Patchers
                 Updater.levelProcessor = null;
             }
 
-            // Editor Theme Setup
+            #region Editor Theme Setup
+
             EditorThemeManager.AddGraphic(EditorManager.inst.timeline.transform.parent.Find("Panel 2").GetComponent<Image>(), ThemeGroup.Timeline_Background);
 
             var openFilePopup = __instance.GetDialog("Open File Popup").Dialog.gameObject;
@@ -199,6 +200,9 @@ namespace BetterLegacy.Patchers
 
             EditorThemeManager.AddInputField(parentSelectorPopup.transform.Find("search-box/search").GetComponent<InputField>(), ThemeGroup.Search_Field_1, 1, SpriteManager.RoundedSide.Bottom);
 
+            #endregion
+
+            // Add function button storage to folder button.
             var levelButtonPrefab = __instance.folderButtonPrefab.Duplicate(__instance.transform, __instance.folderButtonPrefab.name);
             var levelButtonPrefabStorage = levelButtonPrefab.AddComponent<FunctionButtonStorage>();
             levelButtonPrefabStorage.button = levelButtonPrefab.GetComponent<Button>();
