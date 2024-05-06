@@ -120,6 +120,7 @@ namespace BetterLegacy.Patchers
             string[] array = new string[]
             {
                 "Object Count",
+                "Total Object Count",
                 "Event Count",
                 "Theme Count",
                 "Prefab External Count",
@@ -291,13 +292,19 @@ namespace BetterLegacy.Patchers
         [HarmonyPostfix]
         static void UpdatePostfix()
         {
-            if (EditorManager.inst && EditorManager.inst.isEditing && EditorManager.inst.hasLoadedLevel)
+            if (EditorManager.inst && EditorManager.inst.isEditing && EditorManager.inst.hasLoadedLevel &&
+                DataManager.inst.gameData != null && DataManager.inst.gameData.eventObjects != null &&
+                PrefabEditorManager.inst)
             {
                 var transform = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/SettingsDialog").transform;
 
                 if (info.ContainsKey("Object Count") && info["Object Count"])
                 {
                     info["Object Count"].text = $"[ {DataManager.inst.gameData.beatmapObjects.Where(x => !x.fromPrefab).Count()} ]  ";
+                }
+                if (info.ContainsKey("Total Object Count") && info["Total Object Count"])
+                {
+                    info["Total Object Count"].text = $"[ {DataManager.inst.gameData.beatmapObjects.Count} ]  ";
                 }
                 if (info.ContainsKey("Event Count") && info["Event Count"])
                 {
