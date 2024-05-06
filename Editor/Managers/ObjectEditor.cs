@@ -122,6 +122,20 @@ namespace BetterLegacy.Editor.Managers
 
                 scrollBar.value = pointerEventData.scrollDelta.y > 0f ? scrollBar.value + (0.005f * multiply) : pointerEventData.scrollDelta.y < 0f ? scrollBar.value - (0.005f * multiply) : 0f;
             }));
+
+            try
+            {
+                if (RTFile.FileExists(Application.persistentDataPath + "/copied_objects.lsp"))
+                {
+                    var jn = JSON.Parse(RTFile.ReadFromFile(Application.persistentDataPath + "/copied_objects.lsp"));
+                    ObjEditor.inst.beatmapObjCopy = Prefab.Parse(jn);
+                    ObjEditor.inst.hasCopiedObject = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Could not load global copied objects.\n{ex}");
+            }
         }
 
         public IEnumerator Wait()
@@ -520,16 +534,7 @@ namespace BetterLegacy.Editor.Managers
             DeselectAllObjects();
             EditorManager.inst.DisplayNotification("Pasting objects, please wait.", 1f, EditorManager.NotificationType.Success);
 
-            Prefab pr = null;
-
-            if (RTFile.FileExists(Application.persistentDataPath + "/copied_objects.lsp"))
-            {
-                pr = Prefab.Parse(JSON.Parse(RTFile.ReadFromFile(Application.persistentDataPath + "/copied_objects.lsp")));
-
-                ObjEditor.inst.hasCopiedObject = true;
-            }
-
-            StartCoroutine(AddPrefabExpandedToLevel(pr ?? (Prefab)ObjEditor.inst.beatmapObjCopy, true, _offsetTime, false, _regen));
+            StartCoroutine(AddPrefabExpandedToLevel((Prefab)ObjEditor.inst.beatmapObjCopy, true, _offsetTime, false, _regen));
         }
 
         #endregion
@@ -635,9 +640,7 @@ namespace BetterLegacy.Editor.Managers
 
             //Prefabs
             {
-                var prefabInstanceIDs = new Dictionary<string, string>();
-                foreach (var prefabObject in prefab.prefabObjects)
-                    prefabInstanceIDs.Add(prefabObject.ID, LSText.randomString(16));
+                var prefabInstanceIDs = prefab.prefabObjects.ToDictionary(x => x.ID, x => LSText.randomString(16));
 
                 foreach (var prefabObject in prefab.prefabObjects)
                 {
@@ -1164,7 +1167,10 @@ namespace BetterLegacy.Editor.Managers
             });
 
             if (SelectedObjectCount > 1)
+            {
+                EditorManager.inst.ClearDialogs();
                 EditorManager.inst.ShowDialog("Multi Object Editor", false);
+            }
 
             if (SelectedObjectCount <= 0)
                 CheckpointEditor.inst.SetCurrentCheckpoint(0);
@@ -1354,8 +1360,6 @@ namespace BetterLegacy.Editor.Managers
 
             return beatmapObject.timelineObject;
         }
-
-        public void RenderTimelineObjectVoid(TimelineObject timelineObject) => RenderTimelineObject(timelineObject);
 
         public GameObject RenderTimelineObject(TimelineObject timelineObject, bool ignoreLayer = true)
         {
