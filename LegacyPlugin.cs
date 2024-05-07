@@ -151,9 +151,10 @@ namespace BetterLegacy
             {
                 GameManagerPatch.LevelStart += Updater.OnLevelStart;
                 GameManagerPatch.LevelEnd += Updater.OnLevelEnd;
-                ObjectManagerPatch.LevelTick += ModifiersManager.OnLevelTick;
+
                 ObjectManagerPatch.LevelTick += RTEventManager.OnLevelTick;
                 ObjectManagerPatch.LevelTick += Updater.OnLevelTick;
+                ObjectManagerPatch.LevelTick += ModifiersManager.OnLevelTick;
             }
 
             try
