@@ -1974,9 +1974,9 @@ namespace BetterLegacy.Core.Helpers
                                 var beatmapTheme = CoreHelper.CurrentBeatmapTheme;
 
                                 if (int.TryParse(modifier.commands[3], out int startColor) && float.TryParse(modifier.commands[4], out float startOpacity))
-                                    tr.startColor = LSFunctions.LSColors.fadeColor(beatmapTheme.GetObjColor(startColor), startOpacity);
+                                    tr.startColor = LSColors.fadeColor(beatmapTheme.GetObjColor(startColor), startOpacity);
                                 if (int.TryParse(modifier.commands[5], out int endColor) && float.TryParse(modifier.commands[6], out float endOpacity))
-                                    tr.endColor = LSFunctions.LSColors.fadeColor(beatmapTheme.GetObjColor(endColor), endOpacity);
+                                    tr.endColor = LSColors.fadeColor(beatmapTheme.GetObjColor(endColor), endOpacity);
                             }
                         }
                         break;
@@ -2393,13 +2393,13 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "showMouse":
                     {
-                        LSFunctions.LSHelpers.ShowCursor();
+                        LSHelpers.ShowCursor();
                         break;
                     }
                 case "hideMouse":
                     {
                         if (EditorManager.inst == null || !EditorManager.inst.isEditing)
-                            LSFunctions.LSHelpers.HideCursor();
+                            LSHelpers.HideCursor();
                         break;
                     }
                 case "addVariable":
@@ -3336,9 +3336,9 @@ namespace BetterLegacy.Core.Helpers
                         if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer && float.TryParse(modifier.value, out float num))
                         {
                             if (levelObject.visualObject is not TextObject)
-                                levelObject.visualObject.Renderer.material.color = LSFunctions.LSColors.fadeColor(levelObject.visualObject.Renderer.material.color, num);
+                                levelObject.visualObject.Renderer.material.color = LSColors.fadeColor(levelObject.visualObject.Renderer.material.color, num);
                             else
-                                ((TextObject)levelObject.visualObject).TextMeshPro.color = LSFunctions.LSColors.fadeColor(levelObject.visualObject.Renderer.material.color, num);
+                                ((TextObject)levelObject.visualObject).TextMeshPro.color = LSColors.fadeColor(levelObject.visualObject.Renderer.material.color, num);
                         }
 
                         break;
@@ -3347,15 +3347,15 @@ namespace BetterLegacy.Core.Helpers
                     {
                         var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
 
-                        if (list.Count() > 0)
+                        if (list.Count() > 0 && float.TryParse(modifier.value, out float num))
                             foreach (var bm in list)
                             {
-                                if (bm != null && Updater.TryGetObject(bm, out LevelObject levelObject) && levelObject.visualObject.Renderer && float.TryParse(modifier.value, out float num))
+                                if (Updater.TryGetObject(bm, out LevelObject levelObject) && levelObject.visualObject.Renderer)
                                 {
                                     if (levelObject.visualObject is not TextObject)
-                                        levelObject.visualObject.Renderer.material.color = LSFunctions.LSColors.fadeColor(levelObject.visualObject.Renderer.material.color, num);
+                                        levelObject.visualObject.Renderer.material.color = LSColors.fadeColor(levelObject.visualObject.Renderer.material.color, num);
                                     else
-                                        ((TextObject)levelObject.visualObject).TextMeshPro.color = LSFunctions.LSColors.fadeColor(levelObject.visualObject.Renderer.material.color, num);
+                                        ((TextObject)levelObject.visualObject).TextMeshPro.color = LSColors.fadeColor(levelObject.visualObject.Renderer.material.color, num);
                                 }
                             }
 
