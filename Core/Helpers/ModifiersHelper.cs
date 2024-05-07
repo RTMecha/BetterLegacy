@@ -2594,6 +2594,55 @@ namespace BetterLegacy.Core.Helpers
 
                         break;
                     }
+                case "enableObjectOther":
+                    {
+                        var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.value));
+
+                        if (list.Count() > 0)
+                        {
+                            foreach (var beatmapObject in list)
+                            {
+                                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
+                                {
+                                    levelObject.transformChain[0].gameObject.SetActive(true);
+                                }
+                            }
+                        }
+
+                        break;
+                    }
+                case "enableObjectTreeOther":
+                    {
+                        if (modifier.Result == null)
+                        {
+                            var beatmapObjects = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
+
+                            var resultList = new List<List<DataManager.GameData.BeatmapObject>>();
+                            foreach (var bm in beatmapObjects)
+                            {
+                                var beatmapObject = Parser.TryParse(modifier.value, true) ? bm : bm.GetParentChain().Last();
+                                resultList.AddRange(beatmapObject.GetChildChain());
+                            }
+
+                            modifier.Result = resultList;
+                        }
+
+                        var list = (List<List<DataManager.GameData.BeatmapObject>>)modifier.Result;
+
+                        for (int i = 0; i < list.Count; i++)
+                        {
+                            var childList = list[i];
+                            for (int j = 0; j < childList.Count; j++)
+                            {
+                                if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
+                                {
+                                    levelObject.transformChain[0].gameObject.SetActive(true);
+                                }
+                            }
+                        }
+
+                        break;
+                    }
                 case "disableObject":
                     {
                         if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
@@ -2612,6 +2661,55 @@ namespace BetterLegacy.Core.Helpers
                             var beatmapObject = Parser.TryParse(modifier.value, true) ? modifier.reference : modifier.reference.GetParentChain().Last();
 
                             modifier.Result = beatmapObject.GetChildChain();
+                        }
+
+                        var list = (List<List<DataManager.GameData.BeatmapObject>>)modifier.Result;
+
+                        for (int i = 0; i < list.Count; i++)
+                        {
+                            var childList = list[i];
+                            for (int j = 0; j < childList.Count; j++)
+                            {
+                                if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
+                                {
+                                    levelObject.transformChain[0].gameObject.SetActive(false);
+                                }
+                            }
+                        }
+
+                        break;
+                    }
+                case "disableObjectOther":
+                    {
+                        var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.value));
+
+                        if (list.Count() > 0)
+                        {
+                            foreach (var beatmapObject in list)
+                            {
+                                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
+                                {
+                                    levelObject.transformChain[0].gameObject.SetActive(false);
+                                }
+                            }
+                        }
+
+                        break;
+                    }
+                case "disableObjectTreeOther":
+                    {
+                        if (modifier.Result == null)
+                        {
+                            var beatmapObjects = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
+
+                            var resultList = new List<List<DataManager.GameData.BeatmapObject>>();
+                            foreach (var bm in beatmapObjects)
+                            {
+                                var beatmapObject = Parser.TryParse(modifier.value, true) ? bm : bm.GetParentChain().Last();
+                                resultList.AddRange(beatmapObject.GetChildChain());
+                            }
+
+                            modifier.Result = resultList;
                         }
 
                         var list = (List<List<DataManager.GameData.BeatmapObject>>)modifier.Result;
@@ -3931,20 +4029,9 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "gravity":
                     {
-                        //if (modifier.Result == null)
-                        //    modifier.Result = 0f;
-
-                        //if (modifier.commands.Count < 4)
-                        //    modifier.commands.Add("0.1");
-
                         if (float.TryParse(modifier.commands[1], out float gravityX) && float.TryParse(modifier.commands[2], out float gravityY)
                             && modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject))
                         {
-                            //modifier.Result = (float)modifier.Result + Parser.TryParse(modifier.commands[3], 0.1f);
-
-                            //modifier.reference.positionOffset.x += RTMath.Lerp(0f, 0.001f * gravityX, (float)modifier.Result);
-                            //modifier.reference.positionOffset.y += RTMath.Lerp(0f, 0.001f * gravityY, (float)modifier.Result);
-
                             var list = levelObject.parentObjects;
                             float rotation = 0f;
 
@@ -3971,30 +4058,14 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "gravityOther":
                     {
-                        //if (modifier.Result == null)
-                        //    modifier.Result = 0f;
-
-                        //if (modifier.commands.Count < 4)
-                        //    modifier.commands.Add("0.1");
-
                         var beatmapObjects = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.value));
 
                         if (beatmapObjects.Count() > 0 && float.TryParse(modifier.commands[1], out float gravityX) && float.TryParse(modifier.commands[2], out float gravityY))
                         {
-                            //modifier.Result = (float)modifier.Result + Parser.TryParse(modifier.commands[3], 0.1f);
-
                             foreach (var bm in beatmapObjects.Select(x => x as BeatmapObject))
                             {
-                                //bm.positionOffset.x += RTMath.Lerp(0f, 0.001f * gravityX, (float)modifier.Result);
-                                //bm.positionOffset.y += RTMath.Lerp(0f, 0.001f * gravityY, (float)modifier.Result);
-
                                 if (Updater.TryGetObject(bm, out LevelObject levelObject))
                                 {
-                                    //modifier.Result = (float)modifier.Result + Parser.TryParse(modifier.commands[3], 0.1f);
-
-                                    //modifier.reference.positionOffset.x += RTMath.Lerp(0f, 0.001f * gravityX, (float)modifier.Result);
-                                    //modifier.reference.positionOffset.y += RTMath.Lerp(0f, 0.001f * gravityY, (float)modifier.Result);
-
                                     var list = levelObject.parentObjects;
                                     float rotation = 0f;
 
@@ -4031,27 +4102,6 @@ namespace BetterLegacy.Core.Helpers
                         To Type: (Pos / Sca / Rot)
                         To Axis: (X / Y / Z)
                         */
-
-                        if (modifier.commands.Count < 6)
-                            modifier.commands.Add("0");
-
-                        if (modifier.commands.Count < 7)
-                            modifier.commands.Add("1");
-
-                        if (modifier.commands.Count < 8)
-                            modifier.commands.Add("0");
-
-                        if (modifier.commands.Count < 9)
-                            modifier.commands.Add("-99999");
-
-                        if (modifier.commands.Count < 10)
-                            modifier.commands.Add("99999");
-
-                        if (modifier.commands.Count < 11)
-                            modifier.commands.Add("9999");
-
-                        if (modifier.commands.Count < 12)
-                            modifier.commands.Add("False");
 
                         if (int.TryParse(modifier.commands[1], out int fromType) && int.TryParse(modifier.commands[2], out int fromAxis)
                             && int.TryParse(modifier.commands[3], out int toType) && int.TryParse(modifier.commands[4], out int toAxis)
@@ -4157,276 +4207,28 @@ namespace BetterLegacy.Core.Helpers
                             var player = PlayerManager.Players[0];
                             var rb = player.Player.playerObjects["RB Parent"].gameObject.transform;
 
+                            // From Type Position
+                            if (fromType == 0)
                             {
-                                // To Type Position
-                                // To Axis X
-                                // From Type Position
-                                if (toType == 0 && toAxis == 0 && fromType == 0)
-                                {
-                                    var sequence = rb.localPosition;
+                                var sequence = rb.localPosition;
 
-                                    modifier.reference.positionOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) * multiply - offset, min, max);
-                                }
+                                modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) - offset) * multiply, min, max));
+                            }
 
-                                // To Type Position
-                                // To Axis Y
-                                // From Type Position
-                                if (toType == 0 && toAxis == 1 && fromType == 0)
-                                {
-                                    var sequence = rb.localPosition;
+                            // From Type Scale
+                            if (fromType == 1)
+                            {
+                                var sequence = rb.localScale;
 
-                                    modifier.reference.positionOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) * multiply - offset, min, max);
-                                }
+                                modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) - offset) * multiply, min, max));
+                            }
 
-                                // To Type Position
-                                // To Axis Z
-                                // From Type Position
-                                if (toType == 0 && toAxis == 2 && fromType == 0)
-                                {
-                                    var sequence = rb.localPosition;
+                            // From Type Rotation
+                            if (fromType == 2)
+                            {
+                                var sequence = rb.localRotation.eulerAngles;
 
-                                    modifier.reference.positionOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) * multiply - offset, min, max);
-                                }
-
-                                // To Type Position
-                                // To Axis X
-                                // From Type Scale
-                                if (toType == 0 && toAxis == 0 && fromType == 1)
-                                {
-                                    var sequence = rb.localScale;
-
-                                    modifier.reference.positionOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x : sequence.y) * multiply - offset, min, max);
-                                }
-
-                                // To Type Position
-                                // To Axis Y
-                                // From Type Scale
-                                if (toType == 0 && toAxis == 1 && fromType == 1)
-                                {
-                                    var sequence = rb.localScale;
-
-                                    modifier.reference.positionOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x : sequence.y) * multiply - offset, min, max);
-                                }
-
-                                // To Type Position
-                                // To Axis Z
-                                // From Type Scale
-                                if (toType == 0 && toAxis == 2 && fromType == 1)
-                                {
-                                    var sequence = rb.localScale;
-
-                                    modifier.reference.positionOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x : sequence.y) * multiply - offset, min, max);
-                                }
-
-                                // To Type Position
-                                // To Axis X
-                                // From Type Rotation
-                                if (toType == 0 && toAxis == 0 && fromType == 2)
-                                {
-                                    var sequence = rb.localRotation.eulerAngles.z * multiply;
-
-                                    modifier.reference.positionOffset.x = Mathf.Clamp(sequence - offset, min, max);
-                                }
-
-                                // To Type Position
-                                // To Axis Y
-                                // From Type Rotation
-                                if (toType == 0 && toAxis == 1 && fromType == 2)
-                                {
-                                    var sequence = rb.localRotation.eulerAngles.z * multiply;
-
-                                    modifier.reference.positionOffset.y = Mathf.Clamp(sequence - offset, min, max);
-                                }
-
-                                // To Type Position
-                                // To Axis Z
-                                // From Type Rotation
-                                if (toType == 0 && toAxis == 2 && fromType == 2)
-                                {
-                                    var sequence = rb.localRotation.eulerAngles.z * multiply;
-
-                                    modifier.reference.positionOffset.z = Mathf.Clamp(sequence - offset, min, max);
-                                }
-
-                                // To Type Scale
-                                // To Axis X
-                                // From Type Position
-                                if (toType == 1 && toAxis == 0 && fromType == 0)
-                                {
-                                    var sequence = rb.localPosition;
-
-                                    modifier.reference.scaleOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) * multiply - offset, min, max);
-                                }
-
-                                // To Type Scale
-                                // To Axis Y
-                                // From Type Position
-                                if (toType == 1 && toAxis == 1 && fromType == 0)
-                                {
-                                    var sequence = rb.localPosition;
-
-                                    modifier.reference.scaleOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) * multiply - offset, min, max);
-                                }
-
-                                // To Type Scale
-                                // To Axis Z
-                                // From Type Position
-                                if (toType == 1 && toAxis == 2 && fromType == 0)
-                                {
-                                    var sequence = rb.localPosition;
-
-                                    modifier.reference.scaleOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) * multiply - offset, min, max);
-                                }
-
-                                // To Type Scale
-                                // To Axis X
-                                // From Type Scale
-                                if (toType == 1 && toAxis == 0 && fromType == 1)
-                                {
-                                    var sequence = rb.localScale;
-
-                                    modifier.reference.scaleOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x : sequence.y) * multiply - offset, min, max);
-                                }
-
-                                // To Type Scale
-                                // To Axis Y
-                                // From Type Scale
-                                if (toType == 1 && toAxis == 1 && fromType == 1)
-                                {
-                                    var sequence = rb.localScale;
-
-                                    modifier.reference.scaleOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x : sequence.y) * multiply - offset, min, max);
-                                }
-
-                                // To Type Scale
-                                // To Axis Z
-                                // From Type Scale
-                                if (toType == 1 && toAxis == 2 && fromType == 1)
-                                {
-                                    var sequence = rb.localScale;
-
-                                    modifier.reference.scaleOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x : sequence.y) * multiply - offset, min, max);
-                                }
-
-                                // To Type Scale
-                                // To Axis X
-                                // From Type Rotation
-                                if (toType == 1 && toAxis == 0 && fromType == 2)
-                                {
-                                    var sequence = rb.localRotation.eulerAngles.z;
-
-                                    modifier.reference.scaleOffset.x = Mathf.Clamp(sequence * multiply - offset, min, max);
-                                }
-
-                                // To Type Scale
-                                // To Axis Y
-                                // From Type Rotation
-                                if (toType == 1 && toAxis == 1 && fromType == 2)
-                                {
-                                    var sequence = rb.localRotation.eulerAngles.z;
-
-                                    modifier.reference.scaleOffset.y = Mathf.Clamp(sequence * multiply - offset, min, max);
-                                }
-
-                                // To Type Scale
-                                // To Axis Z
-                                // From Type Rotation
-                                if (toType == 1 && toAxis == 2 && fromType == 2)
-                                {
-                                    var sequence = rb.localRotation.eulerAngles.z;
-
-                                    modifier.reference.scaleOffset.z = Mathf.Clamp(sequence * multiply - offset, min, max);
-                                }
-
-                                // To Type Rotation
-                                // To Axis X
-                                // From Type Position
-                                if (toType == 2 && toAxis == 0 && fromType == 0)
-                                {
-                                    var sequence = rb.localPosition;
-
-                                    modifier.reference.rotationOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) * multiply - offset, min, max);
-                                }
-
-                                // To Type Rotation
-                                // To Axis Y
-                                // From Type Position
-                                if (toType == 2 && toAxis == 1 && fromType == 0)
-                                {
-                                    var sequence = rb.localPosition;
-
-                                    modifier.reference.rotationOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) * multiply - offset, min, max);
-                                }
-
-                                // To Type Rotation
-                                // To Axis Z
-                                // From Type Position
-                                if (toType == 2 && toAxis == 2 && fromType == 0)
-                                {
-                                    var sequence = rb.localPosition;
-
-                                    modifier.reference.rotationOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) * multiply - offset, min, max);
-                                }
-
-                                // To Type Rotation
-                                // To Axis X
-                                // From Type Scale
-                                if (toType == 2 && toAxis == 0 && fromType == 1)
-                                {
-                                    var sequence = rb.localScale;
-
-                                    modifier.reference.rotationOffset.x = Mathf.Clamp((fromAxis == 0 ? sequence.x : sequence.y) * multiply - offset, min, max);
-                                }
-
-                                // To Type Rotation
-                                // To Axis Y
-                                // From Type Scale
-                                if (toType == 2 && toAxis == 1 && fromType == 1)
-                                {
-                                    var sequence = rb.localScale;
-
-                                    modifier.reference.rotationOffset.y = Mathf.Clamp((fromAxis == 0 ? sequence.x : sequence.y) * multiply - offset, min, max);
-                                }
-
-                                // To Type Rotation
-                                // To Axis Z
-                                // From Type Scale
-                                if (toType == 2 && toAxis == 2 && fromType == 1)
-                                {
-                                    var sequence = rb.localScale;
-
-                                    modifier.reference.rotationOffset.z = Mathf.Clamp((fromAxis == 0 ? sequence.x : sequence.y) * multiply - offset, min, max);
-                                }
-
-                                // To Type Rotation
-                                // To Axis X
-                                // From Type Rotation
-                                if (toType == 2 && toAxis == 0 && fromType == 2)
-                                {
-                                    var sequence = rb.localRotation.eulerAngles.z;
-
-                                    modifier.reference.rotationOffset.x = Mathf.Clamp(sequence * multiply - offset, min, max);
-                                }
-
-                                // To Type Rotation
-                                // To Axis Y
-                                // From Type Rotation
-                                if (toType == 2 && toAxis == 1 && fromType == 2)
-                                {
-                                    var sequence = rb.localRotation.eulerAngles.z;
-
-                                    modifier.reference.rotationOffset.y = Mathf.Clamp(sequence * multiply - offset, min, max);
-                                }
-
-                                // To Type Rotation
-                                // To Axis Z
-                                // From Type Rotation
-                                if (toType == 2 && toAxis == 2 && fromType == 2)
-                                {
-                                    var sequence = rb.localRotation.eulerAngles.z;
-
-                                    modifier.reference.rotationOffset.z = Mathf.Clamp(sequence * multiply - offset, min, max);
-                                }
+                                modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) - offset) * multiply, min, max));
                             }
                         }
 
@@ -4445,6 +4247,7 @@ namespace BetterLegacy.Core.Helpers
                             "arcade",
                             "editor",
                             "play",
+                            "menu",
                         };
 
                         string[] discordIcons = new string[]
@@ -4536,19 +4339,6 @@ namespace BetterLegacy.Core.Helpers
 
                         break;
                     }
-                    //case "code":
-                    //    {
-                    //        string id = "a";
-                    //        if (modifier.reference)
-                    //            id = modifier.reference.id;
-
-                    //        string codeToInclude = $"var refID = \"{id}\";";
-
-                    //        if (RTCode.Validate(modifier.value))
-                    //            RTCode.Evaluate($"{codeToInclude}{modifier.value}");
-
-                    //        break;
-                    //    }
             }
         }
 
@@ -4621,44 +4411,25 @@ namespace BetterLegacy.Core.Helpers
                         }
                         break;
                     }
+                case "enableObjectOther":
+                    {
+                        var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.value));
+
+                        if (list.Count() > 0)
+                        {
+                            foreach (var beatmapObject in list)
+                            {
+                                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
+                                {
+                                    levelObject.transformChain[0].gameObject.SetActive(false);
+                                }
+                            }
+                        }
+
+                        break;
+                    }
                 case "enableObjectTree":
                     {
-                        //if (!modifier.hasChanged)
-                        //{
-                        //    modifier.hasChanged = true;
-                        //    if (modifier.value == "0")
-                        //        modifier.value = "False";
-
-                        //    if (Parser.TryParse(modifier.value, true))
-                        //    {
-                        //        foreach (var cc in modifier.reference.GetChildChain())
-                        //        {
-                        //            for (int o = 0; o < cc.Count; o++)
-                        //            {
-                        //                if (cc[o] != null && Updater.TryGetObject(cc[o], out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
-                        //                {
-                        //                    levelObject.transformChain[0].gameObject.SetActive(false);
-                        //                }
-                        //            }
-                        //        }
-
-                        //        break;
-                        //    }
-
-                        //    var parentChain = modifier.reference.GetParentChain();
-
-                        //    foreach (var cc in parentChain[parentChain.Count - 1].GetChildChain())
-                        //    {
-                        //        for (int o = 0; o < cc.Count; o++)
-                        //        {
-                        //            if (cc[o] != null && Updater.TryGetObject(cc[o], out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
-                        //            {
-                        //                levelObject.transformChain[0].gameObject.SetActive(false);
-                        //            }
-                        //        }
-                        //    }
-                        //}
-
                         if (modifier.value == "0")
                             modifier.value = "False";
 
@@ -4685,6 +4456,40 @@ namespace BetterLegacy.Core.Helpers
 
                         break;
                     }
+                case "enableObjectTreeOther":
+                    {
+                        if (modifier.Result == null)
+                        {
+                            var beatmapObjects = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
+
+                            var resultList = new List<List<DataManager.GameData.BeatmapObject>>();
+                            foreach (var bm in beatmapObjects)
+                            {
+                                var beatmapObject = Parser.TryParse(modifier.value, true) ? bm : bm.GetParentChain().Last();
+                                resultList.AddRange(beatmapObject.GetChildChain());
+                            }
+
+                            modifier.Result = resultList;
+                        }
+
+                        var list = (List<List<DataManager.GameData.BeatmapObject>>)modifier.Result;
+
+                        for (int i = 0; i < list.Count; i++)
+                        {
+                            var childList = list[i];
+                            for (int j = 0; j < childList.Count; j++)
+                            {
+                                if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
+                                {
+                                    levelObject.transformChain[0].gameObject.SetActive(false);
+                                }
+                            }
+                        }
+
+                        modifier.Result = null;
+
+                        break;
+                    }
                 case "disableObject":
                     {
                         if (!modifier.hasChanged && modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
@@ -4695,42 +4500,88 @@ namespace BetterLegacy.Core.Helpers
 
                         break;
                     }
+                case "disableObjectOther":
+                    {
+                        var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.value));
+
+                        if (list.Count() > 0)
+                        {
+                            foreach (var beatmapObject in list)
+                            {
+                                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
+                                {
+                                    levelObject.transformChain[0].gameObject.SetActive(true);
+                                }
+                            }
+                        }
+
+                        break;
+                    }
                 case "disableObjectTree":
                     {
-                        if (!modifier.hasChanged)
+                        if (modifier.value == "0")
+                            modifier.value = "False";
+
+                        if (Parser.TryParse(modifier.value, true))
                         {
-                            modifier.hasChanged = true;
-
-                            if (modifier.value == "0")
-                                modifier.value = "False";
-
-                            if (Parser.TryParse(modifier.value, true))
-                            {
-                                foreach (var cc in modifier.reference.GetChildChain())
-                                {
-                                    for (int o = 0; o < cc.Count; o++)
-                                    {
-                                        if (cc[o] != null && Updater.TryGetObject(cc[o], out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
-                                        {
-                                            levelObject.transformChain[0].gameObject.SetActive(true);
-                                        }
-                                    }
-                                }
-
-                                break;
-                            }
-
-                            var parentChain = modifier.reference.GetParentChain();
-
-                            foreach (var cc in parentChain[parentChain.Count - 1].GetChildChain())
+                            foreach (var cc in modifier.reference.GetChildChain())
                             {
                                 for (int o = 0; o < cc.Count; o++)
                                 {
                                     if (cc[o] != null && Updater.TryGetObject(cc[o], out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
+                                    {
                                         levelObject.transformChain[0].gameObject.SetActive(true);
+                                    }
+                                }
+                            }
+
+                            break;
+                        }
+
+                        var parentChain = modifier.reference.GetParentChain();
+
+                        foreach (var cc in parentChain[parentChain.Count - 1].GetChildChain())
+                        {
+                            for (int o = 0; o < cc.Count; o++)
+                            {
+                                if (cc[o] != null && Updater.TryGetObject(cc[o], out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
+                                    levelObject.transformChain[0].gameObject.SetActive(true);
+                            }
+                        }
+
+                        break;
+                    }
+                case "disableObjectTreeOther":
+                    {
+                        if (modifier.Result == null)
+                        {
+                            var beatmapObjects = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
+
+                            var resultList = new List<List<DataManager.GameData.BeatmapObject>>();
+                            foreach (var bm in beatmapObjects)
+                            {
+                                var beatmapObject = Parser.TryParse(modifier.value, true) ? bm : bm.GetParentChain().Last();
+                                resultList.AddRange(beatmapObject.GetChildChain());
+                            }
+
+                            modifier.Result = resultList;
+                        }
+
+                        var list = (List<List<DataManager.GameData.BeatmapObject>>)modifier.Result;
+
+                        for (int i = 0; i < list.Count; i++)
+                        {
+                            var childList = list[i];
+                            for (int j = 0; j < childList.Count; j++)
+                            {
+                                if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
+                                {
+                                    levelObject.transformChain[0].gameObject.SetActive(true);
                                 }
                             }
                         }
+
+                        modifier.Result = null;
 
                         break;
                     }

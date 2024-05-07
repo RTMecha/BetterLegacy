@@ -1688,6 +1688,21 @@ namespace BetterLegacy.Editor.Managers
 
                             break;
                         }
+                    case "enableObjectTreeOther":
+                    case "disableObjectTreeOther":
+                        {
+                            stringGenerator("Object Group", 1);
+                            boolGenerator("Use Self", 0, true);
+
+                            break;
+                        }
+                    case "enableObjectOther":
+                    case "disableObjectOther":
+                        {
+                            stringGenerator("Object Group", 0);
+
+                            break;
+                        }
                     #endregion
                     #region Level Rank
                     case "levelRankEquals":
@@ -1706,7 +1721,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             stringGenerator("State", 0);
                             stringGenerator("Details", 1);
-                            dropdownGenerator("Sub Icon", 2, new List<string> { "Arcade", "Editor", "Play" });
+                            dropdownGenerator("Sub Icon", 2, new List<string> { "Arcade", "Editor", "Play", "Menu" });
                             dropdownGenerator("Icon", 3, new List<string> { "PA Logo White", "PA Logo Black" });
 
                             break;
