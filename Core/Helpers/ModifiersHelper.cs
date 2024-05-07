@@ -3326,7 +3326,7 @@ namespace BetterLegacy.Core.Helpers
 
                             index = Mathf.Clamp(index, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
 
-                            levelObject.visualObject.Renderer.material.color += GameManager.inst.LiveTheme.objectColors[index] * distance * num;
+                            levelObject.visualObject.Renderer.material.color += GameManager.inst.LiveTheme.objectColors[index] * (distance - num);
                         }
 
                         break;
