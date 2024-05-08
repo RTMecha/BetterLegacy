@@ -49,12 +49,17 @@ namespace BetterLegacy.Core.Helpers
                         };
                     }
 
-                    if (LevelManager.CurrentLevel.playerData.Deaths < __instance.deaths.Count)
+                    CoreHelper.Log($"Updating save data\n" +
+                        $"Deaths [OLD = {LevelManager.CurrentLevel.playerData.Deaths} > NEW = {__instance.deaths.Count}]\n" +
+                        $"Hits: [OLD = {LevelManager.CurrentLevel.playerData.Hits} > NEW = {__instance.hits.Count}]\n" +
+                        $"Boosts: [OLD = {LevelManager.CurrentLevel.playerData.Boosts} > NEW = {LevelManager.BoostCount}]");
+
+                    if (LevelManager.CurrentLevel.playerData.Deaths > __instance.deaths.Count)
                         LevelManager.CurrentLevel.playerData.Deaths = __instance.deaths.Count;
-                    if (LevelManager.CurrentLevel.playerData.Hits < __instance.hits.Count)
+                    if (LevelManager.CurrentLevel.playerData.Hits > __instance.hits.Count)
                         LevelManager.CurrentLevel.playerData.Hits = __instance.hits.Count;
                     LevelManager.CurrentLevel.playerData.Completed = true;
-                    if (LevelManager.CurrentLevel.playerData.Boosts < LevelManager.BoostCount)
+                    if (LevelManager.CurrentLevel.playerData.Boosts > LevelManager.BoostCount)
                         LevelManager.CurrentLevel.playerData.Boosts = LevelManager.BoostCount;
 
                     if (LevelManager.Saves.Has(x => x.ID == LevelManager.CurrentLevel.id))
@@ -64,6 +69,11 @@ namespace BetterLegacy.Core.Helpers
                     }
                     else
                         LevelManager.Saves.Add(LevelManager.CurrentLevel.playerData);
+
+                    if (LevelManager.Levels.TryFind(x => x.id == LevelManager.CurrentLevel.id, out Level level))
+                    {
+                        level.playerData = LevelManager.CurrentLevel.playerData;
+                    }
                 }
 
                 LevelManager.SaveProgress();
