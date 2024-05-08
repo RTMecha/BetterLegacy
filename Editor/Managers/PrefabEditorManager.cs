@@ -847,7 +847,7 @@ namespace BetterLegacy.Editor.Managers
             DataManager.inst.gameData.beatmapObjects.RemoveAll(x => x.prefabInstanceID == prefabInstanceID && !x.fromPrefab);
             DataManager.inst.gameData.prefabObjects.Add(prefabObject);
 
-            Updater.AddPrefabToLevel(prefabObject);
+            StartCoroutine(Updater.IAddPrefabToLevel(prefabObject));
 
             DataManager.inst.gameData.prefabObjects.Where(x => x.prefabID == prefab.ID).ToList().ForEach(x => Updater.UpdatePrefab(x));
 
