@@ -270,10 +270,13 @@ namespace BetterLegacy.Patchers
         static bool FixedUpdatePrefix()
         {
             if (DataManager.inst && DataManager.inst.gameData != null && DataManager.inst.gameData.beatmapData != null && DataManager.inst.gameData.beatmapData.checkpoints != null &&
-                DataManager.inst.gameData.beatmapData.checkpoints.Count > 0 && CoreHelper.Playing)
+                DataManager.inst.gameData.beatmapData.checkpoints.Count > 0 && (CoreHelper.Playing || CoreHelper.Reversing))
             {
-                Instance.UpcomingCheckpoint = Instance.GetClosestIndex(DataManager.inst.gameData.beatmapData.checkpoints, AudioManager.inst.CurrentAudioSource.time);
-                Instance.UpcomingCheckpointIndex = DataManager.inst.gameData.beatmapData.checkpoints.FindIndex(x => x == Instance.UpcomingCheckpoint);
+                if (!CoreHelper.Reversing)
+                {
+                    Instance.UpcomingCheckpoint = Instance.GetClosestIndex(DataManager.inst.gameData.beatmapData.checkpoints, AudioManager.inst.CurrentAudioSource.time);
+                    Instance.UpcomingCheckpointIndex = DataManager.inst.gameData.beatmapData.checkpoints.FindIndex(x => x == Instance.UpcomingCheckpoint);
+                }
                 if (Instance.timeline && AudioManager.inst.CurrentAudioSource.clip != null)
                 {
                     float num = AudioManager.inst.CurrentAudioSource.time * 400f / AudioManager.inst.CurrentAudioSource.clip.length;
@@ -282,7 +285,9 @@ namespace BetterLegacy.Patchers
                     else
                         Instance.UpdateTimeline();
                 }
-                Instance.lastCheckpointState = DataManager.inst.gameData.beatmapData.GetWhichCheckpointBasedOnTime(AudioManager.inst.CurrentAudioSource.time);
+
+                if (!CoreHelper.Reversing)
+                    Instance.lastCheckpointState = DataManager.inst.gameData.beatmapData.GetWhichCheckpointBasedOnTime(AudioManager.inst.CurrentAudioSource.time);
             }
             Instance.playerGUI.SetActive(CoreHelper.InEditorPreview);
             return false;
