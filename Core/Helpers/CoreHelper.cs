@@ -178,6 +178,21 @@ namespace BetterLegacy.Core.Helpers
         /// <returns>Returns a generated Coroutine.</returns>
         public static Coroutine StartCoroutineAsync(IEnumerator routine) => LegacyPlugin.inst.StartCoroutineAsync(routine);
 
+        public static IEnumerator FixUIText()
+        {
+            var texts = Resources.FindObjectsOfTypeAll<Text>();
+            var textArray = new string[texts.Length];
+
+            for (int i = 0; i < texts.Length; i++)
+                textArray[i] = texts[i].text;
+
+            for (int i = 0; i < texts.Length; i++)
+            {
+                yield return null;
+                texts[i].text = textArray[i];
+            }
+        }
+
         #endregion
 
         /// <summary>
