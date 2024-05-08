@@ -336,33 +336,13 @@ namespace BetterLegacy.Core
                         jn["prefabs"][i] = ((Prefab)_data.prefabs[i]).ToJSON();
                     }
                 }
-                Debug.Log($"Saving themes");
-                if (_data.beatmapThemes != null)
+                CoreHelper.Log($"Saving themes");
+                var levelThemes = DataManager.inst.CustomBeatmapThemes.Where(x => Parser.TryParse(x.id, 0) != 0 && _data.eventObjects.allEvents[4].Has(y => y.eventValues[0] == Parser.TryParse(x.id, 0))).ToList();
+
+                for (int i = 0; i < levelThemes.Count; i++)
                 {
-                    var levelThemes = new List<BaseBeatmapTheme>();
-
-                    for (int i = 0; i < _data.beatmapThemes.Count; i++)
-                    {
-                        var beatmapTheme = _data.beatmapThemes.ElementAt(i).Value;
-
-                        string id = beatmapTheme.id;
-
-                        foreach (var keyframe in _data.eventObjects.allEvents[4])
-                        {
-                            var eventValue = keyframe.eventValues[0].ToString();
-
-                            if (int.TryParse(id, out int num) && (int)keyframe.eventValues[0] == num && levelThemes.Find(x => int.TryParse(x.id, out int xid) && xid == (int)keyframe.eventValues[0]) == null)
-                            {
-                                levelThemes.Add(beatmapTheme);
-                            }
-                        }
-                    }
-
-                    for (int i = 0; i < levelThemes.Count; i++)
-                    {
-                        CoreHelper.Log($"Saving {levelThemes[i].id} - {levelThemes[i].name} to level!");
-                        jn["themes"][i] = ((BeatmapTheme)levelThemes[i]).ToJSON();
-                    }
+                    CoreHelper.Log($"Saving {levelThemes[i].id} - {levelThemes[i].name} to level!");
+                    jn["themes"][i] = ((BeatmapTheme)levelThemes[i]).ToJSON();
                 }
 
                 CoreHelper.Log("Saving Checkpoints");
