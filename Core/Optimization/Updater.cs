@@ -426,7 +426,7 @@ namespace BetterLegacy.Core.Optimization
             DataManager.inst.gameData.beatmapObjects.RemoveAll(x => x.prefabInstanceID == prefabObject.ID);
 
             if (reinsert)
-                AddPrefabToLevel(prefabObject);
+                CoreHelper.StartCoroutine(IAddPrefabToLevel(prefabObject));
         }
 
         /// <summary>
