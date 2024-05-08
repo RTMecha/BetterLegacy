@@ -3631,6 +3631,81 @@ namespace BetterLegacy.Core.Helpers
                         }
                         break;
                     }
+                case "textSequence":
+                    {
+                        if (modifier.reference.shape != 4 || !modifier.reference.levelObject || modifier.reference.levelObject.visualObject is not TextObject)
+                            break;
+
+                        var text = modifier.reference.text;
+
+                        // Hacky method but Idk how else I'll make the sequence ignore formating text
+                        var hasAlignLeft = text.Contains("<align=left>");
+                        var hasAlignRight = text.Contains("<align=right>");
+                        var hasB = text.Contains("<b>");
+                        var hasI = text.Contains("<i>");
+                        var hasU = text.Contains("<u>");
+                        var hasS = text.Contains("<s>");
+                        var hasColor = CoreHelper.RegexMatch(text, new Regex(@"<color=([0-9a-zA-Z]+)>"), out Match match);
+
+                        var time = AudioManager.inst.CurrentAudioSource.time - modifier.reference.StartTime;
+                        var length = Parser.TryParse(modifier.value, 1f);
+
+                        var p = time / length;
+
+                        var stringLength = (int)Mathf.Lerp(0, text.Length, p);
+
+                        var sequenceText = stringLength <= 0 ? "" : text.Substring(0, stringLength);
+                        text = text.Replace("<align=left>", "")
+                                   .Replace("<align=right>", "")
+                                   .Replace("<b>", "")
+                                   .Replace("<i>", "")
+                                   .Replace(match.Groups[0].ToString(), "");
+
+                        stringLength = stringLength = (int)Mathf.Lerp(0, text.Length, p);
+                        text = stringLength <= 0 ? "" : text.Substring(0, stringLength);
+
+                        string textWithoutGlitch = text;
+
+                        if ((sequenceText.Length == 0 || sequenceText[sequenceText.Length - 1] != ' ') && sequenceText.Length != modifier.reference.text.Length && Parser.TryParse(modifier.commands[1], true))
+                            text += LSText.randomString(1);
+
+                        if (hasAlignLeft)
+                            text = "<align=left>" + text;
+                        if (hasAlignRight)
+                            text = "<align=right>" + text;
+                        if (hasB)
+                            text = "<b>" + text;
+                        if (hasI)
+                            text = "<i>" + text;
+                        if (hasU)
+                            text = "<u>" + text;
+                        if (hasS)
+                            text = "<s>" + text;
+                        if (hasColor)
+                            text = match.Groups[0].ToString() + text;
+
+                        if (modifier.constant)
+                            ((TextObject)modifier.reference.levelObject.visualObject).SetText(text);
+                        else
+                            ((TextObject)modifier.reference.levelObject.visualObject).Text = text;
+
+                        if (Parser.TryParse(modifier.commands[2], true) && (modifier.Result is not string || (string)modifier.Result != textWithoutGlitch))
+                        {
+                            modifier.Result = textWithoutGlitch;
+
+                            if (!Parser.TryParse(modifier.commands[3], false))
+                            {
+                                AudioManager.inst.PlaySound("Click");
+                                break;
+                            }
+
+                            if (bool.TryParse(modifier.commands[5], out bool global) && float.TryParse(modifier.commands[6], out float pitch) && float.TryParse(modifier.commands[7], out float vol))
+                                ModifiersManager.GetSoundPath(modifier.reference.id, modifier.commands[4], global, pitch, vol, false);
+
+                        }
+
+                        break;
+                    }
                 case "clampVariable":
                     {
                         modifier.reference.integerVariable = Mathf.Clamp(modifier.reference.integerVariable, Parser.TryParse(modifier.commands.Count > 1 ? modifier.commands[1] : "1", 0), Parser.TryParse(modifier.commands.Count > 2 ? modifier.commands[2] : "1", 1));

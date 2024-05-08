@@ -736,6 +736,20 @@ namespace BetterLegacy.Editor.Managers
 
                             break;
                         }
+                    case "textSequence":
+                        {
+                            singleGenerator("Time", 0, 1f);
+                            boolGenerator("Display Glitch", 1, true);
+                            boolGenerator("Play Sound", 2, true);
+                            boolGenerator("Custom Sound", 3, false);
+                            stringGenerator("Sound Path", 4);
+                            boolGenerator("Global", 5, false);
+
+                            singleGenerator("Pitch", 6, 1f);
+                            singleGenerator("Volume", 7, 1f);
+
+                            break;
+                        }
                     #endregion
                     #region Component
                     case "blur":
