@@ -184,13 +184,17 @@ namespace BetterLegacy.Core.Helpers
             var textArray = new string[texts.Length];
 
             for (int i = 0; i < texts.Length; i++)
+            {
                 textArray[i] = texts[i].text;
+                texts[i].text = "";
+            }
 
             for (int i = 0; i < texts.Length; i++)
             {
-                yield return null;
                 texts[i].text = textArray[i];
             }
+
+            yield break;
         }
 
         #endregion
@@ -296,6 +300,21 @@ namespace BetterLegacy.Core.Helpers
         #endregion
 
         #region Strings
+
+        public static KeyValuePair<string, string> ReplaceMatching(KeyValuePair<string, string> keyValuePair, string sequenceText, string pattern)
+        {
+            var text = keyValuePair.Key;
+            var replace = keyValuePair.Value;
+            var matches1 = Regex.Matches(text, pattern);
+            for (int i = 0; i < matches1.Count; i++)
+            {
+                var m = matches1[i];
+                if (!sequenceText.Contains(m.Groups[0].ToString()))
+                    text = text.Replace(m.Groups[0].ToString(), "");
+                replace = replace.Replace(m.Groups[0].ToString(), "");
+            }
+            return new KeyValuePair<string, string>(text, replace);
+        }
 
         public static bool RegexMatch(string str, Regex regex, out Match match)
         {
