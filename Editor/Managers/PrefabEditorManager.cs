@@ -185,6 +185,21 @@ namespace BetterLegacy.Editor.Managers
 
         public bool advancedParent;
 
+        public IEnumerator UpdatePrefabObjectTimes(PrefabObject currentPrefab)
+        {
+            var prefabObjects = DataManager.inst.gameData.prefabObjects.Where(x => x.prefabID == currentPrefab.prefabID).ToList();
+            for (int i = 0; i < prefabObjects.Count; i++)
+            {
+                var prefabObject = prefabObjects[i];
+
+                if (prefabObject.editorData.layer == EditorManager.inst.layer)
+                    ObjectEditor.inst.RenderTimelineObjectPosition(new TimelineObject((PrefabObject)prefabObject));
+
+                StartCoroutine(Updater.IUpdatePrefab(prefabObject, "Start Time"));
+            }
+            yield break;
+        }
+
         public void UpdateModdedVisbility()
         {
             if (!prefabSelectorLeft.gameObject.activeInHierarchy)
@@ -406,16 +421,7 @@ namespace BetterLegacy.Editor.Managers
                     if (float.TryParse(_val, out float offset))
                     {
                         prefab.Offset = offset;
-                        int num = 0;
-                        foreach (var prefabObject in DataManager.inst.gameData.prefabObjects)
-                        {
-                            if (prefabObject.editorData.layer == EditorManager.inst.layer && prefabObject.prefabID == currentPrefab.prefabID)
-                            {
-                                ObjectEditor.inst.RenderTimelineObject(new TimelineObject((PrefabObject)prefabObject));
-                            }
-                            Updater.UpdatePrefab(prefabObject, "Start Time");
-                            num++;
-                        }
+                        StartCoroutine(UpdatePrefabObjectTimes(currentPrefab));
                     }
                     else
                     {
