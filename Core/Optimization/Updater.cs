@@ -524,6 +524,7 @@ namespace BetterLegacy.Core.Optimization
                                                 beatmapObject.events[i][k].eventTime = original.events[i][k].eventTime / Mathf.Clamp(moddedPrefab.speed, 0.01f, MaxFastSpeed);
                                             }
                                         }
+
                                         UpdateProcessor(beatmapObject, "Keyframes");
                                     }
 
@@ -559,6 +560,136 @@ namespace BetterLegacy.Core.Optimization
                         break;
                     }
             }
+        }
+
+        public static IEnumerator IUpdatePrefab(BasePrefabObject prefabObject, string context)
+        {
+            string lower = context.ToLower().Replace(" ", "").Replace("_", "");
+            switch (lower)
+            {
+                case "offset":
+                case "transformoffset":
+                    {
+                        foreach (var beatmapObject in DataManager.inst.gameData.beatmapObjects.Where(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID && x is BeatmapObject).Select(x => x as BeatmapObject))
+                        {
+                            if (beatmapObject.levelObject && beatmapObject.levelObject.visualObject != null && beatmapObject.levelObject.visualObject.Top)
+                            {
+                                var top = beatmapObject.levelObject.visualObject.Top;
+
+                                bool hasPosX = prefabObject.events.Count > 0 && prefabObject.events[0] != null && prefabObject.events[0].eventValues.Length > 0;
+                                bool hasPosY = prefabObject.events.Count > 0 && prefabObject.events[0] != null && prefabObject.events[0].eventValues.Length > 1;
+
+                                bool hasScaX = prefabObject.events.Count > 1 && prefabObject.events[1] != null && prefabObject.events[1].eventValues.Length > 0;
+                                bool hasScaY = prefabObject.events.Count > 1 && prefabObject.events[1] != null && prefabObject.events[1].eventValues.Length > 1;
+
+                                bool hasRot = prefabObject.events.Count > 2 && prefabObject.events[2] != null && prefabObject.events[2].eventValues.Length > 0;
+
+                                var pos = new Vector3(hasPosX ? prefabObject.events[0].eventValues[0] : 0f, hasPosY ? prefabObject.events[0].eventValues[1] : 0f, 0f);
+                                var sca = new Vector3(hasScaX ? prefabObject.events[1].eventValues[0] : 1f, hasScaY ? prefabObject.events[1].eventValues[1] : 1f, 1f);
+                                var rot = Quaternion.Euler(0f, 0f, hasRot ? prefabObject.events[2].eventValues[0] : 0f);
+
+                                try
+                                {
+                                    if (prefabObject.events[0].random != 0)
+                                        pos = ObjectManager.inst.RandomVector2Parser(prefabObject.events[0]);
+                                    if (prefabObject.events[1].random != 0)
+                                        sca = ObjectManager.inst.RandomVector2Parser(prefabObject.events[1]);
+                                    if (prefabObject.events[2].random != 0)
+                                        rot = Quaternion.Euler(0f, 0f, ObjectManager.inst.RandomFloatParser(prefabObject.events[2]));
+                                }
+                                catch (System.Exception ex)
+                                {
+                                    Debug.LogError($"{className}Prefab Randomization error.\n{ex}");
+                                }
+
+                                beatmapObject.levelObject.prefabOffsetPosition = pos;
+                                beatmapObject.levelObject.prefabOffsetScale = sca.x != 0f && sca.y != 0f ? sca : Vector3.one;
+                                beatmapObject.levelObject.prefabOffsetRotation = rot.eulerAngles;
+
+                                if (!hasPosX)
+                                    Debug.LogError($"{className}PrefabObject does not have Postion X in its' eventValues.\nPossible causes:");
+                                if (!hasPosY)
+                                    Debug.LogError($"{className}PrefabObject does not have Postion Y in its' eventValues.");
+                                if (!hasScaX)
+                                    Debug.LogError($"{className}PrefabObject does not have Scale X in its' eventValues.");
+                                if (!hasScaY)
+                                    Debug.LogError($"{className}PrefabObject does not have Scale Y in its' eventValues.");
+                                if (!hasRot)
+                                    Debug.LogError($"{className}PrefabObject does not have Rotation in its' eventValues.");
+                            }
+                        }
+                        break;
+                    }
+                case "time":
+                case "starttime":
+                case "speed":
+                    {
+                        float t = 1f;
+
+                        var moddedPrefab = (PrefabObject)prefabObject;
+
+                        if (prefabObject.RepeatOffsetTime != 0f)
+                            t = prefabObject.RepeatOffsetTime;
+
+                        float timeToAdd = 0f;
+
+                        var prefab = DataManager.inst.gameData.prefabs.Find(x => x.ID == prefabObject.prefabID);
+
+                        for (int i = 0; i < prefabObject.RepeatCount + 1; i++)
+                        {
+                            foreach (var beatmapObject in DataManager.inst.gameData.beatmapObjects.Where(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID))
+                            {
+                                if (prefab.objects.TryFind(x => x.id == ((BeatmapObject)beatmapObject).originalID, out BaseBeatmapObject original))
+                                {
+                                    beatmapObject.StartTime = prefabObject.StartTime + prefab.Offset + ((original.StartTime + timeToAdd) / Mathf.Clamp(moddedPrefab.speed, 0.01f, MaxFastSpeed));
+
+                                    if (lower == "speed")
+                                    {
+                                        for (int j = 0; j < beatmapObject.events.Count; j++)
+                                        {
+                                            for (int k = 0; k < beatmapObject.events[j].Count; k++)
+                                            {
+                                                beatmapObject.events[i][k].eventTime = original.events[i][k].eventTime / Mathf.Clamp(moddedPrefab.speed, 0.01f, MaxFastSpeed);
+                                            }
+                                        }
+
+                                        UpdateProcessor(beatmapObject, "Keyframes");
+                                    }
+
+                                    UpdateProcessor(beatmapObject, "Start Time");
+                                }
+                            }
+
+                            timeToAdd += t;
+                        }
+
+                        break;
+                    }
+                case "autokill":
+                    {
+                        var pr = prefabObject as PrefabObject;
+
+                        foreach (var beatmapObject in DataManager.inst.gameData.beatmapObjects.Where(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID))
+                        {
+                            if (pr.autoKillType != PrefabObject.AutoKillType.Regular && prefabObject.StartTime + pr.Prefab?.Offset + beatmapObject.GetObjectLifeLength(_oldStyle: true) > pr.autoKillOffset)
+                            {
+                                beatmapObject.autoKillType = ObjectAutoKillType.SongTime;
+                                beatmapObject.autoKillOffset = pr.autoKillType == PrefabObject.AutoKillType.StartTimeOffset ? prefabObject.StartTime + pr.Prefab?.Offset ?? 0f + pr.autoKillOffset : pr.autoKillOffset;
+                            }
+
+                            if (pr.autoKillType == PrefabObject.AutoKillType.Regular)
+                            {
+                                UpdatePrefab(prefabObject);
+                            }
+
+                            UpdateProcessor(beatmapObject, "Start Time");
+                        }
+
+                        break;
+                    }
+            }
+
+            yield break;
         }
 
         public static float MaxFastSpeed => 1000f;
