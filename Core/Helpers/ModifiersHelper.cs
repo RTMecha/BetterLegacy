@@ -3638,51 +3638,114 @@ namespace BetterLegacy.Core.Helpers
 
                         var text = modifier.reference.text;
 
-                        // Hacky method but Idk how else I'll make the sequence ignore formating text
-                        var hasAlignLeft = text.Contains("<align=left>");
-                        var hasAlignRight = text.Contains("<align=right>");
-                        var hasB = text.Contains("<b>");
-                        var hasI = text.Contains("<i>");
-                        var hasU = text.Contains("<u>");
-                        var hasS = text.Contains("<s>");
-                        var hasColor = CoreHelper.RegexMatch(text, new Regex(@"<color=([0-9a-zA-Z]+)>"), out Match match);
-
                         var time = AudioManager.inst.CurrentAudioSource.time - modifier.reference.StartTime;
                         var length = Parser.TryParse(modifier.value, 1f);
 
                         var p = time / length;
 
                         var stringLength = (int)Mathf.Lerp(0, text.Length, p);
+                        var sequenceText = stringLength <= 0 ? "" : stringLength >= text.Length ? text : text.Substring(0, stringLength);
 
-                        var sequenceText = stringLength <= 0 ? "" : text.Substring(0, stringLength);
-                        text = text.Replace("<align=left>", "")
-                                   .Replace("<align=right>", "")
-                                   .Replace("<b>", "")
-                                   .Replace("<i>", "")
-                                   .Replace(match.Groups[0].ToString(), "");
+                        if (sequenceText.Length >= 0 && sequenceText.Length < text.Length && text[sequenceText.Length] == '<')
+                        {
+                            while (sequenceText.Length < modifier.reference.text.Length && (sequenceText.Length <= 0 || sequenceText[sequenceText.Length - 1] != '>'))
+                            {
+                                sequenceText += modifier.reference.text[sequenceText.Length];
+                            }
+                        }
 
-                        stringLength = stringLength = (int)Mathf.Lerp(0, text.Length, p);
-                        text = stringLength <= 0 ? "" : text.Substring(0, stringLength);
+                        #region Replace text
+
+                        var keyValuePair = new KeyValuePair<string, string>(text, text);
+
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<align=([a-zA-Z]+)>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</align>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<alpha=([0-9.]+)>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</alpha>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<b>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</b>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<br>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</br>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<color=([0-9a-zA-Z]+)>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</color>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<cspace=([0-9.]+)>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</cspace>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<font=([0-9a-zA-Z]+)>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</font>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<indent=([0-9.]+)>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</indent>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<i>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</i>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<line-height=([0-9.]+)>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</line-height>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<line-indent=([0-9.]+)>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</line-indent>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<link=([0-9.a-zA-Z]+)>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</link>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<lowercase>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</lowercase>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<uppercase>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</uppercase>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<smallcaps>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</smallcaps>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<margin=([0-9a-zA-Z]+)>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</margin>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<mark=([0-9a-zA-Z]+)>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</mark>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<mspace=([0-9.]+)>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</mspace>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<noparse>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</noparse>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<nobr>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</nobr>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<page>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</page>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<pos=([0-9.]+)>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</pos>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<size=([0-9.]+)>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</size>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<sprite=([0-9.a-zA-Z]+)>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<style=([0-9.a-zA-Z]+)>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</style>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<sub>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</sub>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<sup>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</sup>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<voffset=([0-9.]+)>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</voffset>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<width=([0-9.]+)>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</width>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<u>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</u>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"<s>");
+                        keyValuePair = CoreHelper.ReplaceMatching(keyValuePair, sequenceText, @"</s>");
+
+                        #endregion
+
+                        text = keyValuePair.Key;
+                        var replace = keyValuePair.Value;
+                        var t = text;
+
+                        stringLength = (int)Mathf.Lerp(0, text.Length, p);
+                        text = stringLength <= 0 ? "" : stringLength >= text.Length ? text : text.Substring(0, stringLength);
+
+                        if (text.Length >= 0 && text.Length < sequenceText.Length && sequenceText[text.Length] == '<')
+                        {
+                            while (text.Length < modifier.reference.text.Length && (text.Length <= 0 || text[text.Length - 1] != '>'))
+                            {
+                                text += modifier.reference.text[text.Length];
+                            }
+                        }
+
+                        if (Input.GetKeyDown(KeyCode.G))
+                        {
+                            CoreHelper.Log($"TextSequence: {sequenceText}\nText: {t}\nReplace: {replace}\nFinal: {text}");
+                        }
 
                         string textWithoutGlitch = text;
 
                         if ((sequenceText.Length == 0 || sequenceText[sequenceText.Length - 1] != ' ') && sequenceText.Length != modifier.reference.text.Length && Parser.TryParse(modifier.commands[1], true))
                             text += LSText.randomString(1);
-
-                        if (hasAlignLeft)
-                            text = "<align=left>" + text;
-                        if (hasAlignRight)
-                            text = "<align=right>" + text;
-                        if (hasB)
-                            text = "<b>" + text;
-                        if (hasI)
-                            text = "<i>" + text;
-                        if (hasU)
-                            text = "<u>" + text;
-                        if (hasS)
-                            text = "<s>" + text;
-                        if (hasColor)
-                            text = match.Groups[0].ToString() + text;
 
                         if (modifier.constant)
                             ((TextObject)modifier.reference.levelObject.visualObject).SetText(text);
@@ -3701,7 +3764,6 @@ namespace BetterLegacy.Core.Helpers
 
                             if (bool.TryParse(modifier.commands[5], out bool global) && float.TryParse(modifier.commands[6], out float pitch) && float.TryParse(modifier.commands[7], out float vol))
                                 ModifiersManager.GetSoundPath(modifier.reference.id, modifier.commands[4], global, pitch, vol, false);
-
                         }
 
                         break;
