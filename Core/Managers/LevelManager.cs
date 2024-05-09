@@ -286,25 +286,31 @@ namespace BetterLegacy.Core.Managers
 
         public static void Sort(int orderby, bool ascend) => Levels = SortLevels(Levels, orderby, ascend);
 
-        public static string UpdateBeatmap(string _json, string _version)
+        /// <summary>
+        /// Updates the Beatmap JSON.
+        /// </summary>
+        /// <param name="json">The Beatmap JSON to update.</param>
+        /// <param name="ver">The PA version the Beatmap was made in.</param>
+        /// <returns>Updated Beatmap JSON.</returns>
+        public static string UpdateBeatmap(string json, string ver)
         {
-            Debug.Log("[ -- Updating Beatmap! -- ] - [" + _version + "]");
+            CoreHelper.Log($"[ -- Updating Beatmap! -- ] - [{ver}]");
 
-            var version = new Version(_version);
+            var version = new Version(ver);
 
             // 3.7.26
             if (version.Major <= 3 && version.Minor <= 7 && version.Patch <= 26)
             {
                 Debug.Log("value_x -> x & value_y -> y");
-                _json = _json.Replace("\"value_x\"", "\"x\"");
-                _json = _json.Replace("\"value_y\"", "\"y\"");
+                json = json.Replace("\"value_x\"", "\"x\"");
+                json = json.Replace("\"value_y\"", "\"y\"");
             }
 
             // 3.7.42
             if (version.Major <= 3 && version.Minor <= 7 && version.Patch <= 42)
             {
                 Debug.Log("text 4 -> 5");
-                _json = _json.Replace("\"shape\": \"4\"", "\"shape\": \"5\"");
+                json = json.Replace("\"shape\": \"4\"", "\"shape\": \"5\"");
             }
 
             // 3.8.15
@@ -315,52 +321,58 @@ namespace BetterLegacy.Core.Managers
             if (version.Major <= 3 && version.Minor <= 8 && version.Patch <= 25)
             {
                 Debug.Log("background_objects -> bg_objects");
-                _json = _json.Replace("\"background_objects\"", "\"bg_objects\"");
+                json = json.Replace("\"background_objects\"", "\"bg_objects\"");
                 Debug.Log("reactive_settings -> r_set");
-                _json = _json.Replace("\"reactive_settings\"", "\"r_set\"");
+                json = json.Replace("\"reactive_settings\"", "\"r_set\"");
             }
 
             // 3.8.48
             if (version.Major <= 3 && version.Minor <= 8 && version.Patch <= 48)
             {
                 Debug.Log("is_random -> r");
-                _json = _json.Replace("\"is_random\":\"False\"", "\"r\":\"0\"").Replace("\"is_random\":\"True\"", "\"r\":\"1\"");
-                _json = _json.Replace("\"is_random\": \"False\"", "\"r\": \"0\"").Replace("\"is_random\": \"True\"", "\"r\": \"1\"");
+                json = json.Replace("\"is_random\":\"False\"", "\"r\":\"0\"").Replace("\"is_random\":\"True\"", "\"r\":\"1\"");
+                json = json.Replace("\"is_random\": \"False\"", "\"r\": \"0\"").Replace("\"is_random\": \"True\"", "\"r\": \"1\"");
                 Debug.Log("origin -> o");
-                _json = _json.Replace("\"origin\"", "\"o\"");
+                json = json.Replace("\"origin\"", "\"o\"");
                 Debug.Log("time -> t");
-                _json = _json.Replace("\"time\"", "\"t\"");
+                json = json.Replace("\"time\"", "\"t\"");
                 Debug.Log("start_time -> st");
-                _json = _json.Replace("\"start_time\"", "\"st\"");
+                json = json.Replace("\"start_time\"", "\"st\"");
                 Debug.Log("editor_data -> ed");
-                _json = _json.Replace("\"editor_data\"", "\"ed\"");
+                json = json.Replace("\"editor_data\"", "\"ed\"");
                 Debug.Log("value_random_x -> rx");
-                _json = _json.Replace("\"value_random_x\"", "\"rx\"");
+                json = json.Replace("\"value_random_x\"", "\"rx\"");
                 Debug.Log("value_random_y -> ry");
-                _json = _json.Replace("\"value_random_y\"", "\"ry\"");
+                json = json.Replace("\"value_random_y\"", "\"ry\"");
                 Debug.Log("value_z -> z");
-                _json = _json.Replace("\"value_z\"", "\"z\"").Replace("\"value_z2\"", "\"z2\"");
+                json = json.Replace("\"value_z\"", "\"z\"").Replace("\"value_z2\"", "\"z2\"");
                 Debug.Log("curve_type -> ct");
-                _json = _json.Replace("\"curve_type\"", "\"ct\"");
+                json = json.Replace("\"curve_type\"", "\"ct\"");
                 Debug.Log("p_type -> pt");
-                _json = _json.Replace("\"p_type\"", "\"pt\"");
+                json = json.Replace("\"p_type\"", "\"pt\"");
                 Debug.Log("parent -> p");
-                _json = _json.Replace("\"parent\"", "\"p\"");
+                json = json.Replace("\"parent\"", "\"p\"");
                 Debug.Log("helper -> h");
-                _json = _json.Replace("\"helper\"", "\"h\"");
+                json = json.Replace("\"helper\"", "\"h\"");
                 Debug.Log("depth -> d");
-                _json = _json.Replace("\"depth\"", "\"d\"");
+                json = json.Replace("\"depth\"", "\"d\"");
                 Debug.Log("prefab_id -> pid");
-                _json = _json.Replace("\"prefab_id\"", "\"pid\"");
+                json = json.Replace("\"prefab_id\"", "\"pid\"");
                 Debug.Log("prefab_inst_id -> piid");
-                _json = _json.Replace("\"prefab_inst_id\"", "\"piid\"");
+                json = json.Replace("\"prefab_inst_id\"", "\"piid\"");
                 Debug.Log("shape_option -> so");
-                _json = _json.Replace("\"shape_option\"", "\"so\"");
+                json = json.Replace("\"shape_option\"", "\"so\"");
             }
 
-            return _json;
+            // To fix alpha screwing the font up
+            json = json.Replace("<font=LiberationSans>", "<font=LiberationSans SDF>").Replace("<font=\"LiberationSans\">", "<font=LiberationSans SDF>");
+
+            return json;
         }
 
+        /// <summary>
+        /// Updates the unmodded progress file to a separate one for better control.
+        /// </summary>
         public static void UpgradeProgress()
         {
             if (!RTFile.FileExists(RTFile.ApplicationDirectory + "profile/saves.les") && RTFile.FileExists(RTFile.ApplicationDirectory + "settings/save.lss"))
@@ -386,6 +398,9 @@ namespace BetterLegacy.Core.Managers
             }
         }
 
+        /// <summary>
+        /// Saves the current player save data.
+        /// </summary>
         public static void SaveProgress()
         {
             var jn = JSON.Parse("{}");
@@ -404,6 +419,9 @@ namespace BetterLegacy.Core.Managers
             RTFile.WriteToFile(RTFile.ApplicationDirectory + "profile/saves.les", json);
         }
 
+        /// <summary>
+        /// Loads the current player save data.
+        /// </summary>
         public static void LoadProgress()
         {
             if (!RTFile.FileExists(RTFile.ApplicationDirectory + "profile/saves.les"))
