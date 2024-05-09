@@ -54,13 +54,13 @@ namespace BetterLegacy.Core.Helpers
                         $"Hits: [OLD = {LevelManager.CurrentLevel.playerData.Hits} > NEW = {__instance.hits.Count}]\n" +
                         $"Boosts: [OLD = {LevelManager.CurrentLevel.playerData.Boosts} > NEW = {LevelManager.BoostCount}]");
 
-                    if (LevelManager.CurrentLevel.playerData.Deaths > __instance.deaths.Count)
+                    if (LevelManager.CurrentLevel.playerData.Deaths == 0 || LevelManager.CurrentLevel.playerData.Deaths > __instance.deaths.Count)
                         LevelManager.CurrentLevel.playerData.Deaths = __instance.deaths.Count;
-                    if (LevelManager.CurrentLevel.playerData.Hits > __instance.hits.Count)
+                    if (LevelManager.CurrentLevel.playerData.Hits == 0 || LevelManager.CurrentLevel.playerData.Hits > __instance.hits.Count)
                         LevelManager.CurrentLevel.playerData.Hits = __instance.hits.Count;
-                    LevelManager.CurrentLevel.playerData.Completed = true;
-                    if (LevelManager.CurrentLevel.playerData.Boosts > LevelManager.BoostCount)
+                    if (LevelManager.CurrentLevel.playerData.Boosts == 0 || LevelManager.CurrentLevel.playerData.Boosts > LevelManager.BoostCount)
                         LevelManager.CurrentLevel.playerData.Boosts = LevelManager.BoostCount;
+                    LevelManager.CurrentLevel.playerData.Completed = true;
 
                     if (LevelManager.Saves.Has(x => x.ID == LevelManager.CurrentLevel.id))
                     {
