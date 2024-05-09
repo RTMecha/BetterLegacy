@@ -911,6 +911,13 @@ namespace BetterLegacy.Core.Data
 
             gameData.eventObjects.allEvents = ProjectData.Reader.ParseEventkeyframes(jn["events"], false);
 
+            if (gameData.eventObjects.allEvents[3].Any(x => x.eventValues.Length == 2))
+                for (int i = 0; i < gameData.eventObjects.allEvents[3].Count; i++)
+                {
+                    if (gameData.eventObjects.allEvents[3][i].eventValues.Length == 2)
+                        gameData.eventObjects.allEvents[3][i].eventValues[1] = 1f;
+                }
+
             ProjectData.Reader.ClampEventListValues(gameData.eventObjects.allEvents, EventCount);
 
             return gameData;
@@ -1530,7 +1537,11 @@ namespace BetterLegacy.Core.Data
 			new Data.EventKeyframe
             {
                 eventTime = 0f,
-                eventValues = new float[2],
+                eventValues = new float[2]
+                {
+                    0f,
+                    6f
+                },
                 id = LSText.randomNumString(8),
             }, // Blur
 			new Data.EventKeyframe
