@@ -40,6 +40,8 @@ namespace BetterLegacy.Core.Data
         public string prevID;
         public string nextID;
 
+        public Version Version => new Version(beatmap.game_version);
+        public Version ModVersion => new Version(LevelBeatmap.mod_version);
         public string ID =>
                 !string.IsNullOrEmpty(serverID) && serverID != "-1" ?
                     serverID : !string.IsNullOrEmpty(arcadeID) && arcadeID != "-1" ?
@@ -61,7 +63,12 @@ namespace BetterLegacy.Core.Data
                 date_edited = orig.beatmap.date_edited,
                 game_version = orig.beatmap.game_version,
                 version_number = orig.beatmap.version_number,
-                workshop_id = orig.beatmap.workshop_id
+                workshop_id = orig.beatmap.workshop_id,
+                beatmap_id = orig.LevelBeatmap.beatmap_id,
+                date_created = orig.LevelBeatmap.date_created,
+                date_published = orig.LevelBeatmap.date_published,
+                mod_version = orig.LevelBeatmap.mod_version,
+                name = orig.LevelBeatmap.name,
             },
             creator = new LevelCreator
             {
@@ -80,6 +87,8 @@ namespace BetterLegacy.Core.Data
                 time = orig.song.time,
                 title = orig.song.title,
                 tags = orig.LevelSong.tags,
+                link = orig.LevelSong.link,
+                linkType = orig.LevelSong.linkType,
             },
             serverID = orig.serverID,
             index = orig.index,
@@ -172,11 +181,14 @@ namespace BetterLegacy.Core.Data
                 string dateCreated = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
                 string workshopID = "-1";
                 int num = 0;
+                var modVersion = LegacyPlugin.ModVersion.ToString();
 
                 try
                 {
                     if (!string.IsNullOrEmpty(jn["beatmap"]["game_version"]))
                         gameVersion = jn["beatmap"]["game_version"];
+                    if (!string.IsNullOrEmpty(jn["beatmap"]["mod_version"]))
+                        modVersion = jn["beatmap"]["mod_version"];
                     if (!string.IsNullOrEmpty(jn["beatmap"]["date_edited"]))
                         dateEdited = jn["beatmap"]["date_edited"];
                     if (!string.IsNullOrEmpty(jn["beatmap"]["date_created"]))
@@ -191,7 +203,7 @@ namespace BetterLegacy.Core.Data
                     Debug.LogError($"Beatmap Error: {ex}");
                 }
 
-                var beatmap = new LevelBeatmap(levelName, dateEdited, dateCreated, "", gameVersion, num, workshopID.ToString());
+                var beatmap = new LevelBeatmap(levelName, dateEdited, dateCreated, "", gameVersion, num, workshopID.ToString(), modVersion);
 
                 result = new MetaData(artist, creator, song, beatmap);
             }
@@ -200,7 +212,7 @@ namespace BetterLegacy.Core.Data
                 var artist2 = new LevelArtist("Corrupted", 0, "");
                 var creator2 = new LevelCreator(SteamWrapper.inst.user.displayName, SteamWrapper.inst.user.id, "", 0);
                 var song2 = new LevelSong("Corrupt Metadata", 0, "", 140f, 100f, -1f, -1f, new string[] { "Corrupted" }, 0, "");
-                var beatmap2 = new LevelBeatmap("Corrupted Level", "", "", "", ProjectArrhythmia.GameVersion.ToString(), 0, "-1");
+                var beatmap2 = new LevelBeatmap("Corrupted Level", "", "", "", ProjectArrhythmia.GameVersion.ToString(), 0, "-1", LegacyPlugin.ModVersion.ToString());
                 result = new MetaData(artist2, creator2, song2, beatmap2);
                 Debug.LogError($"{DataManager.inst.className}Something went wrong with parsing metadata!\n{ex}");
             }
@@ -312,6 +324,7 @@ namespace BetterLegacy.Core.Data
                 string datePublished = "";
                 string workshopID = "-1";
                 int num = 0;
+                var modVersion = LegacyPlugin.ModVersion.ToString();
 
                 try
                 {
@@ -319,6 +332,8 @@ namespace BetterLegacy.Core.Data
                         levelName = jn["beatmap"]["name"];
                     if (!string.IsNullOrEmpty(jn["beatmap"]["game_version"]))
                         gameVersion = jn["beatmap"]["game_version"];
+                    if (!string.IsNullOrEmpty(jn["beatmap"]["mod_version"]))
+                        modVersion = jn["beatmap"]["mod_version"];
                     if (!string.IsNullOrEmpty(jn["beatmap"]["date_edited"]))
                         dateEdited = jn["beatmap"]["date_edited"];
                     if (!string.IsNullOrEmpty(jn["beatmap"]["date_created"]))
@@ -335,7 +350,7 @@ namespace BetterLegacy.Core.Data
                     Debug.LogError($"Beatmap Error: {ex}");
                 }
 
-                var beatmap = new LevelBeatmap(levelName, dateEdited, dateCreated, datePublished, gameVersion, num, workshopID);
+                var beatmap = new LevelBeatmap(levelName, dateEdited, dateCreated, datePublished, gameVersion, num, workshopID, modVersion);
 
                 result = new MetaData(artist, creator, song, beatmap);
                 if (!string.IsNullOrEmpty(jn["server_id"]))
@@ -354,7 +369,7 @@ namespace BetterLegacy.Core.Data
                 var artist2 = new LevelArtist("Corrupted", 0, "");
                 var creator2 = new LevelCreator(SteamWrapper.inst.user.displayName, SteamWrapper.inst.user.id, "", 0);
                 var song2 = new LevelSong("Corrupt Metadata", 0, "", 140f, 100f, -1f, -1f, new string[] { "Corrupted" }, 2, "album/full-devoid");
-                var beatmap2 = new LevelBeatmap("Level Name", "", "", "", ProjectArrhythmia.GameVersion.ToString(), 0, "-1");
+                var beatmap2 = new LevelBeatmap("Level Name", "", "", "", ProjectArrhythmia.GameVersion.ToString(), 0, "-1", LegacyPlugin.ModVersion.ToString());
                 result = new MetaData(artist2, creator2, song2, beatmap2);
                 Debug.LogError($"{DataManager.inst.className}Something went wrong with parsing metadata!");
             }
@@ -417,6 +432,7 @@ namespace BetterLegacy.Core.Data
             jn["beatmap"]["date_edited"] = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
             jn["beatmap"]["version_number"] = beatmap.version_number.ToString();
             jn["beatmap"]["game_version"] = beatmap.game_version;
+            jn["beatmap"]["mod_version"] = LevelBeatmap.mod_version;
             jn["beatmap"]["workshop_id"] = LevelBeatmap.beatmap_id;
 
             if (!string.IsNullOrEmpty(serverID))
@@ -561,33 +577,12 @@ namespace BetterLegacy.Core.Data
             beatmap_id = workshop_id.ToString();
             game_version = ProjectArrhythmia.GameVersion.ToString();
             date_created = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+            mod_version = LegacyPlugin.ModVersion.ToString();
         }
 
-        public LevelBeatmap(int versionNumber, string workshopID)
+        public LevelBeatmap(string name, string dateEdited, string dateCreated, string datePublished, string gameVersion, int versionNumber, string beatmapID, string modVersion)
         {
-            name = "Level Name";
-            date_edited = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
-            date_created = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
-            version_number = versionNumber;
-
-            beatmap_id = workshopID;
-            game_version = ProjectArrhythmia.GameVersion.ToString();
-        }
-
-        public LevelBeatmap(string dateEdited, string gameVersion, int versionNumber, string workshopID)
-        {
-            name = "Level Name";
-            date_edited = dateEdited;
-            game_version = gameVersion;
-            version_number = versionNumber;
-
-            beatmap_id = workshopID;
-            game_version = ProjectArrhythmia.GameVersion.ToString();
-        }
-
-        public LevelBeatmap(string name, string dateEdited, string dateCreated, string datePublished, string gameVersion, int versionNumber, string beatmapID)
-        {
-            this.name = "Level Name";
+            this.name = name;
             date_edited = dateEdited;
             game_version = gameVersion;
             version_number = versionNumber;
@@ -595,24 +590,14 @@ namespace BetterLegacy.Core.Data
             beatmap_id = beatmapID;
             date_created = dateCreated;
             date_published = datePublished;
+            mod_version = modVersion;
         }
 
         public string name;
         public string beatmap_id;
         public string date_created;
         public string date_published;
-
-        public void RegisterMods()
-        {
-            foreach (var file in System.IO.Directory.GetFiles(RTFile.ApplicationDirectory + "BepInEx/plugins", "*.dll", System.IO.SearchOption.TopDirectoryOnly))
-            {
-                var name = file.Replace("\\", "/").Replace(RTFile.ApplicationDirectory + "BepInEx/plugins/", "");
-                if (name != "ConfigurationManager.dll" && name != "EditorManagement.dll" && name != "EditorOnStartup.dll")
-                    requiredMods.Add(name);
-            }
-        }
-
-        public List<string> requiredMods = new List<string>();
+        public string mod_version;
 
         #region Operators
 
