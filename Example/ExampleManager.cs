@@ -7,6 +7,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Core.Optimization;
+using BetterLegacy.Editor;
 using BetterLegacy.Editor.Managers;
 using LSFunctions;
 using SimpleJSON;
@@ -2001,11 +2002,11 @@ namespace BetterLegacy.Example
                 {
                     draggingLeftHand = false;
 
-                    foreach (var levelItem in (List<LevelFolder<EditorManager.MetadataWrapper>>)ModCompatibility.sharedFunctions["EditorLevelFolders"])
+                    foreach (var levelItem in EditorManager.inst.loadedLevels.Select(x => x as EditorWrapper))
                     {
-                        if (EditorManager.RectTransformToScreenSpace(image.rectTransform).Overlaps(EditorManager.RectTransformToScreenSpace(levelItem.icon.rectTransform)))
+                        if (EditorManager.RectTransformToScreenSpace(image.rectTransform).Overlaps(EditorManager.RectTransformToScreenSpace(levelItem.GameObject.transform.AsRT())))
                         {
-                            Debug.LogFormat("{0}Picked level: {1}", className, levelItem.level.folder);
+                            Debug.LogFormat("{0}Picked level: {1}", className, levelItem.folder);
                         }
                     }
                 };
@@ -2050,11 +2051,11 @@ namespace BetterLegacy.Example
                 {
                     draggingRightHand = false;
 
-                    foreach (var levelItem in (List<LevelFolder<EditorManager.MetadataWrapper>>)ModCompatibility.sharedFunctions["EditorLevelFolders"])
+                    foreach (var levelItem in EditorManager.inst.loadedLevels.Select(x => x as EditorWrapper))
                     {
-                        if (EditorManager.RectTransformToScreenSpace(image.rectTransform).Overlaps(EditorManager.RectTransformToScreenSpace(levelItem.icon.rectTransform)))
+                        if (EditorManager.RectTransformToScreenSpace(image.rectTransform).Overlaps(EditorManager.RectTransformToScreenSpace(levelItem.GameObject.transform.AsRT())))
                         {
-                            Debug.LogFormat("{0}Picked level: {1}", className, levelItem.level.folder);
+                            Debug.LogFormat("{0}Picked level: {1}", className, levelItem.folder);
                         }
                     }
                 };

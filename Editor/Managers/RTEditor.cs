@@ -9014,12 +9014,8 @@ namespace BetterLegacy.Editor.Managers
             submit2Button.onClick.AddListener(cancelDelegate);
         }
 
-        public static List<LevelFolder<MetadataWrapper>> levelItems = new List<LevelFolder<MetadataWrapper>>();
-
         public IEnumerator RefreshLevelList()
         {
-            levelItems.Clear();
-
             #region Sorting
 
             switch (levelFilter)
@@ -9108,10 +9104,6 @@ namespace BetterLegacy.Editor.Managers
                 ((EditorWrapper)metadataWrapper).GameObject.transform.SetSiblingIndex(num);
                 num++;
             }
-
-            if (ModCompatibility.sharedFunctions.ContainsKey("EditorLevelFolders"))
-                ModCompatibility.sharedFunctions["EditorLevelFolders"] = levelItems;
-            else ModCompatibility.sharedFunctions.Add("EditorLevelFolders", levelItems);
 
             yield break;
         }
