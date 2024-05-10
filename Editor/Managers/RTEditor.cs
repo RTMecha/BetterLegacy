@@ -237,6 +237,23 @@ namespace BetterLegacy.Editor.Managers
             SetNotificationProperties();
 
             timelineSlider = EditorManager.inst.timelineSlider.GetComponent<Slider>();
+            TriggerHelper.AddEventTriggerParams(timelineSlider.gameObject, TriggerHelper.CreateEntry(EventTriggerType.PointerDown, delegate (BaseEventData eventData)
+            {
+                if (!EditorConfig.Instance.DraggingMainCursorFix.Value)
+                    return;
+
+                changingTime = true;
+                newTime = timelineSlider.value / EditorManager.inst.Zoom;
+                AudioManager.inst.SetMusicTime(Mathf.Clamp(timelineSlider.value / EditorManager.inst.Zoom, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
+            }), TriggerHelper.CreateEntry(EventTriggerType.PointerUp, delegate (BaseEventData eventData)
+            {
+                if (!EditorConfig.Instance.DraggingMainCursorFix.Value)
+                    return;
+
+                newTime = timelineSlider.value / EditorManager.inst.Zoom;
+                AudioManager.inst.SetMusicTime(Mathf.Clamp(timelineSlider.value / EditorManager.inst.Zoom, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
+                changingTime = false;
+            }));
 
             DestroyImmediate(EditorManager.inst.mouseTooltip);
             mouseTooltip = EditorManager.inst.notificationPrefabs[0].Duplicate(EditorManager.inst.notification.transform.parent, "tooltip");
@@ -380,6 +397,17 @@ namespace BetterLegacy.Editor.Managers
             }
             UpdateTooltip();
 
+            if (!changingTime && EditorConfig.Instance.DraggingMainCursorFix.Value)
+            {
+                newTime = Mathf.Clamp(AudioManager.inst.CurrentAudioSource.time, 0f, AudioManager.inst.CurrentAudioSource.clip.length) * EditorManager.inst.Zoom;
+                timelineSlider.value = newTime;
+            }
+            else if (EditorConfig.Instance.DraggingMainCursorFix.Value)
+            {
+                newTime = timelineSlider.value / EditorManager.inst.Zoom;
+                AudioManager.inst.SetMusicTime(Mathf.Clamp(timelineSlider.value / EditorManager.inst.Zoom, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
+            }
+
             if (selectingKey)
             {
                 var key = KeybindManager.WatchKeyCode();
@@ -498,6 +526,9 @@ namespace BetterLegacy.Editor.Managers
         }
 
         #region Variables
+
+        public bool changingTime;
+        public float newTime;
 
         public Transform wholeTimeline;
 
@@ -10922,6 +10953,7 @@ namespace BetterLegacy.Editor.Managers
             #region Timeline
 
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.DraggingMainCursorPausesLevel),
+            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.DraggingMainCursorFix),
             new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.TimelineCursorColor),
             new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.KeyframeCursorColor),
             new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ObjectSelectionColor),

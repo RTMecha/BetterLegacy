@@ -58,6 +58,7 @@ namespace BetterLegacy.Configs
             #region Timeline
 
             DraggingMainCursorPausesLevel = Config.Bind("Editor - Timeline", "Dragging Main Cursor Pauses Level", true, "If dragging the cursor pauses the level.");
+            DraggingMainCursorFix = Config.Bind("Editor - Timeline", "Dragging Main Cursor Fix", true, "If the main cursor should act like the object cursor.");
             TimelineCursorColor = Config.Bind("Editor - Timeline", "Timeline Cursor Color", new Color(0.251f, 0.4627f, 0.8745f, 1f), "Color of the main timeline cursor.");
             KeyframeCursorColor = Config.Bind("Editor - Timeline", "Keyframe Cursor Color", new Color(0.251f, 0.4627f, 0.8745f, 1f), "Color of the object timeline cursor.");
             ObjectSelectionColor = Config.Bind("Editor - Timeline", "Object Selection Color", new Color(0.251f, 0.4627f, 0.8745f, 1f), "Color of selected objects.");
@@ -1187,6 +1188,7 @@ namespace BetterLegacy.Configs
         #region Timeline
 
         public ConfigEntry<bool> DraggingMainCursorPausesLevel { get; set; }
+        public ConfigEntry<bool> DraggingMainCursorFix { get; set; }
         public ConfigEntry<Color> TimelineCursorColor { get; set; }
         public ConfigEntry<Color> KeyframeCursorColor { get; set; }
         public ConfigEntry<Color> ObjectSelectionColor { get; set; }

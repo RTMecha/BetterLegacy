@@ -636,6 +636,16 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool updatePointerPrefix()
         {
+            if (EditorConfig.Instance.DraggingMainCursorFix.Value && RTEditor.inst && RTEditor.inst.timelineSlider)
+            {
+                var slider = RTEditor.inst.timelineSlider;
+                slider.minValue = 0f;
+                slider.maxValue = AudioManager.inst.CurrentAudioSource.clip.length * Instance.Zoom;
+                Instance.audioTimeForSlider = slider.value;
+                Instance.timelineSlider.transform.AsRT().sizeDelta = new Vector2(AudioManager.inst.CurrentAudioSource.clip.length * Instance.Zoom, 25f);
+                return false;
+            }
+
             var point = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
             var rect = new Rect(0f, 0.305f * (float)Screen.height, (float)Screen.width, (float)Screen.height * 0.025f);
             if (Instance.updateAudioTime && Input.GetMouseButtonUp(0) && rect.Contains(point))
