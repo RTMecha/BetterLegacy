@@ -112,6 +112,7 @@ namespace BetterLegacy.Core.Data
             {
                 active = bg.active,
                 color = bg.color,
+                FadeColor = bg.color,
                 drawFade = bg.drawFade,
                 kind = bg.kind,
                 layer = bg.layer,
