@@ -391,7 +391,7 @@ namespace BetterLegacy.Core
                     }
                 }
 
-                CoreHelper.Log("Saving Entire Beatmap to {_path}");
+                CoreHelper.Log($"Saving Entire Beatmap to {_path}");
                 RTFile.WriteToFile(_path, jn.ToString());
 
                 onSave?.Invoke();
