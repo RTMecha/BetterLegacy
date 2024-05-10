@@ -639,16 +639,25 @@ namespace BetterLegacy.Editor.Managers
 
         public void SaveSettings()
         {
-            var jn = JSON.Parse(RTFile.FileExists(GameManager.inst.basePath + "editor.lse") ? FileManager.inst.LoadJSONFileRaw(GameManager.inst.basePath + "editor.lse") : "{}");
+            var jn = JSON.Parse("{}");
 
-            jn["timeline"]["tsc"] = EditorManager.inst.timelineScrollRectBar.value.ToString("f2");
-            jn["timeline"]["z"] = EditorManager.inst.zoomFloat.ToString("f3");
-            jn["timeline"]["l"] = EditorManager.inst.layer.ToString();
-            jn["editor"]["t"] = timeEditing.ToString();
-            jn["editor"]["a"] = openAmount.ToString();
-            jn["misc"]["sn"] = SettingEditor.inst.SnapActive.ToString();
-            jn["misc"]["so"] = bpmOffset.ToString();
-            jn["misc"]["t"] = AudioManager.inst.CurrentAudioSource.time;
+            //original JSON: z
+            jn["timeline"]["zoom"] = EditorManager.inst.zoomFloat.ToString("f3");
+            //original JSON: tsc
+            jn["timeline"]["position"] = EditorManager.inst.timelineScrollRectBar.value.ToString("f2");
+            //original JSON: l
+            jn["timeline"]["layer_type"] = ((int)layerType).ToString();
+            jn["timeline"]["layer"] = EditorManager.inst.layer.ToString();
+            //original JSON: t
+            jn["editor"]["editing_time"] = timeEditing.ToString();
+            //original JSON: a
+            jn["editor"]["open_amount"] = openAmount.ToString();
+            //original JSON: sn
+            jn["misc"]["bpm_snap_active"] = SettingEditor.inst.SnapActive.ToString();
+            //original JSON: so
+            jn["misc"]["bpm_offset"] = bpmOffset.ToString();
+            //original JSON: t
+            jn["misc"]["time"] = AudioManager.inst.CurrentAudioSource.time.ToString();
 
             RTFile.WriteToFile(GameManager.inst.basePath + "editor.lse", jn.ToString(3));
         }
@@ -662,34 +671,78 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            var jn = JSON.Parse(FileManager.inst.LoadJSONFileRaw(GameManager.inst.basePath + "editor.lse"));
+            var jn = JSON.Parse(RTFile.ReadFromFile(GameManager.inst.basePath + "editor.lse"));
 
             if (jn["timeline"] != null)
             {
+                var layer = 0;
+                var layerType = LayerType.Objects;
+
+                float zoom = 0.05f;
+                float position = 0f;
+
                 if (jn["timeline"]["z"] != null)
-                    EditorManager.inst.zoomSlider.value = jn["timeline"]["z"].AsFloat;
+                    zoom = jn["timeline"]["z"].AsFloat;
+
                 if (jn["timeline"]["tsc"] != null)
-                    EditorManager.inst.timelineScrollRectBar.value = jn["timeline"]["tsc"].AsFloat;
+                    position = jn["timeline"]["tsc"].AsFloat;
+
+                if (jn["timeline"]["zoom"] != null)
+                    zoom = jn["timeline"]["zoom"].AsFloat;
+
+                if (jn["timeline"]["position"] != null)
+                    position = jn["timeline"]["position"].AsFloat;
+
+                SetTimeline(zoom, position);
+
+                if (jn["timeline"]["layer_type"] != null)
+                    layerType = (LayerType)jn["timeline"]["layer_type"].AsInt;
+
+                this.layerType = layerType;
+
                 if (jn["timeline"]["l"] != null)
-                    SetLayer(jn["timeline"]["l"].AsInt, false);
+                    layer = jn["timeline"]["l"].AsInt;
+
+                if (jn["timeline"]["layer"] != null)
+                    layer = jn["timeline"]["layer"].AsInt;
+
+                SetLayer(layer, false);
             }
 
             if (jn["editor"] != null)
             {
-                savedTimeEditng = jn["editor"]["t"].AsFloat;
-                openAmount = jn["editor"]["a"].AsInt + 1;
+                if (jn["editor"]["t"] != null)
+                    savedTimeEditng = jn["editor"]["t"].AsFloat;
+                if (jn["editor"]["editing_time"] != null)
+                    savedTimeEditng = jn["editor"]["editing_time"].AsFloat;
+
+                if (jn["editor"]["a"] != null)
+                    openAmount = jn["editor"]["a"].AsInt + 1;
+                if (jn["editor"]["open_amount"] != null)
+                    openAmount = jn["editor"]["open_amount"].AsInt + 1;
             }
 
             if (jn["misc"] != null)
             {
                 if (jn["misc"]["sn"] != null)
                     SettingEditor.inst.SnapActive = jn["misc"]["sn"].AsBool;
-                if (jn["misc"]["t"] != null && EditorConfig.Instance.LevelLoadsLastTime.Value)
-                    AudioManager.inst.SetMusicTime(jn["misc"]["t"].AsFloat);
+                if (jn["misc"]["bpm_snap_active"] != null)
+                    SettingEditor.inst.SnapActive = jn["misc"]["bpm_snap_active"].AsBool;
+
+                var bpmOffset = 0f;
                 if (jn["misc"]["so"] != null)
                     bpmOffset = jn["misc"]["so"].AsFloat;
-                else
-                    bpmOffset = 0f;
+                if (jn["misc"]["bpm_offset"] != null)
+                    bpmOffset = jn["misc"]["bpm_offset"].AsFloat;
+                this.bpmOffset = bpmOffset;
+
+                float time = -1f;
+                if (jn["misc"]["t"] != null)
+                    time = jn["misc"]["t"].AsFloat;
+                if (jn["misc"]["time"] != null)
+                    time = jn["misc"]["time"].AsFloat;
+                if (time >= 0f && time < AudioManager.inst.CurrentAudioSource.clip.length && EditorConfig.Instance.LevelLoadsLastTime.Value)
+                    AudioManager.inst.SetMusicTime(time);
 
                 SettingEditor.inst.SnapBPM = DataManager.inst.metaData.song.BPM;
             }
@@ -872,18 +925,20 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="log">If the zoom amount should be logged.</param>
         public void SetTimeline(float zoom, float position = -1f, bool render = true, bool log = true)
         {
+            var timelineTime = GetTimelineTime();
+
             float prevZoom = EditorManager.inst.zoomFloat;
             EditorManager.inst.zoomFloat = Mathf.Clamp01(zoom);
             EditorManager.inst.zoomVal =
                 LSMath.InterpolateOverCurve(EditorManager.inst.ZoomCurve, EditorManager.inst.zoomBounds.x, EditorManager.inst.zoomBounds.y, EditorManager.inst.zoomFloat);
-            
+
             if (EditorManager.inst.zoomFloat != prevZoom)
             {
                 if (render)
                     EditorManager.inst.RenderTimeline();
 
                 EditorManager.inst.timelineScrollRectBar.value =
-                    position >= 0f ? position : AudioManager.inst.CurrentAudioSource.time / AudioManager.inst.CurrentAudioSource.clip.length;
+                    position >= 0f ? position : (EditorConfig.Instance.UseMouseAsZoomPoint.Value ? timelineTime : AudioManager.inst.CurrentAudioSource.time) / AudioManager.inst.CurrentAudioSource.clip.length;
             }
 
             EditorManager.inst.zoomSlider.onValueChanged.ClearAll();
@@ -898,7 +953,18 @@ namespace BetterLegacy.Editor.Managers
                     $"ZoomFloat: {EditorManager.inst.zoomFloat}\n" +
                     $"ZoomVal: {EditorManager.inst.zoomVal}\n" +
                     $"ZoomBounds: {EditorManager.inst.zoomBounds}\n" +
-                    $"Timeline Position: {EditorManager.inst.timelineScrollRectBar.value}");
+                    $"Timeline Position: {EditorManager.inst.timelineScrollRectBar.value}\n" +
+                    $"Timeline Time: {timelineTime}\n" +
+                    $"Timeline Position Calculation: {timelineTime / AudioManager.inst.CurrentAudioSource.clip.length}");
+        }
+
+        public float GetTimelineTime(float _offset = 0f)
+        {
+            float num = Input.mousePosition.x;
+            num += Mathf.Abs(EditorManager.inst.timeline.transform.AsRT().position.x);
+            if (SettingEditor.inst.SnapActive && !Input.GetKey(KeyCode.LeftAlt))
+                return SnapToBPM(num * EditorManager.inst.ScreenScaleInverse / EditorManager.inst.Zoom);
+            return num * EditorManager.inst.ScreenScaleInverse / EditorManager.inst.Zoom + _offset;
         }
 
         #endregion
@@ -10954,6 +11020,7 @@ namespace BetterLegacy.Editor.Managers
 
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.DraggingMainCursorPausesLevel),
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.DraggingMainCursorFix),
+            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.UseMouseAsZoomPoint),
             new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.TimelineCursorColor),
             new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.KeyframeCursorColor),
             new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ObjectSelectionColor),
