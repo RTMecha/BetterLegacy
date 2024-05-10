@@ -111,6 +111,11 @@ namespace BetterLegacy.Core.Managers
             WindowController.ResetResolution();
             WindowController.ResetTitle();
 
+            if (BackgroundManager.inst)
+            {
+                LSHelpers.DeleteChildren(BackgroundManager.inst.backgroundParent);
+            }
+
             Debug.Log($"{className}Parsing level...");
 
             GameManager.inst.gameState = GameManager.State.Parsing;
@@ -168,6 +173,13 @@ namespace BetterLegacy.Core.Managers
                 var customPlayer = new Data.Player.CustomPlayer(true, 0, null);
                 InputDataManager.inst.players.Add(customPlayer);
             }
+            else
+            {
+                for (int i = 0; i < PlayerManager.Players.Count; i++)
+                {
+                    DestroyImmediate(PlayerManager.Players[i].GameObject);
+                }
+            }
 
             PlayerManager.allowController = InputDataManager.inst.players.Count == 0;
 
@@ -183,10 +195,9 @@ namespace BetterLegacy.Core.Managers
 
             EventManager.inst?.updateEvents();
             if (ModCompatibility.sharedFunctions.ContainsKey("EventsCoreResetOffsets"))
-            {
                 ((Action)ModCompatibility.sharedFunctions["EventsCoreResetOffsets"])?.Invoke();
-            }
 
+            BackgroundManager.inst.UpdateBackgrounds();
             yield return inst.StartCoroutine(Updater.IUpdateObjects(true));
 
             LSHelpers.HideCursor();
