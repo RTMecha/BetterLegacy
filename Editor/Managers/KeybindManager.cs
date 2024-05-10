@@ -1642,11 +1642,7 @@ namespace BetterLegacy.Editor.Managers
         {
             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
             {
-                if (timelineObject.IsBeatmapObject)
-                    timelineObject.GetData<BeatmapObject>().editorData.locked = !timelineObject.GetData<BeatmapObject>().editorData.locked;
-                if (timelineObject.IsPrefabObject)
-                    timelineObject.GetData<PrefabObject>().editorData.locked = !timelineObject.GetData<PrefabObject>().editorData.locked;
-
+                timelineObject.Locked = !timelineObject.Locked;
                 ObjectEditor.inst.RenderTimelineObject(timelineObject);
             }
         }
@@ -1656,11 +1652,7 @@ namespace BetterLegacy.Editor.Managers
         {
             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
             {
-                if (timelineObject.IsBeatmapObject)
-                    timelineObject.GetData<BeatmapObject>().editorData.locked = loggled;
-                if (timelineObject.IsPrefabObject)
-                    timelineObject.GetData<PrefabObject>().editorData.locked = loggled;
-
+                timelineObject.Locked = loggled;
                 ObjectEditor.inst.RenderTimelineObject(timelineObject);
             }
 
@@ -1671,11 +1663,7 @@ namespace BetterLegacy.Editor.Managers
         {
             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
             {
-                if (timelineObject.IsBeatmapObject)
-                    timelineObject.GetData<BeatmapObject>().editorData.collapse = !timelineObject.GetData<BeatmapObject>().editorData.collapse;
-                if (timelineObject.IsPrefabObject)
-                    timelineObject.GetData<PrefabObject>().editorData.collapse = !timelineObject.GetData<PrefabObject>().editorData.collapse;
-
+                timelineObject.Collapse = !timelineObject.Collapse;
                 ObjectEditor.inst.RenderTimelineObject(timelineObject);
             }
         }
@@ -1685,11 +1673,7 @@ namespace BetterLegacy.Editor.Managers
         {
             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
             {
-                if (timelineObject.IsBeatmapObject)
-                    timelineObject.GetData<BeatmapObject>().editorData.collapse = coggled;
-                if (timelineObject.IsPrefabObject)
-                    timelineObject.GetData<PrefabObject>().editorData.collapse = coggled;
-
+                timelineObject.Collapse = coggled;
                 ObjectEditor.inst.RenderTimelineObject(timelineObject);
             }
 
@@ -1700,11 +1684,7 @@ namespace BetterLegacy.Editor.Managers
         {
             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
             {
-                if (timelineObject.IsBeatmapObject)
-                    timelineObject.GetData<BeatmapObject>().editorData.layer++;
-                if (timelineObject.IsPrefabObject)
-                    timelineObject.GetData<PrefabObject>().editorData.layer++;
-
+                timelineObject.Layer++;
                 ObjectEditor.inst.RenderTimelineObject(timelineObject);
             }
         }
@@ -1713,10 +1693,8 @@ namespace BetterLegacy.Editor.Managers
         {
             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
             {
-                if (timelineObject.IsBeatmapObject && timelineObject.GetData<BeatmapObject>().editorData.layer > 0)
-                    timelineObject.GetData<BeatmapObject>().editorData.layer--;
-                if (timelineObject.IsPrefabObject && timelineObject.GetData<PrefabObject>().editorData.layer > 0)
-                    timelineObject.GetData<PrefabObject>().editorData.layer--;
+                if (timelineObject.Layer > 0)
+                    timelineObject.Layer--;
 
                 ObjectEditor.inst.RenderTimelineObject(timelineObject);
             }
@@ -1803,10 +1781,15 @@ namespace BetterLegacy.Editor.Managers
         public static void ToggleBPMSnap(Keybind keybind)
         {
             SettingEditor.inst.SnapActive = !SettingEditor.inst.SnapActive;
-            if (EditorManager.inst.GetDialog("Settings Editor").Dialog)
+
+            try
             {
                 var dialog = EditorManager.inst.GetDialog("Settings Editor").Dialog;
                 dialog.Find("snap/toggle/toggle").GetComponent<Toggle>().isOn = SettingEditor.inst.SnapActive;
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Had an error in trying to set snap BPM UI.\nException: {ex}");
             }
         }
 
@@ -1931,59 +1914,43 @@ namespace BetterLegacy.Editor.Managers
         public static void ToggleShowHelp(Keybind keybind) => EditorManager.inst.SetShowHelp(!EditorManager.inst.showHelp);
 
         public static void GoToCurrent(Keybind keybind)
-        {
-            if (!tlScrollbar && RTExtensions.TryFind("Editor Systems/Editor GUI/sizer/main/whole-timeline/Scrollbar", out GameObject gm) && gm.TryGetComponent(out Scrollbar sb))
-                tlScrollbar = sb;
+            => EditorManager.inst.timelineScrollRectBar.value = AudioManager.inst.CurrentAudioSource.time / AudioManager.inst.CurrentAudioSource.clip.length;
 
-            if (tlScrollbar)
-                tlScrollbar.value = AudioManager.inst.CurrentAudioSource.time / AudioManager.inst.CurrentAudioSource.clip.length;
-        }
+        public static void GoToStart(Keybind keybind) => EditorManager.inst.timelineScrollRectBar.value = 0f;
 
-        public static void GoToStart(Keybind keybind)
-        {
-            if (!tlScrollbar && RTExtensions.TryFind("Editor Systems/Editor GUI/sizer/main/whole-timeline/Scrollbar", out GameObject gm) && gm.TryGetComponent(out Scrollbar sb))
-                tlScrollbar = sb;
-
-            if (tlScrollbar)
-                tlScrollbar.value = 0f;
-        }
-
-        public static void GoToEnd(Keybind keybind)
-        {
-            if (!tlScrollbar && RTExtensions.TryFind("Editor Systems/Editor GUI/sizer/main/whole-timeline/Scrollbar", out GameObject gm) && gm.TryGetComponent(out Scrollbar sb))
-                tlScrollbar = sb;
-
-            if (tlScrollbar)
-                tlScrollbar.value = 1f;
-        }
+        public static void GoToEnd(Keybind keybind) => EditorManager.inst.timelineScrollRectBar.value = 1f;
 
         public static void CreateNewMarker(Keybind keybind) => MarkerEditor.inst.CreateNewMarker();
 
         public static void SpawnPrefab(Keybind keybind)
         {
             bool useExternal = keybind.settings.ContainsKey("External") && bool.TryParse(keybind.settings["External"], out useExternal);
+            var prefabs = (useExternal ? PrefabEditorManager.inst.PrefabPanels.Select(x => x.Prefab) : DataManager.inst.gameData.prefabs.Select(x => x as Prefab)).ToList();
 
             if (keybind.settings.ContainsKey("UseID") && bool.TryParse(keybind.settings["UseID"], out bool boolean) && keybind.settings.ContainsKey("ID") && boolean)
             {
-                if (useExternal && !string.IsNullOrEmpty(keybind.settings["ID"]) && PrefabEditorManager.inst.PrefabPanels.Has(x => x.Prefab.ID == keybind.settings["ID"]))
+                if (string.IsNullOrEmpty(keybind.settings["ID"]))
                 {
-                    PrefabEditorManager.inst.AddPrefabObjectToLevel(PrefabEditorManager.inst.PrefabPanels.Find(x => x.Prefab.ID == keybind.settings["ID"]).Prefab);
+                    EditorManager.inst.DisplayNotification("Could not find any Prefab to place as the set ID was empty!", 2.5f, EditorManager.NotificationType.Error);
+                    return;
                 }
-                else if (!useExternal && DataManager.inst.gameData.prefabs.Has(x => x.ID == keybind.settings["ID"]))
-                {
-                    PrefabEditorManager.inst.AddPrefabObjectToLevel(DataManager.inst.gameData.prefabs.Find(x => x.ID == keybind.settings["ID"]));
-                }
+
+                if (prefabs.TryFind(x => x.ID == keybind.settings["ID"], out Prefab prefab))
+                    PrefabEditorManager.inst.AddPrefabObjectToLevel(prefab);
+
+                return;
             }
-            else if (keybind.settings.ContainsKey("Index") && int.TryParse(keybind.settings["Index"], out int index))
+
+            if (keybind.settings.ContainsKey("Index") && int.TryParse(keybind.settings["Index"], out int index))
             {
-                if (useExternal && index >= 0 && index < PrefabEditorManager.inst.PrefabPanels.Count && PrefabEditorManager.inst.PrefabPanels[index] != null)
+                if (index < 0 || index >= prefabs.Count)
                 {
-                    PrefabEditorManager.inst.AddPrefabObjectToLevel(PrefabEditorManager.inst.PrefabPanels[index].Prefab);
+                    EditorManager.inst.DisplayNotification("The index was not in the range of the Prefab count, so could not place any prefabs.", 3f, EditorManager.NotificationType.Error);
+                    return;
                 }
-                else if (!useExternal && index >= 0 && index < DataManager.inst.gameData.prefabs.Count && DataManager.inst.gameData.prefabs[index] != null)
-                {
-                    PrefabEditorManager.inst.AddPrefabObjectToLevel(DataManager.inst.gameData.prefabs[index]);
-                }
+
+                if (prefabs[index] != null)
+                    PrefabEditorManager.inst.AddPrefabObjectToLevel(prefabs[index]);
             }
         }
 
@@ -2147,6 +2114,18 @@ namespace BetterLegacy.Editor.Managers
 
         public static void ForceSnapBPM(Keybind keybind)
         {
+            var markers = DataManager.inst.gameData.beatmapData.markers;
+            var currentMarker = MarkerEditor.inst.currentMarker;
+            if (EditorManager.inst.IsDialogActive(EditorManager.EditorDialog.DialogType.Marker) && currentMarker >= 0 && currentMarker < markers.Count)
+            {
+                var marker = markers[currentMarker];
+                var time = MarkerEditor.inst.left.Find("time/input").GetComponent<InputField>();
+
+                time.text = RTEditor.SnapToBPM(marker.time).ToString();
+
+                return;
+            }
+
             if (RTEditor.inst.layerType == RTEditor.LayerType.Objects && ObjectEditor.inst.SelectedObjects.Count > 0)
                 foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                 {
