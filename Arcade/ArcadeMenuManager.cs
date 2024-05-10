@@ -170,24 +170,27 @@ namespace BetterLegacy.Arcade
 
                         var levelRank = LevelManager.GetLevelRank(level.Level);
 
-                        var shineController = level.ShineController;
-
-                        shineController.speed = speed;
-                        shineController.maxDelay = maxDelay;
-                        shineController.minDelay = minDelay;
-                        shineController.offset = 260f;
-                        shineController.offsetOverShoot = 32f;
-                        level.shine1?.SetColor(color);
-                        level.shine2?.SetColor(color);
-
-                        if ((selectOnly && isSelected || !selectOnly) && levelRank.name == "SS" && shineController.currentLoop == 0)
+                        if (level.Level.metadata.song.difficulty != 6)
                         {
-                            shineController.LoopAnimation(-1, LSColors.yellow400);
-                        }
+                            var shineController = level.ShineController;
 
-                        if ((selectOnly && !isSelected || levelRank.name != "SS") && shineController.currentLoop == -1)
-                        {
-                            shineController.StopAnimation();
+                            shineController.speed = speed;
+                            shineController.maxDelay = maxDelay;
+                            shineController.minDelay = minDelay;
+                            shineController.offset = 260f;
+                            shineController.offsetOverShoot = 32f;
+                            level.shine1?.SetColor(color);
+                            level.shine2?.SetColor(color);
+
+                            if ((selectOnly && isSelected || !selectOnly) && levelRank.name == "SS" && shineController.currentLoop == 0)
+                            {
+                                shineController.LoopAnimation(-1, LSColors.yellow400);
+                            }
+
+                            if ((selectOnly && !isSelected || levelRank.name != "SS") && shineController.currentLoop == -1)
+                            {
+                                shineController.StopAnimation();
+                            }
                         }
 
                         if (level.selected != isSelected)
@@ -450,24 +453,27 @@ namespace BetterLegacy.Arcade
 
                             var levelRank = LevelManager.GetLevelRank(level.Level);
 
-                            var shineController = level.ShineController;
-
-                            shineController.speed = speed;
-                            shineController.maxDelay = maxDelay;
-                            shineController.minDelay = minDelay;
-                            shineController.offset = 260f;
-                            shineController.offsetOverShoot = 32f;
-                            level.shine1?.SetColor(color);
-                            level.shine2?.SetColor(color);
-
-                            if ((selectOnly && isSelected || !selectOnly) && levelRank.name == "SS" && shineController.currentLoop == 0)
+                            if (level.Level.metadata.song.difficulty != 6)
                             {
-                                shineController.LoopAnimation(-1, LSColors.yellow400);
-                            }
+                                var shineController = level.ShineController;
 
-                            if ((selectOnly && !isSelected || levelRank.name != "SS") && shineController.currentLoop == -1)
-                            {
-                                shineController.StopAnimation();
+                                shineController.speed = speed;
+                                shineController.maxDelay = maxDelay;
+                                shineController.minDelay = minDelay;
+                                shineController.offset = 260f;
+                                shineController.offsetOverShoot = 32f;
+                                level.shine1?.SetColor(color);
+                                level.shine2?.SetColor(color);
+
+                                if ((selectOnly && isSelected || !selectOnly) && levelRank.name == "SS" && shineController.currentLoop == 0)
+                                {
+                                    shineController.LoopAnimation(-1, LSColors.yellow400);
+                                }
+
+                                if ((selectOnly && !isSelected || levelRank.name != "SS") && shineController.currentLoop == -1)
+                                {
+                                    shineController.StopAnimation();
+                                }
                             }
 
                             if (level.selected != isSelected)
@@ -2755,21 +2761,25 @@ namespace BetterLegacy.Arcade
                     icon.sprite = level.icon ?? SteamWorkshop.inst.defaultSteamImageSprite;
 
                     var rank = gameObject.transform.Find("Rank").GetComponent<TextMeshProUGUI>();
-
-                    UIManager.SetRectTransform(rank.rectTransform, new Vector2(90f, 30f), ZeroFive, ZeroFive, ZeroFive, Vector2.zero);
-                    rank.transform.localRotation = Quaternion.Euler(0f, 0f, 356f);
-
-                    var levelRank = LevelManager.GetLevelRank(level);
-                    rank.fontSize = 64;
-                    rank.text = $"<color=#{CoreHelper.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>";
-
                     var rankShadow = gameObject.transform.Find("Rank Shadow").GetComponent<TextMeshProUGUI>();
+                    rank.gameObject.SetActive(level.metadata.song.difficulty != 6);
+                    rankShadow.gameObject.SetActive(level.metadata.song.difficulty != 6);
 
-                    UIManager.SetRectTransform(rankShadow.rectTransform, new Vector2(87f, 28f), ZeroFive, ZeroFive, ZeroFive, Vector2.zero);
-                    rankShadow.transform.localRotation = Quaternion.Euler(0f, 0f, 356f);
+                    if (level.metadata.song.difficulty != 6)
+                    {
+                        UIManager.SetRectTransform(rank.rectTransform, new Vector2(90f, 30f), ZeroFive, ZeroFive, ZeroFive, Vector2.zero);
+                        rank.transform.localRotation = Quaternion.Euler(0f, 0f, 356f);
 
-                    rankShadow.fontSize = 68;
-                    rankShadow.text = $"<color=#00000035><b>{levelRank.name}</b></color>";
+                        var levelRank = LevelManager.GetLevelRank(level);
+                        rank.fontSize = 64;
+                        rank.text = $"<align=right><color=#{CoreHelper.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>";
+
+                        UIManager.SetRectTransform(rankShadow.rectTransform, new Vector2(87f, 28f), ZeroFive, ZeroFive, ZeroFive, Vector2.zero);
+                        rankShadow.transform.localRotation = Quaternion.Euler(0f, 0f, 356f);
+
+                        rankShadow.fontSize = 68;
+                        rankShadow.text = $"<align=right><color=#00000035><b>{levelRank.name}</b></color>";
+                    }
 
                     var shineController = gameObject.transform.Find("Shine").GetComponent<ShineController>();
 
@@ -3672,21 +3682,25 @@ namespace BetterLegacy.Arcade
                     icon.sprite = level.icon ?? SteamWorkshop.inst.defaultSteamImageSprite;
 
                     var rank = gameObject.transform.Find("Rank").GetComponent<TextMeshProUGUI>();
-
-                    UIManager.SetRectTransform(rank.rectTransform, new Vector2(115f, 20f), ZeroFive, ZeroFive, ZeroFive, Vector2.zero);
-                    rank.transform.localRotation = Quaternion.Euler(0f, 0f, 356f);
-
-                    var levelRank = LevelManager.GetLevelRank(level);
-                    rank.fontSize = 42;
-                    rank.text = $"<color=#{CoreHelper.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>";
-
                     var rankShadow = gameObject.transform.Find("Rank Shadow").GetComponent<TextMeshProUGUI>();
+                    rank.gameObject.SetActive(level.metadata.song.difficulty != 6);
+                    rankShadow.gameObject.SetActive(level.metadata.song.difficulty != 6);
 
-                    UIManager.SetRectTransform(rankShadow.rectTransform, new Vector2(112f, 18f), ZeroFive, ZeroFive, ZeroFive, Vector2.zero);
-                    rankShadow.transform.localRotation = Quaternion.Euler(0f, 0f, 356f);
+                    if (level.metadata.song.difficulty != 6)
+                    {
+                        UIManager.SetRectTransform(rank.rectTransform, new Vector2(115f, 20f), ZeroFive, ZeroFive, ZeroFive, Vector2.zero);
+                        rank.transform.localRotation = Quaternion.Euler(0f, 0f, 356f);
 
-                    rankShadow.fontSize = 48;
-                    rankShadow.text = $"<color=#00000035><b>{levelRank.name}</b></color>";
+                        var levelRank = LevelManager.GetLevelRank(level);
+                        rank.fontSize = 42;
+                        rank.text = $"<align=right><color=#{CoreHelper.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>";
+
+                        UIManager.SetRectTransform(rankShadow.rectTransform, new Vector2(112f, 18f), ZeroFive, ZeroFive, ZeroFive, Vector2.zero);
+                        rankShadow.transform.localRotation = Quaternion.Euler(0f, 0f, 356f);
+
+                        rankShadow.fontSize = 48;
+                        rankShadow.text = $"<align=right><color=#00000035><b>{levelRank.name}</b></color>";
+                    }
 
                     var shineController = gameObject.transform.Find("Shine").GetComponent<ShineController>();
 
