@@ -14,6 +14,9 @@ namespace BetterLegacy.Editor
     public delegate TimelineObject TimelineObjectReturn<T, T1>(T t, T1 t1);
     public delegate TimelineObject TimelineObjectReturn<T, T1, T2>(T t, T1 t1, T2 t2);
 
+    /// <summary>
+    /// The object for storing object data in the timeline.
+    /// </summary>
     public class TimelineObject : Exists
     {
         public TimelineObject(object data)
@@ -36,14 +39,41 @@ namespace BetterLegacy.Editor
             Image = image;
         }
 
+        /// <summary>
+        /// Casts the object data into a type.
+        /// </summary>
+        /// <typeparam name="T">The type to cast the data to.</typeparam>
+        /// <returns>Casted data.</returns>
         public T GetData<T>() => (T)Data;
 
+        /// <summary>
+        /// The reference of an object related to the timeline object.
+        /// </summary>
         public object Data { get; set; }
+
+        /// <summary>
+        /// The timeline game object.
+        /// </summary>
         public GameObject GameObject { get; set; }
+
+        /// <summary>
+        /// The image of the timeline object.
+        /// </summary>
         public Image Image { get; set; }
+
+        /// <summary>
+        /// The hover scale component of the timeline object.
+        /// </summary>
         public HoverUI Hover { get; set; }
+
+        /// <summary>
+        /// The name text of the timeline object.
+        /// </summary>
         public TextMeshProUGUI Text { get; set; }
 
+        /// <summary>
+        /// Gets the ID of the object.
+        /// </summary>
         public string ID
         {
             get
@@ -58,8 +88,14 @@ namespace BetterLegacy.Editor
             }
         }
 
+        /// <summary>
+        /// The type of keyframe. Only used for keyframes.
+        /// </summary>
         public int Type { get; set; }
         int index;
+        /// <summary>
+        /// Gets the index of the object.
+        /// </summary>
         public int Index
         {
             get
@@ -75,6 +111,9 @@ namespace BetterLegacy.Editor
             set => index = value;
         }
 
+        /// <summary>
+        /// Gets and sets the time of the object.
+        /// </summary>
         public float Time
         {
             get
@@ -98,6 +137,9 @@ namespace BetterLegacy.Editor
             }
         }
 
+        /// <summary>
+        /// Gets and sets the bin (timeline row) of the object.
+        /// </summary>
         public int Bin
         {
             get
@@ -121,6 +163,9 @@ namespace BetterLegacy.Editor
             }
         }
 
+        /// <summary>
+        /// Gets and sets the layer of the object. Does not apply to keyframes.
+        /// </summary>
         public int Layer
         {
             get
@@ -131,8 +176,18 @@ namespace BetterLegacy.Editor
                     return (Data as PrefabObject).editorData.layer;
                 return -1;
             }
+            set
+            {
+                if (IsBeatmapObject)
+                    (Data as BeatmapObject).editorData.layer = value;
+                if (IsPrefabObject)
+                    (Data as PrefabObject).editorData.layer = value;
+            }
         }
 
+        /// <summary>
+        /// Gets and sets the locked state of the object. Currently does not apply to keyframes, but it is planned to.
+        /// </summary>
         public bool Locked
         {
             get
@@ -152,6 +207,9 @@ namespace BetterLegacy.Editor
             }
         }
 
+        /// <summary>
+        /// Gets and sets the collapsed state of the object. Does not apply to keyframes.
+        /// </summary>
         public bool Collapse
         {
             get
@@ -177,15 +235,35 @@ namespace BetterLegacy.Editor
         public bool selected;
 
         float zoom = 0.05f;
+        /// <summary>
+        /// Gets and sets the stored zoom of the object. Specifically used for the object keyframe timeline.
+        /// </summary>
         public float Zoom { get => zoom; set => zoom = value; }
 
         float timelinePosition;
+        /// <summary>
+        /// Gets and sets the stored timeline scrollbar position of the object. Specifically used for the object keyframe timeline.
+        /// </summary>
         public float TimelinePosition { get => timelinePosition; set => timelinePosition = value; }
 
+        /// <summary>
+        /// Checks if the objects' data is of 'BeatmapObject' type.
+        /// </summary>
         public bool IsBeatmapObject => Data != null && Data is BeatmapObject;
+
+        /// <summary>
+        /// Checks if the objects' data is of 'PRefabObject' type.
+        /// </summary>
         public bool IsPrefabObject => Data != null && Data is PrefabObject;
+
+        /// <summary>
+        /// Checks if the objects' data is of 'EventKeyframe' type.
+        /// </summary>
         public bool IsEventKeyframe => Data != null && Data is EventKeyframe;
 
+        /// <summary>
+        /// The internal keyframes an object stores. Only used for Beatmap Objects.
+        /// </summary>
         public List<TimelineObject> InternalSelections { get; set; } = new List<TimelineObject>();
     }
 }
