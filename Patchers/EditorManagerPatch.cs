@@ -597,17 +597,13 @@ namespace BetterLegacy.Patchers
         static bool handleViewShortcutsPrefix()
         {
             var config = EditorConfig.Instance;
+            float multiply = Input.GetKey(KeyCode.LeftControl) ? 2f : Input.GetKey(KeyCode.LeftShift) ? 0.1f : 1f;
 
             if (Instance.IsCurrentDialog(EditorManager.EditorDialog.DialogType.Object)
                 && Instance.IsOverObjTimeline
                 && !LSHelpers.IsUsingInputField()
                 && !RTEditor.inst.isOverMainTimeline)
             {
-                float multiply = 1f;
-                if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
-                    multiply = 2f;
-                if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
-                    multiply = 0.1f;
 
                 if (InputDataManager.inst.editorActions.ZoomIn.WasPressed)
                     ObjEditor.inst.Zoom = ObjEditor.inst.zoomFloat + config.KeyframeZoomAmount.Value * multiply;
@@ -617,12 +613,6 @@ namespace BetterLegacy.Patchers
 
             if (!Instance.IsOverObjTimeline && RTEditor.inst.isOverMainTimeline)
             {
-                float multiply = 1f;
-                if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
-                    multiply = 2f;
-                if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
-                    multiply = 0.1f;
-
                 if (InputDataManager.inst.editorActions.ZoomIn.WasPressed)
                     Instance.Zoom = Instance.zoomFloat + config.MainZoomAmount.Value * multiply;
                 if (InputDataManager.inst.editorActions.ZoomOut.WasPressed)
@@ -694,25 +684,14 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool AddToPitchPrefix(float __0)
         {
-            if (Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.LeftAlt))
-            {
-                AudioManager.inst.SetPitch(AudioManager.inst.pitch + __0 * 10f);
-            }
-            if (Input.GetKey(KeyCode.LeftAlt) && !Input.GetKey(KeyCode.LeftControl))
-            {
-                AudioManager.inst.SetPitch(AudioManager.inst.pitch + __0 / 10f);
-            }
-            if (!Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.LeftAlt))
-            {
-                AudioManager.inst.SetPitch(AudioManager.inst.pitch + __0);
-            }
+            AudioManager.inst.SetPitch(AudioManager.inst.pitch + __0 * (Input.GetKey(KeyCode.LeftControl) ? 10f : Input.GetKey(KeyCode.LeftAlt) ? 0.1f : 1f));
 
             return false;
         }
 
         [HarmonyPatch("ToggleEditor")]
         [HarmonyPostfix]
-        static void ToggleEditorPrefix()
+        static void ToggleEditorPostfix()
         {
             if (Instance.isEditing)
                 Instance.UpdatePlayButton();
@@ -867,7 +846,7 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch("AssignWaveformTextures")]
         [HarmonyPrefix]
-        static bool AssignWaveformTexturesPatch() => false;
+        static bool AssignWaveformTexturesPrefix() => false;
 
         [HarmonyPatch("RenderOpenBeatmapPopup")]
         [HarmonyPrefix]
@@ -879,7 +858,7 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch("RenderParentSearchList")]
         [HarmonyPrefix]
-        static bool RenderParentSearchList()
+        static bool RenderParentSearchListPrefix()
         {
             RTEditor.inst.RefreshParentSearch(Instance, ObjectEditor.inst.CurrentSelection);
             return false;
@@ -887,7 +866,7 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch("OpenAlbumArtSelector")]
         [HarmonyPrefix]
-        static bool OpenAlbumArtSelector()
+        static bool OpenAlbumArtSelectorPrefix()
         {
             string jpgFile = FileBrowser.OpenSingleFile("jpg");
             Debug.Log("Selected file: " + jpgFile);
@@ -909,7 +888,7 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch("RenderTimeline")]
         [HarmonyPrefix]
-        static bool RenderTimelinePatch()
+        static bool RenderTimelinePrefix()
         {
             if (RTEditor.inst.layerType == RTEditor.LayerType.Events)
                 EventEditor.inst.RenderEventObjects();
@@ -1126,17 +1105,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool GetTimelineTimePrefix(ref float __result, float __0)
         {
-            __result = GetTimelineTime(__0);
+            __result = RTEditor.inst.GetTimelineTime(__0);
             return false;
-        }
-
-        public static float GetTimelineTime(float _offset = 0f)
-        {
-            float num = Input.mousePosition.x;
-            num += Mathf.Abs(Instance.timeline.transform.AsRT().position.x);
-            if (SettingEditor.inst.SnapActive && !Input.GetKey(KeyCode.LeftAlt))
-                return Instance.SnapToBPM(num * Instance.ScreenScaleInverse / Instance.Zoom);
-            return num * Instance.ScreenScaleInverse / Instance.Zoom + _offset;
         }
 
         [HarmonyPatch("SetShowHelp")]
@@ -1192,7 +1162,7 @@ namespace BetterLegacy.Patchers
             if (__1)
                 Instance.RenderTimeline();
 
-            Instance.timelineScrollRectBar.value = AudioManager.inst.CurrentAudioSource.time / AudioManager.inst.CurrentAudioSource.clip.length;
+            Instance.timelineScrollRectBar.value = (EditorConfig.Instance.UseMouseAsZoomPoint.Value ? Instance.GetTimelineTime(0f) : AudioManager.inst.CurrentAudioSource.time) / AudioManager.inst.CurrentAudioSource.clip.length;
             Debug.LogFormat("{0}Set Timeline Zoom -> [{1}]", new object[] { Instance.className, Instance.Zoom });
             return false;
         }
@@ -1209,21 +1179,21 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool ZoomSetterPrefix(EditorManager __instance, ref float value)
         {
-            //RTEditor.inst.SetTimeline(value);
+            RTEditor.inst.SetTimeline(value);
 
-            float num = __instance.zoomFloat;
-            __instance.zoomFloat = Mathf.Clamp01(value);
-            __instance.zoomVal = LSMath.InterpolateOverCurve(__instance.ZoomCurve, __instance.zoomBounds.x, __instance.zoomBounds.y, __instance.zoomFloat);
-            if (__instance.zoomFloat != num)
-            {
-                __instance.SetMainTimelineZoom(__instance.zoomVal, true, __instance.timelineScrollRectBar.value);
-            }
-            __instance.zoomSlider.onValueChanged.ClearAll();
-            __instance.zoomSlider.value = __instance.zoomFloat;
-            __instance.zoomSlider.onValueChanged.AddListener(delegate (float _val)
-            {
-                __instance.Zoom = _val;
-            });
+            //float num = __instance.zoomFloat;
+            //__instance.zoomFloat = Mathf.Clamp01(value);
+            //__instance.zoomVal = LSMath.InterpolateOverCurve(__instance.ZoomCurve, __instance.zoomBounds.x, __instance.zoomBounds.y, __instance.zoomFloat);
+            //if (__instance.zoomFloat != num)
+            //{
+            //    __instance.SetMainTimelineZoom(__instance.zoomVal, true, __instance.timelineScrollRectBar.value);
+            //}
+            //__instance.zoomSlider.onValueChanged.ClearAll();
+            //__instance.zoomSlider.value = __instance.zoomFloat;
+            //__instance.zoomSlider.onValueChanged.AddListener(delegate (float _val)
+            //{
+            //    __instance.Zoom = _val;
+            //});
             return false;
         }
     }
