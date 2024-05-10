@@ -5,6 +5,11 @@ namespace BetterLegacy.Core.Data
 {
     public class LevelData : BaseLevelData
     {
+        public LevelData()
+        {
+            modVersion = LegacyPlugin.ModVersion.ToString();
+        }
+
         public string modVersion;
 
         public static LevelData Parse(JSONNode jn)
