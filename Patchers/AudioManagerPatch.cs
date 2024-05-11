@@ -8,7 +8,7 @@ namespace BetterLegacy.Patchers
     {
         [HarmonyPatch("Update")]
         [HarmonyPrefix]
-        static bool AudioUpdatePrefix(AudioManager __instance)
+        static bool UpdatePrefix(AudioManager __instance)
         {
             float masterVol = (float)DataManager.inst.GetSettingInt("MasterVolume", 9) / 9f;
 
@@ -32,7 +32,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SetPitchPrefix(AudioManager __instance, float __0)
         {
-            if (RTEventManager.inst != null)
+            if (RTEventManager.inst)
                 RTEventManager.inst.pitchOffset = __0;
             else
                 __instance.pitch = __0;
