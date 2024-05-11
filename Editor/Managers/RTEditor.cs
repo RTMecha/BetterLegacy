@@ -13004,52 +13004,58 @@ namespace BetterLegacy.Editor.Managers
             {
             }
 
-            public EditorProperty(ValueType _valueType, ConfigEntryBase _configEntry)
+            public EditorProperty(ValueType valueType, ConfigEntryBase configEntry)
             {
-                name = _configEntry.Definition.Key;
-                valueType = _valueType;
+                name = configEntry.Definition.Key;
+                this.valueType = valueType;
 
-                var p = PropCategories.FindIndex(x => x.ToString() == _configEntry.Definition.Section.Replace("Editor - ", "").Replace(" ", ""));
+                var p = PropCategories.FindIndex(x => x.ToString() == configEntry.Definition.Section.Replace("Editor - ", "").Replace(" ", ""));
 
                 propCategory = p >= 0 ? PropCategories[p] : EditorPropCategory.General;
-                configEntry = _configEntry;
-                description = _configEntry.Description.Description;
+                this.configEntry = configEntry;
+                description = configEntry.Description.Description;
+            }
+            
+            public EditorProperty(ConfigEntryBase configEntry)
+            {
+                name = configEntry.Definition.Key;
+                valueType = ConvertType(configEntry.SettingType);
+
+                var p = PropCategories.FindIndex(x => x.ToString() == configEntry.Definition.Section.Replace("Editor - ", "").Replace(" ", ""));
+
+                propCategory = p >= 0 ? PropCategories[p] : EditorPropCategory.General;
+                this.configEntry = configEntry;
+                description = configEntry.Description.Description;
             }
 
-            public EditorProperty(ValueType _valueType, EditorPropCategory _editorProp, ConfigEntryBase _configEntry)
+            public EditorProperty(string name, ValueType valueType, EditorPropCategory editorProp, Action action, string description)
             {
-                name = _configEntry.Definition.Key;
-                valueType = _valueType;
-                propCategory = _editorProp;
-                configEntry = _configEntry;
-                description = _configEntry.Description.Description;
-            }
-
-            public EditorProperty(string _name, ValueType _valueType, EditorPropCategory _editorProp, ConfigEntryBase _configEntry)
-            {
-                name = _name;
-                valueType = _valueType;
-                propCategory = _editorProp;
-                configEntry = _configEntry;
-                description = _configEntry.Description.Description;
-            }
-
-            public EditorProperty(string _name, ValueType _valueType, EditorPropCategory _editorProp, ConfigEntryBase _configEntry, string _description)
-            {
-                name = _name;
-                valueType = _valueType;
-                propCategory = _editorProp;
-                configEntry = _configEntry;
-                description = _description;
-            }
-
-            public EditorProperty(string _name, ValueType _valueType, EditorPropCategory _editorProp, Action action, string _description)
-            {
-                name = _name;
-                valueType = _valueType;
-                propCategory = _editorProp;
-                description = _description;
+                this.name = name;
+                this.valueType = valueType;
+                propCategory = editorProp;
+                this.description = description;
                 this.action = action;
+            }
+
+            ValueType ConvertType(Type type)
+            {
+                if (type == typeof(bool))
+                    return ValueType.Bool;
+                if (type == typeof(int))
+                    return ValueType.Int;
+                if (type == typeof(float))
+                    return ValueType.Float;
+                if (type == typeof(string))
+                    return ValueType.String;
+                if (type == typeof(Vector2))
+                    return ValueType.Vector2;
+                if (type == typeof(Vector3))
+                    return ValueType.Vector3;
+                if (type == typeof(Vector3))
+                    return ValueType.Vector3;
+                if (type == typeof(Color))
+                    return ValueType.Color;
+                return ValueType.Function;
             }
 
             public string name;
@@ -13058,8 +13064,6 @@ namespace BetterLegacy.Editor.Managers
             public ConfigEntryBase configEntry;
             public string description;
             public Action action;
-
-            public ConfigEntry<T> GetConfigEntry<T>() => configEntry is ConfigEntry<T> ? (ConfigEntry<T>)configEntry : null;
 
             public List<EditorPropCategory> PropCategories => new List<EditorPropCategory>()
             {
