@@ -1,8 +1,19 @@
 1.0.0 > [???]
 - Merged all the PA Legacy mods into one new mod called Better Legacy! This merge should make it clear that this version of the game is now a fully different version of PA.
 - Modifier updating now occurs before event updating and object updating.
-- Fixed up loadlevel command and added listlevels::path to interface.
-- Added the glitch effects Analog Glitch and Digital Glitch. While this was added to EventsCore, I added it to BetterLegacy first.
-- Example is now more integrated with the mods than before the merge.
 - Reworked a TON of code to be more readable for anyone interested in helping the modding effort.
-- Optimized a ton of stuff compared to the unmerged versions of the mods.
+- Optimized a ton of stuff compared to the unmerged versions of the mods. (I.E. a level with quite a few modifiers in objects goes from 30 FPS to 100+ FPS)
+- The following notes are smaller updates to each mod:
+-- Decreased level.lsb file sizes by comparing default values and only saving values when a default value does not equal the current one. (RTFunctions)
+-- Background Objects now has Z position. They also have hue, saturation and value for both the base color and the fade color. (RTFunctions)
+-- Fixed Background Objects and players not properly clearing and respawning when loading from one level to another. (RTFunctions)
+-- Added some new fonts (Pixellet, File Deletion, Sans Sans, Monomaniac One and RocknRoll One).
+-- All keyframes can now have their times locked. (EditorManagement)
+-- Newly created markers now have their times snapped to BPM if BPM snap is active. (EditorManagement)
+-- Made the editor.lse file more readable on the user end.
+-- Added the glitch effects Analog Glitch and Digital Glitch. While this was added to EventsCore, I added it to BetterLegacy first. (EventsCore)
+-- Example is now more integrated with the mods than before the merge. (ExampleCompanion)
+-- Fixed up loadlevel command and added listlevels::path to interface. (PageCreator)
+-- Added setMousePosition modifier. (Moves the mouse to the center of the screen at an offset)
+-- Added followMousePosition modifier. (Makes the object track the mouse)
+-- Added textSequence modifier. (Works like the interface text but more advanced and customizable)
