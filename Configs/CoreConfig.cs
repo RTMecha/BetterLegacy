@@ -508,6 +508,6 @@ namespace BetterLegacy.Configs
 
         #endregion
 
-        public override string ToString() => "Editor Config";
+        public override string ToString() => "Core Config";
     }
 }

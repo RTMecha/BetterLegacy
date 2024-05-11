@@ -94,5 +94,7 @@ namespace BetterLegacy.Configs
             if (!ExampleManager.inst && ExampleSpawns.Value)
                 ExampleManager.Init();
         }
+
+        public override string ToString() => "Example Config";
     }
 }

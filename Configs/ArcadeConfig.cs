@@ -341,5 +341,7 @@ namespace BetterLegacy.Configs
         }
 
         #endregion
+
+        public override string ToString() => "Arcade Config";
     }
 }

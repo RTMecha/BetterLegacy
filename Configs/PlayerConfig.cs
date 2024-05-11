@@ -152,5 +152,7 @@ namespace BetterLegacy.Configs
             RTPlayer.AllowPlayersToTakeBulletDamage = AllowPlayersToTakeBulletDamage.Value;
             RTPlayer.EvaluateCode = EvaluateCode.Value;
         }
+
+        public override string ToString() => "Player Config";
     }
 }

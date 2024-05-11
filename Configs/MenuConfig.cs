@@ -87,5 +87,7 @@ namespace BetterLegacy.Configs
             if (!EditorManager.inst && MenuManager.inst.ic)
                 MenuManager.inst.PlayMusic();
         }
+
+        public override string ToString() => "Menu Config";
     }
 }
