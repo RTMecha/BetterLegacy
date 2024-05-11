@@ -30,8 +30,6 @@ namespace BetterLegacy.Editor.Managers
 
         public bool isPressingKey;
 
-        static Scrollbar tlScrollbar;
-
         public int currentKey;
 
         public static bool AllowKeys { get; set; }
@@ -102,15 +100,15 @@ namespace BetterLegacy.Editor.Managers
             UpdateValues();
         }
 
-        public void FixedUpdate()
+        void FixedUpdate()
         {
-            if (dragging)
-            {
-                if (selectionType == SelectionType.Object)
-                    ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
-                if (selectionType == SelectionType.Prefab)
-                    PrefabEditorManager.inst.RenderPrefabObjectDialog(prefabObject);
-            }
+            if (!dragging)
+                return;
+
+            if (selectionType == SelectionType.Object)
+                ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
+            if (selectionType == SelectionType.Prefab)
+                PrefabEditorManager.inst.RenderPrefabObjectDialog(prefabObject);
         }
 
         public void FirstInit()
@@ -457,38 +455,17 @@ namespace BetterLegacy.Editor.Managers
 
         public void GenerateKeybindEditorPopupDialog()
         {
-            var qap = EditorManager.inst.GetDialog("Quick Actions Popup").Dialog;
-            var popup = qap.gameObject.Duplicate(qap.parent, "Keybind List Popup");
-            content = popup.transform.Find("mask/content");
-
-            StartCoroutine(EditorManager.inst.GetSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_edit.png", new EditorManager.SpriteLimits(), delegate (Sprite sprite)
-            {
-                editSprite = sprite;
-            }, delegate (string onError)
-            {
-
-            }));
-
-            var popupTitle = popup.transform.Find("Panel/Text").GetComponent<Text>();
-            popupTitle.text = "Edit a Keybind";
-
-            var search = popup.transform.Find("search-box/search").GetComponent<InputField>();
-            ((Text)search.placeholder).text = "Search for keybind...";
-            search.onValueChanged.ClearAll();
-            search.onValueChanged.AddListener(delegate (string _val)
+            var popup = RTEditor.inst.GeneratePopup("Keybind List Popup", "Edit a Keybind", Vector2.zero, new Vector2(600f, 400f), delegate (string _val)
             {
                 searchTerm = _val;
                 RefreshKeybindPopup();
-            });
-
-            var close = popup.transform.Find("Panel/x").GetComponent<Button>();
-            close.onClick.ClearAll();
-            close.onClick.AddListener(delegate ()
+            }, delegate ()
             {
                 EditorManager.inst.HideDialog("Keybind List Popup");
-            });
+            }, "Search for keybind...");
+            content = popup.Content;
 
-            EditorHelper.AddEditorPopup("Keybind List Popup", popup);
+            editSprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_edit.png");
 
             var dialog = EditorManager.inst.GetDialog("Multi Keyframe Editor (Object)").Dialog;
             editorDialog = dialog.gameObject.Duplicate(dialog.parent, "KeybindEditor").transform;
@@ -501,13 +478,13 @@ namespace BetterLegacy.Editor.Managers
             var clickable = editorDialog.gameObject.AddComponent<Clickable>();
             clickable.onEnable = delegate (bool enabled)
             {
-                if (!enabled)
-                {
-                    RTEditor.inst.selectingKey = false;
-                    RTEditor.inst.setKey = null;
+                if (enabled)
+                    return;
 
-                    RTEditor.inst.onKeySet = null;
-                }
+                RTEditor.inst.selectingKey = false;
+                RTEditor.inst.setKey = null;
+
+                RTEditor.inst.onKeySet = null;
             };
 
             var data = new GameObject("data");
@@ -694,46 +671,13 @@ namespace BetterLegacy.Editor.Managers
 
             EditorHelper.AddEditorDialog("Keybind Editor", editorDialog.gameObject);
 
-            EditorHelper.AddEditorDropdown("View Keybinds", "", "Edit", RTEditor.inst.SearchSprite, delegate ()
+            EditorHelper.AddEditorDropdown("View Keybinds", "", "Edit", SpriteManager.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_keybind.png"), delegate ()
             {
                 OpenPopup();
             });
 
             // Editor Themes
             {
-                EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Background_1, popup, new List<Component>
-                {
-                    popup.GetComponent<Image>(),
-                }, true, 1, SpriteManager.RoundedSide.W));
-
-                var panel = popup.transform.Find("Panel").gameObject;
-                EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Background_1, panel, new List<Component>
-                {
-                    panel.GetComponent<Image>(),
-                }, true, 1, SpriteManager.RoundedSide.Top));
-
-                EditorThemeManager.AddSelectable(panel.transform.Find("x").GetComponent<Button>(), ThemeGroup.Close);
-
-                var parentSelectorPopupCloseX = panel.transform.Find("x").GetChild(0).gameObject;
-                EditorThemeManager.AddSelectable(close, ThemeGroup.Close);
-
-                EditorThemeManager.AddLightText(popupTitle);
-
-                var scrollbar = popup.transform.Find("Scrollbar").gameObject;
-                EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Background_1, scrollbar, new List<Component>
-                {
-                    scrollbar.GetComponent<Image>(),
-                }, true, 1, SpriteManager.RoundedSide.Bottom_Right_I));
-
-                var scrollbarHandle = scrollbar.transform.Find("Sliding Area/Handle").gameObject;
-                EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Scrollbar_1_Handle, scrollbarHandle, new List<Component>
-                {
-                    scrollbarHandle.GetComponent<Image>(),
-                    scrollbar.GetComponent<Scrollbar>()
-                }, true, 1, SpriteManager.RoundedSide.W, true));
-
-                EditorThemeManager.AddInputField(search, ThemeGroup.Search_Field_1, 1, SpriteManager.RoundedSide.Bottom);
-
                 EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Background_1, editorDialog.gameObject, new List<Component>
                 {
                     editorDialog.GetComponent<Image>(),
@@ -2390,126 +2334,122 @@ namespace BetterLegacy.Editor.Managers
 
         public void UpdateValues()
         {
+            if (!dragging)
+                return;
+
             var vector = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f);
             var vector2 = Camera.main.ScreenToWorldPoint(vector) * (currentType == 1 ? 0.2f : currentType == 2 ? 2f : 1f);
             var vector3 = currentType != 1 ? new Vector3((int)vector2.x, (int)vector2.y, 0f) :
                 new Vector3(RTMath.RoundToNearestDecimal(vector2.x, 1), RTMath.RoundToNearestDecimal(vector2.y, 1), 0f);
 
-            if (dragging)
+            switch (currentType)
             {
-                switch (currentType)
-                {
-                    case 0:
+                case 0:
+                    {
+                        if (!setKeyframeValues)
                         {
-                            if (!setKeyframeValues)
-                            {
-                                setKeyframeValues = true;
-                                dragKeyframeValues = new Vector2(selectedKeyframe.eventValues[0], selectedKeyframe.eventValues[1]);
-                                dragOffset = Input.GetKey(KeyCode.LeftShift) ? vector3 : vector2;
-                            }
-
-                            var finalVector = Input.GetKey(KeyCode.LeftShift) ? vector3 : vector2;
-
-                            if (Input.GetKey(KeyCode.LeftControl) && firstDirection == RTObject.Axis.Static)
-                            {
-                                if (dragOffset.x > finalVector.x)
-                                    firstDirection = RTObject.Axis.PosX;
-
-                                if (dragOffset.x < finalVector.x)
-                                    firstDirection = RTObject.Axis.NegX;
-
-                                if (dragOffset.y > finalVector.y)
-                                    firstDirection = RTObject.Axis.PosY;
-
-                                if (dragOffset.y < finalVector.y)
-                                    firstDirection = RTObject.Axis.NegY;
-                            }
-
-                            if (Input.GetKey(KeyCode.X))
-                            {
-                                if (dragOffset.x > finalVector.x)
-                                    firstDirection = RTObject.Axis.PosX;
-                                if (dragOffset.x < finalVector.x)
-                                    firstDirection = RTObject.Axis.NegX;
-                            }
-
-                            if (Input.GetKey(KeyCode.Y))
-                            {
-                                if (dragOffset.x > finalVector.x)
-                                    firstDirection = RTObject.Axis.PosY;
-                                if (dragOffset.x < finalVector.x)
-                                    firstDirection = RTObject.Axis.NegY;
-                            }
-
-                            if (firstDirection == RTObject.Axis.NegX || firstDirection == RTObject.Axis.PosX)
-                                selectedKeyframe.eventValues[1] = dragKeyframeValues.y;
-
-                            if (firstDirection == RTObject.Axis.NegY || firstDirection == RTObject.Axis.PosY)
-                                selectedKeyframe.eventValues[0] = dragKeyframeValues.x;
-
-                            if (firstDirection == RTObject.Axis.Static || firstDirection == RTObject.Axis.PosX || firstDirection == RTObject.Axis.NegX)
-                                selectedKeyframe.eventValues[0] = dragKeyframeValues.x - dragOffset.x + (Input.GetKey(KeyCode.LeftShift) ? vector3.x : vector2.x);
-                            if (firstDirection == RTObject.Axis.Static || firstDirection == RTObject.Axis.PosY || firstDirection == RTObject.Axis.NegY)
-                                selectedKeyframe.eventValues[1] = dragKeyframeValues.y - dragOffset.y + (Input.GetKey(KeyCode.LeftShift) ? vector3.y : vector2.y);
-
-                            break;
+                            setKeyframeValues = true;
+                            dragKeyframeValues = new Vector2(selectedKeyframe.eventValues[0], selectedKeyframe.eventValues[1]);
+                            dragOffset = Input.GetKey(KeyCode.LeftShift) ? vector3 : vector2;
                         }
-                    case 1:
+
+                        var finalVector = Input.GetKey(KeyCode.LeftShift) ? vector3 : vector2;
+
+                        if (Input.GetKey(KeyCode.LeftControl) && firstDirection == RTObject.Axis.Static)
                         {
+                            if (dragOffset.x > finalVector.x)
+                                firstDirection = RTObject.Axis.PosX;
 
-                            if (!setKeyframeValues)
-                            {
-                                setKeyframeValues = true;
-                                dragKeyframeValues = new Vector2(selectedKeyframe.eventValues[0], selectedKeyframe.eventValues[1]);
-                                dragOffset = Input.GetKey(KeyCode.LeftShift) ? vector3 : vector2;
-                            }
+                            if (dragOffset.x < finalVector.x)
+                                firstDirection = RTObject.Axis.NegX;
 
-                            var finalVector = Input.GetKey(KeyCode.LeftShift) ? vector3 : vector2;
+                            if (dragOffset.y > finalVector.y)
+                                firstDirection = RTObject.Axis.PosY;
 
-                            if (Input.GetKey(KeyCode.LeftControl))
-                            {
-                                float total = Vector2.Distance(dragOffset, finalVector);
-
-                                selectedKeyframe.eventValues[0] = dragKeyframeValues.x + total;
-                                selectedKeyframe.eventValues[1] = dragKeyframeValues.y + total;
-                            }
-                            else
-                            {
-                                selectedKeyframe.eventValues[0] = dragKeyframeValues.x - (dragOffset.x + finalVector.x);
-                                selectedKeyframe.eventValues[1] = dragKeyframeValues.y - (dragOffset.y + finalVector.y);
-                            }
-
-                            break;
+                            if (dragOffset.y < finalVector.y)
+                                firstDirection = RTObject.Axis.NegY;
                         }
-                    case 2:
+
+                        if (Input.GetKey(KeyCode.X))
                         {
-                            var position = selectionType == SelectionType.Prefab ? new Vector3(prefabObject.events[0].eventValues[0], prefabObject.events[0].eventValues[1], 0f) : beatmapObject.levelObject?.visualObject?.GameObject.transform.position ??
-                                new Vector3(beatmapObject.events[0].FindLast(x => x.eventTime < AudioManager.inst.CurrentAudioSource.time).eventValues[0], beatmapObject.events[0].FindLast(x => x.eventTime < AudioManager.inst.CurrentAudioSource.time).eventValues[1], 0f);
-
-                            if (!setKeyframeValues)
-                            {
-                                setKeyframeValues = true;
-                                dragKeyframeValuesFloat = selectedKeyframe.eventValues[0];
-                                dragOffsetFloat = Input.GetKey(KeyCode.LeftShift) ? RTMath.roundToNearest(-RTMath.VectorAngle(position, vector2), 15f) : -RTMath.VectorAngle(transform.position, vector2);
-                            }
-
-                            selectedKeyframe.eventValues[0] =
-                                Input.GetKey(KeyCode.LeftShift) ? RTMath.roundToNearest(dragKeyframeValuesFloat - dragOffsetFloat + -RTMath.VectorAngle(position, vector2), 15f) :
-                                dragKeyframeValuesFloat - dragOffsetFloat + -RTMath.VectorAngle(position, vector2);
-
-                            break;
+                            if (dragOffset.x > finalVector.x)
+                                firstDirection = RTObject.Axis.PosX;
+                            if (dragOffset.x < finalVector.x)
+                                firstDirection = RTObject.Axis.NegX;
                         }
-                }
 
-                if (selectionType == SelectionType.Object)
-                {
-                    Updater.UpdateProcessor(beatmapObject, "Keyframes");
-                }
-                if (selectionType == SelectionType.Prefab)
-                {
-                    Updater.UpdatePrefab(prefabObject, "Offset");
-                }
+                        if (Input.GetKey(KeyCode.Y))
+                        {
+                            if (dragOffset.x > finalVector.x)
+                                firstDirection = RTObject.Axis.PosY;
+                            if (dragOffset.x < finalVector.x)
+                                firstDirection = RTObject.Axis.NegY;
+                        }
+
+                        if (firstDirection == RTObject.Axis.NegX || firstDirection == RTObject.Axis.PosX)
+                            selectedKeyframe.eventValues[1] = dragKeyframeValues.y;
+
+                        if (firstDirection == RTObject.Axis.NegY || firstDirection == RTObject.Axis.PosY)
+                            selectedKeyframe.eventValues[0] = dragKeyframeValues.x;
+
+                        if (firstDirection == RTObject.Axis.Static || firstDirection == RTObject.Axis.PosX || firstDirection == RTObject.Axis.NegX)
+                            selectedKeyframe.eventValues[0] = dragKeyframeValues.x - dragOffset.x + (Input.GetKey(KeyCode.LeftShift) ? vector3.x : vector2.x);
+                        if (firstDirection == RTObject.Axis.Static || firstDirection == RTObject.Axis.PosY || firstDirection == RTObject.Axis.NegY)
+                            selectedKeyframe.eventValues[1] = dragKeyframeValues.y - dragOffset.y + (Input.GetKey(KeyCode.LeftShift) ? vector3.y : vector2.y);
+
+                        break;
+                    }
+                case 1:
+                    {
+
+                        if (!setKeyframeValues)
+                        {
+                            setKeyframeValues = true;
+                            dragKeyframeValues = new Vector2(selectedKeyframe.eventValues[0], selectedKeyframe.eventValues[1]);
+                            dragOffset = Input.GetKey(KeyCode.LeftShift) ? vector3 : vector2;
+                        }
+
+                        var finalVector = Input.GetKey(KeyCode.LeftShift) ? vector3 : vector2;
+
+                        if (Input.GetKey(KeyCode.LeftControl))
+                        {
+                            float total = Vector2.Distance(dragOffset, finalVector);
+
+                            selectedKeyframe.eventValues[0] = dragKeyframeValues.x + total;
+                            selectedKeyframe.eventValues[1] = dragKeyframeValues.y + total;
+                        }
+                        else
+                        {
+                            selectedKeyframe.eventValues[0] = dragKeyframeValues.x - (dragOffset.x + finalVector.x);
+                            selectedKeyframe.eventValues[1] = dragKeyframeValues.y - (dragOffset.y + finalVector.y);
+                        }
+
+                        break;
+                    }
+                case 2:
+                    {
+                        var position = selectionType == SelectionType.Prefab ? new Vector3(prefabObject.events[0].eventValues[0], prefabObject.events[0].eventValues[1], 0f) : beatmapObject.levelObject?.visualObject?.GameObject.transform.position ??
+                            new Vector3(beatmapObject.events[0].FindLast(x => x.eventTime < AudioManager.inst.CurrentAudioSource.time).eventValues[0], beatmapObject.events[0].FindLast(x => x.eventTime < AudioManager.inst.CurrentAudioSource.time).eventValues[1], 0f);
+
+                        if (!setKeyframeValues)
+                        {
+                            setKeyframeValues = true;
+                            dragKeyframeValuesFloat = selectedKeyframe.eventValues[0];
+                            dragOffsetFloat = Input.GetKey(KeyCode.LeftShift) ? RTMath.roundToNearest(-RTMath.VectorAngle(position, vector2), 15f) : -RTMath.VectorAngle(transform.position, vector2);
+                        }
+
+                        selectedKeyframe.eventValues[0] =
+                            Input.GetKey(KeyCode.LeftShift) ? RTMath.roundToNearest(dragKeyframeValuesFloat - dragOffsetFloat + -RTMath.VectorAngle(position, vector2), 15f) :
+                            dragKeyframeValuesFloat - dragOffsetFloat + -RTMath.VectorAngle(position, vector2);
+
+                        break;
+                    }
             }
+
+            if (selectionType == SelectionType.Object)
+                Updater.UpdateProcessor(beatmapObject, "Keyframes");
+            if (selectionType == SelectionType.Prefab)
+                Updater.UpdatePrefab(prefabObject, "Offset");
         }
 
         public void SetCurrentKeyframe(int type)
