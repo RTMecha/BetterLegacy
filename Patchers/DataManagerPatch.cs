@@ -30,45 +30,17 @@ namespace BetterLegacy.Patchers
         [HarmonyPostfix]
         static void StartPostfix(DataManager __instance)
         {
-            var systemManager = SystemManager.inst;
-
+            // Initialize managers
             AlephNetworkManager.Init();
-
-            var modCompatibility = new GameObject("ModCompatibility");
-            modCompatibility.transform.SetParent(systemManager.transform);
-            modCompatibility.AddComponent<ModCompatibility>();
-
-            var objects = new GameObject("ShapeManager");
-            objects.transform.SetParent(systemManager.transform);
-            objects.AddComponent<ShapeManager>();
-
-            var uiManager = new GameObject("UIManager");
-            uiManager.transform.SetParent(systemManager.transform);
-            uiManager.AddComponent<UIManager>();
-
-            var quickElements = new GameObject("QuickElementsManager");
-            quickElements.transform.SetParent(systemManager.transform);
-            quickElements.AddComponent<QuickElementManager>();
-
-            var spriteManager = new GameObject("SpriteManager");
-            spriteManager.transform.SetParent(systemManager.transform);
-            spriteManager.AddComponent<SpriteManager>();
-
-            var fontManager = new GameObject("FontManager");
-            fontManager.transform.SetParent(systemManager.transform);
-            fontManager.AddComponent<FontManager>();
-
-            var assetManager = new GameObject("AssetManager");
-            assetManager.transform.SetParent(systemManager.transform);
-            assetManager.AddComponent<AssetManager>();
-
-            var levelManager = new GameObject("LevelManager");
-            levelManager.transform.SetParent(systemManager.transform);
-            levelManager.AddComponent<LevelManager>();
-
-            var playerManager = new GameObject("PlayerManager");
-            playerManager.transform.SetParent(systemManager.transform);
-            playerManager.AddComponent<PlayerManager>();
+            ModCompatibility.Init();
+            ShapeManager.Init();
+            UIManager.Init();
+            QuickElementManager.Init();
+            SpriteManager.Init();
+            FontManager.Init();
+            AssetManager.Init();
+            LevelManager.Init();
+            PlayerManager.Init();
 
             AudioManager.inst.gameObject.AddComponent<SoundManager>();
             ArcadeManager.inst.gameObject.AddComponent<RTArcade>();

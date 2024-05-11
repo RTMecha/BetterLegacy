@@ -15,6 +15,16 @@ namespace BetterLegacy.Core.Managers
     {
         public static QuickElementManager inst;
 
+        /// <summary>
+        /// Inits QuickElementManager.
+        /// </summary>
+        public static void Init()
+        {
+            var gameObject = new GameObject("QuickElementManager");
+            gameObject.transform.SetParent(SystemManager.inst.transform);
+            gameObject.AddComponent<QuickElementManager>();
+        }
+
         void Awake()
         {
             inst = this;

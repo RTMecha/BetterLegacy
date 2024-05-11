@@ -15,6 +15,16 @@ namespace BetterLegacy.Core.Managers
 
         public static Dictionary<string, object> sharedFunctions = new Dictionary<string, object>();
 
+        /// <summary>
+        /// Inits ModCompatibility.
+        /// </summary>
+        public static void Init()
+        {
+            var gameObject = new GameObject("ModCompatibility");
+            gameObject.transform.SetParent(SystemManager.inst.transform);
+            gameObject.AddComponent<ModCompatibility>();
+        }
+
         void Awake()
         {
             inst = this;

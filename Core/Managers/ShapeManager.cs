@@ -29,6 +29,16 @@ namespace BetterLegacy.Core.Managers
         public bool loadedShapes;
         public Transform shapeParent;
 
+        /// <summary>
+        /// Inits ShapeManager.
+        /// </summary>
+        public static void Init()
+        {
+            var gameObject = new GameObject("ShapeManager");
+            gameObject.transform.SetParent(SystemManager.inst.transform);
+            gameObject.AddComponent<ShapeManager>();
+        }
+
         void Awake()
         {
             inst = this;

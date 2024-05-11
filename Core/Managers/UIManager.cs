@@ -17,6 +17,16 @@ namespace BetterLegacy.Core.Managers
         public static Material fontMaterial;
         public static Font inconsolataFont = Font.GetDefault();
 
+        /// <summary>
+        /// Inits UIManager.
+        /// </summary>
+        public static void Init()
+        {
+            var gameObject = new GameObject("UIManager");
+            gameObject.transform.SetParent(SystemManager.inst.transform);
+            gameObject.AddComponent<UIManager>();
+        }
+
         void Awake()
         {
             var findButton = (from x in Resources.FindObjectsOfTypeAll<GameObject>()

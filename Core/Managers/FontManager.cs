@@ -48,6 +48,16 @@ namespace BetterLegacy.Core.Managers
             }
         }
 
+        /// <summary>
+        /// Inits FontManager.
+        /// </summary>
+        public static void Init()
+        {
+            var gameObject = new GameObject("FontManager");
+            gameObject.transform.SetParent(SystemManager.inst.transform);
+            gameObject.AddComponent<FontManager>();
+        }
+
         void Awake()
         {
             inst = this;

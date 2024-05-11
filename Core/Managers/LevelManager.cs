@@ -62,6 +62,16 @@ namespace BetterLegacy.Core.Managers
 
         public static int PlayedLevelCount { get; set; }
 
+        /// <summary>
+        /// Inits LevelManager.
+        /// </summary>
+        public static void Init()
+        {
+            var gameObject = new GameObject("LevelManager");
+            gameObject.transform.SetParent(SystemManager.inst.transform);
+            gameObject.AddComponent<LevelManager>();
+        }
+
         void Awake()
         {
             inst = this;
