@@ -948,7 +948,7 @@ namespace BetterLegacy.Core.Data
             for (int i = 0; i < events[1].Count; i++)
                 jn["events"]["sca"][i] = ((EventKeyframe)events[1][i]).ToJSON();
             for (int i = 0; i < events[2].Count; i++)
-                jn["events"]["rot"][i] = ((EventKeyframe)events[2][i]).ToJSON();
+                jn["events"]["rot"][i] = ((EventKeyframe)events[2][i]).ToJSON(true);
             for (int i = 0; i < events[3].Count; i++)
                 jn["events"]["col"][i] = ((EventKeyframe)events[3][i]).ToJSON();
 
