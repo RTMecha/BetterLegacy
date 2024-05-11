@@ -2408,7 +2408,7 @@ namespace BetterLegacy.Core.Helpers
 
                         if (list.Count() > 0 && int.TryParse(modifier.value, out int num))
                         {
-                            foreach (var bm in DataManager.inst.gameData.beatmapObjects.FindAll(x => x.name == modifier.commands[1]))
+                            foreach (var bm in list)
                             {
                                 var beatmapObject = (BeatmapObject)bm;
                                 beatmapObject.integerVariable += num;
@@ -2422,7 +2422,7 @@ namespace BetterLegacy.Core.Helpers
 
                         if (list.Count() > 0 && int.TryParse(modifier.value, out int num))
                         {
-                            foreach (var bm in DataManager.inst.gameData.beatmapObjects.FindAll(x => x.name == modifier.commands[1]))
+                            foreach (var bm in list)
                             {
                                 var beatmapObject = (BeatmapObject)bm;
                                 beatmapObject.integerVariable -= num;
