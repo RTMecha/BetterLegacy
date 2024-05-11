@@ -1898,18 +1898,19 @@ namespace BetterLegacy.Editor.Managers
 
         public static void AddPitch(Keybind keybind)
         {
-            if (ModCompatibility.sharedFunctions.ContainsKey("EventsCorePitchOffset"))
-                AudioManager.inst.SetPitch((float)ModCompatibility.sharedFunctions["EventsCorePitchOffset"] + 0.1f);
+            if (RTEventManager.inst)
+                RTEventManager.inst.pitchOffset += 0.1f;
             else
-                AudioManager.inst.SetPitch(AudioManager.inst.CurrentAudioSource.pitch + 0.1f);
+                AudioManager.inst.pitch += 0.1f;
+
         }
 
         public static void SubPitch(Keybind keybind)
         {
-            if (ModCompatibility.sharedFunctions.ContainsKey("EventsCorePitchOffset"))
-                AudioManager.inst.SetPitch((float)ModCompatibility.sharedFunctions["EventsCorePitchOffset"] - 0.1f);
+            if (RTEventManager.inst)
+                RTEventManager.inst.pitchOffset -= 0.1f;
             else
-                AudioManager.inst.SetPitch(AudioManager.inst.CurrentAudioSource.pitch - 0.1f);
+                AudioManager.inst.pitch -= 0.1f;
         }
 
         public static void ToggleShowHelp(Keybind keybind) => EditorManager.inst.SetShowHelp(!EditorManager.inst.showHelp);
