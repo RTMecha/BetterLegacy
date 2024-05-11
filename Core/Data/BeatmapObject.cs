@@ -516,6 +516,7 @@ namespace BetterLegacy.Core.Data
 					});
 
                     eventKeyframe.relative = !string.IsNullOrEmpty(kfjn["rel"]) && kfjn["rel"].AsBool;
+                    eventKeyframe.locked = !string.IsNullOrEmpty(kfjn["l"]) && kfjn["l"].AsBool;
 
                     eventKeyframe.active = false;
                     events[0].Add(eventKeyframe);
@@ -549,6 +550,7 @@ namespace BetterLegacy.Core.Data
                     });
 
                     eventKeyframe.relative = !string.IsNullOrEmpty(kfjn["rel"]) && kfjn["rel"].AsBool;
+                    eventKeyframe.locked = !string.IsNullOrEmpty(kfjn["l"]) && kfjn["l"].AsBool;
 
                     eventKeyframe.active = false;
                     events[1].Add(eventKeyframe);
@@ -581,6 +583,7 @@ namespace BetterLegacy.Core.Data
                     });
 
                     eventKeyframe.relative = string.IsNullOrEmpty(kfjn["rel"]) || kfjn["rel"].AsBool;
+                    eventKeyframe.locked = !string.IsNullOrEmpty(kfjn["l"]) && kfjn["l"].AsBool;
 
                     eventKeyframe.active = false;
                     events[2].Add(eventKeyframe);
@@ -616,6 +619,8 @@ namespace BetterLegacy.Core.Data
                             kfjn["rz"].AsFloat,
                             kfjn["rx2"].AsFloat,
                     });
+
+                    eventKeyframe.locked = !string.IsNullOrEmpty(kfjn["l"]) && kfjn["l"].AsBool;
 
                     eventKeyframe.active = false;
                     events[3].Add(eventKeyframe);
