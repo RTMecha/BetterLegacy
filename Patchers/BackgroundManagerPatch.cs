@@ -17,9 +17,9 @@ namespace BetterLegacy.Patchers
 
         public static BackgroundManager Instance { get => BackgroundManager.inst; set => BackgroundManager.inst = value; }
 
-        [HarmonyPatch(typeof(BackgroundManager), "Update")]
+        [HarmonyPatch("Update")]
         [HarmonyPrefix]
-        static void BackgroundManagerUpdatePostfix(BackgroundManager __instance)
+        static void UpdatePrefix(BackgroundManager __instance)
         {
             var list = DataManager.inst.gameData is GameData gameData && gameData.backgroundObjects != null ? gameData.BackgroundObjects.Where(x => x.modifiers.Count > 0).ToList() : null;
 
@@ -92,7 +92,7 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch("CreateBackgroundObject")]
         [HarmonyPrefix]
-        static bool CreateBackgroundObject(ref GameObject __result, DataManager.GameData.BackgroundObject __0)
+        static bool CreateBackgroundObjectPrefix(ref GameObject __result, DataManager.GameData.BackgroundObject __0)
         {
             __result = Updater.CreateBackgroundObject((BackgroundObject)__0);
             return false;
@@ -102,7 +102,7 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch("UpdateBackgroundObjects")]
         [HarmonyPrefix]
-        static bool UpdateBackgroundObjects(BackgroundManager __instance)
+        static bool UpdateBackgroundObjectsPrefix(BackgroundManager __instance)
         {
             if ((GameManager.inst.gameState == GameManager.State.Playing || LevelManager.LevelEnded && CoreConfig.Instance.ReplayLevel.Value) && BackgroundManager.inst?.backgroundParent?.gameObject)
             {
@@ -112,7 +112,6 @@ namespace BetterLegacy.Patchers
                 __instance.sampleMid = __instance.samples.Skip(56).Take(100).Average((float a) => a) * 3000f;
                 __instance.sampleHigh = __instance.samples.Skip(156).Take(100).Average((float a) => a) * 6000f;
 
-                //foreach (var bg in DataManager.inst.gameData.backgroundObjects)
                 for (int bg = 0; bg < DataManager.inst.gameData.backgroundObjects.Count; bg++)
                 {
                     var backgroundObject = (BackgroundObject)DataManager.inst.gameData.backgroundObjects[bg];
@@ -209,15 +208,15 @@ namespace BetterLegacy.Patchers
                         float z = __instance.samples[Mathf.Clamp(backgroundObject.reactiveZSample, 0, __instance.samples.Length - 1)];
 
                         gameObject.transform.localPosition =
-                            new Vector3(backgroundObject.pos.x + x * backgroundObject.reactivePosIntensity[0],
-                            backgroundObject.pos.y + y * backgroundObject.reactivePosIntensity[1],
-                            32f + backgroundObject.layer * 10f + z * backgroundObject.reactiveZIntensity) + backgroundObject.positionOffset;
+                            new Vector3(backgroundObject.pos.x + (x * backgroundObject.reactivePosIntensity[0]),
+                            backgroundObject.pos.y + (y * backgroundObject.reactivePosIntensity[1]),
+                            32f + backgroundObject.layer * 10f + (z * backgroundObject.reactiveZIntensity) + backgroundObject.zposition) + backgroundObject.positionOffset;
                         gameObject.transform.localScale =
                             new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale) +
                             new Vector3(backgroundObject.reactiveSize.x, backgroundObject.reactiveSize.y, 0f) + backgroundObject.scaleOffset;
                         gameObject.transform.localRotation = Quaternion.Euler(
                             new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y,
-                            backgroundObject.rot + rot * backgroundObject.reactiveRotIntensity) + backgroundObject.rotationOffset);
+                            backgroundObject.rot + (rot * backgroundObject.reactiveRotIntensity)) + backgroundObject.rotationOffset);
                     }
                     else
                     {
@@ -225,7 +224,7 @@ namespace BetterLegacy.Patchers
 
                         var gameObject = backgroundObject.BaseObject;
 
-                        gameObject.transform.localPosition = new Vector3(backgroundObject.pos.x, backgroundObject.pos.y, 32f + backgroundObject.layer * 10f) + backgroundObject.positionOffset;
+                        gameObject.transform.localPosition = new Vector3(backgroundObject.pos.x, backgroundObject.pos.y, 32f + backgroundObject.layer * 10f + backgroundObject.zposition) + backgroundObject.positionOffset;
                         gameObject.transform.localScale = new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale) + backgroundObject.scaleOffset;
                         gameObject.transform.localRotation = Quaternion.Euler(new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y, backgroundObject.rot) + backgroundObject.rotationOffset);
                     }

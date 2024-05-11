@@ -47,6 +47,7 @@ namespace BetterLegacy.Editor.Managers
 
             SetSingleInputFieldInt(__instance.left, "depth/x", backgroundObject.layer);
 
+            SetSingleInputField(__instance.left, "zposition/x", backgroundObject.zposition);
             SetSingleInputField(__instance.left, "zscale/x", backgroundObject.zscale);
 
             var fade = __instance.left.Find("fade").GetComponent<Toggle>();

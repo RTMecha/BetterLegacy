@@ -304,6 +304,52 @@ namespace BetterLegacy.Patchers
                 });
             }
 
+            // ZPosition
+            {
+                var iLabel = Instantiate(label);
+                iLabel.transform.SetParent(__instance.left);
+                iLabel.transform.localScale = Vector3.one;
+                iLabel.name = "label";
+                iLabel.transform.GetChild(0).GetComponent<Text>().text = "Z Position";
+                iLabel.transform.SetSiblingIndex(6);
+
+                var iterations = Instantiate(__instance.left.Find("position").gameObject);
+                iterations.transform.SetParent(__instance.left);
+                iterations.transform.localScale = Vector3.one;
+                iterations.name = "zposition";
+                DestroyImmediate(iterations.transform.GetChild(1).gameObject);
+                iterations.transform.SetSiblingIndex(7);
+
+                var x = iterations.transform.Find("x");
+                var xif = x.GetComponent<InputField>();
+                var left = x.Find("<").GetComponent<Button>();
+                var right = x.Find(">").GetComponent<Button>();
+
+                xif.onValueChanged.ClearAll();
+                xif.onValueChanged.AddListener(delegate (string _val)
+                {
+                    if (float.TryParse(_val, out float num))
+                    {
+                        CurrentSelectedBG.zposition = num;
+                        BackgroundManager.inst.UpdateBackgrounds();
+                    }
+                });
+
+                left.onClick.ClearAll();
+                left.onClick.AddListener(delegate ()
+                {
+                    CurrentSelectedBG.zposition -= 0.1f;
+                    BackgroundManager.inst.UpdateBackgrounds();
+                });
+
+                right.onClick.ClearAll();
+                right.onClick.AddListener(delegate ()
+                {
+                    CurrentSelectedBG.zposition += 0.1f;
+                    BackgroundManager.inst.UpdateBackgrounds();
+                });
+            }
+            
             // ZScale
             {
                 var iLabel = Instantiate(label);
@@ -311,14 +357,14 @@ namespace BetterLegacy.Patchers
                 iLabel.transform.localScale = Vector3.one;
                 iLabel.name = "label";
                 iLabel.transform.GetChild(0).GetComponent<Text>().text = "Z Scale";
-                iLabel.transform.SetSiblingIndex(6);
+                iLabel.transform.SetSiblingIndex(8);
 
                 var iterations = Instantiate(__instance.left.Find("position").gameObject);
                 iterations.transform.SetParent(__instance.left);
                 iterations.transform.localScale = Vector3.one;
                 iterations.name = "zscale";
                 DestroyImmediate(iterations.transform.GetChild(1).gameObject);
-                iterations.transform.SetSiblingIndex(7);
+                iterations.transform.SetSiblingIndex(9);
 
                 var x = iterations.transform.Find("x");
                 var xif = x.GetComponent<InputField>();
@@ -383,13 +429,13 @@ namespace BetterLegacy.Patchers
                         iLabel.transform.localScale = Vector3.one;
                         iLabel.name = "label";
                         iLabel.transform.GetChild(0).GetComponent<Text>().text = "Reactive Position Samples";
-                        iLabel.transform.SetSiblingIndex(22);
+                        iLabel.transform.SetSiblingIndex(24);
 
                         var position = Instantiate(__instance.left.Find("position").gameObject);
                         position.transform.SetParent(__instance.left);
                         position.transform.localScale = Vector3.one;
                         position.name = "reactive-position-samples";
-                        position.transform.SetSiblingIndex(23);
+                        position.transform.SetSiblingIndex(25);
 
                         var xif = position.transform.Find("x").GetComponent<InputField>();
                         var yif = position.transform.Find("y").GetComponent<InputField>();
@@ -425,13 +471,13 @@ namespace BetterLegacy.Patchers
                         iLabel.transform.localScale = Vector3.one;
                         iLabel.name = "label";
                         iLabel.transform.GetChild(0).GetComponent<Text>().text = "Reactive Position Intensity";
-                        iLabel.transform.SetSiblingIndex(24);
+                        iLabel.transform.SetSiblingIndex(26);
 
                         var position = Instantiate(__instance.left.Find("position").gameObject);
                         position.transform.SetParent(__instance.left);
                         position.transform.localScale = Vector3.one;
                         position.name = "reactive-position-intensity";
-                        position.transform.SetSiblingIndex(25);
+                        position.transform.SetSiblingIndex(27);
 
                         var xif = position.transform.Find("x").GetComponent<InputField>();
                         var yif = position.transform.Find("y").GetComponent<InputField>();
@@ -470,13 +516,13 @@ namespace BetterLegacy.Patchers
                         iLabel.transform.localScale = Vector3.one;
                         iLabel.name = "label";
                         iLabel.transform.GetChild(0).GetComponent<Text>().text = "Reactive Scale Samples";
-                        iLabel.transform.SetSiblingIndex(26);
+                        iLabel.transform.SetSiblingIndex(28);
 
                         var position = Instantiate(__instance.left.Find("position").gameObject);
                         position.transform.SetParent(__instance.left);
                         position.transform.localScale = Vector3.one;
                         position.name = "reactive-scale-samples";
-                        position.transform.SetSiblingIndex(27);
+                        position.transform.SetSiblingIndex(29);
 
                         var xif = position.transform.Find("x").GetComponent<InputField>();
                         var yif = position.transform.Find("y").GetComponent<InputField>();
@@ -512,13 +558,13 @@ namespace BetterLegacy.Patchers
                         iLabel.transform.localScale = Vector3.one;
                         iLabel.name = "label";
                         iLabel.transform.GetChild(0).GetComponent<Text>().text = "Reactive Scale Intensity";
-                        iLabel.transform.SetSiblingIndex(28);
+                        iLabel.transform.SetSiblingIndex(30);
 
                         var position = Instantiate(__instance.left.Find("position").gameObject);
                         position.transform.SetParent(__instance.left);
                         position.transform.localScale = Vector3.one;
                         position.name = "reactive-scale-intensity";
-                        position.transform.SetSiblingIndex(29);
+                        position.transform.SetSiblingIndex(31);
 
                         var xif = position.transform.Find("x").GetComponent<InputField>();
                         var yif = position.transform.Find("y").GetComponent<InputField>();
@@ -557,13 +603,13 @@ namespace BetterLegacy.Patchers
                         iLabel.transform.localScale = Vector3.one;
                         iLabel.name = "label";
                         iLabel.transform.GetChild(0).GetComponent<Text>().text = "Reactive Rotation Sample";
-                        iLabel.transform.SetSiblingIndex(30);
+                        iLabel.transform.SetSiblingIndex(32);
 
                         var position = Instantiate(__instance.left.Find("position").gameObject);
                         position.transform.SetParent(__instance.left);
                         position.transform.localScale = Vector3.one;
                         position.name = "reactive-rotation-sample";
-                        position.transform.SetSiblingIndex(31);
+                        position.transform.SetSiblingIndex(33);
 
                         DestroyImmediate(position.transform.Find("y").gameObject);
 
@@ -589,13 +635,13 @@ namespace BetterLegacy.Patchers
                         iLabel.transform.localScale = Vector3.one;
                         iLabel.name = "label";
                         iLabel.transform.GetChild(0).GetComponent<Text>().text = "Reactive Rotation Intensity";
-                        iLabel.transform.SetSiblingIndex(32);
+                        iLabel.transform.SetSiblingIndex(34);
 
                         var position = Instantiate(__instance.left.Find("position").gameObject);
                         position.transform.SetParent(__instance.left);
                         position.transform.localScale = Vector3.one;
                         position.name = "reactive-rotation-intensity";
-                        position.transform.SetSiblingIndex(33);
+                        position.transform.SetSiblingIndex(35);
 
                         DestroyImmediate(position.transform.Find("y").gameObject);
 
@@ -624,13 +670,13 @@ namespace BetterLegacy.Patchers
                         iLabel.transform.localScale = Vector3.one;
                         iLabel.name = "label";
                         iLabel.transform.GetChild(0).GetComponent<Text>().text = "Reactive Color Sample";
-                        iLabel.transform.SetSiblingIndex(34);
+                        iLabel.transform.SetSiblingIndex(36);
 
                         var position = Instantiate(__instance.left.Find("position").gameObject);
                         position.transform.SetParent(__instance.left);
                         position.transform.localScale = Vector3.one;
                         position.name = "reactive-color-sample";
-                        position.transform.SetSiblingIndex(35);
+                        position.transform.SetSiblingIndex(37);
 
                         DestroyImmediate(position.transform.Find("y").gameObject);
 
@@ -656,13 +702,13 @@ namespace BetterLegacy.Patchers
                         iLabel.transform.localScale = Vector3.one;
                         iLabel.name = "label";
                         iLabel.transform.GetChild(0).GetComponent<Text>().text = "Reactive Color Intensity";
-                        iLabel.transform.SetSiblingIndex(36);
+                        iLabel.transform.SetSiblingIndex(38);
 
                         var position = Instantiate(__instance.left.Find("position").gameObject);
                         position.transform.SetParent(__instance.left);
                         position.transform.localScale = Vector3.one;
                         position.name = "reactive-color-intensity";
-                        position.transform.SetSiblingIndex(37);
+                        position.transform.SetSiblingIndex(39);
 
                         DestroyImmediate(position.transform.Find("y").gameObject);
 
@@ -687,7 +733,7 @@ namespace BetterLegacy.Patchers
                         colorLabel.transform.SetParent(__instance.left);
                         colorLabel.transform.localScale = Vector3.one;
                         colorLabel.name = "label";
-                        colorLabel.transform.SetSiblingIndex(38);
+                        colorLabel.transform.SetSiblingIndex(40);
                         colorLabel.transform.GetChild(0).GetComponent<Text>().text = "Reactive Color";
 
                         var color = __instance.left.Find("color");
@@ -695,7 +741,7 @@ namespace BetterLegacy.Patchers
                         fadeColor.transform.SetParent(__instance.left);
                         fadeColor.transform.localScale = Vector3.one;
                         fadeColor.name = "reactive-color";
-                        fadeColor.transform.SetSiblingIndex(39);
+                        fadeColor.transform.SetSiblingIndex(41);
                     }
                 }
 
@@ -708,13 +754,13 @@ namespace BetterLegacy.Patchers
                         iLabel.transform.localScale = Vector3.one;
                         iLabel.name = "label";
                         iLabel.transform.GetChild(0).GetComponent<Text>().text = "Reactive Z Sample";
-                        iLabel.transform.SetSiblingIndex(40);
+                        iLabel.transform.SetSiblingIndex(42);
 
                         var position = Instantiate(__instance.left.Find("position").gameObject);
                         position.transform.SetParent(__instance.left);
                         position.transform.localScale = Vector3.one;
                         position.name = "reactive-z-sample";
-                        position.transform.SetSiblingIndex(41);
+                        position.transform.SetSiblingIndex(43);
 
                         DestroyImmediate(position.transform.Find("y").gameObject);
 
@@ -740,13 +786,13 @@ namespace BetterLegacy.Patchers
                         iLabel.transform.localScale = Vector3.one;
                         iLabel.name = "label";
                         iLabel.transform.GetChild(0).GetComponent<Text>().text = "Reactive Z Intensity";
-                        iLabel.transform.SetSiblingIndex(42);
+                        iLabel.transform.SetSiblingIndex(44);
 
                         var position = Instantiate(__instance.left.Find("position").gameObject);
                         position.transform.SetParent(__instance.left);
                         position.transform.localScale = Vector3.one;
                         position.name = "reactive-z-intensity";
-                        position.transform.SetSiblingIndex(43);
+                        position.transform.SetSiblingIndex(45);
 
                         DestroyImmediate(position.transform.Find("y").gameObject);
 
@@ -773,7 +819,7 @@ namespace BetterLegacy.Patchers
                 colorLabel.transform.SetParent(__instance.left);
                 colorLabel.transform.localScale = Vector3.one;
                 colorLabel.name = "label";
-                colorLabel.transform.SetSiblingIndex(14);
+                colorLabel.transform.SetSiblingIndex(16);
                 colorLabel.transform.GetChild(0).GetComponent<Text>().text = "Fade Color";
 
                 var color = __instance.left.Find("color");
@@ -781,7 +827,7 @@ namespace BetterLegacy.Patchers
                 fadeColor.transform.SetParent(__instance.left);
                 fadeColor.transform.localScale = Vector3.one;
                 fadeColor.name = "fade-color";
-                fadeColor.transform.SetSiblingIndex(15);
+                fadeColor.transform.SetSiblingIndex(17);
             }
 
             // Rotation
@@ -884,6 +930,7 @@ namespace BetterLegacy.Patchers
             EditorThemeManager.AddInputField(__instance.left.Find("name/name").GetComponent<InputField>());
             EditorThemeManager.AddInputFields(__instance.left.Find("depth").gameObject, true, "Background Editor Depth");
             EditorThemeManager.AddInputFields(__instance.left.Find("iterations").gameObject, true, "Background Editor Iterations");
+            EditorThemeManager.AddInputFields(__instance.left.Find("zposition").gameObject, true, "");
             EditorThemeManager.AddInputFields(__instance.left.Find("zscale").gameObject, true, "Background Editor Z Scale");
             EditorThemeManager.AddInputFields(__instance.left.Find("position").gameObject, true, "Background Editor Position");
             EditorThemeManager.AddInputFields(__instance.left.Find("scale").gameObject, true, "Background Editor Scale");
