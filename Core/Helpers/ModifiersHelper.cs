@@ -1996,7 +1996,7 @@ namespace BetterLegacy.Core.Helpers
 
                             DataManager.inst.gameData.prefabObjects.Add((PrefabObject)modifier.Result);
 
-                            Updater.AddPrefabToLevel((PrefabObject)modifier.Result);
+                            CoreHelper.StartCoroutine(Updater.IAddPrefabToLevel((PrefabObject)modifier.Result));
                         }
 
                         break;
@@ -2043,17 +2043,10 @@ namespace BetterLegacy.Core.Helpers
                         if ((EditorManager.inst == null && DataManager.inst.GetSettingEnum("ArcadeDifficulty", 1) != 0 || !EditorManager.inst.isEditing) && !modifier.constant)
                             if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject && int.TryParse(modifier.value, out int hit))
                             {
-                                var orderedList = PlayerManager.Players
-                                    .Where(x => x.Player)
-                                    .OrderBy(x => Vector2.Distance(x.Player.playerObjects["RB Parent"].gameObject.transform.position, levelObject.visualObject.GameObject.transform.position)).ToList();
+                                var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
 
-                                if (orderedList.Count > 0)
-                                {
-                                    var closest = orderedList[0];
-
-                                    if (closest)
-                                        closest.Health += hit;
-                                }
+                                if (player)
+                                    player.Health += hit;
                             }
                         break;
                     }
@@ -2071,17 +2064,10 @@ namespace BetterLegacy.Core.Helpers
                         if ((EditorManager.inst == null || !EditorManager.inst.isEditing) && DataManager.inst.GetSettingEnum("ArcadeDifficulty", 1) != 0 && !modifier.constant)
                             if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                             {
-                                var orderedList = PlayerManager.Players
-                                    .Where(x => x.Player)
-                                    .OrderBy(x => Vector2.Distance(x.Player.playerObjects["RB Parent"].gameObject.transform.position, levelObject.visualObject.GameObject.transform.position)).ToList();
+                                var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
 
-                                if (orderedList.Count > 0)
-                                {
-                                    var closest = orderedList[0];
-
-                                    if (closest)
-                                        closest.Health = 0;
-                                }
+                                if (player)
+                                    player.Health = 0;
                             }
 
                         break;
@@ -2103,25 +2089,18 @@ namespace BetterLegacy.Core.Helpers
                         {
                             var vector = modifier.value.Split(new char[] { ',' });
 
-                            var orderedList = PlayerManager.Players
-                                .Where(x => x.Player)
-                                .OrderBy(x => Vector2.Distance(x.Player.playerObjects["RB Parent"].gameObject.transform.position, levelObject.visualObject.GameObject.transform.position)).ToList();
+                            var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
 
-                            if (orderedList.Count > 0)
+                            bool relative = Parser.TryParse(modifier.commands[3], false);
+                            if (player)
                             {
-                                var closest = orderedList[0];
-
-                                bool relative = Parser.TryParse(modifier.commands[3], false);
-                                if (closest)
-                                {
-                                    var tf = closest.Player.playerObjects["RB Parent"].gameObject.transform;
-                                    if (modifier.constant)
-                                        tf.localPosition = new Vector3(Parser.TryParse(vector[0], 0f), Parser.TryParse(vector[1], 0f), 0f);
-                                    else
-                                        tf
-                                            .DOLocalMove(new Vector3(Parser.TryParse(vector[0], 0f) + (relative ? tf.position.x : 0f), Parser.TryParse(vector[1], 0f) + (relative ? tf.position.y : 0f), 0f), Parser.TryParse(modifier.commands[1], 1f))
-                                            .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
-                                }
+                                var tf = player.Player.playerObjects["RB Parent"].gameObject.transform;
+                                if (modifier.constant)
+                                    tf.localPosition = new Vector3(Parser.TryParse(vector[0], 0f), Parser.TryParse(vector[1], 0f), 0f);
+                                else
+                                    tf
+                                        .DOLocalMove(new Vector3(Parser.TryParse(vector[0], 0f) + (relative ? tf.position.x : 0f), Parser.TryParse(vector[1], 0f) + (relative ? tf.position.y : 0f), 0f), Parser.TryParse(modifier.commands[1], 1f))
+                                        .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
                             }
                         }
 
@@ -2149,29 +2128,22 @@ namespace BetterLegacy.Core.Helpers
                     {
                         if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                         {
-                            var orderedList = PlayerManager.Players
-                                .Where(x => x.Player)
-                                .OrderBy(x => Vector2.Distance(x.Player.playerObjects["RB Parent"].gameObject.transform.position, levelObject.visualObject.GameObject.transform.position)).ToList();
+                            var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
 
-                            if (orderedList.Count > 0)
+                            bool relative = Parser.TryParse(modifier.commands[3], false);
+                            if (player)
                             {
-                                var closest = orderedList[0];
-
-                                bool relative = Parser.TryParse(modifier.commands[3], false);
-                                if (closest)
+                                var tf = player.Player.playerObjects["RB Parent"].gameObject.transform;
+                                if (modifier.constant)
                                 {
-                                    var tf = closest.Player.playerObjects["RB Parent"].gameObject.transform;
-                                    if (modifier.constant)
-                                    {
-                                        var v = tf.localPosition;
-                                        v.x += Parser.TryParse(modifier.value, 1f);
-                                        tf.localPosition = v;
-                                    }
-                                    else
-                                        tf
-                                            .DOLocalMoveX(Parser.TryParse(modifier.value, 0f) + (relative ? tf.position.x : 0f), Parser.TryParse(modifier.commands[1], 1f))
-                                            .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
+                                    var v = tf.localPosition;
+                                    v.x += Parser.TryParse(modifier.value, 1f);
+                                    tf.localPosition = v;
                                 }
+                                else
+                                    tf
+                                        .DOLocalMoveX(Parser.TryParse(modifier.value, 0f) + (relative ? tf.position.x : 0f), Parser.TryParse(modifier.commands[1], 1f))
+                                        .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
                             }
                         }
 
@@ -2201,29 +2173,22 @@ namespace BetterLegacy.Core.Helpers
                     {
                         if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                         {
-                            var orderedList = PlayerManager.Players
-                                .Where(x => x.Player)
-                                .OrderBy(x => Vector2.Distance(x.Player.playerObjects["RB Parent"].gameObject.transform.position, levelObject.visualObject.GameObject.transform.position)).ToList();
+                            var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
 
-                            if (orderedList.Count > 0)
+                            bool relative = Parser.TryParse(modifier.commands[3], false);
+                            if (player)
                             {
-                                var closest = orderedList[0];
-
-                                bool relative = Parser.TryParse(modifier.commands[3], false);
-                                if (closest)
+                                var tf = player.Player.playerObjects["RB Parent"].gameObject.transform;
+                                if (modifier.constant)
                                 {
-                                    var tf = closest.Player.playerObjects["RB Parent"].gameObject.transform;
-                                    if (modifier.constant)
-                                    {
-                                        var v = tf.localPosition;
-                                        v.y += Parser.TryParse(modifier.value, 1f);
-                                        tf.localPosition = v;
-                                    }
-                                    else
-                                        tf
-                                            .DOLocalMoveY(Parser.TryParse(modifier.value, 0f) + (relative ? tf.position.y : 0f), Parser.TryParse(modifier.commands[1], 1f))
-                                            .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
+                                    var v = tf.localPosition;
+                                    v.y += Parser.TryParse(modifier.value, 1f);
+                                    tf.localPosition = v;
                                 }
+                                else
+                                    tf
+                                        .DOLocalMoveY(Parser.TryParse(modifier.value, 0f) + (relative ? tf.position.y : 0f), Parser.TryParse(modifier.commands[1], 1f))
+                                        .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
                             }
                         }
 
@@ -2253,28 +2218,21 @@ namespace BetterLegacy.Core.Helpers
                     {
                         if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                         {
-                            var orderedList = PlayerManager.Players
-                                .Where(x => x.Player)
-                                .OrderBy(x => Vector2.Distance(x.Player.playerObjects["RB Parent"].gameObject.transform.position, levelObject.visualObject.GameObject.transform.position)).ToList();
+                            var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
 
-                            if (orderedList.Count > 0)
+                            bool relative = Parser.TryParse(modifier.commands[3], false);
+                            if (player)
                             {
-                                var closest = orderedList[0];
-
-                                bool relative = Parser.TryParse(modifier.commands[3], false);
-                                if (closest)
+                                if (modifier.constant)
                                 {
-                                    if (modifier.constant)
-                                    {
-                                        var v = closest.Player.playerObjects["RB Parent"].gameObject.transform.localRotation.eulerAngles;
-                                        v.z += Parser.TryParse(modifier.value, 1f);
-                                        closest.Player.playerObjects["RB Parent"].gameObject.transform.localRotation = Quaternion.Euler(v);
-                                    }
-                                    else
-                                        closest.Player.playerObjects["RB Parent"].gameObject.transform
-                                            .DORotate(new Vector3(0f, 0f, Parser.TryParse(modifier.value, 0f)), Parser.TryParse(modifier.commands[1], 1f))
-                                            .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
+                                    var v = player.Player.playerObjects["RB Parent"].gameObject.transform.localRotation.eulerAngles;
+                                    v.z += Parser.TryParse(modifier.value, 1f);
+                                    player.Player.playerObjects["RB Parent"].gameObject.transform.localRotation = Quaternion.Euler(v);
                                 }
+                                else
+                                    player.Player.playerObjects["RB Parent"].gameObject.transform
+                                        .DORotate(new Vector3(0f, 0f, Parser.TryParse(modifier.value, 0f)), Parser.TryParse(modifier.commands[1], 1f))
+                                        .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
                             }
                         }
 
@@ -2303,16 +2261,9 @@ namespace BetterLegacy.Core.Helpers
                     {
                         if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject && !modifier.constant)
                         {
-                            var orderedList = PlayerManager.Players
-                                .Where(x => x.Player)
-                                .OrderBy(x => Vector2.Distance(x.Player.playerObjects["RB Parent"].gameObject.transform.position, levelObject.visualObject.GameObject.transform.position)).ToList();
+                            var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
 
-                            if (orderedList.Count > 0)
-                            {
-                                var closest = orderedList[0];
-
-                                closest?.Player?.StartBoost();
-                            }
+                            player?.Player?.StartBoost();
                         }
 
                         break;
@@ -2330,17 +2281,10 @@ namespace BetterLegacy.Core.Helpers
                     {
                         if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                         {
-                            var orderedList = PlayerManager.Players
-                                .Where(x => x.Player)
-                                .OrderBy(x => Vector2.Distance(x.Player.playerObjects["RB Parent"].gameObject.transform.position, levelObject.visualObject.GameObject.transform.position)).ToList();
+                            var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
 
-                            if (orderedList.Count > 0)
-                            {
-                                var closest = orderedList[0];
-
-                                if (closest)
-                                    closest.Player.canBoost = false;
-                            }
+                            if (player)
+                                player.Player.canBoost = false;
                         }
 
                         break;
@@ -2358,17 +2302,10 @@ namespace BetterLegacy.Core.Helpers
                     {
                         if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                         {
-                            var orderedList = PlayerManager.Players
-                                .Where(x => x.Player)
-                                .OrderBy(x => Vector2.Distance(x.Player.playerObjects["RB Parent"].gameObject.transform.position, levelObject.visualObject.GameObject.transform.position)).ToList();
+                            var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
 
-                            if (orderedList.Count > 0)
-                            {
-                                var closest = orderedList[0];
-
-                                if (closest)
-                                    closest.Player.canBoost = true;
-                            }
+                            if (player)
+                                player.Player.canBoost = true;
                         }
 
                         break;

@@ -19,25 +19,9 @@ namespace BetterLegacy.Core.Animation.Keyframe
         {
             get
             {
-                if (PlayerManager.Players.Count > 0)
-                {
-                    var value = Value;
-                    var orderedList = PlayerManager.Players
-                        .Where(x => x.Player && x.Player.transform.Find("Player"))
-                        .OrderBy(x => Vector2.Distance(x.Player.transform.Find("Player").localPosition, value))
-                        .ToList();
-                    if (orderedList.Count > 0)
-                    {
-                        var player = orderedList[0];
-
-                        if (player && player.Player)
-                        {
-                            return player.Player.transform.Find("Player");
-                        }
-                    }
-                    return null;
-                }
-
+                var player = PlayerManager.GetClosestPlayer(Value);
+                if (player.Player)
+                    return player.Player.transform.Find("Player");
                 return null;
             }
         }

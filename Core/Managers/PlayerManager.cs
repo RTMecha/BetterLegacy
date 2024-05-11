@@ -366,6 +366,43 @@ namespace BetterLegacy.Core.Managers
 
         public static float AcurracyDivisionAmount { get; set; } = 10f;
 
+        /// <summary>
+        /// Gets the player closest to a vector.
+        /// </summary>
+        /// <param name="vector2">Position to check closeness to.</param>
+        /// <returns>Returns a CustomPlayer closest to the Vector2 parameter.</returns>
+        public static CustomPlayer GetClosestPlayer(Vector2 vector2)
+        {
+            if (Players.Count == 1)
+            {
+                var player = Players[0];
+
+                if (player && player.Player)
+                    return player;
+
+                return null;
+            }
+
+            if (Players.Count > 0)
+            {
+                var orderedList = Players
+                    .Where(x => x.Player && x.Player.transform.Find("Player"))
+                    .OrderBy(x => Vector2.Distance(x.Player.transform.Find("Player").localPosition, vector2));
+
+                if (orderedList.Count() > 0)
+                {
+                    var player = orderedList.ElementAt(0);
+
+                    if (player && player.Player)
+                        return player;
+                }
+
+                return null;
+            }
+
+            return null;
+        }
+
         #region Game Modes
         public static void SetGameMode(int mode) => DataManager.inst.UpdateSettingInt("ArcadeDifficulty", mode);
 
