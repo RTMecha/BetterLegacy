@@ -438,7 +438,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool CreateNewMarkerPrefix()
         {
-            Instance.CreateNewMarker(EditorManager.inst.CurrentAudioPos);
+            Instance.CreateNewMarker(SettingEditor.inst.SnapActive ? RTEditor.SnapToBPM(EditorManager.inst.CurrentAudioPos) : EditorManager.inst.CurrentAudioPos);
             return false;
         }
 
