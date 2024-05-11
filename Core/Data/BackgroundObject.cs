@@ -75,6 +75,14 @@ namespace BetterLegacy.Core.Data
         public int depth = 9;
         public float zposition;
 
+        public float hue;
+        public float saturation;
+        public float value;
+
+        public float fadeHue;
+        public float fadeSaturation;
+        public float fadeValue;
+
         int fadeColor;
         public int FadeColor
         {
@@ -119,6 +127,12 @@ namespace BetterLegacy.Core.Data
                 shape = bg.shape,
                 zscale = bg.zscale,
                 rotation = bg.rotation,
+                hue = bg.hue,
+                saturation = bg.saturation,
+                value = bg.value,
+                fadeHue = bg.fadeHue,
+                fadeSaturation = bg.fadeSaturation,
+                fadeValue = bg.fadeValue,
 
                 reactiveCol = bg.reactiveCol,
                 reactiveColSample = bg.reactiveColSample,
@@ -197,6 +211,26 @@ namespace BetterLegacy.Core.Data
                 drawFade = jn["fade"].AsBool;
 
             #region New stuff
+
+            float hue = 0f;
+            float sat = 0f;
+            float val = 0f;
+            if (jn["hue"] != null)
+                hue = jn["sat"].AsFloat;
+            if (jn["sat"] != null)
+                sat = jn["sat"].AsFloat;
+            if (jn["val"] != null)
+                val = jn["val"].AsFloat;
+
+            float fadeHue = 0f;
+            float fadeSat = 0f;
+            float fadeVal = 0f;
+            if (jn["fade_hue"] != null)
+                fadeHue = jn["fade_sat"].AsFloat;
+            if (jn["fade_sat"] != null)
+                fadeSat = jn["fade_sat"].AsFloat;
+            if (jn["fade_val"] != null)
+                fadeVal = jn["fade_val"].AsFloat;
 
             float zposition = 0f;
             if (jn["zposition"] != null)
@@ -292,6 +326,13 @@ namespace BetterLegacy.Core.Data
                 reactiveScale = reactiveScale,
                 drawFade = drawFade,
 
+                hue = hue,
+                saturation = sat,
+                value = val,
+                fadeHue = fadeHue,
+                fadeSaturation = fadeSat,
+                fadeValue = fadeVal,
+
                 zposition = zposition,
                 zscale = zscale,
                 depth = depth,
@@ -338,6 +379,19 @@ namespace BetterLegacy.Core.Data
             jn["size"]["y"] = scale.y.ToString();
             jn["rot"] = rot.ToString();
             jn["color"] = color.ToString();
+            if (hue != 0f)
+                jn["hue"] = hue.ToString();
+            if (saturation != 0f)
+                jn["sat"] = saturation.ToString();
+            if (value != 0f)
+                jn["val"] = value.ToString();
+            if (fadeHue != 0f)
+                jn["fade_hue"] = fadeHue.ToString();
+            if (fadeSaturation != 0f)
+                jn["fade_sat"] = fadeSaturation.ToString();
+            if (fadeValue != 0f)
+                jn["fade_val"] = fadeValue.ToString();
+
             jn["layer"] = layer.ToString();
 
             if (!drawFade)

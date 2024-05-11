@@ -83,6 +83,14 @@ namespace BetterLegacy.Editor.Managers
             __instance.left.Find("reactive/x").GetComponent<InputField>().text = backgroundObject.reactiveScale.ToString("f2");
             __instance.left.Find("reactive/slider").GetComponent<Slider>().value = backgroundObject.reactiveScale;
 
+            SetSingleInputField(__instance.left, "fadehuesatval/x", backgroundObject.fadeHue);
+            SetSingleInputField(__instance.left, "fadehuesatval/y", backgroundObject.fadeSaturation);
+            SetSingleInputField(__instance.left, "fadehuesatval/z", backgroundObject.fadeValue);
+            
+            SetSingleInputField(__instance.left, "huesatval/x", backgroundObject.hue);
+            SetSingleInputField(__instance.left, "huesatval/y", backgroundObject.saturation);
+            SetSingleInputField(__instance.left, "huesatval/z", backgroundObject.value);
+
             LSHelpers.DeleteChildren(__instance.left.Find("color"));
             LSHelpers.DeleteChildren(__instance.left.Find("fade-color"));
             LSHelpers.DeleteChildren(__instance.left.Find("reactive-color"));

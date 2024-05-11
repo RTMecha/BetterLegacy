@@ -21,6 +21,7 @@ namespace BetterLegacy.Patchers
 
         public static BackgroundObject CurrentSelectedBG => BackgroundEditor.inst == null ? null : (BackgroundObject)DataManager.inst.gameData.backgroundObjects[BackgroundEditor.inst.currentObj];
 
+        // need to somehow clean up this messy code
         [HarmonyPatch("Awake")]
         [HarmonyPrefix]
         static bool AwakePrefix(BackgroundEditor __instance)
@@ -876,7 +877,171 @@ namespace BetterLegacy.Patchers
                 TriggerHelper.IncreaseDecreaseButtons(yif, 15f, 3f);
             }
 
-            try
+            // Hue / Sat / Val (Fade)
+            {
+                var colorLabel = Instantiate(label);
+                colorLabel.transform.SetParent(__instance.left);
+                colorLabel.transform.localScale = Vector3.one;
+                colorLabel.name = "label";
+                colorLabel.transform.SetSiblingIndex(20);
+                colorLabel.AddComponent<HorizontalLayoutGroup>();
+
+                var label1 = colorLabel.transform.GetChild(0);
+                label1.GetComponent<Text>().text = "Hue";
+                var label2 = label1.gameObject.Duplicate(colorLabel.transform, "text");
+                label2.GetComponent<Text>().text = "Saturation";
+                var label3 = label1.gameObject.Duplicate(colorLabel.transform, "text");
+                label3.GetComponent<Text>().text = "Value";
+
+                var iterations = Instantiate(__instance.left.Find("position").gameObject);
+                iterations.transform.SetParent(__instance.left);
+                iterations.transform.localScale = Vector3.one;
+                iterations.name = "fadehuesatval";
+                iterations.transform.SetSiblingIndex(21);
+
+                // Hue
+                {
+                    var x = iterations.transform.Find("x");
+                    var xif = x.GetComponent<InputField>();
+                    x.transform.GetChild(0).AsRT().sizeDelta = new Vector2(70f, 32f);
+                    xif.image = x.transform.GetChild(0).GetComponent<Image>();
+
+                    xif.onValueChanged.ClearAll();
+                    xif.onValueChanged.AddListener(delegate (string _val)
+                    {
+                        if (float.TryParse(_val, out float num))
+                        {
+                            CurrentSelectedBG.fadeHue = num;
+                        }
+                    });
+
+                    TriggerHelper.IncreaseDecreaseButtons(xif);
+                }
+
+                // Saturation
+                {
+                    var x = iterations.transform.Find("y");
+                    var xif = x.GetComponent<InputField>();
+                    x.transform.AsRT().anchoredPosition = new Vector2(120f, 0f);
+                    x.transform.GetChild(0).AsRT().sizeDelta = new Vector2(70f, 32f);
+                    xif.image = x.transform.GetChild(0).GetComponent<Image>();
+
+                    xif.onValueChanged.ClearAll();
+                    xif.onValueChanged.AddListener(delegate (string _val)
+                    {
+                        if (float.TryParse(_val, out float num))
+                        {
+                            CurrentSelectedBG.fadeSaturation = num;
+                        }
+                    });
+
+                    TriggerHelper.IncreaseDecreaseButtons(xif);
+                }
+
+                // Value
+                {
+                    var x = iterations.transform.Find("x").gameObject.Duplicate(iterations.transform, "z");
+                    var xif = x.GetComponent<InputField>();
+                    x.transform.AsRT().anchoredPosition = new Vector2(240f, 0f);
+                    x.transform.GetChild(0).AsRT().sizeDelta = new Vector2(70f, 32f);
+                    xif.image = x.transform.GetChild(0).GetComponent<Image>();
+
+                    xif.onValueChanged.ClearAll();
+                    xif.onValueChanged.AddListener(delegate (string _val)
+                    {
+                        if (float.TryParse(_val, out float num))
+                        {
+                            CurrentSelectedBG.fadeValue = num;
+                        }
+                    });
+
+                    TriggerHelper.IncreaseDecreaseButtons(xif);
+                }
+            }
+            
+            // Hue / Sat / Val (Color)
+            {
+                var colorLabel = Instantiate(label);
+                colorLabel.transform.SetParent(__instance.left);
+                colorLabel.transform.localScale = Vector3.one;
+                colorLabel.name = "label";
+                colorLabel.transform.SetSiblingIndex(24);
+                colorLabel.AddComponent<HorizontalLayoutGroup>();
+
+                var label1 = colorLabel.transform.GetChild(0);
+                label1.GetComponent<Text>().text = "Hue";
+                var label2 = label1.gameObject.Duplicate(colorLabel.transform, "text");
+                label2.GetComponent<Text>().text = "Saturation";
+                var label3 = label1.gameObject.Duplicate(colorLabel.transform, "text");
+                label3.GetComponent<Text>().text = "Value";
+
+                var iterations = Instantiate(__instance.left.Find("position").gameObject);
+                iterations.transform.SetParent(__instance.left);
+                iterations.transform.localScale = Vector3.one;
+                iterations.name = "huesatval";
+                iterations.transform.SetSiblingIndex(25);
+
+                // Hue
+                {
+                    var x = iterations.transform.Find("x");
+                    var xif = x.GetComponent<InputField>();
+                    x.transform.GetChild(0).AsRT().sizeDelta = new Vector2(70f, 32f);
+                    xif.image = x.transform.GetChild(0).GetComponent<Image>();
+
+                    xif.onValueChanged.ClearAll();
+                    xif.onValueChanged.AddListener(delegate (string _val)
+                    {
+                        if (float.TryParse(_val, out float num))
+                        {
+                            CurrentSelectedBG.hue = num;
+                        }
+                    });
+
+                    TriggerHelper.IncreaseDecreaseButtons(xif);
+                }
+
+                // Saturation
+                {
+                    var x = iterations.transform.Find("y");
+                    var xif = x.GetComponent<InputField>();
+                    x.transform.AsRT().anchoredPosition = new Vector2(120f, 0f);
+                    x.transform.GetChild(0).AsRT().sizeDelta = new Vector2(70f, 32f);
+                    xif.image = x.transform.GetChild(0).GetComponent<Image>();
+
+                    xif.onValueChanged.ClearAll();
+                    xif.onValueChanged.AddListener(delegate (string _val)
+                    {
+                        if (float.TryParse(_val, out float num))
+                        {
+                            CurrentSelectedBG.saturation = num;
+                        }
+                    });
+
+                    TriggerHelper.IncreaseDecreaseButtons(xif);
+                }
+
+                // Value
+                {
+                    var x = iterations.transform.Find("x").gameObject.Duplicate(iterations.transform, "z");
+                    var xif = x.GetComponent<InputField>();
+                    x.transform.AsRT().anchoredPosition = new Vector2(240f, 0f);
+                    x.transform.GetChild(0).AsRT().sizeDelta = new Vector2(70f, 32f);
+                    xif.image = x.transform.GetChild(0).GetComponent<Image>();
+
+                    xif.onValueChanged.ClearAll();
+                    xif.onValueChanged.AddListener(delegate (string _val)
+                    {
+                        if (float.TryParse(_val, out float num))
+                        {
+                            CurrentSelectedBG.value = num;
+                        }
+                    });
+
+                    TriggerHelper.IncreaseDecreaseButtons(xif);
+                }
+            }
+
+            // Modifiers
             {
                 var eventButton = GameObject.Find("Editor Systems/Editor GUI/sizer/main/TimelineBar/GameObject/event");
 
@@ -916,10 +1081,6 @@ namespace BetterLegacy.Patchers
 
                 EditorThemeManager.AddInputFields(__instance.left.Find("block").gameObject, true, "Background Editor Reactive");
             }
-            catch (Exception ex)
-            {
-                Debug.LogException(ex);
-            }
 
             var active = __instance.left.Find("name/active").GetComponent<Toggle>();
             Destroy(active.GetComponent<Animator>());
@@ -936,6 +1097,9 @@ namespace BetterLegacy.Patchers
             EditorThemeManager.AddInputFields(__instance.left.Find("scale").gameObject, true, "Background Editor Scale");
             EditorThemeManager.AddInputFields(__instance.left.Find("depth-rotation").gameObject, true, "Background Editor 3D Rotation");
             EditorThemeManager.AddInputField(__instance.left.Find("rotation/x").GetComponent<InputField>());
+
+            EditorThemeManager.AddInputFields(__instance.left.Find("fadehuesatval").gameObject, true, "");
+            EditorThemeManager.AddInputFields(__instance.left.Find("huesatval").gameObject, true, "");
 
             var rotationSliderImage = __instance.left.Find("rotation/slider/Image").GetComponent<Image>();
             var rotationSlider = __instance.left.Find("rotation/slider").GetComponent<Slider>();

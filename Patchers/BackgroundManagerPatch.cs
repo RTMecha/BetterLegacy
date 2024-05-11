@@ -145,6 +145,8 @@ namespace BetterLegacy.Patchers
                         a = beatmapTheme.GetBGColor(backgroundObject.color);
                     }
 
+                    a = CoreHelper.ChangeColorHSV(a, backgroundObject.hue, backgroundObject.saturation, backgroundObject.value);
+
                     a.a = 1f;
 
                     for (int i = 0; i < backgroundObject.renderers.Count; i++)
@@ -159,6 +161,8 @@ namespace BetterLegacy.Patchers
                             int layer = backgroundObject.depth - backgroundObject.layer;
                             float t = a.a / (float)layer * (float)i;
                             Color b = beatmapTheme.GetBGColor(backgroundObject.FadeColor);
+
+                            b = CoreHelper.ChangeColorHSV(b, backgroundObject.fadeHue, backgroundObject.fadeSaturation, backgroundObject.fadeValue);
 
                             if (CoreHelper.ColorMatch(b, beatmapTheme.backgroundColor, 0.05f))
                             {
