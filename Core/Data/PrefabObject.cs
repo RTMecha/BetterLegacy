@@ -220,7 +220,9 @@ namespace BetterLegacy.Core.Data
             prefabObject.ID = jn["id"] != null ? jn["id"] : LSText.randomString(16);
             prefabObject.prefabID = jn["pid"];
             prefabObject.StartTime = jn["st"].AsFloat;
-            prefabObject.parent = jn["p"];
+
+            if (jn["p"] != null)
+                prefabObject.parent = jn["p"];
 
             if (!string.IsNullOrEmpty(jn["rc"]))
                 prefabObject.RepeatCount = jn["rc"].AsInt;
@@ -237,7 +239,8 @@ namespace BetterLegacy.Core.Data
             if (jn["ako"] != null)
                 prefabObject.autoKillOffset = jn["ako"].AsFloat;
 
-            prefabObject.editorData = ObjectEditorData.Parse(jn["ed"]);
+            if (jn["ed"] != null)
+                prefabObject.editorData = ObjectEditorData.Parse(jn["ed"]);
 
             prefabObject.events.Clear();
 
@@ -331,8 +334,6 @@ namespace BetterLegacy.Core.Data
 
             jn["id"] = ID;
             jn["pid"] = prefabID;
-            if (!string.IsNullOrEmpty(parent))
-                jn["p"] = parent;
 
             jn["ed"] = ((ObjectEditorData)editorData).ToJSONVG();
 
@@ -360,11 +361,37 @@ namespace BetterLegacy.Core.Data
             jn["pid"] = prefabID;
             jn["st"] = StartTime.ToString();
 
-            jn["sp"] = speed.ToString();
+            if (speed != 1f)
+                jn["sp"] = speed.ToString();
 
-            jn["akt"] = ((int)autoKillType).ToString();
+            if (parentType != "111")
+                jn["pt"] = parentType;
 
-            jn["ako"] = autoKillOffset.ToString();
+            if (parentOffsets.Any(x => x != 0f))
+            {
+                for (int i = 0; i < parentOffsets.Length; i++)
+                    jn["po"][i] = parentOffsets[i].ToString();
+            }
+
+            if (parentAdditive != "000")
+                jn["pa"] = parentAdditive;
+
+            if (parentParallax.Any(x => x != 1f))
+            {
+                for (int i = 0; i < parentParallax.Length; i++)
+                    jn["ps"][i] = parentParallax[i].ToString();
+            }
+
+            if (!string.IsNullOrEmpty(parent))
+                jn["p"] = parent;
+
+            if (autoKillType != AutoKillType.Regular)
+            {
+                jn["akt"] = ((int)autoKillType).ToString();
+
+                if (autoKillOffset != -1f)
+                    jn["ako"] = autoKillOffset.ToString();
+            }
 
             if (RepeatCount > 0)
                 jn["rc"] = RepeatCount.ToString();
@@ -376,8 +403,10 @@ namespace BetterLegacy.Core.Data
             if (editorData.collapse)
                 jn["ed"]["shrink"] = editorData.collapse.ToString();
 
-            jn["ed"]["layer"] = editorData.layer.ToString();
-            jn["ed"]["bin"] = editorData.Bin.ToString();
+            if (editorData.layer != 0)
+                jn["ed"]["layer"] = editorData.layer.ToString();
+            if (editorData.Bin != 0)
+                jn["ed"]["bin"] = editorData.Bin.ToString();
 
             jn["e"]["pos"]["x"] = events[0].eventValues[0].ToString();
             jn["e"]["pos"]["y"] = events[0].eventValues[1].ToString();
@@ -406,6 +435,7 @@ namespace BetterLegacy.Core.Data
                 jn["e"]["rot"]["rx"] = events[2].eventRandomValues[0].ToString();
                 jn["e"]["rot"]["rz"] = events[2].eventRandomValues[2].ToString();
             }
+
             return jn;
         }
 

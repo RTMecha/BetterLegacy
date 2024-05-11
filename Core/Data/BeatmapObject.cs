@@ -30,72 +30,13 @@ namespace BetterLegacy.Core.Data
             editorData = new ObjectEditorData();
         }
 
-        public BeatmapObject(BaseBeatmapObject beatmapObject)
-        {
-            id = beatmapObject.id;
-            parent = beatmapObject.parent;
-            name = beatmapObject.name;
-            active = beatmapObject.active;
-            autoKillOffset = beatmapObject.autoKillOffset;
-            autoKillType = beatmapObject.autoKillType;
-            depth = beatmapObject.depth;
-            editorData = new ObjectEditorData();
-            editorData.Bin = beatmapObject.editorData.Bin;
-            editorData.layer = beatmapObject.editorData.layer;
-            editorData.collapse = beatmapObject.editorData.collapse;
-            editorData.locked = beatmapObject.editorData.locked;
-            fromPrefab = beatmapObject.fromPrefab;
-            objectType = (ObjectType)beatmapObject.objectType;
-            origin = beatmapObject.origin;
-            prefabID = beatmapObject.prefabID;
-            prefabInstanceID = beatmapObject.prefabInstanceID;
-            shape = beatmapObject.shape;
-            shapeOption = beatmapObject.shapeOption;
-            StartTime = beatmapObject.StartTime;
-            text = beatmapObject.text;
-
-            events = beatmapObject.events.Clone();
-        }
-
-        public BeatmapObject(BaseBeatmapObject beatmapObject, bool ldm, List<Modifier<BeatmapObject>> modifiers)
-        {
-            id = beatmapObject.id;
-            parent = beatmapObject.parent;
-            name = beatmapObject.name;
-            active = beatmapObject.active;
-            autoKillOffset = beatmapObject.autoKillOffset;
-            autoKillType = beatmapObject.autoKillType;
-            depth = beatmapObject.depth;
-            editorData = new ObjectEditorData();
-            editorData.Bin = beatmapObject.editorData.Bin;
-            editorData.layer = beatmapObject.editorData.layer;
-            editorData.collapse = beatmapObject.editorData.collapse;
-            editorData.locked = beatmapObject.editorData.locked;
-            fromPrefab = beatmapObject.fromPrefab;
-            objectType = (ObjectType)beatmapObject.objectType;
-            origin = beatmapObject.origin;
-            prefabID = beatmapObject.prefabID;
-            prefabInstanceID = beatmapObject.prefabInstanceID;
-            shape = beatmapObject.shape;
-            shapeOption = beatmapObject.shapeOption;
-            StartTime = beatmapObject.StartTime;
-            text = beatmapObject.text;
-
-            var evs = new List<BaseEventKeyframe>[beatmapObject.events.Count];
-            beatmapObject.events.CopyTo(evs);
-            events = evs.ToList();
-
-            LDM = ldm;
-            this.modifiers = modifiers;
-        }
-
         public bool LDM { get; set; }
 
         public float[] parallaxSettings = new float[3]
         {
-            1f,
-            1f,
-            1f
+            1f, // Pos
+            1f, // Sca
+            1f, // Rot
         };
 
         public string parentAdditive = "000";
@@ -117,16 +58,40 @@ namespace BetterLegacy.Core.Data
         public bool desync = false;
 
         public List<Modifier<BeatmapObject>> modifiers = new List<Modifier<BeatmapObject>>();
+
+        /// <summary>
+        /// For object modifiers.
+        /// </summary>
         public List<Component> components = new List<Component>();
 
+        /// <summary>
+        /// ParticleSystem for modifiers.
+        /// </summary>
         public ParticleSystem particleSystem;
+
+        /// <summary>
+        /// TrailRender for modifiers.
+        /// </summary>
         public TrailRenderer trailRenderer;
+
+        /// <summary>
+        /// Used for editor optimization.
+        /// </summary>
         public RTObject RTObject { get; set; }
 
+        /// <summary>
+        /// Used for optimization.
+        /// </summary>
         public Optimization.Objects.LevelObject levelObject;
 
+        /// <summary>
+        /// Used for editor.
+        /// </summary>
         public TimelineObject timelineObject;
 
+        /// <summary>
+        /// Use for object modifiers.
+        /// </summary>
         public Detector detector;
 
         public int integerVariable;
@@ -137,12 +102,29 @@ namespace BetterLegacy.Core.Data
         public Vector3 reactiveScaleOffset = Vector3.zero;
         public float reactiveRotationOffset = 0f;
 
+        /// <summary>
+        /// Moves the objects' associated parent objects at this offset.
+        /// </summary>
         public Vector3 positionOffset = Vector3.zero;
+
+        /// <summary>
+        /// Scales the objects' associated parent objects at this offset.
+        /// </summary>
         public Vector3 scaleOffset = Vector3.zero;
+
+        /// <summary>
+        /// Rotates the objects' associated parent objects at this offset.
+        /// </summary>
         public Vector3 rotationOffset = Vector3.zero;
 
+        /// <summary>
+        /// Used for objects spawned from a Prefab Object.
+        /// </summary>
         public string originalID;
 
+        /// <summary>
+        /// Gets if the current audio time is within the lifespan of the object.
+        /// </summary>
         public bool Alive
         {
             get
@@ -178,11 +160,11 @@ namespace BetterLegacy.Core.Data
 
         public new enum ObjectType
         {
-            Normal,
-            Helper,
-            Decoration,
-            Empty,
-            Solid
+            Normal, // If the object can hit the player.
+            Helper, // If the object should be utilized as a warning.
+            Decoration, // If the object should be used in decorating.
+            Empty, // If a level object isn't generated for the object.
+            Solid // If players can't pass through the object.
         }
 
         /// <summary>
@@ -197,6 +179,13 @@ namespace BetterLegacy.Core.Data
 
         #region Methods
 
+        /// <summary>
+        /// Creates a new Beatmap Object with all the same values as the original provided.
+        /// </summary>
+        /// <param name="orig">The original to copy.</param>
+        /// <param name="newID">If a new ID should be generated.</param>
+        /// <param name="copyVariables">If variables should be copied.</param>
+        /// <returns>Returns a copied Beatmap Object.</returns>
         public static BeatmapObject DeepCopy(BeatmapObject orig, bool newID = true, bool copyVariables = true)
         {
             var beatmapObject = new BeatmapObject
@@ -249,6 +238,11 @@ namespace BetterLegacy.Core.Data
             return beatmapObject;
         }
 
+        /// <summary>
+        /// Parses a Beatmap Object from VG to formatted JSON.
+        /// </summary>
+        /// <param name="jn">VG JSON.</param>
+        /// <returns>Returns a parsed Beatmap Object.</returns>
         public static BeatmapObject ParseVG(JSONNode jn)
         {
             var beatmapObject = new BeatmapObject();
@@ -462,6 +456,11 @@ namespace BetterLegacy.Core.Data
             return beatmapObject;
         }
 
+        /// <summary>
+        /// Parses a Beatmap Object from LS formatted JSON.
+        /// </summary>
+        /// <param name="jn">LS JSON.</param>
+        /// <returns>Returns a parsed Beatmap Object.</returns>
         public static BeatmapObject Parse(JSONNode jn)
         {
             var beatmapObject = new BeatmapObject();
@@ -740,6 +739,10 @@ namespace BetterLegacy.Core.Data
             return beatmapObject;
         }
 
+        /// <summary>
+        /// Converts the current Beatmap Object to the VG format.
+        /// </summary>
+        /// <returns></returns>
         public JSONNode ToJSONVG()
         {
             var jn = JSON.Parse("{}");
@@ -867,6 +870,10 @@ namespace BetterLegacy.Core.Data
             return jn;
         }
 
+        /// <summary>
+        /// Converts the current Beatmap Object to the LS format.
+        /// </summary>
+        /// <returns>Returns a JSONNode.</returns>
         public JSONNode ToJSON()
         {
             var jn = JSON.Parse("{}");
@@ -881,24 +888,20 @@ namespace BetterLegacy.Core.Data
             if (parentType != "101")
                 jn["pt"] = parentType;
 
-            if (parentOffsets.FindIndex(x => x != 0f) != -1)
+            if (parentOffsets.Any(x => x != 0f))
             {
-                int index = 0;
-                foreach (var offset in parentOffsets)
-                {
-                    jn["po"][index] = offset.ToString();
-                    index++;
-                }
+                for (int i = 0; i < parentOffsets.Count; i++)
+                    jn["po"][i] = parentOffsets[i].ToString();
             }
+            
+            if (parentAdditive != "000")
+                jn["pa"] = parentAdditive;
 
-            if (parallaxSettings.ToList().FindIndex(x => x != 1f) != -1)
+            if (parallaxSettings.Any(x => x != 1f))
             {
                 for (int i = 0; i < parallaxSettings.Length; i++)
                     jn["ps"][i] = parallaxSettings[i].ToString();
             }
-
-            if (parentAdditive != "000")
-                jn["pa"] = parentAdditive;
 
             if (!string.IsNullOrEmpty(parent))
                 jn["p"] = parent;
@@ -938,8 +941,12 @@ namespace BetterLegacy.Core.Data
                 for (int i = 0; i < tags.Count; i++)
                     jn["tags"][i] = tags[i];
 
-            jn["o"]["x"] = origin.x.ToString();
-            jn["o"]["y"] = origin.y.ToString();
+            if (origin.x != 0f || origin.y != 0f)
+            {
+                jn["o"]["x"] = origin.x.ToString();
+                jn["o"]["y"] = origin.y.ToString();
+            }
+
             if (editorData.locked)
                 jn["ed"]["locked"] = editorData.locked.ToString();
             if (editorData.collapse)

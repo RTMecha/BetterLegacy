@@ -287,11 +287,19 @@ namespace BetterLegacy.Core
                 CoreHelper.Log("Saving Markers");
                 for (int i = 0; i < _data.beatmapData.markers.Count; i++)
                 {
-                    jn["ed"]["markers"][i]["active"] = "True";
-                    jn["ed"]["markers"][i]["name"] = _data.beatmapData.markers[i].name.ToString();
-                    jn["ed"]["markers"][i]["desc"] = _data.beatmapData.markers[i].desc.ToString();
-                    jn["ed"]["markers"][i]["col"] = _data.beatmapData.markers[i].color.ToString();
-                    jn["ed"]["markers"][i]["t"] = _data.beatmapData.markers[i].time.ToString();
+                    var marker = _data.beatmapData.markers[i];
+                    jn["ed"]["markers"][i]["active"] = "True"; // this has to stay here due to unmodded not handling "active" being null for some weird reason.
+
+                    if (!string.IsNullOrEmpty(jn["ed"]["markers"][i]["name"]))
+                        jn["ed"]["markers"][i]["name"] = marker.name.ToString();
+
+                    if (!string.IsNullOrEmpty(marker.desc) && marker.desc != "Description")
+                        jn["ed"]["markers"][i]["desc"] = marker.desc.ToString();
+
+                    if (_data.beatmapData.markers[i].color != 0)
+                        jn["ed"]["markers"][i]["col"] = marker.color.ToString();
+
+                    jn["ed"]["markers"][i]["t"] = marker.time.ToString();
                 }
 
                 for (int i = 0; i < _data.levelModifiers.Count; i++)
@@ -314,10 +322,10 @@ namespace BetterLegacy.Core
                 }
 
                 CoreHelper.Log("Saving Object Prefabs");
-                for (int i = 0; i < _data.prefabObjects.Count; i++)
+                var prefabObjects = _data.prefabObjects.Where(x => x is PrefabObject prefabObject && !prefabObject.fromModifier).Select(x => x as PrefabObject).ToList();
+                for (int i = 0; i < prefabObjects.Count; i++)
                 {
-                    if (!((PrefabObject)_data.prefabObjects[i]).fromModifier)
-                        jn["prefab_objects"][i] = ((PrefabObject)_data.prefabObjects[i]).ToJSON();
+                    jn["prefab_objects"][i] = prefabObjects[i].ToJSON();
                 }
 
                 CoreHelper.Log("Saving Level Data");
@@ -328,6 +336,7 @@ namespace BetterLegacy.Core
                     jn["level_data"]["follow_player"] = "False";
                     jn["level_data"]["show_intro"] = "False";
                 }
+
                 CoreHelper.Log("Saving prefabs");
                 if (_data.prefabs != null)
                 {
@@ -358,7 +367,7 @@ namespace BetterLegacy.Core
                 CoreHelper.Log("Saving Beatmap Objects");
                 if (_data.beatmapObjects != null)
                 {
-                    List<BaseBeatmapObject> list = _data.beatmapObjects.FindAll(x => !x.fromPrefab);
+                    var list = _data.beatmapObjects.FindAll(x => !x.fromPrefab);
                     jn["beatmap_objects"] = new JSONArray();
                     for (int i = 0; i < list.Count; i++)
                     {
@@ -367,7 +376,7 @@ namespace BetterLegacy.Core
                 }
                 else
                 {
-                    Debug.Log("skipping objects");
+                    CoreHelper.Log("skipping objects");
                     jn["beatmap_objects"] = new JSONArray();
                 }
 
