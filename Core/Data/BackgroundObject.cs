@@ -42,16 +42,6 @@ namespace BetterLegacy.Core.Data
             shape = ShapeManager.inst.Shapes3D[0][0];
         }
 
-        public void SetShape(int shape)
-        {
-            this.shape = Shape.DeepCopy(ShapeManager.inst.Shapes3D[shape][0]);
-            foreach (var gameObject in gameObjects)
-            {
-                if (gameObject.TryGetComponent(out MeshFilter meshFilter) && this.shape.mesh)
-                    meshFilter.mesh = this.shape.mesh;
-            }
-        }
-
         public void SetShape(int shape, int shapeOption)
         {
             this.shape = Shape.DeepCopy(ShapeManager.inst.GetShape3D(shape, shapeOption));
@@ -83,7 +73,7 @@ namespace BetterLegacy.Core.Data
         public Shape shape;
         public float zscale = 10f;
         public int depth = 9;
-        //public float zPosition;
+        public float zposition;
 
         int fadeColor;
         public int FadeColor
@@ -112,7 +102,7 @@ namespace BetterLegacy.Core.Data
             {
                 active = bg.active,
                 color = bg.color,
-                FadeColor = bg.color,
+                FadeColor = bg.FadeColor,
                 drawFade = bg.drawFade,
                 kind = bg.kind,
                 layer = bg.layer,
@@ -208,6 +198,10 @@ namespace BetterLegacy.Core.Data
 
             #region New stuff
 
+            float zposition = 0f;
+            if (jn["zposition"] != null)
+                zposition = jn["zposition"].AsFloat;
+
             float zscale = 10f;
             if (jn["zscale"] != null)
                 zscale = jn["zscale"].AsFloat;
@@ -298,6 +292,7 @@ namespace BetterLegacy.Core.Data
                 reactiveScale = reactiveScale,
                 drawFade = drawFade,
 
+                zposition = zposition,
                 zscale = zscale,
                 depth = depth,
                 shape = shape,
@@ -333,9 +328,10 @@ namespace BetterLegacy.Core.Data
         {
             var jn = JSON.Parse("{}");
 
-            jn["active"] = active.ToString();
+            if (!active)
+                jn["active"] = active.ToString();
             jn["name"] = name.ToString();
-            jn["kind"] = kind.ToString();
+            //jn["kind"] = kind.ToString(); // Unused so no need to save to JSON. Luckily Legacy should handle this being missing.
             jn["pos"]["x"] = pos.x.ToString();
             jn["pos"]["y"] = pos.y.ToString();
             jn["size"]["x"] = scale.x.ToString();
@@ -343,35 +339,74 @@ namespace BetterLegacy.Core.Data
             jn["rot"] = rot.ToString();
             jn["color"] = color.ToString();
             jn["layer"] = layer.ToString();
-            jn["fade"] = drawFade.ToString();
 
-            jn["zscale"] = zscale.ToString();
-            jn["depth"] = depth.ToString();
-            jn["s"] = shape.Type.ToString();
-            jn["so"] = shape.Option.ToString();
-            jn["color_fade"] = FadeColor.ToString();
-            jn["r_offset"]["x"] = rotation.x.ToString();
-            jn["r_offset"]["y"] = rotation.y.ToString();
+            if (!drawFade)
+                jn["fade"] = drawFade.ToString();
 
-            jn["rc"]["pos"]["i"]["x"] = reactivePosIntensity.x.ToString();
-            jn["rc"]["pos"]["i"]["y"] = reactivePosIntensity.y.ToString();
-            jn["rc"]["pos"]["s"]["x"] = reactivePosSamples.x.ToString();
-            jn["rc"]["pos"]["s"]["y"] = reactivePosSamples.y.ToString();
+            if (zposition != 0f)
+                jn["zposition"] = zposition.ToString();
 
-            jn["rc"]["z"]["i"] = reactiveZIntensity.ToString();
-            jn["rc"]["z"]["s"] = reactiveZSample.ToString();
+            if (zscale != 10f)
+                jn["zscale"] = zscale.ToString();
 
-            jn["rc"]["sca"]["i"]["x"] = reactiveScaIntensity.x.ToString();
-            jn["rc"]["sca"]["i"]["y"] = reactiveScaIntensity.y.ToString();
-            jn["rc"]["sca"]["s"]["x"] = reactiveScaSamples.x.ToString();
-            jn["rc"]["sca"]["s"]["y"] = reactiveScaSamples.y.ToString();
+            if (depth != 9)
+                jn["depth"] = depth.ToString();
 
-            jn["rc"]["rot"]["i"] = reactiveRotIntensity.ToString();
-            jn["rc"]["rot"]["s"] = reactiveRotSample.ToString();
+            if (shape.Type != 0 || shape.Option != 0)
+            {
+                jn["s"] = shape.Type.ToString();
+                jn["so"] = shape.Option.ToString();
+            }
 
-            jn["rc"]["col"]["i"] = reactiveColIntensity.ToString();
-            jn["rc"]["col"]["s"] = reactiveColSample.ToString();
-            jn["rc"]["col"]["c"] = reactiveCol.ToString();
+            if (FadeColor != 0)
+                jn["color_fade"] = FadeColor.ToString();
+
+            if (rotation.x != 0f || rotation.y != 0f)
+            {
+                jn["r_offset"]["x"] = rotation.x.ToString();
+                jn["r_offset"]["y"] = rotation.y.ToString();
+            }
+
+            if (reactivePosIntensity.x != 0f || reactivePosIntensity.y != 0f)
+            {
+                jn["rc"]["pos"]["i"]["x"] = reactivePosIntensity.x.ToString();
+                jn["rc"]["pos"]["i"]["y"] = reactivePosIntensity.y.ToString();
+            }
+
+            if (reactivePosSamples.x != 0 || reactivePosSamples.y != 0)
+            {
+                jn["rc"]["pos"]["s"]["x"] = reactivePosSamples.x.ToString();
+                jn["rc"]["pos"]["s"]["y"] = reactivePosSamples.y.ToString();
+            }
+
+            if (reactiveZIntensity != 0f)
+                jn["rc"]["z"]["i"] = reactiveZIntensity.ToString();
+            if (reactiveZSample != 0)
+                jn["rc"]["z"]["s"] = reactiveZSample.ToString();
+
+            if (reactiveScaIntensity.x != 0f || reactiveScaIntensity.y != 0f)
+            {
+                jn["rc"]["sca"]["i"]["x"] = reactiveScaIntensity.x.ToString();
+                jn["rc"]["sca"]["i"]["y"] = reactiveScaIntensity.y.ToString();
+            }
+            
+            if (reactiveScaSamples.x != 0 || reactiveScaSamples.y != 0)
+            {
+                jn["rc"]["sca"]["s"]["x"] = reactiveScaSamples.x.ToString();
+                jn["rc"]["sca"]["s"]["y"] = reactiveScaSamples.y.ToString();
+            }
+
+            if (reactiveRotIntensity != 0f)
+                jn["rc"]["rot"]["i"] = reactiveRotIntensity.ToString();
+            if (reactiveRotSample != 0)
+                jn["rc"]["rot"]["s"] = reactiveRotSample.ToString();
+
+            if (reactiveColIntensity != 0f)
+                jn["rc"]["col"]["i"] = reactiveColIntensity.ToString();
+            if (reactiveColSample != 0)
+                jn["rc"]["col"]["s"] = reactiveColSample.ToString();
+            if (reactiveCol != 0)
+                jn["rc"]["col"]["c"] = reactiveCol.ToString();
 
             if (reactive)
             {
