@@ -2398,8 +2398,33 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "hideMouse":
                     {
-                        if (EditorManager.inst == null || !EditorManager.inst.isEditing)
+                        if (!EditorManager.inst || !EditorManager.inst.isEditing)
                             LSHelpers.HideCursor();
+                        break;
+                    }
+                case "setMousePosition":
+                    {
+                        if (EditorManager.inst && EditorManager.inst.isEditing)
+                            break;
+
+                        var screenScale = Display.main.systemWidth / 1920f;
+                        float windowCenterX = (Display.main.systemWidth) / 2;
+                        float windowCenterY = (Display.main.systemHeight) / 2;
+
+                        if (int.TryParse(modifier.commands[1], out int x) && int.TryParse(modifier.commands[2], out int y))
+                        {
+                            System.Windows.Forms.Cursor.Position = new System.Drawing.Point((int)((x * screenScale) + windowCenterX), (int)((y * screenScale) + windowCenterY));
+                        }
+
+                        break;
+                    }
+                case "followMousePosition":
+                    {
+                        Vector2 mousePosition = Input.mousePosition;
+                        mousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
+
+                        modifier.reference.positionOffset = mousePosition;
+
                         break;
                     }
                 case "addVariable":
@@ -3316,7 +3341,9 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "addColorPlayerDistance":
                     {
-                        if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject && levelObject.visualObject.Renderer && int.TryParse(modifier.commands[1], out int index) && float.TryParse(modifier.value, out float num))
+                        if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) &&
+                            levelObject.visualObject.GameObject && levelObject.visualObject.Renderer &&
+                            int.TryParse(modifier.commands[1], out int index) && float.TryParse(modifier.value, out float offset) && float.TryParse(modifier.commands[2], out float multiply))
                         {
                             var i = RTExtensions.ClosestPlayer(levelObject.visualObject.GameObject);
 
@@ -3326,7 +3353,32 @@ namespace BetterLegacy.Core.Helpers
 
                             index = Mathf.Clamp(index, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
 
-                            levelObject.visualObject.Renderer.material.color += GameManager.inst.LiveTheme.objectColors[index] * (distance - num);
+                            //levelObject.visualObject.Renderer.material.color += GameManager.inst.LiveTheme.objectColors[index] * (offset - distance * multiply);
+                            levelObject.visualObject.Renderer.material.color += GameManager.inst.LiveTheme.objectColors[index] * -(distance * multiply - offset);
+                        }
+
+                        break;
+                    }
+                case "lerpColorPlayerDistance":
+                    {
+                        if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) &&
+                            levelObject.visualObject.GameObject && levelObject.visualObject.Renderer &&
+                            int.TryParse(modifier.commands[1], out int index) && float.TryParse(modifier.value, out float offset) && float.TryParse(modifier.commands[2], out float multiply) &&
+                            float.TryParse(modifier.commands[3], out float opacity) &&
+                            float.TryParse(modifier.commands[4], out float hue) && float.TryParse(modifier.commands[5], out float sat) && float.TryParse(modifier.commands[6], out float val))
+                        {
+                            var i = RTExtensions.ClosestPlayer(levelObject.visualObject.GameObject);
+
+                            var player = GameManager.inst.players.transform.Find(string.Format("Player {0}/Player", i + 1));
+
+                            var distance = Vector2.Distance(player.transform.position, levelObject.visualObject.GameObject.transform.position);
+
+                            index = Mathf.Clamp(index, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
+
+                            levelObject.visualObject.Renderer.material.color =
+                                Color.Lerp(levelObject.visualObject.Renderer.material.color,
+                                            LSColors.fadeColor(CoreHelper.ChangeColorHSV(GameManager.inst.LiveTheme.objectColors[index], hue, sat, val), opacity),
+                                            -(distance * multiply - offset));
                         }
 
                         break;

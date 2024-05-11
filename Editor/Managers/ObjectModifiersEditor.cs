@@ -1271,7 +1271,6 @@ namespace BetterLegacy.Editor.Managers
                     #region Color
                     case "addColor":
                     case "addColorOther":
-                    case "addColorPlayerDistance":
                     case "lerpColor":
                     case "lerpColorOther":
                         {
@@ -1283,6 +1282,23 @@ namespace BetterLegacy.Editor.Managers
                             colorGenerator("Color", !cmd.Contains("Other") ? 1 : 2);
 
                             singleGenerator("Multiply", 0, 1f);
+
+                            break;
+                        }
+                    case "addColorPlayerDistance":
+                    case "lerpColorPlayerDistance":
+                        {
+                            colorGenerator("Color", 1);
+                            singleGenerator("Multiply", 0, 1f);
+                            singleGenerator("Offset", 2, 10f);
+
+                            if (cmd == "lerpColorPlayerDistance")
+                            {
+                                singleGenerator("Opacity", 3, 1f);
+                                singleGenerator("Hue", 4, 0f);
+                                singleGenerator("Saturation", 5, 0f);
+                                singleGenerator("Value", 6, 0f);
+                            }
 
                             break;
                         }
@@ -1836,6 +1852,13 @@ namespace BetterLegacy.Editor.Managers
                                 {
                                     addText,
                                 }));
+
+                            break;
+                        }
+                    case "setMousePosition":
+                        {
+                            integerGenerator("Position X", 1, 0);
+                            integerGenerator("Position Y", 1, 0);
 
                             break;
                         }
