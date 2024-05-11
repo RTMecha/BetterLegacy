@@ -1962,7 +1962,8 @@ namespace BetterLegacy.Editor.Managers
 
             for (int i = 0; i < defaultModifiers.Count; i++)
             {
-                if (string.IsNullOrEmpty(searchTerm) || defaultModifiers[i].commands[0].ToLower().Contains(searchTerm.ToLower()))
+                if (string.IsNullOrEmpty(searchTerm) || defaultModifiers[i].commands[0].ToLower().Contains(searchTerm.ToLower()) ||
+                    searchTerm.ToLower() == "action" && defaultModifiers[i].type == ModifierBase.Type.Action || searchTerm.ToLower() == "trigger" && defaultModifiers[i].type == ModifierBase.Type.Trigger)
                 {
                     int tmpIndex = i;
 
