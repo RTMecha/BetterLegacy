@@ -175,7 +175,6 @@ namespace BetterLegacy.Core.Data
 
                 var song = new LevelSong(title, difficulty, description, bpm, time, previewStart, previewLength, tags, 0, "");
 
-                string levelName = "Level Name";
                 string gameVersion = ProjectArrhythmia.GameVersion.ToString();
                 string dateEdited = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
                 string dateCreated = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
@@ -203,7 +202,7 @@ namespace BetterLegacy.Core.Data
                     Debug.LogError($"Beatmap Error: {ex}");
                 }
 
-                var beatmap = new LevelBeatmap(levelName, dateEdited, dateCreated, "", gameVersion, num, workshopID.ToString(), modVersion);
+                var beatmap = new LevelBeatmap(title, dateEdited, dateCreated, "", gameVersion, num, workshopID.ToString(), modVersion);
 
                 result = new MetaData(artist, creator, song, beatmap);
             }
@@ -330,6 +329,8 @@ namespace BetterLegacy.Core.Data
                 {
                     if (!string.IsNullOrEmpty(jn["beatmap"]["name"]))
                         levelName = jn["beatmap"]["name"];
+                    else
+                        levelName = title;
                     if (!string.IsNullOrEmpty(jn["beatmap"]["game_version"]))
                         gameVersion = jn["beatmap"]["game_version"];
                     if (!string.IsNullOrEmpty(jn["beatmap"]["mod_version"]))
