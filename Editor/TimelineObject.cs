@@ -186,7 +186,7 @@ namespace BetterLegacy.Editor
         }
 
         /// <summary>
-        /// Gets and sets the locked state of the object. Currently does not apply to keyframes, but it is planned to.
+        /// Gets and sets the locked state of the object.
         /// </summary>
         public bool Locked
         {
@@ -196,6 +196,8 @@ namespace BetterLegacy.Editor
                     return (Data as BeatmapObject).editorData.locked;
                 if (IsPrefabObject)
                     return (Data as PrefabObject).editorData.locked;
+                if (IsEventKeyframe)
+                    return (Data as EventKeyframe).locked;
                 return false;
             }
             set
@@ -204,6 +206,8 @@ namespace BetterLegacy.Editor
                     (Data as BeatmapObject).editorData.locked = value;
                 if (IsPrefabObject)
                     (Data as PrefabObject).editorData.locked = value;
+                if (IsEventKeyframe)
+                    (Data as EventKeyframe).locked = value;
             }
         }
 

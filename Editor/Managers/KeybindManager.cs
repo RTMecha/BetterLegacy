@@ -1584,6 +1584,33 @@ namespace BetterLegacy.Editor.Managers
 
         public static void SwapLockSelection(Keybind keybind)
         {
+            if (EditorManager.inst.IsOverObjTimeline && ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+            {
+                var selected = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.selected);
+                var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
+
+                foreach (var timelineObject in selected)
+                {
+                    if (timelineObject.Index == 0)
+                        continue;
+
+                    timelineObject.Locked = !timelineObject.Locked;
+                    ObjectEditor.inst.RenderKeyframe(beatmapObject, timelineObject);
+                }
+
+                return;
+            }
+
+            if (RTEditor.inst.layerType == RTEditor.LayerType.Events)
+            {
+                foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
+                {
+                    timelineObject.Locked = !timelineObject.Locked;
+                    RTEventEditor.inst.RenderTimelineObject(timelineObject);
+                }
+                return;
+            }
+
             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
             {
                 timelineObject.Locked = !timelineObject.Locked;
@@ -1594,6 +1621,36 @@ namespace BetterLegacy.Editor.Managers
         public static bool loggled = true;
         public static void ToggleLockSelection(Keybind keybind)
         {
+            if (EditorManager.inst.IsOverObjTimeline && ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+            {
+                var selected = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.selected);
+                var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
+
+                foreach (var timelineObject in selected)
+                {
+                    if (timelineObject.Index == 0)
+                        continue;
+
+                    timelineObject.Locked = loggled;
+                    ObjectEditor.inst.RenderKeyframe(beatmapObject, timelineObject);
+                }
+
+                loggled = !loggled;
+                return;
+            }
+
+            if (RTEditor.inst.layerType == RTEditor.LayerType.Events)
+            {
+                foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
+                {
+                    timelineObject.Locked = loggled;
+                    RTEventEditor.inst.RenderTimelineObject(timelineObject);
+                }
+
+                loggled = !loggled;
+                return;
+            }
+
             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
             {
                 timelineObject.Locked = loggled;

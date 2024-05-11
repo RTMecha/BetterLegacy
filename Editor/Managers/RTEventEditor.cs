@@ -525,14 +525,16 @@ namespace BetterLegacy.Editor.Managers
             if (selectPasted)
                 RTEditor.inst.timelineKeyframes.ForEach(x => x.selected = false);
 
+            var time = EditorManager.inst.CurrentAudioPos;
+            if (SettingEditor.inst.SnapActive)
+                time = RTEditor.SnapToBPM(time);
+
             foreach (var keyframeSelection in kfs)
             {
                 var eventKeyframe = EventKeyframe.DeepCopy(keyframeSelection.GetData<EventKeyframe>());
                 if (setTime)
                 {
-                    eventKeyframe.eventTime = EditorManager.inst.CurrentAudioPos + eventKeyframe.eventTime;
-                    if (SettingEditor.inst.SnapActive)
-                        eventKeyframe.eventTime = RTEditor.SnapToBPM(eventKeyframe.eventTime);
+                    eventKeyframe.eventTime = time + eventKeyframe.eventTime;
                 }
 
                 var index = AllEvents[keyframeSelection.Type].FindIndex(x => x.eventTime > eventKeyframe.eventTime) - 1;
@@ -588,7 +590,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void CreateNewEventObject(float time, int type)
         {
-            BaseEventKeyframe eventKeyframe = null;
+            EventKeyframe eventKeyframe = null;
 
             if (SettingEditor.inst.SnapActive)
                 time = RTEditor.SnapToBPM(time);
@@ -604,6 +606,8 @@ namespace BetterLegacy.Editor.Managers
                 eventKeyframe = EventKeyframe.DeepCopy((EventKeyframe)GameData.DefaultKeyframes[type]);
                 eventKeyframe.eventTime = 0f;
             }
+
+            eventKeyframe.locked = false;
 
             if (type == 2 && ResetRotation)
                 eventKeyframe.SetEventValues(new float[1]);
@@ -649,6 +653,8 @@ namespace BetterLegacy.Editor.Managers
                 if (type == 2 && ResetRotation)
                     eventKeyframe.SetEventValues(new float[1]);
             }
+
+            eventKeyframe.locked = false;
 
             AllEvents[type].Add(eventKeyframe);
 
@@ -782,6 +788,10 @@ namespace BetterLegacy.Editor.Managers
                     RTEditor.GetKeyframeIcon(eventKeyframe.curveType,
                     AllEvents[kf.Type].Count > kf.Index + 1 ?
                     AllEvents[kf.Type][kf.Index + 1].curveType : DataManager.inst.AnimationList[0]);
+
+                var locked = kf.GameObject.transform.Find("lock");
+                if (locked)
+                    locked.gameObject.SetActive(kf.Locked);
             }
         }
 

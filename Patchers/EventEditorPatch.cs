@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Core.Data;
+﻿using BetterLegacy.Core;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Managers;
@@ -7,6 +8,7 @@ using LSFunctions;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using EventKeyframeSelection = EventEditor.KeyframeSelection;
 
@@ -85,6 +87,18 @@ namespace BetterLegacy.Patchers
             Instance.EventLabels.SetActive(false);
             Instance.EventHolders.SetActive(false);
 
+            if (ObjEditor.inst && ObjEditor.inst.timelineObjectPrefabLock)
+            {
+                var gameObject = EventEditor.inst.TimelinePrefab.Duplicate(EventEditor.inst.transform, EventEditor.inst.TimelinePrefab.name);
+
+                var lockedUI = ObjEditor.inst.timelineObjectPrefabLock.Duplicate(gameObject.transform, "lock");
+                lockedUI.transform.AsRT().anchoredPosition = new Vector2(6f, 0f);
+                lockedUI.transform.AsRT().sizeDelta = new Vector2(15f, 15f);
+
+                EventEditor.inst.TimelinePrefab = gameObject;
+            }
+
+
             RTEventEditor.Init(Instance);
 
             return false;
@@ -105,15 +119,14 @@ namespace BetterLegacy.Patchers
                 var timelineTime = EditorManager.inst.GetTimelineTime();
                 foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
                 {
-                    if (timelineObject.Index != 0)
-                    {
-                        float num = timelineTime + Instance.mouseOffsetXForDrag + timelineObject.timeOffset;
-                        num = Mathf.Clamp(num, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
-                        DataManager.inst.gameData.eventObjects.allEvents[timelineObject.Type][timelineObject.Index].eventTime = num;
-                    }
+                    if (timelineObject.Index == 0 || timelineObject.Locked)
+                        continue;
+
+                    DataManager.inst.gameData.eventObjects.allEvents[timelineObject.Type][timelineObject.Index].eventTime =
+                        Mathf.Clamp(timelineTime + Instance.mouseOffsetXForDrag + timelineObject.timeOffset, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
                 }
 
-                if (RTEditor.inst.dragOffset != timelineTime + Instance.mouseOffsetXForDrag)
+                if (!RTEventEditor.inst.SelectedKeyframes.All(x => x.Locked) && RTEditor.inst.dragOffset != timelineTime + Instance.mouseOffsetXForDrag)
                 {
                     if (RTEditor.DraggingPlaysSound && (SettingEditor.inst.SnapActive || !RTEditor.DraggingPlaysSoundBPM))
                         SoundManager.inst.PlaySound("LeftRight", SettingEditor.inst.SnapActive ? 0.6f : 0.1f, 0.8f);

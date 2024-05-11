@@ -513,9 +513,13 @@ namespace BetterLegacy.Editor.Managers
         {
             var eventKeyframe = EventKeyframe.DeepCopy(timelineObject.GetData<EventKeyframe>());
 
+            var time = EditorManager.inst.CurrentAudioPos;
+            if (SettingEditor.inst.SnapActive)
+                time = RTEditor.SnapToBPM(time);
+
             if (setTime)
             {
-                eventKeyframe.eventTime = EditorManager.inst.CurrentAudioPos - beatmapObject.StartTime + eventKeyframe.eventTime;
+                eventKeyframe.eventTime = time - beatmapObject.StartTime + eventKeyframe.eventTime;
                 if (eventKeyframe.eventTime <= 0f)
                     eventKeyframe.eventTime = 0.001f;
             }
@@ -1327,6 +1331,8 @@ namespace BetterLegacy.Editor.Managers
             if (eventKeyframe.relative)
                 for (int i = 0; i < eventKeyframe.eventValues.Length; i++)
                     eventKeyframe.eventValues[i] = 0f;
+
+            eventKeyframe.locked = false;
 
             beatmapObject.events[type].Add(eventKeyframe);
 
@@ -4596,6 +4602,10 @@ namespace BetterLegacy.Editor.Managers
             var rectTransform = (RectTransform)timelineObject.GameObject.transform;
             rectTransform.sizeDelta = new Vector2(14f, 25f);
             rectTransform.anchoredPosition = new Vector2(x, 0f);
+
+            var locked = timelineObject.GameObject.transform.Find("lock");
+            if (locked)
+                locked.gameObject.SetActive(timelineObject.Locked);
         }
 
         public void UpdateKeyframeOrder(BeatmapObject beatmapObject)
