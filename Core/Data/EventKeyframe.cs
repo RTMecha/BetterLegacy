@@ -39,6 +39,7 @@ namespace BetterLegacy.Core.Data
         public int index;
         public int type;
         public bool relative;
+        public bool locked;
 
         public void SetCurve(string ease)
             => curveType = DataManager.inst.AnimationList.Has(x => x.Name == ease) ? DataManager.inst.AnimationList.Find(x => x.Name == ease) : DataManager.inst.AnimationList[0];
@@ -66,9 +67,10 @@ namespace BetterLegacy.Core.Data
             eventValues = eventKeyframe.eventValues.ToList().Clone().ToArray(),
             random = eventKeyframe.random,
             relative = eventKeyframe.relative,
+            locked = eventKeyframe.locked,
         };
 
-        public static EventKeyframe Parse(JSONNode jn, int type, int valueCount)
+        public static EventKeyframe Parse(JSONNode jn, int type, int valueCount, bool defaultRelative = false)
         {
             var eventKeyframe = new EventKeyframe();
 
@@ -99,14 +101,16 @@ namespace BetterLegacy.Core.Data
 
             eventKeyframe.random = jn["r"].AsInt;
 
-            eventKeyframe.relative = !string.IsNullOrEmpty(jn["rel"]) && jn["rel"].AsBool;
+            eventKeyframe.relative = !string.IsNullOrEmpty(jn["rel"]) ? jn["rel"].AsBool : defaultRelative;
+
+            eventKeyframe.locked = !string.IsNullOrEmpty(jn["l"]) && jn["l"].AsBool;
 
             eventKeyframe.SetEventRandomValues(eventRandomValues.ToArray());
 
             return eventKeyframe;
         }
 
-        public JSONNode ToJSON()
+        public JSONNode ToJSON(bool defaultRelative = false)
         {
             JSONNode jn = JSON.Parse("{}");
             jn["t"] = eventTime.ToString();
@@ -124,7 +128,11 @@ namespace BetterLegacy.Core.Data
                     jn[raxis[i]] = eventRandomValues[i].ToString();
             }
 
-            jn["rel"] = relative.ToString();
+            if (relative != defaultRelative)
+                jn["rel"] = relative.ToString();
+
+            if (locked)
+                jn["l"] = locked.ToString();
 
             return jn;
         }
