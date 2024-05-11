@@ -8281,6 +8281,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Load Settings like timeline position, editor layer, bpm active, etc
             LoadSettings();
+            EditorManager.inst.RenderTimeline();
 
             if (EditorConfig.Instance.LevelPausesOnStart.Value)
             {
