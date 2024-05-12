@@ -801,18 +801,21 @@ namespace BetterLegacy.Core.Data
         {
             var gameData = new GameData();
 
-            for (int i = 0; i < jn["modifiers"].Count; i++)
-            {
-                var modifier = jn["modifiers"][i];
+            LastParsedJSON = jn;
 
-                var levelModifier = new LevelModifier();
+            if (jn["modifiers"] != null)
+                for (int i = 0; i < jn["modifiers"].Count; i++)
+                {
+                    var modifier = jn["modifiers"][i];
 
-                levelModifier.ActionModifier = Modifier<GameData>.Parse(modifier["action"], gameData);
-                levelModifier.TriggerModifier = Modifier<GameData>.Parse(modifier["trigger"], gameData);
-                levelModifier.retriggerAmount = modifier["retrigger"].AsInt;
+                    var levelModifier = new LevelModifier();
 
-                gameData.levelModifiers.Add(levelModifier);
-            }
+                    levelModifier.ActionModifier = Modifier<GameData>.Parse(modifier["action"], gameData);
+                    levelModifier.TriggerModifier = Modifier<GameData>.Parse(modifier["trigger"], gameData);
+                    levelModifier.retriggerAmount = modifier["retrigger"].AsInt;
+
+                    gameData.levelModifiers.Add(levelModifier);
+                }
 
             gameData.beatmapData = LevelBeatmapData.Parse(jn);
 
@@ -912,17 +915,30 @@ namespace BetterLegacy.Core.Data
 
             gameData.eventObjects.allEvents = ProjectData.Reader.ParseEventkeyframes(jn["events"], false);
 
-            if (gameData.eventObjects.allEvents[3].Any(x => x.eventValues.Length == 2))
+            // Fix for some levels having a Y value in shake, resulting in a shake with a 0 x direction value.
+            var shakeIsBroke = false;
+            if (jn["events"]["shake"] != null)
+                for (int i = 0; i < jn["events"]["shake"].Count; i++)
+                {
+                    if (jn["events"]["shake"][i]["y"] != null && jn["events"]["shake"][i]["z"] == null)
+                        shakeIsBroke = true;
+                }
+
+            if (shakeIsBroke)
                 for (int i = 0; i < gameData.eventObjects.allEvents[3].Count; i++)
                 {
-                    if (gameData.eventObjects.allEvents[3][i].eventValues.Length == 2)
-                        gameData.eventObjects.allEvents[3][i].eventValues[1] = 1f;
+                    gameData.eventObjects.allEvents[3][i].eventValues[1] = 1f;
                 }
 
             ProjectData.Reader.ClampEventListValues(gameData.eventObjects.allEvents, EventCount);
 
             return gameData;
         }
+
+        /// <summary>
+        /// Parsed JSON for debugging purposes.
+        /// </summary>
+        public static JSONNode LastParsedJSON { get; set; }
 
         public static int EventCount => DefaultKeyframes.Count;
 
@@ -1272,28 +1288,56 @@ namespace BetterLegacy.Core.Data
 
         #endregion
 
-        public bool Modded
-        {
-            get
-            {
-                return
-                    BeatmapObjects.Has(x => x.modifiers.Count > 0
+        public bool Modded => BeatmapObjectsModded || EventKeyframesModded || PrefabObjectsModded;
+
+        bool BeatmapObjectsModded => BeatmapObjects.Any(x => x.modifiers.Count > 0
                     || x.objectType == Data.BeatmapObject.ObjectType.Solid
                     || x.desync
                     || x.background
                     || x.LDM
                     || x.parallaxSettings.Any(y => y != 1f)
                     || x.parentAdditive != "000"
-                    || x.shape > 5
-                    || x.shapeOption >= UnmoddedShapeOptions[Mathf.Clamp(x.shape, 0, UnmoddedShapeOptions.Length)]
+                    || x.shape > UnmoddedShapeOptions.Length - 1
+                    || x.shapeOption >= UnmoddedShapeOptions[Mathf.Clamp(x.shape, 0, UnmoddedShapeOptions.Length - 1)]
                     || ArePositionKeyframesModded(x.events[0])
                     || AreScaleKeyframesModded(x.events[1])
                     || AreRotationKeyframesModded(x.events[2])
-                    || AreColorKeyframesModded(x.events[3])) ||
-                    eventObjects.allEvents.Count > 24 && eventObjects.allEvents[24].Count > 0 &&
-                    eventObjects.allEvents[24].Any(x => x.eventValues.Length > 3 && x.eventValues[0] == 1f && (x.eventValues[1] == 1f || x.eventValues[2] == 1f));
+                    || AreColorKeyframesModded(x.events[3]));
+
+        bool EventKeyframesModded
+        {
+            get
+            {
+                bool eventKeyframesModded = false;
+
+                for (int i = 0; i < eventObjects.allEvents.Count; i++)
+                {
+                    for (int j = 0; j < eventObjects.allEvents[i].Count; j++)
+                    {
+                        var eventKeyframe = (Data.EventKeyframe)eventObjects.allEvents[i][j];
+
+                        for (int k = 0; k < eventKeyframe.eventValues.Length; k++)
+                        {
+                            if ((DefaultUnmoddedEventKeyframes.Length <= i || DefaultUnmoddedEventKeyframes[i] <= k) && DefaultKeyframes[i].eventValues[k] != eventKeyframe.eventValues[k])
+                            {
+                                eventKeyframesModded = true;
+                                break;
+                            }
+                        }
+
+                        if (eventKeyframesModded)
+                            break;
+                    }
+
+                    if (eventKeyframesModded)
+                        break;
+                }
+
+                return eventKeyframesModded;
             }
         }
+
+        bool PrefabObjectsModded => PrefabObjects.Any(x => x.RepeatCount > 0 || x.speed != 1f || !string.IsNullOrEmpty(x.parent) || x.autoKillType != Data.PrefabObject.AutoKillType.Regular);
 
         static bool ArePositionKeyframesModded(List<BaseEventKeyframe> eventKeyframes)
             => eventKeyframes.Any(x => x.random > 4 || x.eventValues.Length > 2 && x.eventValues[2] != 0f || ((Data.EventKeyframe)x).relative);
@@ -1315,6 +1359,23 @@ namespace BetterLegacy.Core.Data
             2,
             1,
             6
+        };
+
+        /// <summary>
+        /// For comparing modded values.
+        /// </summary>
+        public static int[] DefaultUnmoddedEventKeyframes => new int[]
+        {
+            2, // Move
+            1, // Zoom
+            1, // Rotate
+            1, // Shake
+            1, // Theme
+            1, // Chroma
+            1, // Bloom
+            6, // Vignette
+            1, // Lens
+            3, // Grain
         };
 
         public static string[] EventTypes => new string[]
@@ -1788,6 +1849,26 @@ namespace BetterLegacy.Core.Data
         public static bool SaveOpacityToThemes { get; set; } = false;
 
         public LevelBeatmapData LevelBeatmapData => (LevelBeatmapData)beatmapData;
+
+        public List<Data.Prefab> Prefabs
+        {
+            get => prefabs.Select(x => (Data.Prefab)x).ToList();
+            set
+            {
+                prefabs.Clear();
+                prefabs.AddRange(value);
+            }
+        }
+        
+        public List<Data.PrefabObject> PrefabObjects
+        {
+            get => prefabObjects.Select(x => (Data.PrefabObject)x).ToList();
+            set
+            {
+                prefabObjects.Clear();
+                prefabObjects.AddRange(value);
+            }
+        }
 
         public List<Data.BeatmapObject> BeatmapObjects
         {

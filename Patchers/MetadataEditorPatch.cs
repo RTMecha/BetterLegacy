@@ -317,45 +317,53 @@ namespace BetterLegacy.Patchers
 
             ((RectTransform)content.Find("spacer (1)")).sizeDelta = new Vector2(732f, 80f);
 
+            if (!MetaData.IsValid)
+            {
+                EditorManager.inst.HideDialog("Metadata Editor");
+                EditorManager.inst.DisplayNotification("Metadata was not valid.", 1.4f, EditorManager.NotificationType.Error);
+            }
+
+            var metadata = MetaData.Current;
+
             var openArtistURL = content.Find("artist/link/inputs/openurl").GetComponent<Button>();
             openArtistURL.onClick.ClearAll();
             openArtistURL.onClick.AddListener(delegate ()
             {
-                Application.OpenURL(DataManager.inst.metaData.artist.getUrl());
+                Application.OpenURL(metadata.artist.getUrl());
             });
 
             var artistName = content.Find("artist/name/input").GetComponent<InputField>();
             artistName.onEndEdit.RemoveAllListeners();
-            artistName.text = DataManager.inst.metaData.artist.Name;
+            artistName.text = metadata.artist.Name;
             artistName.onEndEdit.AddListener(delegate (string _val)
             {
-                string oldVal = DataManager.inst.metaData.artist.Name;
-                DataManager.inst.metaData.artist.Name = _val;
+                string oldVal = metadata.artist.Name;
+                metadata.artist.Name = _val;
                 EditorManager.inst.history.Add(new History.Command("Change Artist Name", delegate ()
                 {
-                    DataManager.inst.metaData.artist.Name = _val;
+                    metadata.artist.Name = _val;
                     Instance.Render();
                 }, delegate ()
                 {
-                    DataManager.inst.metaData.artist.Name = oldVal;
+                    metadata.artist.Name = oldVal;
                     Instance.Render();
                 }), false);
             });
 
             var artistLink = content.Find("artist/link/inputs/input").GetComponent<InputField>();
             artistLink.onEndEdit.RemoveAllListeners();
-            artistLink.text = DataManager.inst.metaData.artist.Link;
+            artistLink.text = metadata.artist.Link;
             artistLink.onEndEdit.AddListener(delegate (string _val)
             {
-                string oldVal = DataManager.inst.metaData.artist.Link;
-                DataManager.inst.metaData.artist.Link = _val;
+                string oldVal = metadata.artist.Link;
+                metadata.artist.Link = _val;
                 EditorManager.inst.history.Add(new History.Command("Change Artist Link", delegate ()
                 {
-                    DataManager.inst.metaData.artist.Link = _val;
+                    metadata.artist.Link = _val;
                     Instance.Render();
                 }, delegate ()
                 {
-                    DataManager.inst.metaData.artist.Link = oldVal;
+                    metadata.artist.Link = oldVal;
                     Instance.Render();
                 }), false);
             });
@@ -364,70 +372,68 @@ namespace BetterLegacy.Patchers
             artistLinkTypes.options.Clear();
             artistLinkTypes.onValueChanged.RemoveAllListeners();
             artistLinkTypes.options = DataManager.inst.linkTypes.Select(x => new Dropdown.OptionData(x.name)).ToList();
-            artistLinkTypes.value = DataManager.inst.metaData.artist.LinkType;
+            artistLinkTypes.value = metadata.artist.LinkType;
             artistLinkTypes.onValueChanged.AddListener(delegate (int _val)
             {
-                int oldVal = DataManager.inst.metaData.artist.LinkType;
-                DataManager.inst.metaData.artist.LinkType = _val;
+                int oldVal = metadata.artist.LinkType;
+                metadata.artist.LinkType = _val;
                 EditorManager.inst.history.Add(new History.Command("Change Artist Link", delegate ()
                 {
-                    DataManager.inst.metaData.artist.LinkType = _val;
+                    metadata.artist.LinkType = _val;
                     Instance.Render();
                 }, delegate ()
                 {
-                    DataManager.inst.metaData.artist.LinkType = oldVal;
+                    metadata.artist.LinkType = oldVal;
                     Instance.Render();
                 }), false);
             });
 
             var creatorName = content.Find("creator/name/input").GetComponent<InputField>();
             creatorName.onValueChanged.RemoveAllListeners();
-            creatorName.text = DataManager.inst.metaData.creator.steam_name;
+            creatorName.text = metadata.creator.steam_name;
             creatorName.onValueChanged.AddListener(delegate (string _val)
             {
-                DataManager.inst.metaData.creator.steam_name = _val;
+                metadata.creator.steam_name = _val;
             });
-
-            var moddedMetadata = MetaData.Current;
 
             var levelName = content.Find("creator/level_name/input").GetComponent<InputField>();
             levelName.onValueChanged.RemoveAllListeners();
-            levelName.text = moddedMetadata.LevelBeatmap.name;
+            levelName.text = metadata.LevelBeatmap.name;
             levelName.onValueChanged.AddListener(delegate (string _val)
             {
-                moddedMetadata.LevelBeatmap.name = _val;
+                metadata.LevelBeatmap.name = _val;
             });
 
             var songTitle = content.Find("song/title/input").GetComponent<InputField>();
             songTitle.onValueChanged.RemoveAllListeners();
-            songTitle.text = DataManager.inst.metaData.song.title;
+            songTitle.text = metadata.song.title;
             songTitle.onValueChanged.AddListener(delegate (string _val)
             {
-                DataManager.inst.metaData.song.title = _val;
+                metadata.song.title = _val;
             });
 
             var openCreatorURL = content.Find("creator/link/inputs/openurl").GetComponent<Button>();
             openCreatorURL.onClick.ClearAll();
             openCreatorURL.onClick.AddListener(delegate ()
             {
-                if (moddedMetadata.LevelCreator.URL != null)
-                    Application.OpenURL(moddedMetadata.LevelCreator.URL);
+                if (metadata.LevelCreator.URL != null)
+                    Application.OpenURL(metadata.LevelCreator.URL);
             });
 
             var creatorLink = content.Find("creator/link/inputs/input").GetComponent<InputField>();
             creatorLink.onEndEdit.RemoveAllListeners();
-            creatorLink.text = moddedMetadata.LevelCreator.link;
+            creatorLink.text = metadata.LevelCreator.link;
             creatorLink.onEndEdit.AddListener(delegate (string _val)
             {
-                string oldVal = moddedMetadata.LevelCreator.link;
-                moddedMetadata.LevelCreator.link = _val;
+                string oldVal = metadata.LevelCreator.link;
+                metadata.LevelCreator.link = _val;
                 EditorManager.inst.history.Add(new History.Command("Change Artist Link", delegate ()
                 {
-                    moddedMetadata.LevelCreator.link = _val;
+                    metadata.LevelCreator.link = _val;
                     Instance.Render();
                 }, delegate ()
                 {
-                    moddedMetadata.LevelCreator.link = oldVal;
+                    metadata.LevelCreator.link = oldVal;
                     Instance.Render();
                 }), false);
             });
@@ -436,18 +442,18 @@ namespace BetterLegacy.Patchers
             creatorLinkTypes.options.Clear();
             creatorLinkTypes.onValueChanged.RemoveAllListeners();
             creatorLinkTypes.options = LevelCreator.creatorLinkTypes.Select(x => new Dropdown.OptionData(x.name)).ToList();
-            creatorLinkTypes.value = moddedMetadata.LevelCreator.linkType;
+            creatorLinkTypes.value = metadata.LevelCreator.linkType;
             creatorLinkTypes.onValueChanged.AddListener(delegate (int _val)
             {
-                int oldVal = moddedMetadata.LevelCreator.linkType;
-                moddedMetadata.LevelCreator.linkType = _val;
+                int oldVal = metadata.LevelCreator.linkType;
+                metadata.LevelCreator.linkType = _val;
                 EditorManager.inst.history.Add(new History.Command("Change Creator Link", delegate ()
                 {
-                    moddedMetadata.LevelCreator.linkType = _val;
+                    metadata.LevelCreator.linkType = _val;
                     Instance.Render();
                 }, delegate ()
                 {
-                    moddedMetadata.LevelCreator.linkType = oldVal;
+                    metadata.LevelCreator.linkType = oldVal;
                     Instance.Render();
                 }), false);
             });
@@ -456,24 +462,24 @@ namespace BetterLegacy.Patchers
             openSongURL.onClick.ClearAll();
             openSongURL.onClick.AddListener(delegate ()
             {
-                if (!string.IsNullOrEmpty(moddedMetadata.LevelSong.link))
-                    Application.OpenURL(moddedMetadata.SongURL);
+                if (!string.IsNullOrEmpty(metadata.LevelSong.link))
+                    Application.OpenURL(metadata.SongURL);
             });
 
             var songLink = content.Find("song/link/inputs/input").GetComponent<InputField>();
             songLink.onEndEdit.RemoveAllListeners();
-            songLink.text = moddedMetadata.LevelSong.link;
+            songLink.text = metadata.LevelSong.link;
             songLink.onEndEdit.AddListener(delegate (string _val)
             {
-                string oldVal = moddedMetadata.LevelSong.link;
-                moddedMetadata.LevelSong.link = _val;
+                string oldVal = metadata.LevelSong.link;
+                metadata.LevelSong.link = _val;
                 EditorManager.inst.history.Add(new History.Command("Change Artist Link", delegate ()
                 {
-                    moddedMetadata.LevelSong.link = _val;
+                    metadata.LevelSong.link = _val;
                     Instance.Render();
                 }, delegate ()
                 {
-                    moddedMetadata.LevelSong.link = oldVal;
+                    metadata.LevelSong.link = oldVal;
                     Instance.Render();
                 }), false);
             });
@@ -482,18 +488,18 @@ namespace BetterLegacy.Patchers
             songLinkTypes.options.Clear();
             songLinkTypes.onValueChanged.RemoveAllListeners();
             songLinkTypes.options = CoreHelper.InstanceLinks.Select(x => new Dropdown.OptionData(x.name)).ToList();
-            songLinkTypes.value = moddedMetadata.LevelSong.linkType;
+            songLinkTypes.value = metadata.LevelSong.linkType;
             songLinkTypes.onValueChanged.AddListener(delegate (int _val)
             {
-                int oldVal = moddedMetadata.LevelSong.linkType;
-                moddedMetadata.LevelSong.linkType = _val;
+                int oldVal = metadata.LevelSong.linkType;
+                metadata.LevelSong.linkType = _val;
                 EditorManager.inst.history.Add(new History.Command("Change Creator Link", delegate ()
                 {
-                    moddedMetadata.LevelSong.linkType = _val;
+                    metadata.LevelSong.linkType = _val;
                     Instance.Render();
                 }, delegate ()
                 {
-                    moddedMetadata.LevelSong.linkType = oldVal;
+                    metadata.LevelSong.linkType = oldVal;
                     Instance.Render();
                 }), false);
             });
@@ -502,10 +508,10 @@ namespace BetterLegacy.Patchers
             ((RectTransform)content.Find("creator/description/input")).sizeDelta = new Vector2(523f, 140f);
             var creatorDescription = content.Find("creator/description/input").GetComponent<InputField>();
             creatorDescription.onValueChanged.RemoveAllListeners();
-            creatorDescription.text = DataManager.inst.metaData.song.description;
+            creatorDescription.text = metadata.song.description;
             creatorDescription.onValueChanged.AddListener(delegate (string _val)
             {
-                DataManager.inst.metaData.song.description = _val;
+                metadata.song.description = _val;
             });
 
             SetToggleList();
@@ -513,23 +519,19 @@ namespace BetterLegacy.Patchers
             RenderTags();
             content.Find("agreement/text").GetComponent<Text>().text = "If you want to upload to the Steam Workshop, you can convert the level to the current level format for vanilla PA and upload it to the workshop. Beware any modded features not in current PA will not be saved. " +
                 "However, if you want to include modded features, then it's recommended to upload to the arcade server or zip the level.";
-            //for (int i = 5; i < 9; i++)
-            //{
-            //    content.GetChild(i).gameObject.SetActive(false);
-            //}
 
-            bool hasID = !string.IsNullOrEmpty(moddedMetadata.ID);
-            content.Find("id/id").GetComponent<Text>().text = hasID ? $"ID: {moddedMetadata.ID} (Click this text to copy)" : "No ID assigned.";
+            bool hasID = !string.IsNullOrEmpty(metadata.ID);
+            content.Find("id/id").GetComponent<Text>().text = hasID ? $"ID: {metadata.ID} (Click this text to copy)" : "No ID assigned.";
             var idClickable = content.Find("id").GetComponent<Clickable>() ?? content.Find("id").gameObject.AddComponent<Clickable>();
             idClickable.onClick = delegate (PointerEventData eventData)
             {
-                LSText.CopyToClipboard(moddedMetadata.ID);
-                EditorManager.inst.DisplayNotification($"Copied ID: {moddedMetadata.ID} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
+                LSText.CopyToClipboard(metadata.ID);
+                EditorManager.inst.DisplayNotification($"Copied ID: {metadata.ID} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
             };
 
-            content.Find("id/revisions").gameObject.SetActive(hasID);
-            if (hasID)
-                content.Find("id/revisions").GetComponent<Text>().text = "Version: " + DataManager.inst.metaData.beatmap.version_number.ToString();
+            // Changed revisions to modded display.
+            content.Find("id/revisions").gameObject.SetActive(true);
+            content.Find("id/revisions").GetComponent<Text>().text = $"Modded: {(GameData.Current.Modded ? "Yes" : "No")}";
 
             var uploadText = content.Find("submit/upload/Text").GetComponent<Text>();
             uploadText.text = hasID ? "Update" : "Upload";
