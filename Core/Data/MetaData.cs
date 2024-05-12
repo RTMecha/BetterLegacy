@@ -26,11 +26,14 @@ namespace BetterLegacy.Core.Data
 
         }
 
-        public MetaData(BaseMetaData metadata)
-        {
+        /// <summary>
+        /// Checks if the current metadata is of the correct type.
+        /// </summary>
+        public static bool IsValid => DataManager.inst.metaData is MetaData;
 
-        }
-
+        /// <summary>
+        /// The current metadata.
+        /// </summary>
         public static MetaData Current => (MetaData)DataManager.inst.metaData;
 
         public string collectionID;
@@ -40,12 +43,23 @@ namespace BetterLegacy.Core.Data
         public string prevID;
         public string nextID;
 
+        /// <summary>
+        /// Gets the game version of the metadata.
+        /// </summary>
         public Version Version => new Version(beatmap.game_version);
+
+        /// <summary>
+        /// Gets the mod version of the metadata.
+        /// </summary>
         public Version ModVersion => new Version(LevelBeatmap.mod_version);
+
+        /// <summary>
+        /// Gets the prioritised ID. Arcade ID (if empty) > Server ID (if empty) > Steam Workshop ID (if empty) > -1
+        /// </summary>
         public string ID =>
-                !string.IsNullOrEmpty(serverID) && serverID != "-1" ?
-                    serverID : !string.IsNullOrEmpty(arcadeID) && arcadeID != "-1" ?
-                    arcadeID : !string.IsNullOrEmpty(LevelBeatmap.beatmap_id) && LevelBeatmap.beatmap_id != "-1" ?
+                !string.IsNullOrEmpty(arcadeID) && arcadeID != "-1" ?
+                    arcadeID : !string.IsNullOrEmpty(serverID) && serverID != "-1" ?
+                    serverID : !string.IsNullOrEmpty(LevelBeatmap.beatmap_id) && LevelBeatmap.beatmap_id != "-1" ?
                     LevelBeatmap.beatmap_id : "-1";
 
         #region Methods
@@ -453,7 +467,14 @@ namespace BetterLegacy.Core.Data
 
         #endregion
 
+        /// <summary>
+        /// For future "more credits" section of an arcade level.
+        /// </summary>
         public List<LevelArtist> Artists { get; set; } = new List<LevelArtist>();
+
+        /// <summary>
+        /// For future "more credits" section of an arcade level.
+        /// </summary>
         public List<LevelCreator> Creators { get; set; } = new List<LevelCreator>();
 
         public LevelArtist LevelArtist => (LevelArtist)artist;
@@ -461,15 +482,18 @@ namespace BetterLegacy.Core.Data
         public LevelSong LevelSong => (LevelSong)song;
         public LevelBeatmap LevelBeatmap => (LevelBeatmap)beatmap;
 
+        /// <summary>
+        /// Formats the song URL into a correct link format, in cases where the artist name is included in the song link somewhere.
+        /// </summary>
         public string SongURL => CoreHelper.GetURL(0, LevelSong.linkType, LevelSong.linkType == 2 ? artist.Name + "," + LevelSong.link : LevelSong.link);
 
         #region Operators
 
         public static implicit operator bool(MetaData exists) => exists != null;
 
-        public override bool Equals(object obj) => obj is MetaData && LevelBeatmap.beatmap_id == (obj as MetaData).LevelBeatmap.beatmap_id;
+        public override bool Equals(object obj) => obj is MetaData && ID == (obj as MetaData).ID;
 
-        public override string ToString() => $"{LevelBeatmap.beatmap_id}: {artist.Name} - {song.title}";
+        public override string ToString() => $"{ID}: {artist.Name} - {song.title}";
 
         #endregion
     }
