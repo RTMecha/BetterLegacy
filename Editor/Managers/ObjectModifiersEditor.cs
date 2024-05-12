@@ -468,7 +468,8 @@ namespace BetterLegacy.Editor.Managers
                     var startColorBase = numberInput.Duplicate(layout, label);
                     startColorBase.transform.localScale = Vector3.one;
 
-                    startColorBase.transform.Find("Text").GetComponent<Text>().text = label;
+                    var labelText = startColorBase.transform.Find("Text").GetComponent<Text>();
+                    labelText.text = label;
 
                     Destroy(startColorBase.transform.Find("Input").gameObject);
                     Destroy(startColorBase.transform.Find(">").gameObject);
@@ -502,6 +503,7 @@ namespace BetterLegacy.Editor.Managers
                         }));
                     }
 
+                    EditorThemeManager.ApplyLightText(labelText);
                     SetObjectColors(startColors.GetComponentsInChildren<Toggle>(), type, Parser.TryParse(modifier.commands[type], 0), modifier);
                 };
 
@@ -1280,6 +1282,10 @@ namespace BetterLegacy.Editor.Managers
                             }
 
                             colorGenerator("Color", !cmd.Contains("Other") ? 1 : 2);
+
+                            singleGenerator("Hue", !cmd.Contains("Other") ? 2 : 3, 0f);
+                            singleGenerator("Saturation", !cmd.Contains("Other") ? 3 : 4, 0f);
+                            singleGenerator("Value", !cmd.Contains("Other") ? 4 : 5, 0f);
 
                             singleGenerator("Multiply", 0, 1f);
 

@@ -3231,12 +3231,14 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "addColor":
                         {
-                            if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer && int.TryParse(modifier.commands[1], out int index) && float.TryParse(modifier.value, out float num))
+                            if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer &&
+                                int.TryParse(modifier.commands[1], out int index) && float.TryParse(modifier.value, out float multiply) &&
+                                float.TryParse(modifier.commands[2], out float hue) && float.TryParse(modifier.commands[3], out float sat) && float.TryParse(modifier.commands[4], out float val))
                             {
                                 index = Mathf.Clamp(index, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
 
                                 if (levelObject.visualObject.Renderer != null)
-                                    levelObject.visualObject.Renderer.material.color += GameManager.inst.LiveTheme.objectColors[index] * num;
+                                    levelObject.visualObject.Renderer.material.color += CoreHelper.ChangeColorHSV(GameManager.inst.LiveTheme.objectColors[index], hue, sat, val) * multiply;
                             }
 
                             break;
@@ -3245,14 +3247,16 @@ namespace BetterLegacy.Core.Helpers
                         {
                             var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
 
-                            if (list.Count() > 0)
+                            if (list.Count() > 0 &&
+                                int.TryParse(modifier.commands[2], out int index) && float.TryParse(modifier.value, out float multiply) &&
+                                float.TryParse(modifier.commands[3], out float hue) && float.TryParse(modifier.commands[4], out float sat) && float.TryParse(modifier.commands[5], out float val))
                                 foreach (var bm in list)
                                 {
-                                    if (Updater.TryGetObject(bm, out LevelObject levelObject) && levelObject.visualObject.Renderer && int.TryParse(modifier.commands[2], out int index) && float.TryParse(modifier.value, out float num))
+                                    if (Updater.TryGetObject(bm, out LevelObject levelObject) && levelObject.visualObject.Renderer)
                                     {
                                         index = Mathf.Clamp(index, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
 
-                                        levelObject.visualObject.Renderer.material.color += GameManager.inst.LiveTheme.objectColors[index] * num;
+                                        levelObject.visualObject.Renderer.material.color += CoreHelper.ChangeColorHSV(GameManager.inst.LiveTheme.objectColors[index], hue, sat, val) * multiply;
                                     }
                                 }
 
@@ -3260,12 +3264,15 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "lerpColor":
                         {
-                            if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer && int.TryParse(modifier.commands[1], out int index) && float.TryParse(modifier.value, out float num))
+                            if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer &&
+                                int.TryParse(modifier.commands[1], out int index) && float.TryParse(modifier.value, out float multiply) &&
+                                float.TryParse(modifier.commands[2], out float hue) && float.TryParse(modifier.commands[3], out float sat) && float.TryParse(modifier.commands[4], out float val))
                             {
                                 index = Mathf.Clamp(index, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
 
                                 if (levelObject.visualObject != null && levelObject.visualObject.Renderer)
-                                    levelObject.visualObject.Renderer.material.color = RTMath.Lerp(levelObject.visualObject.Renderer.material.color, GameManager.inst.LiveTheme.objectColors[index], num);
+                                    levelObject.visualObject.Renderer.material.color =
+                                        RTMath.Lerp(levelObject.visualObject.Renderer.material.color, CoreHelper.ChangeColorHSV(GameManager.inst.LiveTheme.objectColors[index], hue, sat, val), multiply);
                             }
 
                             break;
@@ -3274,18 +3281,20 @@ namespace BetterLegacy.Core.Helpers
                         {
                             var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
 
-                            if (list.Count() > 0)
+                            if (list.Count() > 0 &&
+                                        int.TryParse(modifier.commands[2], out int index) && float.TryParse(modifier.value, out float multiply) &&
+                                        float.TryParse(modifier.commands[3], out float hue) && float.TryParse(modifier.commands[4], out float sat) && float.TryParse(modifier.commands[5], out float val))
                                 foreach (var bm in list)
                                 {
-                                    if (bm != null && Updater.TryGetObject(bm, out LevelObject levelObject) && int.TryParse(modifier.commands[2], out int index) && float.TryParse(modifier.value, out float num))
+                                    if (bm != null && Updater.TryGetObject(bm, out LevelObject levelObject))
                                     {
                                         index = Mathf.Clamp(index, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
 
                                         if (levelObject.visualObject != null && levelObject.visualObject.Renderer)
-                                            levelObject.visualObject.Renderer.material.color = RTMath.Lerp(levelObject.visualObject.Renderer.material.color, GameManager.inst.LiveTheme.objectColors[index], num);
+                                            levelObject.visualObject.Renderer.material.color =
+                                                RTMath.Lerp(levelObject.visualObject.Renderer.material.color, CoreHelper.ChangeColorHSV(GameManager.inst.LiveTheme.objectColors[index], hue, sat, val), multiply);
                                     }
                                 }
-
 
                             break;
                         }
@@ -3303,7 +3312,6 @@ namespace BetterLegacy.Core.Helpers
 
                                 index = Mathf.Clamp(index, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
 
-                                //levelObject.visualObject.Renderer.material.color += GameManager.inst.LiveTheme.objectColors[index] * (offset - distance * multiply);
                                 levelObject.visualObject.Renderer.material.color += GameManager.inst.LiveTheme.objectColors[index] * -(distance * multiply - offset);
                             }
 
