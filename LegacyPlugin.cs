@@ -41,6 +41,8 @@ namespace BetterLegacy
         static EditorPrefabHolder editorPrefabHolder;
         static CorePrefabHolder corePrefabHolder;
 
+        public static Sprite EmptyObjectSprite { get; set; }
+
         public static Material blur;
         public static Material GetBlur()
         {
@@ -105,6 +107,8 @@ namespace BetterLegacy
                 blurColored = assetBundle.LoadAsset<Shader>("simpleblur.shader");
                 assetBundle.Unload(false);
                 GetKinoGlitch();
+
+                EmptyObjectSprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_empty.png");
             }
             catch (Exception ex)
             {
