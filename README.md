@@ -1,10 +1,10 @@
 ﻿# BetterLegacy
 
 > [!WARNING]\
-> The mod is currently being worked on, so there is no way to install yet. If you want to beta test, feel free to join the [Discord server](https://discord.gg/5XfVScJSK5) and get the mod testing role..
+> The mod is currently being worked on, so there is no way to install yet other than through testing. If you want to beta test the most latest builds, feel free to join the [Discord server](https://discord.gg/5XfVScJSK5) and get the mod testing role to get access to the mod-testing channel.
 
 Make Project Arrhythmia (Legacy) better than ever before with this singular mod.
-If you want to know how to install, navigate to the bottom.
+If you want to know how to install, go [here](https://github.com/RTMecha/BetterLegacy/edit/master/README.md#installation)
 
 ## Info
 The mod is made up of 8 sections, all originating from their own mods.
