@@ -16,13 +16,25 @@ namespace BetterLegacy.Core.Managers
 {
     public class ModifiersManager : MonoBehaviour
     {
+        /// <summary>
+        /// Assigns delegates to the modifier's actions. Can be patched with a custom method.
+        /// </summary>
+        /// <param name="modifier">Modifier to assign to.</param>
         public static void AssignModifierActions(Modifier<BeatmapObject> modifier)
         {
-            modifier.Action = ModifiersHelper.Action;
-            modifier.Trigger = ModifiersHelper.Trigger;
+            // Only assign methods depending on modifier type.
+            if (modifier.type == ModifierBase.Type.Action)
+                modifier.Action = ModifiersHelper.Action;
+            if (modifier.type == ModifierBase.Type.Trigger)
+                modifier.Trigger = ModifiersHelper.Trigger;
+
+            // Both action and trigger modifier types can be inactive.
             modifier.Inactive = ModifiersHelper.Inactive;
         }
 
+        /// <summary>
+        /// Updates modifiers on level tick.
+        /// </summary>
         public static void OnLevelTick()
         {
             var order = DataManager.inst.gameData is GameData gameData ? gameData.BeatmapObjects.OrderBy(x => x.StartTime).Where(x => x.modifiers.Count > 0).ToList() : null;
@@ -108,6 +120,9 @@ namespace BetterLegacy.Core.Managers
             }
         }
 
+        /// <summary>
+        /// Inits ModifiersManager.
+        /// </summary>
         public static void Init()
         {
             var gameObject = new GameObject("ModifiersManager");
@@ -117,7 +132,7 @@ namespace BetterLegacy.Core.Managers
 
         void Awake()
         {
-            modifierTypes.Clear();
+            defaultBeatmapObjectModifiers.Clear();
 
             var path = RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "default_modifiers.lsb";
 
@@ -127,7 +142,7 @@ namespace BetterLegacy.Core.Managers
             var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
             for (int i = 0; i < jn["modifiers"].Count; i++)
-                modifierTypes.Add(Modifier<BeatmapObject>.Parse(jn["modifiers"][i]));
+                defaultBeatmapObjectModifiers.Add(Modifier<BeatmapObject>.Parse(jn["modifiers"][i]));
         }
 
         public static void DeleteKey(string id, AudioSource audioSource)
@@ -302,9 +317,9 @@ namespace BetterLegacy.Core.Managers
 
         #endregion
 
-        public static List<Modifier<BeatmapObject>> modifierTypes = new List<Modifier<BeatmapObject>>();
+        public static List<Modifier<BeatmapObject>> defaultBeatmapObjectModifiers = new List<Modifier<BeatmapObject>>();
 
-        public static List<Modifier<BackgroundObject>> bgModifierTypes = new List<Modifier<BackgroundObject>>
+        public static List<Modifier<BackgroundObject>> defaultBackgroundObjectModifiers = new List<Modifier<BackgroundObject>>
         {
             new Modifier<BackgroundObject>
             {

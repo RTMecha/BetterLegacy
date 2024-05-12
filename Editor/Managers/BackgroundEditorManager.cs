@@ -1065,10 +1065,10 @@ namespace BetterLegacy.Editor.Managers
                     if (!modifier.verified)
                     {
                         modifier.verified = true;
-                        modifier.VerifyModifier(ModifiersManager.bgModifierTypes);
+                        modifier.VerifyModifier(ModifiersManager.defaultBackgroundObjectModifiers);
                     }
 
-                    if (!modifier.IsValid(ModifiersManager.bgModifierTypes))
+                    if (!modifier.IsValid(ModifiersManager.defaultBackgroundObjectModifiers))
                     {
                         EditorManager.inst.DisplayNotification("Modifier does not have a command name and is lacking values.", 2f, EditorManager.NotificationType.Error);
                         continue;
@@ -1217,7 +1217,7 @@ namespace BetterLegacy.Editor.Managers
         public string searchTerm;
         public void RefreshDefaultModifiersList(BackgroundObject backgroundObject)
         {
-            defaultModifiers = ModifiersManager.bgModifierTypes;
+            defaultModifiers = ModifiersManager.defaultBackgroundObjectModifiers;
 
             var dialog = EditorManager.inst.GetDialog("Default Background Modifiers Popup").Dialog.gameObject;
 

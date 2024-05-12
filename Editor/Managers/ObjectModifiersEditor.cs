@@ -564,10 +564,10 @@ namespace BetterLegacy.Editor.Managers
                 if (!modifier.verified)
                 {
                     modifier.verified = true;
-                    modifier.VerifyModifier(ModifiersManager.modifierTypes);
+                    modifier.VerifyModifier(ModifiersManager.defaultBeatmapObjectModifiers);
                 }
 
-                if (!modifier.IsValid(ModifiersManager.modifierTypes))
+                if (!modifier.IsValid(ModifiersManager.defaultBeatmapObjectModifiers))
                 {
                     EditorManager.inst.DisplayNotification("Modifier does not have a command name and is lacking values.", 2f, EditorManager.NotificationType.Error);
                     continue;
@@ -1976,7 +1976,7 @@ namespace BetterLegacy.Editor.Managers
         public string searchTerm;
         public void RefreshDefaultModifiersList(BeatmapObject beatmapObject)
         {
-            defaultModifiers = ModifiersManager.modifierTypes;
+            defaultModifiers = ModifiersManager.defaultBeatmapObjectModifiers;
 
             var dialog = EditorManager.inst.GetDialog("Default Modifiers Popup").Dialog.gameObject;
 

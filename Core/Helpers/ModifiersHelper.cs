@@ -29,10 +29,10 @@ namespace BetterLegacy.Core.Helpers
             if (!modifier.verified)
             {
                 modifier.verified = true;
-                modifier.VerifyModifier(ModifiersManager.modifierTypes);
+                modifier.VerifyModifier(ModifiersManager.defaultBeatmapObjectModifiers);
             }
 
-            if (!modifier.IsValid(ModifiersManager.modifierTypes))
+            if (!modifier.IsValid(ModifiersManager.defaultBeatmapObjectModifiers))
                 return false;
 
             switch (modifier.commands[0])
@@ -1295,10 +1295,10 @@ namespace BetterLegacy.Core.Helpers
             if (!modifier.verified)
             {
                 modifier.verified = true;
-                modifier.VerifyModifier(ModifiersManager.modifierTypes);
+                modifier.VerifyModifier(ModifiersManager.defaultBeatmapObjectModifiers);
             }
 
-            if (!modifier.IsValid(ModifiersManager.modifierTypes))
+            if (!modifier.IsValid(ModifiersManager.defaultBeatmapObjectModifiers))
                 return;
             try
             {
@@ -4432,10 +4432,10 @@ namespace BetterLegacy.Core.Helpers
             if (!modifier.verified)
             {
                 modifier.verified = true;
-                modifier.VerifyModifier(ModifiersManager.modifierTypes);
+                modifier.VerifyModifier(ModifiersManager.defaultBeatmapObjectModifiers);
             }
 
-            if (!modifier.IsValid(ModifiersManager.modifierTypes))
+            if (!modifier.IsValid(ModifiersManager.defaultBeatmapObjectModifiers))
                 return;
 
             switch (modifier.commands[0])
@@ -4764,10 +4764,10 @@ namespace BetterLegacy.Core.Helpers
             if (!modifier.verified)
             {
                 modifier.verified = true;
-                modifier.VerifyModifier(ModifiersManager.bgModifierTypes);
+                modifier.VerifyModifier(ModifiersManager.defaultBackgroundObjectModifiers);
             }
 
-            if (!modifier.IsValid(ModifiersManager.bgModifierTypes))
+            if (!modifier.IsValid(ModifiersManager.defaultBackgroundObjectModifiers))
                 return false;
 
             switch (modifier.commands[0])
@@ -4798,10 +4798,10 @@ namespace BetterLegacy.Core.Helpers
             if (!modifier.verified)
             {
                 modifier.verified = true;
-                modifier.VerifyModifier(ModifiersManager.bgModifierTypes);
+                modifier.VerifyModifier(ModifiersManager.defaultBackgroundObjectModifiers);
             }
 
-            if (!modifier.IsValid(ModifiersManager.bgModifierTypes))
+            if (!modifier.IsValid(ModifiersManager.defaultBackgroundObjectModifiers))
                 return;
 
             modifier.hasChanged = false;
@@ -5202,10 +5202,10 @@ namespace BetterLegacy.Core.Helpers
             if (!modifier.verified)
             {
                 modifier.verified = true;
-                modifier.VerifyModifier(ModifiersManager.bgModifierTypes);
+                modifier.VerifyModifier(ModifiersManager.defaultBackgroundObjectModifiers);
             }
 
-            if (!modifier.IsValid(ModifiersManager.bgModifierTypes))
+            if (!modifier.IsValid(ModifiersManager.defaultBackgroundObjectModifiers))
                 return;
         }
     }
