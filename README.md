@@ -1,7 +1,7 @@
 ﻿# BetterLegacy
 
 > [!WARNING]\
-> The mod is currently being worked on, so there is no way to install yet If you want to beta test, feel free to join the [Discord server](https://discord.gg/5XfVScJSK5) and get the mod testing role..
+> The mod is currently being worked on, so there is no way to install yet. If you want to beta test, feel free to join the [Discord server](https://discord.gg/5XfVScJSK5) and get the mod testing role..
 
 Make Project Arrhythmia (Legacy) better than ever before with this singular mod.
 If you want to know how to install, navigate to the bottom.
@@ -9,29 +9,29 @@ If you want to know how to install, navigate to the bottom.
 ## Info
 The mod is made up of 8 sections, all originating from their own mods.
 - **Core**
-Original mod: [RTFunctions](https://github.com/RTMecha/RTFunctions)
-Summary: Improves the base game by adding a ton of optimization, features and bug fixes.
+-- Original mod: [RTFunctions](https://github.com/RTMecha/RTFunctions)
+-- Summary: Improves the base game by adding a ton of optimization, features and bug fixes.
 - **Editor**
-Original mod: [EditorManagement](https://github.com/RTMecha/EditorManagement)
-Summary: Increases editor performance, workflow and fixes a ton of editor bugs.
+-- Original mod: [EditorManagement](https://github.com/RTMecha/EditorManagement)
+-- Summary: Increases editor performance, workflow and fixes a ton of editor bugs.
 - **Events**
-Original mod: [EventsCore](https://github.com/RTMecha/EventsCore)
-Summary: Makes event keyframes auto update and has their easings line up with the object easings. Plus, adds a ton of new events (40 total events).
+-- Original mod: [EventsCore](https://github.com/RTMecha/EventsCore)
+-- Summary: Makes event keyframes auto update and has their easings line up with the object easings. Plus, adds a ton of new events (40 total events).
 - **Players**
-Original mod: [CreativePlayers](https://github.com/RTMecha/CreativePlayers)
-Summary: Allows for custom player models and for up to 8 players in multiplayer.
+-- Original mod: [CreativePlayers](https://github.com/RTMecha/CreativePlayers)
+-- Summary: Allows for custom player models and for up to 8 players in multiplayer.
 - **Modifiers**
-Original mod: [ObjectModifiers](https://github.com/RTMecha/ObjectModifiers)
-Summary: Adds a new modifier system to both regular objects and background objects. Modifiers are made up of two types, triggers and actions. Triggers check if something is happening and if it is (or there are no triggers) it'll allow the actions to do their thing.'
+-- Original mod: [ObjectModifiers](https://github.com/RTMecha/ObjectModifiers)
+-- Summary: Adds a new modifier system to both regular objects and background objects. Modifiers are made up of two types, triggers and actions. Triggers check if something is happening and if it is (or there are no triggers) it'll allow the actions to do their thing.'
 - **Arcade**
-Original mod: [ArcadiaCustoms](https://github.com/RTMecha/ArcadiaCustoms)
-Summary: Improves the Legacy arcade UI by adding mouse navigation, level searching, locally installed levels, an upcoming online server and even Steam workshop browsing.
+-- Original mod: [ArcadiaCustoms](https://github.com/RTMecha/ArcadiaCustoms)
+-- Summary: Improves the Legacy arcade UI by adding mouse navigation, level searching, locally installed levels, an upcoming online server and even Steam workshop browsing.
 - **Menus**
-Original mod: [PageCreator](https://github.com/RTMecha/PageCreator)
-Summary: Can use custom menu music and custom lilscript functions.
+-- Original mod: [PageCreator](https://github.com/RTMecha/PageCreator)
+-- Summary: Can use custom menu music and custom lilscript functions.
 - **Companion**
-Original mod: [ExampleCompanion](https://github.com/RTMecha/ExampleCompanion)
-Summary: Adds a little companion to accompany you on your Project Arrhythmia journey.
+-- Original mod: [ExampleCompanion](https://github.com/RTMecha/ExampleCompanion)
+-- Summary: Adds a little companion to accompany you on your Project Arrhythmia journey.
 
 ## Installation
 You can only currently install BetterLegacy manually. A new launcher to install automatically and manage instances of PA is planned. For now you will need to use the current [Project Launcher](https://github.com/RTMecha/ProjectLauncher/releases) release to manage instances. (Install guide based on [Catalyst](https://github.com/Reimnop/Catalyst) guide)
