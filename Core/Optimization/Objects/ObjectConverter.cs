@@ -110,7 +110,8 @@ namespace BetterLegacy.Core.Optimization.Objects
 
                 try
                 {
-                    levelObject = ToLevelObject(beatmapObject);
+                    var sprite = ShowEmpties && beatmapObject.objectType == ObjectType.Empty ? LegacyPlugin.EmptyObjectSprite : null;
+                    levelObject = ToLevelObject(beatmapObject, sprite);
                 }
                 catch (Exception e)
                 {
@@ -127,7 +128,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             }
         }
 
-        public bool VerifyObject(BeatmapObject beatmapObject) => !ShowEmpties && beatmapObject.objectType == ObjectType.Empty || beatmapObject.LDM && CoreConfig.Instance.LDM.Value;
+        public bool VerifyObject(BeatmapObject beatmapObject) => ShowDamagable && beatmapObject.objectType != ObjectType.Normal || !ShowEmpties && beatmapObject.objectType == ObjectType.Empty || beatmapObject.LDM && CoreConfig.Instance.LDM.Value;
 
         public ILevelObject ToILevelObject(BeatmapObject beatmapObject)
         {
@@ -144,7 +145,8 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             try
             {
-                levelObject = ToLevelObject(beatmapObject);
+                var sprite = ShowEmpties && beatmapObject.objectType == ObjectType.Empty ? LegacyPlugin.EmptyObjectSprite : null;
+                levelObject = ToLevelObject(beatmapObject, sprite);
             }
             catch (Exception e)
             {
@@ -159,7 +161,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             return levelObject ?? null;
         }
 
-        LevelObject ToLevelObject(BeatmapObject beatmapObject)
+        LevelObject ToLevelObject(BeatmapObject beatmapObject, Sprite sprite = null)
         {
             var parentObjects = new List<LevelParentObject>();
 
@@ -170,6 +172,12 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             var shape = Mathf.Clamp(beatmapObject.shape, 0, ObjectManager.inst.objectPrefabs.Count - 1);
             var shapeOption = Mathf.Clamp(beatmapObject.shapeOption, 0, ObjectManager.inst.objectPrefabs[shape].options.Count - 1);
+
+            if (sprite != null)
+            {
+                shape = 6;
+                shapeOption = 0;
+            }
 
             GameObject baseObject = Object.Instantiate(ObjectManager.inst.objectPrefabs[shape].options[shapeOption], parent == null ? ObjectManager.inst.objectParent.transform : parent.transform);
 
@@ -269,8 +277,8 @@ namespace BetterLegacy.Core.Optimization.Objects
             // 6 = image object
             // 9 = player object
             VisualObject visual =
-                beatmapObject.shape == 4 ? new TextObject(visualObject, top.transform, opacity, beatmapObject.text, isBackground) :
-                beatmapObject.shape == 6 ? new ImageObject(visualObject, top.transform, opacity, beatmapObject.text, isBackground, AssetManager.SpriteAssets.ContainsKey(beatmapObject.text) ? AssetManager.SpriteAssets[beatmapObject.text] : null) :
+                sprite == null && beatmapObject.shape == 4 ? new TextObject(visualObject, top.transform, opacity, beatmapObject.text, isBackground) :
+                sprite != null || beatmapObject.shape == 6 ? new ImageObject(visualObject, top.transform, opacity, beatmapObject.text, isBackground, sprite != null ? sprite : AssetManager.SpriteAssets.ContainsKey(beatmapObject.text) ? AssetManager.SpriteAssets[beatmapObject.text] : null) :
                 beatmapObject.shape == 9 ? new PlayerObject(visualObject, top.transform) :
                 new SolidObject(visualObject, top.transform, opacity, hasCollider, isSolid, isBackground, beatmapObject.opacityCollision);
 

@@ -6,6 +6,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Optimization.Objects;
 using BetterLegacy.Editor.Managers;
 using LSFunctions;
 using System;
@@ -2511,29 +2512,22 @@ namespace BetterLegacy.Configs
 
         void SetPreviewConfig()
         {
-            try
-            {
-                ModCompatibility.sharedFunctions.AddSet("ShowEmpties", ShowEmpties.Value);
-                ModCompatibility.sharedFunctions.AddSet("ShowDamagable", OnlyShowDamagable.Value);
+            RTObject.Enabled = ObjectDraggerEnabled.Value;
+            RTObject.CreateKeyframe = ObjectDraggerCreatesKeyframe.Value;
+            RTObject.HighlightColor = ObjectHighlightAmount.Value;
+            RTObject.HighlightDoubleColor = ObjectHighlightDoubleAmount.Value;
+            RTObject.HighlightObjects = HighlightObjects.Value;
+            RTObject.ShowObjectsOnlyOnLayer = OnlyObjectsOnCurrentLayerVisible.Value;
+            RTObject.LayerOpacity = VisibleObjectOpacity.Value;
 
-                RTObject.Enabled = ObjectDraggerEnabled.Value;
-                RTObject.CreateKeyframe = ObjectDraggerCreatesKeyframe.Value;
-                RTObject.HighlightColor = ObjectHighlightAmount.Value;
-                RTObject.HighlightDoubleColor = ObjectHighlightDoubleAmount.Value;
-                RTObject.HighlightObjects = HighlightObjects.Value;
-                RTObject.ShowObjectsOnlyOnLayer = OnlyObjectsOnCurrentLayerVisible.Value;
-                RTObject.LayerOpacity = VisibleObjectOpacity.Value;
+            RTRotator.RotatorRadius = ObjectDraggerRotatorRadius.Value;
+            RTScaler.ScalerOffset = ObjectDraggerScalerOffset.Value;
+            RTScaler.ScalerScale = ObjectDraggerScalerScale.Value;
 
-                RTRotator.RotatorRadius = ObjectDraggerRotatorRadius.Value;
-                RTScaler.ScalerOffset = ObjectDraggerScalerOffset.Value;
-                RTScaler.ScalerScale = ObjectDraggerScalerScale.Value;
+            RTPlayer.ZenModeInEditor = EditorZenMode.Value;
 
-                RTPlayer.ZenModeInEditor = EditorZenMode.Value;
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"SharedFunctions Error{ex}");
-            }
+            ObjectConverter.ShowEmpties = ShowEmpties.Value;
+            ObjectConverter.ShowDamagable = OnlyShowDamagable.Value;
         }
 
         void SetTimelineColors()
