@@ -38,6 +38,15 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
             if (Renderer)
                 material = Renderer.material;
 
+            if (EditorManager.inst)
+            {
+                var collider = gameObject.AddComponent<BoxCollider2D>();
+                gameObject.tag = "Helper";
+                collider.isTrigger = true;
+                collider.size = Vector2.one;
+                Collider = collider;
+            }
+
             var local = gameObject.transform.localPosition;
 
             if (imageData != null)
