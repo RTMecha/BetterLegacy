@@ -2493,11 +2493,11 @@ namespace BetterLegacy.Editor.Managers
                         {
                             setKeyframeValues = true;
                             dragKeyframeValuesFloat = selectedKeyframe.eventValues[0];
-                            dragOffsetFloat = Input.GetKey(KeyCode.LeftShift) ? RTMath.roundToNearest(-RTMath.VectorAngle(position, vector2), 15f) : -RTMath.VectorAngle(transform.position, vector2);
+                            dragOffsetFloat = Input.GetKey(KeyCode.LeftShift) ? RTMath.RoundToNearestNumber(-RTMath.VectorAngle(position, vector2), 15f) : -RTMath.VectorAngle(transform.position, vector2);
                         }
 
                         selectedKeyframe.eventValues[0] =
-                            Input.GetKey(KeyCode.LeftShift) ? RTMath.roundToNearest(dragKeyframeValuesFloat - dragOffsetFloat + -RTMath.VectorAngle(position, vector2), 15f) :
+                            Input.GetKey(KeyCode.LeftShift) ? RTMath.RoundToNearestNumber(dragKeyframeValuesFloat - dragOffsetFloat + -RTMath.VectorAngle(position, vector2), 15f) :
                             dragKeyframeValuesFloat - dragOffsetFloat + -RTMath.VectorAngle(position, vector2);
 
                         break;
