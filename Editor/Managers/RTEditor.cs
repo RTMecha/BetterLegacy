@@ -2801,6 +2801,33 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorManager.inst.DisplayNotification("Event Offsets have been reset.", 1.4f, EditorManager.NotificationType.Success);
             });
+            
+            EditorHelper.AddEditorDropdown("Deactivate Modifiers", "", "Edit", saveAs.Find("Panel/x/Image").GetComponent<Image>().sprite, delegate ()
+            {
+                if (!GameData.IsValid)
+                    return;
+
+                if (!EditorManager.inst.hasLoadedLevel)
+                {
+                    EditorManager.inst.DisplayNotification("Load a level first!", 1f, EditorManager.NotificationType.Warning);
+                    return;
+                }
+
+                var beatmapObjects = GameData.Current.BeatmapObjects.Where(x => x.modifiers.Count > 0);
+                for (int i = 0; i < beatmapObjects.Count(); i++)
+                {
+                    var beatmapObject = beatmapObjects.ElementAt(i);
+
+                    for (int j = 0; j < beatmapObject.modifiers.Count; j++)
+                    {
+                        var modifier = beatmapObject.modifiers[j];
+                        modifier.active = false;
+                        modifier.Inactive?.Invoke(modifier);
+                    }
+                }
+
+                EditorManager.inst.DisplayNotification("Modifiers have been deactivated.", 1.4f, EditorManager.NotificationType.Success);
+            });
 
             EditorHelper.AddEditorDropdown("Get Example", "", "View", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_example-white.png"), delegate ()
             {
