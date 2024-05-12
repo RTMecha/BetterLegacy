@@ -50,7 +50,7 @@ You can only currently install BetterLegacy manually. A new launcher to install 
 1. In the Project Arrhythmia folder, go to Project Arrhythmia_Data > Plugins.
 1. Make a backup of the steam_api64.dll file somewhere outside of the Project Arrhythmia folder, just in case.
 1. Download [Steamworks.NET](https://github.com/rlabrecque/Steamworks.NET/releases/download/14.0.0/Steamworks.NET-Standalone_14.0.0.zip), extract it somewhere.
-1. Open the Windows-x64 folder and drag & drop the steam_api64.dll file to the recently opened Plugins folder.
-	- ℹ️ _This is to allow Legacy to better interact with Steam as normally it will not acknowledge Steam._
+1. Open the Windows-x64 folder and drag & drop the steam_api64.dll file to the recently opened Plugins folder to replace the original file.
+	- ℹ️ _This is to allow Legacy to better interact with Steam as normally it will not acknowledge Steam with the older file._
 1. Finally, download the Beatmaps.zip file, extract it to the Project Arrhythmia folder.
-1. You just installed BetterLegacy, awesome! Hope you have fun with the mods, whatever you end up doing.
+1. You just installed BetterLegacy, awesome! Hope you have fun with the mods, whatever you end up doing. If something breaks or you have a general suggestion for the mod, feel free to open an [issue](https://github.com/RTMecha/BetterLegacy/issues) or make a [pull request](https://github.com/RTMecha/BetterLegacy/pulls) if you want to help with modding.
