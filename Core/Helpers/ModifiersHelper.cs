@@ -4357,8 +4357,6 @@ namespace BetterLegacy.Core.Helpers
                             if (EditorManager.inst || modifier.constant || !LevelManager.CurrentLevel)
                                 break;
 
-                            int prevHits = LevelManager.CurrentLevel.playerData != null ? LevelManager.CurrentLevel.playerData.Hits : -1;
-
                             if (LevelManager.Saves.Where(x => x.Completed).Count() >= 100)
                             {
                                 SteamWrapper.inst.achievements.SetAchievement("GREAT_TESTER");
@@ -4374,13 +4372,13 @@ namespace BetterLegacy.Core.Helpers
                                     };
                                 }
 
-                                if (LevelManager.CurrentLevel.playerData.Deaths < GameManager.inst.deaths.Count)
+                                if (LevelManager.CurrentLevel.playerData.Deaths == 0 || LevelManager.CurrentLevel.playerData.Deaths > GameManager.inst.deaths.Count)
                                     LevelManager.CurrentLevel.playerData.Deaths = GameManager.inst.deaths.Count;
-                                if (LevelManager.CurrentLevel.playerData.Hits < GameManager.inst.hits.Count)
+                                if (LevelManager.CurrentLevel.playerData.Hits == 0 || LevelManager.CurrentLevel.playerData.Hits > GameManager.inst.hits.Count)
                                     LevelManager.CurrentLevel.playerData.Hits = GameManager.inst.hits.Count;
-                                LevelManager.CurrentLevel.playerData.Completed = true;
-                                if (LevelManager.CurrentLevel.playerData.Boosts < LevelManager.BoostCount)
+                                if (LevelManager.CurrentLevel.playerData.Boosts == 0 || LevelManager.CurrentLevel.playerData.Boosts > LevelManager.BoostCount)
                                     LevelManager.CurrentLevel.playerData.Boosts = LevelManager.BoostCount;
+                                LevelManager.CurrentLevel.playerData.Completed = true;
 
                                 if (LevelManager.Saves.Has(x => x.ID == LevelManager.CurrentLevel.id))
                                 {
@@ -4389,9 +4387,46 @@ namespace BetterLegacy.Core.Helpers
                                 }
                                 else
                                     LevelManager.Saves.Add(LevelManager.CurrentLevel.playerData);
+
+                                if (LevelManager.Levels.TryFind(x => x.id == LevelManager.CurrentLevel.id, out Level level))
+                                {
+                                    level.playerData = LevelManager.CurrentLevel.playerData;
+                                }
                             }
 
                             LevelManager.SaveProgress();
+
+                            break;
+                        }
+                    case "backgroundShape":
+                        {
+                            if (modifier.reference.shape == 4 || modifier.reference.shape == 6 || modifier.reference.shape == 9 || modifier.Result != null)
+                                break;
+
+                            if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
+                            {
+                                var shape = new Vector2Int(modifier.reference.shape, modifier.reference.shapeOption);
+                                if (ShapeManager.inst.StoredShapes3D.ContainsKey(shape))
+                                {
+                                    levelObject.visualObject.GameObject.GetComponent<MeshFilter>().mesh = ShapeManager.inst.StoredShapes3D[shape].mesh;
+                                    modifier.Result = "frick";
+                                    levelObject.visualObject.GameObject.AddComponent<DestroyModifierResult>();
+                                }
+                            }
+
+                            break;
+                        }
+                    case "sphereShape":
+                        {
+                            if (modifier.reference.shape == 4 || modifier.reference.shape == 6 || modifier.reference.shape == 9 || modifier.Result != null)
+                                break;
+
+                            if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
+                            {
+                                levelObject.visualObject.GameObject.GetComponent<MeshFilter>().mesh = GameManager.inst.PlayerPrefabs[1].GetComponentInChildren<MeshFilter>().mesh;
+                                modifier.Result = "frick";
+                                levelObject.visualObject.GameObject.AddComponent<DestroyModifierResult>();
+                            }
 
                             break;
                         }
