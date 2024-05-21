@@ -106,7 +106,7 @@ namespace BetterLegacy.Core.Managers
             if (fullPath[fullPath.Length - 1] != '/' || fullPath[fullPath.Length - 1] != '\\')
                 fullPath += "/";
 
-            if (!CoreConfig.Instance.EnableVideoBackground.Value || !RTFile.FileExists(fullPath + "bg.mp4") || !RTFile.FileExists(fullPath + "bg.mov"))
+            if (!CoreConfig.Instance.EnableVideoBackground.Value || !RTFile.FileExists(fullPath + "bg.mp4") && !RTFile.FileExists(fullPath + "bg.mov"))
             {
                 Stop();
                 yield break;
@@ -114,13 +114,13 @@ namespace BetterLegacy.Core.Managers
 
             if (RTFile.FileExists(fullPath + "bg.mp4"))
             {
-                Play(fullPath + "/bg.mp4", 1f);
+                Play(fullPath + "bg.mp4", 1f);
                 while (!videoPlayer.isPrepared)
                     yield return null;
             }
             else if (RTFile.FileExists(fullPath + "bg.mov"))
             {
-                Play(fullPath + "/bg.mov", 1f);
+                Play(fullPath + "bg.mov", 1f);
                 while (!videoPlayer.isPrepared)
                     yield return null;
             }
