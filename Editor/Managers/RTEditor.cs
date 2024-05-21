@@ -276,47 +276,6 @@ namespace BetterLegacy.Editor.Managers
             });
 
             ModCompatibility.sharedFunctions.AddSet("ShowWarningPopup", (Action<string, UnityAction, UnityAction, string, string>)ShowWarningPopup);
-
-            if (ModCompatibility.sharedFunctions.ContainsKey("EventsCoreConfigs") && ModCompatibility.sharedFunctions["EventsCoreConfigs"] is List<ConfigEntryBase> configs)
-            {
-                foreach (var config in configs)
-                {
-                    if (otherProperties.Has(x => x.name == config.Definition.Key))
-                        continue;
-
-                    var editorProperty = EditorProperty.ValueType.Bool;
-
-                    switch (config.Definition.Key)
-                    {
-                        case "Editor Camera Offset":
-                        case "Players & GUI Active":
-                        case "Show Intro":
-                        case "Show Effects":
-                        case "Editor Camera Use Keys":
-                        case "Editor Camera Reset Values":
-                            {
-                                editorProperty = EditorProperty.ValueType.Bool;
-                                break;
-                            }
-                        case "Editor Camera Speed":
-                        case "Editor Camera Slow Speed":
-                        case "Editor Camera Fast Speed":
-                            {
-                                editorProperty = EditorProperty.ValueType.Float;
-                                break;
-                            }
-                        case "Editor Camera Toggle Key":
-                        case "Players & GUI Toggle Key":
-                        case "Shake Mode":
-                            {
-                                editorProperty = EditorProperty.ValueType.Enum;
-                                break;
-                            }
-                    }
-
-                    otherProperties.Add(new EditorProperty(editorProperty, config));
-                }
-            }
         }
 
         void Update()
@@ -787,8 +746,7 @@ namespace BetterLegacy.Editor.Managers
         {
             var config = EditorConfig.Instance;
 
-            if (!config.Debug.Value)
-                Debug.Log("<color=#F6AC1A>Editor</color><color=#2FCBD6>Management</color>\nNotification: " + name + "\nText: " + text + "\nTime: " + time + "\nType: " + type);
+            Debug.Log("<color=#F6AC1A>Editor</color><color=#2FCBD6>Management</color>\nNotification: " + name + "\nText: " + text + "\nTime: " + time + "\nType: " + type);
 
             if (!notifications.Contains(name) && notifications.Count < 20 && config.NotificationsDisplay.Value)
             {
@@ -9842,7 +9800,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         case EditorProperty.ValueType.Bool:
                             {
-                                if (prop.configEntry.SettingType != typeof(bool))
+                                if (prop.configEntry.BoxedValue.GetType() != typeof(bool))
                                 {
                                     Destroy(gameObject);
                                     continue;
@@ -9862,11 +9820,13 @@ namespace BetterLegacy.Editor.Managers
                             }
                         case EditorProperty.ValueType.Int:
                             {
-                                if (prop.configEntry.SettingType != typeof(int))
+                                if (prop.configEntry.BoxedValue.GetType() != typeof(int))
                                 {
                                     Destroy(gameObject);
                                     continue;
                                 }
+
+                                var config = (Setting<int>)prop.configEntry;
 
                                 var inputField = gameObject.transform.Find("input").GetComponent<InputField>();
 
@@ -9878,12 +9838,10 @@ namespace BetterLegacy.Editor.Managers
                                         prop.configEntry.BoxedValue = result;
                                 });
 
-                                if (prop.configEntry.Description.AcceptableValues != null)
+                                if (config.MinValue != 0 && config.MaxValue != 0)
                                 {
-                                    int min = int.MinValue;
-                                    int max = int.MaxValue;
-                                    min = (int)prop.configEntry.Description.AcceptableValues.Clamp(min);
-                                    max = (int)prop.configEntry.Description.AcceptableValues.Clamp(max);
+                                    int min = config.MinValue;
+                                    int max = config.MaxValue;
 
                                     TriggerHelper.AddEventTriggerParams(inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputField, 1, min, max));
 
@@ -9912,11 +9870,13 @@ namespace BetterLegacy.Editor.Managers
                             }
                         case EditorProperty.ValueType.Float:
                             {
-                                if (prop.configEntry.SettingType != typeof(float))
+                                if (prop.configEntry.BoxedValue.GetType() != typeof(float))
                                 {
                                     Destroy(gameObject);
                                     continue;
                                 }
+
+                                var config = (Setting<float>)prop.configEntry;
 
                                 var inputField = gameObject.transform.Find("input").GetComponent<InputField>();
 
@@ -9928,12 +9888,10 @@ namespace BetterLegacy.Editor.Managers
                                         prop.configEntry.BoxedValue = result;
                                 });
 
-                                if (prop.configEntry.Description.AcceptableValues != null)
+                                if (config.MinValue != 0f && config.MaxValue != 0f)
                                 {
-                                    float min = float.NegativeInfinity;
-                                    float max = float.PositiveInfinity;
-                                    min = (float)prop.configEntry.Description.AcceptableValues.Clamp(min);
-                                    max = (float)prop.configEntry.Description.AcceptableValues.Clamp(max);
+                                    float min = config.MinValue;
+                                    float max = config.MaxValue;
 
                                     TriggerHelper.AddEventTriggerParams(inputField.gameObject, TriggerHelper.ScrollDelta(inputField, 0.1f, 10f, min, max));
 
@@ -9962,11 +9920,13 @@ namespace BetterLegacy.Editor.Managers
                             }
                         case EditorProperty.ValueType.IntSlider:
                             {
-                                if (prop.configEntry.SettingType != typeof(int))
+                                if (prop.configEntry.BoxedValue.GetType() != typeof(int))
                                 {
                                     Destroy(gameObject);
                                     continue;
                                 }
+
+                                var config = (Setting<int>)prop.configEntry;
 
                                 gameObject.transform.Find("label").AsRT().anchoredPosition = Vector2.zero;
                                 gameObject.transform.Find("label").AsRT().sizeDelta = new Vector2(312f, 32f);
@@ -10017,12 +9977,10 @@ namespace BetterLegacy.Editor.Managers
 
                                 EditorThemeManager.ApplyInputField(inputField);
 
-                                if (prop.configEntry.Description.AcceptableValues != null)
+                                if (config.MinValue != 0 && config.MaxValue != 0)
                                 {
-                                    int min = int.MinValue;
-                                    int max = int.MaxValue;
-                                    min = (int)prop.configEntry.Description.AcceptableValues.Clamp(min);
-                                    max = (int)prop.configEntry.Description.AcceptableValues.Clamp(max);
+                                    int min = config.MinValue;
+                                    int max = config.MaxValue;
 
                                     slider.minValue = min;
                                     slider.maxValue = max;
@@ -10046,11 +10004,13 @@ namespace BetterLegacy.Editor.Managers
                             }
                         case EditorProperty.ValueType.FloatSlider:
                             {
-                                if (prop.configEntry.SettingType != typeof(float))
+                                if (prop.configEntry.BoxedValue.GetType() != typeof(float))
                                 {
                                     Destroy(gameObject);
                                     continue;
                                 }
+
+                                var config = (Setting<float>)prop.configEntry;
 
                                 var slider = gameObject.transform.Find("slider").GetComponent<Slider>();
                                 var inputField = gameObject.transform.Find("input").GetComponent<InputField>();
@@ -10107,12 +10067,10 @@ namespace BetterLegacy.Editor.Managers
                                     }
                                 });
 
-                                if (prop.configEntry.Description.AcceptableValues != null)
+                                if (config.MinValue != 0f && config.MaxValue != 0f)
                                 {
-                                    float min = float.NegativeInfinity;
-                                    float max = float.PositiveInfinity;
-                                    min = (float)prop.configEntry.Description.AcceptableValues.Clamp(min);
-                                    max = (float)prop.configEntry.Description.AcceptableValues.Clamp(max);
+                                    float min = config.MinValue;
+                                    float max = config.MaxValue;
 
                                     slider.minValue = min * 10f;
                                     slider.maxValue = max * 10f;
@@ -10136,7 +10094,7 @@ namespace BetterLegacy.Editor.Managers
                             }
                         case EditorProperty.ValueType.String:
                             {
-                                if (prop.configEntry.SettingType != typeof(string))
+                                if (prop.configEntry.BoxedValue.GetType() != typeof(string))
                                 {
                                     Destroy(gameObject);
                                     continue;
@@ -10157,7 +10115,7 @@ namespace BetterLegacy.Editor.Managers
                             }
                         case EditorProperty.ValueType.Vector2:
                             {
-                                if (prop.configEntry.SettingType != typeof(Vector2))
+                                if (prop.configEntry.BoxedValue.GetType() != typeof(Vector2))
                                 {
                                     Destroy(gameObject);
                                     continue;
@@ -10228,7 +10186,7 @@ namespace BetterLegacy.Editor.Managers
                             }
                         case EditorProperty.ValueType.Enum:
                             {
-                                bool isKeyCode = prop.configEntry.GetType() == typeof(ConfigEntry<KeyCode>);
+                                bool isKeyCode = prop.configEntry.GetType() == typeof(Setting<KeyCode>);
 
                                 var l = gameObject.transform.Find("label");
 
@@ -10266,16 +10224,16 @@ namespace BetterLegacy.Editor.Managers
                                 dropdown.options.Clear();
                                 hide.DisabledOptions.Clear();
 
-                                var type = prop.configEntry.SettingType;
-                                var enums = Enum.GetValues(prop.configEntry.SettingType);
+                                var type = prop.configEntry.BoxedValue.GetType();
+                                var enums = Enum.GetValues(prop.configEntry.BoxedValue.GetType());
 
                                 for (int j = 0; j < enums.Length; j++)
                                 {
                                     var str = "Invalid Value";
-                                    if (Enum.GetName(prop.configEntry.SettingType, j) != null)
+                                    if (Enum.GetName(prop.configEntry.BoxedValue.GetType(), j) != null)
                                     {
                                         hide.DisabledOptions.Add(false);
-                                        str = Enum.GetName(prop.configEntry.SettingType, j);
+                                        str = Enum.GetName(prop.configEntry.BoxedValue.GetType(), j);
                                     }
                                     else
                                         hide.DisabledOptions.Add(true);
@@ -10295,7 +10253,7 @@ namespace BetterLegacy.Editor.Managers
                             }
                         case EditorProperty.ValueType.Color:
                             {
-                                if (prop.configEntry.SettingType != typeof(Color))
+                                if (prop.configEntry.BoxedValue.GetType() != typeof(Color))
                                 {
                                     Destroy(gameObject);
                                     continue;
@@ -10979,6 +10937,14 @@ namespace BetterLegacy.Editor.Managers
         #endregion
 
         #region Editor Properties
+
+        public void AddOtherProperty(BaseSetting setting)
+        {
+            if (otherProperties.Has(x => x.name == setting.Key))
+                return;
+
+            otherProperties.Add(new EditorProperty(setting));
+        }
 
         public static List<EditorProperty> EditorProperties => new List<EditorProperty>()
         {
@@ -12954,38 +12920,38 @@ namespace BetterLegacy.Editor.Managers
 
             #region Configs
 
-            public ConfigEntry<bool> ActiveConfig { get; set; }
+            public Setting<bool> ActiveConfig { get; set; }
 
             // Position
-            public ConfigEntry<bool> PosActiveConfig { get; set; }
-            public ConfigEntry<Vector2> PosOpenConfig { get; set; }
-            public ConfigEntry<Vector2> PosCloseConfig { get; set; }
-            public ConfigEntry<Vector2> PosOpenDurationConfig { get; set; }
-            public ConfigEntry<Vector2> PosCloseDurationConfig { get; set; }
-            public ConfigEntry<Easings> PosXOpenEaseConfig { get; set; }
-            public ConfigEntry<Easings> PosXCloseEaseConfig { get; set; }
-            public ConfigEntry<Easings> PosYOpenEaseConfig { get; set; }
-            public ConfigEntry<Easings> PosYCloseEaseConfig { get; set; }
+            public Setting<bool> PosActiveConfig { get; set; }
+            public Setting<Vector2> PosOpenConfig { get; set; }
+            public Setting<Vector2> PosCloseConfig { get; set; }
+            public Setting<Vector2> PosOpenDurationConfig { get; set; }
+            public Setting<Vector2> PosCloseDurationConfig { get; set; }
+            public Setting<Easings> PosXOpenEaseConfig { get; set; }
+            public Setting<Easings> PosXCloseEaseConfig { get; set; }
+            public Setting<Easings> PosYOpenEaseConfig { get; set; }
+            public Setting<Easings> PosYCloseEaseConfig { get; set; }
 
             // Scale
-            public ConfigEntry<bool> ScaActiveConfig { get; set; }
-            public ConfigEntry<Vector2> ScaOpenConfig { get; set; }
-            public ConfigEntry<Vector2> ScaCloseConfig { get; set; }
-            public ConfigEntry<Vector2> ScaOpenDurationConfig { get; set; }
-            public ConfigEntry<Vector2> ScaCloseDurationConfig { get; set; }
-            public ConfigEntry<Easings> ScaXOpenEaseConfig { get; set; }
-            public ConfigEntry<Easings> ScaXCloseEaseConfig { get; set; }
-            public ConfigEntry<Easings> ScaYOpenEaseConfig { get; set; }
-            public ConfigEntry<Easings> ScaYCloseEaseConfig { get; set; }
+            public Setting<bool> ScaActiveConfig { get; set; }
+            public Setting<Vector2> ScaOpenConfig { get; set; }
+            public Setting<Vector2> ScaCloseConfig { get; set; }
+            public Setting<Vector2> ScaOpenDurationConfig { get; set; }
+            public Setting<Vector2> ScaCloseDurationConfig { get; set; }
+            public Setting<Easings> ScaXOpenEaseConfig { get; set; }
+            public Setting<Easings> ScaXCloseEaseConfig { get; set; }
+            public Setting<Easings> ScaYOpenEaseConfig { get; set; }
+            public Setting<Easings> ScaYCloseEaseConfig { get; set; }
 
             // Rotation
-            public ConfigEntry<bool> RotActiveConfig { get; set; }
-            public ConfigEntry<float> RotOpenConfig { get; set; }
-            public ConfigEntry<float> RotCloseConfig { get; set; }
-            public ConfigEntry<float> RotOpenDurationConfig { get; set; }
-            public ConfigEntry<float> RotCloseDurationConfig { get; set; }
-            public ConfigEntry<Easings> RotOpenEaseConfig { get; set; }
-            public ConfigEntry<Easings> RotCloseEaseConfig { get; set; }
+            public Setting<bool> RotActiveConfig { get; set; }
+            public Setting<float> RotOpenConfig { get; set; }
+            public Setting<float> RotCloseConfig { get; set; }
+            public Setting<float> RotOpenDurationConfig { get; set; }
+            public Setting<float> RotCloseDurationConfig { get; set; }
+            public Setting<Easings> RotOpenEaseConfig { get; set; }
+            public Setting<Easings> RotCloseEaseConfig { get; set; }
 
             #endregion
 
@@ -13032,28 +12998,28 @@ namespace BetterLegacy.Editor.Managers
             {
             }
 
-            public EditorProperty(ValueType valueType, ConfigEntryBase configEntry)
+            public EditorProperty(ValueType valueType, BaseSetting configEntry)
             {
-                name = configEntry.Definition.Key;
+                name = configEntry.Key;
                 this.valueType = valueType;
 
-                var p = PropCategories.FindIndex(x => x.ToString() == configEntry.Definition.Section.Replace("Editor - ", "").Replace(" ", ""));
+                var p = PropCategories.FindIndex(x => x.ToString() == configEntry.Section.Replace("Editor - ", "").Replace(" ", ""));
 
                 propCategory = p >= 0 ? PropCategories[p] : EditorPropCategory.General;
                 this.configEntry = configEntry;
-                description = configEntry.Description.Description;
+                description = configEntry.Description;
             }
             
-            public EditorProperty(ConfigEntryBase configEntry)
+            public EditorProperty(BaseSetting configEntry)
             {
-                name = configEntry.Definition.Key;
-                valueType = ConvertType(configEntry.SettingType);
+                name = configEntry.Key;
+                valueType = ConvertType(configEntry.BoxedValue.GetType());
 
-                var p = PropCategories.FindIndex(x => x.ToString() == configEntry.Definition.Section.Replace("Editor - ", "").Replace(" ", ""));
+                var p = PropCategories.FindIndex(x => x.ToString() == configEntry.Section.Replace("Editor - ", "").Replace(" ", ""));
 
                 propCategory = p >= 0 ? PropCategories[p] : EditorPropCategory.General;
                 this.configEntry = configEntry;
-                description = configEntry.Description.Description;
+                description = configEntry.Description;
             }
 
             public EditorProperty(string name, ValueType valueType, EditorPropCategory editorProp, Action action, string description)
@@ -13089,7 +13055,7 @@ namespace BetterLegacy.Editor.Managers
             public string name;
             public ValueType valueType;
             public EditorPropCategory propCategory;
-            public ConfigEntryBase configEntry;
+            public BaseSetting configEntry;
             public string description;
             public Action action;
 
