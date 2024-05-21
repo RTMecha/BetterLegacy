@@ -530,7 +530,7 @@ namespace BetterLegacy.Patchers
 
             if (CoreConfig.Instance.defaultSettings.ContainsKey(__0))
             {
-                ((ConfigEntry<int>)CoreConfig.Instance.defaultSettings[__0]).Value = __1;
+                ((Setting<int>)CoreConfig.Instance.defaultSettings[__0]).Value = __1;
             }
 
             return false;
@@ -608,7 +608,7 @@ namespace BetterLegacy.Patchers
 
             if (CoreConfig.Instance.defaultSettings.ContainsKey(__0))
             {
-                ((ConfigEntry<bool>)CoreConfig.Instance.defaultSettings[__0]).Value = __1;
+                ((Setting<bool>)CoreConfig.Instance.defaultSettings[__0]).Value = __1;
             }
 
             return false;

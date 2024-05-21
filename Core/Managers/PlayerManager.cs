@@ -48,7 +48,7 @@ namespace BetterLegacy.Core.Managers
             { 3, "0" },
         };
 
-        public static List<ConfigEntry<string>> PlayerIndexes { get; set; } = new List<ConfigEntry<string>>();
+        public static List<Setting<string>> PlayerIndexes { get; set; } = new List<Setting<string>>();
 
         public static List<CustomPlayer> Players => InputDataManager.inst.players.Select(x => x as CustomPlayer).ToList();
 

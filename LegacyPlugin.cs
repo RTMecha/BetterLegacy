@@ -85,14 +85,14 @@ namespace BetterLegacy
 
             try
             {
-                coreConfig = new CoreConfig(Config);
-                editorConfig = new EditorConfig(Config);
-                arcadeConfig = new ArcadeConfig(Config);
-                menuConfig = new MenuConfig(Config);
-                eventsConfig = new EventsConfig(Config);
-                modifiersConfig = new ModifiersConfig(Config);
-                playerConfig = new PlayerConfig(Config);
-                exampleConfig = new ExampleConfig(Config);
+                coreConfig = new CoreConfig();
+                editorConfig = new EditorConfig();
+                arcadeConfig = new ArcadeConfig();
+                menuConfig = new MenuConfig();
+                eventsConfig = new EventsConfig();
+                modifiersConfig = new ModifiersConfig();
+                playerConfig = new PlayerConfig();
+                exampleConfig = new ExampleConfig();
             }
             catch (Exception ex)
             {
@@ -150,6 +150,15 @@ namespace BetterLegacy
                 CoreHelper.LogError($"Failed to initialize Editor Themes.\n{ex}");
                 throw;
             } // Editor themes loading
+
+            try
+            {
+                ConfigManager.Init();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Config Manager failed to generate.\n{ex}");
+            } // Config Manager initialization
 
             // Hooks
             {
