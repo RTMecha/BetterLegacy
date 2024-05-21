@@ -11,40 +11,28 @@ namespace BetterLegacy.Configs
     public class ExampleConfig : BaseConfig
     {
         public static ExampleConfig Instance { get; set; }
-        public override ConfigFile Config { get; set; }
 
-        public ExampleConfig(ConfigFile config) : base(config)
+        public ExampleConfig() : base("Example") // Set config name via base("")
         {
             Instance = this;
-            Config = config;
-
-            ExampleSpawns = Config.Bind("Example - General", "Spawns", true, "If Example should spawn.");
-            ExampleSpeaks = Config.Bind("Example - General", "Speaks", true, "If Example can talk.");
-
-            ExampleVisible = Config.Bind("Example - Visibility", "Set Opacity", false, "If Example becomes transparent.");
-            ExampleVisibility = Config.Bind("Example - Visibility", "Amount", 0.5f, "The opacity of Example if visibility is turned off.");
-            ExampleVisiblityToggle = Config.Bind("Example - Visibility", "Toggle KeyCode", KeyCode.O, "The key to press to make Example become transparent.");
-
-            EnabledInGame = Config.Bind("Example - Visibility", "In Game", false, "If Example is enabled in game. Includes Editor Preview.");
-            EnabledInEditor = Config.Bind("Example - Visibility", "In Editor", true, "If Example is enabled in editor.");
-            EnabledInMenus = Config.Bind("Example - Visibility", "In Menus", false, "If Example is enabled in menus.");
+            BindSettings();
 
             SetupSettingChanged();
         }
 
-        #region Configs
+        #region Settings
 
         #region General
 
         /// <summary>
         /// If Example should spawn.
         /// </summary>
-        public ConfigEntry<bool> ExampleSpawns { get; set; }
+        public Setting<bool> ExampleSpawns { get; set; }
 
         /// <summary>
         /// If Example should spawn.
         /// </summary>
-        public ConfigEntry<bool> ExampleSpeaks { get; set; }
+        public Setting<bool> ExampleSpeaks { get; set; }
 
         #endregion
 
@@ -53,48 +41,65 @@ namespace BetterLegacy.Configs
         /// <summary>
         /// If Example becomes transparent.
         /// </summary>
-        public ConfigEntry<bool> ExampleVisible { get; set; }
+        public Setting<bool> ExampleVisible { get; set; }
 
         /// <summary>
         /// The opacity of Example if visibility is turned off.
         /// </summary>
-        public ConfigEntry<float> ExampleVisibility { get; set; }
+        public Setting<float> ExampleVisibility { get; set; }
 
         /// <summary>
         /// The key to press to make Example become transparent.
         /// </summary>
-        public ConfigEntry<KeyCode> ExampleVisiblityToggle { get; set; }
+        public Setting<KeyCode> ExampleVisiblityToggle { get; set; }
 
         /// <summary>
         /// If Example is enabled in game. Includes Editor Preview.
         /// </summary>
-        public ConfigEntry<bool> EnabledInGame { get; set; }
+        public Setting<bool> EnabledInGame { get; set; }
 
         /// <summary>
         /// If Example is enabled in editor.
         /// </summary>
-        public ConfigEntry<bool> EnabledInEditor { get; set; }
+        public Setting<bool> EnabledInEditor { get; set; }
 
         /// <summary>
         /// If Example is enabled in menus.
         /// </summary>
-        public ConfigEntry<bool> EnabledInMenus { get; set; }
+        public Setting<bool> EnabledInMenus { get; set; }
 
         #endregion
 
         #endregion
+
+        /// <summary>
+        /// Bind the individual settings of the config.
+        /// </summary>
+        public override void BindSettings()
+        {
+            Load();
+
+            ExampleSpawns = Bind(this, "General", "Spawns", true, "If Example should spawn.");
+            ExampleSpeaks = Bind(this, "General", "Speaks", true, "If Example can talk.");
+
+            ExampleVisible = Bind(this, "Visibility", "Set Opacity", false, "If Example becomes transparent.");
+            ExampleVisibility = Bind(this, "Visibility", "Amount", 0.5f, "The opacity of Example if visibility is turned off.");
+            ExampleVisiblityToggle = Bind(this, "Visibility", "Toggle KeyCode", KeyCode.O, "The key to press to make Example become transparent.");
+
+            EnabledInGame = Bind(this, "Visibility", "In Game", false, "If Example is enabled in game. Includes Editor Preview.");
+            EnabledInEditor = Bind(this, "Visibility", "In Editor", true, "If Example is enabled in editor.");
+            EnabledInMenus = Bind(this, "Visibility", "In Menus", false, "If Example is enabled in menus.");
+
+            Save();
+        }
+
+        #region Settings Changed
 
         public override void SetupSettingChanged()
         {
-            ExampleSpawns.SettingChanged += ExampleSpawnsChanged;
+
         }
 
-        void ExampleSpawnsChanged(object sender, EventArgs e)
-        {
-            if (!ExampleManager.inst && ExampleSpawns.Value)
-                ExampleManager.Init();
-        }
-
-        public override string ToString() => "Example Config";
+        #endregion
     }
 }

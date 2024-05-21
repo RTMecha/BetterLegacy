@@ -9,34 +9,48 @@ namespace BetterLegacy.Configs
     {
         public static ModifiersConfig Instance { get; set; }
 
-        public override ConfigFile Config { get; set; }
-
-        public ModifiersConfig(ConfigFile config) : base(config)
+        public ModifiersConfig() : base("Modifiers") // Set config name via base("")
         {
             Instance = this;
-            Config = config;
-
-            EditorLoadLevel = Config.Bind("Modifiers - Editing", "Modifier Loads Level in Editor", true, "Any modifiers with the \"loadLevel\" function will load the level whilst in the editor. This is only to prevent the loss of progress.");
-            EditorSavesBeforeLoad = Config.Bind("Modifiers - Editing", "Saves Before Load", true, "The current level will have a backup saved before a level is loaded using a loadLevel modifier or before the game has been quit.");
+            BindSettings();
 
             SetupSettingChanged();
         }
 
+        #region Settings
+
         /// <summary>
         /// Any modifiers with the "loadLevel" function will load the level whilst in the editor. This is only to prevent the loss of progress.
         /// </summary>
-        public ConfigEntry<bool> EditorLoadLevel { get; set; }
+        public Setting<bool> EditorLoadLevel { get; set; }
 
         /// <summary>
         /// The current level will have a backup saved before a level is loaded using a loadLevel modifier or before the game has been quit.
         /// </summary>
-        public ConfigEntry<bool> EditorSavesBeforeLoad { get; set; }
+        public Setting<bool> EditorSavesBeforeLoad { get; set; }
+
+        #endregion
+
+        /// <summary>
+        /// Bind the individual settings of the config.
+        /// </summary>
+        public override void BindSettings()
+        {
+            Load();
+
+            EditorLoadLevel = Bind(this, "Editing", "Modifier Loads Level in Editor", true, "Any modifiers with the \"loadLevel\" function will load the level whilst in the editor. This is only to prevent the loss of progress.");
+            EditorSavesBeforeLoad = Bind(this, "Editing", "Saves Before Load", true, "The current level will have a backup saved before a level is loaded using a loadLevel modifier or before the game has been quit.");
+
+            Save();
+        }
+
+        #region Settings Changed
 
         public override void SetupSettingChanged()
         {
 
         }
 
-        public override string ToString() => "Modifiers Config";
+        #endregion
     }
 }
