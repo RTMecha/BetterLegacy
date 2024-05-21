@@ -276,6 +276,16 @@ namespace BetterLegacy.Core.Managers
             var contentRT = content.AddComponent<RectTransform>();
             SetRectTransform(contentRT, Vector2.zero, Vector2.one, Vector2.up, new Vector2(0.5f, 1f), new Vector2(0f, 32f));
 
+            var contentVLG = content.AddComponent<VerticalLayoutGroup>();
+            contentVLG.childControlHeight = false;
+            contentVLG.childControlWidth = true;
+            contentVLG.childForceExpandHeight = false;
+            contentVLG.childForceExpandWidth = true;
+            var contentSizeFitter = content.AddComponent<ContentSizeFitter>();
+            contentSizeFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+            contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.MinSize;
+
+            scrollRect.scrollSensitivity = 15f;
             scrollRect.content = contentRT;
             scrollRect.horizontal = false;
             scrollRect.movementType = ScrollRect.MovementType.Clamped;
@@ -321,6 +331,7 @@ namespace BetterLegacy.Core.Managers
             dropdownD.itemText = itemLabelText;
             dropdownD.alphaFadeSpeed = 0.15f;
             dropdownD.template = (RectTransform)template["RectTransform"];
+            dropdownD.image = (Image)dropdownBase["Image"];
             ((GameObject)template["GameObject"]).SetActive(false);
 
             return dictionary;
@@ -413,7 +424,7 @@ namespace BetterLegacy.Core.Managers
 
         public static UICanvas GenerateUICanvas(string name, Transform parent, bool dontDestroy = false)
         {
-            var gameObject = new GameObject("Canvas");
+            var gameObject = new GameObject(name);
             if (dontDestroy)
                 DontDestroyOnLoad(gameObject);
 
