@@ -528,11 +528,6 @@ namespace BetterLegacy.Patchers
         {
             ModCompatibility.sharedFunctions.AddSet(Instance.settingPrefix + __0, __1);
 
-            if (CoreConfig.Instance.defaultSettings.ContainsKey(__0))
-            {
-                ((Setting<int>)CoreConfig.Instance.defaultSettings[__0]).Value = __1;
-            }
-
             return false;
         }
 
@@ -605,11 +600,6 @@ namespace BetterLegacy.Patchers
         static bool UpdateSettingBoolPrefix(string __0, bool __1)
         {
             ModCompatibility.sharedFunctions.AddSet(Instance.settingPrefix + __0, __1);
-
-            if (CoreConfig.Instance.defaultSettings.ContainsKey(__0))
-            {
-                ((Setting<bool>)CoreConfig.Instance.defaultSettings[__0]).Value = __1;
-            }
 
             return false;
         }
