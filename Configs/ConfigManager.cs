@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace BetterLegacy.Configs
@@ -23,6 +24,7 @@ namespace BetterLegacy.Configs
         public Transform subTabs;
         public InputFieldStorage pageFieldStorage;
         public Transform content;
+        public Text descriptionText;
 
         public GameObject numberFieldStorage;
 
@@ -291,6 +293,20 @@ namespace BetterLegacy.Configs
             EditorThemeManager.ApplySelectable(pageFieldStorage.rightButton, ThemeGroup.Function_2, false);
             EditorThemeManager.ApplySelectable(pageFieldStorage.rightGreaterButton, ThemeGroup.Function_2, false);
 
+            var descriptionBase = Creator.NewUIObject("Description Base", configBase.transform);
+            UIManager.SetRectTransform(descriptionBase.transform.AsRT(), new Vector2(500f, -180f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 0.5f), new Vector2(240f, 350f));
+            var descriptionBaseImage = descriptionBase.AddComponent<Image>();
+
+            var description = Creator.NewUIObject("Description", descriptionBase.transform);
+            UIManager.SetRectTransform(description.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-8f, -8f));
+            descriptionText = description.AddComponent<Text>();
+            descriptionText.font = Font.GetDefault();
+            descriptionText.fontSize = 18;
+            descriptionText.text = "Hover over a setting to get the description.";
+
+            EditorThemeManager.ApplyGraphic(descriptionBaseImage, ThemeGroup.Background_2, true, roundedSide: SpriteManager.RoundedSide.Left);
+            EditorThemeManager.ApplyLightText(descriptionText);
+
             configs.Add(CoreConfig.Instance);
             configs.Add(ArcadeConfig.Instance);
             configs.Add(EditorConfig.Instance);
@@ -309,6 +325,12 @@ namespace BetterLegacy.Configs
         {
             if (Input.GetKeyDown(CoreConfig.Instance.OpenConfigKey.Value))
                 (Active ? (Action)Hide : Show).Invoke();
+        }
+
+        void FixedUpdate()
+        {
+            if (canvas != null)
+                canvas.CanvasScaler.referenceResolution = new Vector2(Screen.width, Screen.height);
         }
 
         public bool Active => configBase && configBase.activeSelf;
@@ -451,6 +473,8 @@ namespace BetterLegacy.Configs
 
                     var gameObject = Creator.NewUIObject("Setting", content);
                     gameObject.transform.AsRT().sizeDelta = new Vector2(830f, 38f);
+
+                    gameObject.AddComponent<HoverConfig>().Init(setting);
 
                     var image = gameObject.AddComponent<Image>();
 
@@ -687,9 +711,18 @@ namespace BetterLegacy.Configs
 
     public class ConfigManagerUI : MonoBehaviour
     {
-        void OnEnable()
+        void OnEnable() => ConfigManager.inst.SetTab(ConfigManager.inst.currentTab);
+    }
+
+    public class HoverConfig : MonoBehaviour, IPointerEnterHandler
+    {
+        public BaseSetting Setting { get; set; }
+
+        public void Init(BaseSetting baseSetting) => Setting = baseSetting;
+
+        public void OnPointerEnter(PointerEventData pointerEventData)
         {
-            ConfigManager.inst.SetTab(ConfigManager.inst.currentTab);
+            ConfigManager.inst.descriptionText.text = Setting.Description;
         }
     }
 }
