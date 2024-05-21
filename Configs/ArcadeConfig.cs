@@ -223,7 +223,7 @@ namespace BetterLegacy.Configs
 
             PlayLevelMenuIconRoundness = Bind(this, "UI", "Play Level Menu Icon Roundness", 2, "The roundness of the Play Menu icon. (New UI Only)", 0, 5);
 
-            MiscRounded = Bind(this, "Arcade", "Misc Rounded - UI", true, "If some random elements should be rounded in the UI. (New UI Only)");
+            MiscRounded = Bind(this, "UI", "Misc Rounded", true, "If some random elements should be rounded in the UI. (New UI Only)");
 
             OnlyShowShineOnSelected = Bind(this, "UI", "Only Show Shine on Selected", true, "If the SS rank shine should only show on the current selected level with an SS rank or on all levels with an SS rank.");
             ShineSpeed = Bind(this, "UI", "SS Rank Shine Speed", 0.7f, "How fast the shine goes by.", 0.1f, 3f);
