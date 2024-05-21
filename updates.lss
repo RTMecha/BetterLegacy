@@ -3,6 +3,7 @@
 - Modifier updating now occurs before event updating and object updating.
 - Reworked a TON of code to be more readable for anyone interested in helping the modding effort.
 - Optimized a ton of stuff compared to the unmerged versions of the mods. (I.E. a level with quite a few modifiers in objects goes from 30 FPS to 100+ FPS)
+- Configs now use a custom system with a brand new config menu, which decreases the load times and halving the file size.
 - The following notes are smaller updates to each mod:
 -- Decreased level.lsb file sizes by comparing default values and only saving values when a default value does not equal the current one. (RTFunctions)
 -- Background Objects now has Z position. They also have hue, saturation and value for both the base color and the fade color. (RTFunctions)
