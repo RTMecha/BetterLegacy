@@ -1,4 +1,4 @@
-1.0.0 > [???]
+1.0.0 > [May 22, 2024]
 - Merged all the PA Legacy mods into one new mod called Better Legacy! This merge should make it clear that this version of the game is now a fully different version of PA.
 - Modifier updating now occurs before event updating and object updating.
 - Reworked a TON of code to be more readable for anyone interested in helping the modding effort.
