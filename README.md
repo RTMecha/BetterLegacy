@@ -1,7 +1,7 @@
 ﻿# BetterLegacy
 
 Make Project Arrhythmia (Legacy) better than ever before with this singular mod.
-If you want to know how to install, go [here](https://github.com/RTMecha/BetterLegacy/edit/master/README.md#installation)
+If you want to know how to install, go [here](https://github.com/RTMecha/BetterLegacy/master/README.md#installation)
 
 ## Info
 The mod is made up of 8 sections, all originating from their own mods.
