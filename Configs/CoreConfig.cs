@@ -38,166 +38,9 @@ namespace BetterLegacy.Configs
 
         #region Configs
 
-        #region Debugging
-
-        /// <summary>
-        /// If disabled, turns all Unity debug logs off. Might boost performance.
-        /// </summary>
-        public Setting<bool> DebugsOn { get; set; }
-
-        /// <summary>
-        /// Shows a helpful info overlay with some information about the current gamestate.
-        /// </summary>
-        public Setting<bool> DebugInfo { get; set; }
-
-        /// <summary>
-        /// If the Debug Info menu should be created on game start. Requires restart to have this option take affect.
-        /// </summary>
-        public Setting<bool> DebugInfoStartup { get; set; }
-
-        /// <summary>
-        /// Shows a helpful info overlay with some information about the current gamestate.
-        /// </summary>
-        public Setting<KeyCode> DebugInfoToggleKey { get; set; }
-
-        /// <summary>
-        /// The position the Debug Info menu is at.
-        /// </summary>
-        public Setting<Vector2> DebugPosition { get; set; }
-
-        /// <summary>
-        /// If in editor, code ran will have their results be notified.
-        /// </summary>
-        public Setting<bool> NotifyREPL { get; set; }
-
-        #endregion
-
-        #region Game
-
-        /// <summary>
-        /// The player will not move while an InputField is being used with this off.
-        /// </summary>
-        public Setting<bool> AllowControlsInputField { get; set; }
-
-        /// <summary>
-        /// Possibly releases the fixed framerate of the game.
-        /// </summary>
-        public Setting<bool> UseNewUpdateMethod { get; set; }
-
-        /// <summary>
-        /// The path to save screenshots to.
-        /// </summary>
-        public Setting<string> ScreenshotsPath { get; set; }
-
-        /// <summary>
-        /// The key to press to take a screenshot.
-        /// </summary>
-        public Setting<KeyCode> ScreenshotKey { get; set; }
-
-        /// <summary>
-        /// The key to press to open the Config Manager.
-        /// </summary>
-        public Setting<KeyCode> OpenConfigKey { get; set; }
-
-        /// <summary>
-        /// If anti-aliasing is on or not.
-        /// </summary>
-        public Setting<bool> AntiAliasing { get; set; }
-
-        /// <summary>
-        /// If you want the game to continue playing when minimized.
-        /// </summary>
-        public Setting<bool> RunInBackground { get; set; }
-
-        /// <summary>
-        /// Increases the clip panes to a very high amount, allowing for object render depth to go really high or really low. Off is the unmodded setting.
-        /// </summary>
-        public Setting<bool> IncreasedClipPlanes { get; set; }
-
-        /// <summary>
-        /// If on, the old video BG feature returns, though somewhat buggy. Requires a bg.mp4 or bg.mov file to exist in the level folder.
-        /// </summary>
-        public Setting<bool> EnableVideoBackground { get; set; }
-
-        /// <summary>
-        /// If custom written code should evaluate. Turn this on if you're sure the level you're using isn't going to mess anything up with a code Modifier or custom player code.
-        /// </summary>
-        public Setting<bool> EvaluateCode { get; set; }
-
-        /// <summary>
-        /// When completing a level, having this on will replay the level with no players in the background of the end screen.
-        /// </summary>
-        public Setting<bool> ReplayLevel { get; set; }
-
-        /// <summary>
-        /// Due to LS file formats also being in level folders with VG formats, VG format will need to be prioritized, though you can turn this off if a VG level isn't working and it has a level.lsb file.
-        /// </summary>
-        public Setting<bool> PrioritizeVG { get; set; }
-
-        /// <summary>
-        /// The size of the in-game interface blur.
-        /// </summary>
-        public Setting<float> InterfaceBlurSize { get; set; }
-
-        /// <summary>
-        /// The color of the in-game interface blur.
-        /// </summary>
-        public Setting<Color> InterfaceBlurColor { get; set; }
-
-        #endregion
-
-        #region User
-
-        /// <summary>
-        /// Sets the username to show in levels and menus.
-        /// </summary>
-        public Setting<string> DisplayName { get; set; }
-
-        #endregion
-
-        #region File
-
-        /// <summary>
-        /// Opens the folder containing the Project Arrhythmia application and all files related to it.
-        /// </summary>
-        public Setting<KeyCode> OpenPAFolder { get; set; }
-
-        /// <summary>
-        /// Opens the data folder all instances of PA share containing the log files and global editor data.
-        /// </summary>
-        public Setting<KeyCode> OpenPAPersistentFolder { get; set; }
-
-        #endregion
-
-        #region Level
-
-        /// <summary>
-        /// If on, reactive color will lerp from base color to reactive color. Otherwise, the reactive color will be added to the base color.
-        /// </summary>
-        public Setting<bool> BGReactiveLerp { get; set; }
-
-        /// <summary>
-        /// If enabled, any objects with "LDM" (Low Detail Mode) toggled on will not be rendered.
-        /// </summary>
-        public Setting<bool> LDM { get; set; }
-
-        #endregion
-
-        #region Discord
-
-        /// <summary>
-        /// If level name is shown in your Discord status.
-        /// </summary>
-        public Setting<bool> DiscordShowLevel { get; set; }
-
-        /// <summary>
-        /// Only change if you already have your own custom Discord status setup.
-        /// </summary>
-        public Setting<string> DiscordRichPresenceID { get; set; }
-
-        #endregion
-
         #region Default Settings
+
+        public Setting<KeyCode> FullscreenKey { get; set; }
 
         /// <summary>
         /// If game window should cover the entire screen or not.
@@ -347,6 +190,165 @@ namespace BetterLegacy.Configs
 
         #endregion
 
+        #region Game
+
+        /// <summary>
+        /// The player will not move while an InputField is being used with this off.
+        /// </summary>
+        public Setting<bool> AllowControlsInputField { get; set; }
+
+        /// <summary>
+        /// Possibly releases the fixed framerate of the game.
+        /// </summary>
+        public Setting<bool> UseNewUpdateMethod { get; set; }
+
+        /// <summary>
+        /// The path to save screenshots to.
+        /// </summary>
+        public Setting<string> ScreenshotsPath { get; set; }
+
+        /// <summary>
+        /// The key to press to take a screenshot.
+        /// </summary>
+        public Setting<KeyCode> ScreenshotKey { get; set; }
+
+        /// <summary>
+        /// The key to press to open the Config Manager.
+        /// </summary>
+        public Setting<KeyCode> OpenConfigKey { get; set; }
+
+        /// <summary>
+        /// If anti-aliasing is on or not.
+        /// </summary>
+        public Setting<bool> AntiAliasing { get; set; }
+
+        /// <summary>
+        /// If you want the game to continue playing when minimized.
+        /// </summary>
+        public Setting<bool> RunInBackground { get; set; }
+
+        /// <summary>
+        /// Increases the clip panes to a very high amount, allowing for object render depth to go really high or really low. Off is the unmodded setting.
+        /// </summary>
+        public Setting<bool> IncreasedClipPlanes { get; set; }
+
+        /// <summary>
+        /// If on, the old video BG feature returns, though somewhat buggy. Requires a bg.mp4 or bg.mov file to exist in the level folder.
+        /// </summary>
+        public Setting<bool> EnableVideoBackground { get; set; }
+
+        /// <summary>
+        /// If custom written code should evaluate. Turn this on if you're sure the level you're using isn't going to mess anything up with a code Modifier or custom player code.
+        /// </summary>
+        public Setting<bool> EvaluateCode { get; set; }
+
+        /// <summary>
+        /// When completing a level, having this on will replay the level with no players in the background of the end screen.
+        /// </summary>
+        public Setting<bool> ReplayLevel { get; set; }
+
+        /// <summary>
+        /// Due to LS file formats also being in level folders with VG formats, VG format will need to be prioritized, though you can turn this off if a VG level isn't working and it has a level.lsb file.
+        /// </summary>
+        public Setting<bool> PrioritizeVG { get; set; }
+
+        /// <summary>
+        /// The size of the in-game interface blur.
+        /// </summary>
+        public Setting<float> InterfaceBlurSize { get; set; }
+
+        /// <summary>
+        /// The color of the in-game interface blur.
+        /// </summary>
+        public Setting<Color> InterfaceBlurColor { get; set; }
+
+        #endregion
+
+        #region User
+
+        /// <summary>
+        /// Sets the username to show in levels and menus.
+        /// </summary>
+        public Setting<string> DisplayName { get; set; }
+
+        #endregion
+
+        #region File
+
+        /// <summary>
+        /// Opens the folder containing the Project Arrhythmia application and all files related to it.
+        /// </summary>
+        public Setting<KeyCode> OpenPAFolder { get; set; }
+
+        /// <summary>
+        /// Opens the data folder all instances of PA share containing the log files and global editor data.
+        /// </summary>
+        public Setting<KeyCode> OpenPAPersistentFolder { get; set; }
+
+        #endregion
+
+        #region Level
+
+        /// <summary>
+        /// If on, reactive color will lerp from base color to reactive color. Otherwise, the reactive color will be added to the base color.
+        /// </summary>
+        public Setting<bool> BGReactiveLerp { get; set; }
+
+        /// <summary>
+        /// If enabled, any objects with "LDM" (Low Detail Mode) toggled on will not be rendered.
+        /// </summary>
+        public Setting<bool> LDM { get; set; }
+
+        #endregion
+
+        #region Discord
+
+        /// <summary>
+        /// If level name is shown in your Discord status.
+        /// </summary>
+        public Setting<bool> DiscordShowLevel { get; set; }
+
+        /// <summary>
+        /// Only change if you already have your own custom Discord status setup.
+        /// </summary>
+        public Setting<string> DiscordRichPresenceID { get; set; }
+
+        #endregion
+
+        #region Debugging
+
+        /// <summary>
+        /// If disabled, turns all Unity debug logs off. Might boost performance.
+        /// </summary>
+        public Setting<bool> DebugsOn { get; set; }
+
+        /// <summary>
+        /// Shows a helpful info overlay with some information about the current gamestate.
+        /// </summary>
+        public Setting<bool> DebugInfo { get; set; }
+
+        /// <summary>
+        /// If the Debug Info menu should be created on game start. Requires restart to have this option take affect.
+        /// </summary>
+        public Setting<bool> DebugInfoStartup { get; set; }
+
+        /// <summary>
+        /// Shows a helpful info overlay with some information about the current gamestate.
+        /// </summary>
+        public Setting<KeyCode> DebugInfoToggleKey { get; set; }
+
+        /// <summary>
+        /// The position the Debug Info menu is at.
+        /// </summary>
+        public Setting<Vector2> DebugPosition { get; set; }
+
+        /// <summary>
+        /// If in editor, code ran will have their results be notified.
+        /// </summary>
+        public Setting<bool> NotifyREPL { get; set; }
+
+        #endregion
+
         #endregion
 
         /// <summary>
@@ -356,31 +358,27 @@ namespace BetterLegacy.Configs
         {
             Load();
 
-            #region Debugging
+            #region Settings
 
-            DebugsOn = Bind(this, "Debugging", "Enabled", true, "If disabled, turns all Unity debug logs off. Might boost performance.");
-            DebugInfo = Bind(this, "Debugging", "Show Debug Info", false, "Shows a helpful info overlay with some information about the current gamestate.");
-            DebugInfoStartup = Bind(this, "Debugging", "Create Debug Info", false, "If the Debug Info menu should be created on game start. Requires restart to have this option take affect.");
-            DebugInfoToggleKey = BindEnum(this, "Debugging", "Show Debug Info Toggle Key", KeyCode.F6, "Shows a helpful info overlay with some information about the current gamestate.");
-            DebugPosition = Bind(this, "Debugging", "Debug Info Position", new Vector2(-960f, 540f), "The position the Debug Info menu is at.");
-            NotifyREPL = Bind(this, "Debugging", "Notify REPL", false, "If in editor, code ran will have their results be notified.");
+            FullscreenKey = BindEnum(this, "Settings", "Fullscreen Key", KeyCode.F11, "The key to toggle fullscreen.");
+            Fullscreen = Bind(this, "Settings", "Fullscreen", false, "If game window should cover the entire screen or not.");
+            Resolution = BindEnum(this, "Settings", "Resolution", Resolutions.p720, "The size of the game window in pixels.");
+            MasterVol = Bind(this, "Settings", "Volume Master", 8, "Total volume.", 0, 9);
+            MusicVol = Bind(this, "Settings", "Volume Music", 9, "Music volume.", 0, 9);
+            SFXVol = Bind(this, "Settings", "Volume SFX", 9, "SFX volume.", 0, 9);
+            Language = BindEnum(this, "Settings", "Language", BetterLegacy.Language.English, "The language the game is in.");
+            ControllerRumble = Bind(this, "Settings", "Controller Vibrate", true, "If the controllers should vibrate.");
 
             #endregion
 
             #region Game
 
             AllowControlsInputField = Bind(this, "Game", "Allow Controls While Using InputField", true, "The player will not move while an InputField is being used with this off.");
-            UseNewUpdateMethod = Bind(this, "Game", "Use New Update Method", true, "Possibly releases the fixed framerate of the game.");
-            ScreenshotsPath = Bind(this, "Game", "Screenshot Path", "screenshots", "The path to save screenshots to.");
-            ScreenshotKey = BindEnum(this, "Game", "Screenshot Key", KeyCode.F2, "The key to press to take a screenshot.");
             OpenConfigKey = BindEnum(this, "Game", "Open Config Key", KeyCode.F12, "The key to press to open the Config Manager.");
             AntiAliasing = Bind(this, "Game", "Anti-Aliasing", true, "If anti-aliasing is on or not.");
             RunInBackground = Bind(this, "Game", "Run In Background", true, "If you want the game to continue playing when minimized.");
             IncreasedClipPlanes = Bind(this, "Game", "Increase Camera Clip Planes", true, "Increases the clip panes to a very high amount, allowing for object render depth to go really high or really low. Off is the unmodded setting.");
-            EnableVideoBackground = Bind(this, "Game", "Video Backgrounds", true, "If on, the old video BG feature returns, though somewhat buggy. Requires a bg.mp4 or bg.mov file to exist in the level folder.");
             EvaluateCode = Bind(this, "Game", "Evaluate Custom Code", false, "If custom written code should evaluate. Turn this on if you're sure the level you're using isn't going to mess anything up with a code Modifier or custom player code.");
-            ReplayLevel = Bind(this, "Game", "Replay Level in Background After Completion", true, "When completing a level, having this on will replay the level with no players in the background of the end screen.");
-            PrioritizeVG = Bind(this, "Game", "Priotize VG format", true, "Due to LS file formats also being in level folders with VG formats, VG format will need to be prioritized, though you can turn this off if a VG level isn't working and it has a level.lsb file.");
 
             InterfaceBlurSize = Bind(this, "Game", "Interface Blur Size", 3f, "The size of the in-game interface blur.");
             InterfaceBlurColor = Bind(this, "Game", "Interface Blur Color", new Color(0.4f, 0.4f, 0.4f), "The color of the in-game interface blur.");
@@ -395,6 +393,8 @@ namespace BetterLegacy.Configs
 
             #region File
 
+            ScreenshotsPath = Bind(this, "File", "Screenshot Path", "screenshots", "The path to save screenshots to.");
+            ScreenshotKey = BindEnum(this, "File", "Screenshot Key", KeyCode.F2, "The key to press to take a screenshot.");
             OpenPAFolder = BindEnum(this, "File", "Open Project Arrhythmia Folder", KeyCode.F4, "Opens the folder containing the Project Arrhythmia application and all files related to it.");
             OpenPAPersistentFolder = BindEnum(this, "File", "Open LocalLow Folder", KeyCode.F5, "Opens the data folder all instances of PA share containing the log files and global editor data.");
 
@@ -404,6 +404,10 @@ namespace BetterLegacy.Configs
 
             BGReactiveLerp = Bind(this, "Level", "Reactive Color Lerp", true, "If on, reactive color will lerp from base color to reactive color. Otherwise, the reactive color will be added to the base color.");
             LDM = Bind(this, "Level", "Low Detail Mode", false, "If enabled, any objects with \"LDM\" (Low Detail Mode) toggled on will not be rendered.");
+            EnableVideoBackground = Bind(this, "Level", "Video Backgrounds", true, "If on, the old video BG feature returns, though somewhat buggy. Requires a bg.mp4 or bg.mov file to exist in the level folder.");
+            UseNewUpdateMethod = Bind(this, "Level", "Use New Update Method", true, "Possibly releases the fixed framerate of the game.");
+            ReplayLevel = Bind(this, "Level", "Replay Level in Background After Completion", true, "When completing a level, having this on will replay the level with no players in the background of the end screen.");
+            PrioritizeVG = Bind(this, "Level", "Priotize VG format", true, "Due to LS file formats also being in level folders with VG formats, VG format will need to be prioritized, though you can turn this off if a VG level isn't working and it has a level.lsb file.");
 
             #endregion
 
@@ -414,15 +418,14 @@ namespace BetterLegacy.Configs
 
             #endregion
 
-            #region Settings
+            #region Debugging
 
-            Fullscreen = Bind(this, "Settings", "Fullscreen", false, "If game window should cover the entire screen or not.");
-            Resolution = BindEnum(this, "Settings", "Resolution", Resolutions.p720, "The size of the game window in pixels.");
-            MasterVol = Bind(this, "Settings", "Volume Master", 8, "Total volume.", 0, 9);
-            MusicVol = Bind(this, "Settings", "Volume Music", 9, "Music volume.", 0, 9);
-            SFXVol = Bind(this, "Settings", "Volume SFX", 9, "SFX volume.", 0, 9);
-            Language = BindEnum(this, "Settings", "Language", BetterLegacy.Language.English, "The language the game is in.");
-            ControllerRumble = Bind(this, "Settings", "Controller Vibrate", true, "If the controllers should vibrate.");
+            DebugsOn = Bind(this, "Debugging", "Enabled", true, "If disabled, turns all Unity debug logs off. Might boost performance.");
+            DebugInfo = Bind(this, "Debugging", "Show Debug Info", false, "Shows a helpful info overlay with some information about the current gamestate.");
+            DebugInfoStartup = Bind(this, "Debugging", "Create Debug Info", false, "If the Debug Info menu should be created on game start. Requires restart to have this option take affect.");
+            DebugInfoToggleKey = BindEnum(this, "Debugging", "Show Debug Info Toggle Key", KeyCode.F6, "Shows a helpful info overlay with some information about the current gamestate.");
+            DebugPosition = Bind(this, "Debugging", "Debug Info Position", new Vector2(-960f, 540f), "The position the Debug Info menu is at.");
+            NotifyREPL = Bind(this, "Debugging", "Notify REPL", false, "If in editor, code ran will have their results be notified.");
 
             #endregion
 
