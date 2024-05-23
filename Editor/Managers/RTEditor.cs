@@ -883,37 +883,45 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="log">If the zoom amount should be logged.</param>
         public void SetTimeline(float zoom, float position = -1f, bool render = true, bool log = true)
         {
-            var timelineTime = GetTimelineTime();
-
-            float prevZoom = EditorManager.inst.zoomFloat;
-            EditorManager.inst.zoomFloat = Mathf.Clamp01(zoom);
-            EditorManager.inst.zoomVal =
-                LSMath.InterpolateOverCurve(EditorManager.inst.ZoomCurve, EditorManager.inst.zoomBounds.x, EditorManager.inst.zoomBounds.y, EditorManager.inst.zoomFloat);
-
-            if (EditorManager.inst.zoomFloat != prevZoom)
+            try
             {
-                if (render)
-                    EditorManager.inst.RenderTimeline();
+                var timelineTime = GetTimelineTime();
 
-                EditorManager.inst.timelineScrollRectBar.value =
-                    position >= 0f ? position : (EditorConfig.Instance.UseMouseAsZoomPoint.Value ? timelineTime : AudioManager.inst.CurrentAudioSource.time) / AudioManager.inst.CurrentAudioSource.clip.length;
+                float prevZoom = EditorManager.inst.zoomFloat;
+                EditorManager.inst.zoomFloat = Mathf.Clamp01(zoom);
+                EditorManager.inst.zoomVal =
+                    LSMath.InterpolateOverCurve(EditorManager.inst.ZoomCurve, EditorManager.inst.zoomBounds.x, EditorManager.inst.zoomBounds.y, EditorManager.inst.zoomFloat);
+
+                if (EditorManager.inst.zoomFloat != prevZoom)
+                {
+                    if (render)
+                        EditorManager.inst.RenderTimeline();
+
+                    if (AudioManager.inst.CurrentAudioSource.clip != null)
+                        EditorManager.inst.timelineScrollRectBar.value =
+                            position >= 0f ? position : (EditorConfig.Instance.UseMouseAsZoomPoint.Value ? timelineTime : AudioManager.inst.CurrentAudioSource.time) / AudioManager.inst.CurrentAudioSource.clip.length;
+                }
+
+                EditorManager.inst.zoomSlider.onValueChanged.ClearAll();
+                EditorManager.inst.zoomSlider.value = EditorManager.inst.zoomFloat;
+                EditorManager.inst.zoomSlider.onValueChanged.AddListener(delegate (float _val)
+                {
+                    EditorManager.inst.Zoom = _val;
+                });
+
+                if (log)
+                    CoreHelper.Log($"SET MAIN ZOOM\n" +
+                        $"ZoomFloat: {EditorManager.inst.zoomFloat}\n" +
+                        $"ZoomVal: {EditorManager.inst.zoomVal}\n" +
+                        $"ZoomBounds: {EditorManager.inst.zoomBounds}\n" +
+                        $"Timeline Position: {EditorManager.inst.timelineScrollRectBar.value}\n" +
+                        $"Timeline Time: {timelineTime}\n" +
+                        $"Timeline Position Calculation: {(AudioManager.inst.CurrentAudioSource.clip == null ? -1f : timelineTime / AudioManager.inst.CurrentAudioSource.clip.length)}");
             }
-
-            EditorManager.inst.zoomSlider.onValueChanged.ClearAll();
-            EditorManager.inst.zoomSlider.value = EditorManager.inst.zoomFloat;
-            EditorManager.inst.zoomSlider.onValueChanged.AddListener(delegate (float _val)
+            catch (Exception ex)
             {
-                EditorManager.inst.Zoom = _val;
-            });
-
-            if (log)
-                CoreHelper.Log($"SET MAIN ZOOM\n" +
-                    $"ZoomFloat: {EditorManager.inst.zoomFloat}\n" +
-                    $"ZoomVal: {EditorManager.inst.zoomVal}\n" +
-                    $"ZoomBounds: {EditorManager.inst.zoomBounds}\n" +
-                    $"Timeline Position: {EditorManager.inst.timelineScrollRectBar.value}\n" +
-                    $"Timeline Time: {timelineTime}\n" +
-                    $"Timeline Position Calculation: {timelineTime / AudioManager.inst.CurrentAudioSource.clip.length}");
+                CoreHelper.LogError($"Had an error with setting zoom. Exception: {ex}");
+            }
         }
 
         public float GetTimelineTime(float _offset = 0f)
@@ -11077,6 +11085,7 @@ namespace BetterLegacy.Editor.Managers
             new EditorProperty(EditorProperty.ValueType.Int, EditorConfig.Instance.ThemesPerPage),
             new EditorProperty(EditorProperty.ValueType.Int, EditorConfig.Instance.ThemesEventKeyframePerPage),
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.MouseTooltipDisplay),
+            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ShowHelpOnStartup),
             new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.NotificationWidth),
             new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.NotificationSize),
             new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.NotificationDirection),
