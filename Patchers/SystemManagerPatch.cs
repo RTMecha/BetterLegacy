@@ -18,14 +18,17 @@ namespace BetterLegacy.Patchers
             ExampleManager.Init();
         }
 
-        [HarmonyPatch(typeof(SystemManager), "Update")]
+        [HarmonyPatch("Update")]
         [HarmonyPrefix]
-        static bool SystemManagerUpdatePrefix()
+        static bool UpdatePrefix()
         {
-            if (Input.GetKeyDown(CoreConfig.Instance.ScreenshotKey.Value) && !LSHelpers.IsUsingInputField())
+            if (LSHelpers.IsUsingInputField())
+                return false;
+
+            if (Input.GetKeyDown(CoreConfig.Instance.ScreenshotKey.Value))
                 CoreHelper.TakeScreenshot();
 
-            if (Input.GetKeyDown(KeyCode.F11) && !LSHelpers.IsUsingInputField())
+            if (Input.GetKeyDown(CoreConfig.Instance.FullscreenKey.Value))
                 CoreConfig.Instance.Fullscreen.Value = !CoreConfig.Instance.Fullscreen.Value;
 
             return false;
