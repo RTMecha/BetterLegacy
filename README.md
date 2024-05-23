@@ -1,10 +1,7 @@
 ﻿# BetterLegacy
 
-> [!WARNING]\
-> The mod is currently being worked on, so there is no way to install yet other than through testing. If you want to beta test the most latest builds, feel free to join the [Discord server](https://discord.gg/5XfVScJSK5) and get the mod testing role to get access to the mod-testing channel.
-
 Make Project Arrhythmia (Legacy) better than ever before with this singular mod.
-If you want to know how to install, go [here](https://github.com/RTMecha/BetterLegacy/edit/master/README.md#installation)
+If you want to know how to install, go [here](https://github.com/RTMecha/BetterLegacy/blob/master/README.md#installation)
 
 ## Info
 The mod is made up of 8 sections, all originating from their own mods.
@@ -34,7 +31,7 @@ The mod is made up of 8 sections, all originating from their own mods.
    - Summary: Adds a little companion to accompany you on your Project Arrhythmia journey.
 
 ## Installation
-You can only currently install BetterLegacy manually. A new launcher to install automatically and manage instances of PA is planned. For now you will need to use the current [Project Launcher](https://github.com/RTMecha/ProjectLauncher/releases) release to manage instances. (Install guide based on [Catalyst](https://github.com/Reimnop/Catalyst) guide)
+You can install the mods via the [Project Launcher](https://github.com/RTMecha/ProjectLauncher/releases/latest). You can use that tool to manage multiple instances of Project Arrhythmia and easily keep up to date with different mod updates. However, if you want to install it manually, follow the guide below. (Install guide based on [Catalyst](https://github.com/Reimnop/Catalyst) guide)
 1. Verify you are on the Legacy branch.
 	- ℹ️ _As BetterLegacy is obviously made for the **Legacy** branch, it will not work on any other._
 	- ℹ️ _Go to your Steam library and right click Project Arrhythmia then click on Properties. Navigate to the Betas tab and change the Beta Participation dropdown to the Legacy branch._
