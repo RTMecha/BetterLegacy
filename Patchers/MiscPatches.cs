@@ -83,9 +83,9 @@ namespace BetterLegacy.Patchers
     {
         [HarmonyPatch("OnPointerEnter")]
         [HarmonyPrefix]
-        static bool OnPointerEnter(HoverTooltip __instance)
+        static bool OnPointerEnterPrefix(HoverTooltip __instance)
         {
-            var index = (int)DataManager.inst.GetCurrentLanguageEnum();
+            var index = (int)CoreConfig.Instance.Language.Value;
 
             var tooltip = __instance.tooltipLangauges.Find(x => (int)x.language == index);
             var hasTooltip = tooltip != null;
@@ -93,5 +93,9 @@ namespace BetterLegacy.Patchers
             EditorManager.inst.SetTooltip(hasTooltip ? tooltip.keys : new List<string>(), hasTooltip ? tooltip.desc : "No tooltip added yet!", hasTooltip ? tooltip.hint : __instance.gameObject.name);
             return false;
         }
+
+        [HarmonyPatch("OnPointerExit")]
+        [HarmonyPrefix]
+        static bool OnPointerExitPrefix() => false; // Don't want to have the actual mouse tooltip to disappear when I don't want it to.
     }
 }
