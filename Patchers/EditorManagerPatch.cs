@@ -16,6 +16,7 @@ using LSFunctions;
 using SimpleJSON;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using TMPro;
@@ -240,7 +241,7 @@ namespace BetterLegacy.Patchers
         {
             Instance.GetLevelList();
 
-            CoreHelper.UpdateDiscordStatus("", "In Editor", "editor");
+            CoreHelper.UpdateDiscordStatus("", "In Editor (Selecting level)", "editor");
 
             Instance.SetDialogStatus("Timeline", true, true);
 
@@ -249,25 +250,17 @@ namespace BetterLegacy.Patchers
 
             Instance.GUI.SetActive(false);
             Instance.canEdit = DataManager.inst.GetSettingBool("CanEdit", false);
-            if (Instance.canEdit)
-            {
-                Instance.isEditing = true;
-                SteamWrapper.inst.user.displayName = CoreConfig.Instance.DisplayName.Value;
-                Instance.SetCreatorName(SteamWrapper.inst.user.displayName);
-                Instance.SetGridScale(1);
-                Instance.SetShowGrid(true);
-                Instance.showTooltip = false;
-                Instance.SetTooltipDisappear(0f);
-                Instance.SetShowHelp(false);
-                Instance.ToggleShowHelp();
-                Instance.UpdateTooltip();
-                Instance.tooltip.transform.parent.gameObject.SetActive(false);
-                Instance.Zoom = 0.05f;
-                Instance.SetLayer(0);
-                Instance.SetDifficulty(0);
-                Instance.firstOpened = false;
-            }
+
+            Instance.isEditing = true;
+            SteamWrapper.inst.user.displayName = CoreConfig.Instance.DisplayName.Value;
+            Instance.SetCreatorName(SteamWrapper.inst.user.displayName);
+            Instance.SetShowHelp(EditorConfig.Instance.ShowHelpOnStartup.Value);
+
+            RTEditor.inst.mouseTooltip?.SetActive(false);
+
             LoadBaseLevelPrefix();
+            Instance.Zoom = 0.05f;
+            Instance.SetLayer(0);
             Instance.DisplayNotification("Base Level Loaded", 2f, EditorManager.NotificationType.Info);
 
             InputDataManager.inst.editorActions.Cut.ClearBindings();
@@ -279,10 +272,29 @@ namespace BetterLegacy.Patchers
             InputDataManager.inst.editorActions.Redo.ClearBindings();
             InputDataManager.inst.editorActions.CreateMarker.ClearBindings();
 
-            Instance.notification.transform.Find("info").gameObject.SetActive(true);
-
             //Set Editor Zoom cap
             Instance.zoomBounds = EditorConfig.Instance.MainZoomBounds.Value;
+
+            try
+            {
+                CoreHelper.StartCoroutine(RTEditor.inst.AssignTimelineTexture());
+                Instance.UpdateTimelineSizes();
+                Instance.firstOpened = true;
+
+                RTEventEditor.inst.CreateEventObjects();
+                CheckpointEditor.inst.CreateGhostCheckpoints();
+                GameManager.inst.UpdateTimeline();
+                CheckpointEditor.inst.SetCurrentCheckpoint(0);
+                if (!April)
+                    Instance.TogglePlayingSong();
+                else
+                    Instance.DisplayNotification("Welcome to the 3.0.0 update!\njk, April Fools!", 6f, EditorManager.NotificationType.Error);
+                Instance.ClearDialogs();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"{Instance.className}First opened error!{ex}");
+            }
 
             return false;
         }
@@ -306,29 +318,6 @@ namespace BetterLegacy.Patchers
                         if (!Instance.IsUsingInputField())
                         {
                             Instance.handleViewShortcuts();
-                        }
-                    }
-                    if (!Instance.firstOpened)
-                    {
-                        try
-                        {
-                            CoreHelper.StartCoroutine(RTEditor.inst.AssignTimelineTexture());
-                            Instance.UpdateTimelineSizes();
-                            Instance.firstOpened = true;
-
-                            RTEventEditor.inst.CreateEventObjects();
-                            CheckpointEditor.inst.CreateGhostCheckpoints();
-                            GameManager.inst.UpdateTimeline();
-                            CheckpointEditor.inst.SetCurrentCheckpoint(0);
-                            if (!April)
-                                Instance.TogglePlayingSong();
-                            else
-                                Instance.DisplayNotification("Welcome to the 3.0.0 update!\njk, April Fools!", 6f, EditorManager.NotificationType.Error);
-                            Instance.ClearDialogs();
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.LogError($"{Instance.className}First opened error!{ex}");
                         }
                     }
 
@@ -1109,12 +1098,44 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("SetShowHelp")]
-        [HarmonyPostfix]
-        static void SetShowHelpPostfix(bool __0)
+        [HarmonyPatch("SetTooltip")]
+        [HarmonyPrefix]
+        static bool SetTooltipPrefix(List<string> __0, string __1, string __2)
         {
+            if (Instance.toolTipRoutine != null)
+                Instance.StopCoroutine(Instance.toolTipRoutine);
+
+            Instance.tooltipString = Instance.TooltipConverter(__0, __1, __2);
+            return false;
+        }
+
+        [HarmonyPatch("TooltipConverter")]
+        [HarmonyPrefix]
+        static bool TooltipConverterPrefix(ref string __result, List<string> __0, string __1, string __2)
+        {
+            string text = "";
+
+            if (__0 != null && __0.Count > 0)
+                text += $"<size=16>[{string.Join(", ", __0.ToArray())}]</size><br>";
+            if (!string.IsNullOrEmpty(__1))
+                text += $"<b><size=18>{__1}</size></b>";
+            if (!string.IsNullOrEmpty(__2))
+                text += $"<br><size=18>{__2}</size>";
+
+            __result = text;
+            return false;
+        }
+
+        [HarmonyPatch("SetShowHelp")]
+        [HarmonyPrefix]
+        static bool SetShowHelpPrefix(bool __0)
+        {
+            Instance.showHelp = __0;
+            Instance.tooltip.transform.parent.gameObject.SetActive(__0);
+
             if (__0)
                 RTEditor.inst.RebuildNotificationLayout();
+            return false;
         }
 
         [HarmonyPatch("UpdateTooltip")]
