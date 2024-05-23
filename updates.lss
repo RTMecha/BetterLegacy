@@ -1,3 +1,7 @@
+1.0.1 > [May 23, 2024]
+- Moved default settings to the top of the Core config.
+- Fixed some issues with tooltips internally.
+- Fixed an uncommon editor break if the PA application lags.
 1.0.0 > [May 22, 2024]
 - Merged all the PA Legacy mods into one new mod called Better Legacy! This merge should make it clear that this version of the game is now a fully different version of PA.
 - Modifier updating now occurs before event updating and object updating.
