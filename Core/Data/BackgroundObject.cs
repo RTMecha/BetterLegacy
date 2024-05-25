@@ -125,6 +125,7 @@ namespace BetterLegacy.Core.Data
                 text = bg.text,
                 depth = bg.depth,
                 shape = bg.shape,
+                zposition = bg.zposition,
                 zscale = bg.zscale,
                 rotation = bg.rotation,
                 hue = bg.hue,
