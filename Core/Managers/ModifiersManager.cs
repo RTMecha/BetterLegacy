@@ -44,8 +44,10 @@ namespace BetterLegacy.Core.Managers
                 {
                     var beatmapObject = order[i];
 
-                    if (beatmapObject.modifiers.Any(x => x.Action == null || x.Trigger == null || x.Inactive == null))
-                        beatmapObject.modifiers.Where(x => x.Action == null || x.Trigger == null || x.Inactive == null).ToList().ForEach(delegate (Modifier<BeatmapObject> modifier)
+                    Func<Modifier<BeatmapObject>, bool> modifierPredicate = x => x.Action == null && x.type == ModifierBase.Type.Action || x.Trigger == null && x.type == ModifierBase.Type.Trigger || x.Inactive == null;
+
+                    if (beatmapObject.modifiers.Any(modifierPredicate))
+                        beatmapObject.modifiers.Where(modifierPredicate).ToList().ForEach(delegate (Modifier<BeatmapObject> modifier)
                         {
                             AssignModifierActions(modifier);
                         });
@@ -64,6 +66,7 @@ namespace BetterLegacy.Core.Managers
                                     if (!act.constant)
                                         act.active = true;
 
+                                    act.running = true;
                                     act.Action?.Invoke(act);
                                 }
 
@@ -72,9 +75,10 @@ namespace BetterLegacy.Core.Managers
                             }
                             else
                             {
-                                foreach (var act in actions.Where(x => x.active))
+                                foreach (var act in actions.Where(x => x.active || x.running))
                                 {
                                     act.active = false;
+                                    act.running = false;
                                     act.Inactive?.Invoke(act);
                                 }
                             }
@@ -86,22 +90,18 @@ namespace BetterLegacy.Core.Managers
                                 if (!act.constant)
                                     act.active = true;
 
+                                act.running = true;
                                 act.Action?.Invoke(act);
                             }
                         }
                     }
-                    else if (beatmapObject.modifiers.Any(x => x.active))
+                    else if (beatmapObject.modifiers.Any(x => x.active || x.running))
                     {
-                        foreach (var act in actions.Where(x => x.active))
+                        foreach (var act in beatmapObject.modifiers.Where(x => x.active || x.running))
                         {
                             act.active = false;
+                            act.running = false;
                             act.Inactive?.Invoke(act);
-                        }
-
-                        foreach (var trig in triggers.Where(x => x.active))
-                        {
-                            trig.active = false;
-                            trig.Inactive?.Invoke(trig);
                         }
                     }
                 }

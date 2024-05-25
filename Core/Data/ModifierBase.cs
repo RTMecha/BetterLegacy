@@ -20,6 +20,7 @@ namespace BetterLegacy.Core.Data
 
         public Type type = Type.Action;
         public string value;
+        public bool running = false;
         public bool active = false;
         public List<string> commands = new List<string>
         {
