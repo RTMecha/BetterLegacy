@@ -2727,13 +2727,10 @@ namespace BetterLegacy.Editor.Managers
                         File.Copy(_val, copyTo, RTFile.FileExists(copyTo));
 
                         if (RTFile.FileExists(copyTo) && CoreConfig.Instance.EnableVideoBackground.Value)
-                        {
                             RTVideoManager.inst.Play(copyTo, 1f);
-                        }
                         else
-                        {
                             RTVideoManager.inst.Stop();
-                        }
+
                         return;
                     }
 
@@ -6251,7 +6248,7 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < multiColorButtons.Count; i++)
             {
                 var multiColorButton = multiColorButtons[i];
-                multiColorButton.Selected.gameObject.SetActive(currentMultiColorSelection == i);
+                multiColorButton.Selected.SetActive(currentMultiColorSelection == i);
             }
         }
 
@@ -6469,6 +6466,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 new Document.Element("Welcome to <b>Project Arrhythmia</b>!\nWhether you're new to the game, modding or have been around for a while, I'm sure this " +
                         "documentation will help massively in understanding the ins and outs of the editor and the game as a whole.", Document.Element.Type.Text),
+                new Document.Element("These documents only list editor features and how to use them, everything else is listed in the Github wiki.", Document.Element.Type.Text),
                 new Document.Element("<b>DOCUMENTATION INFO</b>", Document.Element.Type.Text),
                 new Document.Element("<b>[VANILLA]</b> represents a feature from original Legacy, with very minor tweaks done to it if any.", Document.Element.Type.Text),
                 new Document.Element("<b>[MODDED]</b> represents a feature added by mods. These features will not work in unmodded PA.", Document.Element.Type.Text),
@@ -6596,7 +6594,7 @@ namespace BetterLegacy.Editor.Managers
                         "Clicking your scroll wheel over it will flip any left / right.", Document.Element.Type.Text),
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_name_type.png", Document.Element.Type.Image),
                 new Document.Element("<b>Tags [MODDED]</b>\nBeing able to group objects together or even specify things about an object is possible with Object Tags. This feature " +
-                        "is mostly used by ObjectModifiers, but can be used in other ways such as a \"DontRotate\" tag which prevents Player Shapes from rotating automatically.", Document.Element.Type.Text),
+                        "is mostly used by modifiers, but can be used in other ways such as a \"DontRotate\" tag which prevents Player Shapes from rotating automatically.", Document.Element.Type.Text),
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_tags.png", Document.Element.Type.Image),
                 new Document.Element("<b>Locked [PATCHED]</b>\nIf on, prevents Beatmap Objects' start time from being changed. It's patched because unmodded PA doesn't " +
                         "have the toggle UI for this, however you can still use it in unmodded PA via hitting Ctrl + L.", Document.Element.Type.Text),
@@ -6664,21 +6662,25 @@ namespace BetterLegacy.Editor.Managers
             GenerateDocument("Beatmap Object Keyframes (WIP)", "The things that animate objects in different ways.", new List<Document.Element>
             {
                 new Document.Element("The keyframes in the Beatmap Objects' keyframe timeline allow animating several aspects of a Beatmap Objects' visual.", Document.Element.Type.Text),
+                new Document.Element("<b>POSITION [PATCHED]</b>", Document.Element.Type.Text),
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pos_none.png", Document.Element.Type.Image),
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pos_normal.png", Document.Element.Type.Image),
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pos_toggle.png", Document.Element.Type.Image),
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pos_scale.png", Document.Element.Type.Image),
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pos_static_homing.png", Document.Element.Type.Image),
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pos_dynamic_homing.png", Document.Element.Type.Image),
+                new Document.Element("<b>SCALE [VANILLA]</b>", Document.Element.Type.Text),
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_sca_none.png", Document.Element.Type.Image),
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_sca_normal.png", Document.Element.Type.Image),
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_sca_toggle.png", Document.Element.Type.Image),
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_sca_scale.png", Document.Element.Type.Image),
+                new Document.Element("<b>ROTATION [VANILLA]</b>", Document.Element.Type.Text),
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_rot_none.png", Document.Element.Type.Image),
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_rot_normal.png", Document.Element.Type.Image),
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_rot_toggle.png", Document.Element.Type.Image),
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_rot_static_homing.png", Document.Element.Type.Image),
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_rot_dynamic_homing.png", Document.Element.Type.Image),
+                new Document.Element("<b>COLOR [PATCHED]</b>", Document.Element.Type.Text),
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_col_none.png", Document.Element.Type.Image),
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_col_dynamic_homing.png", Document.Element.Type.Image),
             });
@@ -8004,19 +8006,31 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
                 EditorThemeManager.ApplyLightText(folderButtonStorage.text);
 
-                list.Add(StartCoroutine(GetAlbumSprite(file, delegate (Sprite cover)
-                {
-                    iconImage.sprite = cover ?? SteamWorkshop.inst.defaultSteamImageSprite;
-                    editorWrapper.albumArt = cover ?? SteamWorkshop.inst.defaultSteamImageSprite;
-
-                    EditorManager.inst.loadedLevels.Add(editorWrapper);
-                }, delegate
+                if (!RTFile.FileExists($"{file}/level.jpg"))
                 {
                     anyFailed = true;
                     failedLevels.Add(Path.GetFileName(path));
 
                     iconImage.sprite = SteamWorkshop.inst.defaultSteamImageSprite;
                     editorWrapper.albumArt = SteamWorkshop.inst.defaultSteamImageSprite;
+
+                    EditorManager.inst.loadedLevels.Add(editorWrapper);
+                    continue;
+                }
+
+                list.Add(StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{file}/level.jpg", delegate (Texture2D cover)
+                {
+                    if (!cover)
+                    {
+                        iconImage.sprite = SteamWorkshop.inst.defaultSteamImageSprite;
+                        editorWrapper.albumArt = SteamWorkshop.inst.defaultSteamImageSprite;
+                        EditorManager.inst.loadedLevels.Add(editorWrapper);
+                        return;
+                    }
+
+                    var sprite = SpriteManager.CreateSprite(cover);
+                    iconImage.sprite = sprite;
+                    editorWrapper.albumArt = sprite;
 
                     EditorManager.inst.loadedLevels.Add(editorWrapper);
                 })));
@@ -10940,7 +10954,6 @@ namespace BetterLegacy.Editor.Managers
                                                              select x).ToList();
             MarkerEditor.inst.CreateMarkers();
         }
-
 
         #endregion
 
