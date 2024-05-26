@@ -422,7 +422,7 @@ namespace BetterLegacy.Core.Managers
             }
         }
 
-        public static UICanvas GenerateUICanvas(string name, Transform parent, bool dontDestroy = false)
+        public static UICanvas GenerateUICanvas(string name, Transform parent, bool dontDestroy = false, int sortingOrder = 10000)
         {
             var gameObject = new GameObject(name);
             if (dontDestroy)
@@ -437,13 +437,10 @@ namespace BetterLegacy.Core.Managers
             rectTransform.anchorMax = Vector2.zero;
 
             var canvas = gameObject.AddComponent<Canvas>();
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.None;
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.TexCoord1;
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.Tangent;
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.Normal;
+            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.None | AdditionalCanvasShaderChannels.TexCoord1 | AdditionalCanvasShaderChannels.Tangent | AdditionalCanvasShaderChannels.Normal;
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.scaleFactor = CoreHelper.ScreenScale;
-            canvas.sortingOrder = 10000;
+            canvas.sortingOrder = sortingOrder;
 
             var canvasGroup = gameObject.AddComponent<CanvasGroup>();
 

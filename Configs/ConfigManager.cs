@@ -330,7 +330,7 @@ namespace BetterLegacy.Configs
         void FixedUpdate()
         {
             if (canvas != null)
-                canvas.CanvasScaler.referenceResolution = new Vector2(Screen.width, Screen.height);
+                canvas.Canvas.scaleFactor = CoreHelper.ScreenScale;
         }
 
         public bool Active => configBase && configBase.activeSelf;

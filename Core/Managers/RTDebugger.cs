@@ -60,38 +60,17 @@ namespace BetterLegacy.Core.Managers
 
         public static bool init = false;
 
+        public static UICanvas canvas;
+
         public static void Init()
         {
             if (init)
                 return;
 
-            var inter = new GameObject("Debug Info");
-            UnityEngine.Object.DontDestroyOnLoad(inter);
-            inter.transform.localScale = Vector3.one * CoreHelper.ScreenScale;
-            var interfaceRT = inter.AddComponent<RectTransform>();
-            interfaceRT.anchoredPosition = new Vector2(960f, 540f);
-            interfaceRT.sizeDelta = new Vector2(1920f, 1080f);
-            interfaceRT.pivot = new Vector2(0.5f, 0.5f);
-            interfaceRT.anchorMin = Vector2.zero;
-            interfaceRT.anchorMax = Vector2.zero;
-
-            var canvas = inter.AddComponent<Canvas>();
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.None;
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.TexCoord1;
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.Tangent;
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.Normal;
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.scaleFactor = CoreHelper.ScreenScale;
-            canvas.sortingOrder = 13000;
-
-            var canvasScaler = inter.AddComponent<CanvasScaler>();
-            canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            canvasScaler.referenceResolution = new Vector2(Screen.width, Screen.height);
-
-            inter.AddComponent<GraphicRaycaster>();
+            canvas = UIManager.GenerateUICanvas("Debug Info Canvas", null, true, 13000);
 
             var info = new GameObject("Info");
-            info.transform.SetParent(interfaceRT);
+            info.transform.SetParent(canvas.GameObject.transform);
             info.transform.localScale = Vector3.one;
 
             var infoRT = info.AddComponent<RectTransform>();
@@ -134,6 +113,9 @@ namespace BetterLegacy.Core.Managers
                             $"<b>Main Camera Rotation: {Camera.main.transform.rotation.eulerAngles}<br>" +
                             $"<b>BG Camera Position: {EventManager.inst.camPer.transform.position}<br>" +
                             $"<b>BG Camera Rotation: {EventManager.inst.camPer.transform.rotation.eulerAngles}<br>";
+
+                if (canvas != null)
+                    canvas.Canvas.scaleFactor = CoreHelper.ScreenScale;
             }
         }
     }
