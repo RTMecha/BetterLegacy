@@ -1,3 +1,7 @@
+1.0.2 > [May 26, 2024]
+- Fixed modifiers inactive state not being run when the modifier is constant.
+- Background Objects now copy & paste the Z Position value.
+- Fixed Debug Info and Config Managers' scale being broken.
 1.0.1 > [May 23, 2024]
 - Moved default settings to the top of the Core config.
 - Fixed some issues with tooltips internally.
