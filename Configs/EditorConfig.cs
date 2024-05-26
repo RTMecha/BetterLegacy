@@ -116,6 +116,7 @@ namespace BetterLegacy.Configs
         public Setting<bool> LevelPausesOnStart { get; set; }
         public Setting<bool> BackupPreviousLoadedLevel { get; set; }
         public Setting<bool> SettingPathReloads { get; set; }
+        public Setting<bool> CopyPasteGlobal { get; set; }
         public Setting<bool> SavingSavesThemeOpacity { get; set; }
         public Setting<bool> UpdatePrefabListOnFilesChanged { get; set; }
         public Setting<bool> UpdateThemeListOnFilesChanged { get; set; }
@@ -1241,6 +1242,7 @@ namespace BetterLegacy.Configs
             LevelPausesOnStart = Bind(this, "Data", "Level Pauses on Start", false, "Editor pauses on level load.");
             BackupPreviousLoadedLevel = Bind(this, "Data", "Backup Previous Loaded Level", false, "Saves the previously loaded level when loading a different level to a level-previous.lsb file.");
             SettingPathReloads = Bind(this, "Data", "Setting Path Reloads", true, "With this setting on, update the list for levels, prefabs and themes when changing the directory.");
+            CopyPasteGlobal = Bind(this, "Data", "Copy Paste From Global Folder", false, "If copied objects & event keyframes are saved to a global file for any instance of Project Arrhythmia to load when pasting. Turn off if copy & paste is breaking.");
             SavingSavesThemeOpacity = Bind(this, "Data", "Saving Saves Theme Opacity", false, "Turn this off if you don't want themes to break in unmodded PA.");
             UpdatePrefabListOnFilesChanged = Bind(this, "Data", "Update Prefab List on Files Changed", false, "When you add a prefab to your prefab path, the editor will automatically update the prefab list for you.");
             UpdateThemeListOnFilesChanged = Bind(this, "Data", "Update Theme List on Files Changed", false, "When you add a theme to your theme path, the editor will automatically update the theme list for you.");

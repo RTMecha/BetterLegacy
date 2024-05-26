@@ -1706,11 +1706,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                     else
                     {
-                        foreach (EventKeyframeSelection keyframeSelection2 in EventEditor.inst.copiedEventKeyframes.Keys)
-                        {
-                            EventEditor.inst.DeleteEvent(keyframeSelection2.Type, keyframeSelection2.Index);
-                        }
-                        EventEditor.inst.copiedEventKeyframes.Clear();
+                        StartCoroutine(RTEventEditor.inst.DeleteKeyframes());
                         EditorManager.inst.DisplayNotification("Cut Event Keyframe", 1f, EditorManager.NotificationType.Success, false);
                     }
                 }
@@ -1750,7 +1746,7 @@ namespace BetterLegacy.Editor.Managers
 
             if (isOverMainTimeline && layerType == LayerType.Events)
             {
-                if (RTFile.FileExists($"{Application.persistentDataPath}/copied_events.lsev"))
+                if (EditorConfig.Instance.CopyPasteGlobal.Value && RTFile.FileExists($"{Application.persistentDataPath}/copied_events.lsev"))
                 {
                     var jn = JSON.Parse(RTFile.ReadFromFile($"{Application.persistentDataPath}/copied_events.lsev"));
 
@@ -11074,6 +11070,7 @@ namespace BetterLegacy.Editor.Managers
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.LevelPausesOnStart),
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.BackupPreviousLoadedLevel),
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.SettingPathReloads),
+            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.CopyPasteGlobal),
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.SavingSavesThemeOpacity),
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.UpdatePrefabListOnFilesChanged),
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.UpdateThemeListOnFilesChanged),

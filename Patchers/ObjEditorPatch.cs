@@ -2180,10 +2180,8 @@ namespace BetterLegacy.Patchers
                  select x).ToList();
 
             float start = 0f;
-            //if (ConfigEntries.PasteOffset.Value)
-            //{
-            //	start = -AudioManager.inst.CurrentAudioSource.time + e[0].StartTime();
-            //}
+            if (EditorConfig.Instance.PasteOffset.Value)
+                start = -AudioManager.inst.CurrentAudioSource.time + a[0].Time;
 
             var copy = new Prefab("copied prefab", 0, start,
                 a.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()).ToList(),
@@ -2193,7 +2191,8 @@ namespace BetterLegacy.Patchers
             Instance.beatmapObjCopy = copy;
             Instance.hasCopiedObject = true;
 
-            RTFile.WriteToFile(Application.persistentDataPath + "/copied_objects.lsp", copy.ToJSON().ToString());
+            if (EditorConfig.Instance.CopyPasteGlobal.Value)
+                RTFile.WriteToFile(Application.persistentDataPath + "/copied_objects.lsp", copy.ToJSON().ToString());
             return false;
         }
 
