@@ -85,6 +85,9 @@ namespace BetterLegacy
 
             try
             {
+                if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "profile"))
+                    Directory.CreateDirectory(RTFile.ApplicationDirectory + "profile");
+
                 coreConfig = new CoreConfig();
                 editorConfig = new EditorConfig();
                 arcadeConfig = new ArcadeConfig();
