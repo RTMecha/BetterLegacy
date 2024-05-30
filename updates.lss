@@ -1,3 +1,7 @@
+1.0.3 > [May 31, 2024]
+- Added FPS related settings to the Core config for better GPU handling.
+- Added a config for global copied objects / events for cases where it breaks.
+- Fixed profile folder not being created before config creation.
 1.0.2 > [May 26, 2024]
 - Fixed modifiers inactive state not being run when the modifier is constant.
 - Background Objects now copy & paste the Z Position value.
