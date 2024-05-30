@@ -11,7 +11,7 @@
 
   <PropertyGroup>
     <!-- Change this to your BepInEx plugins folder -->
-    <PluginGamePath>E:/Project Launcher/instances/Mod Testing/BepInEx/plugins/</PluginGamePath>
+    <PluginGamePath>C:/Users/Mecha/Desktop/Project Launcher/instances/Mod Testing/BepInEx/plugins/</PluginGamePath>
   </PropertyGroup>
 
   <!-- Post-build event for Debug configuration -->
