@@ -37,53 +37,31 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public static void OnLevelTick()
         {
-            var order = DataManager.inst.gameData is GameData gameData ? gameData.BeatmapObjects.OrderBy(x => x.StartTime).Where(x => x.modifiers.Count > 0).ToList() : null;
+            if (DataManager.inst.gameData is not GameData || !CoreHelper.Playing)
+                return;
 
-            if (order != null && CoreHelper.Playing)
-                for (int i = 0; i < order.Count; i++)
-                {
-                    var beatmapObject = order[i];
+            var order = GameData.Current.BeatmapObjects.OrderBy(x => x.StartTime).Where(x => x.modifiers.Count > 0);
 
-                    Func<Modifier<BeatmapObject>, bool> modifierPredicate = x => x.Action == null && x.type == ModifierBase.Type.Action || x.Trigger == null && x.type == ModifierBase.Type.Trigger || x.Inactive == null;
+            for (int i = 0; i < order.Count(); i++)
+            {
+                var beatmapObject = order.ElementAt(i);
 
-                    if (beatmapObject.modifiers.Any(modifierPredicate))
-                        beatmapObject.modifiers.Where(modifierPredicate).ToList().ForEach(delegate (Modifier<BeatmapObject> modifier)
-                        {
-                            AssignModifierActions(modifier);
-                        });
+                Func<Modifier<BeatmapObject>, bool> modifierPredicate = x => x.Action == null && x.type == ModifierBase.Type.Action || x.Trigger == null && x.type == ModifierBase.Type.Trigger || x.Inactive == null;
 
-                    var actions = beatmapObject.modifiers.Where(x => x.type == ModifierBase.Type.Action);
-                    var triggers = beatmapObject.modifiers.Where(x => x.type == ModifierBase.Type.Trigger);
-
-                    if (beatmapObject.ignoreLifespan || beatmapObject.TimeWithinLifespan())
+                if (beatmapObject.modifiers.Any(modifierPredicate))
+                    beatmapObject.modifiers.Where(modifierPredicate).ToList().ForEach(delegate (Modifier<BeatmapObject> modifier)
                     {
-                        if (triggers.Count() > 0)
-                        {
-                            if (triggers.All(x => !x.active && (x.Trigger(x) && !x.not || !x.Trigger(x) && x.not)))
-                            {
-                                foreach (var act in actions.Where(x => !x.active))
-                                {
-                                    if (!act.constant)
-                                        act.active = true;
+                        AssignModifierActions(modifier);
+                    });
 
-                                    act.running = true;
-                                    act.Action?.Invoke(act);
-                                }
+                var actions = beatmapObject.modifiers.Where(x => x.type == ModifierBase.Type.Action);
+                var triggers = beatmapObject.modifiers.Where(x => x.type == ModifierBase.Type.Trigger);
 
-                                foreach (var trig in triggers.Where(x => !x.constant))
-                                    trig.active = true;
-                            }
-                            else
-                            {
-                                foreach (var act in actions.Where(x => x.active || x.running))
-                                {
-                                    act.active = false;
-                                    act.running = false;
-                                    act.Inactive?.Invoke(act);
-                                }
-                            }
-                        }
-                        else
+                if (beatmapObject.ignoreLifespan || beatmapObject.TimeWithinLifespan())
+                {
+                    if (triggers.Count() > 0)
+                    {
+                        if (triggers.All(x => !x.active && (x.Trigger(x) && !x.not || !x.Trigger(x) && x.not)))
                         {
                             foreach (var act in actions.Where(x => !x.active))
                             {
@@ -93,18 +71,42 @@ namespace BetterLegacy.Core.Managers
                                 act.running = true;
                                 act.Action?.Invoke(act);
                             }
+
+                            foreach (var trig in triggers.Where(x => !x.constant))
+                                trig.active = true;
+                        }
+                        else
+                        {
+                            foreach (var act in actions.Where(x => x.active || x.running))
+                            {
+                                act.active = false;
+                                act.running = false;
+                                act.Inactive?.Invoke(act);
+                            }
                         }
                     }
-                    else if (beatmapObject.modifiers.Any(x => x.active || x.running))
+                    else
                     {
-                        foreach (var act in beatmapObject.modifiers.Where(x => x.active || x.running))
+                        foreach (var act in actions.Where(x => !x.active))
                         {
-                            act.active = false;
-                            act.running = false;
-                            act.Inactive?.Invoke(act);
+                            if (!act.constant)
+                                act.active = true;
+
+                            act.running = true;
+                            act.Action?.Invoke(act);
                         }
                     }
                 }
+                else if (beatmapObject.modifiers.Any(x => x.active || x.running))
+                {
+                    foreach (var act in beatmapObject.modifiers.Where(x => x.active || x.running))
+                    {
+                        act.active = false;
+                        act.running = false;
+                        act.Inactive?.Invoke(act);
+                    }
+                }
+            }
 
             foreach (var audioSource in audioSources)
             {

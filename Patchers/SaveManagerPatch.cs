@@ -1,5 +1,6 @@
 ﻿using BetterLegacy.Configs;
 using BetterLegacy.Core;
+using BetterLegacy.Core.Helpers;
 using HarmonyLib;
 using SimpleJSON;
 using UnityEngine;
@@ -65,6 +66,21 @@ namespace BetterLegacy.Patchers
 
                 RTFile.WriteToFile(RTFile.ApplicationDirectory + "settings/functions.lss", jn.ToString(3));
             }
+        }
+
+        [HarmonyPatch("ApplyVideoSettings")]
+        [HarmonyPrefix]
+        static bool ApplyVideoSettingsPrefix()
+        {
+            var resolution = CoreHelper.CurrentResolution;
+            Screen.SetResolution(resolution.x, resolution.y, CoreConfig.Instance.Fullscreen.Value);
+            
+            QualitySettings.vSyncCount = CoreConfig.Instance.VSync.Value ? 1 : 0;
+            QualitySettings.antiAliasing = DataManager.inst.GetSettingEnum("AntiAliasing", 0);
+            Application.targetFrameRate = CoreConfig.Instance.FPSLimit.Value;
+            CoreHelper.Log($"Apply Video Settings\nResolution: [{Screen.currentResolution}]\nFullscreen: [{Screen.fullScreen}]\nVSync Count: [{QualitySettings.vSyncCount}]");
+
+            return false;
         }
 
         [HarmonyPatch("OnApplicationQuit")]

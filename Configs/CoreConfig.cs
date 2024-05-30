@@ -53,6 +53,16 @@ namespace BetterLegacy.Configs
         public Setting<Resolutions> Resolution { get; set; }
 
         /// <summary>
+        /// If FPS matches your monitors refresh rate.
+        /// </summary>
+        public Setting<bool> VSync { get; set; }
+
+        /// <summary>
+        /// The amount the FPS is limited to. If the number is -1, it is unlimited.
+        /// </summary>
+        public Setting<int> FPSLimit { get; set; }
+
+        /// <summary>
         /// Total volume.
         /// </summary>
         public Setting<int> MasterVol { get; set; }
@@ -363,6 +373,8 @@ namespace BetterLegacy.Configs
             FullscreenKey = BindEnum(this, "Settings", "Fullscreen Key", KeyCode.F11, "The key to toggle fullscreen.");
             Fullscreen = Bind(this, "Settings", "Fullscreen", false, "If game window should cover the entire screen or not.");
             Resolution = BindEnum(this, "Settings", "Resolution", Resolutions.p720, "The size of the game window in pixels.");
+            VSync = Bind(this, "Settings", "VSync", true, "If FPS matches your monitors refresh rate.");
+            FPSLimit = Bind(this, "Settings", "FPS Limit", -1, "The amount the FPS is limited to. If the number is -1, it is unlimited.");
             MasterVol = Bind(this, "Settings", "Volume Master", 8, "Total volume.", 0, 9);
             MusicVol = Bind(this, "Settings", "Volume Music", 9, "Music volume.", 0, 9);
             SFXVol = Bind(this, "Settings", "Volume SFX", 9, "SFX volume.", 0, 9);
@@ -451,6 +463,14 @@ namespace BetterLegacy.Configs
             LDM.SettingChanged += LDMChanged;
             DiscordShowLevel.SettingChanged += DiscordChanged;
             DebugInfoStartup.SettingChanged += DebugInfoChanged;
+
+            VSync.SettingChanged += FPSChanged;
+            FPSLimit.SettingChanged += FPSChanged;
+        }
+
+        void FPSChanged()
+        {
+            SaveManager.inst.ApplyVideoSettings();
         }
 
         void DebugInfoChanged() => RTDebugger.Init();

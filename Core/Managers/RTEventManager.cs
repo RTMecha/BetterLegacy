@@ -77,44 +77,12 @@ namespace BetterLegacy.Core.Managers
             ModCompatibility.sharedFunctions["EventsCoreEventOffsets"] = ResetOffsets();
         }
 
-        //LAYER 1:
-        // 00 - Move
-        // 01 - Zoom
-        // 02 - Rotate
-        // 03 - Shake
-        // 04 - Theme
-        // 05 - Chromatic
-        // 06 - Bloom
-        // 07 - Vignette
-        // 08 - Lens
-        // 09 - Grain
-        // 10 - ColorGrading
-        // 11 - Gradient
-        // 12 - RadialBlur
-        // 13 - ColorSplit
-
-        //LAYER 2:
-        // 00 - Cam Offset
-        // 01 - Gradient
-        // 02 - DoubleVision
-        // 03 - Scanlines
-        // 04 - Blur
-        // 05 - Pixelize
-        // 06 - BG
-        // 07 - Invert
-        // 08 - Timeline
-        // 09 - Player
-        // 10 - Follow Player
-        // 11 - Music
-        // 12 - Glitch
-        // 13 - Misc
-
         public static bool Playable =>
             RTEffectsManager.inst &&
             EventManager.inst &&
             GameManager.inst &&
-            (GameManager.inst.gameState == GameManager.State.Playing || GameManager.inst.gameState == GameManager.State.Reversing || LevelManager.LevelEnded) &&
-            DataManager.inst.gameData != null &&
+            (CoreHelper.Playing || CoreHelper.Reversing || LevelManager.LevelEnded) &&
+            GameData.IsValid &&
             DataManager.inst.gameData.eventObjects != null &&
             DataManager.inst.gameData.eventObjects.allEvents != null &&
             DataManager.inst.gameData.eventObjects.allEvents.Count > 0;
@@ -530,6 +498,10 @@ namespace BetterLegacy.Core.Managers
                 if (!float.IsNaN(inst.pixel))
                     LSEffectsManager.inst.pixelize.amount.Override(!allowFX ? 0f : inst.pixel);
 
+                inst.analogGlitch.enabled = allowFX && inst.analogGlitchEnabled;
+                inst.digitalGlitch.enabled = allowFX;
+
+                // trying to figure out colorgrading issues... might be OS dependant?
                 if (float.IsNaN(inst.colorGradingHueShift))
                 {
                     CoreHelper.LogError($"ColorGrading Hueshift was not a number!");
@@ -1520,11 +1492,7 @@ namespace BetterLegacy.Core.Managers
         #region Analog Glitch - 38
 
         // 38 - 0
-        public static void updateAnalogGlitchEnabled(float x)
-        {
-            if (inst.analogGlitch)
-                inst.analogGlitch.enabled = (int)x == 1;
-        }
+        public static void updateAnalogGlitchEnabled(float x) => inst.analogGlitchEnabled = (int)x == 1;
 
         // 38 - 1
         public static void updateAnalogGlitchColorDrift(float x)
@@ -1570,6 +1538,8 @@ namespace BetterLegacy.Core.Managers
         #endregion
 
         #region Variables
+
+        public bool analogGlitchEnabled;
 
         public float timelineVal;
         public float timelineSat;
