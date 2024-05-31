@@ -247,6 +247,36 @@ namespace BetterLegacy.Menus
             }
         }
 
+        public void ApplyInterfaceTheme()
+        {
+            if (!ic)
+                return;
+
+            var previousTextColor = ic.interfaceSettings.textColor;
+            ic.interfaceSettings.textHighlightColor = LSColors.HexToColor(DataManager.inst.GetSettingEnumValues("UITheme", 0)["text-highlight"]);
+            ic.interfaceSettings.bgColor = LSColors.HexToColor(DataManager.inst.GetSettingEnumValues("UITheme", 0)["bg"]);
+            ic.interfaceSettings.borderHighlightColor = LSColors.HexToColor(DataManager.inst.GetSettingEnumValues("UITheme", 0)["highlight"]);
+            ic.interfaceSettings.textColor = LSColors.HexToColor(DataManager.inst.GetSettingEnumValues("UITheme", 0)["text"]);
+            ic.interfaceSettings.borderColor = LSColors.HexToColorAlpha(DataManager.inst.GetSettingEnumValues("UITheme", 0)["buttonbg"]);
+            ic.cam.GetComponent<Camera>().backgroundColor = ic.interfaceSettings.bgColor;
+
+            var tmpUGUI = ic.MainPanel.transform.GetComponentsInChildren<TextMeshProUGUI>();
+            foreach (var textMeshProUGUI2 in tmpUGUI)
+            {
+                if (textMeshProUGUI2.color == previousTextColor)
+                    textMeshProUGUI2.color = ic.interfaceSettings.textColor;
+            }
+
+            var tmp = ic.MainPanel.transform.GetComponentsInChildren<TextMeshPro>();
+            foreach (var textMeshProUGUI2 in tmp)
+            {
+                if (textMeshProUGUI2.color == previousTextColor)
+                    textMeshProUGUI2.color = ic.interfaceSettings.textColor;
+            }
+
+            SaveManager.inst.UpdateSettingsFile(false);
+        }
+
         #region Base
 
         bool loadingInterface;
@@ -434,6 +464,11 @@ namespace BetterLegacy.Menus
                             break;
                     }
                     break;
+                case "config":
+                    {
+                        ConfigManager.inst.Show();
+                        break;
+                    }
                 case "apply_ui_theme_with_reload":
                     {
                         Color textColor3 = ic.interfaceSettings.textColor;
@@ -468,32 +503,7 @@ namespace BetterLegacy.Menus
                     }
                 case "apply_ui_theme":
                     {
-                        Color textColor2 = ic.interfaceSettings.textColor;
-                        ic.interfaceSettings.textHighlightColor = LSColors.HexToColor(DataManager.inst.GetSettingEnumValues("UITheme", 0)["text-highlight"]);
-                        ic.interfaceSettings.bgColor = LSColors.HexToColor(DataManager.inst.GetSettingEnumValues("UITheme", 0)["bg"]);
-                        ic.interfaceSettings.borderHighlightColor = LSColors.HexToColor(DataManager.inst.GetSettingEnumValues("UITheme", 0)["highlight"]);
-                        ic.interfaceSettings.textColor = LSColors.HexToColor(DataManager.inst.GetSettingEnumValues("UITheme", 0)["text"]);
-                        ic.interfaceSettings.borderColor = LSColors.HexToColorAlpha(DataManager.inst.GetSettingEnumValues("UITheme", 0)["buttonbg"]);
-                        ic.cam.GetComponent<Camera>().backgroundColor = ic.interfaceSettings.bgColor;
-
-                        var tmpUGUI = ic.MainPanel.transform.GetComponentsInChildren<TextMeshProUGUI>();
-                        foreach (var textMeshProUGUI2 in tmpUGUI)
-                        {
-                            if (textMeshProUGUI2.color == textColor2)
-                            {
-                                textMeshProUGUI2.color = ic.interfaceSettings.textColor;
-                            }
-                        }
-
-                        var tmp = ic.MainPanel.transform.GetComponentsInChildren<TextMeshPro>();
-                        foreach (var textMeshProUGUI2 in tmp)
-                        {
-                            if (textMeshProUGUI2.color == textColor2)
-                            {
-                                textMeshProUGUI2.color = ic.interfaceSettings.textColor;
-                            }
-                        }
-                        SaveManager.inst.UpdateSettingsFile(false);
+                        ApplyInterfaceTheme();
                         break;
                     }
                 case "apply_level_ui_theme":
