@@ -172,7 +172,7 @@ namespace BetterLegacy.Configs
             contentVerticalLayoutGroup.spacing = 8f;
             contentVerticalLayoutGroup.childControlHeight = false;
             contentVerticalLayoutGroup.childForceExpandHeight = false;
-            UIManager.SetRectTransform(this.content.AsRT(), Vector2.zero, new Vector2(0.995f, 0.94f), new Vector2(0.136f, 0.136f), new Vector2(0.5f, 0.5f), Vector2.zero);
+            UIManager.SetRectTransform(this.content.AsRT(), Vector2.zero, new Vector2(0.995f, 0.88f), new Vector2(0.136f, 0.136f), new Vector2(0.5f, 0.5f), Vector2.zero);
 
             var pagePanel = Creator.NewUIObject("Page Panel", configBase.transform);
             UIManager.SetRectTransform(pagePanel.transform.AsRT(), Vector2.zero, new Vector2(1f, 0f), new Vector2(0.132f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 64f));
@@ -283,6 +283,20 @@ namespace BetterLegacy.Configs
 
             }
 
+            var searchField = numberFieldStorage.transform.Find("input").gameObject.Duplicate(configBase.transform);
+            UIManager.SetRectTransform(searchField.transform.AsRT(), new Vector2(134f, -50f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(856f, 32f));
+            var searchFieldInput = searchField.GetComponent<InputField>();
+            searchFieldInput.textComponent.alignment = TextAnchor.MiddleLeft;
+            searchFieldInput.onValueChanged.ClearAll();
+            searchFieldInput.text = "";
+            searchFieldInput.onValueChanged.AddListener(delegate (string _val)
+            {
+                searchTerm = _val;
+                currentSubTabPage = 0;
+                RefreshSettings();
+            });
+            EditorThemeManager.ApplyInputField(searchFieldInput, ThemeGroup.Search_Field_1);
+
             var pageObject = numberFieldStorage.Duplicate(pagePanel.transform, "Page");
             UIManager.SetRectTransform(pageObject.transform.AsRT(), new Vector2(580f, 32f), Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
 
@@ -339,11 +353,12 @@ namespace BetterLegacy.Configs
 
         public void Hide() => configBase.SetActive(false);
 
-        public int maxSettingsPerPage = 15;
+        public int maxSettingsPerPage = 14;
         public int currentSubTabPage;
         public int currentSubTab;
         public int currentTab;
         public int lastTab;
+        public string searchTerm;
         public List<string> subTabSections = new List<string>();
         public void SetTab(int tabIndex)
         {
@@ -414,60 +429,17 @@ namespace BetterLegacy.Configs
             var settings = config.Settings.Where(x => subTabSections[currentSubTab] == x.Section);
             var page = currentSubTabPage + 1;
             var max = page * maxSettingsPerPage;
-
-            pageFieldStorage.inputField.onValueChanged.ClearAll();
-            pageFieldStorage.inputField.text = currentSubTabPage.ToString();
-            pageFieldStorage.inputField.onValueChanged.AddListener(delegate (string _val)
-            {
-                if (int.TryParse(_val, out int p))
-                {
-                    currentSubTabPage = p;
-                    RefreshSettings();
-                }
-            });
-
-            if (settings.Count() / maxSettingsPerPage != 0)
-                TriggerHelper.AddEventTriggerParams(pageFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(pageFieldStorage.inputField, max: settings.Count() / maxSettingsPerPage));
-            else
-                TriggerHelper.AddEventTriggerParams(pageFieldStorage.inputField.gameObject);
-
-            pageFieldStorage.leftGreaterButton.onClick.ClearAll();
-            pageFieldStorage.leftGreaterButton.onClick.AddListener(delegate ()
-            {
-                currentSubTabPage = 0;
-                RefreshSettings();
-            });
-            pageFieldStorage.leftButton.onClick.ClearAll();
-            pageFieldStorage.leftButton.onClick.AddListener(delegate ()
-            {
-                if (int.TryParse(pageFieldStorage.inputField.text, out int p))
-                {
-                    currentSubTabPage = Mathf.Clamp(p - 1, 0, settings.Count() / maxSettingsPerPage);
-                    RefreshSettings();
-                }
-            });
-            pageFieldStorage.rightButton.onClick.ClearAll();
-            pageFieldStorage.rightButton.onClick.AddListener(delegate ()
-            {
-                if (int.TryParse(pageFieldStorage.inputField.text, out int p))
-                {
-                    currentSubTabPage = Mathf.Clamp(p + 1, 0, settings.Count() / maxSettingsPerPage);
-                    RefreshSettings();
-                }
-            });
-            pageFieldStorage.rightGreaterButton.onClick.ClearAll();
-            pageFieldStorage.rightGreaterButton.onClick.AddListener(delegate ()
-            {
-                currentSubTabPage = settings.Count() / maxSettingsPerPage;
-                RefreshSettings();
-            });
-
+            
             LSHelpers.DeleteChildren(content);
+            int num = 0;
             for (int i = 0; i < settings.Count(); i++)
             {
                 var setting = settings.ElementAt(i);
 
-                if (i >= max - maxSettingsPerPage && i < max)
+                if (!CoreHelper.SearchString(searchTerm, setting.Key) && !CoreHelper.SearchString(searchTerm, setting.Section))
+                    continue;
+
+                if (num >= max - maxSettingsPerPage && num < max)
                 {
                     CoreHelper.Log($"Setting: {setting.Key}");
 
@@ -530,7 +502,12 @@ namespace BetterLegacy.Configs
                         integerStorage.inputField.onValueChanged.AddListener(delegate (string _val)
                         {
                             if (int.TryParse(_val, out int value))
+                            {
+                                if (intSetting.MinValue != 0 || intSetting.MaxValue != 0)
+                                    value = Mathf.Clamp(value, intSetting.MinValue, intSetting.MaxValue);
+
                                 setting.BoxedValue = value;
+                            }
                         });
 
                         TriggerHelper.IncreaseDecreaseButtonsInt(integerStorage.inputField, min: intSetting.MinValue, max: intSetting.MaxValue, t: integer.transform);
@@ -556,7 +533,12 @@ namespace BetterLegacy.Configs
                         floatingPointStorage.inputField.onValueChanged.AddListener(delegate (string _val)
                         {
                             if (float.TryParse(_val, out float value))
+                            {
+                                if (floatSetting.MinValue != 0 || floatSetting.MaxValue != 0)
+                                    value = Mathf.Clamp(value, floatSetting.MinValue, floatSetting.MaxValue);
+
                                 setting.BoxedValue = value;
+                            }
                         });
 
                         TriggerHelper.IncreaseDecreaseButtons(floatingPointStorage.inputField, min: floatSetting.MinValue, max: floatSetting.MaxValue, t: floatingPoint.transform);
@@ -705,7 +687,57 @@ namespace BetterLegacy.Configs
                         EditorThemeManager.ApplyDropdown(dropdown);
                     }
                 }
+
+                num++;
             }
+
+            pageFieldStorage.inputField.onValueChanged.ClearAll();
+            pageFieldStorage.inputField.text = currentSubTabPage.ToString();
+            pageFieldStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+            {
+                if (int.TryParse(_val, out int p))
+                {
+                    currentSubTabPage = p;
+                    RefreshSettings();
+                }
+            });
+
+            if (num / maxSettingsPerPage != 0)
+                TriggerHelper.AddEventTriggerParams(pageFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(pageFieldStorage.inputField, max: num / maxSettingsPerPage));
+            else
+                TriggerHelper.AddEventTriggerParams(pageFieldStorage.inputField.gameObject);
+
+            pageFieldStorage.leftGreaterButton.onClick.ClearAll();
+            pageFieldStorage.leftGreaterButton.onClick.AddListener(delegate ()
+            {
+                currentSubTabPage = 0;
+                RefreshSettings();
+            });
+            pageFieldStorage.leftButton.onClick.ClearAll();
+            pageFieldStorage.leftButton.onClick.AddListener(delegate ()
+            {
+                if (int.TryParse(pageFieldStorage.inputField.text, out int p))
+                {
+                    currentSubTabPage = Mathf.Clamp(p - 1, 0, num / maxSettingsPerPage);
+                    RefreshSettings();
+                }
+            });
+            pageFieldStorage.rightButton.onClick.ClearAll();
+            pageFieldStorage.rightButton.onClick.AddListener(delegate ()
+            {
+                if (int.TryParse(pageFieldStorage.inputField.text, out int p))
+                {
+                    currentSubTabPage = Mathf.Clamp(p + 1, 0, num / maxSettingsPerPage);
+                    RefreshSettings();
+                }
+            });
+            pageFieldStorage.rightGreaterButton.onClick.ClearAll();
+            pageFieldStorage.rightGreaterButton.onClick.AddListener(delegate ()
+            {
+                currentSubTabPage = num / maxSettingsPerPage;
+                RefreshSettings();
+            });
+
         }
     }
 
