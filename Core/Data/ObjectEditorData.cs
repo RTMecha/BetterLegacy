@@ -25,6 +25,8 @@ namespace BetterLegacy.Core.Data
             set => layer = Mathf.Clamp(value, 0, int.MaxValue);
         }
 
+        public int Index { get; set; } = -1;
+
         #region Methods
 
         public static ObjectEditorData DeepCopy(ObjectEditorData orig) => new ObjectEditorData
@@ -32,7 +34,8 @@ namespace BetterLegacy.Core.Data
             Bin = orig.Bin,
             Layer = orig.Layer,
             collapse = orig.collapse,
-            locked = orig.locked
+            locked = orig.locked,
+            Index = orig.Index,
         };
 
         public static ObjectEditorData ParseVG(JSONNode jn) => new ObjectEditorData
@@ -49,6 +52,7 @@ namespace BetterLegacy.Core.Data
             layer = jn["layer"] == null ? 0 : Mathf.Clamp(jn["layer"].AsInt, 0, int.MaxValue),
             collapse = jn["shrink"] == null ? jn["collapse"] == null ? false : jn["collapse"].AsBool : jn["shrink"].AsBool,
             locked = jn["locked"] == null ? false : jn["locked"].AsBool,
+            Index = jn["index"] == null ? -1 : jn["index"].AsInt,
         };
 
         public JSONNode ToJSONVG()
@@ -73,6 +77,9 @@ namespace BetterLegacy.Core.Data
                 jn["collapse"] = collapse.ToString();
             if (locked)
                 jn["locked"] = locked.ToString();
+
+            if (Index != -1)
+                jn["index"] = Index.ToString();
 
             return jn;
         }
