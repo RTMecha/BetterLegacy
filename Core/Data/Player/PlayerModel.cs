@@ -326,6 +326,7 @@ namespace BetterLegacy.Core.Data.Player
                     case "Base Boost Cooldown": return basePart.boostCooldown; // 6
                     case "Base Min Boost Time": return basePart.minBoostTime; // 7
                     case "Base Max Boost Time": return basePart.maxBoostTime; // 8
+                    case "Base Hit Cooldown": return basePart.hitCooldown; // 8
                     case "Base Rotate Mode": return basePart.rotateMode; // 9
                     case "Base Collision Accurate": return basePart.collisionAccurate; // 10
                     case "Base Sprint Sneak Active": return basePart.sprintSneakActive; // 11
@@ -711,6 +712,8 @@ namespace BetterLegacy.Core.Data.Player
                     case "Base Min Boost Time": basePart.minBoostTime = (float)value; // 7
                         break;
                     case "Base Max Boost Time": basePart.maxBoostTime = (float)value; // 8
+                        break;
+                    case "Base Hit Cooldown": basePart.hitCooldown = (float)value; // 8
                         break;
                     case "Base Rotate Mode": basePart.rotateMode = (Base.BaseRotateMode)value; // 9
                         break;
@@ -1337,6 +1340,7 @@ namespace BetterLegacy.Core.Data.Player
             "Base Boost Cooldown",
             "Base Min Boost Time",
             "Base Max Boost Time",
+            "Base Hit Cooldown",
             "Base Rotate Mode",
             "Base Collision Accurate",
             "Base Sprint Sneak Active",
@@ -1743,6 +1747,7 @@ namespace BetterLegacy.Core.Data.Player
                 boostCooldown = orig.boostCooldown,
                 minBoostTime = orig.minBoostTime,
                 maxBoostTime = orig.maxBoostTime,
+                hitCooldown = orig.hitCooldown,
                 rotateMode = orig.rotateMode,
                 collisionAccurate = orig.collisionAccurate,
                 sprintSneakActive = orig.sprintSneakActive
@@ -1768,6 +1773,8 @@ namespace BetterLegacy.Core.Data.Player
                     b.minBoostTime = jn["boost_min_time"].AsFloat;
                 if (!string.IsNullOrEmpty(jn["boost_max_time"]))
                     b.maxBoostTime = jn["boost_max_time"].AsFloat;
+                if (!string.IsNullOrEmpty(jn["hit_cooldown"]))
+                    b.hitCooldown = jn["hit_cooldown"].AsFloat;
                 if (!string.IsNullOrEmpty(jn["rotate_mode"]))
                     b.rotateMode = (BaseRotateMode)jn["rotate_mode"].AsInt;
                 if (!string.IsNullOrEmpty(jn["collision_acc"]))
@@ -1790,6 +1797,7 @@ namespace BetterLegacy.Core.Data.Player
                 jn["boost_cooldown"] = boostCooldown.ToString();
                 jn["boost_min_time"] = minBoostTime.ToString();
                 jn["boost_max_time"] = maxBoostTime.ToString();
+                jn["hit_cooldown"] = hitCooldown.ToString();
                 jn["rotate_mode"] = ((int)rotateMode).ToString();
                 jn["collision_acc"] = collisionAccurate.ToString();
                 jn["sprsneak"] = sprintSneakActive.ToString();
@@ -1812,6 +1820,8 @@ namespace BetterLegacy.Core.Data.Player
             public float minBoostTime = 0.07f;
 
             public float maxBoostTime = 0.18f;
+
+            public float hitCooldown = 2.5f;
 
             public BaseRotateMode rotateMode = BaseRotateMode.RotateToDirection;
 

@@ -1,6 +1,8 @@
 ﻿using BetterLegacy.Components.Editor;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
+using BetterLegacy.Core.Animation;
+using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
@@ -14,6 +16,8 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using XInputDotNetPure;
+
+using Ease = BetterLegacy.Core.Animation.Ease;
 
 namespace BetterLegacy.Components.Player
 {
@@ -90,6 +94,9 @@ namespace BetterLegacy.Components.Player
 
         public PlayerModel PlayerModel { get; set; }
 
+        public Animator anim;
+        public Rigidbody2D rb;
+
         #endregion
 
         #region Bool
@@ -161,7 +168,7 @@ namespace BetterLegacy.Components.Player
         #region Tail
 
         public bool tailGrows = false;
-        public bool boostTail = false;
+        public bool showBoostTail = false;
         public float tailDistance = 2f;
         public int tailMode;
         public enum TailUpdateMode
@@ -227,17 +234,9 @@ namespace BetterLegacy.Components.Player
 
         public delegate void PlayerHitDelegate(int _health, Vector3 _pos);
 
-        public delegate void PlayerHealDelegate(int _health, Vector3 _pos);
-
-        public delegate void PlayerBoostDelegate();
-
         public delegate void PlayerDeathDelegate(Vector3 _pos);
 
         public event PlayerHitDelegate playerHitEvent;
-
-        public event PlayerHealDelegate playerHealEvent;
-
-        public event PlayerBoostDelegate playerBoostEvent;
 
         public event PlayerDeathDelegate playerDeathEvent;
 
@@ -252,11 +251,13 @@ namespace BetterLegacy.Components.Player
             var anim = gameObject.GetComponent<Animator>();
             anim.keepAnimatorControllerStateOnDisable = true;
             playerObjects["Base"].values.Add("Animator", anim);
+            this.anim = anim;
 
             var rb = transform.Find("Player").gameObject;
             playerObjects.Add("RB Parent", new PlayerObject("RB Parent", rb));
             playerObjects["RB Parent"].values.Add("Transform", rb.transform);
             playerObjects["RB Parent"].values.Add("Rigidbody2D", rb.GetComponent<Rigidbody2D>());
+            this.rb = rb.GetComponent<Rigidbody2D>();
 
             var circleCollider = rb.GetComponent<CircleCollider2D>();
 
@@ -322,59 +323,42 @@ namespace BetterLegacy.Components.Player
 
             // Set new parents
             {
-                // Tail 1
-                var trail1Base = new GameObject("Tail 1 Base");
-                trail1Base.layer = 8;
-                trail1Base.transform.SetParent(transform.Find("trail"));
-                transform.Find("trail/1").SetParent(trail1Base.transform);
-
-                playerObjects.Add("Tail 1 Base", new PlayerObject("Tail 1 Base", trail1Base));
-
-                // Tail 2
-                var trail2Base = new GameObject("Tail 2 Base");
-                trail2Base.layer = 8;
-                trail2Base.transform.SetParent(transform.Find("trail"));
-                transform.Find("trail/2").SetParent(trail2Base.transform);
-
-                playerObjects.Add("Tail 2 Base", new PlayerObject("Tail 2 Base", trail2Base));
-
-                // Tail 3
-                var trail3Base = new GameObject("Tail 3 Base");
-                trail3Base.layer = 8;
-                trail3Base.transform.SetParent(transform.Find("trail"));
-                transform.Find("trail/3").SetParent(trail3Base.transform);
-
-                playerObjects.Add("Tail 3 Base", new PlayerObject("Tail 3 Base", trail3Base));
+                path.Add(new MovementPath(Vector3.zero, Quaternion.identity, rb.transform));
 
                 // Boost
-                var boostBase = new GameObject("Boost Base");
+                var boostBase = Creator.NewGameObject("Boost Base", transform.Find("Player"));
                 boostBase.layer = 8;
-                boostBase.transform.SetParent(transform.Find("Player"));
                 boost.transform.SetParent(boostBase.transform);
                 boost.transform.localPosition = Vector3.zero;
                 boost.transform.localRotation = Quaternion.identity;
 
                 playerObjects.Add("Boost Base", new PlayerObject("Boost Base", boostBase));
 
-                var boostTail = Instantiate(boostBase);
-                boostTail.name = "Boost Tail";
+                var boostTail = boostBase.Duplicate(transform.Find("trail"), "Boost Tail");
                 boostTail.layer = 8;
-                boostTail.transform.SetParent(transform.Find("trail"));
 
                 playerObjects.Add("Boost Tail Base", new PlayerObject("Boost Tail Base", boostTail));
                 var child = boostTail.transform.GetChild(0);
 
-                bool showBoost = this.boostTail;
+                bool showBoost = this.showBoostTail;
 
                 playerObjects.Add("Boost Tail", new PlayerObject("Boost Tail", child.gameObject));
                 playerObjects["Boost Tail"].values.Add("MeshRenderer", child.GetComponent<MeshRenderer>());
                 playerObjects["Boost Tail"].values.Add("MeshFilter", child.GetComponent<MeshFilter>());
 
-                path.Add(new MovementPath(Vector3.zero, Quaternion.identity, rb.transform));
                 path.Add(new MovementPath(Vector3.zero, Quaternion.identity, boostTail.transform, showBoost));
-                path.Add(new MovementPath(Vector3.zero, Quaternion.identity, trail1Base.transform));
-                path.Add(new MovementPath(Vector3.zero, Quaternion.identity, trail2Base.transform));
-                path.Add(new MovementPath(Vector3.zero, Quaternion.identity, trail3Base.transform));
+
+                for (int i = 1; i < 4; i++)
+                {
+                    var name = $"Tail {i} Base";
+                    var tailBase = Creator.NewGameObject(name, transform.Find("trail"));
+                    tailBase.layer = 8;
+                    transform.Find($"trail/{i}").SetParent(tailBase.transform);
+                    path.Add(new MovementPath(Vector3.zero, Quaternion.identity, tailBase.transform));
+
+                    playerObjects.Add(name, new PlayerObject(name, tailBase));
+                }
+
                 path.Add(new MovementPath(Vector3.zero, Quaternion.identity, null));
             }
 
@@ -586,7 +570,6 @@ namespace BetterLegacy.Components.Player
         public bool playerNeedsUpdating;
         void Start()
         {
-            playerHealEvent += UpdateTail;
             playerHitEvent += UpdateTail;
             Spawn();
 
@@ -601,7 +584,7 @@ namespace BetterLegacy.Components.Player
             CanMove = false;
             isDead = false;
             isBoosting = false;
-            ((Animator)playerObjects["Base"].values["Animator"]).SetTrigger("spawn");
+            anim.SetTrigger("spawn");
             PlaySpawnParticles();
 
             EvaluateSpawnCode();
@@ -632,18 +615,6 @@ namespace BetterLegacy.Components.Player
                 }
             }
 
-            //Anim
-            {
-                if (GameManager.inst.gameState == GameManager.State.Paused)
-                {
-                    ((Animator)playerObjects["Base"].values["Animator"]).speed = 0f;
-                }
-                else if (GameManager.inst.gameState == GameManager.State.Playing)
-                {
-                    ((Animator)playerObjects["Base"].values["Animator"]).speed = 1f / CoreHelper.ForwardPitch;
-                }
-            }
-
             if (!PlayerModel)
                 return;
 
@@ -656,31 +627,28 @@ namespace BetterLegacy.Components.Player
                 ((TrailRenderer)playerObjects["Boost Trail"].values["TrailRenderer"]).endWidth = PlayerModel.boostPart.Trail.endWidth * v.magnitude / 1.414213f;
             }
 
-            if (!CoreHelper.Paused)
+            if (CoreHelper.Paused)
+                return;
+
+            if (!PlayerAlive && !isDead && CustomPlayer && !PlayerManager.IsPractice)
+                StartCoroutine(Kill());
+
+            if (CanMove && PlayerAlive && Actions != null)
             {
-                if (!PlayerAlive && !isDead && CustomPlayer && !PlayerManager.IsPractice)
-                    StartCoroutine(Kill());
-
-                if (CanMove && PlayerAlive && Actions != null)
+                if (Actions.Boost.WasPressed && CanBoost && !LockBoost)
                 {
-                    if (Actions.Boost.WasPressed && CanBoost && !LockBoost)
-                    {
-                        StartBoost();
-                        return;
-                    }
-                    if (isBoosting && !isBoostCancelled && (Actions.Boost.WasReleased || startBoostTime + maxBoostTime <= Time.time))
-                    {
-                        InitMidBoost(true);
-                    }
+                    StartBoost();
+                    return;
                 }
 
-                if (PlayerAlive && faceController != null && PlayerModel.bulletPart.active)
-                {
-                    if (!PlayerModel.bulletPart.constant && faceController.Shoot.WasPressed && canShoot ||
-                        PlayerModel.bulletPart.constant && faceController.Shoot.IsPressed && canShoot)
-                        CreateBullet();
-                }
+                if (isBoosting && !isBoostCancelled && (Actions.Boost.WasReleased || startBoostTime + maxBoostTime <= Time.time))
+                    InitMidBoost(true);
             }
+
+            if (PlayerAlive && faceController != null && PlayerModel.bulletPart.active &&
+                (!PlayerModel.bulletPart.constant && faceController.Shoot.WasPressed && canShoot ||
+                    PlayerModel.bulletPart.constant && faceController.Shoot.IsPressed && canShoot))
+                CreateBullet();
         }
 
         bool canShoot = true;
@@ -703,7 +671,7 @@ namespace BetterLegacy.Components.Player
             var player = playerObjects["RB Parent"].gameObject;
 
             // Here we handle the player's bounds to the camera. It is possible to include negative zoom in those bounds but it might not be a good idea since people have already utilized it.
-            if (!OutOfBounds && !EventsConfig.Instance.EditorCamEnabled.Value && GameManager.inst.gameState == GameManager.State.Playing)
+            if (!OutOfBounds && !EventsConfig.Instance.EditorCamEnabled.Value && CoreHelper.Playing)
             {
                 var cameraToViewportPoint = Camera.main.WorldToViewportPoint(player.transform.position);
                 cameraToViewportPoint.x = Mathf.Clamp(cameraToViewportPoint.x, 0f, 1f);
@@ -715,32 +683,43 @@ namespace BetterLegacy.Components.Player
                 }
             }
 
-            if (!PlayerModel)
+            if (!PlayerModel || !PlayerModel.FaceControlActive || faceController == null)
                 return;
 
-            if (PlayerModel.FaceControlActive && faceController != null)
-            {
-                var vector = new Vector2(faceController.Move.Vector.x, faceController.Move.Vector.y);
-                var fp = PlayerModel.FacePosition;
-                if (vector.magnitude > 1f)
-                {
-                    vector = vector.normalized;
-                }
+            var vector = new Vector2(faceController.Move.Vector.x, faceController.Move.Vector.y);
+            var fp = PlayerModel.FacePosition;
+            if (vector.magnitude > 1f)
+                vector = vector.normalized;
 
-                if (rotateMode == RotateMode.FlipX && lastMovement.x < 0f)
-                    vector.x = -vector.x;
-                if (rotateMode == RotateMode.FlipY && lastMovement.y < 0f)
-                    vector.y = -vector.y;
+            if (rotateMode == RotateMode.FlipX && lastMovement.x < 0f)
+                vector.x = -vector.x;
+            if (rotateMode == RotateMode.FlipY && lastMovement.y < 0f)
+                vector.y = -vector.y;
 
-                playerObjects["Face Parent"].gameObject.transform.localPosition = new Vector3(vector.x * 0.3f + fp.x, vector.y * 0.3f + fp.y, 0f);
-            }
-
+            playerObjects["Face Parent"].gameObject.transform.localPosition = new Vector3(vector.x * 0.3f + fp.x, vector.y * 0.3f + fp.y, 0f);
         }
+
+        float timeHit;
+        float timeHitOffset;
 
         void UpdateSpeeds()
         {
+            float pitch = CoreHelper.ForwardPitch;
+
+            if (CoreHelper.Paused)
+                pitch = 0f;
+
+            anim.speed = pitch;
+
             if (!PlayerModel)
                 return;
+
+            timeHitOffset = Time.time - timeHit;
+            if (timeHitOffset > PlayerModel.basePart.hitCooldown && isTakingHit)
+            {
+                isTakingHit = false;
+                CanTakeDamage = true;
+            }
 
             var idl = PlayerModel.basePart.moveSpeed;
             var bst = PlayerModel.basePart.boostSpeed;
@@ -748,21 +727,12 @@ namespace BetterLegacy.Components.Player
             var bstmin = PlayerModel.basePart.minBoostTime;
             var bstmax = PlayerModel.basePart.maxBoostTime;
 
-            float pitch = CoreHelper.ForwardPitch;
-
             idleSpeed = idl;
             boostSpeed = bst;
 
             boostCooldown = bstcldwn / pitch;
             minBoostTime = bstmin / pitch;
             maxBoostTime = bstmax / pitch;
-
-            var anim = (Animator)playerObjects["Base"].values["Animator"];
-
-            if (GameManager.inst.gameState == GameManager.State.Paused)
-                pitch = 0f;
-
-            anim.speed = pitch;
         }
 
         void UpdateTailDistance()
@@ -774,29 +744,27 @@ namespace BetterLegacy.Components.Player
                 int num = i - 1;
 
                 if (i == 2 && !path[1].active)
-                {
                     num = i - 2;
+
+                if (Vector3.Distance(path[i].pos, path[num].pos) <= tailDistance)
+                    continue;
+
+                Vector3 pos = Vector3.Lerp(path[i].pos, path[num].pos, Time.deltaTime * 12f);
+                Quaternion rot = Quaternion.Lerp(path[i].rot, path[num].rot, Time.deltaTime * 12f);
+
+                if (tailMode == 0)
+                {
+                    path[i].pos = pos;
+                    path[i].rot = rot;
                 }
 
-                if (Vector3.Distance(path[i].pos, path[num].pos) > tailDistance)
+                if (tailMode > 1)
                 {
-                    Vector3 pos = Vector3.Lerp(path[i].pos, path[num].pos, Time.deltaTime * 12f);
-                    Quaternion rot = Quaternion.Lerp(path[i].rot, path[num].rot, Time.deltaTime * 12f);
+                    path[i].pos = new Vector3(RTMath.RoundToNearestDecimal(pos.x, 1), RTMath.RoundToNearestDecimal(pos.y, 1), RTMath.RoundToNearestDecimal(pos.z, 1));
 
-                    if (tailMode == 0)
-                    {
-                        path[i].pos = pos;
-                        path[i].rot = rot;
-                    }
+                    var r = rot.eulerAngles;
 
-                    if (tailMode > 1)
-                    {
-                        path[i].pos = new Vector3(RTMath.RoundToNearestDecimal(pos.x, 1), RTMath.RoundToNearestDecimal(pos.y, 1), RTMath.RoundToNearestDecimal(pos.z, 1));
-
-                        var r = rot.eulerAngles;
-
-                        path[i].rot = Quaternion.Euler((int)r.x, (int)r.y, (int)r.z);
-                    }
+                    path[i].rot = Quaternion.Euler((int)r.x, (int)r.y, (int)r.z);
                 }
             }
         }
@@ -809,7 +777,7 @@ namespace BetterLegacy.Components.Player
             float num = Time.deltaTime * 200f;
             for (int i = 1; i < path.Count; i++)
             {
-                if (InputDataManager.inst.players.Count > 0 && path.Count >= i && path[i].transform != null && path[i].transform.gameObject.activeSelf)
+                if (path.Count >= i && path[i].transform != null && path[i].transform.gameObject.activeSelf)
                 {
                     num *= Vector3.Distance(path[i].lastPos, path[i].pos);
                     path[i].transform.position = Vector3.MoveTowards(path[i].lastPos, path[i].pos, num);
@@ -827,10 +795,8 @@ namespace BetterLegacy.Components.Player
             for (int i = 1; i < path.Count; i++)
             {
                 int num = i;
-                if (boostTail && path[1].active)
-                {
+                if (showBoostTail && path[1].active)
                     num += 1;
-                }
 
                 if (i == 1)
                 {
@@ -878,11 +844,13 @@ namespace BetterLegacy.Components.Player
             if (!PlayerModel)
                 return;
 
+            var pitch = CoreHelper.ForwardPitch;
+
             var headTrail = (TrailRenderer)playerObjects["Head Trail"].values["TrailRenderer"];
             var boostTrail = (TrailRenderer)playerObjects["Boost Trail"].values["TrailRenderer"];
 
-            headTrail.time = PlayerModel.headPart.Trail.time / CoreHelper.ForwardPitch;
-            boostTrail.time = PlayerModel.boostPart.Trail.time / CoreHelper.ForwardPitch;
+            headTrail.time = PlayerModel.headPart.Trail.time / pitch;
+            boostTrail.time = PlayerModel.boostPart.Trail.time / pitch;
 
             for (int i = 0; i < PlayerModel.tailParts.Count; i++)
             {
@@ -891,7 +859,7 @@ namespace BetterLegacy.Components.Player
                 {
                     var tailTrail = (TrailRenderer)playerObjects[str].values["TrailRenderer"];
 
-                    tailTrail.time = PlayerModel.tailParts[i].Trail.time / CoreHelper.ForwardPitch;
+                    tailTrail.time = PlayerModel.tailParts[i].Trail.time / pitch;
                 }
             }
         }
@@ -1024,6 +992,7 @@ namespace BetterLegacy.Components.Player
                 rb.velocity = Vector3.zero;
             }
 
+            // Currently unused.
             if (PlayerAlive && CustomPlayer.active && CanMove && !CoreHelper.Paused && !LSHelpers.IsUsingInputField() && movementMode == MovementMode.Mouse && (EditorManager.inst == null || !EditorManager.inst.isEditing) && Application.isFocused && isKeyboard && !EventsConfig.Instance.EditorCamEnabled.Value)
             {
                 Vector2 screenCenter = new Vector2(1920 / 2 * (int)EditorManager.inst.ScreenScale, 1080 / 2 * (int)EditorManager.inst.ScreenScale);
@@ -1061,20 +1030,15 @@ namespace BetterLegacy.Components.Player
                     var c = Quaternion.Slerp(player.transform.rotation, b, 720f * Time.deltaTime).eulerAngles;
 
                     if (rotateMode == RotateMode.FlipX && c.z > 90f && c.z < 270f)
-                    {
                         c.z = -c.z + 180f;
-                    }
                     if (rotateMode == RotateMode.FlipY && c.z > 0f && c.z < 180f)
-                    {
                         c.z = -c.z + 90f;
-                    }
 
                     playerObjects["Face Base"].gameObject.transform.rotation = Quaternion.Euler(c);
                 }
-
-                if (rotateMode == RotateMode.RotateToDirection)
+                else
                 {
-                    Quaternion b = Quaternion.AngleAxis(Mathf.Atan2(lastMovement.y, lastMovement.x) * 57.29578f, player.transform.forward);
+                    var b = Quaternion.AngleAxis(Mathf.Atan2(lastMovement.y, lastMovement.x) * 57.29578f, player.transform.forward);
                     player.transform.rotation = Quaternion.Slerp(player.transform.rotation, b, 720f * Time.deltaTime);
 
                     playerObjects["Face Base"].gameObject.transform.localRotation = Quaternion.identity;
@@ -1137,13 +1101,10 @@ namespace BetterLegacy.Components.Player
                 }
             }
 
-            //var posCalc = (player.transform.position - lastPos) * 50.2008f;
             var posCalc = (player.transform.position - lastPos);
 
             if (posCalc.x < -0.001f || posCalc.x > 0.001f || posCalc.y < -0.001f || posCalc.y > 0.001f)
-            {
                 lastMovement = posCalc;
-            }
 
             lastPos = player.transform.position;
 
@@ -1214,9 +1175,7 @@ namespace BetterLegacy.Components.Player
                 for (int i = 0; i < healthObjects.Count; i++)
                 {
                     if (healthObjects[i].image != null)
-                    {
                         healthObjects[i].image.color = GetColor(topCol, topAlpha, topColHex);
-                    }
                 }
 
                 barBaseIm.color = GetColor(baseCol, baseAlpha, baseColHex);
@@ -1239,19 +1198,20 @@ namespace BetterLegacy.Components.Player
                 var psCol = PlayerModel.tailParts[i].Particles.color;
                 var psColHex = PlayerModel.tailParts[i].Particles.customColor;
                 var str = string.Format("Tail {0} Particles", i + 1);
-                if (playerObjects.ContainsKey(str))
-                {
-                    var ps = playerObjects[string.Format("Tail {0} Particles", i + 1)].values.Get<string, ParticleSystem>("ParticleSystem");
-                    var main = ps.main;
 
-                    main.startColor = GetColor(psCol, 1f, psColHex);
+                if (!playerObjects.ContainsKey(str))
+                    continue;
 
-                    ((MeshRenderer)playerObjects[string.Format("Tail {0}", i + 1)].values["MeshRenderer"]).material.color = GetColor(col, alpha, colHex);
-                    var trailRenderer = playerObjects[string.Format("Tail {0}", i + 1)].values.Get<string, TrailRenderer>("TrailRenderer");
+                var ps = playerObjects[string.Format("Tail {0} Particles", i + 1)].values.Get<string, ParticleSystem>("ParticleSystem");
+                var main = ps.main;
 
-                    trailRenderer.startColor = GetColor(colStart, alphaStart, colStartHex);
-                    trailRenderer.endColor = GetColor(colEnd, alphaEnd, colEndHex);
-                }
+                main.startColor = GetColor(psCol, 1f, psColHex);
+
+                ((MeshRenderer)playerObjects[string.Format("Tail {0}", i + 1)].values["MeshRenderer"]).material.color = GetColor(col, alpha, colHex);
+                var trailRenderer = playerObjects[string.Format("Tail {0}", i + 1)].values.Get<string, TrailRenderer>("TrailRenderer");
+
+                trailRenderer.startColor = GetColor(colStart, alphaStart, colStartHex);
+                trailRenderer.endColor = GetColor(colEnd, alphaEnd, colEndHex);
             }
 
             if (playerObjects["Head Trail"].values["TrailRenderer"] != null && PlayerModel.headPart.Trail.emitting)
@@ -1268,6 +1228,7 @@ namespace BetterLegacy.Components.Player
                 trailRenderer.startColor = GetColor(colStart, alphaStart, colStartHex);
                 trailRenderer.endColor = GetColor(colEnd, alphaEnd, colEndHex);
             }
+
             if (playerObjects["Head Particles"].values["ParticleSystem"] != null && PlayerModel.headPart.Particles.emitting)
             {
                 var colStart = PlayerModel.headPart.Particles.color;
@@ -1278,6 +1239,7 @@ namespace BetterLegacy.Components.Player
 
                 main.startColor = GetColor(colStart, 1f, colStartHex);
             }
+
             if (playerObjects["Boost Trail"].values["TrailRenderer"] != null && PlayerModel.boostPart.Trail.emitting)
             {
                 var colStart = PlayerModel.boostPart.Trail.startColor;
@@ -1292,6 +1254,7 @@ namespace BetterLegacy.Components.Player
                 trailRenderer.startColor = GetColor(colStart, alphaStart, colStartHex);
                 trailRenderer.endColor = GetColor(colEnd, alphaEnd, colEndHex);
             }
+
             if (playerObjects["Boost Particles"].values["ParticleSystem"] != null && PlayerModel.boostPart.Particles.emitting)
             {
                 var colStart = PlayerModel.boostPart.Particles.color;
@@ -1341,24 +1304,24 @@ namespace BetterLegacy.Components.Player
 
         public void PlayerHit()
         {
-            var rb = (Rigidbody2D)playerObjects["RB Parent"].values["Rigidbody2D"];
-            var anim = (Animator)playerObjects["Base"].values["Animator"];
             var player = playerObjects["RB Parent"].gameObject;
 
-            if (CanTakeDamage && PlayerAlive)
-            {
-                InitBeforeHit();
-                if (PlayerAlive)
-                    anim.SetTrigger("hurt");
-                if (CustomPlayer)
-                {
-                    if (!PlayerManager.IsPractice)
-                        CustomPlayer.Health--;
-                    playerHitEvent?.Invoke(CustomPlayer.Health, rb.position);
-                }
+            if (!CanTakeDamage || !PlayerAlive)
+                return;
 
-                EvaluateHitCode();
+            timeHit = Time.time;
+
+            InitBeforeHit();
+            if (PlayerAlive)
+                anim.SetTrigger("hurt");
+            if (CustomPlayer)
+            {
+                if (!PlayerManager.IsPractice)
+                    CustomPlayer.Health--;
+                playerHitEvent?.Invoke(CustomPlayer.Health, rb.position);
             }
+
+            EvaluateHitCode();
         }
 
         IEnumerator BoostCooldownLoop()
@@ -1366,23 +1329,29 @@ namespace BetterLegacy.Components.Player
             var player = playerObjects["RB Parent"].gameObject;
             var headTrail = (TrailRenderer)playerObjects["Boost Trail"].values["TrailRenderer"];
             if (PlayerModel && PlayerModel.boostPart.Trail.emitting)
-            {
                 headTrail.emitting = false;
-            }
 
-            DOTween.To(delegate (float x)
+            AnimationManager.inst.Play(new RTAnimation("Player Stretch")
             {
-                stretchVector = new Vector2(x, -x);
-            }, stretchAmount * 1.5f, 0f, 1.5f).SetEase(DataManager.inst.AnimationList[stretchEasing].Animation);
+                animationHandlers = new List<AnimationHandlerBase>
+                {
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, stretchAmount * 1.5f, Ease.Linear),
+                        new FloatKeyframe(1.5f, 0f, Ease.GetEaseFunction(DataManager.inst.AnimationList[stretchEasing].Name)),
+                    }, delegate (float x)
+                    {
+                        stretchVector = new Vector2(x, -x);
+                    }),
+                },
+            });
 
             yield return new WaitForSeconds(boostCooldown / CoreHelper.ForwardPitch);
             CanBoost = true;
             if (PlayBoostRecoverSound)
-            {
                 AudioManager.inst.PlaySound("boost_recover");
-            }
 
-            if (boostTail)
+            if (showBoostTail)
             {
                 path[1].active = true;
                 var tweener = playerObjects["Boost Tail Base"].gameObject.transform.DOScale(Vector3.one, 0.1f / CoreHelper.ForwardPitch).SetEase(DataManager.inst.AnimationList[9].Animation);
@@ -1397,10 +1366,10 @@ namespace BetterLegacy.Components.Player
         IEnumerator Kill()
         {
             isDead = true;
-            playerDeathEvent?.Invoke(((Rigidbody2D)playerObjects["RB Parent"].values["Rigidbody2D"]).position);
+            playerDeathEvent?.Invoke(rb.position);
             CustomPlayer.active = false;
             CustomPlayer.health = 0;
-            ((Animator)playerObjects["Base"].values["Animator"]).SetTrigger("kill");
+            anim.SetTrigger("kill");
             InputDataManager.inst.SetControllerRumble(playerIndex, 1f);
             EvaluateDeathCode();
             yield return new WaitForSecondsRealtime(0.2f);
@@ -1427,48 +1396,40 @@ namespace BetterLegacy.Components.Player
 
         public void StartBoost()
         {
-            if (CanBoost && !isBoosting)
+            if (!CanBoost || isBoosting)
+                return;
+
+            startBoostTime = Time.time;
+            InitBeforeBoost();
+            anim.SetTrigger("boost");
+
+            var ps = (ParticleSystem)playerObjects["Boost Particles"].values["ParticleSystem"];
+            var emission = ps.emission;
+
+            var headTrail = (TrailRenderer)playerObjects["Boost Trail"].values["TrailRenderer"];
+
+            if (emission.enabled)
+                ps.Play();
+            if (PlayerModel && PlayerModel.boostPart.Trail.emitting)
+                headTrail.emitting = true;
+
+            if (PlayBoostSound)
+                AudioManager.inst.PlaySound("boost");
+
+            CreatePulse();
+
+            stretchVector = new Vector2(stretchAmount * 1.5f, -(stretchAmount * 1.5f));
+
+            if (showBoostTail)
             {
-                var anim = (Animator)playerObjects["Base"].values["Animator"];
-
-                startBoostTime = Time.time;
-                InitBeforeBoost();
-                anim.SetTrigger("boost");
-
-                var ps = (ParticleSystem)playerObjects["Boost Particles"].values["ParticleSystem"];
-                var emission = ps.emission;
-
-                var headTrail = (TrailRenderer)playerObjects["Boost Trail"].values["TrailRenderer"];
-
-                if (emission.enabled)
-                {
-                    ps.Play();
-                }
-                if (PlayerModel && PlayerModel.boostPart.Trail.emitting)
-                {
-                    headTrail.emitting = true;
-                }
-
-                if (PlayBoostSound)
-                {
-                    AudioManager.inst.PlaySound("boost");
-                }
-
-                CreatePulse();
-
-                stretchVector = new Vector2(stretchAmount * 1.5f, -(stretchAmount * 1.5f));
-
-                if (boostTail)
-                {
-                    path[1].active = false;
-                    animatingBoost = true;
-                    playerObjects["Boost Tail Base"].gameObject.transform.DOScale(Vector3.zero, 0.05f / CoreHelper.ForwardPitch).SetEase(DataManager.inst.AnimationList[2].Animation);
-                }
-
-                LevelManager.BoostCount++;
-
-                EvaluateBoostCode();
+                path[1].active = false;
+                animatingBoost = true;
+                playerObjects["Boost Tail Base"].gameObject.transform.DOScale(Vector3.zero, 0.05f / CoreHelper.ForwardPitch).SetEase(DataManager.inst.AnimationList[2].Animation);
             }
+
+            LevelManager.BoostCount++;
+
+            EvaluateBoostCode();
         }
 
         public void InitBeforeBoost()
@@ -1492,8 +1453,6 @@ namespace BetterLegacy.Components.Player
 
         public IEnumerator BoostCancel(float _offset)
         {
-            var anim = (Animator)playerObjects["Base"].values["Animator"];
-
             isBoostCancelled = true;
             yield return new WaitForSeconds(_offset);
             isBoosting = false;
@@ -1501,24 +1460,20 @@ namespace BetterLegacy.Components.Player
             {
                 CanTakeDamage = true;
                 anim.SetTrigger("boost_cancel");
-                yield return new WaitForSeconds(0.1f);
-                InitAfterBoost();
             }
             else
             {
                 float num = (Time.time - startHurtTime) / 2.5f;
                 if (num < 1f)
-                {
                     anim.Play("Hurt", -1, num);
-                }
                 else
                 {
                     anim.SetTrigger("boost_cancel");
                     InitAfterHit();
                 }
-                yield return new WaitForSeconds(0.1f);
-                InitAfterBoost();
             }
+            yield return new WaitForSeconds(0.1f);
+            InitAfterBoost();
             anim.SetTrigger("boost_cancel");
             yield break;
         }
@@ -1527,7 +1482,7 @@ namespace BetterLegacy.Components.Player
         public IEnumerator DamageSetDelay(float _offset)
         {
             yield return new WaitForSeconds(_offset);
-            CoreHelper.Log("Player can now be damaged.");
+            CoreHelper.Log($"Player {playerIndex} can now be damaged.");
             CanTakeDamage = true;
             yield break;
         }
@@ -1541,6 +1496,7 @@ namespace BetterLegacy.Components.Player
 
         public void InitBeforeHit()
         {
+            CoreHelper.Log($"Player {playerIndex} InitBeforeHit");
             startHurtTime = Time.time;
             CanBoost = true;
             isBoosting = false;
@@ -1550,10 +1506,10 @@ namespace BetterLegacy.Components.Player
             AudioManager.inst.PlaySound(CoreConfig.Instance.Language.Value == Language.Pirate ? "pirate_KillPlayer" : "HurtPlayer");
         }
 
+        // Empty method for animation controller
         public void InitAfterHit()
         {
-            isTakingHit = false;
-            CanTakeDamage = true;
+
         }
 
         public void ResetMovement()
@@ -1584,7 +1540,6 @@ namespace BetterLegacy.Components.Player
                 return;
 
             var currentModel = PlayerModel;
-            var rb = (Rigidbody2D)playerObjects["RB Parent"].values["Rigidbody2D"];
 
             //New NameTag
             {
@@ -1701,33 +1656,31 @@ namespace BetterLegacy.Components.Player
                 tailDistance = currentModel.tailBase.distance;
                 tailMode = (int)currentModel.tailBase.mode;
 
-                tailGrows = (bool)currentModel.tailBase.grows;
+                tailGrows = currentModel.tailBase.grows;
 
-                boostTail = (bool)currentModel.boostTailPart.active;
+                showBoostTail = currentModel.boostTailPart.active;
 
-                playerObjects["Boost Tail Base"].gameObject.SetActive(boostTail);
+                playerObjects["Boost Tail Base"].gameObject.SetActive(showBoostTail);
 
                 var fp = currentModel.FacePosition;
                 playerObjects["Face Parent"].gameObject.transform.localPosition = new Vector3(fp.x, fp.y, 0f);
 
                 if (!isBoosting)
-                {
-                    path[1].active = boostTail;
-                }
+                    path[1].active = showBoostTail;
 
                 //Stretch
                 {
-                    stretch = (bool)currentModel.stretchPart.active;
-                    stretchAmount = (float)currentModel.stretchPart.amount;
-                    stretchEasing = (int)currentModel.stretchPart.easing;
+                    stretch = currentModel.stretchPart.active;
+                    stretchAmount = currentModel.stretchPart.amount;
+                    stretchEasing = currentModel.stretchPart.easing;
                 }
 
                 var bt1 = currentModel.boostTailPart.position;
                 var bt2 = currentModel.boostTailPart.scale;
                 var bt3 = currentModel.boostTailPart.rotation;
 
-                playerObjects["Boost Tail"].gameObject.SetActive(boostTail);
-                if (boostTail)
+                playerObjects["Boost Tail"].gameObject.SetActive(showBoostTail);
+                if (showBoostTail)
                 {
                     playerObjects["Boost Tail"].gameObject.transform.localPosition = new Vector3(bt1.x, bt1.y, 0.1f);
                     playerObjects["Boost Tail"].gameObject.transform.localScale = new Vector3(bt2.x, bt2.y, 1f);
@@ -1736,21 +1689,14 @@ namespace BetterLegacy.Components.Player
 
                 rotateMode = (RotateMode)(int)currentModel.basePart.rotateMode;
 
-                ((CircleCollider2D)playerObjects["RB Parent"].values["CircleCollider2D"]).isTrigger = DataManager.inst.GetSettingEnum("ArcadeDifficulty", 1) == 0 && ZenEditorIncludesSolid;
-                ((PolygonCollider2D)playerObjects["RB Parent"].values["PolygonCollider2D"]).isTrigger = DataManager.inst.GetSettingEnum("ArcadeDifficulty", 1) == 0 && ZenEditorIncludesSolid;
+                ((CircleCollider2D)playerObjects["RB Parent"].values["CircleCollider2D"]).isTrigger = PlayerManager.IsZenMode && ZenEditorIncludesSolid;
+                ((PolygonCollider2D)playerObjects["RB Parent"].values["PolygonCollider2D"]).isTrigger = PlayerManager.IsZenMode && ZenEditorIncludesSolid;
 
                 var colAcc = (bool)currentModel.basePart.collisionAccurate;
+                ((CircleCollider2D)playerObjects["RB Parent"].values["CircleCollider2D"]).enabled = !colAcc;
+                ((PolygonCollider2D)playerObjects["RB Parent"].values["PolygonCollider2D"]).enabled = colAcc;
                 if (colAcc)
-                {
-                    ((CircleCollider2D)playerObjects["RB Parent"].values["CircleCollider2D"]).enabled = false;
-                    ((PolygonCollider2D)playerObjects["RB Parent"].values["PolygonCollider2D"]).enabled = true;
                     ((PolygonCollider2D)playerObjects["RB Parent"].values["PolygonCollider2D"]).CreateCollider((MeshFilter)playerObjects["Head"].values["MeshFilter"]);
-                }
-                else
-                {
-                    ((PolygonCollider2D)playerObjects["RB Parent"].values["PolygonCollider2D"]).enabled = false;
-                    ((CircleCollider2D)playerObjects["RB Parent"].values["CircleCollider2D"]).enabled = true;
-                }
 
                 for (int i = 0; i < currentModel.tailParts.Count; i++)
                 {
@@ -1771,7 +1717,7 @@ namespace BetterLegacy.Components.Player
                 //Health
                 {
                     if (CustomPlayer)
-                        CustomPlayer.Health = DataManager.inst.GetSettingEnum("ArcadeDifficulty", 0) == 3 ? 1 : currentModel.basePart.health;
+                        CustomPlayer.Health = PlayerManager.IsNoHit ? 1 : currentModel.basePart.health;
                 }
 
                 //Health Images
@@ -1794,7 +1740,6 @@ namespace BetterLegacy.Components.Player
                     playerObjects["Head Trail"].gameObject.transform.localPosition = currentModel.headPart.Trail.positionOffset;
 
                     headTrail.enabled = currentModel.headPart.Trail.emitting;
-                    //headTrail.time = (float)currentModel.values["Head Trail Time"];
                     headTrail.startWidth = currentModel.headPart.Trail.startWidth;
                     headTrail.endWidth = currentModel.headPart.Trail.endWidth;
                 }
@@ -1888,7 +1833,6 @@ namespace BetterLegacy.Components.Player
                     var headTrail = (TrailRenderer)playerObjects["Boost Trail"].values["TrailRenderer"];
                     headTrail.enabled = currentModel.boostPart.Trail.emitting;
                     headTrail.emitting = currentModel.boostPart.Trail.emitting;
-                    //headTrail.time = (float)currentModel.values["Boost Trail Time"];
                 }
 
                 //Boost Particles
@@ -1987,7 +1931,6 @@ namespace BetterLegacy.Components.Player
                             var headTrail = (TrailRenderer)playerObjects[str].values["TrailRenderer"];
                             headTrail.enabled = currentModel.tailParts[i].Trail.emitting;
                             headTrail.emitting = currentModel.tailParts[i].Trail.emitting;
-                            //headTrail.time = (float)currentModel.values[string.Format("Tail {0} Trail Time", i)];
                             headTrail.startWidth = currentModel.tailParts[i].Trail.startWidth;
                             headTrail.endWidth = currentModel.tailParts[i].Trail.endWidth;
 
@@ -2187,7 +2130,6 @@ namespace BetterLegacy.Components.Player
             if (dictionary != null && dictionary.Count > 0)
                 foreach (var obj in dictionary)
                 {
-                    var id = obj.Key;
                     var customObj = obj.Value;
 
                     var c = CreateCustomObject();
@@ -2247,114 +2189,6 @@ namespace BetterLegacy.Components.Player
                 foreach (var obj in customObjects.Values)
                 {
                     UpdateVisibility(obj);
-
-                    //int vis = (int)obj.values["Visibility"];
-                    //bool not = (bool)obj.values["Visibility Not"];
-                    //float value = (float)obj.values["Visibility Value"];
-                    //if (obj.gameObject != null)
-                    //{
-                    //    switch (vis)
-                    //    {
-                    //        case 0:
-                    //            {
-                    //                obj.gameObject.SetActive(true);
-                    //                break;
-                    //            }
-                    //        case 1:
-                    //            {
-                    //                if (!not)
-                    //                    obj.gameObject.SetActive(isBoosting);
-                    //                else
-                    //                    obj.gameObject.SetActive(!isBoosting);
-                    //                break;
-                    //            }
-                    //        case 2:
-                    //            {
-                    //                if (!not)
-                    //                    obj.gameObject.SetActive(isTakingHit);
-                    //                else
-                    //                    obj.gameObject.SetActive(!isTakingHit);
-                    //                break;
-                    //            }
-                    //        case 3:
-                    //            {
-                    //                bool zen = DataManager.inst.GetSettingEnum("ArcadeDifficulty", 1) == 0;
-                    //                obj.gameObject.SetActive(!not && zen || !zen);
-                    //                break;
-                    //            }
-                    //        case 4:
-                    //            {
-                    //                if (CustomPlayer)
-                    //                {
-                    //                    var val = (float)CustomPlayer.health / (float)initialHealthCount * 100f >= value;
-                    //                    if (!not)
-                    //                        obj.gameObject.SetActive(val);
-                    //                    else
-                    //                        obj.gameObject.SetActive(!val);
-                    //                }
-                    //                else
-                    //                    obj.gameObject.SetActive(false);
-
-                    //                break;
-                    //            }
-                    //        case 5:
-                    //            {
-                    //                if (CustomPlayer)
-                    //                {
-                    //                    var val = CustomPlayer.health >= value;
-                    //                    if (!not)
-                    //                        obj.gameObject.SetActive(val);
-                    //                    else
-                    //                        obj.gameObject.SetActive(!val);
-                    //                }
-                    //                else
-                    //                    obj.gameObject.SetActive(false);
-                    //                break;
-                    //            }
-                    //        case 6:
-                    //            {
-                    //                if (CustomPlayer)
-                    //                {
-                    //                    var val = CustomPlayer.health == value;
-                    //                    if (!not)
-                    //                        obj.gameObject.SetActive(val);
-                    //                    else
-                    //                        obj.gameObject.SetActive(!val);
-                    //                }
-                    //                else
-                    //                    obj.gameObject.SetActive(false);
-                    //                break;
-                    //            }
-                    //        case 7:
-                    //            {
-                    //                if (CustomPlayer)
-                    //                {
-                    //                    var val = CustomPlayer.health > value;
-                    //                    if (!not)
-                    //                        obj.gameObject.SetActive(val);
-                    //                    else
-                    //                        obj.gameObject.SetActive(!val);
-                    //                }
-                    //                else
-                    //                    obj.gameObject.SetActive(false);
-                    //                break;
-                    //            }
-                    //        case 8:
-                    //            {
-                    //                if (CustomPlayer)
-                    //                {
-                    //                    bool val = Input.GetKey(GetKeyCode((int)value));
-                    //                    if (!not)
-                    //                        obj.gameObject.SetActive(val);
-                    //                    else
-                    //                        obj.gameObject.SetActive(!val);
-                    //                }
-                    //                else
-                    //                    obj.gameObject.SetActive(false);
-                    //                break;
-                    //            }
-                    //    }
-                    //}
 
                     int col = (int)obj.values["Color"];
                     string hex = (string)obj.values["Custom Color"];
@@ -2463,11 +2297,6 @@ namespace BetterLegacy.Components.Player
             {
                 barBaseIm.gameObject.SetActive(false);
             }
-            //for (int j = 1; j < _health + 1; j++)
-            //{
-            //    if (path.Count > _health + 1 && path[j].transform != null)
-            //        path[j].transform.gameObject.SetActive(true);
-            //}
         }
 
         public Color GetColor(int col, float alpha, string hex)
@@ -2493,23 +2322,20 @@ namespace BetterLegacy.Components.Player
             int s = Mathf.Clamp(currentModel.pulsePart.shape.type, 0, ObjectManager.inst.objectPrefabs.Count - 1);
             int so = Mathf.Clamp(currentModel.pulsePart.shape.option, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
 
-            var objcopy = ObjectManager.inst.objectPrefabs[s].options[so];
             if (s == 4 || s == 6)
             {
-                objcopy = ObjectManager.inst.objectPrefabs[0].options[0];
+                s = 0;
+                so = 0;
             }
 
-            var pulse = Instantiate(objcopy);
-            pulse.transform.SetParent(ObjectManager.inst.objectParent.transform);
+            var pulse = ObjectManager.inst.objectPrefabs[s].options[so].Duplicate(ObjectManager.inst.objectParent.transform);
             pulse.transform.localScale = new Vector3(currentModel.pulsePart.startScale.x, currentModel.pulsePart.startScale.y, 1f);
             pulse.transform.position = player.transform.position;
             pulse.transform.GetChild(0).localPosition = new Vector3(currentModel.pulsePart.startPosition.x, currentModel.pulsePart.startPosition.y, currentModel.pulsePart.depth);
             pulse.transform.GetChild(0).localRotation = Quaternion.Euler(new Vector3(0f, 0f, currentModel.pulsePart.startRotation));
 
             if (currentModel.pulsePart.rotateToHead)
-            {
                 pulse.transform.localRotation = player.transform.localRotation;
-            }
 
             //Destroy
             {
@@ -2567,29 +2393,29 @@ namespace BetterLegacy.Components.Player
 
         void UpdateBoostTheme()
         {
-            if (boosts.Count > 0)
+            if (boosts.Count < 1)
+                return;
+
+            foreach (var boost in boosts)
             {
-                foreach (var boost in boosts)
+                if (boost == null)
+                    continue;
+
+                int startCol = (int)boost.values["StartColor"];
+                int endCol = (int)boost.values["EndColor"];
+
+                var startHex = (string)boost.values["StartCustomColor"];
+                var endHex = (string)boost.values["EndCustomColor"];
+
+                float alpha = (float)boost.values["Opacity"];
+                float colorTween = (float)boost.values["ColorTween"];
+
+                Color startColor = GetColor(startCol, alpha, startHex);
+                Color endColor = GetColor(endCol, alpha, endHex);
+
+                if (((MeshRenderer)boost.values["MeshRenderer"]) != null)
                 {
-                    if (boost != null)
-                    {
-                        int startCol = (int)boost.values["StartColor"];
-                        int endCol = (int)boost.values["EndColor"];
-
-                        var startHex = (string)boost.values["StartCustomColor"];
-                        var endHex = (string)boost.values["EndCustomColor"];
-
-                        float alpha = (float)boost.values["Opacity"];
-                        float colorTween = (float)boost.values["ColorTween"];
-
-                        Color startColor = GetColor(startCol, alpha, startHex);
-                        Color endColor = GetColor(endCol, alpha, endHex);
-
-                        if (((MeshRenderer)boost.values["MeshRenderer"]) != null)
-                        {
-                            ((MeshRenderer)boost.values["MeshRenderer"]).material.color = Color.Lerp(startColor, endColor, colorTween);
-                        }
-                    }
+                    ((MeshRenderer)boost.values["MeshRenderer"]).material.color = Color.Lerp(startColor, endColor, colorTween);
                 }
             }
         }
@@ -2605,11 +2431,12 @@ namespace BetterLegacy.Components.Player
             audioSource.playOnAwake = true;
             audioSource.loop = false;
             audioSource.volume = AudioManager.inst.sfxVol;
-            audioSource.pitch = pitch * AudioManager.inst.pitch;
+            audioSource.pitch = pitch;
             audioSource.Play();
             StartCoroutine(AudioManager.inst.DestroyWithDelay(audioSource, _clip.length / p));
         }
 
+        // to do: aiming so you don't need to be facing the direction of the bullet
         void CreateBullet()
         {
             var currentModel = PlayerModel;
@@ -2627,14 +2454,13 @@ namespace BetterLegacy.Components.Player
             int s = Mathf.Clamp(currentModel.bulletPart.shape.type, 0, ObjectManager.inst.objectPrefabs.Count - 1);
             int so = Mathf.Clamp(currentModel.bulletPart.shape.option, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
 
-            var objcopy = ObjectManager.inst.objectPrefabs[s].options[so];
             if (s == 4 || s == 6)
             {
-                objcopy = ObjectManager.inst.objectPrefabs[0].options[0];
+                s = 0;
+                so = 0;
             }
 
-            var pulse = Instantiate(objcopy);
-            pulse.transform.SetParent(ObjectManager.inst.objectParent.transform);
+            var pulse = ObjectManager.inst.objectPrefabs[s].options[so].Duplicate(ObjectManager.inst.objectParent.transform);
             pulse.transform.localScale = new Vector3(currentModel.bulletPart.startScale.x, currentModel.bulletPart.startScale.y, 1f);
 
             var vec = new Vector3(currentModel.bulletPart.origin.x, currentModel.bulletPart.origin.y, 0f);
@@ -2763,76 +2589,24 @@ namespace BetterLegacy.Components.Player
         public string HitCodePath => "player/hit.cs";
         public string DeathCodePath => "player/death.cs";
 
-        void EvaluateSpawnCode()
+        void EvaluateSpawnCode() => EvaluatePlayerCode(RTFile.BasePath + SpawnCodePath);
+
+        void EvaluateBoostCode() => EvaluatePlayerCode(RTFile.BasePath + BoostCodePath);
+
+        void EvaluateHitCode() => EvaluatePlayerCode(RTFile.BasePath + HitCodePath);
+
+        void EvaluateDeathCode() => EvaluatePlayerCode(RTFile.BasePath + DeathCodePath);
+
+        void EvaluatePlayerCode(string path)
         {
-            if (!EvaluateCode)
+            if (!EvaluateCode || !RTFile.FileExists(path))
                 return;
 
-            string path = RTFile.BasePath + SpawnCodePath;
+            var defaultCode = $"var playerIndex = {playerIndex};{Environment.NewLine}";
+            var cs = RTFile.ReadFromFile(path);
 
-            if (RTFile.FileExists(path))
-            {
-                var def = $"var playerIndex = {playerIndex};{Environment.NewLine}";
-
-                string cs = FileManager.inst.LoadJSONFileRaw(path);
-
-                if (RTCode.Validate(cs))
-                    RTCode.Evaluate($"{def}{cs}");
-            }
-        }
-
-        void EvaluateBoostCode()
-        {
-            if (!EvaluateCode)
-                return;
-
-            string path = RTFile.BasePath + BoostCodePath;
-
-            if (RTFile.FileExists(path))
-            {
-                var def = $"var playerIndex = {playerIndex};{Environment.NewLine}";
-
-                string cs = FileManager.inst.LoadJSONFileRaw(path);
-
-                if (RTCode.Validate(cs))
-                    RTCode.Evaluate($"{def}{cs}");
-            }
-        }
-
-        void EvaluateHitCode()
-        {
-            if (!EvaluateCode)
-                return;
-
-            string path = RTFile.BasePath + HitCodePath;
-
-            if (RTFile.FileExists(path))
-            {
-                var def = $"var playerIndex = {playerIndex};{Environment.NewLine}";
-
-                string cs = FileManager.inst.LoadJSONFileRaw(path);
-
-                if (RTCode.Validate(cs))
-                    RTCode.Evaluate($"{def}{cs}");
-            }
-        }
-
-        void EvaluateDeathCode()
-        {
-            if (!EvaluateCode)
-                return;
-
-            string path = RTFile.BasePath + DeathCodePath;
-
-            if (RTFile.FileExists(path))
-            {
-                var def = $"var playerIndex = {playerIndex};{Environment.NewLine}";
-
-                string cs = FileManager.inst.LoadJSONFileRaw(path);
-
-                if (RTCode.Validate(cs))
-                    RTCode.Evaluate($"{def}{cs}");
-            }
+            if (RTCode.Validate(cs))
+                RTCode.Evaluate($"{defaultCode}{cs}");
         }
 
         #endregion
@@ -2957,6 +2731,20 @@ namespace BetterLegacy.Components.Player
 
         public Dictionary<string, PlayerObject> playerObjects = new Dictionary<string, PlayerObject>();
         public Dictionary<string, CustomGameObject> customObjects = new Dictionary<string, CustomGameObject>();
+
+        public PlayerPart head;
+        public PlayerPart boost;
+        public PlayerPart boostTail;
+
+        public List<PlayerPart> tailParts = new List<PlayerPart>();
+
+        public class PlayerPart
+        {
+            public GameObject GameObject { get; set; }
+            public Transform Transform { get; set; }
+            public MeshRenderer MeshRenderer { get; set; }
+            public MeshFilter MeshFilter { get; set; }
+        }
 
         public class PlayerObject
         {
