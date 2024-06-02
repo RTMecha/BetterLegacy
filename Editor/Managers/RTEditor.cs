@@ -8102,6 +8102,7 @@ namespace BetterLegacy.Editor.Managers
 
             RTPlayer.LockBoost = false;
             RTPlayer.SpeedMultiplier = 1f;
+            RTPlayer.JumpMode = false;
 
             WindowController.ResetTitle();
 
