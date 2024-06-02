@@ -2329,6 +2329,15 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+                    case "gameMode":
+                        {
+                            if (int.TryParse(modifier.value, out int value))
+                            {
+                                RTPlayer.JumpMode = value == 1;
+                            }
+
+                            break;
+                        }
                     case "showMouse":
                         {
                             LSHelpers.ShowCursor();
@@ -2521,12 +2530,33 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+                    case "setCollision":
+                        {
+                            if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.Collider)
+                                levelObject.visualObject.Collider.enabled = Parser.TryParse(modifier.value, false);
+
+                            break;
+                        }
+                    case "setCollisionOther":
+                        {
+                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
+
+                            if (list.Count() > 0)
+                            {
+                                foreach (var beatmapObject in list)
+                                {
+                                    if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.Collider)
+                                        levelObject.visualObject.Collider.enabled = Parser.TryParse(modifier.value, false);
+                                }
+                            }
+
+                            break;
+                        }
                     case "enableObject":
                         {
                             if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
-                            {
                                 levelObject.transformChain[0].gameObject.SetActive(true);
-                            }
+
                             break;
                         }
                     case "enableObjectTree":
@@ -2566,9 +2596,7 @@ namespace BetterLegacy.Core.Helpers
                                 foreach (var beatmapObject in list)
                                 {
                                     if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
-                                    {
                                         levelObject.transformChain[0].gameObject.SetActive(true);
-                                    }
                                 }
                             }
 
@@ -2598,9 +2626,7 @@ namespace BetterLegacy.Core.Helpers
                                 for (int j = 0; j < childList.Count; j++)
                                 {
                                     if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
-                                    {
                                         levelObject.transformChain[0].gameObject.SetActive(true);
-                                    }
                                 }
                             }
 
@@ -2609,9 +2635,8 @@ namespace BetterLegacy.Core.Helpers
                     case "disableObject":
                         {
                             if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
-                            {
                                 levelObject.transformChain[0].gameObject.SetActive(false);
-                            }
+
                             break;
                         }
                     case "disableObjectTree":

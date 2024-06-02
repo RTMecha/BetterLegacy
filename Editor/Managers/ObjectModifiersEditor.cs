@@ -504,7 +504,7 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     EditorThemeManager.ApplyLightText(labelText);
-                    SetObjectColors(startColors.GetComponentsInChildren<Toggle>(), type, Parser.TryParse(modifier.commands[type], 0), modifier);
+                    SetObjectColors(startColors.GetComponentsInChildren<Toggle>(), type, Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], 0), modifier);
                 };
 
                 Action<string, int, List<string>> dropdownGenerator = delegate (string label, int type, List<string> options)
@@ -523,11 +523,14 @@ namespace BetterLegacy.Editor.Managers
 
                     d.options = options.Select(x => new Dropdown.OptionData(x)).ToList();
 
-                    d.value = Parser.TryParse(modifier.commands[type], 0);
+                    d.value = Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], 0);
 
                     d.onValueChanged.AddListener(delegate (int _val)
                     {
-                        modifier.commands[type] = _val.ToString();
+                        if (type == 0)
+                            modifier.value = _val.ToString();
+                        else
+                            modifier.commands[type] = _val.ToString();
                         modifier.active = false;
                     });
 
@@ -551,11 +554,14 @@ namespace BetterLegacy.Editor.Managers
 
                     d.options = options;
 
-                    d.value = Parser.TryParse(modifier.commands[type], 0);
+                    d.value = Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], 0);
 
                     d.onValueChanged.AddListener(delegate (int _val)
                     {
-                        modifier.commands[type] = _val.ToString();
+                        if (type == 0)
+                            modifier.value = _val.ToString();
+                        else
+                            modifier.commands[type] = _val.ToString();
                         modifier.active = false;
                     });
 
@@ -1763,6 +1769,22 @@ namespace BetterLegacy.Editor.Managers
                             break;
                         }
                     #endregion
+                    case "gameMode":
+                        {
+                            dropdownGenerator("Mode", 0, new List<string> { "Regular", "Platformer" });
+
+                            break;
+                        }
+                    case "setCollision":
+                    case "setCollisionOther":
+                        {
+                            boolGenerator("On", 0, false);
+
+                            if (cmd == "setCollisionOther")
+                                stringGenerator("Object Group", 1);
+
+                            break;
+                        }
                     case "legacyTail":
                         {
                             singleGenerator("Total Time", 0, 200f);
@@ -1939,7 +1961,10 @@ namespace BetterLegacy.Editor.Managers
 
         public void SetObjectColors(Toggle[] toggles, int index, int i, Modifier<BeatmapObject> modifier)
         {
-            modifier.commands[index] = i.ToString();
+            if (index == 0)
+                modifier.value = i.ToString();
+            else
+                modifier.commands[index] = i.ToString();
 
             int num = 0;
             foreach (var toggle in toggles)
