@@ -111,12 +111,20 @@ namespace BetterLegacy.Components.Player
         public bool isBoostCancelled;
         public bool isDead = true;
 
+        public bool isKeyboard;
+        public bool animatingBoost;
+
+        #endregion
+
+        #region Jumping
+
+        public bool JumpMode { get; set; }
         public float jumpGravity = 10f;
         public float jumpIntensity = 40f;
         public float bounciness = 0.1f;
-        public bool jumpMode;
-        public bool isKeyboard;
-        public bool animatingBoost;
+        public int jumpCount = 2; // -1 should be treated as infinity
+        int currentJumpCount = 0;
+        public float jumpBoostMultiplier = 0.5f; // to make sure the jump goes about the same distance as left and right boost
 
         #endregion
 
@@ -185,26 +193,6 @@ namespace BetterLegacy.Components.Player
         #endregion
 
         #region Properties
-
-        //public bool CanTakeDamage
-        //{
-        //    get => (!(EditorManager.inst == null) || DataManager.inst.GetSettingEnum("ArcadeDifficulty", 1) != 0 || !DataManager.inst.GetSettingBool("IsArcade")) && (!(EditorManager.inst == null) || GameManager.inst.gameState != GameManager.State.Paused) && (!(EditorManager.inst != null) || !EditorManager.inst.isEditing) && canTakeDamage;
-        //    set => canTakeDamage = value;
-        //}
-
-        //public bool CanMove
-        //{
-        //    get => canMove;
-        //    set => canMove = value;
-        //}
-
-        //public bool CanBoost
-        //{
-        //    get => (!(EditorManager.inst != null) || !EditorManager.inst.isEditing) && (canBoost && !isBoosting) && (GameManager.inst == null || GameManager.inst.gameState != GameManager.State.Paused) && !LSHelpers.IsUsingInputField();
-        //    set => canBoost = value;
-        //}
-
-        //public bool PlayerAlive => (!(InputDataManager.inst != null) || InputDataManager.inst.players.Count > 0) && (InputDataManager.inst != null && InputDataManager.inst.players[playerIndex].health > 0) && !isDead;
 
         public bool CanTakeDamage
         {
@@ -637,22 +625,6 @@ namespace BetterLegacy.Components.Player
             if (!PlayerAlive && !isDead && CustomPlayer && !PlayerManager.IsPractice)
                 StartCoroutine(Kill());
 
-            if (CanMove && PlayerAlive && Actions != null)
-            {
-                if (Actions.Boost.WasPressed && CanBoost && !LockBoost)
-                {
-                    StartBoost();
-                    return;
-                }
-
-                if (isBoosting && !isBoostCancelled && (Actions.Boost.WasReleased || startBoostTime + maxBoostTime <= Time.time))
-                    InitMidBoost(true);
-            }
-
-            if (PlayerAlive && faceController != null && PlayerModel.bulletPart.active &&
-                (!PlayerModel.bulletPart.constant && faceController.Shoot.WasPressed && canShoot ||
-                    PlayerModel.bulletPart.constant && faceController.Shoot.IsPressed && canShoot))
-                CreateBullet();
         }
 
         bool canShoot = true;
@@ -870,30 +842,68 @@ namespace BetterLegacy.Components.Player
 
         void UpdateControls()
         {
-            if (!CustomPlayer || !PlayerModel)
+            if (!CustomPlayer || !PlayerModel || !PlayerAlive)
                 return;
+
+            if (CanMove && Actions != null)
+            {
+                if (Actions.Boost.WasPressed && (JumpMode || CanBoost) && !LockBoost && (!JumpMode || !colliding && currentJumpCount == jumpCount))
+                {
+                    if (JumpMode)
+                        currentJumpCount++;
+
+                    StartBoost();
+                    return;
+                }
+
+                if (isBoosting && !isBoostCancelled && (Actions.Boost.WasReleased || startBoostTime + maxBoostTime <= Time.time))
+                    InitMidBoost(true);
+            }
+
+            if (PlayerAlive && faceController != null && PlayerModel.bulletPart.active &&
+                (!PlayerModel.bulletPart.constant && faceController.Shoot.WasPressed && canShoot ||
+                    PlayerModel.bulletPart.constant && faceController.Shoot.IsPressed && canShoot))
+                CreateBullet();
 
             var player = playerObjects["RB Parent"].gameObject;
 
-            if (jumpMode)
+            if (JumpMode)
             {
                 rb.gravityScale = jumpGravity;
-                rb.sharedMaterial.bounciness = bounciness;
 
                 if (Actions == null)
                     return;
 
-                var velocity = rb.velocity;
-                if (Actions.Boost.WasPressed) // need to figure out collision (player needs to be able to only jump when they are colliding with something
+                var pitch = CoreHelper.ForwardPitch;
+                float x = Actions.Move.Vector.x;
+                float y = Actions.Move.Vector.y;
+
+                if (isBoosting)
                 {
-                    velocity.y = jumpIntensity;
+                    var vector = new Vector2(x, y * jumpBoostMultiplier);
+
+                    rb.velocity = PlayerForce + vector * boostSpeed * pitch * SpeedMultiplier;
+                    return;
                 }
 
-                float x = Actions.Move.Vector.x;
+                var velocity = rb.velocity;
+                if (Actions.Boost.WasPressed && (colliding || jumpCount == -1 || currentJumpCount < jumpCount))
+                {
+                    velocity.y = jumpIntensity;
+
+                    if (PlayBoostSound)
+                        AudioManager.inst.PlaySound("boost");
+
+                    if (colliding)
+                    {
+                        currentJumpCount = 0;
+                        colliding = false;
+                    }
+                    currentJumpCount++;
+                }
+
                 if (x != 0f)
                     lastMoveHorizontal = x;
-
-                var pitch = CoreHelper.ForwardPitch;
 
                 var sp = PlayerModel.basePart.sprintSneakActive ? faceController.Sprint.IsPressed ? 1.3f : faceController.Sneak.IsPressed ? 0.1f : 1f : 1f;
 
@@ -910,6 +920,7 @@ namespace BetterLegacy.Components.Player
                 (CoreConfig.Instance.AllowControlsInputField.Value || !LSHelpers.IsUsingInputField()) &&
                 movementMode == MovementMode.KeyboardController && !EventsConfig.Instance.EditorCamEnabled.Value)
             {
+                colliding = false;
                 float x = Actions.Move.Vector.x;
                 float y = Actions.Move.Vector.y;
                 if (x != 0f)
@@ -1321,23 +1332,15 @@ namespace BetterLegacy.Components.Player
 
         void HandleCollision(Collider2D other, bool stay = true)
         {
-            colliding = true;
-
             if (CanTakeDamage && (!CoreHelper.InEditor || !ZenModeInEditor) && (!stay || !isBoosting) && CollisionCheck(other))
                 PlayerHit();
         }
         
         void HandleCollision(Collider other, bool stay = true)
         {
-            colliding = true;
-
             if (CanTakeDamage && (!CoreHelper.InEditor || !ZenModeInEditor) && (!stay || !isBoosting) && CollisionCheck(other))
                 PlayerHit();
         }
-
-        public void OnObjectCollisionExit(Collider2D other) => colliding = false;
-
-        public void OnObjectCollisionExit(Collider other) => colliding = false;
 
         #endregion
 
@@ -1709,6 +1712,7 @@ namespace BetterLegacy.Components.Player
                 if (!isBoosting)
                     path[1].active = showBoostTail;
 
+                rb.sharedMaterial.bounciness = bounciness;
                 //Stretch
                 {
                     stretch = currentModel.stretchPart.active;
