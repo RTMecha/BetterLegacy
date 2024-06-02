@@ -243,20 +243,12 @@ namespace BetterLegacy.Core.Optimization
 
                                 levelObject.SetActive(beatmapObject.TimeWithinLifespan());
 
-                                foreach (var levelParent in levelObject.parentObjects)
+                                for (int i = 0; i < levelObject.parentObjects.Count; i++)
                                 {
-                                    if (DataManager.inst.gameData.beatmapObjects.TryFind(x => x.id == levelParent.ID, out BaseBeatmapObject parent))
-                                    {
-                                        levelParent.TimeOffset = parent.StartTime;
+                                    var levelParent = levelObject.parentObjects[i];
+                                    var parent = levelParent.BeatmapObject;
 
-                                        levelParent.ParentAnimatePosition = parent.GetParentType(0);
-                                        levelParent.ParentAnimateScale = parent.GetParentType(1);
-                                        levelParent.ParentAnimateRotation = parent.GetParentType(2);
-
-                                        levelParent.ParentOffsetPosition = parent.getParentOffset(0);
-                                        levelParent.ParentOffsetScale = parent.getParentOffset(1);
-                                        levelParent.ParentOffsetRotation = parent.getParentOffset(2);
-                                    }
+                                    levelParent.TimeOffset = parent.StartTime;
                                 }
                             }
 

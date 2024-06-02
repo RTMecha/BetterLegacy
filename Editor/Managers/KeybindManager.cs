@@ -2144,11 +2144,8 @@ namespace BetterLegacy.Editor.Managers
                 && ObjectEditor.inst.CurrentSelection.IsBeatmapObject
                 && ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.selected).Count() > 0)
             {
-                foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalSelections)
-                {
-                    if (timelineObject.Index != 0)
-                        timelineObject.Time = RTEditor.SnapToBPM(timelineObject.Time);
-                }
+                foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.selected && x.Index != 0))
+                    timelineObject.Time = RTEditor.SnapToBPM(timelineObject.Time);
 
                 var bm = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
                 ObjectEditor.inst.RenderTimelineObject(ObjectEditor.inst.CurrentSelection);
@@ -2157,10 +2154,9 @@ namespace BetterLegacy.Editor.Managers
             }
 
             if (RTEditor.inst.layerType == RTEditor.LayerType.Events && RTEventEditor.inst.SelectedKeyframes.Count > 0)
-                foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
+                foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes.Where(x => x.Index != 0))
                 {
-                    if (timelineObject.Index != 0)
-                        timelineObject.Time = RTEditor.SnapToBPM(timelineObject.Time);
+                    timelineObject.Time = RTEditor.SnapToBPM(timelineObject.Time);
 
                     RTEventEditor.inst.RenderTimelineObject(timelineObject);
                 }
