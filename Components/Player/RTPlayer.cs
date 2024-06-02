@@ -111,6 +111,10 @@ namespace BetterLegacy.Components.Player
         public bool isBoostCancelled;
         public bool isDead = true;
 
+        public float jumpGravity = 10f;
+        public float jumpIntensity = 40f;
+        public float bounciness = 0.1f;
+        public bool jumpMode;
         public bool isKeyboard;
         public bool animatingBoost;
 
@@ -869,11 +873,42 @@ namespace BetterLegacy.Components.Player
             if (!CustomPlayer || !PlayerModel)
                 return;
 
-            var anim = (Animator)playerObjects["Base"].values["Animator"];
             var player = playerObjects["RB Parent"].gameObject;
-            var rb = (Rigidbody2D)playerObjects["RB Parent"].values["Rigidbody2D"];
+
+            if (jumpMode)
+            {
+                rb.gravityScale = jumpGravity;
+                rb.sharedMaterial.bounciness = bounciness;
+
+                if (Actions == null)
+                    return;
+
+                var velocity = rb.velocity;
+                if (Actions.Boost.WasPressed) // need to figure out collision (player needs to be able to only jump when they are colliding with something
+                {
+                    velocity.y = jumpIntensity;
+                }
+
+                float x = Actions.Move.Vector.x;
+                if (x != 0f)
+                    lastMoveHorizontal = x;
+
+                var pitch = CoreHelper.ForwardPitch;
+
+                var sp = PlayerModel.basePart.sprintSneakActive ? faceController.Sprint.IsPressed ? 1.3f : faceController.Sneak.IsPressed ? 0.1f : 1f : 1f;
+
+                velocity.x = x * idleSpeed * pitch * sp * SpeedMultiplier;
+
+                rb.velocity = velocity;
+
+                return;
+            }
+
+            rb.gravityScale = 0f;
+
             if (PlayerAlive && Actions != null && CustomPlayer.active && CanMove && !CoreHelper.Paused &&
-                (CoreConfig.Instance.AllowControlsInputField.Value || !LSHelpers.IsUsingInputField()) && movementMode == MovementMode.KeyboardController && !EventsConfig.Instance.EditorCamEnabled.Value)
+                (CoreConfig.Instance.AllowControlsInputField.Value || !LSHelpers.IsUsingInputField()) &&
+                movementMode == MovementMode.KeyboardController && !EventsConfig.Instance.EditorCamEnabled.Value)
             {
                 float x = Actions.Move.Vector.x;
                 float y = Actions.Move.Vector.y;
@@ -1271,32 +1306,38 @@ namespace BetterLegacy.Components.Player
 
         #region Collision Handlers
 
-        bool CollisionCheck(Collider2D _other) => _other.tag != "Helper" && _other.tag != "Player" && _other.name != $"bullet (Player {playerIndex + 1})";
-        bool CollisionCheck(Collider _other) => _other.tag != "Helper" && _other.tag != "Player" && _other.name != $"bullet (Player {playerIndex + 1})";
+        public bool colliding;
 
-        public void OnChildTriggerEnter(Collider2D _other)
+        bool CollisionCheck(Collider2D other) => other.tag != "Helper" && other.tag != "Player" && other.name != $"bullet (Player {playerIndex + 1})";
+        bool CollisionCheck(Collider other) => other.tag != "Helper" && other.tag != "Player" && other.name != $"bullet (Player {playerIndex + 1})";
+
+        public void OnObjectCollisionEnter(Collider2D other) => HandleCollision(other);
+
+        public void OnObjectCollisionEnter(Collider other) => HandleCollision(other);
+
+        public void OnObjectCollisionStay(Collider2D other) => HandleCollision(other, false);
+
+        public void OnObjectCollisionStay(Collider other) => HandleCollision(other, false);
+
+        void HandleCollision(Collider2D other, bool stay = true)
         {
-            if (CanTakeDamage && (EditorManager.inst == null || !ZenModeInEditor) && !isBoosting && CollisionCheck(_other))
+            colliding = true;
+
+            if (CanTakeDamage && (!CoreHelper.InEditor || !ZenModeInEditor) && (!stay || !isBoosting) && CollisionCheck(other))
+                PlayerHit();
+        }
+        
+        void HandleCollision(Collider other, bool stay = true)
+        {
+            colliding = true;
+
+            if (CanTakeDamage && (!CoreHelper.InEditor || !ZenModeInEditor) && (!stay || !isBoosting) && CollisionCheck(other))
                 PlayerHit();
         }
 
-        public void OnChildTriggerEnterMesh(Collider _other)
-        {
-            if (CanTakeDamage && (EditorManager.inst == null || !ZenModeInEditor) && !isBoosting && CollisionCheck(_other))
-                PlayerHit();
-        }
+        public void OnObjectCollisionExit(Collider2D other) => colliding = false;
 
-        public void OnChildTriggerStay(Collider2D _other)
-        {
-            if (CanTakeDamage && (EditorManager.inst == null || !ZenModeInEditor) && CollisionCheck(_other))
-                PlayerHit();
-        }
-
-        public void OnChildTriggerStayMesh(Collider _other)
-        {
-            if (CanTakeDamage && (EditorManager.inst == null || !ZenModeInEditor) && CollisionCheck(_other))
-                PlayerHit();
-        }
+        public void OnObjectCollisionExit(Collider other) => colliding = false;
 
         #endregion
 
