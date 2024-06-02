@@ -7,12 +7,15 @@ namespace BetterLegacy.Components.Player
     {
         public RTPlayer player;
 
-        void OnTriggerEnter2D(Collider2D other) => player?.OnChildTriggerEnter(other);
+        void OnTriggerEnter2D(Collider2D other) => player?.OnObjectCollisionEnter(other);
 
-        void OnTriggerEnter(Collider other) => player?.OnChildTriggerEnterMesh(other);
+        void OnTriggerEnter(Collider other) => player?.OnObjectCollisionEnter(other);
 
-        void OnTriggerStay2D(Collider2D other) => player?.OnChildTriggerStay(other);
+        void OnTriggerStay2D(Collider2D other) => player?.OnObjectCollisionStay(other);
 
-        void OnTriggerStay(Collider other) => player?.OnChildTriggerStayMesh(other);
+        void OnTriggerStay(Collider other) => player?.OnObjectCollisionStay(other);
+
+        void OnTriggerExit2D(Collider2D other) => player?.OnObjectCollisionExit(other);
+        void OnTriggerExit(Collider other) => player?.OnObjectCollisionExit(other);
     }
 }
