@@ -118,7 +118,7 @@ namespace BetterLegacy.Components.Player
 
         #region Jumping
 
-        public bool JumpMode { get; set; }
+        public static bool JumpMode { get; set; }
         public float jumpGravity = 10f;
         public float jumpIntensity = 40f;
         public float bounciness = 0.1f;
