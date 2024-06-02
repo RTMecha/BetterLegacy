@@ -642,471 +642,135 @@ namespace BetterLegacy.Core.Managers
             switch (_name1)
             {
                 #region Symbol
-                case "giedi ancient autobot.otf":
-                    {
-                        return "Ancient Autobot";
-                    }
-                case "transformersmovie-y9ad.ttf":
-                    {
-                        return "Transformers Movie";
-                    }
-                case "webdings.ttf":
-                    {
-                        return "Webdings";
-                    }
-                case "wingding.ttf":
-                    {
-                        return "Wingdings";
-                    }
-                case "undertale-wingdings.ttf":
-                    {
-                        return "Determination Wingdings";
-                    }
+                case "giedi ancient autobot.otf": return "Ancient Autobot";
+                case "transformersmovie-y9ad.ttf": return "Transformers Movie";
+                case "webdings.ttf": return "Webdings";
+                case "wingding.ttf": return "Wingdings";
+                case "undertale-wingdings.ttf": return "Determination Wingdings";
                 #endregion
                 #region English Fonts
-                case "about_friend_extended_v2_by_matthewtheprep_ddribq5.otf":
-                    {
-                        return "About Friend";
-                    }
-                case "adamwarrenpro-bold.ttf":
-                    {
-                        return "Adam Warren Pro Bold";
-                    }
-                case "adamwarrenpro-bolditalic.ttf":
-                    {
-                        return "Adam Warren Pro BoldItalic";
-                    }
-                case "adamwarrenpro.ttf":
-                    {
-                        return "Adam Warren Pro";
-                    }
-                case "angsaz.ttf":
-                    {
-                        return "Angsana Z";
-                    }
-                case "arrhythmia-font.ttf":
-                    {
-                        return "Arrhythmia";
-                    }
-                case "arial.ttf":
-                    {
-                        return "Arial";
-                    }
-                case "arialbd.ttf":
-                    {
-                        return "Arial Bold";
-                    }
-                case "arialbi.ttf":
-                    {
-                        return "Arial Bold Italic";
-                    }
-                case "ariali.ttf":
-                    {
-                        return "Arial Italic";
-                    }
-                case "ariblk.ttf":
-                    {
-                        return "Arial Black";
-                    }
-                case "badabb__.ttf":
-                    {
-                        return "BadaBoom BB";
-                    }
-                case "calibri.ttf":
-                    {
-                        return "Calibri";
-                    }
-                case "calibrii.ttf":
-                    {
-                        return "Calibri Italic";
-                    }
-                case "calibril.ttf":
-                    {
-                        return "Calibri Light";
-                    }
-                case "calibrili.ttf":
-                    {
-                        return "Calibri Light Italic";
-                    }
-                case "calibriz.ttf":
-                    {
-                        return "Calibri Bold Italic";
-                    }
-                case "cambria.ttc":
-                    {
-                        return "Cambria";
-                    }
-                case "cambriab.ttf":
-                    {
-                        return "Cambria Bold";
-                    }
-                case "cambriaz.ttf":
-                    {
-                        return "Cambria Bold Italic";
-                    }
-                case "candara.ttf":
-                    {
-                        return "Candara";
-                    }
-                case "candarab.ttf":
-                    {
-                        return "Candara Bold";
-                    }
-                case "candarai.ttf":
-                    {
-                        return "Candara Italic";
-                    }
-                case "candaral.ttf":
-                    {
-                        return "Candara Light";
-                    }
-                case "candarali.ttf":
-                    {
-                        return "Candara Light Italic";
-                    }
-                case "candaraz.ttf":
-                    {
-                        return "Candara Bold Italic";
-                    }
-                case "construction.ttf":
-                    {
-                        return "Construction";
-                    }
-                case "comic.ttf":
-                    {
-                        return "Comic Sans";
-                    }
-                case "comicbd.ttf":
-                    {
-                        return "Comic Sans Bold";
-                    }
-                case "comici.ttf":
-                    {
-                        return "Comic Sans Italic";
-                    }
-                case "comicz.ttf":
-                    {
-                        return "Comic Sans Bold Italic";
-                    }
-                case "ldfcomicsans-jj7l.ttf":
-                    {
-                        return "Comic Sans";
-                    }
-                case "ldfcomicsansbold-zgma.ttf":
-                    {
-                        return "Comic Sans Bold";
-                    }
-                case "ldfcomicsanshairline-5pml.ttf":
-                    {
-                        return "Comic Sans Hairline";
-                    }
-                case "ldfcomicsanslight-6dzo.ttf":
-                    {
-                        return "Comic Sans Light";
-                    }
-                case "dtm-mono.otf":
-                    {
-                        return "Determination Mono";
-                    }
-                case "dtm-sans.otf":
-                    {
-                        return "determination sans";
-                    }
-                case "filedeletion-yw6m5.ttf":
-                    {
-                        return "File Deletion";
-                    }
-                case "flowcircular-regular.ttf":
-                    {
-                        return "Flow Circular";
-                    }
-                case "fredokaone-regular.ttf":
-                    {
-                        return "Fredoka One";
-                    }
-                case "hachicro.ttf":
-                    {
-                        return "Hachicro";
-                    }
-                case "inconsolata-variablefont_wdth,wght.ttf":
-                    {
-                        return "Inconsolata Variable";
-                    }
-                case "impact.ttf":
-                    {
-                        return "Impact";
-                    }
-                case "komikah_.ttf":
-                    {
-                        return "Komika Hand";
-                    }
-                case "komikahb.ttf":
-                    {
-                        return "Komika Hand Bold";
-                    }
-                case "komikask.ttf":
-                    {
-                        return "Komika Slick";
-                    }
-                case "komikasl.ttf":
-                    {
-                        return "Komika Slim";
-                    }
-                case "komikhbi.ttf":
-                    {
-                        return "Komika Hand BoldItalic";
-                    }
-                case "komikhi_.ttf":
-                    {
-                        return "Komika Hand Italic";
-                    }
-                case "komikj__.ttf":
-                    {
-                        return "Komika Jam";
-                    }
-                case "komikji_.ttf":
-                    {
-                        return "Komika Jam Italic";
-                    }
-                case "komikski.ttf":
-                    {
-                        return "Komika Slick Italic";
-                    }
-                case "komiksli.ttf":
-                    {
-                        return "Komika Slim Italic";
-                    }
-                case "bionicle language.ttf":
-                    {
-                        return "Matoran Language 1";
-                    }
-                case "mata nui.ttf":
-                    {
-                        return "Matoran Language 2";
-                    }
-                case "minecraftbold-nmk1.otf":
-                    {
-                        return "Minecraft Text Bold";
-                    }
-                case "minecraftbolditalic-1y1e.otf":
-                    {
-                        return "Minecraft Text BoldItalic";
-                    }
-                case "minecraftitalic-r8mo.otf":
-                    {
-                        return "Minecraft Text Italic";
-                    }
-                case "minecraftregular-bmg3.otf":
-                    {
-                        return "Minecraft Text";
-                    }
-                case "minercraftory.ttf":
-                    {
-                        return "Minecraftory";
-                    }
-                case "micross.ttf":
-                    {
-                        return "Sans Serif";
-                    }
-                case "monsterfriendback.otf":
-                    {
-                        return "Monster Friend Back";
-                    }
-                case "monsterfriendfore.otf":
-                    {
-                        return "Monster Friend Fore";
-                    }
-                case "necosmic-personalrse.otf":
-                    {
-                        return "Necosmic";
-                    }
-                case "oxygene1.ttf":
-                    {
-                        return "Oxygene";
-                    }
-                case "piraka theory gf.ttf":
-                    {
-                        return "Piraka Theory";
-                    }
-                case "persons unknown.otf":
-                    {
-                        return "Persons Unknown";
-                    }
-                case "plastiquekingdom.ttf":
-                    {
-                        return "PlastiqueKingdom";
-                    }
-                case "piraka.ttf":
-                    {
-                        return "Piraka";
-                    }
-                case "pusab___.otf":
-                    {
-                        return "Pusab";
-                    }
-                case "rahkshi font.ttf":
-                    {
-                        return "Rahkshi";
-                    }
-                case "revuebt-regular 1.otf":
-                    {
-                        return "Revue 1";
-                    }
-                case "revuebt-regular.otf":
-                    {
-                        return "Revue";
-                    }
-                case "times.ttf":
-                    {
-                        return "Times New Roman";
-                    }
-                case "timesbd.ttf":
-                    {
-                        return "Times New Roman Bold";
-                    }
-                case "timesbi.ttf":
-                    {
-                        return "Times New Roman Bold Italic";
-                    }
-                case "timesi.ttf":
-                    {
-                        return "Times New Roman Italic";
-                    }
-                case "transdings-waoo.ttf":
-                    {
-                        return "Transdings";
-                    }
-                case "nexa bold.otf":
-                    {
-                        return "Nexa Bold";
-                    }
-                case "nexabook.otf":
-                    {
-                        return "Nexa Book";
-                    }
-                case "sans mita aprilia.ttf":
-                    {
-                        return "Sans Sans";
-                    }
-                case "spookyhollow.ttf":
-                    {
-                        return "SpookyHollow";
-                    }
+                case "about_friend_extended_v2_by_matthewtheprep_ddribq5.otf": return "About Friend";
+                case "adamwarrenpro-bold.ttf": return "Adam Warren Pro Bold";
+                case "adamwarrenpro-bolditalic.ttf": return "Adam Warren Pro BoldItalic";
+                case "adamwarrenpro.ttf": return "Adam Warren Pro";
+                case "angsaz.ttf": return "Angsana Z";
+                case "arrhythmia-font.ttf": return "Arrhythmia";
+                case "arial.ttf": return "Arial";
+                case "arialbd.ttf": return "Arial Bold";
+                case "arialbi.ttf": return "Arial Bold Italic";
+                case "ariali.ttf": return "Arial Italic";
+                case "ariblk.ttf": return "Arial Black";
+                case "badabb__.ttf": return "BadaBoom BB";
+                case "calibri.ttf": return "Calibri";
+                case "calibrii.ttf": return "Calibri Italic";
+                case "calibril.ttf": return "Calibri Light";
+                case "calibrili.ttf": return "Calibri Light Italic";
+                case "calibriz.ttf": return "Calibri Bold Italic";
+                case "cambria.ttc": return "Cambria";
+                case "cambriab.ttf": return "Cambria Bold";
+                case "cambriaz.ttf": return "Cambria Bold Italic";
+                case "candara.ttf": return "Candara";
+                case "candarab.ttf": return "Candara Bold";
+                case "candarai.ttf": return "Candara Italic";
+                case "candaral.ttf": return "Candara Light";
+                case "candarali.ttf": return "Candara Light Italic";
+                case "candaraz.ttf": return "Candara Bold Italic";
+                case "construction.ttf": return "Construction";
+                case "comic.ttf": return "Comic Sans";
+                case "comicbd.ttf": return "Comic Sans Bold";
+                case "comici.ttf": return "Comic Sans Italic";
+                case "comicz.ttf": return "Comic Sans Bold Italic";
+                case "ldfcomicsans-jj7l.ttf": return "Comic Sans";
+                case "ldfcomicsansbold-zgma.ttf": return "Comic Sans Bold";
+                case "ldfcomicsanshairline-5pml.ttf": return "Comic Sans Hairline";
+                case "ldfcomicsanslight-6dzo.ttf": return "Comic Sans Light";
+                case "dtm-mono.otf": return "Determination Mono";
+                case "dtm-sans.otf": return "determination sans";
+                case "filedeletion-yw6m5.ttf": return "File Deletion";
+                case "flowcircular-regular.ttf": return "Flow Circular";
+                case "fredokaone-regular.ttf": return "Fredoka One";
+                case "hachicro.ttf": return "Hachicro";
+                case "inconsolata-variablefont_wdth,wght.ttf": return "Inconsolata Variable";
+                case "impact.ttf": return "Impact";
+                case "komikah_.ttf": return "Komika Hand";
+                case "komikahb.ttf": return "Komika Hand Bold";
+                case "komikask.ttf": return "Komika Slick";
+                case "komikasl.ttf": return "Komika Slim";
+                case "komikhbi.ttf": return "Komika Hand BoldItalic";
+                case "komikhi_.ttf": return "Komika Hand Italic";
+                case "komikj__.ttf": return "Komika Jam";
+                case "komikji_.ttf": return "Komika Jam Italic";
+                case "komikski.ttf": return "Komika Slick Italic";
+                case "komiksli.ttf": return "Komika Slim Italic";
+                case "bionicle language.ttf": return "Matoran Language 1";
+                case "mata nui.ttf": return "Matoran Language 2";
+                case "minecraftbold-nmk1.otf": return "Minecraft Text Bold";
+                case "minecraftbolditalic-1y1e.otf": return "Minecraft Text BoldItalic";
+                case "minecraftitalic-r8mo.otf": return "Minecraft Text Italic";
+                case "minecraftregular-bmg3.otf": return "Minecraft Text";
+                case "minercraftory.ttf": return "Minecraftory";
+                case "micross.ttf": return "Sans Serif";
+                case "monsterfriendback.otf": return "Monster Friend Back";
+                case "monsterfriendfore.otf": return "Monster Friend Fore";
+                case "necosmic-personalrse.otf": return "Necosmic";
+                case "oxygene1.ttf": return "Oxygene";
+                case "piraka theory gf.ttf": return "Piraka Theory";
+                case "persons unknown.otf": return "Persons Unknown";
+                case "plastiquekingdom.ttf": return "PlastiqueKingdom";
+                case "piraka.ttf": return "Piraka";
+                case "pusab___.otf": return "Pusab";
+                case "rahkshi font.ttf": return "Rahkshi";
+                case "revuebt-regular 1.otf": return "Revue 1";
+                case "revuebt-regular.otf": return "Revue";
+                case "times.ttf": return "Times New Roman";
+                case "timesbd.ttf": return "Times New Roman Bold";
+                case "timesbi.ttf": return "Times New Roman Bold Italic";
+                case "timesi.ttf": return "Times New Roman Italic";
+                case "transdings-waoo.ttf": return "Transdings";
+                case "nexa bold.otf": return "Nexa Bold";
+                case "nexabook.otf": return "Nexa Book";
+                case "sans mita aprilia.ttf": return "Sans Sans";
+                case "spookyhollow.ttf": return "SpookyHollow";
                 #endregion
                 #region Thai Fonts
-                case "angsa.ttf":
-                    {
-                        return "Angsana";
-                    }
-                case "angsab.ttf":
-                    {
-                        return "Angsana Bold";
-                    }
-                case "angsai.ttf":
-                    {
-                        return "Angsana Italic";
-                    }
-                case "angsananewbolditalic.ttf":
-                    {
-                        return "Angsana Bold Italic";
-                    }
-                case "krr manga s.otf":
-                    {
-                        return "Manga";
-                    }
-                case "pixellet.ttf":
-                    {
-                        return "Pixellet";
-                    }
-                case "ploypilinfont.ttf":
-                    {
-                        return "Ploypilin";
-                    }
+                case "angsa.ttf": return "Angsana";
+                case "angsab.ttf": return "Angsana Bold";
+                case "angsai.ttf": return "Angsana Italic";
+                case "angsananewbolditalic.ttf": return "Angsana Bold Italic";
+                case "krr manga s.otf": return "Manga";
+                case "pixellet.ttf": return "Pixellet";
+                case "ploypilinfont.ttf": return "Ploypilin";
                 #endregion
                 #region Russian Fonts
-                case "18vag rounded m bold.ttf":
-                    {
-                        return "VAG Rounded";
-                    }
-                case "milk(rus by lyajka) regular.ttf":
-                    {
-                        return "LemonMilkRus";
-                    }
-                case "1 nevrouz m regular.ttf":
-                    {
-                        return "Nevrouz";
-                    }
-
+                case "18vag rounded m bold.ttf": return "VAG Rounded";
+                case "milk(rus by lyajka) regular.ttf": return "LemonMilkRus";
+                case "1 nevrouz m regular.ttf": return "Nevrouz";
                 #endregion
                 #region Japanese Fonts
-                case "dotgothic16-regular.ttf":
-                    {
-                        return "DotGothic16";
-                    }
-                case "jkg-l_3.ttf":
-                    {
-                        return "Jkg";
-                    }
-                case "monomaniacone-regular.ttf":
-                    {
-                        return "Monomaniac One";
-                    }
-                case "rocknrollone-regular.ttf":
-                    {
-                        return "RocknRoll One";
-                    }
-                case "ronde-b_square.otf":
-                    {
-                        return "Ronde-B";
-                    }
-                case "yokomoji.otf":
-                    {
-                        return "Yokomoji";
-                    }
+                case "dotgothic16-regular.ttf": return "DotGothic16";
+                case "jkg-l_3.ttf": return "Jkg";
+                case "monomaniacone-regular.ttf": return "Monomaniac One";
+                case "rocknrollone-regular.ttf": return "RocknRoll One";
+                case "ronde-b_square.otf": return "Ronde-B";
+                case "yokomoji.otf": return "Yokomoji";
                 #endregion
                 #region Korean Fonts
-                case "himelody-regular.ttf":
-                    {
-                        return "HiMelody";
-                    }
-                case "jua-regular.ttf":
-                    {
-                        return "Jua";
-                    }
-                case "kiranghaerang-regular.ttf":
-                    {
-                        return "KirangHaerang";
-                    }
-                case "notosanskr-variablefont_wght.ttf":
-                    {
-                        return "NotoSansKR";
-                    }
+                case "himelody-regular.ttf": return "HiMelody";
+                case "jua-regular.ttf": return "Jua";
+                case "kiranghaerang-regular.ttf": return "KirangHaerang";
+                case "notosanskr-variablefont_wght.ttf": return "NotoSansKR";
                 #endregion
                 #region Chinese Fonts
-                case "azppt regular.ttf":
-                    {
-                        return "AZPPT";
-                    }
-                case "hanyisentypagoda regular.ttf":
-                    {
-                        return "HanyiSentyPagoda";
-                    }
-                case "notosanstc-variablefont.ttf":
-                    {
-                        return "NotoSansTC";
-                    }
-                case "notosanshk-variablefont.ttf":
-                    {
-                        return "NotoSansHK";
-                    }
-                case "notosanssc-variablefont.ttf":
-                    {
-                        return "NotoSansSC";
-                    }
-                case "yrdzst medium.ttf":
-                    {
-                        return "YRDZST";
-                    }
+                case "azppt regular.ttf": return "AZPPT";
+                case "hanyisentypagoda regular.ttf": return "HanyiSentyPagoda";
+                case "notosanstc-variablefont.ttf": return "NotoSansTC";
+                case "notosanshk-variablefont.ttf": return "NotoSansHK";
+                case "notosanssc-variablefont.ttf": return "NotoSansSC";
+                case "yrdzst medium.ttf": return "YRDZST";
+                #endregion
+                #region Tagalog Fonts
+                case "notosanstagalog-regular.ttf": return "NotoSansTagalog";
+                case "tagdoc93.ttf": return "TagDoc93";
                 #endregion
             }
             return _name1;
