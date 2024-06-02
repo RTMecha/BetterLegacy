@@ -183,6 +183,16 @@ namespace BetterLegacy.Editor.Managers
             SetupMiscEditorThemes();
             CreateScreenshotsView();
 
+            // Manager initializations
+            try
+            {
+                PlayerEditor.Init();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"PlayerEditor failed to init.\nException: {ex}");
+            }
+
             // Player Editor
             {
                 var gameObject = new GameObject("PlayerEditorManager");
@@ -212,7 +222,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             mousePicker = new GameObject("picker");
-            mousePicker.transform.SetParent(EditorManager.inst.GetDialog("Parent Selector").Dialog.parent.parent);
+            mousePicker.transform.SetParent(EditorManager.inst.dialogs.parent);
             mousePicker.transform.localScale = Vector3.one;
             mousePicker.layer = 5;
             mousePickerRT = mousePicker.AddComponent<RectTransform>();
