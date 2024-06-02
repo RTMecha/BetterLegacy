@@ -31,15 +31,13 @@ namespace BetterLegacy.Editor.Managers
 
         public enum Tab
         {
-            Base,
-            Stretch,
+            Base, // includes stretch
             GUI,
             Boost,
             Pulse,
             Bullet,
-            TailBase,
-            BoostTail,
-            Tail, // All tail parts go here
+            Tail, // All tail related parts go here
+            CustomObjects
         }
 
         public IEnumerator GenerateUI()
