@@ -1,4 +1,5 @@
 ﻿
+using BetterLegacy.Core.Helpers;
 using UnityEngine;
 
 namespace BetterLegacy.Components.Player
@@ -15,7 +16,10 @@ namespace BetterLegacy.Components.Player
 
         void OnTriggerStay(Collider other) => player?.OnObjectCollisionStay(other);
 
-        void OnTriggerExit2D(Collider2D other) => player?.OnObjectCollisionExit(other);
-        void OnTriggerExit(Collider other) => player?.OnObjectCollisionExit(other);
+        void OnCollisionEnter2D()
+        {
+            if (player)
+                player.colliding = true;
+        }
     }
 }
