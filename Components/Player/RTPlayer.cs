@@ -850,7 +850,12 @@ namespace BetterLegacy.Components.Player
                 if (Actions.Boost.WasPressed && (JumpMode || CanBoost) && !LockBoost && (!JumpMode || !colliding && currentJumpCount == jumpCount))
                 {
                     if (JumpMode)
+                    {
+                        if (PlayBoostSound)
+                            AudioManager.inst.PlaySound("boost_recover");
+
                         currentJumpCount++;
+                    }
 
                     StartBoost();
                     return;
