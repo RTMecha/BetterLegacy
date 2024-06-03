@@ -21,6 +21,12 @@ namespace BetterLegacy.Core
         public static Vector3 Clamp(Vector3 value, Vector3 min, Vector3 max) => new Vector3(Mathf.Clamp(value.x, min.x, max.x), Mathf.Clamp(value.y, min.y, max.y), Mathf.Clamp(value.z, min.z, max.z));
         public static Vector3Int Clamp(Vector3Int value, Vector3Int min, Vector3Int max) => new Vector3Int(Mathf.Clamp(value.x, min.x, max.x), Mathf.Clamp(value.y, min.y, max.y), Mathf.Clamp(value.z, min.z, max.z));
 
+        public static float ClampZero(float value, float min, float max)
+            => min != 0f || max != 0f ? Clamp(value, min, max) : value;
+        
+        public static float ClampZero(int value, int min, int max)
+            => min != 0 || max != 0 ? Clamp(value, min, max) : value;
+
         public static Vector3 CenterOfVectors(IEnumerable<Vector3> vectors)
         {
             var vector = Vector3.zero;
