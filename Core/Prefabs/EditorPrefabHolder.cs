@@ -21,6 +21,7 @@ namespace BetterLegacy.Core.Prefabs
         public GameObject DeleteButton { get; set; }
         public GameObject Function1Button { get; set; }
         public GameObject Function2Button { get; set; }
+        public GameObject Dropdown { get; set; }
     }
 
     public class DeleteButtonStorage : MonoBehaviour
