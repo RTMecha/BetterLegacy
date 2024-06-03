@@ -137,6 +137,8 @@ namespace BetterLegacy.Editor.Managers
                 functionButtonStorage.text = prefabHolder.Function2Button.transform.GetChild(0).GetComponent<Text>();
                 Destroy(prefabHolder.Function2Button.GetComponent<Animator>());
                 functionButtonStorage.button.transition = Selectable.Transition.ColorTint;
+
+                prefabHolder.Dropdown = ObjEditor.inst.KeyframeDialogs[0].transform.Find("curves").gameObject.Duplicate(prefabHolder.PrefabParent, "dropdown");
             }
 
             if (PrefabEditor.inst)
