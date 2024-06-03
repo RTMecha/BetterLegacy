@@ -124,6 +124,68 @@ namespace BetterLegacy.Editor.Managers
 
                     var input = EditorPrefabHolder.Instance.NumberInputField.transform.Find("input").gameObject.Duplicate(gameObject.transform, "input");
                     UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(260f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(200f, 32f));
+
+                    EditorThemeManager.AddInputField(input.GetComponent<InputField>());
+                }
+
+                if (name == "Base Health" || name == "Boost Particles Amount" ||
+                    name.Contains("Scale") && (name.Contains("Start") || name.Contains("End")) && !name.Contains("Pulse") && !name.Contains("Bullet") ||
+                    name.Contains("Rotation") && !name.Contains("Easing") ||
+                    name == "Tail Base Distance" ||
+                    name.Contains("Opacity") && !name.Contains("Easing") ||
+                    name.Contains("Lifetime") ||
+                    name.Contains("Start Width") ||
+                    name.Contains("End Width") ||
+                    name.Contains("Trail Time") ||
+                    name == "Boost Particles Duration" ||
+                    name.Contains("Amount") && !name.Contains("Boost") ||
+                    name.Contains("Speed") || name.Contains("Depth") || name == "Pulse Duration" ||
+                    name.Contains("Cooldown") || name.Contains("Boost Time") || name == "Bullet Lifetime" || name.Contains("Duration") ||
+                    name == "Tail Base Time")
+                {
+                    if (name == "Base Health" || name == "Boost Particles Amount")
+                        valueType = RTEditor.EditorProperty.ValueType.Int;
+                    if (name.Contains("Scale") && (name.Contains("Start") || name.Contains("End")) && !name.Contains("Pulse") && !name.Contains("Bullet") ||
+                        name.Contains("Rotation") && !name.Contains("Easing") ||
+                        name == "Tail Base Distance" ||
+                        name.Contains("Opacity") && !name.Contains("Easing") ||
+                        name.Contains("Lifetime") ||
+                        name.Contains("Start Width") ||
+                        name.Contains("End Width") ||
+                        name.Contains("Trail Time") ||
+                        name == "Boost Particles Duration" ||
+                        name.Contains("Amount") && !name.Contains("Boost") ||
+                        name.Contains("Speed") || name.Contains("Depth") || name == "Pulse Duration" ||
+                        name.Contains("Cooldown") || name.Contains("Boost Time") || name == "Bullet Lifetime" || name.Contains("Duration") ||
+                        name == "Tail Base Time")
+                        valueType = RTEditor.EditorProperty.ValueType.Float;
+
+                    var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
+                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+
+                    var inputFieldStorage = input.GetComponent<InputFieldStorage>();
+
+                    Destroy(inputFieldStorage.middleButton.gameObject);
+                    EditorThemeManager.AddInputField(inputFieldStorage.inputField);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.leftGreaterButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.leftButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.rightButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.rightGreaterButton, ThemeGroup.Function_2, false);
+                }
+
+                if (name == "Tail Base Mode")
+                {
+                    valueType = RTEditor.EditorProperty.ValueType.Enum;
+
+                    var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(gameObject.transform, "dropdown").GetComponent<Dropdown>();
+                    dropdown.options.Clear();
+                    dropdown.onValueChanged.RemoveAllListeners();
+
+                    dropdown.options = new List<Dropdown.OptionData>
+                    {
+                        new Dropdown.OptionData("Legacy"),
+                        new Dropdown.OptionData("Dev+")
+                    };
                 }
 
                 editorUIs.Add(new PlayerEditorUI
@@ -140,7 +202,6 @@ namespace BetterLegacy.Editor.Managers
 
         public IEnumerator Refresh()
         {
-            var models = PlayerManager.PlayerModels;
             var currentIndex = PlayerManager.GetPlayerModelIndex(playerModelIndex);
             var currentModel = PlayerManager.PlayerModels[currentIndex];
 
@@ -174,6 +235,38 @@ namespace BetterLegacy.Editor.Managers
 
                                 break;
                             }
+                        case RTEditor.EditorProperty.ValueType.Int:
+                            {
+                                var inputFieldStorage = ui.GameObject.transform.Find("input").GetComponent<InputFieldStorage>();
+                                inputFieldStorage.inputField.onValueChanged.ClearAll();
+                                inputFieldStorage.inputField.text = value.ToString();
+                                inputFieldStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+                                {
+                                    if (int.TryParse(_val, out int result))
+                                        currentModel[key] = result;
+                                });
+
+                                TriggerHelper.IncreaseDecreaseButtonsInt(inputFieldStorage);
+                                TriggerHelper.AddEventTriggerParams(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
+
+                                break;
+                            }
+                        case RTEditor.EditorProperty.ValueType.Float:
+                            {
+                                var inputFieldStorage = ui.GameObject.transform.Find("input").GetComponent<InputFieldStorage>();
+                                inputFieldStorage.inputField.onValueChanged.ClearAll();
+                                inputFieldStorage.inputField.text = value.ToString();
+                                inputFieldStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+                                {
+                                    if (float.TryParse(_val, out float result))
+                                        currentModel[key] = result;
+                                });
+
+                                TriggerHelper.IncreaseDecreaseButtons(inputFieldStorage);
+                                TriggerHelper.AddEventTriggerParams(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField));
+
+                                break;
+                            }
                     }
                 }
                 catch (Exception ex)
@@ -195,7 +288,7 @@ namespace BetterLegacy.Editor.Managers
 
         }
 
-        public Tab CurrentTab { get; set; }
+        public Tab CurrentTab { get; set; } = Tab.Base;
         public string searchTerm;
         public List<PlayerEditorUI> editorUIs = new List<PlayerEditorUI>();
 
