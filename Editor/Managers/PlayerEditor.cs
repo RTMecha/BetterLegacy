@@ -14,6 +14,8 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
+using BetterLegacy.Configs;
+using BetterLegacy.Components;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -24,9 +26,11 @@ namespace BetterLegacy.Editor.Managers
     {
         public static PlayerEditor inst;
 
-        public static Dropdown playerModelDropdown;
-        public static InputField playerModelIndexIF;
-        public static int playerModelIndex = 0;
+        public RTEditor.Popup ModelsPopup { get; set; }
+        public string modelSearchTerm;
+        public int playerModelIndex = 0;
+        public Transform content;
+        public Sprite PlayerSprite { get; set; }
 
         public static void Init() => Creator.NewGameObject("PlayerEditor", EditorManager.inst.transform.parent).AddComponent<PlayerEditor>();
 
@@ -40,10 +44,10 @@ namespace BetterLegacy.Editor.Managers
         {
             Global,
             Base, // includes stretch
+            Head,
             GUI,
             Boost,
-            Pulse,
-            Bullet,
+            Spawners, // Bullet and Pulse
             Tail, // All tail related parts go here
             Custom
         }
@@ -52,10 +56,10 @@ namespace BetterLegacy.Editor.Managers
         {
             return
                 str.Contains("Base") && !str.Contains("GUI") && !str.Contains("Tail") || str.Contains("Stretch") ? Tab.Base :
+                !str.Contains("Pulse") && str.Contains("Head") || str.Contains("Face") ? Tab.Head :
                 str.Contains("GUI") ? Tab.GUI :
                 str.Contains("Boost") && !str.Contains("Tail") ? Tab.Boost :
-                str.Contains("Pulse") ? Tab.Pulse :
-                str.Contains("Bullet") ? Tab.Bullet :
+                str.Contains("Pulse") || str.Contains("Bullet") ? Tab.Spawners :
                 str.Contains("Tail") ? Tab.Tail : Tab.Custom;
         }
 
@@ -75,6 +79,8 @@ namespace BetterLegacy.Editor.Managers
 
             Destroy(dialog.transform.Find("Text").gameObject);
 
+            EditorThemeManager.AddGraphic(dialog.GetComponent<Image>(), ThemeGroup.Background_1);
+
             var search = EditorManager.inst.GetDialog("Open File Popup").Dialog.Find("search-box").gameObject.Duplicate(dialog.transform, "search");
 
             var searchField = search.transform.GetChild(0).GetComponent<InputField>();
@@ -84,27 +90,76 @@ namespace BetterLegacy.Editor.Managers
             searchField.onValueChanged.AddListener(delegate (string _val)
             {
                 searchTerm = _val;
-                StartCoroutine(Refresh());
+                StartCoroutine(RefreshEditor());
             });
 
             ((Text)searchField.placeholder).text = "Search for value...";
 
+            // Tabs
+            {
+                var spacer = dialog.transform.Find("spacer");
+                var layout = Creator.NewUIObject("layout", spacer);
+                UIManager.SetRectTransform(layout.transform.AsRT(), new Vector2(8f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(760f, 43.2f));
+                var layoutHLG = layout.AddComponent<HorizontalLayoutGroup>();
+                layoutHLG.childControlWidth = false;
+                layoutHLG.childForceExpandWidth = false;
+                layoutHLG.spacing = 2f;
+
+                var enumNames = Enum.GetNames(typeof(Tab));
+                for (int i = 0; i < enumNames.Length; i++)
+                {
+                    var e = enumNames[i];
+                    var tabIndex = i;
+                    var tab = EditorPrefabHolder.Instance.Function1Button.Duplicate(layout.transform, e);
+                    tab.transform.AsRT().sizeDelta = new Vector2(92f, 43.2f);
+                    var functionButtonStorage = tab.GetComponent<FunctionButtonStorage>();
+                    functionButtonStorage.text.fontSize = 16;
+                    functionButtonStorage.text.text = e;
+                    functionButtonStorage.button.onClick.ClearAll();
+                    functionButtonStorage.button.onClick.AddListener(delegate ()
+                    {
+                        CurrentTab = (Tab)tabIndex;
+                        StartCoroutine(RefreshEditor());
+                    });
+
+                    EditorThemeManager.AddSelectable(functionButtonStorage.button, EditorThemeManager.EditorTheme.GetGroup($"Tab Color {i + 1}"));
+                    tab.AddComponent<ContrastColors>().Init(functionButtonStorage.text, tab.GetComponent<Image>());
+                }
+            }
+
             var scrollView = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View").Duplicate(dialog.transform, "Scroll View");
+            var boolInput = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/SettingsDialog/snap/toggle/toggle");
 
             scrollView.transform.AsRT().sizeDelta = new Vector2(765f, 512f);
 
+            PlayerSprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_player.png");
+
             EditorHelper.AddEditorDialog("Player Editor New", dialog);
-            EditorHelper.AddEditorDropdown("Player Editor New", "", "Edit", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_player.png"), delegate ()
+            EditorHelper.AddEditorDropdown("Player Editor New", "", "Edit", PlayerSprite, delegate ()
             {
                 EditorManager.inst.ShowDialog("Player Editor New");
-                StartCoroutine(Refresh());
+                StartCoroutine(RefreshEditor());
             });
 
-            var content = scrollView.transform.Find("Viewport/Content");
+            content = scrollView.transform.Find("Viewport/Content");
 
             var labelPrefab = EditorManager.inst.folderButtonPrefab.transform.GetChild(0).gameObject;
 
             LSHelpers.DeleteChildren(content);
+
+            // Default
+            {
+                var gameObject = Creator.NewUIObject("handler", content);
+                gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 42f);
+
+                var label = labelPrefab.Duplicate(gameObject.transform, "label");
+                var labelText = label.GetComponent<Text>();
+                labelText.text = "Cannot edit default Player models.";
+                UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
+
+
+                gameObject.SetActive(false);
+            }
 
             for (int i = 0; i < PlayerModel.Values.Count; i++)
             {
@@ -118,6 +173,13 @@ namespace BetterLegacy.Editor.Managers
                 UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
 
                 RTEditor.EditorProperty.ValueType valueType = RTEditor.EditorProperty.ValueType.Function;
+                if (name == "Base ID")
+                {
+                    var id = labelPrefab.Duplicate(gameObject.transform, "id");
+                    UIManager.SetRectTransform(id.transform.AsRT(), new Vector2(-32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(750f, 32f));
+                    var button = gameObject.AddComponent<Button>();
+                }
+
                 if (name == "Base Name" || name.Contains("Color") && name.Contains("Custom"))
                 {
                     valueType = RTEditor.EditorProperty.ValueType.String;
@@ -173,11 +235,45 @@ namespace BetterLegacy.Editor.Managers
                     EditorThemeManager.AddSelectable(inputFieldStorage.rightGreaterButton, ThemeGroup.Function_2, false);
                 }
 
+                if (name.Contains("Position") && !name.Contains("Easing") && !name.Contains("Duration") ||
+                    name.Contains("Scale") && !name.Contains("Particles") && !name.Contains("Easing") && !name.Contains("Duration") ||
+                    name.Contains("Force") || name.Contains("Origin"))
+                {
+                    valueType = RTEditor.EditorProperty.ValueType.Vector2;
+
+                    var inputX = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "x");
+                    UIManager.SetRectTransform(inputX.transform.AsRT(), new Vector2(-52f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+
+                    var inputXStorage = inputX.GetComponent<InputFieldStorage>();
+
+                    Destroy(inputXStorage.middleButton.gameObject);
+                    EditorThemeManager.AddInputField(inputXStorage.inputField);
+                    EditorThemeManager.AddSelectable(inputXStorage.leftButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputXStorage.rightButton, ThemeGroup.Function_2, false);
+
+                    Destroy(inputXStorage.leftGreaterButton.gameObject);
+                    Destroy(inputXStorage.rightGreaterButton.gameObject);
+
+                    var inputY = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "y");
+                    UIManager.SetRectTransform(inputY.transform.AsRT(), new Vector2(162f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+
+                    var inputYStorage = inputY.GetComponent<InputFieldStorage>();
+
+                    Destroy(inputYStorage.middleButton.gameObject);
+                    EditorThemeManager.AddInputField(inputYStorage.inputField);
+                    EditorThemeManager.AddSelectable(inputYStorage.leftButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputYStorage.rightButton, ThemeGroup.Function_2, false);
+
+                    Destroy(inputYStorage.leftGreaterButton.gameObject);
+                    Destroy(inputYStorage.rightGreaterButton.gameObject);
+                }
+
                 if (name == "Tail Base Mode")
                 {
                     valueType = RTEditor.EditorProperty.ValueType.Enum;
 
                     var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(gameObject.transform, "dropdown").GetComponent<Dropdown>();
+                    dropdown.transform.AsRT().anchoredPosition = new Vector2(566f, -16f);
                     dropdown.options.Clear();
                     dropdown.onValueChanged.RemoveAllListeners();
 
@@ -186,6 +282,100 @@ namespace BetterLegacy.Editor.Managers
                         new Dropdown.OptionData("Legacy"),
                         new Dropdown.OptionData("Dev+")
                     };
+
+                    EditorThemeManager.AddDropdown(dropdown);
+                }
+                
+                if (name == "Base Rotate Mode")
+                {
+                    valueType = RTEditor.EditorProperty.ValueType.Enum;
+
+                    var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(gameObject.transform, "dropdown").GetComponent<Dropdown>();
+                    dropdown.transform.AsRT().anchoredPosition = new Vector2(566f, -16f);
+                    dropdown.options.Clear();
+                    dropdown.onValueChanged.RemoveAllListeners();
+
+                    dropdown.options = new List<Dropdown.OptionData>
+                    {
+                        new Dropdown.OptionData("Face Direction"),
+                        new Dropdown.OptionData("None"),
+                        new Dropdown.OptionData("Flip X"),
+                        new Dropdown.OptionData("Flip Y")
+                    };
+
+                    EditorThemeManager.AddDropdown(dropdown);
+                }
+                
+                if (name == "GUI Health Mode")
+                {
+                    valueType = RTEditor.EditorProperty.ValueType.Enum;
+
+                    var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(gameObject.transform, "dropdown").GetComponent<Dropdown>();
+                    dropdown.transform.AsRT().anchoredPosition = new Vector2(566f, -16f);
+                    dropdown.options.Clear();
+                    dropdown.onValueChanged.RemoveAllListeners();
+
+                    dropdown.options = new List<Dropdown.OptionData>
+                    {
+                        new Dropdown.OptionData("Images"),
+                        new Dropdown.OptionData("Text"),
+                        new Dropdown.OptionData("Equals Bar"),
+                        new Dropdown.OptionData("Bar"),
+                    };
+
+                    EditorThemeManager.AddDropdown(dropdown);
+                }
+                
+                if (name.Contains("Easing"))
+                {
+                    valueType = RTEditor.EditorProperty.ValueType.Enum;
+
+                    var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(gameObject.transform, "dropdown").GetComponent<Dropdown>();
+                    dropdown.transform.AsRT().anchoredPosition = new Vector2(566f, -16f);
+                    dropdown.options.Clear();
+                    dropdown.onValueChanged.RemoveAllListeners();
+
+                    dropdown.options = EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList();
+
+                    EditorThemeManager.AddDropdown(dropdown);
+                }
+
+                if (name.Contains("Color") && !name.Contains("Easing") && !name.Contains("Custom") && !name.Contains("Duration"))
+                {
+                    valueType = RTEditor.EditorProperty.ValueType.Color;
+
+                    var layout = Creator.NewUIObject("colors", gameObject.transform);
+                    layout.transform.AsRT().anchoredPosition = new Vector2(170f, -16f);
+                    layout.transform.AsRT().sizeDelta = new Vector2(400f, 100f);
+                    var layoutGLG = layout.AddComponent<GridLayoutGroup>();
+                    layoutGLG.cellSize = new Vector2(32f, 32f);
+                    layoutGLG.spacing = new Vector2(8f, 8f);
+
+                    gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 162f);
+
+                    for (int j = 0; j < 25; j++)
+                    {
+                        var color = EditorManager.inst.colorGUI.Duplicate(layout.transform, $"{j + 1}");
+                        EditorThemeManager.AddGraphic(color.GetComponent<Image>(), ThemeGroup.Null, true);
+                        EditorThemeManager.AddGraphic(color.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Background_1);
+                    }
+                }
+
+                if (name.Contains("Active") || name.Contains("Emitting") || name == "Pulse Rotate to Head" ||
+                    name == "Tail Base Grows" || name == "Base Collision Accurate" || name == "Bullet Constant" ||
+                    name == "Bullet Hurt Players" || name == "Bullet AutoKill")
+                {
+                    valueType = RTEditor.EditorProperty.ValueType.Bool;
+
+                    var toggle = boolInput.Duplicate(gameObject.transform, "toggle").GetComponent<Toggle>();
+                    toggle.transform.AsRT().anchoredPosition = new Vector2(725f, -21f);
+
+                    EditorThemeManager.AddToggle(toggle);
+                }
+
+                if (name == "Custom Objects")
+                {
+
                 }
 
                 editorUIs.Add(new PlayerEditorUI
@@ -197,29 +387,169 @@ namespace BetterLegacy.Editor.Managers
                 });
             }
 
+            // Functions
+            {
+                var spacer = Creator.NewUIObject("spacer", dialog.transform);
+                spacer.transform.AsRT().sizeDelta = new Vector2(765f, 54f);
+
+                var layout = Creator.NewUIObject("layout", spacer.transform);
+                UIManager.SetRectTransform(layout.transform.AsRT(), new Vector2(8f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(760f, 43.2f));
+                var layoutHLG = layout.AddComponent<HorizontalLayoutGroup>();
+                layoutHLG.childControlWidth = false;
+                layoutHLG.childForceExpandWidth = false;
+                layoutHLG.spacing = 2f;
+
+                var select = EditorPrefabHolder.Instance.Function1Button.Duplicate(layout.transform, "function");
+                select.transform.AsRT().sizeDelta = new Vector2(92f, 43.2f);
+                var selectStorage = select.GetComponent<FunctionButtonStorage>();
+                selectStorage.text.fontSize = 16;
+                selectStorage.text.text = "Select";
+                selectStorage.button.onClick.ClearAll();
+                selectStorage.button.onClick.AddListener(delegate ()
+                {
+                    EditorManager.inst.ShowDialog("Player Models Popup");
+                    StartCoroutine(RefreshModels());
+                });
+
+                EditorThemeManager.AddSelectable(selectStorage.button, ThemeGroup.Function_2);
+                EditorThemeManager.AddGraphic(selectStorage.text, ThemeGroup.Function_2_Text);
+
+                var playerIndexObject = EditorPrefabHolder.Instance.Dropdown.Duplicate(layout.transform, "dropdown");
+                playerIndexObject.transform.AsRT().sizeDelta = new Vector2(164f, 43.2f);
+                var playerIndexDropdown = playerIndexObject.GetComponent<Dropdown>();
+                playerIndexDropdown.onValueChanged.ClearAll();
+                playerIndexDropdown.options = new List<Dropdown.OptionData>
+                {
+                    new Dropdown.OptionData("Player 1"),
+                    new Dropdown.OptionData("Player 2"),
+                    new Dropdown.OptionData("Player 3"),
+                    new Dropdown.OptionData("Player 4"),
+                };
+                playerIndexDropdown.value = 0;
+                playerIndexDropdown.onValueChanged.AddListener(delegate (int _val)
+                {
+                    playerModelIndex = _val;
+                    StartCoroutine(RefreshEditor());
+                });
+
+                EditorThemeManager.AddDropdown(playerIndexDropdown);
+
+                var create = EditorPrefabHolder.Instance.Function1Button.Duplicate(layout.transform, "function");
+                create.transform.AsRT().sizeDelta = new Vector2(92f, 43.2f);
+                var createStorage = create.GetComponent<FunctionButtonStorage>();
+                createStorage.text.fontSize = 16;
+                createStorage.text.text = "Create";
+                createStorage.button.onClick.ClearAll();
+                createStorage.button.onClick.AddListener(delegate ()
+                {
+                    var num = PlayerManager.PlayerModels.Count;
+
+                    PlayerManager.CreateNewPlayerModel();
+                    PlayerManager.SetPlayerModel(playerModelIndex, PlayerManager.PlayerModels.ElementAt(num).Key);
+                    PlayerManager.RespawnPlayers();
+                    StartCoroutine(RefreshEditor());
+                    EditorManager.inst.DisplayNotification("Created a new player model!", 1.5f, EditorManager.NotificationType.Success);
+                });
+
+                EditorThemeManager.AddSelectable(createStorage.button, ThemeGroup.Function_2);
+                EditorThemeManager.AddGraphic(createStorage.text, ThemeGroup.Function_2_Text);
+
+                var save = EditorPrefabHolder.Instance.Function1Button.Duplicate(layout.transform, "function");
+                save.transform.AsRT().sizeDelta = new Vector2(92f, 43.2f);
+                var saveStorage = save.GetComponent<FunctionButtonStorage>();
+                saveStorage.text.fontSize = 16;
+                saveStorage.text.text = "Save";
+                saveStorage.button.onClick.ClearAll();
+                saveStorage.button.onClick.AddListener(delegate ()
+                {
+                    PlayerManager.SaveGlobalModels();
+                    EditorManager.inst.DisplayNotification("Saved player models", 1.5f, EditorManager.NotificationType.Success);
+                });
+
+                EditorThemeManager.AddSelectable(saveStorage.button, ThemeGroup.Function_2);
+                EditorThemeManager.AddGraphic(saveStorage.text, ThemeGroup.Function_2_Text);
+
+                var load = EditorPrefabHolder.Instance.Function1Button.Duplicate(layout.transform, "function");
+                load.transform.AsRT().sizeDelta = new Vector2(92f, 43.2f);
+                var loadStorage = load.GetComponent<FunctionButtonStorage>();
+                loadStorage.text.fontSize = 16;
+                loadStorage.text.text = "Reload";
+                loadStorage.button.onClick.ClearAll();
+                loadStorage.button.onClick.AddListener(delegate ()
+                {
+                    PlayerManager.LoadGlobalModels();
+                    PlayerManager.RespawnPlayers();
+                    StartCoroutine(RefreshEditor());
+                    EditorManager.inst.HideDialog("Player Models Popup");
+
+                    EditorManager.inst.DisplayNotification("Loaded player models", 1.5f, EditorManager.NotificationType.Success);
+                });
+
+                EditorThemeManager.AddSelectable(loadStorage.button, ThemeGroup.Function_2);
+                EditorThemeManager.AddGraphic(loadStorage.text, ThemeGroup.Function_2_Text);
+            }
+
+            ModelsPopup = RTEditor.inst.GeneratePopup("Player Models Popup", "Player Models", Vector2.zero, Vector2.zero, delegate (string _val)
+            {
+                modelSearchTerm = _val;
+                StartCoroutine(RefreshModels());
+            });
+
             yield break;
         }
 
-        public IEnumerator Refresh()
+        public IEnumerator RefreshEditor()
         {
             var currentIndex = PlayerManager.GetPlayerModelIndex(playerModelIndex);
             var currentModel = PlayerManager.PlayerModels[currentIndex];
 
+            var isDefault = PlayerModel.DefaultModels.Any(x => currentModel.basePart.id == x.basePart.id);
+            content.Find("handler").gameObject.SetActive(isDefault);
+
             for (int i = 0; i < editorUIs.Count; i++)
             {
                 var ui = editorUIs[i];
-                var active = CoreHelper.SearchString(searchTerm, ui.Name) && ui.Tab == CurrentTab;
+                var active = (!isDefault || ui.Name == "Base ID") && CoreHelper.SearchString(searchTerm, ui.Name) && ui.Tab == CurrentTab;
                 ui.GameObject?.SetActive(active);
                 if (!active)
                     continue;
 
                 try
                 {
-                    var value = PlayerManager.PlayerModels[PlayerManager.PlayerModelsIndex[0]][i];
+                    var value = PlayerManager.PlayerModels[PlayerManager.PlayerModelsIndex[Mathf.Clamp(playerModelIndex, 0, 3)]][i];
                     var key = PlayerModel.Values[i];
+
+                    if (key == "Base ID")
+                    {
+                        var text = ui.GameObject.transform.Find("id").GetComponent<Text>();
+                        text.alignment = TextAnchor.MiddleRight;
+                        text.text = value.ToString() + " (Click to copy)";
+                        var button = ui.GameObject.GetComponent<Button>();
+                        button.onClick.ClearAll();
+                        button.onClick.AddListener(delegate ()
+                        {
+                            LSText.CopyToClipboard(value.ToString());
+                            EditorManager.inst.DisplayNotification($"Copied ID \"{value}\" to clipboard!", 2f, EditorManager.NotificationType.Success);
+                        });
+
+                        continue;
+                    }
 
                     switch (ui.ValueType)
                     {
+                        case RTEditor.EditorProperty.ValueType.Bool:
+                            {
+                                var toggle = ui.GameObject.transform.Find("toggle").GetComponent<Toggle>();
+                                toggle.onValueChanged.ClearAll();
+                                toggle.isOn = (bool)value;
+                                toggle.onValueChanged.AddListener(delegate (bool _val)
+                                {
+                                    currentModel[key] = _val;
+                                    PlayerManager.UpdatePlayers();
+                                });
+
+                                break;
+                            }
                         case RTEditor.EditorProperty.ValueType.String:
                             {
                                 var inputField = ui.GameObject.transform.Find("input").GetComponent<InputField>();
@@ -231,6 +561,8 @@ namespace BetterLegacy.Editor.Managers
                                         currentModel[key] = _val;
                                     else
                                         currentModel[key] = _val.Length == 6 || _val.Length == 8 ? _val : LSColors.ColorToHex(LSColors.pink500);
+
+                                    PlayerManager.UpdatePlayers();
                                 });
 
                                 break;
@@ -243,7 +575,10 @@ namespace BetterLegacy.Editor.Managers
                                 inputFieldStorage.inputField.onValueChanged.AddListener(delegate (string _val)
                                 {
                                     if (int.TryParse(_val, out int result))
+                                    {
                                         currentModel[key] = result;
+                                        PlayerManager.UpdatePlayers();
+                                    }
                                 });
 
                                 TriggerHelper.IncreaseDecreaseButtonsInt(inputFieldStorage);
@@ -259,11 +594,90 @@ namespace BetterLegacy.Editor.Managers
                                 inputFieldStorage.inputField.onValueChanged.AddListener(delegate (string _val)
                                 {
                                     if (float.TryParse(_val, out float result))
+                                    {
                                         currentModel[key] = result;
+                                        PlayerManager.UpdatePlayers();
+                                    }
                                 });
 
                                 TriggerHelper.IncreaseDecreaseButtons(inputFieldStorage);
                                 TriggerHelper.AddEventTriggerParams(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField));
+
+                                break;
+                            }
+                        case RTEditor.EditorProperty.ValueType.Vector2:
+                            {
+                                var inputXStorage = ui.GameObject.transform.Find("x").GetComponent<InputFieldStorage>();
+                                var inputYStorage = ui.GameObject.transform.Find("y").GetComponent<InputFieldStorage>();
+
+                                inputXStorage.inputField.onValueChanged.ClearAll();
+                                inputXStorage.inputField.text = ((Vector2)value).x.ToString();
+                                inputXStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+                                {
+                                    if (float.TryParse(_val, out float result))
+                                    {
+                                        currentModel[key] = new Vector2(result, ((Vector2)value).y);
+                                        PlayerManager.UpdatePlayers();
+                                    }
+                                });
+
+                                inputYStorage.inputField.onValueChanged.ClearAll();
+                                inputYStorage.inputField.text = ((Vector2)value).y.ToString();
+                                inputYStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+                                {
+                                    if (float.TryParse(_val, out float result))
+                                    {
+                                        currentModel[key] = new Vector2(((Vector2)value).x, result);
+                                        PlayerManager.UpdatePlayers();
+                                    }
+                                });
+
+                                break;
+                            }
+                        case RTEditor.EditorProperty.ValueType.Color:
+                            {
+                                var colors = ui.GameObject.transform.Find("colors");
+
+                                for (int j = 0; j < colors.childCount; j++)
+                                {
+                                    var colorIndex = j;
+                                    var color = colors.GetChild(j);
+                                    color.GetChild(0).gameObject.SetActive((int)value == j);
+                                    color.GetComponent<Image>().color = CoreHelper.GetPlayerColor(playerModelIndex, j, 1f, "FFFFFF");
+
+                                    var button = color.GetComponent<Button>();
+                                    button.onClick.ClearAll();
+                                    button.onClick.AddListener(delegate ()
+                                    {
+                                        currentModel[key] = colorIndex;
+                                        StartCoroutine(RefreshEditor());
+                                    });
+                                }
+
+                                break;
+                            }
+                        case RTEditor.EditorProperty.ValueType.Enum:
+                            {
+                                var dropdown = ui.GameObject.transform.Find("dropdown").GetComponent<Dropdown>();
+                                dropdown.onValueChanged.ClearAll();
+                                dropdown.value = (int)value;
+                                dropdown.onValueChanged.AddListener(delegate (int _val)
+                                {
+                                    currentModel[key] = _val;
+                                    PlayerManager.UpdatePlayers();
+                                });
+
+                                TriggerHelper.AddEventTriggerParams(dropdown.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, delegate (BaseEventData baseEventData)
+                                {
+                                    if (!EditorConfig.Instance.ScrollOnEasing.Value)
+                                        return;
+
+                                    var pointerEventData = (PointerEventData)baseEventData;
+                                    if (pointerEventData.scrollDelta.y > 0f)
+                                        dropdown.value = dropdown.value == 0 ? dropdown.options.Count - 1 : dropdown.value - 1;
+                                    if (pointerEventData.scrollDelta.y < 0f)
+                                        dropdown.value = dropdown.value == dropdown.options.Count - 1 ? 0 : dropdown.value + 1;
+                                }));
 
                                 break;
                             }
@@ -273,6 +687,49 @@ namespace BetterLegacy.Editor.Managers
                 {
                     CoreHelper.LogError($"Exception: {ex}");
                 }
+            }
+
+            if (CurrentTab == Tab.Global)
+            {
+                // handle global functions here
+            }
+
+            yield break;
+        }
+
+        public IEnumerator RefreshModels()
+        {
+            LSHelpers.DeleteChildren(ModelsPopup.Content);
+
+            int num = 0;
+            foreach (var playerModel in PlayerManager.PlayerModels)
+            {
+                int index = num;
+                var name = playerModel.Value.basePart.name;
+                if (!CoreHelper.SearchString(modelSearchTerm, name))
+                    continue;
+
+                var model = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(ModelsPopup.Content, name);
+                var modelButton = model.GetComponent<Button>();
+                modelButton.onClick.ClearAll();
+                modelButton.onClick.AddListener(delegate ()
+                {
+                    PlayerManager.SetPlayerModelIndex(playerModelIndex, index);
+                    PlayerManager.RespawnPlayers();
+                    StartCoroutine(RefreshEditor());
+                });
+
+                var text = model.transform.GetChild(0).GetComponent<Text>();
+                text.text = name;
+
+                var image = model.transform.Find("Image").GetComponent<Image>();
+                image.sprite = PlayerSprite;
+
+                EditorThemeManager.ApplySelectable(modelButton, ThemeGroup.List_Button_1);
+                EditorThemeManager.ApplyGraphic(image, ThemeGroup.Light_Text);
+                EditorThemeManager.ApplyLightText(text);
+
+                num++;
             }
 
             yield break;
