@@ -297,6 +297,10 @@ namespace BetterLegacy.Core.Helpers
             return LSColors.ColorFromHSV(hue, sat, val < 0.5 ? -val + 1 : -(val - 1));
         }
 
+        public static Color GetPlayerColor(int playerIndex, int col, float alpha, string hex)
+            => LSColors.fadeColor(col >= 0 && col < 4 ? CoreHelper.CurrentBeatmapTheme.playerColors[col] : col == 4 ? CoreHelper.CurrentBeatmapTheme.guiColor : col > 4 && col < 23 ? CoreHelper.CurrentBeatmapTheme.objectColors[col - 5] :
+                col == 23 ? CoreHelper.CurrentBeatmapTheme.playerColors[playerIndex % 4] : col == 24 ? LSColors.HexToColor(hex) : col == 25 ? CoreHelper.CurrentBeatmapTheme.guiAccentColor : LSColors.pink500, alpha);
+
         #endregion
 
         #region Strings
