@@ -16,6 +16,8 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Configs;
 using BetterLegacy.Components;
+using BetterLegacy.Core.Data;
+using BetterLegacy.Components.Player;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -161,6 +163,167 @@ namespace BetterLegacy.Editor.Managers
                 gameObject.SetActive(false);
             }
 
+            // Global
+            {
+                // Speed
+                {
+                    var gameObject = Creator.NewUIObject("Global Speed", content);
+                    gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 42f);
+
+                    var label = labelPrefab.Duplicate(gameObject.transform, "label");
+                    var labelText = label.GetComponent<Text>();
+                    labelText.text = "Global Speed";
+                    EditorThemeManager.AddLightText(labelText);
+                    UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
+
+                    var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
+                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+
+                    var inputFieldStorage = input.GetComponent<InputFieldStorage>();
+
+                    Destroy(inputFieldStorage.middleButton.gameObject);
+                    EditorThemeManager.AddInputField(inputFieldStorage.inputField);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.leftGreaterButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.leftButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.rightButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.rightGreaterButton, ThemeGroup.Function_2, false);
+
+                    editorUIs.Add(new PlayerEditorUI
+                    {
+                        Name = "Global Speed",
+                        GameObject = gameObject,
+                        Tab = Tab.Global,
+                        ValueType = RTEditor.EditorProperty.ValueType.Float,
+                        Index = -1,
+                    });
+                }
+                
+                // Lock Boost
+                {
+                    var gameObject = Creator.NewUIObject("Global Lock Boost", content);
+                    gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 42f);
+
+                    var label = labelPrefab.Duplicate(gameObject.transform, "label");
+                    var labelText = label.GetComponent<Text>();
+                    labelText.text = "Global Lock Boost";
+                    EditorThemeManager.AddLightText(labelText);
+                    UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
+
+                    var toggle = boolInput.Duplicate(gameObject.transform, "toggle").GetComponent<Toggle>();
+                    toggle.transform.AsRT().anchoredPosition = new Vector2(725f, -21f);
+
+                    EditorThemeManager.AddToggle(toggle);
+
+                    editorUIs.Add(new PlayerEditorUI
+                    {
+                        Name = "Global Lock Boost",
+                        GameObject = gameObject,
+                        Tab = Tab.Global,
+                        ValueType = RTEditor.EditorProperty.ValueType.Bool,
+                        Index = -1,
+                    });
+                }
+
+                // Gamemode
+                {
+                    var gameObject = Creator.NewUIObject("Global Lock Boost", content);
+                    gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 42f);
+
+                    var label = labelPrefab.Duplicate(gameObject.transform, "label");
+                    var labelText = label.GetComponent<Text>();
+                    labelText.text = "Global Gamemode";
+                    EditorThemeManager.AddLightText(labelText);
+                    UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
+
+                    var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(gameObject.transform, "dropdown").GetComponent<Dropdown>();
+                    dropdown.transform.AsRT().anchoredPosition = new Vector2(566f, -16f);
+                    dropdown.options.Clear();
+                    dropdown.onValueChanged.RemoveAllListeners();
+
+                    dropdown.options = new List<Dropdown.OptionData>
+                    {
+                        new Dropdown.OptionData("Regular"),
+                        new Dropdown.OptionData("Platformer"),
+                    };
+
+                    EditorThemeManager.AddDropdown(dropdown);
+
+                    editorUIs.Add(new PlayerEditorUI
+                    {
+                        Name = "Global Gamemode",
+                        GameObject = gameObject,
+                        Tab = Tab.Global,
+                        ValueType = RTEditor.EditorProperty.ValueType.Enum,
+                        Index = -1,
+                    });
+                }
+
+                // Max Jump Count
+                {
+                    var gameObject = Creator.NewUIObject("Global Max Jump Count", content);
+                    gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 42f);
+
+                    var label = labelPrefab.Duplicate(gameObject.transform, "label");
+                    var labelText = label.GetComponent<Text>();
+                    labelText.text = "Global Max Jump Count";
+                    EditorThemeManager.AddLightText(labelText);
+                    UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
+
+                    var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
+                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+
+                    var inputFieldStorage = input.GetComponent<InputFieldStorage>();
+
+                    Destroy(inputFieldStorage.middleButton.gameObject);
+                    EditorThemeManager.AddInputField(inputFieldStorage.inputField);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.leftGreaterButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.leftButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.rightButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.rightGreaterButton, ThemeGroup.Function_2, false);
+
+                    editorUIs.Add(new PlayerEditorUI
+                    {
+                        Name = "Global Max Jump Count",
+                        GameObject = gameObject,
+                        Tab = Tab.Global,
+                        ValueType = RTEditor.EditorProperty.ValueType.Int,
+                        Index = -1,
+                    });
+                }
+
+                // Update Properties
+                {
+                    var gameObject = Creator.NewUIObject("Update Properties", content);
+                    gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 42f);
+
+                    var label = labelPrefab.Duplicate(gameObject.transform, "label");
+                    var labelText = label.GetComponent<Text>();
+                    labelText.text = "Update Properties";
+                    EditorThemeManager.AddLightText(labelText);
+                    UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
+
+                    var image = gameObject.AddComponent<Image>();
+
+                    var button = gameObject.AddComponent<Button>();
+                    button.image = image;
+                    button.onClick.AddListener(delegate ()
+                    {
+                        RTPlayer.SetGameDataProperties();
+                    });
+
+                    EditorThemeManager.AddSelectable(button, ThemeGroup.List_Button_1);
+
+                    editorUIs.Add(new PlayerEditorUI
+                    {
+                        Name = "Update Properties",
+                        GameObject = gameObject,
+                        Tab = Tab.Global,
+                        ValueType = RTEditor.EditorProperty.ValueType.Function,
+                        Index = -1,
+                    });
+                }
+            }
+
             for (int i = 0; i < PlayerModel.Values.Count; i++)
             {
                 var name = PlayerModel.Values[i];
@@ -171,6 +334,7 @@ namespace BetterLegacy.Editor.Managers
                 var labelText = label.GetComponent<Text>();
                 labelText.text = name;
                 UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
+                EditorThemeManager.AddLightText(labelText);
 
                 RTEditor.EditorProperty.ValueType valueType = RTEditor.EditorProperty.ValueType.Function;
                 if (name == "Base ID")
@@ -375,7 +539,7 @@ namespace BetterLegacy.Editor.Managers
 
                 if (name == "Custom Objects")
                 {
-
+                    // maybe have a select custom objects thing similar to select models button
                 }
 
                 editorUIs.Add(new PlayerEditorUI
@@ -384,6 +548,7 @@ namespace BetterLegacy.Editor.Managers
                     GameObject = gameObject,
                     Tab = ParseTab(name),
                     ValueType = valueType,
+                    Index = i,
                 });
             }
 
@@ -504,20 +669,104 @@ namespace BetterLegacy.Editor.Managers
             var currentModel = PlayerManager.PlayerModels[currentIndex];
 
             var isDefault = PlayerModel.DefaultModels.Any(x => currentModel.basePart.id == x.basePart.id);
-            content.Find("handler").gameObject.SetActive(isDefault);
+            content.Find("handler").gameObject.SetActive(isDefault && CurrentTab != Tab.Global);
 
             for (int i = 0; i < editorUIs.Count; i++)
             {
                 var ui = editorUIs[i];
-                var active = (!isDefault || ui.Name == "Base ID") && CoreHelper.SearchString(searchTerm, ui.Name) && ui.Tab == CurrentTab;
+                var active = (!isDefault || ui.Name == "Base ID" || ui.Tab == CurrentTab && CurrentTab == Tab.Global) && CoreHelper.SearchString(searchTerm, ui.Name) && ui.Tab == CurrentTab;
                 ui.GameObject?.SetActive(active);
                 if (!active)
                     continue;
 
+                if (ui.Tab == Tab.Global)
+                {
+                    switch (ui.Name)
+                    {
+                        case "Global Speed":
+                            {
+                                var inputFieldStorage = ui.GameObject.transform.Find("input").GetComponent<InputFieldStorage>();
+                                inputFieldStorage.inputField.onValueChanged.ClearAll();
+                                inputFieldStorage.inputField.text = GameData.Current.LevelBeatmapData.ModLevelData.speedMultiplier.ToString();
+                                inputFieldStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+                                {
+                                    if (float.TryParse(_val, out float result))
+                                    {
+                                        GameData.Current.LevelBeatmapData.ModLevelData.speedMultiplier = result;
+                                        RTPlayer.SetGameDataProperties();
+                                    }
+                                });
+
+                                TriggerHelper.IncreaseDecreaseButtons(inputFieldStorage);
+                                TriggerHelper.AddEventTriggerParams(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField));
+
+                                break;
+                            }
+                        case "Global Lock Boost":
+                            {
+                                var toggle = ui.GameObject.transform.Find("toggle").GetComponent<Toggle>();
+                                toggle.onValueChanged.ClearAll();
+                                toggle.isOn = GameData.Current.LevelBeatmapData.ModLevelData.lockBoost;
+                                toggle.onValueChanged.AddListener(delegate (bool _val)
+                                {
+                                    GameData.Current.LevelBeatmapData.ModLevelData.lockBoost = _val;
+                                    RTPlayer.SetGameDataProperties();
+                                });
+
+                                break;
+                            }
+                        case "Global Gamemode":
+                            {
+                                var dropdown = ui.GameObject.transform.Find("dropdown").GetComponent<Dropdown>();
+                                dropdown.onValueChanged.ClearAll();
+                                dropdown.value = GameData.Current.LevelBeatmapData.ModLevelData.gameMode;
+                                dropdown.onValueChanged.AddListener(delegate (int _val)
+                                {
+                                    GameData.Current.LevelBeatmapData.ModLevelData.gameMode = _val;
+                                    RTPlayer.SetGameDataProperties();
+                                });
+
+                                TriggerHelper.AddEventTriggerParams(dropdown.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, delegate (BaseEventData baseEventData)
+                                {
+                                    if (!EditorConfig.Instance.ScrollOnEasing.Value)
+                                        return;
+
+                                    var pointerEventData = (PointerEventData)baseEventData;
+                                    if (pointerEventData.scrollDelta.y > 0f)
+                                        dropdown.value = dropdown.value == 0 ? dropdown.options.Count - 1 : dropdown.value - 1;
+                                    if (pointerEventData.scrollDelta.y < 0f)
+                                        dropdown.value = dropdown.value == dropdown.options.Count - 1 ? 0 : dropdown.value + 1;
+                                }));
+
+                                break;
+                            }
+                        case "Global Max Jump Count":
+                            {
+                                var inputFieldStorage = ui.GameObject.transform.Find("input").GetComponent<InputFieldStorage>();
+                                inputFieldStorage.inputField.onValueChanged.ClearAll();
+                                inputFieldStorage.inputField.text = GameData.Current.LevelBeatmapData.ModLevelData.maxJumpCount.ToString();
+                                inputFieldStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+                                {
+                                    if (int.TryParse(_val, out int result))
+                                    {
+                                        GameData.Current.LevelBeatmapData.ModLevelData.maxJumpCount = result;
+                                        RTPlayer.SetGameDataProperties();
+                                    }
+                                });
+
+                                TriggerHelper.IncreaseDecreaseButtonsInt(inputFieldStorage);
+                                TriggerHelper.AddEventTriggerParams(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
+
+                                break;
+                            }
+                    }
+                    continue;
+                }
+
                 try
                 {
-                    var value = PlayerManager.PlayerModels[PlayerManager.PlayerModelsIndex[Mathf.Clamp(playerModelIndex, 0, 3)]][i];
-                    var key = PlayerModel.Values[i];
+                    var value = PlayerManager.PlayerModels[PlayerManager.PlayerModelsIndex[Mathf.Clamp(playerModelIndex, 0, 3)]][ui.Index];
+                    var key = PlayerModel.Values[ui.Index];
 
                     if (key == "Base ID")
                     {
@@ -745,6 +994,7 @@ namespace BetterLegacy.Editor.Managers
             public GameObject GameObject { get; set; }
             public Tab Tab { get; set; }
             public RTEditor.EditorProperty.ValueType ValueType { get; set; }
+            public int Index { get; set; }
         }
     }
 }
