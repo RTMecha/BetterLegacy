@@ -6341,10 +6341,9 @@ namespace BetterLegacy.Editor.Managers
                     var textGameObject = gameObject.transform.GetChild(0).gameObject;
                     textGameObject.transform.SetParent(gameObject.transform);
                     textGameObject.layer = 5;
-                    var textRectTransform = textGameObject.GetComponent<RectTransform>();
                     var textText = textGameObject.GetComponent<Text>();
 
-                    textRectTransform.anchoredPosition = Vector2.zero;
+                    textGameObject.transform.AsRT().anchoredPosition = Vector2.zero;
                     textText.text = name;
                     textText.alignment = TextAnchor.MiddleCenter;
                     textText.font = FontManager.inst.DefaultFont;
