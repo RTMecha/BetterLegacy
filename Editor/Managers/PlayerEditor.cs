@@ -190,7 +190,7 @@ namespace BetterLegacy.Editor.Managers
                     EditorThemeManager.AddInputField(input.GetComponent<InputField>());
                 }
 
-                if (name == "Base Health" || name == "Boost Particles Amount" ||
+                if (name == "Base Health" || name == "Boost Particles Amount" || name == "Base Jump Gravity" ||
                     name.Contains("Scale") && (name.Contains("Start") || name.Contains("End")) && !name.Contains("Pulse") && !name.Contains("Bullet") ||
                     name.Contains("Rotation") && !name.Contains("Easing") ||
                     name == "Tail Base Distance" ||
@@ -203,9 +203,9 @@ namespace BetterLegacy.Editor.Managers
                     name.Contains("Amount") && !name.Contains("Boost") ||
                     name.Contains("Speed") || name.Contains("Depth") || name == "Pulse Duration" ||
                     name.Contains("Cooldown") || name.Contains("Boost Time") || name == "Bullet Lifetime" || name.Contains("Duration") ||
-                    name == "Tail Base Time")
+                    name == "Tail Base Time" || name == "Base Jump Gravity" || name == "Base Jump Intensity" || name == "Base Bounciness")
                 {
-                    if (name == "Base Health" || name == "Boost Particles Amount")
+                    if (name == "Base Health" || name == "Boost Particles Amount" || name == "Base Jump Count")
                         valueType = RTEditor.EditorProperty.ValueType.Int;
                     if (name.Contains("Scale") && (name.Contains("Start") || name.Contains("End")) && !name.Contains("Pulse") && !name.Contains("Bullet") ||
                         name.Contains("Rotation") && !name.Contains("Easing") ||
@@ -219,7 +219,7 @@ namespace BetterLegacy.Editor.Managers
                         name.Contains("Amount") && !name.Contains("Boost") ||
                         name.Contains("Speed") || name.Contains("Depth") || name == "Pulse Duration" ||
                         name.Contains("Cooldown") || name.Contains("Boost Time") || name == "Bullet Lifetime" || name.Contains("Duration") ||
-                        name == "Tail Base Time")
+                        name == "Tail Base Time" || name == "Base Jump Gravity" || name == "Base Jump Intensity" || name == "Base Bounciness")
                         valueType = RTEditor.EditorProperty.ValueType.Float;
 
                     var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
@@ -363,7 +363,7 @@ namespace BetterLegacy.Editor.Managers
 
                 if (name.Contains("Active") || name.Contains("Emitting") || name == "Pulse Rotate to Head" ||
                     name == "Tail Base Grows" || name == "Base Collision Accurate" || name == "Bullet Constant" ||
-                    name == "Bullet Hurt Players" || name == "Bullet AutoKill")
+                    name == "Bullet Hurt Players" || name == "Bullet AutoKill" || name == "Base Can Boost")
                 {
                     valueType = RTEditor.EditorProperty.ValueType.Bool;
 
@@ -733,16 +733,6 @@ namespace BetterLegacy.Editor.Managers
             }
 
             yield break;
-        }
-
-        public void Save()
-        {
-
-        }
-
-        public void Load()
-        {
-
         }
 
         public Tab CurrentTab { get; set; } = Tab.Base;

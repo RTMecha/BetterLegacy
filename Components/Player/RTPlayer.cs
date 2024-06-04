@@ -3,6 +3,7 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
@@ -63,6 +64,24 @@ namespace BetterLegacy.Components.Player
 
         public static Vector2 PlayerForce { get; set; }
 
+        public static void SetGameDataProperties()
+        {
+            try
+            {
+                LockBoost = GameData.Current.LevelBeatmapData.ModLevelData.lockBoost;
+                SpeedMultiplier = GameData.Current.LevelBeatmapData.ModLevelData.speedMultiplier;
+                JumpMode = GameData.Current.LevelBeatmapData.ModLevelData.gameMode == 1;
+                JumpGravity = GameData.Current.LevelBeatmapData.ModLevelData.jumpGravity;
+                JumpIntensity = GameData.Current.LevelBeatmapData.ModLevelData.jumpIntensity;
+                MaxJumpCount = GameData.Current.LevelBeatmapData.ModLevelData.maxJumpCount;
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Could not set properties {ex}");
+            }
+
+        }
+
         #region Base
 
         public MyGameActions Actions { get; set; }
@@ -118,7 +137,11 @@ namespace BetterLegacy.Components.Player
 
         #region Jumping
 
+        public static float JumpGravity { get; set; } = 1f;
+        public static float JumpIntensity { get; set; } = 1f;
         public static bool JumpMode { get; set; }
+        public static int MaxJumpCount { get; set; } = 10;
+
         public float jumpGravity = 10f;
         public float jumpIntensity = 40f;
         public float bounciness = 0.1f;
@@ -214,7 +237,7 @@ namespace BetterLegacy.Components.Player
 
         public bool CanBoost
         {
-            get => (!EditorManager.inst || !EditorManager.inst.isEditing) && canBoost && !isBoosting && !CoreHelper.Paused && !LSHelpers.IsUsingInputField();
+            get => (!EditorManager.inst || !EditorManager.inst.isEditing) && canBoost && !isBoosting && (PlayerModel == null || PlayerModel.basePart.canBoost) && !CoreHelper.Paused && !LSHelpers.IsUsingInputField();
             set => canBoost = value;
         }
 
@@ -847,11 +870,11 @@ namespace BetterLegacy.Components.Player
 
             if (CanMove && Actions != null)
             {
-                if (Actions.Boost.WasPressed && (JumpMode || CanBoost) && !LockBoost && (!JumpMode || !colliding && currentJumpCount == jumpCount))
+                if (Actions.Boost.WasPressed && (JumpMode || CanBoost) && !LockBoost && (!JumpMode || !colliding && currentJumpCount == Mathf.Clamp(jumpCount, -1, MaxJumpCount)))
                 {
                     if (JumpMode)
                     {
-                        if (PlayBoostSound)
+                        if (PlayBoostSound && CanBoost)
                             AudioManager.inst.PlaySound("boost_recover");
 
                         currentJumpCount++;
@@ -874,7 +897,7 @@ namespace BetterLegacy.Components.Player
 
             if (JumpMode)
             {
-                rb.gravityScale = jumpGravity;
+                rb.gravityScale = jumpGravity * JumpGravity;
 
                 if (Actions == null)
                     return;
@@ -892,9 +915,9 @@ namespace BetterLegacy.Components.Player
                 }
 
                 var velocity = rb.velocity;
-                if (Actions.Boost.WasPressed && (colliding || jumpCount == -1 || currentJumpCount < jumpCount))
+                if (Actions.Boost.WasPressed && (colliding || jumpCount == -1 || currentJumpCount < Mathf.Clamp(jumpCount, -1, MaxJumpCount)))
                 {
-                    velocity.y = jumpIntensity;
+                    velocity.y = jumpIntensity * JumpIntensity;
 
                     if (PlayBoostSound)
                         AudioManager.inst.PlaySound("boost");
@@ -1716,6 +1739,11 @@ namespace BetterLegacy.Components.Player
 
                 if (!isBoosting)
                     path[1].active = showBoostTail;
+
+                jumpGravity = currentModel.basePart.jumpGravity;
+                jumpIntensity = currentModel.basePart.jumpIntensity;
+                jumpCount = currentModel.basePart.jumpCount;
+                bounciness = currentModel.basePart.bounciness;
 
                 rb.sharedMaterial.bounciness = bounciness;
                 //Stretch

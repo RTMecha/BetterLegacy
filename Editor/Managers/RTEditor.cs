@@ -8101,10 +8101,6 @@ namespace BetterLegacy.Editor.Managers
                 LSHelpers.DeleteChildren(ObjEditor.inst.TimelineParents[i]);
             }
 
-            RTPlayer.LockBoost = false;
-            RTPlayer.SpeedMultiplier = 1f;
-            RTPlayer.JumpMode = false;
-
             WindowController.ResetTitle();
 
             Updater.UpdateObjects(false);
@@ -8235,6 +8231,8 @@ namespace BetterLegacy.Editor.Managers
             }
 
             PreviewCover?.GameObject?.SetActive(false);
+
+            RTPlayer.SetGameDataProperties();
 
             PlayerManager.LoadGlobalModels();
             PlayerManager.LoadIndexes();

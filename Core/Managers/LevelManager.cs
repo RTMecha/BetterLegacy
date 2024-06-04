@@ -197,9 +197,7 @@ namespace BetterLegacy.Core.Managers
 
             PlayerManager.AssignPlayerModels();
 
-            RTPlayer.LockBoost = false;
-            RTPlayer.SpeedMultiplier = 1f;
-            RTPlayer.JumpMode = false;
+            RTPlayer.SetGameDataProperties();
 
             GameManager.inst.introAnimator.SetTrigger("play");
             GameManager.inst.SpawnPlayers(DataManager.inst.gameData.beatmapData.checkpoints[0].pos);

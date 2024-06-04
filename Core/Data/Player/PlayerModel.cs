@@ -331,6 +331,12 @@ namespace BetterLegacy.Core.Data.Player
                     case "Base Collision Accurate": return basePart.collisionAccurate; // 10
                     case "Base Sprint Sneak Active": return basePart.sprintSneakActive; // 11
 
+                    case "Base Jump Gravity": return basePart.jumpGravity;
+                    case "Base Jump Intensity": return basePart.jumpIntensity;
+                    case "Base Jump Count": return basePart.jumpCount;
+                    case "Base Bounciness": return basePart.bounciness;
+                    case "Base Can Boost": return basePart.canBoost;
+
                     #endregion
 
                     #region Stretch
@@ -720,6 +726,17 @@ namespace BetterLegacy.Core.Data.Player
                     case "Base Collision Accurate": basePart.collisionAccurate = (bool)value; // 10
                         break;
                     case "Base Sprint Sneak Active": basePart.sprintSneakActive = (bool)value; // 11
+                        break;
+
+                    case "Base Jump Gravity": basePart.jumpGravity = (float)value;
+                        break;
+                    case "Base Jump Intensity": basePart.jumpIntensity = (float)value;
+                        break;
+                    case "Base Jump Count": basePart.jumpCount = (int)value;
+                        break;
+                    case "Base Bounciness": basePart.bounciness = (float)value;
+                        break;
+                    case "Base Can Boost": basePart.canBoost = (bool)value;
                         break;
 
                     #endregion
@@ -1345,6 +1362,12 @@ namespace BetterLegacy.Core.Data.Player
             "Base Collision Accurate",
             "Base Sprint Sneak Active",
 
+            "Base Jump Gravity",
+            "Base Jump Intensity",
+            "Base Jump Count",
+            "Base Bounciness",
+            "Base Can Boost",
+
             #endregion
 
             #region Stretch
@@ -1750,7 +1773,12 @@ namespace BetterLegacy.Core.Data.Player
                 hitCooldown = orig.hitCooldown,
                 rotateMode = orig.rotateMode,
                 collisionAccurate = orig.collisionAccurate,
-                sprintSneakActive = orig.sprintSneakActive
+                sprintSneakActive = orig.sprintSneakActive,
+                jumpGravity = orig.jumpGravity,
+                jumpIntensity = orig.jumpIntensity,
+                jumpCount = orig.jumpCount,
+                bounciness = orig.bounciness,
+                canBoost = orig.canBoost,
             };
 
             public static Base Parse(JSONNode jn, PlayerModel playerModel)
@@ -1782,6 +1810,17 @@ namespace BetterLegacy.Core.Data.Player
                 if (!string.IsNullOrEmpty(jn["sprsneak"]))
                     b.sprintSneakActive = jn["sprsneak"].AsBool;
 
+                if (!string.IsNullOrEmpty(jn["jump_gravity"]))
+                    b.jumpGravity = jn["jump_gravity"].AsFloat;
+                if (!string.IsNullOrEmpty(jn["jump_intensity"]))
+                    b.jumpIntensity = jn["jump_intensity"].AsFloat;
+                if (!string.IsNullOrEmpty(jn["bounciness"]))
+                    b.bounciness = jn["bounciness"].AsFloat;
+                if (!string.IsNullOrEmpty(jn["jump_count"]))
+                    b.jumpCount = jn["jump_count"].AsInt;
+                if (!string.IsNullOrEmpty(jn["can_boost"]))
+                    b.canBoost = jn["can_boost"].AsBool;
+
                 return b;
             }
 
@@ -1791,16 +1830,37 @@ namespace BetterLegacy.Core.Data.Player
 
                 jn["name"] = name;
                 jn["id"] = id;
-                jn["health"] = health.ToString();
-                jn["move_speed"] = moveSpeed.ToString();
-                jn["boost_speed"] = boostSpeed.ToString();
-                jn["boost_cooldown"] = boostCooldown.ToString();
-                jn["boost_min_time"] = minBoostTime.ToString();
-                jn["boost_max_time"] = maxBoostTime.ToString();
-                jn["hit_cooldown"] = hitCooldown.ToString();
-                jn["rotate_mode"] = ((int)rotateMode).ToString();
-                jn["collision_acc"] = collisionAccurate.ToString();
-                jn["sprsneak"] = sprintSneakActive.ToString();
+
+                if (health != 3)
+                    jn["health"] = health.ToString();
+                if (moveSpeed != 20f)
+                    jn["move_speed"] = moveSpeed.ToString();
+                if (boostSpeed != 85f)
+                    jn["boost_speed"] = boostSpeed.ToString();
+                if (boostCooldown != 0.1f)
+                    jn["boost_cooldown"] = boostCooldown.ToString();
+                if (minBoostTime != 0.07f)
+                    jn["boost_min_time"] = minBoostTime.ToString();
+                if (maxBoostTime != 0.18f)
+                    jn["boost_max_time"] = maxBoostTime.ToString();
+                if (hitCooldown != 2.5f)
+                    jn["hit_cooldown"] = hitCooldown.ToString();
+                if (rotateMode != BaseRotateMode.RotateToDirection)
+                    jn["rotate_mode"] = ((int)rotateMode).ToString();
+                if (collisionAccurate)
+                    jn["collision_acc"] = collisionAccurate.ToString();
+                if (sprintSneakActive)
+                    jn["sprsneak"] = sprintSneakActive.ToString();
+                if (jumpGravity != 40f)
+                    jn["jump_gravity"] = jumpGravity.ToString();
+                if (jumpIntensity != 10f)
+                    jn["jump_intensity"] = jumpIntensity.ToString();
+                if (bounciness != 0.1f)
+                    jn["bounciness"] = bounciness.ToString();
+                if (jumpCount != 1)
+                    jn["jump_count"] = jumpCount.ToString();
+                if (canBoost)
+                    jn["can_boost"] = canBoost.ToString();
 
                 return jn;
             }
@@ -1820,6 +1880,16 @@ namespace BetterLegacy.Core.Data.Player
             public float minBoostTime = 0.07f;
 
             public float maxBoostTime = 0.18f;
+
+            public float jumpGravity = 10f;
+
+            public float jumpIntensity = 40f;
+
+            public float bounciness = 0.1f;
+
+            public int jumpCount = 1;
+
+            public bool canBoost = true;
 
             public float hitCooldown = 2.5f;
 

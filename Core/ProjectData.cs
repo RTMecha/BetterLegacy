@@ -330,11 +330,7 @@ namespace BetterLegacy.Core
 
                 CoreHelper.Log("Saving Level Data");
                 {
-                    jn["level_data"]["mod_version"] = LegacyPlugin.ModVersion.ToString();
-                    jn["level_data"]["level_version"] = "4.1.16";
-                    jn["level_data"]["background_color"] = "0";
-                    jn["level_data"]["follow_player"] = "False";
-                    jn["level_data"]["show_intro"] = "False";
+                    jn["level_data"] = _data.LevelBeatmapData.ModLevelData.ToJSON();
                 }
 
                 CoreHelper.Log("Saving prefabs");
