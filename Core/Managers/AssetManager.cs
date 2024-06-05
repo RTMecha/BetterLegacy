@@ -17,7 +17,7 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public static void Init()
         {
-            var gameObject = new GameObject("FontManager");
+            var gameObject = new GameObject(nameof(AssetManager));
             gameObject.transform.SetParent(SystemManager.inst.transform);
             gameObject.AddComponent<AssetManager>();
         }
