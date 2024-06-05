@@ -2329,6 +2329,58 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+                    case "playerVelocityAll":
+                        {
+                            if (float.TryParse(modifier.commands[1], out float x) && float.TryParse(modifier.commands[2], out float y))
+                            {
+                                for (int i = 0; i < PlayerManager.Players.Count; i++)
+                                {
+                                    var player = PlayerManager.Players[i];
+                                    if (player.Player && player.Player.rb)
+                                    {
+                                        player.Player.rb.velocity = new Vector2(x, y);
+                                    }
+                                }
+                            }
+
+                            break;
+                        }
+                    case "playerVelocityXAll":
+                        {
+                            if (float.TryParse(modifier.value, out float x))
+                            {
+                                for (int i = 0; i < PlayerManager.Players.Count; i++)
+                                {
+                                    var player = PlayerManager.Players[i];
+                                    if (player.Player && player.Player.rb)
+                                    {
+                                        var velocity = player.Player.rb.velocity;
+                                        velocity.x = x;
+                                        player.Player.rb.velocity = velocity;
+                                    }
+                                }
+                            }
+
+                            break;
+                        }
+                    case "playerVelocityYAll":
+                        {
+                            if (float.TryParse(modifier.value, out float x))
+                            {
+                                for (int i = 0; i < PlayerManager.Players.Count; i++)
+                                {
+                                    var player = PlayerManager.Players[i];
+                                    if (player.Player && player.Player.rb)
+                                    {
+                                        var velocity = player.Player.rb.velocity;
+                                        velocity.y = x;
+                                        player.Player.rb.velocity = velocity;
+                                    }
+                                }
+                            }
+
+                            break;
+                        }
                     case "gameMode":
                         {
                             if (int.TryParse(modifier.value, out int value))
