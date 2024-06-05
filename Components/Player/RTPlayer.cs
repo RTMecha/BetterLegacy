@@ -68,12 +68,14 @@ namespace BetterLegacy.Components.Player
         {
             try
             {
-                LockBoost = GameData.Current.LevelBeatmapData.ModLevelData.lockBoost;
-                SpeedMultiplier = GameData.Current.LevelBeatmapData.ModLevelData.speedMultiplier;
-                JumpMode = GameData.Current.LevelBeatmapData.ModLevelData.gameMode == 1;
-                JumpGravity = GameData.Current.LevelBeatmapData.ModLevelData.jumpGravity;
-                JumpIntensity = GameData.Current.LevelBeatmapData.ModLevelData.jumpIntensity;
-                MaxJumpCount = GameData.Current.LevelBeatmapData.ModLevelData.maxJumpCount;
+                var levelData = GameData.Current.LevelBeatmapData.ModLevelData;
+                LockBoost = levelData.lockBoost;
+                SpeedMultiplier = levelData.speedMultiplier;
+                JumpMode = levelData.gameMode == 1;
+                JumpGravity = levelData.jumpGravity;
+                JumpIntensity = levelData.jumpIntensity;
+                MaxJumpCount = levelData.maxJumpCount;
+                CustomPlayer.MaxHealth = levelData.maxHealth;
             }
             catch (Exception ex)
             {
