@@ -1,6 +1,8 @@
 ﻿using BetterLegacy.Core.Helpers;
+using SimpleJSON;
 using System;
 using System.Text.RegularExpressions;
+using UnityEngine;
 
 namespace BetterLegacy.Core
 {
@@ -132,5 +134,27 @@ namespace BetterLegacy.Core
 
             return 0f;
         }
+
+        public static Vector2 TryParse(JSONNode jn, Vector2 defaultValue)
+            => new Vector2(
+                jn["x"] == null ? defaultValue.x : jn["x"].AsFloat,
+                jn["y"] == null ? defaultValue.y : jn["y"].AsFloat);
+
+        public static Vector3 TryParse(JSONNode jn, Vector3 defaultValue)
+            => new Vector3(
+                jn["x"] == null ? defaultValue.x : jn["x"].AsFloat,
+                jn["y"] == null ? defaultValue.y : jn["y"].AsFloat,
+                jn["z"] == null ? defaultValue.z : jn["z"].AsFloat);
+
+        public static Vector2Int TryParse(JSONNode jn, Vector2Int defaultValue)
+            => new Vector2Int(
+                jn["x"] == null ? defaultValue.x : jn["x"].AsInt,
+                jn["y"] == null ? defaultValue.y : jn["y"].AsInt);
+
+        public static Vector3Int TryParse(JSONNode jn, Vector3Int defaultValue)
+            => new Vector3Int(
+                jn["x"] == null ? defaultValue.x : jn["x"].AsInt,
+                jn["y"] == null ? defaultValue.y : jn["y"].AsInt,
+                jn["z"] == null ? defaultValue.z : jn["z"].AsInt);
     }
 }
