@@ -588,6 +588,16 @@ namespace BetterLegacy.Core
             return jn;
         }
 
+        public static JSONNode ToJSON(this Vector2Int vector2)
+        {
+            var jn = JSON.Parse("{}");
+
+            jn["x"] = vector2.x.ToString();
+            jn["y"] = vector2.y.ToString();
+
+            return jn;
+        }
+        
         public static JSONNode ToJSON(this Vector2 vector2)
         {
             var jn = JSON.Parse("{}");
@@ -598,6 +608,17 @@ namespace BetterLegacy.Core
             return jn;
         }
 
+        public static JSONNode ToJSON(this Vector3Int vector3)
+        {
+            var jn = JSON.Parse("{}");
+
+            jn["x"] = vector3.x.ToString();
+            jn["y"] = vector3.y.ToString();
+            jn["z"] = vector3.z.ToString();
+
+            return jn;
+        }
+        
         public static JSONNode ToJSON(this Vector3 vector3)
         {
             var jn = JSON.Parse("{}");
