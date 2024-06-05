@@ -538,8 +538,6 @@ namespace BetterLegacy.Configs
 
             if (RTVideoManager.inst && RTVideoManager.inst.didntPlay && Instance.EnableVideoBackground.Value)
                 RTVideoManager.inst.Play(RTVideoManager.inst.currentURL, RTVideoManager.inst.currentAlpha);
-
-            LegacyPlugin.SaveProfile();
         }
 
         #endregion
