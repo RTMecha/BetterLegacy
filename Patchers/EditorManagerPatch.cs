@@ -340,10 +340,7 @@ namespace BetterLegacy.Patchers
                                     foreach (var player in PlayerManager.Players)
                                     {
                                         if (player.PlayerModel != null && player.PlayerModel.basePart != null)
-                                        {
-                                            player.health = player.PlayerModel.basePart.health;
-                                            player.Player?.UpdateTail(player.health, Vector3.zero);
-                                        }
+                                            player.Health = player.PlayerModel.basePart.health;
                                     }
                             }
                             catch (Exception ex)
