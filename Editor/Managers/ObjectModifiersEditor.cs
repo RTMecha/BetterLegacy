@@ -1785,6 +1785,20 @@ namespace BetterLegacy.Editor.Managers
 
                             break;
                         }
+                    case "playerVelocityAll":
+                        {
+                            singleGenerator("X", 1, 0f);
+                            singleGenerator("Y", 2, 0f);
+
+                            break;
+                        }
+                    case "playerVelocityXAll":
+                    case "playerVelocityYAll":
+                        {
+                            singleGenerator(cmd == "playerVelocityXAll" ? "X" : "Y", 0, 0f);
+
+                            break;
+                        }
                     case "legacyTail":
                         {
                             singleGenerator("Total Time", 0, 200f);
