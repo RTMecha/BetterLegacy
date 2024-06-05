@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Editor.Managers;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -71,5 +72,19 @@ namespace BetterLegacy.Core.Helpers
         }
 
         public static void LogIsNull<T>(string message, object obj) => Debug.Log($"{message}{typeof(T)} is null: {obj == null}");
+
+        //EditorHelper.LoadLevel("C:/Users/Mecha/Desktop/Project Launcher/instances/Mod Testing/beatmaps/editor/RhythmTech/Apocrypha but Platformer")
+        public static void LoadLevel(string fullPath, float delay = 2f) => CoreHelper.StartCoroutine(ILoadLevel(fullPath, delay));
+
+        static IEnumerator ILoadLevel(string fullPath, float delay = 2f)
+        {
+            SceneManager.inst.LoadScene("Editor");
+            while (!EditorManager.inst || !RTEditor.inst || EditorManager.inst.loading)
+                yield return null;
+
+            yield return new WaitForSeconds(delay);
+
+            CoreHelper.StartCoroutine(RTEditor.inst.LoadLevel(fullPath));
+        }
     }
 }
