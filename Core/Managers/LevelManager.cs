@@ -197,10 +197,12 @@ namespace BetterLegacy.Core.Managers
 
             PlayerManager.AssignPlayerModels();
 
-            RTPlayer.SetGameDataProperties();
+            RTPlayer.JumpMode = false;
 
             GameManager.inst.introAnimator.SetTrigger("play");
             GameManager.inst.SpawnPlayers(DataManager.inst.gameData.beatmapData.checkpoints[0].pos);
+
+            RTPlayer.SetGameDataProperties();
 
             EventManager.inst?.updateEvents();
             if (ModCompatibility.sharedFunctions.ContainsKey("EventsCoreResetOffsets"))
