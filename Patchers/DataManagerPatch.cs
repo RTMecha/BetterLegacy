@@ -39,6 +39,7 @@ namespace BetterLegacy.Patchers
             SpriteManager.Init();
             FontManager.Init();
             AssetManager.Init();
+            AchievementManager.Init();
             LevelManager.Init();
             PlayerManager.Init();
 
