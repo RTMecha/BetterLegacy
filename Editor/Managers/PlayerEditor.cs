@@ -167,12 +167,14 @@ namespace BetterLegacy.Editor.Managers
             {
                 // Speed
                 {
-                    var gameObject = Creator.NewUIObject("Global Speed", content);
+                    var name = "Global Speed";
+
+                    var gameObject = Creator.NewUIObject(name, content);
                     gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 42f);
 
                     var label = labelPrefab.Duplicate(gameObject.transform, "label");
                     var labelText = label.GetComponent<Text>();
-                    labelText.text = "Global Speed";
+                    labelText.text = name;
                     EditorThemeManager.AddLightText(labelText);
                     UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
 
@@ -190,17 +192,19 @@ namespace BetterLegacy.Editor.Managers
 
                     editorUIs.Add(new PlayerEditorUI
                     {
-                        Name = "Global Speed",
+                        Name = name,
                         GameObject = gameObject,
                         Tab = Tab.Global,
                         ValueType = RTEditor.EditorProperty.ValueType.Float,
                         Index = -1,
                     });
                 }
-                
+
                 // Lock Boost
                 {
-                    var gameObject = Creator.NewUIObject("Global Lock Boost", content);
+                    var name = "Global Lock Boost";
+
+                    var gameObject = Creator.NewUIObject(name, content);
                     gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 42f);
 
                     var label = labelPrefab.Duplicate(gameObject.transform, "label");
@@ -216,7 +220,7 @@ namespace BetterLegacy.Editor.Managers
 
                     editorUIs.Add(new PlayerEditorUI
                     {
-                        Name = "Global Lock Boost",
+                        Name = name,
                         GameObject = gameObject,
                         Tab = Tab.Global,
                         ValueType = RTEditor.EditorProperty.ValueType.Bool,
@@ -226,12 +230,14 @@ namespace BetterLegacy.Editor.Managers
 
                 // Gamemode
                 {
-                    var gameObject = Creator.NewUIObject("Global Lock Boost", content);
+                    var name = "Global Gamemode";
+
+                    var gameObject = Creator.NewUIObject(name, content);
                     gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 42f);
 
                     var label = labelPrefab.Duplicate(gameObject.transform, "label");
                     var labelText = label.GetComponent<Text>();
-                    labelText.text = "Global Gamemode";
+                    labelText.text = name;
                     EditorThemeManager.AddLightText(labelText);
                     UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
 
@@ -250,7 +256,7 @@ namespace BetterLegacy.Editor.Managers
 
                     editorUIs.Add(new PlayerEditorUI
                     {
-                        Name = "Global Gamemode",
+                        Name = name,
                         GameObject = gameObject,
                         Tab = Tab.Global,
                         ValueType = RTEditor.EditorProperty.ValueType.Enum,
@@ -260,12 +266,14 @@ namespace BetterLegacy.Editor.Managers
 
                 // Max Jump Count
                 {
-                    var gameObject = Creator.NewUIObject("Global Max Jump Count", content);
+                    var name = "Global Max Jump Count";
+
+                    var gameObject = Creator.NewUIObject(name, content);
                     gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 42f);
 
                     var label = labelPrefab.Duplicate(gameObject.transform, "label");
                     var labelText = label.GetComponent<Text>();
-                    labelText.text = "Global Max Jump Count";
+                    labelText.text = name;
                     EditorThemeManager.AddLightText(labelText);
                     UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
 
@@ -283,7 +291,7 @@ namespace BetterLegacy.Editor.Managers
 
                     editorUIs.Add(new PlayerEditorUI
                     {
-                        Name = "Global Max Jump Count",
+                        Name = name,
                         GameObject = gameObject,
                         Tab = Tab.Global,
                         ValueType = RTEditor.EditorProperty.ValueType.Int,
@@ -293,12 +301,14 @@ namespace BetterLegacy.Editor.Managers
 
                 // Update Properties
                 {
-                    var gameObject = Creator.NewUIObject("Update Properties", content);
+                    var name = "Update Properties";
+
+                    var gameObject = Creator.NewUIObject(name, content);
                     gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 42f);
 
                     var label = labelPrefab.Duplicate(gameObject.transform, "label");
                     var labelText = label.GetComponent<Text>();
-                    labelText.text = "Update Properties";
+                    labelText.text = name;
                     EditorThemeManager.AddLightText(labelText);
                     UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
 
@@ -315,7 +325,7 @@ namespace BetterLegacy.Editor.Managers
 
                     editorUIs.Add(new PlayerEditorUI
                     {
-                        Name = "Update Properties",
+                        Name = name,
                         GameObject = gameObject,
                         Tab = Tab.Global,
                         ValueType = RTEditor.EditorProperty.ValueType.Function,
@@ -367,7 +377,7 @@ namespace BetterLegacy.Editor.Managers
                     name.Contains("Amount") && !name.Contains("Boost") ||
                     name.Contains("Speed") || name.Contains("Depth") || name == "Pulse Duration" ||
                     name.Contains("Cooldown") || name.Contains("Boost Time") || name == "Bullet Lifetime" || name.Contains("Duration") ||
-                    name == "Tail Base Time" || name == "Base Jump Gravity" || name == "Base Jump Intensity" || name == "Base Bounciness")
+                    name == "Tail Base Time" || name == "Base Jump Gravity" || name == "Base Jump Count" || name == "Base Jump Intensity" || name == "Base Bounciness")
                 {
                     if (name == "Base Health" || name == "Boost Particles Amount" || name == "Base Jump Count")
                         valueType = RTEditor.EditorProperty.ValueType.Int;
@@ -552,6 +562,43 @@ namespace BetterLegacy.Editor.Managers
                 });
             }
 
+            // Custom Objects
+            {
+                // ID
+                {
+                    var name = "ID";
+
+                    var gameObject = Creator.NewUIObject(name, content);
+                    gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 42f);
+
+                    var label = labelPrefab.Duplicate(gameObject.transform, "label");
+                    var labelText = label.GetComponent<Text>();
+                    labelText.text = name;
+                    UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
+                    EditorThemeManager.AddLightText(labelText);
+
+                    editorUIs.Add(new PlayerEditorUI
+                    {
+                        Name = name,
+                        GameObject = gameObject,
+                        Tab = Tab.Global,
+                        ValueType = RTEditor.EditorProperty.ValueType.Float,
+                        Index = -1,
+                    });
+                }
+                // Name
+                // Depth
+                // Parent
+                // Position Offset
+                // Scale Offset
+                // Rotation Offset
+                // Scale Parent
+                // Rotation Parent
+                // Require All
+                // Text
+                // Visibility
+            }
+
             // Functions
             {
                 var spacer = Creator.NewUIObject("spacer", dialog.transform);
@@ -583,13 +630,9 @@ namespace BetterLegacy.Editor.Managers
                 playerIndexObject.transform.AsRT().sizeDelta = new Vector2(164f, 43.2f);
                 var playerIndexDropdown = playerIndexObject.GetComponent<Dropdown>();
                 playerIndexDropdown.onValueChanged.ClearAll();
-                playerIndexDropdown.options = new List<Dropdown.OptionData>
-                {
-                    new Dropdown.OptionData("Player 1"),
-                    new Dropdown.OptionData("Player 2"),
-                    new Dropdown.OptionData("Player 3"),
-                    new Dropdown.OptionData("Player 4"),
-                };
+                playerIndexDropdown.options = new List<Dropdown.OptionData>();
+                for (int i = 1; i <= 4; i++)
+                    playerIndexDropdown.options.Add(new Dropdown.OptionData($"Player {i}"));
                 playerIndexDropdown.value = 0;
                 playerIndexDropdown.onValueChanged.AddListener(delegate (int _val)
                 {
