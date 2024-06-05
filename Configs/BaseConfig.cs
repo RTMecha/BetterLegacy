@@ -1,5 +1,6 @@
 ﻿using BepInEx.Configuration;
 using BetterLegacy.Core;
+using BetterLegacy.Core.Helpers;
 using LSFunctions;
 using SimpleJSON;
 using System;
@@ -25,7 +26,20 @@ namespace BetterLegacy.Configs
         public void OnSettingChanged(object instance)
         {
             if (instance is BaseSetting setting)
-                JSON[setting.Section][setting.Key]["value"] = setting.BoxedValue.ToString().Replace(":", "{{colon}}");
+            {
+                if (setting.BoxedValue is Color color)
+                    JSON[setting.Section][setting.Key]["value"] = CoreHelper.ColorToHex(color);
+                else if (setting.BoxedValue is Vector2 vector2)
+                    JSON[setting.Section][setting.Key]["value"] = vector2.ToJSON();
+                else if (setting.BoxedValue is Vector3 vector3)
+                    JSON[setting.Section][setting.Key]["value"] = vector3.ToJSON();
+                else if (setting.BoxedValue is Vector2Int vector2Int)
+                    JSON[setting.Section][setting.Key]["value"] = vector2Int.ToJSON();
+                else if (setting.BoxedValue is Vector3Int vector3Int)
+                    JSON[setting.Section][setting.Key]["value"] = vector3Int.ToJSON();
+                else
+                    JSON[setting.Section][setting.Key]["value"] = setting.BoxedValue.ToString().Replace(":", "{{colon}}");
+            }
 
             SettingChanged?.Invoke();
 
@@ -46,7 +60,19 @@ namespace BetterLegacy.Configs
 
             if (JSON[section][key] == null)
             {
-                JSON[section][key]["value"] = defaultValue.ToString().Replace(":", "{{colon}}");
+                if (defaultValue is Color color)
+                    JSON[section][key]["value"] = CoreHelper.ColorToHex(color);
+                else if (defaultValue is Vector2 vector2)
+                    JSON[section][key]["value"] = vector2.ToJSON();
+                else if (defaultValue is Vector3 vector3)
+                    JSON[section][key]["value"] = vector3.ToJSON();
+                else if (defaultValue is Vector2Int vector2Int)
+                    JSON[section][key]["value"] = vector2Int.ToJSON();
+                else if (defaultValue is Vector3Int vector3Int)
+                    JSON[section][key]["value"] = vector3Int.ToJSON();
+                else
+                    JSON[section][key]["value"] = defaultValue.ToString().Replace(":", "{{colon}}");
+
                 setting.Value = defaultValue;
                 setting.fireSettingChanged = true;
             }
@@ -67,9 +93,9 @@ namespace BetterLegacy.Configs
                 else if (defaultValue is Vector3Int defaultVector3Int)
                     setting.BoxedValue = new Vector3(Parser.TryParse(JSON[section][key]["value"]["x"], defaultVector3Int.x), Parser.TryParse(JSON[section][key]["value"]["y"], defaultVector3Int.y), Parser.TryParse(JSON[section][key]["value"]["z"], defaultVector3Int.z));
                 else if (defaultValue is Color defaultColor)
-                    setting.BoxedValue = JSON[section][key]["value"].ToString().Length == 8 ? LSColors.HexToColorAlpha(JSON[section][key]["value"]) : JSON[section][key]["value"].ToString().Length == 6 ? LSColors.HexToColor(JSON[section][key]["value"]) : defaultColor;
+                    setting.BoxedValue = ((string)JSON[section][key]["value"]).Length == 8 ? LSColors.HexToColorAlpha(JSON[section][key]["value"]) : ((string)JSON[section][key]["value"]).Length == 6 ? LSColors.HexToColor(JSON[section][key]["value"]) : defaultColor;
                 else if (defaultValue is string defaultString)
-                    setting.BoxedValue = ((string)JSON[section][key]["value"]).Replace("{{colon}}", ":");
+                    setting.BoxedValue = defaultString.Replace("{{colon}}", ":");
 
                 setting.fireSettingChanged = true;
             }
