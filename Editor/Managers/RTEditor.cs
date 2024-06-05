@@ -4432,37 +4432,92 @@ namespace BetterLegacy.Editor.Managers
 
             // Song Time Autokill
             {
-                labelGenerator("Set Song Time Autokill to Current");
+                labelGenerator("Set Autokill offset to current time");
 
                 buttonGenerator("set autokill", "Set", parent, delegate ()
                 {
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                     {
-                        var bm = timelineObject.GetData<BeatmapObject>();
-                        bm.autoKillType = AutoKillType.SongTime;
-                        bm.autoKillOffset = AudioManager.inst.CurrentAudioSource.time;
+                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                        beatmapObject.autoKillType = AutoKillType.SongTime;
+
+                        float num = 0f;
+
+                        if (beatmapObject.autoKillType == AutoKillType.SongTime)
+                            num = AudioManager.inst.CurrentAudioSource.time;
+                        else num = AudioManager.inst.CurrentAudioSource.time - beatmapObject.StartTime;
+
+                        if (num < 0f)
+                            num = 0f;
+
+                        beatmapObject.autoKillOffset = num;
 
                         ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                        Updater.UpdateProcessor(bm, "Autokill");
+                        Updater.UpdateProcessor(beatmapObject, "Autokill");
                     }
                 });
             }
 
             // No Autokill
             {
-                labelGenerator("Set to No Autokill");
+                labelGenerator("Set Autokill Type");
 
-                buttonGenerator("set no autokill", "Set", parent, delegate ()
-                {
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                GenerateButtons(parent, 48f, 8f,
+                    new ButtonFunction("No Autokill", delegate ()
                     {
-                        var bm = timelineObject.GetData<BeatmapObject>();
-                        bm.autoKillType = AutoKillType.OldStyleNoAutokill;
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        {
+                            var bm = timelineObject.GetData<BeatmapObject>();
+                            bm.autoKillType = AutoKillType.OldStyleNoAutokill;
 
-                        ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                        Updater.UpdateProcessor(bm, "Autokill");
-                    }
-                });
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                            Updater.UpdateProcessor(bm, "Autokill");
+                        }
+                    }),
+                    new ButtonFunction("Last KF", delegate ()
+                    {
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        {
+                            var bm = timelineObject.GetData<BeatmapObject>();
+                            bm.autoKillType = AutoKillType.LastKeyframe;
+
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                            Updater.UpdateProcessor(bm, "Autokill");
+                        }
+                    }),
+                    new ButtonFunction("Last KF Offset", delegate ()
+                    {
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        {
+                            var bm = timelineObject.GetData<BeatmapObject>();
+                            bm.autoKillType = AutoKillType.LastKeyframeOffset;
+
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                            Updater.UpdateProcessor(bm, "Autokill");
+                        }
+                    }),
+                    new ButtonFunction("Fixed Time", delegate ()
+                    {
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        {
+                            var bm = timelineObject.GetData<BeatmapObject>();
+                            bm.autoKillType = AutoKillType.FixedTime;
+
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                            Updater.UpdateProcessor(bm, "Autokill");
+                        }
+                    }),
+                    new ButtonFunction("Song Time", delegate ()
+                    {
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        {
+                            var bm = timelineObject.GetData<BeatmapObject>();
+                            bm.autoKillType = AutoKillType.SongTime;
+
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                            Updater.UpdateProcessor(bm, "Autokill");
+                        }
+                    }));
             }
 
             // Set Parent
@@ -4519,21 +4574,103 @@ namespace BetterLegacy.Editor.Managers
 
             // Cycle Object Type
             {
-                labelGenerator("Cycle Object Type");
+                labelGenerator("Set Object Type");
 
-                buttonGenerator("cycle obj type", "Cycle", parent, delegate ()
-                {
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
+                GenerateButtons(parent, 32f, 8f,
+                    new ButtonFunction("Sub", delegate ()
                     {
-                        var bm = timelineObject.GetData<BeatmapObject>();
-                        bm.objectType += 1;
-                        if ((int)bm.objectType > 4)
-                            bm.objectType = 0;
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        {
+                            var bm = timelineObject.GetData<BeatmapObject>();
 
-                        ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                        Updater.UpdateProcessor(bm, "ObjectType");
-                    }
-                });
+                            int objectType = (int)bm.objectType;
+
+                            objectType--;
+                            if (objectType < 0)
+                                objectType = 4;
+
+                            bm.objectType = (BeatmapObject.ObjectType)objectType;
+
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                            Updater.UpdateProcessor(bm, "ObjectType");
+                        }
+                    }),
+                    new ButtonFunction("Add", delegate ()
+                    {
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        {
+                            var bm = timelineObject.GetData<BeatmapObject>();
+
+                            int objectType = (int)bm.objectType;
+
+                            objectType++;
+                            if (objectType > 4)
+                                objectType = 0;
+
+                            bm.objectType = (BeatmapObject.ObjectType)objectType;
+
+
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                            Updater.UpdateProcessor(bm, "ObjectType");
+                        }
+                    }));
+
+                GenerateButtons(parent, 48f, 8f,
+                    new ButtonFunction(nameof(BeatmapObject.ObjectType.Normal), delegate ()
+                    {
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        {
+                            var bm = timelineObject.GetData<BeatmapObject>();
+                            bm.objectType = BeatmapObject.ObjectType.Normal;
+
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                            Updater.UpdateProcessor(bm, "ObjectType");
+                        }
+                    }),
+                    new ButtonFunction(nameof(BeatmapObject.ObjectType.Helper), delegate ()
+                    {
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        {
+                            var bm = timelineObject.GetData<BeatmapObject>();
+                            bm.objectType = BeatmapObject.ObjectType.Helper;
+
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                            Updater.UpdateProcessor(bm, "ObjectType");
+                        }
+                    }),
+                    new ButtonFunction("Deco", delegate ()
+                    {
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        {
+                            var bm = timelineObject.GetData<BeatmapObject>();
+                            bm.objectType = BeatmapObject.ObjectType.Decoration;
+
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                            Updater.UpdateProcessor(bm, "ObjectType");
+                        }
+                    }),
+                    new ButtonFunction(nameof(BeatmapObject.ObjectType.Empty), delegate ()
+                    {
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        {
+                            var bm = timelineObject.GetData<BeatmapObject>();
+                            bm.objectType = BeatmapObject.ObjectType.Empty;
+
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                            Updater.UpdateProcessor(bm, "ObjectType");
+                        }
+                    }),
+                    new ButtonFunction(nameof(BeatmapObject.ObjectType.Solid), delegate ()
+                    {
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        {
+                            var bm = timelineObject.GetData<BeatmapObject>();
+                            bm.objectType = BeatmapObject.ObjectType.Solid;
+
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                            Updater.UpdateProcessor(bm, "ObjectType");
+                        }
+                    }));
             }
 
             // Assign Objects to Prefab
@@ -4567,23 +4704,25 @@ namespace BetterLegacy.Editor.Managers
             {
                 labelGenerator("Modify time lock state");
 
-                multiButtonGenerator("lock", "On", "Off", delegate ()
-                {
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
+                GenerateButtons(parent, 32f, 8f,
+                    new ButtonFunction("On", delegate()
                     {
-                        timelineObject.Locked = true;
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
+                        {
+                            timelineObject.Locked = true;
 
-                        ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                    }
-                }, delegate ()
-                {
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                        }
+                    }),
+                    new ButtonFunction("Off", delegate()
                     {
-                        timelineObject.Locked = false;
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
+                        {
+                            timelineObject.Locked = false;
 
-                        ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                    }
-                });
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                        }
+                    }));
 
                 buttonGenerator("lock swap", "Swap Lock", parent, delegate ()
                 {
@@ -4600,23 +4739,25 @@ namespace BetterLegacy.Editor.Managers
             {
                 labelGenerator("Modify timeline collapse state");
 
-                multiButtonGenerator("collapse", "On", "Off", delegate ()
-                {
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
+                GenerateButtons(parent, 32f, 8f,
+                    new ButtonFunction("On", delegate ()
                     {
-                        timelineObject.Collapse = true;
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
+                        {
+                            timelineObject.Collapse = true;
 
-                        ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                    }
-                }, delegate ()
-                {
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                        }
+                    }),
+                    new ButtonFunction("Off", delegate ()
                     {
-                        timelineObject.Collapse = false;
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
+                        {
+                            timelineObject.Collapse = false;
 
-                        ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                    }
-                });
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                        }
+                    }));
 
                 buttonGenerator("collapse swap", "Swap Collapse", parent, delegate ()
                 {
@@ -4633,21 +4774,23 @@ namespace BetterLegacy.Editor.Managers
             {
                 labelGenerator("Modify Object Render Type");
 
-                multiButtonGenerator("render type", "On", "Off", delegate ()
-                {
-                    foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                GenerateButtons(parent, 32f, 8f,
+                    new ButtonFunction("On", delegate ()
                     {
-                        beatmapObject.background = true;
-                        Updater.UpdateProcessor(beatmapObject);
-                    }
-                }, delegate ()
-                {
-                    foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                        foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                        {
+                            beatmapObject.background = true;
+                            Updater.UpdateProcessor(beatmapObject);
+                        }
+                    }),
+                    new ButtonFunction("Off", delegate ()
                     {
-                        beatmapObject.background = false;
-                        Updater.UpdateProcessor(beatmapObject);
-                    }
-                });
+                        foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                        {
+                            beatmapObject.background = false;
+                            Updater.UpdateProcessor(beatmapObject);
+                        }
+                    }));
 
                 buttonGenerator("render type swap", "Swap Render Type", parent, delegate ()
                 {
@@ -4663,21 +4806,23 @@ namespace BetterLegacy.Editor.Managers
             {
                 labelGenerator("Modify Low Detail Mode");
 
-                multiButtonGenerator("ldm", "On", "Off", delegate ()
-                {
-                    foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                GenerateButtons(parent, 32f, 8f,
+                    new ButtonFunction("On", delegate ()
                     {
-                        beatmapObject.LDM = true;
-                        Updater.UpdateProcessor(beatmapObject);
-                    }
-                }, delegate ()
-                {
-                    foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                        foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                        {
+                            beatmapObject.LDM = true;
+                            Updater.UpdateProcessor(beatmapObject);
+                        }
+                    }),
+                    new ButtonFunction("Off", delegate ()
                     {
-                        beatmapObject.LDM = false;
-                        Updater.UpdateProcessor(beatmapObject);
-                    }
-                });
+                        foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                        {
+                            beatmapObject.LDM = false;
+                            Updater.UpdateProcessor(beatmapObject);
+                        }
+                    }));
 
                 buttonGenerator("ldm swap", "Swap LDM", parent, delegate ()
                 {
@@ -5392,7 +5537,6 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
             }
-
 
             // Assign Colors
             {
@@ -6206,6 +6350,53 @@ namespace BetterLegacy.Editor.Managers
             multiObjectEditorDialog.Find("data/left").AsRT().sizeDelta = new Vector2(355f, 730f);
         }
 
+        public void GenerateLabels(Transform parent, params string[] labels)
+        {
+            var labelBase = Creator.NewUIObject("label", parent);
+            var labelHLG = labelBase.AddComponent<HorizontalLayoutGroup>();
+            var labelPrefab = EditorManager.inst.folderButtonPrefab.transform.GetChild(0).gameObject;
+
+            for (int i = 0; i < labels.Length; i++)
+            {
+                var label = labelPrefab.Duplicate(labelBase.transform, "text");
+                var labelText = label.GetComponent<Text>();
+                labelText.text = labels[i];
+                EditorThemeManager.AddLightText(labelText);
+            }
+        }
+
+        /// <summary>
+        /// Generates a horizontal group of buttons.
+        /// </summary>
+        /// <param name="parent">The transform to parent the buttons group to.</param>
+        /// <param name="sizeY">The Y size of the base. Default is 32 or 48.</param>
+        /// <param name="spacing">Spacing for the layout group. Default is 8.</param>
+        /// <param name="buttons">Array of buttons to generate.</param>
+        public void GenerateButtons(Transform parent, float sizeY, float spacing, params ButtonFunction[] buttons)
+        {
+            var p = Creator.NewUIObject("buttons", parent);
+            p.transform.AsRT().sizeDelta = new Vector2(0f, sizeY);
+            var pHLG = p.AddComponent<HorizontalLayoutGroup>();
+            pHLG.spacing = spacing;
+
+            for (int i = 0; i < buttons.Length; i++)
+            {
+                var b = buttons[i];
+                var button = EditorPrefabHolder.Instance.Function1Button.Duplicate(p.transform, b.Name);
+                var buttonStorage = button.GetComponent<FunctionButtonStorage>();
+                buttonStorage.button.onClick.ClearAll();
+                buttonStorage.button.onClick.AddListener(delegate ()
+                {
+                    b.Action?.Invoke();
+                });
+                buttonStorage.text.fontSize = b.FontSize;
+                buttonStorage.text.text = b.Name;
+
+                EditorThemeManager.AddGraphic(buttonStorage.button.image, ThemeGroup.Function_1, true);
+                EditorThemeManager.AddGraphic(buttonStorage.text, ThemeGroup.Function_1_Text);
+            }
+        }
+
         InputField CreateInputField(string name, string value, string placeholder, Transform parent, float length = 340f, bool isInteger = true, float minValue = 0f, float maxValue = 0f)
         {
             var gameObject = EditorPrefabHolder.Instance.NumberInputField.Duplicate(parent, name);
@@ -6247,6 +6438,26 @@ namespace BetterLegacy.Editor.Managers
             public Button Button { get; set; }
             public Image Image { get; set; }
             public GameObject Selected { get; set; }
+        }
+
+        public class ButtonFunction
+        {
+            public ButtonFunction(string name, Action action)
+            {
+                Name = name;
+                Action = action;
+            }
+            
+            public ButtonFunction(string name, int fontSize, Action action)
+            {
+                Name = name;
+                FontSize = fontSize;
+                Action = action;
+            }
+
+            public string Name { get; set; }
+            public int FontSize { get; set; } = 16;
+            public Action Action { get; set; }
         }
 
         int currentMultiColorSelection = 0;
@@ -8114,7 +8325,7 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.currentLoadedLevel = name;
             EditorManager.inst.SetPitch(1f);
 
-            EditorManager.inst.timelineScrollbar.GetComponent<Scrollbar>().value = 0f;
+            EditorManager.inst.timelineScrollRectBar.value = 0f;
             GameManager.inst.gameState = GameManager.State.Loading;
             string rawJSON = null;
             string rawMetadataJSON = null;
@@ -8133,13 +8344,13 @@ namespace BetterLegacy.Editor.Managers
             SetFileInfo($"Loading Level Data for [ {name} ]");
 
             CoreHelper.Log($"Loading {(string.IsNullOrEmpty(autosave) ? "level.lsb" : autosave)}...");
-            rawJSON = FileManager.inst.LoadJSONFileRaw(fullPath + "/" + (string.IsNullOrEmpty(autosave) ? "level.lsb" : autosave));
-            rawMetadataJSON = FileManager.inst.LoadJSONFileRaw(fullPath + "/metadata.lsb");
+            rawJSON = RTFile.ReadFromFile(fullPath + "/" + (string.IsNullOrEmpty(autosave) ? "level.lsb" : autosave));
+            rawMetadataJSON = RTFile.ReadFromFile(fullPath + "/metadata.lsb");
 
             if (string.IsNullOrEmpty(rawMetadataJSON))
             {
                 DataManager.inst.SaveMetadata(fullPath + "/metadata.lsb");
-                rawMetadataJSON = FileManager.inst.LoadJSONFileRaw(fullPath + "/metadata.lsb");
+                rawMetadataJSON = RTFile.ReadFromFile(fullPath + "/metadata.lsb");
             }
 
             GameManager.inst.path = fullPath + "/level.lsb";
@@ -8232,15 +8443,8 @@ namespace BetterLegacy.Editor.Managers
 
             PreviewCover?.GameObject?.SetActive(false);
 
-            RTPlayer.SetGameDataProperties();
-
-            PlayerManager.LoadGlobalModels();
-            PlayerManager.LoadIndexes();
-            PlayerManager.RespawnPlayers();
-
             SetFileInfo($"Playing Music for [ {name} ]\n\nIf it doesn't, then something went wrong!");
             AudioManager.inst.PlayMusic(null, song, true, 0f, true);
-            StartCoroutine(EditorManager.inst.SpawnPlayersWithDelay(0.2f));
             if (EditorConfig.Instance.WaveformGenerate.Value)
             {
                 SetFileInfo($"Assigning Waveform Textures for [ {name} ]");
@@ -8261,6 +8465,14 @@ namespace BetterLegacy.Editor.Managers
 
             SetFileInfo($"Updating states for [ {name} ]");
             CoreHelper.UpdateDiscordStatus($"Editing: {DataManager.inst.metaData.song.title}", "In Editor", "editor");
+
+            RTPlayer.JumpMode = false;
+
+            PlayerManager.LoadGlobalModels();
+            PlayerManager.LoadIndexes();
+            PlayerManager.RespawnPlayers();
+
+            RTPlayer.SetGameDataProperties();
 
             StartCoroutine(Updater.IUpdateObjects(true));
 
@@ -8284,7 +8496,7 @@ namespace BetterLegacy.Editor.Managers
             GameManager.inst.ResetCheckpoints(true);
             GameManager.inst.gameState = GameManager.State.Playing;
 
-            EditorManager.inst.DisplayNotification($"{name} Level Loaded", 2f, EditorManager.NotificationType.Success);
+            EditorManager.inst.DisplayNotification($"{name} Level loaded", 2f, EditorManager.NotificationType.Success);
             EditorManager.inst.UpdatePlayButton();
             EditorManager.inst.hasLoadedLevel = true;
 
@@ -8710,6 +8922,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.DisplayNotification("The file you are trying to load doesn't appear to be a song file.", 2f, EditorManager.NotificationType.Error);
                 return;
             }
+
             if (!RTFile.FileExists(EditorManager.inst.newAudioFile))
             {
                 EditorManager.inst.DisplayNotification("The file you are trying to load doesn't appear to exist.", 2f, EditorManager.NotificationType.Error);
@@ -8729,26 +8942,28 @@ namespace BetterLegacy.Editor.Managers
             if (setNew)
                 EditorManager.inst.newLevelName += " - " + num.ToString();
 
-            if (RTFile.DirectoryExists(RTFile.ApplicationDirectory + editorListSlash + EditorManager.inst.newLevelName))
+            var path = RTFile.ApplicationDirectory + editorListSlash + EditorManager.inst.newLevelName;
+
+            if (RTFile.DirectoryExists(path))
             {
                 EditorManager.inst.DisplayNotification("The level you are trying to create already exists.", 2f, EditorManager.NotificationType.Error);
                 return;
             }
-            Directory.CreateDirectory(RTFile.ApplicationDirectory + editorListSlash + EditorManager.inst.newLevelName);
+            Directory.CreateDirectory(path);
 
             if (EditorManager.inst.newAudioFile.ToLower().Contains(".ogg"))
             {
-                string destFileName = RTFile.ApplicationDirectory + editorListSlash + EditorManager.inst.newLevelName + "/level.ogg";
+                string destFileName = $"{path}/level.ogg";
                 File.Copy(EditorManager.inst.newAudioFile, destFileName, true);
             }
             if (EditorManager.inst.newAudioFile.ToLower().Contains(".wav"))
             {
-                string destFileName = RTFile.ApplicationDirectory + editorListSlash + EditorManager.inst.newLevelName + "/level.wav";
+                string destFileName = $"{path}/level.wav";
                 File.Copy(EditorManager.inst.newAudioFile, destFileName, true);
             }
             if (EditorManager.inst.newAudioFile.ToLower().Contains(".mp3"))
             {
-                string destFileName = RTFile.ApplicationDirectory + editorListSlash + EditorManager.inst.newLevelName + "/level.mp3";
+                string destFileName = $"{path}/level.mp3";
                 File.Copy(EditorManager.inst.newAudioFile, destFileName, true);
             }
 
@@ -8756,7 +8971,7 @@ namespace BetterLegacy.Editor.Managers
 
             var gameData = !string.IsNullOrEmpty(json) ? GameData.Parse(JSON.Parse(json), false) : CreateBaseBeatmap();
 
-            StartCoroutine(ProjectData.Writer.SaveData(RTFile.ApplicationDirectory + editorListSlash + EditorManager.inst.newLevelName + "/level.lsb", gameData));
+            StartCoroutine(ProjectData.Writer.SaveData($"{path}/level.lsb", gameData));
             var metaData = new MetaData();
             metaData.beatmap.game_version = "4.1.16";
             metaData.arcadeID = LSText.randomNumString(16);
@@ -8768,8 +8983,8 @@ namespace BetterLegacy.Editor.Managers
             DataManager.inst.metaData = metaData;
 
             fromNewLevel = true;
-            DataManager.inst.SaveMetadata(RTFile.ApplicationDirectory + editorListSlash + EditorManager.inst.newLevelName + "/metadata.lsb");
-            StartCoroutine(LoadLevel(RTFile.ApplicationDirectory + editorListSlash + EditorManager.inst.newLevelName));
+            DataManager.inst.SaveMetadata($"{path}/metadata.lsb");
+            StartCoroutine(LoadLevel(path));
             EditorManager.inst.HideDialog("New File Popup");
         }
 
@@ -8777,10 +8992,9 @@ namespace BetterLegacy.Editor.Managers
         {
             var gameData = new GameData();
             gameData.beatmapData = new LevelBeatmapData();
-            gameData.beatmapData.levelData = new DataManager.GameData.BeatmapData.LevelData();
+            gameData.beatmapData.levelData = new LevelData();
+            gameData.beatmapData.editorData = new LevelEditorData();
             gameData.beatmapData.checkpoints.Add(new DataManager.GameData.BeatmapData.Checkpoint(false, "Base Checkpoint", 0f, Vector2.zero));
-            var editorData = new LevelEditorData();
-            gameData.beatmapData.editorData = editorData;
 
             if (gameData.eventObjects.allEvents == null)
                 gameData.eventObjects.allEvents = new List<List<BaseEventKeyframe>>();
@@ -8843,13 +9057,6 @@ namespace BetterLegacy.Editor.Managers
             gameData.beatmapObjects.Add(beatmapObject);
 
             return gameData;
-        }
-
-        public IEnumerator GetAlbumSprite(string fullpath, Action<Sprite> callback, Action<string> onError)
-        {
-            string path = fullpath + "/level.jpg";
-            yield return StartCoroutine(EditorManager.inst.GetSprite(path, new EditorManager.SpriteLimits(), callback, onError));
-            yield break;
         }
 
         #endregion
