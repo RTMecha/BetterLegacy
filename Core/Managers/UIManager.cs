@@ -425,6 +425,7 @@ namespace BetterLegacy.Core.Managers
         public static UICanvas GenerateUICanvas(string name, Transform parent, bool dontDestroy = false, int sortingOrder = 10000)
         {
             var gameObject = new GameObject(name);
+            gameObject.transform.SetParent(parent);
             if (dontDestroy)
                 DontDestroyOnLoad(gameObject);
 
