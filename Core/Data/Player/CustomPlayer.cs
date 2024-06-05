@@ -29,45 +29,43 @@ namespace BetterLegacy.Core.Data.Player
 
         public new PlayerIndex GetPlayerIndex(int _index) => (PlayerIndex)_index;
 
-        public new void ControllerDisconnected(InputDevice __0)
+        public new void ControllerDisconnected(InputDevice device)
         {
-            if (__0.SortOrder == SortOrder && GetDeviceModel(__0.Name) == deviceModel)
+            if (device.SortOrder == SortOrder && GetDeviceModel(device.Name) == deviceModel)
             {
                 if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Input Select")
                 {
                     InputManager.OnDeviceAttached -= ControllerConnected;
                     InputManager.OnDeviceDetached -= ControllerDisconnected;
                     InputDataManager.inst.players.RemoveAt(index);
-                    int num = 0;
-                    foreach (var customPlayer in InputDataManager.inst.players)
+                    for (int i = 0; i < InputDataManager.inst.players.Count; i++)
                     {
-                        InputDataManager.inst.players[num].index = num;
-                        InputDataManager.inst.players[num].playerIndex = GetPlayerIndex(InputDataManager.inst.players[num].index);
-                        num++;
+                        InputDataManager.inst.players[i].index = i;
+                        InputDataManager.inst.players[i].playerIndex = GetPlayerIndex(InputDataManager.inst.players[i].index);
                     }
                 }
                 controllerConnected = false;
-                device = null;
+                base.device = null;
                 if (Player)
                     Player.Actions = null;
                 HarmonyLib.AccessTools.Field(typeof(InputDataManager), "playerDisconnectedEvent").SetValue(InputDataManager.inst, this);
-                Debug.LogFormat("{0}Disconnected Controler Was Attached to player. Controller [{1}] [{2}] -/- Player [{3}]", InputDataManager.className, __0.Name, __0.SortOrder, index);
+                Debug.LogFormat("{0}Disconnected Controler was attached to player. Controller [{1}] [{2}] -/- Player [{3}]", InputDataManager.className, device.Name, device.SortOrder, index);
             }
         }
 
-        public new void ControllerConnected(InputDevice __0)
+        public new void ControllerConnected(InputDevice device)
         {
-            if (__0.SortOrder == SortOrder && GetDeviceModel(__0.Name) == deviceModel)
+            if (device.SortOrder == SortOrder && GetDeviceModel(device.Name) == deviceModel)
             {
-                InputDataManager.inst.ThereIsNoPlayerUsingJoystick(__0);
+                InputDataManager.inst.ThereIsNoPlayerUsingJoystick(device);
                 controllerConnected = true;
-                device = __0;
+                base.device = device;
                 HarmonyLib.AccessTools.Field(typeof(InputDataManager), "playerReconnectedEvent").SetValue(InputDataManager.inst, this);
                 var myGameActions = MyGameActions.CreateWithJoystickBindings();
-                myGameActions.Device = __0;
+                myGameActions.Device = device;
                 if (Player)
                     Player.Actions = myGameActions;
-                Debug.LogFormat("{0}Connected Controller Exists in players. Controller [{1}] [{2}] -> Player [{3}]", InputDataManager.className, __0.Name, __0.SortOrder, index);
+                Debug.LogFormat("{0}Connected Controller exists in players. Controller [{1}] [{2}] -> Player [{3}]", InputDataManager.className, device.Name, device.SortOrder, index);
             }
         }
 
@@ -79,17 +77,16 @@ namespace BetterLegacy.Core.Data.Player
                 Player.Actions = myGameActions;
         }
 
+        public static int MaxHealth { get; set; } = 3;
+
         public int Health
         {
-            get => health;
+            get => Mathf.Clamp(health, 0, MaxHealth);
             set
             {
-                health = value;
+                health = Mathf.Clamp(value, 0, MaxHealth);
                 if (Player)
-                {
-                    var rb = (Rigidbody2D)Player.playerObjects["RB Parent"].values["Rigidbody2D"];
-                    Player.UpdateTail(health, rb.position);
-                }
+                    Player.UpdateTail(health, Player.rb.position);
             }
         }
 
