@@ -42,6 +42,7 @@ namespace BetterLegacy
         static CorePrefabHolder corePrefabHolder;
 
         public static Sprite EmptyObjectSprite { get; set; }
+        public static Sprite AtanPlaceholder { get; set; }
 
         public static Material blur;
         public static Material GetBlur()
@@ -106,12 +107,13 @@ namespace BetterLegacy
             try
             {
                 blur = GetBlur();
-                var assetBundle = AssetBundle.LoadFromFile(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/shadercolored.asset");
+                var assetBundle = AssetBundle.LoadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}shadercolored.asset");
                 blurColored = assetBundle.LoadAsset<Shader>("simpleblur.shader");
                 assetBundle.Unload(false);
                 GetKinoGlitch();
 
-                EmptyObjectSprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_empty.png");
+                EmptyObjectSprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_empty.png");
+                AtanPlaceholder = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}atan-placeholder.png");
             }
             catch (Exception ex)
             {
@@ -232,31 +234,47 @@ namespace BetterLegacy
             jn["user_data"]["name"] = player.sprName;
             jn["user_data"]["spr-id"] = player.sprID;
 
+            for (int i = 0; i < AchievementManager.achievements.Count; i++)
+            {
+                jn["achievements"][i] = AchievementManager.achievements[i].ToJSON();
+            }
+
             if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "profile"))
                 Directory.CreateDirectory(RTFile.ApplicationDirectory + "profile");
-            RTFile.WriteToFile("profile/profile.sep", jn.ToString(3));
+
+            RTFile.WriteToFile("profile/profile.sep", jn.ToString());
         }
 
         public static void ParseProfile()
         {
-            if (RTFile.DirectoryExists(RTFile.ApplicationDirectory + "profile"))
+            if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "profile"))
+                return;
+
+            string rawProfileJSON = RTFile.ReadFromFile(RTFile.ApplicationDirectory + "profile/profile.sep");
+
+            if (string.IsNullOrEmpty(rawProfileJSON))
+                return;
+
+            var jn = JSON.Parse(rawProfileJSON);
+
+            if (!string.IsNullOrEmpty(jn["user_data"]["name"]))
+                player.sprName = jn["user_data"]["name"];
+
+            if (!string.IsNullOrEmpty(jn["user_data"]["spr-id"]))
+                player.sprID = jn["user_data"]["spr-id"];
+
+            try
             {
-                string rawProfileJSON = RTFile.ReadFromFile(RTFile.ApplicationDirectory + "profile/profile.sep");
+                if (jn["achievements"] == null)
+                    return;
 
-                if (!string.IsNullOrEmpty(rawProfileJSON))
-                {
-                    var jn = JSON.Parse(rawProfileJSON);
-
-                    if (!string.IsNullOrEmpty(jn["user_data"]["name"]))
-                    {
-                        player.sprName = jn["user_data"]["name"];
-                    }
-
-                    if (!string.IsNullOrEmpty(jn["user_data"]["spr-id"]))
-                    {
-                        player.sprID = jn["user_data"]["spr-id"];
-                    }
-                }
+                AchievementManager.achievements.Clear();
+                for (int i = 0; i < jn["achievements"].Count; i++)
+                    AchievementManager.achievements.Add(Achievement.Parse(jn["achievements"][i]));
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Exception: {ex}");
             }
         }
 
@@ -271,9 +289,9 @@ namespace BetterLegacy
         {
             public User(string _sprName, string _sprID, Universe _universe)
             {
-                sprName = _sprName;
-                sprID = _sprID;
-                universe = _universe;
+                this.sprName = sprName;
+                this.sprID = sprID;
+                this.universe = universe;
             }
 
             public string sprName = "Null";

@@ -15,10 +15,11 @@ namespace BetterLegacy.Core.Data
     /// <summary>
     /// Custom achievement class to be used for levels and the game.
     /// </summary>
-    public struct Achievement
+    public class Achievement
     {
-        public Achievement(string name, string description, int difficulty, Sprite icon, AchievementFunction requirement, bool hidden = false)
+        public Achievement(string id, string name, string description, int difficulty, Sprite icon, AchievementFunction requirement, bool hidden = false)
         {
+            ID = id;
             Name = name;
             Description = description;
             Difficulty = difficulty;
@@ -27,6 +28,8 @@ namespace BetterLegacy.Core.Data
             Hidden = hidden;
             unlocked = false;
         }
+
+        public string ID { get; set; }
 
         /// <summary>
         /// Name of the achievement.
@@ -66,7 +69,7 @@ namespace BetterLegacy.Core.Data
         /// <summary>
         /// The metadata difficulty type.
         /// </summary>
-        public DataManager.Difficulty DifficultyType => Difficulty == 0 ? DataManager.inst.difficulties.Last() : DataManager.inst.difficulties[Difficulty - 1];
+        public DataManager.Difficulty DifficultyType => Difficulty == 0 ? DataManager.inst.difficulties.Last() : Difficulty - 1 >= 0 && Difficulty - 1 < DataManager.inst.difficulties.Count ? DataManager.inst.difficulties[Difficulty - 1] : new DataManager.Difficulty("Unknown Difficulty", Color.red);
 
         public void Unlock()
         {
@@ -93,24 +96,30 @@ namespace BetterLegacy.Core.Data
                 achievement.Unlock();
         }
 
-        public static Achievement Parse(JSONNode jn)
+        public static Achievement Parse(JSONNode jn, bool parseUnlock = false)
         {
             var icon = jn["icon"];
             byte[] imageData = new byte[icon.Count];
             for (int j = 0; j < icon.Count; j++)
                 imageData[j] = (byte)icon[j].AsInt;
-            
-            return new Achievement(jn["name"], jn["desc"], jn["difficulty"].AsInt, SpriteManager.LoadSprite(imageData), null, jn["hidden"].AsBool);
+
+            return new Achievement(jn["id"], jn["name"], jn["desc"], jn["difficulty"].AsInt, SpriteManager.LoadSprite(imageData), null, jn["hidden"].AsBool)
+            {
+                unlocked = parseUnlock && jn["unlocked"] != null && jn["unlocked"].AsBool,
+            };
         }
 
-        public JSONNode ToJSON()
+        public JSONNode ToJSON(bool saveUnlock = false)
         {
             var jn = JSON.Parse("{}");
 
+            jn["id"] = ID;
             jn["name"] = Name;
             jn["desc"] = Description;
             jn["difficulty"] = Difficulty.ToString();
             jn["hidden"] = Hidden.ToString();
+            if (saveUnlock)
+                jn["unlocked"] = unlocked.ToString();
 
             var imageData = Icon.texture.EncodeToPNG();
             for (int j = 0; j < imageData.Length; j++)
@@ -121,7 +130,7 @@ namespace BetterLegacy.Core.Data
 
         public static implicit operator bool(Achievement achievement) => achievement.Requirement?.Invoke() == true;
 
-        public static Achievement TestAchievement => new Achievement("Test", "Test this achievement!", 0, null, delegate ()
+        public static Achievement TestAchievement => new Achievement("0", "Test", "Test this achievement!", 3, LegacyPlugin.AtanPlaceholder, delegate ()
         {
             return true;
         });
