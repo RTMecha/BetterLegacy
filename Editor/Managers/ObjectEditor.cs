@@ -2211,14 +2211,6 @@ namespace BetterLegacy.Editor.Managers
                         num = 0f;
 
                     akOffset.text = num.ToString();
-
-                    //beatmapObject.autoKillOffset = num;
-
-                    //// AutoKillType affects both physical object and timeline object.
-                    //RenderTimelineObject(new TimelineObject(beatmapObject));
-                    //if (UpdateObjects)
-                    //    Updater.UpdateProcessor(beatmapObject, "Autokill");
-                    //ResizeKeyframeTimeline(beatmapObject);
                 });
 
                 // Add Scrolling for easy changing of values.
