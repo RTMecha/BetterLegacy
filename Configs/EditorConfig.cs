@@ -63,6 +63,7 @@ namespace BetterLegacy.Configs
         public Setting<bool> BringToSelection { get; set; }
         public Setting<bool> SelectPasted { get; set; }
         public Setting<bool> CreateObjectsatCameraCenter { get; set; }
+        public Setting<bool> SpawnPrefabsAtCameraCenter { get; set; }
         public Setting<bool> CreateObjectsScaleParentDefault { get; set; }
         public Setting<bool> AllowEditorKeybindsWithEditorCam { get; set; }
         public Setting<bool> RotationEventKeyframeResets { get; set; }
@@ -1189,6 +1190,7 @@ namespace BetterLegacy.Configs
             BringToSelection = Bind(this, "General", "Bring To Selection", false, "When an object is selected (whether it be a regular object, a marker, etc), it will move the layer and audio time to that object.");
             SelectPasted = Bind(this, "General", "Select Pasted Keyframes", false, "Select a pasted keyframe.");
             CreateObjectsatCameraCenter = Bind(this, "General", "Create Objects at Camera Center", true, "When an object is created, its position will be set to that of the camera's.");
+            SpawnPrefabsAtCameraCenter = Bind(this, "General", "Spawn Prefabs at Camera Center", true, "When a Prefab object is placed into a level, its position will be set to that of the camera's.");
             CreateObjectsScaleParentDefault = Bind(this, "General", "Create Objects Scale Parent Default", true, "The default value for new Beatmap Objects' Scale Parent.");
             AllowEditorKeybindsWithEditorCam = Bind(this, "General", "Allow Editor Keybinds With Editor Cam", true, "Allows keybinds to be used if EventsCore editor camera is on.");
             RotationEventKeyframeResets = Bind(this, "General", "Rotation Event Keyframe Resets", true, "When an Event / Check rotation keyframe is created, it resets the value to 0.");

@@ -907,6 +907,13 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < prefabObject.events.Count; i++)
                 prefabObject.events[i] = new EventKeyframe(prefabObject.events[i]);
 
+            if (EditorConfig.Instance.SpawnPrefabsAtCameraCenter.Value)
+            {
+                var pos = EventManager.inst.cam.transform.position;
+                prefabObject.events[0].eventValues[0] = pos.x;
+                prefabObject.events[0].eventValues[1] = pos.y;
+            }
+
             // Set default scale
             prefabObject.events[1].eventValues[0] = 1f;
             prefabObject.events[1].eventValues[1] = 1f;
@@ -915,8 +922,7 @@ namespace BetterLegacy.Editor.Managers
 
             Updater.AddPrefabToLevel(prefabObject);
 
-            var timelineObject = new TimelineObject(prefabObject);
-            ObjectEditor.inst.SetCurrentObject(timelineObject);
+            ObjectEditor.inst.SetCurrentObject(new TimelineObject(prefabObject));
 
             if (prefab.Name.Contains("Example") && ExampleManager.inst && ExampleManager.inst.Visible)
             {
