@@ -978,6 +978,43 @@ namespace BetterLegacy.Core.Data
             CoreHelper.Log($"Set Parent Additive: {parentAdditive}");
         }
 
+        public void SetAutokillToScale(List<BaseBeatmapObject> beatmapObjects)
+        {
+            try
+            {
+                var parent = this.parent;
+                var beatmapObject = this;
+
+                if (beatmapObject.events != null && beatmapObject.events.Count > 1 &&
+                    (beatmapObject.events[1].Last().eventValues[0] == 0f || beatmapObject.events[1].Last().eventValues[1] == 0f ||
+                    beatmapObject.events[1].Last().eventValues[0] == 0.001f || beatmapObject.events[1].Last().eventValues[1] == 0.001f))
+                {
+                    autoKillType = AutoKillType.SongTime;
+                    autoKillOffset = beatmapObject.StartTime + beatmapObject.events[1].Last().eventTime;
+                    return;
+                }
+
+                while (!string.IsNullOrEmpty(parent) && beatmapObjects.Any(x => x.id == parent))
+                {
+                    beatmapObject = (BeatmapObject)beatmapObjects.Find(x => x.id == parent);
+                    parent = beatmapObject.parent;
+
+                    if (beatmapObject.events != null && beatmapObject.events.Count > 1 &&
+                        (beatmapObject.events[1].Last().eventValues[0] == 0f || beatmapObject.events[1].Last().eventValues[1] == 0f ||
+                        beatmapObject.events[1].Last().eventValues[0] == 0.001f || beatmapObject.events[1].Last().eventValues[1] == 0.001f))
+                    {
+                        autoKillType = AutoKillType.SongTime;
+                        autoKillOffset = beatmapObject.StartTime + beatmapObject.events[1].Last().eventTime;
+                        break;
+                    }
+                }
+            }
+            catch
+            {
+
+            }
+        }
+
         #endregion
 
         #region Operators

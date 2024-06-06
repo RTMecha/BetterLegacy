@@ -2804,6 +2804,11 @@ namespace BetterLegacy.Editor.Managers
             {
                 ExampleManager.Init();
             });
+            
+            EditorHelper.AddEditorDropdown("Show Config Manager", "", "View", null, delegate ()
+            {
+                ConfigManager.inst.Show();
+            });
 
             titleBar.Find("Help/Help Dropdown/Join Discord/Text").GetComponent<Text>().text = "Modder's Discord";
             titleBar.Find("Help/Help Dropdown/Watch Tutorials/Text").AsRT().sizeDelta = new Vector2(200f, 0f);
@@ -4428,6 +4433,16 @@ namespace BetterLegacy.Editor.Managers
                         EditorManager.inst.HideDialog("Warning Popup");
                     });
                 });
+            }
+
+            // Optimization
+            {
+                labelGenerator("Auto Optimize");
+
+                foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                {
+                    beatmapObject.SetAutokillToScale(DataManager.inst.gameData.beatmapObjects);
+                }
             }
 
             // Song Time Autokill
@@ -7632,7 +7647,13 @@ namespace BetterLegacy.Editor.Managers
             EditorHelper.AddEditorDropdown("Debugger", "", "View", SpriteManager.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "debugger.png"), delegate ()
             {
                 EditorManager.inst.ShowDialog("Debugger Popup");
-                RefreshDocumentation();
+                RefreshDebugger();
+            });
+
+            EditorHelper.AddEditorDropdown("Show Explorer", "", "View", SearchSprite, delegate ()
+            {
+                var ui = UEUIManager;
+                ui.GetProperty("ShowMenu").SetValue(ui, true);
             });
 
             GenerateDebugButton(

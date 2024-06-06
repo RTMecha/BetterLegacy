@@ -208,11 +208,6 @@ namespace BetterLegacy.Configs
         public Setting<bool> AllowControlsInputField { get; set; }
 
         /// <summary>
-        /// Possibly releases the fixed framerate of the game.
-        /// </summary>
-        public Setting<bool> UseNewUpdateMethod { get; set; }
-
-        /// <summary>
         /// The path to save screenshots to.
         /// </summary>
         public Setting<string> ScreenshotsPath { get; set; }
@@ -243,24 +238,9 @@ namespace BetterLegacy.Configs
         public Setting<bool> IncreasedClipPlanes { get; set; }
 
         /// <summary>
-        /// If on, the old video BG feature returns, though somewhat buggy. Requires a bg.mp4 or bg.mov file to exist in the level folder.
-        /// </summary>
-        public Setting<bool> EnableVideoBackground { get; set; }
-
-        /// <summary>
         /// If custom written code should evaluate. Turn this on if you're sure the level you're using isn't going to mess anything up with a code Modifier or custom player code.
         /// </summary>
         public Setting<bool> EvaluateCode { get; set; }
-
-        /// <summary>
-        /// When completing a level, having this on will replay the level with no players in the background of the end screen.
-        /// </summary>
-        public Setting<bool> ReplayLevel { get; set; }
-
-        /// <summary>
-        /// Due to LS file formats also being in level folders with VG formats, VG format will need to be prioritized, though you can turn this off if a VG level isn't working and it has a level.lsb file.
-        /// </summary>
-        public Setting<bool> PrioritizeVG { get; set; }
 
         /// <summary>
         /// The size of the in-game interface blur.
@@ -308,6 +288,31 @@ namespace BetterLegacy.Configs
         /// If enabled, any objects with "LDM" (Low Detail Mode) toggled on will not be rendered.
         /// </summary>
         public Setting<bool> LDM { get; set; }
+
+        /// <summary>
+        /// If on, the old video BG feature returns, though somewhat buggy. Requires a bg.mp4 or bg.mov file to exist in the level folder.
+        /// </summary>
+        public Setting<bool> EnableVideoBackground { get; set; }
+
+        /// <summary>
+        /// Possibly releases the fixed framerate of the game.
+        /// </summary>
+        public Setting<bool> UseNewUpdateMethod { get; set; }
+
+        /// <summary>
+        /// When completing a level, having this on will replay the level with no players in the background of the end screen.
+        /// </summary>
+        public Setting<bool> ReplayLevel { get; set; }
+
+        /// <summary>
+        /// Due to LS file formats also being in level folders with VG formats, VG format will need to be prioritized, though you can turn this off if a VG level isn't working and it has a level.lsb file.
+        /// </summary>
+        public Setting<bool> PrioritizeVG { get; set; }
+
+        /// <summary>
+        /// When parsing a level, it will automatically try to apply as many optimizations to itself as possible changing how the level works.
+        /// </summary>
+        public Setting<bool> ParseOptimizations { get; set; }
 
         #endregion
 
@@ -420,6 +425,7 @@ namespace BetterLegacy.Configs
             UseNewUpdateMethod = Bind(this, "Level", "Use New Update Method", true, "Possibly releases the fixed framerate of the game.");
             ReplayLevel = Bind(this, "Level", "Replay Level in Background After Completion", true, "When completing a level, having this on will replay the level with no players in the background of the end screen.");
             PrioritizeVG = Bind(this, "Level", "Priotize VG format", true, "Due to LS file formats also being in level folders with VG formats, VG format will need to be prioritized, though you can turn this off if a VG level isn't working and it has a level.lsb file.");
+            ParseOptimizations = Bind(this, "Level", "Parse Optimizations", false, "When parsing a level, it will automatically try to apply as many optimizations to itself as possible changing how the level works.");
 
             #endregion
 

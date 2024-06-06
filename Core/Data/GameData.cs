@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Components.Player;
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Helpers;
@@ -352,6 +353,7 @@ namespace BetterLegacy.Core.Data
         public static GameData ParseVG(JSONNode jn, bool parseThemes = true)
         {
             var gameData = new GameData();
+            var parseOptimizations = CoreConfig.Instance.ParseOptimizations.Value;
 
             for (int i = 0; i < jn["triggers"].Count; i++)
             {
@@ -398,6 +400,10 @@ namespace BetterLegacy.Core.Data
             CoreHelper.Log($"Parsing Objects");
             for (int i = 0; i < jn["objects"].Count; i++)
                 gameData.beatmapObjects.Add(Data.BeatmapObject.ParseVG(jn["objects"][i]));
+
+            if (parseOptimizations)
+                for (int i = 0; i < gameData.beatmapObjects.Count; i++)
+                    ((Data.BeatmapObject)gameData.beatmapObjects[i]).SetAutokillToScale(gameData.beatmapObjects);
 
             CoreHelper.Log($"Parsing Prefab Objects");
             for (int i = 0; i < jn["prefab_objects"].Count; i++)
@@ -802,6 +808,7 @@ namespace BetterLegacy.Core.Data
             var gameData = new GameData();
 
             LastParsedJSON = jn;
+            var parseOptimizations = CoreConfig.Instance.ParseOptimizations.Value;
 
             if (jn["modifiers"] != null)
                 for (int i = 0; i < jn["modifiers"].Count; i++)
@@ -882,6 +889,10 @@ namespace BetterLegacy.Core.Data
             for (int i = 0; i < jn["beatmap_objects"].Count; i++)
                 gameData.beatmapObjects.Add(Data.BeatmapObject.Parse(jn["beatmap_objects"][i]));
 
+            if (parseOptimizations)
+                for (int i = 0; i < gameData.beatmapObjects.Count; i++)
+                    ((Data.BeatmapObject)gameData.beatmapObjects[i]).SetAutokillToScale(gameData.beatmapObjects);
+            
             AssetManager.SpriteAssets.Clear();
             if (jn["assets"] != null && jn["assets"]["spr"] != null)
             {
