@@ -4439,7 +4439,6 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                     {
                         var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                        beatmapObject.autoKillType = AutoKillType.SongTime;
 
                         float num = 0f;
 
