@@ -29,14 +29,24 @@ using Screen = UnityEngine.Screen;
 #pragma warning disable CS0618 // Type or member is obsolete
 namespace BetterLegacy.Arcade
 {
+    /// <summary>
+    /// The current arcade UI handler class.
+    /// </summary>
     public class ArcadeMenuManager : MonoBehaviour
     {
+        /// <summary>
+        /// ArcadeMenuManager instance reference.
+        /// </summary>
         public static ArcadeMenuManager inst;
 
         #region Base
 
+        /// <summary>
+        /// The base GameObject.
+        /// </summary>
         public GameObject menuUI;
 
+        // The colors of the UI based on menu themes.
         public Color textColor;
         public Color highlightColor;
         public Color textHighlightColor;
@@ -49,7 +59,14 @@ namespace BetterLegacy.Arcade
 
         #region Page
 
+        /// <summary>
+        /// The current maximum amount of levels per page.
+        /// </summary>
         public static int MaxLevelsPerPage { get; set; } = 20;
+
+        /// <summary>
+        /// The list containing the current page of each tab.
+        /// </summary>
         public List<int> CurrentPage { get; set; } = new List<int>
         {
             0,
@@ -64,29 +81,52 @@ namespace BetterLegacy.Arcade
 
         #region Selection
 
+        /// <summary>
+        /// Current selection by X and Y coordinates.
+        /// </summary>
         public Vector2Int selected;
 
-        public bool SelectedTab => selected.y == 0;
-
+        /// <summary>
+        /// Selection coordinate limiter.
+        /// </summary>
         public List<int> SelectionLimit { get; set; } = new List<int>();
 
         #endregion
 
         #region Tabs
 
+        /// <summary>
+        /// RectTransform parent of the tabs.
+        /// </summary>
         public RectTransform TabContent { get; set; }
-        public List<RectTransform> RegularBases { get; set; } = new List<RectTransform>();
-        public List<RectTransform> RegularContents { get; set; } = new List<RectTransform>();
-        public List<RectTransform> SelectedContents { get; set; } = new List<RectTransform>();
 
+        /// <summary>
+        /// The list for each base.
+        /// </summary>
+        public List<RectTransform> RegularBases { get; set; } = new List<RectTransform>();
+
+        /// <summary>
+        /// The list for each content.
+        /// </summary>
+        public List<RectTransform> RegularContents { get; set; } = new List<RectTransform>();
+
+        /// <summary>
+        /// A list containing all tabs.
+        /// </summary>
         public List<Tab> Tabs { get; set; } = new List<Tab>();
 
+        /// <summary>
+        /// The current selected tab.
+        /// </summary>
         public int CurrentTab { get; set; } = 0;
 
         #endregion
 
         #region Settings
 
+        /// <summary>
+        /// The settings list depending on which page is currently being viewed.
+        /// </summary>
         List<List<Tab>> Settings { get; set; } = new List<List<Tab>>
         {
             new List<Tab>(),
@@ -101,20 +141,35 @@ namespace BetterLegacy.Arcade
 
         #region Open
 
+        /// <summary>
+        /// If local level view has been opened.
+        /// </summary>
         public bool OpenedLocalLevel { get; set; }
+
+        /// <summary>
+        /// If online level view has been opened.
+        /// </summary>
         public bool OpenedOnlineLevel { get; set; }
+
+        /// <summary>
+        /// If Steam level view has been opened.
+        /// </summary>
         public bool OpenedSteamLevel { get; set; }
 
         #endregion
 
         #region Prefabs
 
-        public GameObject localLevelPrefab;
+        /// <summary>
+        /// The prefab for levels to be used.
+        /// </summary>
+        public GameObject levelPrefab;
 
         #endregion
 
-        public float Scroll { get; set; }
-
+        /// <summary>
+        /// If UI has initialized yet.
+        /// </summary>
         public bool init = false;
 
         void Awake()
@@ -127,17 +182,20 @@ namespace BetterLegacy.Arcade
         {
             UpdateTheme();
 
+            // Check if main UI should be updated or not.
             if (!init || OpenedLocalLevel || OpenedOnlineLevel || OpenedSteamLevel)
                 return;
 
             UpdateControls();
 
+            // Update all tab colors.
             for (int i = 0; i < Tabs.Count; i++)
             {
                 Tabs[i].Text.color = selected.y == 0 && i == selected.x ? textHighlightColor : textColor;
                 Tabs[i].Image.color = selected.y == 0 && i == selected.x ? highlightColor : Color.Lerp(buttonBGColor, Color.white, 0.01f);
             }
 
+            // Update all setting colors.
             for (int i = 0; i < Settings[CurrentTab].Count; i++)
             {
                 var setting = Settings[CurrentTab][i];
@@ -147,6 +205,7 @@ namespace BetterLegacy.Arcade
 
             try
             {
+                // Update local levels
                 if (CurrentTab == 0)
                 {
                     localPageField.caretColor = highlightColor;
@@ -259,6 +318,7 @@ namespace BetterLegacy.Arcade
                     }
                 }
 
+                // Update online levels
                 if (CurrentTab == 1)
                 {
                     onlinePageField.caretColor = highlightColor;
@@ -341,6 +401,7 @@ namespace BetterLegacy.Arcade
                     }
                 }
 
+                // Update queue levels
                 if (CurrentTab == 4)
                 {
                     if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.V))
@@ -429,6 +490,7 @@ namespace BetterLegacy.Arcade
                     }
                 }
 
+                // Update Steam levels
                 if (CurrentTab == 5)
                 {
                     steamPageField.caretColor = highlightColor;
@@ -623,7 +685,9 @@ namespace BetterLegacy.Arcade
 
             }
         }
-
+        /// <summary>
+        /// Control system.
+        /// </summary>
         void UpdateControls()
         {
             if (LSHelpers.IsUsingInputField() || loadingOnlineLevels || loadingLocalLevels)
@@ -677,22 +741,26 @@ namespace BetterLegacy.Arcade
                     AudioManager.inst.PlaySound("Block");
             }
 
+            // Enter tab
             if (actions.Submit.WasPressed && selected.y == 0)
             {
                 AudioManager.inst.PlaySound("blip");
                 SelectTab();
             }
 
+            // Click setting 1
             if (actions.Submit.WasPressed && selected.y == 1)
             {
                 Settings[CurrentTab][selected.x].Clickable.onClick?.Invoke(null);
             }
 
+            // Click setting 2
             if (actions.Submit.WasPressed && selected.y == 2 && CurrentTab == 1)
             {
                 Settings[CurrentTab][selected.x].Clickable.onClick?.Invoke(null);
             }
 
+            // Set tabs
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Alpha1))
             {
                 AudioManager.inst.PlaySound("blip");
@@ -1177,24 +1245,14 @@ namespace BetterLegacy.Arcade
 
                 RegularContents.Add(regularContentRT);
 
-                var selectedContent = new GameObject("Selected Content");
-                selectedContent.transform.SetParent(localRT);
-                selectedContent.transform.localScale = Vector3.one;
-
-                var selectedContentRT = selectedContent.AddComponent<RectTransform>();
-                selectedContentRT.anchoredPosition = Vector2.zero;
-                selectedContentRT.sizeDelta = Vector3.zero;
-
-                SelectedContents.Add(selectedContentRT);
-
                 // Prefab
                 {
                     var level = UIManager.GenerateUIImage("Level", transform);
                     UIManager.SetRectTransform(level.GetObject<RectTransform>(), Vector2.zero, ZeroFive, ZeroFive, ZeroFive, new Vector2(300f, 180f));
-                    localLevelPrefab = level.GetObject<GameObject>();
-                    localLevelPrefab.AddComponent<Mask>();
+                    levelPrefab = level.GetObject<GameObject>();
+                    levelPrefab.AddComponent<Mask>();
 
-                    var clickable = localLevelPrefab.AddComponent<Clickable>();
+                    var clickable = levelPrefab.AddComponent<Clickable>();
 
                     var levelDifficulty = UIManager.GenerateUIImage("Difficulty", level.GetObject<RectTransform>());
 
@@ -1431,16 +1489,6 @@ namespace BetterLegacy.Arcade
                 regularContentRT.sizeDelta = Vector3.zero;
 
                 RegularContents.Add(regularContentRT);
-
-                var selectedContent = new GameObject("Selected Content");
-                selectedContent.transform.SetParent(onlineRT);
-                selectedContent.transform.localScale = Vector3.one;
-
-                var selectedContentRT = selectedContent.AddComponent<RectTransform>();
-                selectedContentRT.anchoredPosition = Vector2.zero;
-                selectedContentRT.sizeDelta = Vector3.zero;
-
-                SelectedContents.Add(selectedContentRT);
 
                 var searchField = UIManager.GenerateUIInputField("Search", onlineRT);
 
@@ -2113,16 +2161,6 @@ namespace BetterLegacy.Arcade
 
                 RegularContents.Add(regularContentRT);
 
-                var selectedContent = new GameObject("Selected Content");
-                selectedContent.transform.SetParent(queueRT);
-                selectedContent.transform.localScale = Vector3.one;
-
-                var selectedContentRT = selectedContent.AddComponent<RectTransform>();
-                selectedContentRT.anchoredPosition = Vector2.zero;
-                selectedContentRT.sizeDelta = Vector3.zero;
-
-                SelectedContents.Add(selectedContentRT);
-
                 var searchField = UIManager.GenerateUIInputField("Search", queueRT);
 
                 UIManager.SetRectTransform(searchField.GetObject<RectTransform>(), new Vector2(0f, 270f), ZeroFive, ZeroFive, ZeroFive, new Vector2(1600f, 60f));
@@ -2417,16 +2455,6 @@ namespace BetterLegacy.Arcade
 
                 RegularContents.Add(regularContentRT);
 
-                var selectedContent = new GameObject("Selected Content");
-                selectedContent.transform.SetParent(steamRT);
-                selectedContent.transform.localScale = Vector3.one;
-
-                var selectedContentRT = selectedContent.AddComponent<RectTransform>();
-                selectedContentRT.anchoredPosition = Vector2.zero;
-                selectedContentRT.sizeDelta = Vector3.zero;
-
-                SelectedContents.Add(selectedContentRT);
-
                 var searchField = UIManager.GenerateUIInputField("Search", steamRT);
 
                 UIManager.SetRectTransform(searchField.GetObject<RectTransform>(), new Vector2(0f, 270f), ZeroFive, ZeroFive, ZeroFive, new Vector2(1600f, 60f));
@@ -2661,7 +2689,6 @@ namespace BetterLegacy.Arcade
         {
             loadingLocalLevels = true;
             LSHelpers.DeleteChildren(RegularContents[0]);
-            LSHelpers.DeleteChildren(SelectedContents[0]);
             LocalLevels.Clear();
             int currentPage = CurrentPage[0] + 1;
 
@@ -2689,7 +2716,7 @@ namespace BetterLegacy.Arcade
             {
                 if (level.id != null && level.id != "0" && num >= max - MaxLevelsPerPage && num < max)
                 {
-                    var gameObject = localLevelPrefab.Duplicate(RegularContents[0]);
+                    var gameObject = levelPrefab.Duplicate(RegularContents[0]);
 
                     int column = (num % MaxLevelsPerPage) % 5;
                     int row = (int)((num % MaxLevelsPerPage) / 5);
@@ -2902,7 +2929,6 @@ namespace BetterLegacy.Arcade
 
             loadingOnlineLevels = true;
             LSHelpers.DeleteChildren(RegularContents[1]);
-            LSHelpers.DeleteChildren(SelectedContents[1]);
             OnlineLevels.Clear();
 
             if (string.IsNullOrEmpty(query))
@@ -2944,7 +2970,7 @@ namespace BetterLegacy.Arcade
 
                             if (id != null && id != "0")
                             {
-                                var gameObject = localLevelPrefab.Duplicate(RegularContents[1]);
+                                var gameObject = levelPrefab.Duplicate(RegularContents[1]);
 
                                 int column = (i % MaxLevelsPerPage) % 5;
                                 int row = (int)((i % MaxLevelsPerPage) / 5);
@@ -3294,7 +3320,7 @@ namespace BetterLegacy.Arcade
             {
                 if (level.id != null && level.id != "0" && num >= max - MaxQueuedLevelsPerPage && num < max)
                 {
-                    var gameObject = localLevelPrefab.Duplicate(RegularContents[4]);
+                    var gameObject = levelPrefab.Duplicate(RegularContents[4]);
 
                     int row = num % MaxQueuedLevelsPerPage;
 
@@ -3605,7 +3631,7 @@ namespace BetterLegacy.Arcade
             {
                 if (level.id != null && level.id != "0" && num >= max - MaxSteamLevelsPerPage && num < max)
                 {
-                    var gameObject = localLevelPrefab.Duplicate(RegularContents[5]);
+                    var gameObject = levelPrefab.Duplicate(RegularContents[5]);
 
                     int column = (num % MaxSteamLevelsPerPage) % 5;
                     int row = (int)((num % MaxSteamLevelsPerPage) / 5);
@@ -3764,7 +3790,7 @@ namespace BetterLegacy.Arcade
                     return;
                 }
 
-                var gameObject = localLevelPrefab.Duplicate(RegularContents[5]);
+                var gameObject = levelPrefab.Duplicate(RegularContents[5]);
 
                 int column = (num) % 5;
                 int row = (int)((num) / 5);
