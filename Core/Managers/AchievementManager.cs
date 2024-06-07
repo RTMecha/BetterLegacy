@@ -177,5 +177,10 @@ namespace BetterLegacy.Core.Managers
         {
             Achievement.TestAchievement,
         };
+
+        public static List<AchievementFunction> requirements = new List<AchievementFunction>()
+        {
+            () => true,
+        };
     }
 }

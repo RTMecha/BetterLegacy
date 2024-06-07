@@ -52,6 +52,11 @@ namespace BetterLegacy.Core.Data
         public int Difficulty { get; set; }
 
         /// <summary>
+        /// The requirement index from the requirements list.
+        /// </summary>
+        public int RequirementIndex { get; set; }
+
+        /// <summary>
         /// The delegate requirement of the achievement.
         /// </summary>
         public AchievementFunction Requirement { get; set; }
@@ -70,6 +75,12 @@ namespace BetterLegacy.Core.Data
         /// The metadata difficulty type.
         /// </summary>
         public DataManager.Difficulty DifficultyType => Difficulty == 0 ? DataManager.inst.difficulties.Last() : Difficulty - 1 >= 0 && Difficulty - 1 < DataManager.inst.difficulties.Count ? DataManager.inst.difficulties[Difficulty - 1] : new DataManager.Difficulty("Unknown Difficulty", Color.red);
+
+        public void AssignRequirement(int index)
+        {
+            RequirementIndex = index;
+            Requirement = AchievementManager.requirements[Mathf.Clamp(index, 0, AchievementManager.requirements.Count - 1)];
+        }
 
         public void Unlock()
         {
@@ -103,7 +114,9 @@ namespace BetterLegacy.Core.Data
             for (int j = 0; j < icon.Count; j++)
                 imageData[j] = (byte)icon[j].AsInt;
 
-            return new Achievement(jn["id"], jn["name"], jn["desc"], jn["difficulty"].AsInt, SpriteManager.LoadSprite(imageData), null, jn["hidden"].AsBool)
+            var requirement = AchievementManager.requirements[jn["requirement"] == null ? 0 : Mathf.Clamp(jn["requirement"].AsInt, 0, AchievementManager.requirements.Count - 1)];
+
+            return new Achievement(jn["id"], jn["name"], jn["desc"], jn["difficulty"].AsInt, SpriteManager.LoadSprite(imageData), requirement, jn["hidden"].AsBool)
             {
                 unlocked = parseUnlock && jn["unlocked"] != null && jn["unlocked"].AsBool,
             };
@@ -120,6 +133,8 @@ namespace BetterLegacy.Core.Data
             jn["hidden"] = Hidden.ToString();
             if (saveUnlock)
                 jn["unlocked"] = unlocked.ToString();
+
+            jn["requirement"] = RequirementIndex.ToString();
 
             var imageData = Icon.texture.EncodeToPNG();
             for (int j = 0; j < imageData.Length; j++)
