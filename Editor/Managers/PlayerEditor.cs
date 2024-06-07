@@ -34,6 +34,8 @@ namespace BetterLegacy.Editor.Managers
         public Transform content;
         public Sprite PlayerSprite { get; set; }
 
+        GameObject labelPrefab;
+
         public static void Init() => Creator.NewGameObject("PlayerEditor", EditorManager.inst.transform.parent).AddComponent<PlayerEditor>();
 
         void Awake()
@@ -145,7 +147,7 @@ namespace BetterLegacy.Editor.Managers
 
             content = scrollView.transform.Find("Viewport/Content");
 
-            var labelPrefab = EditorManager.inst.folderButtonPrefab.transform.GetChild(0).gameObject;
+            labelPrefab = EditorManager.inst.folderButtonPrefab.transform.GetChild(0).gameObject;
 
             LSHelpers.DeleteChildren(content);
 
@@ -566,25 +568,11 @@ namespace BetterLegacy.Editor.Managers
             {
                 // ID
                 {
-                    var name = "ID";
+                    var gameObject = GenerateUIPart("ID");
 
-                    var gameObject = Creator.NewUIObject(name, content);
-                    gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 42f);
-
-                    var label = labelPrefab.Duplicate(gameObject.transform, "label");
-                    var labelText = label.GetComponent<Text>();
-                    labelText.text = name;
-                    UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
-                    EditorThemeManager.AddLightText(labelText);
-
-                    editorUIs.Add(new PlayerEditorUI
-                    {
-                        Name = name,
-                        GameObject = gameObject,
-                        Tab = Tab.Global,
-                        ValueType = RTEditor.EditorProperty.ValueType.Float,
-                        Index = -1,
-                    });
+                    var id = labelPrefab.Duplicate(gameObject.transform, "id");
+                    UIManager.SetRectTransform(id.transform.AsRT(), new Vector2(-32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(750f, 32f));
+                    var button = gameObject.AddComponent<Button>();
                 }
                 // Name
                 // Depth
@@ -704,6 +692,29 @@ namespace BetterLegacy.Editor.Managers
             });
 
             yield break;
+        }
+
+        public GameObject GenerateUIPart(string name, int index = -1)
+        {
+            var gameObject = Creator.NewUIObject(name, content);
+            gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 42f);
+
+            var label = labelPrefab.Duplicate(gameObject.transform, "label");
+            var labelText = label.GetComponent<Text>();
+            labelText.text = name;
+            UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
+            EditorThemeManager.AddLightText(labelText);
+
+            editorUIs.Add(new PlayerEditorUI
+            {
+                Name = name,
+                GameObject = gameObject,
+                Tab = Tab.Global,
+                ValueType = RTEditor.EditorProperty.ValueType.Float,
+                Index = index,
+            });
+
+            return gameObject;
         }
 
         public IEnumerator RefreshEditor()
