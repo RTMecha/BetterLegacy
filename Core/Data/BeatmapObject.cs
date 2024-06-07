@@ -985,7 +985,7 @@ namespace BetterLegacy.Core.Data
                 var parent = this.parent;
                 var beatmapObject = this;
 
-                if (beatmapObject.events != null && beatmapObject.events.Count > 1 &&
+                if (beatmapObject.events != null && beatmapObject.events.Count > 1 && beatmapObject.events[1].Last().eventTime < GetObjectLifeLength(_oldStyle: true) &&
                     (beatmapObject.events[1].Last().eventValues[0] == 0f || beatmapObject.events[1].Last().eventValues[1] == 0f ||
                     beatmapObject.events[1].Last().eventValues[0] == 0.001f || beatmapObject.events[1].Last().eventValues[1] == 0.001f))
                 {
@@ -999,7 +999,7 @@ namespace BetterLegacy.Core.Data
                     beatmapObject = (BeatmapObject)beatmapObjects.Find(x => x.id == parent);
                     parent = beatmapObject.parent;
 
-                    if (beatmapObject.events != null && beatmapObject.events.Count > 1 &&
+                    if (beatmapObject.events != null && beatmapObject.events.Count > 1 && beatmapObject.events[1].Last().eventTime < GetObjectLifeLength(_oldStyle: true) &&
                         (beatmapObject.events[1].Last().eventValues[0] == 0f || beatmapObject.events[1].Last().eventValues[1] == 0f ||
                         beatmapObject.events[1].Last().eventValues[0] == 0.001f || beatmapObject.events[1].Last().eventValues[1] == 0.001f))
                     {
