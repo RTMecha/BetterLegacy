@@ -68,19 +68,19 @@ namespace BetterLegacy.Configs
 
         public object Clamp(T value)
         {
-            if (value is float floatValue && MinValue is float floatMin && MaxValue is float floatMax && floatMin != default && floatMax != default)
+            if (value is float floatValue && MinValue is float floatMin && MaxValue is float floatMax && (floatMin != default || floatMax != default))
             {
                 return Mathf.Clamp(floatValue, floatMin, floatMax);
             }
-            if (value is int intValue && MinValue is int intMin && MaxValue is int intMax && intMin != default && intMax != default)
+            if (value is int intValue && MinValue is int intMin && MaxValue is int intMax && (intMin != default || intMax != default))
             {
                 return Mathf.Clamp(intValue, intMin, intMax);
             }
-            if (value is Vector2 vector2Value && MinValue is Vector2 vector2Min && MaxValue is Vector2 vector2Max && vector2Min != default && vector2Max != default)
+            if (value is Vector2 vector2Value && MinValue is Vector2 vector2Min && MaxValue is Vector2 vector2Max && (vector2Min != default || vector2Max != default))
             {
                 return RTMath.Clamp(vector2Value, vector2Min, vector2Max);
             }
-            if (value is Vector3 vector3Value && MinValue is Vector3 vector3Min && MaxValue is Vector3 vector3Max && vector3Min != default && vector3Max != default)
+            if (value is Vector3 vector3Value && MinValue is Vector3 vector3Min && MaxValue is Vector3 vector3Max && (vector3Min != default || vector3Max != default))
             {
                 return RTMath.Clamp(vector3Value, vector3Min, vector3Max);
             }
