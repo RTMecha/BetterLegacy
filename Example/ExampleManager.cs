@@ -37,48 +37,34 @@ namespace BetterLegacy.Example
 
         #region Sprites
 
-        public string SpeakPath => RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/Example Parts/example speak.ogg";
-        public string TailPath => RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/Example Parts/example tail.png";
-        public string EarBottomPath => RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/Example Parts/example ear bottom.png";
-        public string HeadPath => RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/Example Parts/example head.png";
-        public string EyesPath => RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/Example Parts/example eyes.png";
-        public string PupilsPath => RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/Example Parts/example pupils.png";
-        public string BlinkPath => RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/Example Parts/example blink.png";
-        public string SnoutPath => RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/Example Parts/example snout.png";
-        public string MouthPath => RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/Example Parts/example mouth.png";
-        public string LipsPath => RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/Example Parts/example lips.png";
-        public string NosePath => RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/Example Parts/example nose.png";
-        public string BrowsPath => RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/Example Parts/example brow.png";
-        public string EarTopPath => RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/Example Parts/example ear top.png";
+        public string ExamplePartsPath = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Example Parts/";
+        public string SpeakPath => $"{ExamplePartsPath}example speak.ogg";
+        public string TailPath => $"{ExamplePartsPath}example tail.png";
+        public string EarBottomPath => $"{ExamplePartsPath}example ear bottom.png";
+        public string HeadPath => $"{ExamplePartsPath}example head.png";
+        public string EyesPath => $"{ExamplePartsPath}example eyes.png";
+        public string PupilsPath => $"{ExamplePartsPath}example pupils.png";
+        public string BlinkPath => $"{ExamplePartsPath}example blink.png";
+        public string SnoutPath => $"{ExamplePartsPath}example snout.png";
+        public string MouthPath => $"{ExamplePartsPath}example mouth.png";
+        public string LipsPath => $"{ExamplePartsPath}example lips.png";
+        public string NosePath => $"{ExamplePartsPath}example nose.png";
+        public string BrowsPath => $"{ExamplePartsPath}example brow.png";
+        public string EarTopPath => $"{ExamplePartsPath}example ear top.png";
 
-        public string HandsPath => RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/Example Parts/example hand.png";
+        public string HandsPath => $"{ExamplePartsPath}example hand.png";
 
         #endregion
 
         #region Movement
 
-        public Vector2 TotalPosition
-        {
-            get
-            {
-                if (parentX == null || parentY == null) return Vector2.zero;
-                return new Vector2(parentX.localPosition.x, parentY.localPosition.y);
-            }
-        }
+        public Vector2 TotalPosition => parentX == null || parentY == null ? Vector2.zero : new Vector2(parentX.localPosition.x, parentY.localPosition.y);
 
         public float floatingLevel;
 
         #endregion
 
         #region Parents
-
-        public Transform EditorParent
-        {
-            get
-            {
-                return EditorManager.inst.GUIMain.transform;
-            }
-        }
 
         public Canvas canvas;
         public GameObject baseCanvas;
@@ -183,13 +169,18 @@ namespace BetterLegacy.Example
             new Dialogue("How are you doing so far?", SayAnyways),
             new Dialogue("Hey! You should probably have a break. Just saying.", TimeLongerThan10Hours),
             new Dialogue("Go touch some grass.", TimeLongerThan10Hours),
+            new Dialogue("Jeez.", TimeLongerThan10Hours),
 
             new Dialogue("*Caw caw*", UserIsTori),
             new Dialogue("CrowBirb moment", UserIsTori),
             new Dialogue("A four dimensional tesseract.", UserIsCubeCube),
+            new Dialogue("Warning! Incoming game.", UserIsCubeCube), // ReBoot reference
             new Dialogue("penis monkey", UserIsDiggy),
+            new Dialogue("Snufusnargan", UserIsDiggy),
+            new Dialogue("Brand new backer buddy gay friends, YEAH!", UserIsDiggy),
             new Dialogue("So... where's all the cookies?", UserIsMecha),
             new Dialogue("Hey, you might want to set a username.", UserIsPlayer),
+            new Dialogue($"Where's your username? Set it via pressing the ConfigManager toggle key {CoreConfig.Instance.OpenConfigKey.Value}, going to the User section of the Core tab and then changing the name there.", UserIsPlayer),
             new Dialogue("Zzzzzzz...", UserIsSleepyz, delegate ()
             {
                 var a = inst.allowBlinking;
