@@ -2014,6 +2014,8 @@ namespace BetterLegacy.Editor.Managers
             Load();
         }
 
+        #region Editor Variables
+
         public Image editorTitlePanel;
 
         public InputField documentEditorName;
@@ -2059,10 +2061,7 @@ namespace BetterLegacy.Editor.Managers
 
         public List<GameObject> editors = new List<GameObject>();
 
-        void Start()
-        {
-
-        }
+        #endregion
 
         void Update()
         {
