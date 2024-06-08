@@ -22,8 +22,6 @@ using UnityEngine.UI;
 
 namespace BetterLegacy.Patchers
 {
-    public delegate void LevelEventHandler();
-
     [HarmonyPatch(typeof(GameManager))]
     public class GameManagerPatch : MonoBehaviour
     {
@@ -31,15 +29,12 @@ namespace BetterLegacy.Patchers
 
         #region Variables
 
-        public static event LevelEventHandler LevelStart;
-        public static event LevelEventHandler LevelEnd;
-
         public static Color bgColorToLerp;
         public static Color timelineColorToLerp;
 
         #endregion
 
-        [HarmonyPatch(typeof(GameManager), "Awake")]
+        [HarmonyPatch("Awake")]
         [HarmonyPrefix]
         static void AwakePrefix(GameManager __instance)
         {
@@ -292,14 +287,6 @@ namespace BetterLegacy.Patchers
             Instance.playerGUI.SetActive(CoreHelper.InEditorPreview);
             return false;
         }
-
-        [HarmonyPatch("PlayLevel")]
-        [HarmonyPostfix]
-        static void PlayLevelPostfix() => LevelStart?.Invoke();
-
-        public static void StartInvoke() => LevelStart?.Invoke();
-
-        public static void EndInvoke() => LevelEnd?.Invoke();
 
         [HarmonyPatch("LoadLevelCurrent")]
         [HarmonyPrefix]

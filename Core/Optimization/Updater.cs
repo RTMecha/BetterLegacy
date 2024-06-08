@@ -54,6 +54,11 @@ namespace BetterLegacy.Core.Optimization
             previousAudioTime = 0.0f;
             audioTimeVelocity = 0.0f;
 
+            // Removing and reinserting prefabs.
+            DataManager.inst.gameData.beatmapObjects.RemoveAll(x => x.fromPrefab);
+            for (int i = 0; i < DataManager.inst.gameData.prefabObjects.Count; i++)
+                AddPrefabToLevel(DataManager.inst.gameData.prefabObjects[i], false);
+
             levelProcessor = new LevelProcessor(GameData.Current);
         }
 
@@ -79,8 +84,9 @@ namespace BetterLegacy.Core.Optimization
         {
             if (!UseNewUpdateMethod)
             {
-                CurrentTime = AudioManager.inst.CurrentAudioSource.time;
-                levelProcessor?.Update(AudioManager.inst.CurrentAudioSource.time);
+                var time = AudioManager.inst.CurrentAudioSource.time;
+                CurrentTime = time;
+                levelProcessor?.Update(time);
                 return;
             }
 
@@ -89,90 +95,6 @@ namespace BetterLegacy.Core.Optimization
             CurrentTime = smoothedTime;
             levelProcessor?.Update(smoothedTime);
             previousAudioTime = smoothedTime;
-        }
-
-        /// <summary>
-        /// Gets a BeatmapObjects associated LevelObject. Useful for other mods that want to retrieve this data.
-        /// </summary>
-        /// <param name="_beatmapObject"></param>
-        /// <returns>ILevelObject from specified BeatmapObject.</returns>
-        public static ILevelObject GetLevelObject(BaseBeatmapObject _beatmapObject)
-        {
-            if (levelProcessor == null || levelProcessor.level == null)
-                return null;
-
-            var objects = levelProcessor.level.objects;
-            if (objects == null || objects.Count < 1)
-                return null;
-
-            return objects.Find(x => x.ID == _beatmapObject.id);
-        }
-
-        /// <summary>
-        /// Gets the BeatmapObjects' Unity GameObject.
-        /// </summary>
-        /// <param name="beatmapObject">The Beatmap Object to get the GameObject from.</param>
-        /// <returns>GameObject from specified BeatmapObject. Null if object does not exist.</returns>
-        public static GameObject GetGameObject(BaseBeatmapObject beatmapObject)
-        {
-            try
-            {
-                // If LevelProcessor is null, then no level has been initialized.
-                if (levelProcessor == null)
-                    return null;
-
-                // If Level is null, then same as above.
-                if (levelProcessor.level == null)
-                    return null;
-
-                var objects = levelProcessor.level.objects;
-
-                // If Objects list is null
-                if (objects == null)
-                    return null;
-
-                // If list is empty
-                if (objects.Count < 1)
-                    return null;
-
-                // If Objects list does not contain a matching item to the BeatmapObjects' ID.
-                if (objects.Find(x => x.ID != null && x.ID == beatmapObject.id) == null)
-                    return null;
-
-                return ((LevelObject)objects.Find(x => x.ID == beatmapObject.id)).visualObject.GameObject;
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Gets a BeatmapObjects associated LevelObject. Useful for other mods that want to retrieve this data.
-        /// </summary>
-        /// <param name="_beatmapObject"></param>
-        /// <param name="objects"></param>
-        /// <returns>ILevelObject from specified BeatmapObject.</returns>
-        public static ILevelObject GetILevelObject(BaseBeatmapObject _beatmapObject, List<ILevelObject> objects)
-        {
-            if (objects == null || objects.Count < 1)
-                return null;
-
-            return objects.Find(x => x.ID == _beatmapObject.id);
-        }
-
-        /// <summary>
-        /// Gets a LevelObject with the specified ID. Useful for other mods that want to retrieve this data.
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="objects"></param>
-        /// <returns>ILevelObject with matching ID.</returns>
-        public static ILevelObject GetILevelObject(string id, List<ILevelObject> objects)
-        {
-            if (objects == null || objects.Count < 1)
-                return null;
-
-            return objects.Find(x => x.ID == id);
         }
 
         /// <summary>
@@ -210,12 +132,23 @@ namespace BetterLegacy.Core.Optimization
             }
         }
 
+        public static void Sort()
+        {
+            if (!levelProcessor || !levelProcessor.engine || levelProcessor.engine.objectSpawner == null)
+                return;
+
+            var spawner = levelProcessor.engine.objectSpawner;
+
+            spawner.activateList.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
+            spawner.deactivateList.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
+            spawner.RecalculateObjectStates();
+        }
+
         /// <summary>
         /// Updates a specific value.
         /// </summary>
-        /// <param name="beatmapObject"></param>
-        /// <param name="context"></param>
-        /// <param name="value">The specific context to update under.</param>
+        /// <param name="beatmapObject">The BeatmapObject to update.</param>
+        /// <param name="context">The specific context to update under.</param>
         public static void UpdateProcessor(BaseBeatmapObject beatmapObject, string context)
         {
             if (TryGetObject(beatmapObject, out LevelObject levelObject))
@@ -230,35 +163,22 @@ namespace BetterLegacy.Core.Optimization
                     case "time":
                     case "starttime":
                         {
-                            if (levelProcessor && levelProcessor.engine && levelProcessor.engine.objectSpawner != null)
-                            {
-                                var spawner = levelProcessor.engine.objectSpawner;
+                            if (!levelProcessor || !levelProcessor.engine || levelProcessor.engine.objectSpawner == null)
+                                break;
 
-                                levelObject.StartTime = beatmapObject.StartTime;
-                                levelObject.KillTime = beatmapObject.StartTime + beatmapObject.GetObjectLifeLength(0.0f, true);
+                            var spawner = levelProcessor.engine.objectSpawner;
 
-                                spawner.activateList.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
-                                spawner.deactivateList.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
-                                spawner.RecalculateObjectStates();
+                            levelObject.StartTime = beatmapObject.StartTime;
+                            levelObject.KillTime = beatmapObject.StartTime + beatmapObject.GetObjectLifeLength(0.0f, true);
 
-                                levelObject.SetActive(beatmapObject.TimeWithinLifespan());
+                            spawner.activateList.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
+                            spawner.deactivateList.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
+                            spawner.RecalculateObjectStates();
 
-                                foreach (var levelParent in levelObject.parentObjects)
-                                {
-                                    if (DataManager.inst.gameData.beatmapObjects.TryFind(x => x.id == levelParent.ID, out BaseBeatmapObject parent))
-                                    {
-                                        levelParent.TimeOffset = parent.StartTime;
+                            levelObject.SetActive(beatmapObject.TimeWithinLifespan());
 
-                                        levelParent.ParentAnimatePosition = parent.GetParentType(0);
-                                        levelParent.ParentAnimateScale = parent.GetParentType(1);
-                                        levelParent.ParentAnimateRotation = parent.GetParentType(2);
-
-                                        levelParent.ParentOffsetPosition = parent.getParentOffset(0);
-                                        levelParent.ParentOffsetScale = parent.getParentOffset(1);
-                                        levelParent.ParentOffsetRotation = parent.getParentOffset(2);
-                                    }
-                                }
-                            }
+                            foreach (var levelParent in levelObject.parentObjects)
+                                levelParent.TimeOffset = levelParent.BeatmapObject.StartTime;
 
                             break;
                         } // StartTime
@@ -266,15 +186,15 @@ namespace BetterLegacy.Core.Optimization
                     case "autokilloffset":
                     case "autokill":
                         {
-                            if (levelProcessor && levelProcessor.engine && levelProcessor.engine.objectSpawner != null)
-                            {
-                                var spawner = levelProcessor.engine.objectSpawner;
+                            if (!levelProcessor || !levelProcessor.engine || levelProcessor.engine.objectSpawner == null)
+                                break;
 
-                                levelObject.KillTime = beatmapObject.StartTime + beatmapObject.GetObjectLifeLength(0.0f, true);
+                            var spawner = levelProcessor.engine.objectSpawner;
 
-                                spawner.deactivateList.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
-                                spawner.RecalculateObjectStates();
-                            }
+                            levelObject.KillTime = beatmapObject.StartTime + beatmapObject.GetObjectLifeLength(0.0f, true);
+
+                            spawner.deactivateList.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
+                            spawner.RecalculateObjectStates();
 
                             break;
                         } // Autokill
@@ -375,10 +295,12 @@ namespace BetterLegacy.Core.Optimization
                         } // Origin & Depth
                     case "shape":
                         {
-                            //if (beatmapObject.shape == 4 || beatmapObject.shape == 6)
-                            UpdateProcessor(beatmapObject);
+                            //if (beatmapObject.shape == 4 || beatmapObject.shape == 6 || beatmapObject.shape == 9)
+                                UpdateProcessor(beatmapObject);
+
                             //else if (ShapeManager.GetShape(beatmapObject.shape, beatmapObject.shapeOption).mesh != null)
                             //    levelObject.visualObject.GameObject.GetComponent<MeshFilter>().mesh = ShapeManager.GetShape(beatmapObject.shape, beatmapObject.shapeOption).mesh;
+
                             break;
                         } // Shape
                     case "text":
@@ -1005,7 +927,7 @@ namespace BetterLegacy.Core.Optimization
             }
 
             // Get ILevelObject related to BeatmapObject.
-            var iLevelObject = GetILevelObject(id, objects);
+            var iLevelObject = objects == null || objects.Count < 1 ? null : objects.Find(x => x.ID == id);
 
             // If ILevelObject is not null, then start destroying.
             if (iLevelObject != null)
@@ -1050,7 +972,10 @@ namespace BetterLegacy.Core.Optimization
         {
             // We check if LevelProcessor has been invoked and if the level should restart.
             if (levelProcessor == null && restart)
-                GameManagerPatch.StartInvoke();
+            {
+                OnLevelStart();
+                return;
+            }
 
             // If it is not null then we continue.
             if (levelProcessor != null)
@@ -1063,21 +988,22 @@ namespace BetterLegacy.Core.Optimization
                 // Delete all the "GameObjects" children.
                 LSFunctions.LSHelpers.DeleteChildren(GameObject.Find("GameObjects").transform);
 
-                // Removing and reinserting prefabs.
-                DataManager.inst.gameData.beatmapObjects.RemoveAll(x => x.fromPrefab);
-                if (restart)
-                    for (int i = 0; i < DataManager.inst.gameData.prefabObjects.Count; i++)
-                        AddPrefabToLevel(DataManager.inst.gameData.prefabObjects[i], false);
-
                 // End and restart.
-                GameManagerPatch.EndInvoke();
+                OnLevelEnd();
                 if (restart)
-                    GameManagerPatch.StartInvoke();
+                    OnLevelStart();
             }
         }
 
         public static IEnumerator IUpdateObjects(bool restart, bool resetOffsets = false)
         {
+            // We check if LevelProcessor has been invoked and if the level should restart.
+            if (levelProcessor == null && restart)
+            {
+                OnLevelStart();
+                yield break;
+            }
+
             if (resetOffsets)
                 ResetOffsets();
 
@@ -1089,12 +1015,6 @@ namespace BetterLegacy.Core.Optimization
 
             // Delete all the "GameObjects" children.
             LSFunctions.LSHelpers.DeleteChildren(GameObject.Find("GameObjects").transform);
-
-            // Removing and reinserting prefabs.
-            DataManager.inst.gameData.beatmapObjects.RemoveAll(x => x.fromPrefab);
-            if (restart)
-                for (int i = 0; i < DataManager.inst.gameData.prefabObjects.Count; i++)
-                    CoreHelper.StartCoroutine(IAddPrefabToLevel(DataManager.inst.gameData.prefabObjects[i], false));
 
             // End and restart.
             OnLevelEnd();

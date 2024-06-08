@@ -167,12 +167,9 @@ namespace BetterLegacy
 
             // Hooks
             {
-                GameManagerPatch.LevelStart += Updater.OnLevelStart;
-                GameManagerPatch.LevelEnd += Updater.OnLevelEnd;
-
-                ObjectManagerPatch.LevelTick += RTEventManager.OnLevelTick;
-                ObjectManagerPatch.LevelTick += Updater.OnLevelTick;
-                ObjectManagerPatch.LevelTick += ModifiersManager.OnLevelTick;
+                ObjectManagerPatch.LevelTick += RTEventManager.OnLevelTick; // events need to update first
+                ObjectManagerPatch.LevelTick += Updater.OnLevelTick; // objects update second
+                ObjectManagerPatch.LevelTick += ModifiersManager.OnLevelTick; // modifiers update third
             }
 
             try
