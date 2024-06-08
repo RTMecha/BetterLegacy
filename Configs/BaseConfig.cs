@@ -94,8 +94,8 @@ namespace BetterLegacy.Configs
                     setting.BoxedValue = Parser.TryParse(JSON[section][key]["value"], defaultVector3Int);
                 else if (defaultValue is Color defaultColor)
                     setting.BoxedValue = ((string)JSON[section][key]["value"]).Length == 8 ? LSColors.HexToColorAlpha(JSON[section][key]["value"]) : ((string)JSON[section][key]["value"]).Length == 6 ? LSColors.HexToColor(JSON[section][key]["value"]) : defaultColor;
-                else if (defaultValue is string defaultString)
-                    setting.BoxedValue = defaultString.Replace("{{colon}}", ":");
+                else if (defaultValue is string)
+                    setting.BoxedValue = ((string)JSON[section][key]["value"]).Replace("{{colon}}", ":");
 
                 setting.fireSettingChanged = true;
             }
