@@ -33,6 +33,7 @@ namespace BetterLegacy.Editor.Managers
         public int playerModelIndex = 0;
         public Transform content;
         public Sprite PlayerSprite { get; set; }
+        public string CustomObjectID { get; set; }
 
         GameObject labelPrefab;
 
@@ -351,9 +352,11 @@ namespace BetterLegacy.Editor.Managers
                 RTEditor.EditorProperty.ValueType valueType = RTEditor.EditorProperty.ValueType.Function;
                 if (name == "Base ID")
                 {
+                    valueType = RTEditor.EditorProperty.ValueType.Function;
+
                     var id = labelPrefab.Duplicate(gameObject.transform, "id");
                     UIManager.SetRectTransform(id.transform.AsRT(), new Vector2(-32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(750f, 32f));
-                    var button = gameObject.AddComponent<Button>();
+                    gameObject.AddComponent<Button>();
                 }
 
                 if (name == "Base Name" || name.Contains("Color") && name.Contains("Custom"))
@@ -551,7 +554,10 @@ namespace BetterLegacy.Editor.Managers
 
                 if (name == "Custom Objects")
                 {
-                    // maybe have a select custom objects thing similar to select models button
+                    valueType = RTEditor.EditorProperty.ValueType.Function;
+
+                    labelText.text = "Select a custom object.";
+                    gameObject.AddComponent<Button>();
                 }
 
                 editorUIs.Add(new PlayerEditorUI
@@ -568,7 +574,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 // ID
                 {
-                    var gameObject = GenerateUIPart("ID");
+                    var gameObject = GenerateUIPart("ID", Tab.Custom, RTEditor.EditorProperty.ValueType.Function);
 
                     var id = labelPrefab.Duplicate(gameObject.transform, "id");
                     UIManager.SetRectTransform(id.transform.AsRT(), new Vector2(-32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(750f, 32f));
@@ -615,7 +621,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddGraphic(selectStorage.text, ThemeGroup.Function_2_Text);
 
                 var playerIndexObject = EditorPrefabHolder.Instance.Dropdown.Duplicate(layout.transform, "dropdown");
-                playerIndexObject.transform.AsRT().sizeDelta = new Vector2(164f, 43.2f);
+                playerIndexObject.transform.AsRT().sizeDelta = new Vector2(200f, 43.2f);
                 var playerIndexDropdown = playerIndexObject.GetComponent<Dropdown>();
                 playerIndexDropdown.onValueChanged.ClearAll();
                 playerIndexDropdown.options = new List<Dropdown.OptionData>();
@@ -694,7 +700,7 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
-        public GameObject GenerateUIPart(string name, int index = -1)
+        public GameObject GenerateUIPart(string name, Tab tab, RTEditor.EditorProperty.ValueType valueType, int index = -1)
         {
             var gameObject = Creator.NewUIObject(name, content);
             gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 42f);
@@ -709,8 +715,8 @@ namespace BetterLegacy.Editor.Managers
             {
                 Name = name,
                 GameObject = gameObject,
-                Tab = Tab.Global,
-                ValueType = RTEditor.EditorProperty.ValueType.Float,
+                Tab = tab,
+                ValueType = valueType,
                 Index = index,
             });
 
@@ -817,6 +823,49 @@ namespace BetterLegacy.Editor.Managers
                     continue;
                 }
 
+                if (ui.Name == "Custom Objects")
+                {
+                    var button = ui.GameObject.GetComponent<Button>();
+                    button.onClick.ClearAll();
+                    button.onClick.AddListener(delegate ()
+                    {
+                        EditorManager.inst.ShowDialog("Player Models Popup");
+                        StartCoroutine(RefreshCustomObjects());
+                    });
+
+                    continue;
+                }
+
+                if (ui.Tab == Tab.Custom)
+                {
+                    var customActive = active && !string.IsNullOrEmpty(CustomObjectID) && currentModel.customObjects.ContainsKey(CustomObjectID);
+                    ui.GameObject?.SetActive(customActive);
+                    if (!customActive)
+                        continue;
+
+                    var customObject = currentModel.customObjects[CustomObjectID];
+
+                    switch (ui.Name)
+                    {
+                        case "ID":
+                            {
+                                var text = ui.GameObject.transform.Find("id").GetComponent<Text>();
+                                text.alignment = TextAnchor.MiddleRight;
+                                text.text = customObject.id + " (Click to copy)";
+                                var button = ui.GameObject.GetComponent<Button>();
+                                button.onClick.ClearAll();
+                                button.onClick.AddListener(delegate ()
+                                {
+                                    LSText.CopyToClipboard(customObject.id);
+                                    EditorManager.inst.DisplayNotification($"Copied ID \"{customObject.id}\" to clipboard!", 2f, EditorManager.NotificationType.Success);
+                                });
+
+                                break;
+                            }
+                    }
+                    continue;
+                }
+
                 try
                 {
                     var value = PlayerManager.PlayerModels[PlayerManager.PlayerModelsIndex[Mathf.Clamp(playerModelIndex, 0, 3)]][ui.Index];
@@ -837,7 +886,7 @@ namespace BetterLegacy.Editor.Managers
 
                         continue;
                     }
-
+                    
                     switch (ui.ValueType)
                     {
                         case RTEditor.EditorProperty.ValueType.Bool:
@@ -992,11 +1041,6 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
-            if (CurrentTab == Tab.Global)
-            {
-                // handle global functions here
-            }
-
             yield break;
         }
 
@@ -1031,6 +1075,62 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplySelectable(modelButton, ThemeGroup.List_Button_1);
                 EditorThemeManager.ApplyGraphic(image, ThemeGroup.Light_Text);
                 EditorThemeManager.ApplyLightText(text);
+
+                num++;
+            }
+
+            yield break;
+        }
+
+        public IEnumerator RefreshCustomObjects()
+        {
+            LSHelpers.DeleteChildren(ModelsPopup.Content);
+
+            var currentIndex = PlayerManager.GetPlayerModelIndex(playerModelIndex);
+            var currentModel = PlayerManager.PlayerModels[currentIndex];
+
+            var isDefault = PlayerModel.DefaultModels.Any(x => currentModel.basePart.id == x.basePart.id);
+
+            if (isDefault)
+                yield break;
+
+            var createNew = PrefabEditor.inst.CreatePrefab.Duplicate(ModelsPopup.Content, "Create");
+            var createNewButton = createNew.GetComponent<Button>();
+            createNewButton.onClick.ClearAll();
+            createNewButton.onClick.AddListener(delegate ()
+            {
+                var customObject = new PlayerModel.CustomObject(currentModel);
+                var id = LSText.randomNumString(16);
+                customObject.id = id;
+                currentModel.customObjects.Add(id, customObject);
+
+                CustomObjectID = id;
+
+                StartCoroutine(RefreshCustomObjects());
+                StartCoroutine(RefreshEditor());
+            });
+
+            var createNewText = createNew.transform.GetChild(0).GetComponent<Text>();
+            createNewText.text = "Create custom object";
+
+            EditorThemeManager.AddGraphic(createNewButton.image, ThemeGroup.Add, true);
+            EditorThemeManager.AddGraphic(createNewText, ThemeGroup.Add_Text);
+
+            int num = 0;
+            foreach (var customObject in currentModel.customObjects)
+            {
+                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(ModelsPopup.Content, customObject.Value.name);
+                var text = gameObject.transform.GetChild(0).GetComponent<Text>();
+                text.text = customObject.Value.name;
+
+                var button = gameObject.GetComponent<Button>();
+                button.onClick.ClearAll();
+                button.onClick.AddListener(delegate ()
+                {
+                    CustomObjectID = customObject.Value.id;
+                    StartCoroutine(RefreshEditor());
+                    EditorManager.inst.HideDialog("Player Models Popup");
+                });
 
                 num++;
             }
