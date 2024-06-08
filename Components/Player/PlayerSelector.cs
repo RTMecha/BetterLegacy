@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using BetterLegacy.Editor.Managers;
+using UnityEngine;
 
 namespace BetterLegacy.Components.Player
 {
@@ -14,9 +15,8 @@ namespace BetterLegacy.Components.Player
 
         void OnMouseDown()
         {
-            var playerEditor = GameObject.Find("PlayerEditorManager").GetComponentByName("CreativePlayersEditor");
-
-            playerEditor.GetType().GetMethod("OpenDialog").Invoke(playerEditor, new object[] { });
+            EditorManager.inst.ShowDialog("Player Editor New");
+            StartCoroutine(PlayerEditor.inst.RefreshEditor());
         }
     }
 }
