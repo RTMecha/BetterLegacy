@@ -287,7 +287,7 @@ namespace BetterLegacy
 
         public class User
         {
-            public User(string _sprName, string _sprID, Universe _universe)
+            public User(string sprName, string sprID, Universe universe)
             {
                 this.sprName = sprName;
                 this.sprID = sprID;
