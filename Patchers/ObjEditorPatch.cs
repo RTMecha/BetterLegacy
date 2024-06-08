@@ -49,53 +49,28 @@ namespace BetterLegacy.Patchers
 
                 CoreHelper.LogInit(__instance.className);
 
-                __instance.timelineKeyframes.Add(new List<GameObject>());
-                __instance.timelineKeyframes.Add(new List<GameObject>());
-                __instance.timelineKeyframes.Add(new List<GameObject>());
-                __instance.timelineKeyframes.Add(new List<GameObject>());
-
-                var beginDragTrigger = new EventTrigger.Entry();
-                beginDragTrigger.eventID = EventTriggerType.BeginDrag;
-                beginDragTrigger.callback.AddListener(delegate (BaseEventData eventData)
+                var beginDragTrigger = TriggerHelper.CreateEntry(EventTriggerType.BeginDrag, delegate (BaseEventData eventData)
                 {
                     var pointerEventData = (PointerEventData)eventData;
                     __instance.SelectionBoxImage.gameObject.SetActive(true);
                     __instance.DragStartPos = pointerEventData.position * EditorManager.inst.ScreenScaleInverse;
-                    __instance.SelectionRect = default(Rect);
+                    __instance.SelectionRect = default;
                 });
 
-                var dragTrigger = new EventTrigger.Entry();
-                dragTrigger.eventID = EventTriggerType.Drag;
-                dragTrigger.callback.AddListener(delegate (BaseEventData eventData)
+                var dragTrigger = TriggerHelper.CreateEntry(EventTriggerType.Drag, delegate (BaseEventData eventData)
                 {
-                    Vector3 vector = ((PointerEventData)eventData).position * EditorManager.inst.ScreenScaleInverse;
-                    if (vector.x < __instance.DragStartPos.x)
-                    {
-                        __instance.SelectionRect.xMin = vector.x;
-                        __instance.SelectionRect.xMax = __instance.DragStartPos.x;
-                    }
-                    else
-                    {
-                        __instance.SelectionRect.xMin = __instance.DragStartPos.x;
-                        __instance.SelectionRect.xMax = vector.x;
-                    }
-                    if (vector.y < __instance.DragStartPos.y)
-                    {
-                        __instance.SelectionRect.yMin = vector.y;
-                        __instance.SelectionRect.yMax = __instance.DragStartPos.y;
-                    }
-                    else
-                    {
-                        __instance.SelectionRect.yMin = __instance.DragStartPos.y;
-                        __instance.SelectionRect.yMax = vector.y;
-                    }
+                    var vector = ((PointerEventData)eventData).position * EditorManager.inst.ScreenScaleInverse;
+
+                    __instance.SelectionRect.xMin = vector.x < __instance.DragStartPos.x ? vector.x : __instance.DragStartPos.x;
+                    __instance.SelectionRect.xMax = vector.x < __instance.DragStartPos.x ? __instance.DragStartPos.x : vector.x;
+                    __instance.SelectionRect.yMin = vector.y < __instance.DragStartPos.y ? vector.y : __instance.DragStartPos.y;
+                    __instance.SelectionRect.yMax = vector.y < __instance.DragStartPos.y ? __instance.DragStartPos.y : vector.y;
+
                     __instance.SelectionBoxImage.rectTransform.offsetMin = __instance.SelectionRect.min;
                     __instance.SelectionBoxImage.rectTransform.offsetMax = __instance.SelectionRect.max;
                 });
 
-                var endDragTrigger = new EventTrigger.Entry();
-                endDragTrigger.eventID = EventTriggerType.EndDrag;
-                endDragTrigger.callback.AddListener(delegate (BaseEventData eventData)
+                var endDragTrigger = TriggerHelper.CreateEntry(EventTriggerType.EndDrag, delegate (BaseEventData eventData)
                 {
                     var pointerEventData = (PointerEventData)eventData;
                     __instance.DragEndPos = pointerEventData.position;
@@ -103,13 +78,9 @@ namespace BetterLegacy.Patchers
 
                     CoreHelper.StartCoroutine(ObjectEditor.inst.GroupSelectKeyframes(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)));
                 });
+
                 foreach (var gameObject in __instance.SelectionArea)
-                {
-                    var eventTr = gameObject.GetComponent<EventTrigger>();
-                    eventTr.triggers.Add(beginDragTrigger);
-                    eventTr.triggers.Add(dragTrigger);
-                    eventTr.triggers.Add(endDragTrigger);
-                }
+                    TriggerHelper.AddEventTriggerParams(gameObject, beginDragTrigger, dragTrigger, endDragTrigger);
             }
 
             var objectView = ObjEditor.inst.ObjectView.transform;
