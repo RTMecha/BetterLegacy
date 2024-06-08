@@ -4437,12 +4437,18 @@ namespace BetterLegacy.Editor.Managers
 
             // Optimization
             {
-                labelGenerator("Auto Optimize");
+                labelGenerator("Auto optimize objects");
 
-                foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                buttonGenerator("optimize", "Optimize", parent, delegate ()
                 {
-                    beatmapObject.SetAutokillToScale(DataManager.inst.gameData.beatmapObjects);
-                }
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                    {
+                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                        beatmapObject.SetAutokillToScale(DataManager.inst.gameData.beatmapObjects);
+                        Updater.UpdateProcessor(beatmapObject, "Autokill");
+                        ObjectEditor.inst.RenderTimelineObjectPosition(timelineObject);
+                    }
+                });
             }
 
             // Song Time Autokill
