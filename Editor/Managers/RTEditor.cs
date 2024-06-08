@@ -2067,7 +2067,7 @@ namespace BetterLegacy.Editor.Managers
             popup.transform.Find("Scrollbar").AsRT().sizeDelta = new Vector2(32f, inSize.y);
 
             popupInstance.Close = popupInstance.TopPanel.Find("x").GetComponent<Button>();
-            popupInstance.Close.onClick.RemoveAllListeners();
+            popupInstance.Close.onClick.ClearAll();
             popupInstance.Close.onClick.AddListener(delegate ()
             {
                 EditorManager.inst.HideDialog(name);
