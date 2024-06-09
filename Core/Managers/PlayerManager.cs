@@ -598,7 +598,7 @@ namespace BetterLegacy.Core.Managers
             if (InputDataManager.inst)
                 foreach (var player in Players.Where(x => x.Player).Select(x => x.Player))
                 {
-                    if (EditorManager.inst != null || DataManager.inst.GetSettingEnum("ArcadeDifficulty", 1) == 0)
+                    if (CoreHelper.InEditor || IsZenMode)
                         player.UpdatePlayer();
                 }
         }
