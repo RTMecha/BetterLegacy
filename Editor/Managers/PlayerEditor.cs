@@ -580,14 +580,216 @@ namespace BetterLegacy.Editor.Managers
                     UIManager.SetRectTransform(id.transform.AsRT(), new Vector2(-32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(750f, 32f));
                     var button = gameObject.AddComponent<Button>();
                 }
+
                 // Name
+                {
+                    var gameObject = GenerateUIPart("Name", Tab.Custom, RTEditor.EditorProperty.ValueType.String);
+
+                    var input = EditorPrefabHolder.Instance.NumberInputField.transform.Find("input").gameObject.Duplicate(gameObject.transform, "input");
+                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(260f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(200f, 32f));
+
+                    EditorThemeManager.AddInputField(input.GetComponent<InputField>());
+                }
+
+                // Position
+                {
+                    var gameObject = GenerateUIPart("Position", Tab.Custom, RTEditor.EditorProperty.ValueType.Vector2);
+
+                    var inputX = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "x");
+                    UIManager.SetRectTransform(inputX.transform.AsRT(), new Vector2(-52f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+
+                    var inputXStorage = inputX.GetComponent<InputFieldStorage>();
+
+                    Destroy(inputXStorage.middleButton.gameObject);
+                    EditorThemeManager.AddInputField(inputXStorage.inputField);
+                    EditorThemeManager.AddSelectable(inputXStorage.leftButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputXStorage.rightButton, ThemeGroup.Function_2, false);
+
+                    Destroy(inputXStorage.leftGreaterButton.gameObject);
+                    Destroy(inputXStorage.rightGreaterButton.gameObject);
+
+                    var inputY = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "y");
+                    UIManager.SetRectTransform(inputY.transform.AsRT(), new Vector2(162f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+
+                    var inputYStorage = inputY.GetComponent<InputFieldStorage>();
+
+                    Destroy(inputYStorage.middleButton.gameObject);
+                    EditorThemeManager.AddInputField(inputYStorage.inputField);
+                    EditorThemeManager.AddSelectable(inputYStorage.leftButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputYStorage.rightButton, ThemeGroup.Function_2, false);
+
+                    Destroy(inputYStorage.leftGreaterButton.gameObject);
+                    Destroy(inputYStorage.rightGreaterButton.gameObject);
+                }
+
+                // Scale
+                {
+                    var gameObject = GenerateUIPart("Scale", Tab.Custom, RTEditor.EditorProperty.ValueType.Vector2);
+
+                    var inputX = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "x");
+                    UIManager.SetRectTransform(inputX.transform.AsRT(), new Vector2(-52f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+
+                    var inputXStorage = inputX.GetComponent<InputFieldStorage>();
+
+                    Destroy(inputXStorage.middleButton.gameObject);
+                    EditorThemeManager.AddInputField(inputXStorage.inputField);
+                    EditorThemeManager.AddSelectable(inputXStorage.leftButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputXStorage.rightButton, ThemeGroup.Function_2, false);
+
+                    Destroy(inputXStorage.leftGreaterButton.gameObject);
+                    Destroy(inputXStorage.rightGreaterButton.gameObject);
+
+                    var inputY = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "y");
+                    UIManager.SetRectTransform(inputY.transform.AsRT(), new Vector2(162f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+
+                    var inputYStorage = inputY.GetComponent<InputFieldStorage>();
+
+                    Destroy(inputYStorage.middleButton.gameObject);
+                    EditorThemeManager.AddInputField(inputYStorage.inputField);
+                    EditorThemeManager.AddSelectable(inputYStorage.leftButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputYStorage.rightButton, ThemeGroup.Function_2, false);
+
+                    Destroy(inputYStorage.leftGreaterButton.gameObject);
+                    Destroy(inputYStorage.rightGreaterButton.gameObject);
+                }
+
+                // Rotation
+                {
+                    var gameObject = GenerateUIPart("Rotation", Tab.Custom, RTEditor.EditorProperty.ValueType.Float);
+
+                    var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
+                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+
+                    var inputFieldStorage = input.GetComponent<InputFieldStorage>();
+
+                    Destroy(inputFieldStorage.middleButton.gameObject);
+                    EditorThemeManager.AddInputField(inputFieldStorage.inputField);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.leftGreaterButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.leftButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.rightButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.rightGreaterButton, ThemeGroup.Function_2, false);
+                }
+
                 // Depth
+                {
+                    var gameObject = GenerateUIPart("Depth", Tab.Custom, RTEditor.EditorProperty.ValueType.Float);
+
+                    var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
+                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+
+                    var inputFieldStorage = input.GetComponent<InputFieldStorage>();
+
+                    Destroy(inputFieldStorage.middleButton.gameObject);
+                    EditorThemeManager.AddInputField(inputFieldStorage.inputField);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.leftGreaterButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.leftButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.rightButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.rightGreaterButton, ThemeGroup.Function_2, false);
+                }
+
+                // Color
+                {
+                    var gameObject = GenerateUIPart("Color", Tab.Custom, RTEditor.EditorProperty.ValueType.Color);
+
+                    var layout = Creator.NewUIObject("colors", gameObject.transform);
+                    layout.transform.AsRT().anchoredPosition = new Vector2(170f, -16f);
+                    layout.transform.AsRT().sizeDelta = new Vector2(400f, 100f);
+                    var layoutGLG = layout.AddComponent<GridLayoutGroup>();
+                    layoutGLG.cellSize = new Vector2(32f, 32f);
+                    layoutGLG.spacing = new Vector2(8f, 8f);
+
+                    gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 162f);
+
+                    for (int j = 0; j < 25; j++)
+                    {
+                        var color = EditorManager.inst.colorGUI.Duplicate(layout.transform, $"{j + 1}");
+                        EditorThemeManager.AddGraphic(color.GetComponent<Image>(), ThemeGroup.Null, true);
+                        EditorThemeManager.AddGraphic(color.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Background_1);
+                    }
+                }
+
+                // Custom Color
+                {
+                    var gameObject = GenerateUIPart("Custom Color", Tab.Custom, RTEditor.EditorProperty.ValueType.String);
+
+                    var input = EditorPrefabHolder.Instance.NumberInputField.transform.Find("input").gameObject.Duplicate(gameObject.transform, "input");
+                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(260f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(200f, 32f));
+
+                    EditorThemeManager.AddInputField(input.GetComponent<InputField>());
+                }
+
+                // Opacity
+                {
+                    var gameObject = GenerateUIPart("Opacity", Tab.Custom, RTEditor.EditorProperty.ValueType.Float);
+
+                    var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
+                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+
+                    var inputFieldStorage = input.GetComponent<InputFieldStorage>();
+
+                    Destroy(inputFieldStorage.middleButton.gameObject);
+                    EditorThemeManager.AddInputField(inputFieldStorage.inputField);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.leftGreaterButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.leftButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.rightButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.rightGreaterButton, ThemeGroup.Function_2, false);
+                }
+
                 // Parent
                 // Position Offset
+                {
+                    var gameObject = GenerateUIPart("Position Offset", Tab.Custom, RTEditor.EditorProperty.ValueType.Float);
+
+                    var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
+                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+
+                    var inputFieldStorage = input.GetComponent<InputFieldStorage>();
+
+                    Destroy(inputFieldStorage.middleButton.gameObject);
+                    EditorThemeManager.AddInputField(inputFieldStorage.inputField);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.leftGreaterButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.leftButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.rightButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.rightGreaterButton, ThemeGroup.Function_2, false);
+                }
+
                 // Scale Offset
+                {
+                    var gameObject = GenerateUIPart("Scale Offset", Tab.Custom, RTEditor.EditorProperty.ValueType.Float);
+
+                    var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
+                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+
+                    var inputFieldStorage = input.GetComponent<InputFieldStorage>();
+
+                    Destroy(inputFieldStorage.middleButton.gameObject);
+                    EditorThemeManager.AddInputField(inputFieldStorage.inputField);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.leftGreaterButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.leftButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.rightButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.rightGreaterButton, ThemeGroup.Function_2, false);
+                }
+
                 // Rotation Offset
+                {
+                    var gameObject = GenerateUIPart("Rotation Offset", Tab.Custom, RTEditor.EditorProperty.ValueType.Float);
+
+                    var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
+                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+
+                    var inputFieldStorage = input.GetComponent<InputFieldStorage>();
+
+                    Destroy(inputFieldStorage.middleButton.gameObject);
+                    EditorThemeManager.AddInputField(inputFieldStorage.inputField);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.leftGreaterButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.leftButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.rightButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.rightGreaterButton, ThemeGroup.Function_2, false);
+                }
+
                 // Scale Parent
                 // Rotation Parent
+                // Shape
                 // Require All
                 // Text
                 // Visibility
@@ -859,6 +1061,134 @@ namespace BetterLegacy.Editor.Managers
                                     LSText.CopyToClipboard(customObject.id);
                                     EditorManager.inst.DisplayNotification($"Copied ID \"{customObject.id}\" to clipboard!", 2f, EditorManager.NotificationType.Success);
                                 });
+
+                                break;
+                            }
+                        case "Name":
+                        case "Custom Color":
+                            {
+                                var inputField = ui.GameObject.transform.Find("input").GetComponent<InputField>();
+                                inputField.onValueChanged.ClearAll();
+                                inputField.text = ui.Name == "Name" ? customObject.name : customObject.customColor;
+                                inputField.onValueChanged.AddListener(delegate (string _val)
+                                {
+                                    if (ui.Name == "Name")
+                                        customObject.name = _val;
+                                    else
+                                        customObject.customColor = _val;
+                                });
+
+                                break;
+                            }
+                        case "Rotation":
+                        case "Depth":
+                        case "Opacity":
+                        case "Position Offset":
+                        case "Scale Offset":
+                        case "Rotation Offset":
+                            {
+
+                                var inputFieldStorage = ui.GameObject.transform.Find("input").GetComponent<InputFieldStorage>();
+                                inputFieldStorage.inputField.onValueChanged.ClearAll();
+                                inputFieldStorage.inputField.text =
+                                    (ui.Name == "Rotation" ? customObject.rotation : ui.Name == "Depth" ? customObject.depth :
+                                    ui.Name == "Opacity" ? customObject.opacity : ui.Name == "Position Offset" ? customObject.positionOffset :
+                                    ui.Name == "Scale Offset" ? customObject.scaleOffset : customObject.rotationOffset).ToString();
+                                inputFieldStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+                                {
+                                    if (float.TryParse(_val, out float result))
+                                    {
+                                        if (ui.Name == "Rotation")
+                                            customObject.rotation = result;
+                                        if (ui.Name == "Depth")
+                                            customObject.depth = result;
+                                        if (ui.Name == "Opacity")
+                                            customObject.opacity = result;
+                                        if (ui.Name == "Position Offset")
+                                            customObject.positionOffset = result;
+                                        if (ui.Name == "Scale Offset")
+                                            customObject.scaleOffset = result;
+                                        if (ui.Name == "Rotation Offset")
+                                            customObject.rotationOffset = result;
+
+                                        PlayerManager.UpdatePlayers();
+                                    }
+                                });
+
+                                TriggerHelper.IncreaseDecreaseButtons(inputFieldStorage);
+                                TriggerHelper.AddEventTriggerParams(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField));
+
+                                break;
+                            }
+                        case "Position":
+                        case "Scale":
+                            {
+                                var isPosition = ui.Name == "Position";
+                                var vector = isPosition ? customObject.position : customObject.scale;
+
+                                var inputXStorage = ui.GameObject.transform.Find("x").GetComponent<InputFieldStorage>();
+                                var inputYStorage = ui.GameObject.transform.Find("y").GetComponent<InputFieldStorage>();
+
+                                inputXStorage.inputField.onValueChanged.ClearAll();
+                                inputXStorage.inputField.text = vector.x.ToString();
+                                inputXStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+                                {
+                                    var vector = ui.Name == "Position" ? customObject.position : customObject.scale;
+
+                                    if (float.TryParse(_val, out float result))
+                                    {
+                                        if (isPosition)
+                                            customObject.position = new Vector2(result, vector.y);
+                                        else
+                                            customObject.scale = new Vector2(result, vector.y);
+                                        
+                                        PlayerManager.UpdatePlayers();
+                                    }
+                                });
+
+                                inputYStorage.inputField.onValueChanged.ClearAll();
+                                inputYStorage.inputField.text = vector.y.ToString();
+                                inputYStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+                                {
+                                    var vector = ui.Name == "Position" ? customObject.position : customObject.scale;
+
+                                    if (float.TryParse(_val, out float result))
+                                    {
+                                        if (isPosition)
+                                            customObject.position = new Vector2(vector.x, result);
+                                        else
+                                            customObject.scale = new Vector2(vector.x, result);
+
+                                        PlayerManager.UpdatePlayers();
+                                    }
+                                });
+
+                                TriggerHelper.AddEventTriggerParams(inputXStorage.gameObject, TriggerHelper.ScrollDelta(inputXStorage.inputField));
+                                TriggerHelper.AddEventTriggerParams(inputYStorage.gameObject, TriggerHelper.ScrollDelta(inputYStorage.inputField));
+                                TriggerHelper.IncreaseDecreaseButtons(inputXStorage);
+                                TriggerHelper.IncreaseDecreaseButtons(inputYStorage);
+
+                                break;
+                            }
+                        case "Color":
+                            {
+                                var colors = ui.GameObject.transform.Find("colors");
+
+                                for (int j = 0; j < colors.childCount; j++)
+                                {
+                                    var colorIndex = j;
+                                    var color = colors.GetChild(j);
+                                    color.GetChild(0).gameObject.SetActive(customObject.color == j);
+                                    color.GetComponent<Image>().color = CoreHelper.GetPlayerColor(playerModelIndex, j, 1f, "FFFFFF");
+
+                                    var button = color.GetComponent<Button>();
+                                    button.onClick.ClearAll();
+                                    button.onClick.AddListener(delegate ()
+                                    {
+                                        customObject.color = colorIndex;
+                                        StartCoroutine(RefreshEditor());
+                                    });
+                                }
 
                                 break;
                             }
