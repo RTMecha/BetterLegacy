@@ -1,3 +1,14 @@
+1.1.0 > [Jun 12, 2024]
+- Added data for timeline object indexing. This will eventually make each timeline object render above or below other objects depending on what you set the index to.
+- Added player hit cooldown. (This currently does not affect the hit cooldown animation)
+- Levels load a lot faster now.
+- Started working on a custom achievement system.
+- Added setCollision and setCollisionOther modifiers. These can enable / disable the collision of an object or multiple.
+- Added game modes! This currently includes two modes: Regular and Platformer. Platformer forces the player to have proper gravity and the only way they can navigate is left / right and jumping. The player can jump multiple times before they can boost.
+- Player models now have a can boost value.
+- Reworked the Player Editor.
+- Fixed some config values not saving correctly.
+- Added a config setting for automatically attempting to parse level data in a more optimized way. Objects alive after they've been scaled down to zero by zero will have their autokill times set to song time.
 1.0.4 > [May 31, 2024]
 - Added searching to config manager.
 - Fixed some values not being limited in the configs.
