@@ -195,13 +195,6 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.LogError($"PlayerEditor failed to init.\nException: {ex}");
             }
 
-            // Player Editor
-            {
-                var gameObject = new GameObject("PlayerEditorManager");
-                gameObject.transform.SetParent(GameObject.Find("Editor Systems").transform);
-                gameObject.AddComponent<CreativePlayersEditor>();
-            }
-
             // Object Modifiers Editor
             {
                 var gameObject = new GameObject("ObjectModifiersEditor");
