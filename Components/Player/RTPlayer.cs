@@ -7,6 +7,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Managers.Networking;
 using DG.Tweening;
 using LSFunctions;
 using System;
@@ -2113,7 +2114,7 @@ namespace BetterLegacy.Components.Player
                     {
                         var customObj = obj.Value;
 
-                        if (((Shape)customObj.values["Shape"]).type != 4 && ((Shape)customObj.values["Shape"]).type != 6)
+                        if (((Shape)customObj.values["Shape"]).type != 9)
                         {
                             var shape = (Shape)customObj.values["Shape"];
                             var pos = (Vector2)customObj.values["Position"];
@@ -2125,8 +2126,7 @@ namespace BetterLegacy.Components.Player
                             int s = Mathf.Clamp(shape.type, 0, ObjectManager.inst.objectPrefabs.Count - 1);
                             int so = Mathf.Clamp(shape.option, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
 
-                            customObj.gameObject = Instantiate(ObjectManager.inst.objectPrefabs[s].options[so]);
-                            customObj.gameObject.transform.SetParent(transform);
+                            customObj.gameObject = ObjectManager.inst.objectPrefabs[s].options[so].Duplicate(transform);
                             customObj.gameObject.transform.localScale = Vector3.one;
                             customObj.gameObject.transform.localRotation = Quaternion.identity;
 
@@ -2178,14 +2178,44 @@ namespace BetterLegacy.Components.Player
                                     }
                             }
 
-                            customObj.gameObject.transform.GetChild(0).localPosition = new Vector3(pos.x, pos.y, depth);
-                            customObj.gameObject.transform.GetChild(0).localScale = new Vector3(sca.x, sca.y, 1f);
-                            customObj.gameObject.transform.GetChild(0).localEulerAngles = new Vector3(0f, 0f, rot);
+                            var child = customObj.gameObject.transform.GetChild(0);
+                            child.localPosition = new Vector3(pos.x, pos.y, depth);
+                            child.localScale = new Vector3(sca.x, sca.y, 1f);
+                            child.localEulerAngles = new Vector3(0f, 0f, rot);
 
                             customObj.gameObject.tag = "Helper";
-                            customObj.gameObject.transform.GetChild(0).tag = "Helper";
+                            child.tag = "Helper";
 
-                            customObj.values["MeshRenderer"] = customObj.gameObject.GetComponentInChildren<MeshRenderer>();
+                            var renderer = customObj.gameObject.GetComponentInChildren<Renderer>();
+                            renderer.enabled = true;
+                            customObj.values["Renderer"] = renderer;
+
+                            Destroy(child.GetComponent<Collider2D>());
+
+                            if (s == 4 && child.gameObject.TryGetComponent(out TextMeshPro tmp))
+                            {
+                                tmp.text = customObj.customObject.text;
+                                customObj.values.AddSet("TextMeshPro", tmp);
+                            }
+
+                            if (s == 6 && renderer is SpriteRenderer spriteRenderer)
+                            {
+                                var path = RTFile.BasePath + customObj.customObject.text;
+
+                                if (!RTFile.FileExists(path))
+                                {
+                                    spriteRenderer.sprite = ArcadeManager.inst.defaultImage;
+                                    continue;
+                                }
+
+                                CoreHelper.StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{path}", delegate (Texture2D texture2D)
+                                {
+                                    if (!spriteRenderer)
+                                        return;
+
+                                    spriteRenderer.sprite = SpriteManager.CreateSprite(texture2D);
+                                }));
+                            }
                         }
                     }
                 }
@@ -2256,7 +2286,7 @@ namespace BetterLegacy.Components.Player
             obj.values.Add("Parent Scale Active", false);
             obj.values.Add("Parent Rotation Active", true);
             obj.values.Add("Depth", 0f);
-            obj.values.Add("MeshRenderer", null);
+            obj.values.Add("Renderer", null);
             var id = LSText.randomNumString(16);
             obj.values.Add("ID", id);
 
@@ -2270,13 +2300,18 @@ namespace BetterLegacy.Components.Player
                 {
                     UpdateVisibility(obj);
 
+                    if (!obj.gameObject.activeSelf)
+                        continue;
+
                     int col = (int)obj.values["Color"];
                     string hex = (string)obj.values["Custom Color"];
                     float alpha = (float)obj.values["Opacity"];
-                    if (((MeshRenderer)obj.values["MeshRenderer"]) != null && obj.gameObject.activeSelf)
-                    {
-                        ((MeshRenderer)obj.values["MeshRenderer"]).material.color = GetColor(col, alpha, hex);
-                    }
+
+
+                    if (obj.values.ContainsKey("TextMeshPro") && obj.values["TextMeshPro"] is TextMeshPro tmp)
+                        tmp.color = GetColor(col, alpha, hex);
+                    else if (obj.values["Renderer"] is Renderer renderer)
+                        renderer.material.color = GetColor(col, alpha, hex);
                 }
         }
 
