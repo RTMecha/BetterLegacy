@@ -152,10 +152,10 @@ namespace BetterLegacy.Editor.Managers
 
             PlayerSprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_player.png");
 
-            EditorHelper.AddEditorDialog("Player Editor New", dialog);
-            EditorHelper.AddEditorDropdown("Player Editor New", "", "Edit", PlayerSprite, delegate ()
+            EditorHelper.AddEditorDialog("Player Editor", dialog);
+            EditorHelper.AddEditorDropdown("Player Editor", "", "Edit", PlayerSprite, delegate ()
             {
-                EditorManager.inst.ShowDialog("Player Editor New");
+                EditorManager.inst.ShowDialog("Player Editor");
                 StartCoroutine(RefreshEditor());
             });
 
@@ -565,7 +565,7 @@ namespace BetterLegacy.Editor.Managers
                     EditorThemeManager.AddToggle(toggle);
                 }
 
-                if (name == "Shape")
+                if (name.Contains("Shape"))
                 {
                     gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 92f);
 
@@ -1652,6 +1652,7 @@ namespace BetterLegacy.Editor.Managers
                                 {
                                     if (float.TryParse(_val, out float result))
                                     {
+                                        var value = PlayerManager.PlayerModels[PlayerManager.PlayerModelsIndex[Mathf.Clamp(playerModelIndex, 0, 3)]][ui.Index];
                                         currentModel[key] = new Vector2(result, ((Vector2)value).y);
                                         PlayerManager.UpdatePlayers();
                                     }
@@ -1663,10 +1664,16 @@ namespace BetterLegacy.Editor.Managers
                                 {
                                     if (float.TryParse(_val, out float result))
                                     {
+                                        var value = PlayerManager.PlayerModels[PlayerManager.PlayerModelsIndex[Mathf.Clamp(playerModelIndex, 0, 3)]][ui.Index];
                                         currentModel[key] = new Vector2(((Vector2)value).x, result);
                                         PlayerManager.UpdatePlayers();
                                     }
                                 });
+
+                                TriggerHelper.AddEventTriggerParams(inputXStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputXStorage.inputField));
+                                TriggerHelper.AddEventTriggerParams(inputYStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputYStorage.inputField));
+                                TriggerHelper.IncreaseDecreaseButtons(inputXStorage);
+                                TriggerHelper.IncreaseDecreaseButtons(inputYStorage);
 
                                 break;
                             }
