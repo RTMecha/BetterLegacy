@@ -1831,7 +1831,15 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderShape(PlayerEditorUI ui)
         {
-            var generic = (PlayerModel.Generic)ui.Reference;
+            PlayerModel.Generic generic = null;
+            if (ui.Reference is PlayerModel.Generic genericAssign)
+                generic = genericAssign;
+            PlayerModel.Pulse pulse = null;
+            if (ui.Reference is PlayerModel.Pulse pulseAssign)
+                pulse = pulseAssign;
+            PlayerModel.Bullet bullet = null;
+            if (ui.Reference is PlayerModel.Bullet bulletAssign)
+                bullet = bulletAssign;
 
             var shape = ui.GameObject.transform.Find("shape");
             var shapeSettings = ui.GameObject.transform.Find("shapesettings");
@@ -1970,16 +1978,39 @@ namespace BetterLegacy.Editor.Managers
 
             LSHelpers.SetActiveChildren(shapeSettings, false);
 
-            if (generic.shape.type >= shapeSettings.childCount)
+            int type = 0;
+            int option = 0;
+            if (generic != null)
+            {
+                type = generic.shape.Type;
+                option = generic.shape.Option;
+            }
+            if (pulse != null)
+            {
+                type = pulse.shape.Type;
+                option = pulse.shape.Option;
+            }
+            if (bullet != null)
+            {
+                type = bullet.shape.Type;
+                option = bullet.shape.Option;
+            }
+
+            if (type >= shapeSettings.childCount)
             {
                 CoreHelper.Log($"Somehow, the object ended up being at a higher shape than normal.");
-                generic.shape = ShapeManager.inst.Shapes2D[shapeSettings.childCount - 1][0];
+                if (generic != null)
+                    generic.shape = ShapeManager.inst.Shapes2D[shapeSettings.childCount - 1][0];
+                if (pulse != null)
+                    pulse.shape = ShapeManager.inst.Shapes2D[shapeSettings.childCount - 1][0];
+                if (bullet != null)
+                    bullet.shape = ShapeManager.inst.Shapes2D[shapeSettings.childCount - 1][0];
 
                 PlayerManager.UpdatePlayers();
                 RenderShape(ui);
             }
 
-            if (generic.shape.type == 4)
+            if (type == 4)
             {
                 shapeSettings.AsRT().sizeDelta = new Vector2(351f, 74f);
                 var child = shapeSettings.GetChild(4);
@@ -1994,14 +2025,14 @@ namespace BetterLegacy.Editor.Managers
                 shapeSettings.GetChild(4).AsRT().sizeDelta = new Vector2(351f, 32f);
             }
 
-            shapeSettings.GetChild(generic.shape.type).gameObject.SetActive(true);
+            shapeSettings.GetChild(type).gameObject.SetActive(true);
 
             int num = 0;
             foreach (var toggle in ui.shapeToggles)
             {
                 int index = num;
                 toggle.onValueChanged.ClearAll();
-                toggle.isOn = generic.shape.Type == index;
+                toggle.isOn = type == index;
                 toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < UnmoddedShapeCounts.Length);
 
                 if (RTEditor.ShowModdedUI || index < UnmoddedShapeCounts.Length)
@@ -2010,7 +2041,12 @@ namespace BetterLegacy.Editor.Managers
                         if (_val)
                         {
                             CoreHelper.Log($"Set shape to {index}");
-                            generic.shape = ShapeManager.inst.Shapes2D[index][0];
+                            if (generic != null)
+                                generic.shape = ShapeManager.inst.Shapes2D[index][0];
+                            if (pulse != null)
+                                pulse.shape = ShapeManager.inst.Shapes2D[index][0];
+                            if (bullet != null)
+                                bullet.shape = ShapeManager.inst.Shapes2D[index][0];
 
                             PlayerManager.UpdatePlayers();
                             RenderShape(ui);
@@ -2020,23 +2056,28 @@ namespace BetterLegacy.Editor.Managers
                 num++;
             }
 
-            if (generic.shape.type != 4 && generic.shape.type != 6)
+            if (type != 4 && type != 6)
             {
                 num = 0;
-                foreach (var toggle in ui.shapeOptionToggles[generic.shape.type])
+                foreach (var toggle in ui.shapeOptionToggles[type])
                 {
                     int index = num;
                     toggle.onValueChanged.ClearAll();
-                    toggle.isOn = generic.shape.Option == index;
-                    toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < UnmoddedShapeCounts[generic.shape.type]);
+                    toggle.isOn = option == index;
+                    toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < UnmoddedShapeCounts[type]);
 
-                    if (RTEditor.ShowModdedUI || index < UnmoddedShapeCounts[generic.shape.type])
+                    if (RTEditor.ShowModdedUI || index < UnmoddedShapeCounts[type])
                         toggle.onValueChanged.AddListener(delegate (bool _val)
                         {
                             if (_val)
                             {
                                 CoreHelper.Log($"Set shape option to {index}");
-                                generic.shape = ShapeManager.inst.Shapes2D[generic.shape.type][index];
+                                if (generic != null)
+                                    generic.shape = ShapeManager.inst.Shapes2D[type][index];
+                                if (pulse != null)
+                                    pulse.shape = ShapeManager.inst.Shapes2D[type][index];
+                                if (bullet != null)
+                                    bullet.shape = ShapeManager.inst.Shapes2D[type][index];
 
                                 PlayerManager.UpdatePlayers();
                                 RenderShape(ui);
@@ -2078,7 +2119,12 @@ namespace BetterLegacy.Editor.Managers
             else
             {
                 CoreHelper.Log($"Player shape cannot be text nor image.");
-                generic.shape = ShapeManager.inst.Shapes2D[0][0];
+                if (generic != null)
+                    generic.shape = ShapeManager.inst.Shapes2D[0][0];
+                if (bullet != null)
+                    bullet.shape = ShapeManager.inst.Shapes2D[0][0];
+                if (pulse != null)
+                    pulse.shape = ShapeManager.inst.Shapes2D[0][0];
 
                 PlayerManager.UpdatePlayers();
                 RenderShape(ui);
@@ -2151,6 +2197,7 @@ namespace BetterLegacy.Editor.Managers
         public Tab CurrentTab { get; set; } = Tab.Base;
         public string searchTerm;
         public List<PlayerEditorUI> editorUIs = new List<PlayerEditorUI>();
+        public List<PlayerEditorUI> EditorUIsActive => editorUIs.Where(x => x.GameObject.activeSelf).ToList();
 
         public class PlayerEditorUI
         {
@@ -2165,6 +2212,8 @@ namespace BetterLegacy.Editor.Managers
             public bool updatedShapes = false;
             public List<Toggle> shapeToggles = new List<Toggle>();
             public List<List<Toggle>> shapeOptionToggles = new List<List<Toggle>>();
+
+            public override string ToString() => $"{Tab} - {Name}";
         }
     }
 }

@@ -186,14 +186,7 @@ namespace BetterLegacy.Editor.Managers
             CreateScreenshotsView();
 
             // Manager initializations
-            try
-            {
-                PlayerEditor.Init();
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogError($"PlayerEditor failed to init.\nException: {ex}");
-            }
+            PlayerEditor.Init();
 
             // Object Modifiers Editor
             {
