@@ -416,10 +416,16 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
-            StartCoroutine(ProjectData.Writer.SaveData(save, combinedGameData, delegate ()
-            {
-                EditorManager.inst.DisplayNotification($"Combined {FontManager.TextTranslater.ArrayToString(list.ToArray())} to {savePath}!", 3f, EditorManager.NotificationType.Success);
-            }));
+            if (EditorConfig.Instance.CombinerOutputFormat.Value == FileType.LS)
+                StartCoroutine(ProjectData.Writer.SaveData(save, combinedGameData, delegate ()
+                {
+                    EditorManager.inst.DisplayNotification($"Combined {FontManager.TextTranslater.ArrayToString(list.ToArray())} to {savePath}!", 3f, EditorManager.NotificationType.Success);
+                }));
+            else
+                StartCoroutine(ProjectData.Writer.SaveDataVG(save.Replace(".lsb", ".vgd"), combinedGameData, delegate ()
+                {
+                    EditorManager.inst.DisplayNotification($"Combined {FontManager.TextTranslater.ArrayToString(list.ToArray())} to {savePath}!", 3f, EditorManager.NotificationType.Success);
+                }));
         }
     }
 }

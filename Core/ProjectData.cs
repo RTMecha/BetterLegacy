@@ -1,6 +1,7 @@
 ﻿using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using LSFunctions;
 using SimpleJSON;
 using System;
 using System.Collections;
@@ -393,6 +394,264 @@ namespace BetterLegacy.Core
                                 jn["events"][GameData.EventTypes[i]][j] = ((EventKeyframe)_data.eventObjects.allEvents[i][j]).ToJSON();
                             }
                         }
+                    }
+                }
+
+                CoreHelper.Log($"Saving Entire Beatmap to {_path}");
+                RTFile.WriteToFile(_path, jn.ToString());
+
+                onSave?.Invoke();
+
+                yield break;
+            }
+
+            public static IEnumerator SaveDataVG(string _path, GameData _data, Action onSave = null)
+            {
+                var jn = JSON.Parse("{}");
+
+                jn["editor"]["bpm"]["snap"]["objects"] = true;
+                jn["editor"]["bpm"]["bpm_value"] = 140f;
+                jn["editor"]["bpm"]["bpm_offset"] = 0f;
+                jn["editor"]["bpm"]["BPMValue"] = 140f;
+                jn["editor"]["grid"]["scale"]["x"] = 2f;
+                jn["editor"]["grid"]["scale"]["y"] = 2f;
+                jn["editor"]["general"]["complexity"] = 0;
+                jn["editor"]["general"]["theme"] = 0;
+                jn["editor"]["general"]["test_mode"] = 0;
+                jn["editor"]["preview"]["cam_zoom_offset"] = 0f;
+                jn["editor"]["preview"]["cam_zoom_offset_color"] = 0;
+
+                for (int i = 0; i < 6; i++)
+                    jn["editor_prefab_spawn"][i] = new JSONObject();
+
+                for (int i = 1; i < 6; i++)
+                {
+                    jn["parallax_settings"]["l"][i - 1]["d"] = 100 * i;
+                    jn["parallax_settings"]["l"][i - 1]["c"] = 1 * i;
+                }
+
+                for (int i = 0; i < _data.levelModifiers.Count; i++)
+                {
+                    var levelModifier = _data.levelModifiers[i];
+
+                    var triggerIndex = GameData.LevelModifier.DefaultTriggers.ToList().FindIndex(x => x.commands[0] == levelModifier.TriggerModifier.commands[0]);
+                    var actionIndex = GameData.LevelModifier.DefaultActions.ToList().FindIndex(x => x.commands[0] == levelModifier.ActionModifier.commands[0]);
+
+                    if (triggerIndex < 0 || actionIndex < 0)
+                        continue;
+
+                    jn["triggers"][i]["event_trigger"] = triggerIndex;
+                    jn["triggers"][i]["event_trigger_time"]["x"] = Parser.TryParse(levelModifier.TriggerModifier.commands[1], 0f);
+                    jn["triggers"][i]["event_trigger_time"]["y"] = Parser.TryParse(levelModifier.TriggerModifier.commands[2], 0f);
+                    jn["triggers"][i]["event_retrigger"] = levelModifier.retriggerAmount;
+
+                    jn["triggers"][i]["event_type"] = actionIndex;
+
+                    for (int j = 1; j < levelModifier.ActionModifier.commands.Count; j++)
+                        jn["triggers"][i]["event_data"][j - 1] = levelModifier.ActionModifier.commands[j];
+                }
+
+                for (int i = 0; i < _data.beatmapData.checkpoints.Count; i++)
+                {
+                    var checkpoint = _data.beatmapData.checkpoints[i];
+                    jn["checkpoints"][i]["n"] = checkpoint.name;
+                    jn["checkpoints"][i]["t"] = checkpoint.time;
+                    jn["checkpoints"][i]["p"]["X"] = checkpoint.pos.x;
+                    jn["checkpoints"][i]["p"]["y"] = checkpoint.pos.y;
+                }
+
+                for (int i = 0; i < _data.beatmapObjects.Count; i++)
+                {
+                    jn["objects"][i] = ((Data.BeatmapObject)_data.beatmapObjects[i]).ToJSONVG();
+                }
+
+                if (_data.prefabObjects.Count > 0)
+                    for (int i = 0; i < _data.prefabObjects.Count; i++)
+                    {
+                        jn["prefab_objects"][i] = ((Data.PrefabObject)_data.prefabObjects[i]).ToJSONVG();
+                    }
+                else
+                    jn["prefab_objects"] = new JSONArray();
+
+                if (_data.prefabs.Count > 0)
+                    for (int i = 0; i < _data.prefabs.Count; i++)
+                    {
+                        jn["prefabs"][i] = ((Data.Prefab)_data.prefabs[i]).ToJSONVG();
+                    }
+                else
+                    jn["prefabs"] = new JSONArray();
+
+                Dictionary<string, string> idsConverter = new Dictionary<string, string>();
+
+                int themeIndex = 0;
+                var themes = DataManager.inst.CustomBeatmapThemes.Select(x => x as BeatmapTheme).Where(x => _data.eventObjects.allEvents[4].Has(y => int.TryParse(x.id, out int id) && id == y.eventValues[0]));
+                if (themes.Count() > 0)
+                    foreach (var beatmapTheme in themes)
+                    {
+                        beatmapTheme.VGID = LSText.randomString(16);
+
+                        if (!idsConverter.ContainsKey(Parser.TryParse(beatmapTheme.id, 0f).ToString()))
+                        {
+                            idsConverter.Add(Parser.TryParse(beatmapTheme.id, 0f).ToString(), beatmapTheme.VGID);
+                        }
+
+                        jn["themes"][themeIndex] = beatmapTheme.ToJSONVG();
+                        themeIndex++;
+                    }
+                else
+                    jn["themes"] = new JSONArray();
+
+                if (_data.beatmapData.markers.Count > 0)
+                    for (int i = 0; i < _data.beatmapData.markers.Count; i++)
+                    {
+                        jn["markers"][i] = _data.beatmapData.markers[i].ToJSONVG();
+                    }
+                else
+                    jn["markers"] = new JSONArray();
+
+                // Event Handlers
+                {
+                    // Move
+                    for (int i = 0; i < _data.eventObjects.allEvents[0].Count; i++)
+                    {
+                        var eventKeyframe = _data.eventObjects.allEvents[0][i];
+                        jn["events"][0][i]["ct"] = eventKeyframe.curveType.Name;
+                        jn["events"][0][i]["t"] = eventKeyframe.eventTime;
+                        jn["events"][0][i]["ev"][0] = eventKeyframe.eventValues[0];
+                        jn["events"][0][i]["ev"][1] = eventKeyframe.eventValues[1];
+                    }
+
+                    // Zoom
+                    for (int i = 0; i < _data.eventObjects.allEvents[1].Count; i++)
+                    {
+                        var eventKeyframe = _data.eventObjects.allEvents[1][i];
+                        jn["events"][1][i]["ct"] = eventKeyframe.curveType.Name;
+                        jn["events"][1][i]["t"] = eventKeyframe.eventTime;
+                        jn["events"][1][i]["ev"][0] = eventKeyframe.eventValues[0];
+                    }
+
+                    // Rotate
+                    for (int i = 0; i < _data.eventObjects.allEvents[2].Count; i++)
+                    {
+                        var eventKeyframe = _data.eventObjects.allEvents[2][i];
+                        jn["events"][2][i]["ct"] = eventKeyframe.curveType.Name;
+                        jn["events"][2][i]["t"] = eventKeyframe.eventTime;
+                        jn["events"][2][i]["ev"][0] = eventKeyframe.eventValues[0];
+                    }
+
+                    // Shake
+                    for (int i = 0; i < _data.eventObjects.allEvents[3].Count; i++)
+                    {
+                        var eventKeyframe = _data.eventObjects.allEvents[3][i];
+                        jn["events"][3][i]["ct"] = eventKeyframe.curveType.Name;
+                        jn["events"][3][i]["t"] = eventKeyframe.eventTime;
+                        jn["events"][3][i]["ev"][0] = eventKeyframe.eventValues[0];
+                    }
+
+                    // Themes
+                    for (int i = 0; i < _data.eventObjects.allEvents[4].Count; i++)
+                    {
+                        var eventKeyframe = _data.eventObjects.allEvents[4][i];
+                        jn["events"][4][i]["ct"] = eventKeyframe.curveType.Name;
+                        jn["events"][4][i]["t"] = eventKeyframe.eventTime;
+                        jn["events"][4][i]["evs"][0] = idsConverter.ContainsKey(eventKeyframe.eventValues[0].ToString()) ? idsConverter[eventKeyframe.eventValues[0].ToString()] : eventKeyframe.eventValues[0].ToString();
+                    }
+
+                    // Chroma
+                    for (int i = 0; i < _data.eventObjects.allEvents[5].Count; i++)
+                    {
+                        var eventKeyframe = _data.eventObjects.allEvents[5][i];
+                        jn["events"][5][i]["ct"] = eventKeyframe.curveType.Name;
+                        jn["events"][5][i]["t"] = eventKeyframe.eventTime;
+                        jn["events"][5][i]["ev"][0] = eventKeyframe.eventValues[0];
+                    }
+
+                    // Bloom
+                    for (int i = 0; i < _data.eventObjects.allEvents[6].Count; i++)
+                    {
+                        var eventKeyframe = _data.eventObjects.allEvents[6][i];
+                        jn["events"][6][i]["ct"] = eventKeyframe.curveType.Name;
+                        jn["events"][6][i]["t"] = eventKeyframe.eventTime;
+                        jn["events"][6][i]["ev"][0] = eventKeyframe.eventValues[0];
+                        jn["events"][6][i]["ev"][1] = eventKeyframe.eventValues[1];
+                        jn["events"][6][i]["ev"][2] = Mathf.Clamp(eventKeyframe.eventValues[4], 0f, 9f);
+                    }
+
+                    // Vignette
+                    for (int i = 0; i < _data.eventObjects.allEvents[7].Count; i++)
+                    {
+                        var eventKeyframe = _data.eventObjects.allEvents[7][i];
+                        jn["events"][7][i]["ct"] = eventKeyframe.curveType.Name;
+                        jn["events"][7][i]["t"] = eventKeyframe.eventTime;
+                        jn["events"][7][i]["ev"][0] = eventKeyframe.eventValues[0];
+                        jn["events"][7][i]["ev"][1] = eventKeyframe.eventValues[1];
+                        jn["events"][7][i]["ev"][2] = eventKeyframe.eventValues[2];
+                        jn["events"][7][i]["ev"][3] = eventKeyframe.eventValues[3];
+                        jn["events"][7][i]["ev"][4] = eventKeyframe.eventValues[4];
+                        jn["events"][7][i]["ev"][5] = eventKeyframe.eventValues[5];
+                        jn["events"][7][i]["ev"][6] = Mathf.Clamp(eventKeyframe.eventValues[6], 0f, 9f);
+                    }
+
+                    // Lens
+                    for (int i = 0; i < _data.eventObjects.allEvents[8].Count; i++)
+                    {
+                        var eventKeyframe = _data.eventObjects.allEvents[8][i];
+                        jn["events"][8][i]["ct"] = eventKeyframe.curveType.Name;
+                        jn["events"][8][i]["t"] = eventKeyframe.eventTime;
+                        jn["events"][8][i]["ev"][0] = eventKeyframe.eventValues[0];
+                        jn["events"][8][i]["ev"][1] = eventKeyframe.eventValues[1];
+                        jn["events"][8][i]["ev"][2] = eventKeyframe.eventValues[2];
+                    }
+
+                    // Grain
+                    for (int i = 0; i < _data.eventObjects.allEvents[9].Count; i++)
+                    {
+                        var eventKeyframe = _data.eventObjects.allEvents[9][i];
+                        jn["events"][9][i]["ct"] = eventKeyframe.curveType.Name;
+                        jn["events"][9][i]["t"] = eventKeyframe.eventTime;
+                        jn["events"][9][i]["ev"][0] = eventKeyframe.eventValues[0];
+                        jn["events"][9][i]["ev"][1] = eventKeyframe.eventValues[1];
+                        jn["events"][9][i]["ev"][2] = eventKeyframe.eventValues[2];
+                        jn["events"][9][i]["ev"][3] = 1f;
+                    }
+
+                    // Gradient
+                    for (int i = 0; i < _data.eventObjects.allEvents[15].Count; i++)
+                    {
+                        var eventKeyframe = _data.eventObjects.allEvents[15][i];
+                        jn["events"][10][i]["ct"] = eventKeyframe.curveType.Name;
+                        jn["events"][10][i]["t"] = eventKeyframe.eventTime;
+                        jn["events"][10][i]["ev"][0] = eventKeyframe.eventValues[0];
+                        jn["events"][10][i]["ev"][1] = eventKeyframe.eventValues[1];
+                        jn["events"][10][i]["ev"][2] = Mathf.Clamp(eventKeyframe.eventValues[2], 0f, 9f);
+                        jn["events"][10][i]["ev"][3] = Mathf.Clamp(eventKeyframe.eventValues[3], 0f, 9f);
+                        jn["events"][10][i]["ev"][4] = eventKeyframe.eventValues[4];
+                    }
+
+                    jn["events"][11][0]["ct"] = "Linear";
+                    jn["events"][11][0]["t"] = 0f;
+                    jn["events"][11][0]["ev"][0] = 0f;
+                    jn["events"][11][0]["ev"][1] = 0f;
+                    jn["events"][11][0]["ev"][2] = 0f;
+
+                    // Hueshift
+                    for (int i = 0; i < _data.eventObjects.allEvents[10].Count; i++)
+                    {
+                        var eventKeyframe = _data.eventObjects.allEvents[10][i];
+                        jn["events"][12][i]["ct"] = eventKeyframe.curveType.Name;
+                        jn["events"][12][i]["t"] = eventKeyframe.eventTime;
+                        jn["events"][12][i]["ev"][0] = eventKeyframe.eventValues[0];
+                    }
+
+                    // Player
+                    for (int i = 0; i < _data.eventObjects.allEvents[36].Count; i++)
+                    {
+                        var eventKeyframe = _data.eventObjects.allEvents[36][i];
+                        jn["events"][13][i]["ct"] = eventKeyframe.curveType.Name;
+                        jn["events"][13][i]["t"] = eventKeyframe.eventTime;
+                        jn["events"][13][i]["ev"][0] = eventKeyframe.eventValues[0];
+                        jn["events"][13][i]["ev"][1] = eventKeyframe.eventValues[1];
+                        jn["events"][13][i]["ev"][2] = 0f;
                     }
                 }
 
