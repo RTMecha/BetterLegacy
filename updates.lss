@@ -1,3 +1,6 @@
+1.1.1 > [Jun 13, 2024]
+- Fixed an issue with Pulse and Bullet shapes not rendering correctly.
+- Added a config setting for PA filetype output for Level Combiner. You can output either VG or LS level types.
 1.1.0 > [Jun 12, 2024]
 - Added data for timeline object indexing. This will eventually make each timeline object render above or below other objects depending on what you set the index to.
 - Added player hit cooldown. (This currently does not affect the hit cooldown animation)
