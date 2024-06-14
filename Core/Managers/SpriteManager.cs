@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using UnityEngine;
@@ -89,6 +90,11 @@ namespace BetterLegacy.Core.Managers
             image.sprite = GetRoundedSprite(roundness, side);
             image.type = UnityEngine.UI.Image.Type.Sliced;
         }
+
+        public static string SpriteToString(Sprite sprite) => TextureToString(sprite.texture);
+        public static string TextureToString(Texture2D texture2D) => Convert.ToBase64String(texture2D.EncodeToPNG());
+
+        public static Sprite StringToSprite(string str) => LoadSprite(Convert.FromBase64String(str));
 
         public enum RoundedSide
         {
