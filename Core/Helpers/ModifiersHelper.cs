@@ -5328,5 +5328,168 @@ namespace BetterLegacy.Core.Helpers
             if (!modifier.IsValid(ModifiersManager.defaultBackgroundObjectModifiers))
                 return;
         }
+
+        public static bool PlayerTrigger(Modifier<RTPlayer> modifier)
+        {
+            if (!modifier.verified)
+            {
+                modifier.verified = true;
+                modifier.VerifyModifier(null);
+            }
+
+            if (!modifier.IsValid(ModifiersManager.defaultPlayerModifiers) || modifier.reference == null || modifier.reference.CustomPlayer == null || modifier.reference.PlayerModel == null)
+                return false;
+
+            modifier.hasChanged = false;
+
+            switch (modifier.commands[0])
+            {
+                case "actionPress":
+                    {
+                        return modifier.reference.Actions.Boost.IsPressed;
+                    }
+                case "actionDown":
+                    {
+                        return modifier.reference.Actions.Boost.WasPressed;
+                    }
+                case "healthEquals":
+                    {
+                        return modifier.reference.CustomPlayer.Health == Parser.TryParse(modifier.value, 3);
+                    }
+                case "healthGreaterEquals":
+                    {
+                        return modifier.reference.CustomPlayer.Health >= Parser.TryParse(modifier.value, 3);
+                    }
+                case "healthLesserEquals":
+                    {
+                        return modifier.reference.CustomPlayer.Health <= Parser.TryParse(modifier.value, 3);
+                    }
+                case "healthGreater":
+                    {
+                        return modifier.reference.CustomPlayer.Health > Parser.TryParse(modifier.value, 3);
+                    }
+                case "healthLesser":
+                    {
+                        return modifier.reference.CustomPlayer.Health < Parser.TryParse(modifier.value, 3);
+                    }
+                case "healthPerEquals":
+                    {
+                        var health = ((float)modifier.reference.CustomPlayer.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
+
+                        return health == Parser.TryParse(modifier.value, 50f);
+                    }
+                case "healthPerGreaterEquals":
+                    {
+                        var health = ((float)modifier.reference.CustomPlayer.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
+
+                        return health >= Parser.TryParse(modifier.value, 50f);
+                    }
+                case "healthPerLesserEquals":
+                    {
+                        var health = ((float)modifier.reference.CustomPlayer.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
+
+                        return health <= Parser.TryParse(modifier.value, 50f);
+                    }
+                case "healthPerGreater":
+                    {
+                        var health = ((float)modifier.reference.CustomPlayer.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
+
+                        return health > Parser.TryParse(modifier.value, 50f);
+                    }
+                case "healthPerLesser":
+                    {
+                        var health = ((float)modifier.reference.CustomPlayer.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
+
+                        return health < Parser.TryParse(modifier.value, 50f);
+                    }
+                case "isDead":
+                    {
+                        return modifier.reference.isDead;
+                    }
+                case "isBoosting":
+                    {
+                        return modifier.reference.isBoosting;
+                    }
+            }
+
+            return false;
+        }
+
+        public static void PlayerAction(Modifier<RTPlayer> modifier)
+        {
+            if (!modifier.verified)
+            {
+                modifier.verified = true;
+                modifier.VerifyModifier(ModifiersManager.defaultPlayerModifiers);
+            }
+
+            if (!modifier.IsValid(ModifiersManager.defaultPlayerModifiers) || modifier.reference == null || modifier.reference.CustomPlayer == null || modifier.reference.PlayerModel == null)
+                return;
+
+            modifier.hasChanged = false;
+
+            switch (modifier.commands[0])
+            {
+                case "setCustomActive":
+                    {
+                        var s = modifier.commands[1];
+
+                        if (modifier.reference.customObjects.ContainsKey(s) &&
+                            modifier.reference.customObjects[s].values.ContainsKey("Renderer") &&
+                            modifier.reference.customObjects[s].values["Renderer"] is Renderer renderer)
+                            renderer.enabled = Parser.TryParse(modifier.value, false);
+
+                        break;
+                    }
+                case "kill":
+                    {
+                        modifier.reference.CustomPlayer.Health = 0;
+                        break;
+                    }
+                case "hit":
+                    {
+                        modifier.reference.PlayerHit();
+                        break;
+                    }
+                case "signalModifier":
+                    {
+                        var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
+
+                        foreach (var bm in list)
+                        {
+                            CoreHelper.StartCoroutine(ModifiersManager.ActivateModifier((BeatmapObject)bm, Parser.TryParse(modifier.value, 0f)));
+                        }
+
+                        break;
+                    }
+            }
+        }
+
+        public static void PlayerInactive(Modifier<RTPlayer> modifier)
+        {
+            if (!modifier.verified)
+            {
+                modifier.verified = true;
+                modifier.VerifyModifier(ModifiersManager.defaultPlayerModifiers);
+            }
+
+            if (!modifier.IsValid(ModifiersManager.defaultPlayerModifiers) || modifier.reference == null || modifier.reference.CustomPlayer == null || modifier.reference.PlayerModel == null)
+                return;
+
+            switch (modifier.commands[0])
+            {
+                case "setCustomActive":
+                    {
+                        var s = modifier.commands[1];
+
+                        if (Parser.TryParse(modifier.commands[2], true) && modifier.reference.customObjects.ContainsKey(s) &&
+                            modifier.reference.customObjects[s].values.ContainsKey("Renderer") &&
+                            modifier.reference.customObjects[s].values["Renderer"] is Renderer renderer)
+                            renderer.enabled = !Parser.TryParse(modifier.value, false);
+
+                        break;
+                    }
+            }
+        }
     }
 }

@@ -648,9 +648,63 @@ namespace BetterLegacy.Components.Player
             if (CoreHelper.Paused)
                 return;
 
+            // Modifiers
+            if (PlayerModel.modifiers.Count > 0)
+            {
+                Func<Modifier<RTPlayer>, bool> modifierPredicate = x => x.Action == null && x.type == ModifierBase.Type.Action || x.Trigger == null && x.type == ModifierBase.Type.Trigger || x.Inactive == null;
+
+                if (PlayerModel.modifiers.Any(modifierPredicate))
+                    PlayerModel.modifiers.Where(modifierPredicate).ToList().ForEach(delegate (Modifier<RTPlayer> modifier)
+                    {
+                        modifier.Action = ModifiersHelper.PlayerAction;
+                        modifier.Trigger = ModifiersHelper.PlayerTrigger;
+                        modifier.Inactive = ModifiersHelper.PlayerInactive;
+                    });
+
+                var actions = PlayerModel.modifiers.Where(x => x.type == ModifierBase.Type.Action);
+                var triggers = PlayerModel.modifiers.Where(x => x.type == ModifierBase.Type.Trigger);
+
+                if (triggers.Count() > 0)
+                {
+                    if (triggers.All(x => !x.active && (x.Trigger(x) && !x.not || !x.Trigger(x) && x.not)))
+                    {
+                        foreach (var act in actions.Where(x => !x.active))
+                        {
+                            if (!act.constant)
+                                act.active = true;
+
+                            act.running = true;
+                            act.Action?.Invoke(act);
+                        }
+
+                        foreach (var trig in triggers.Where(x => !x.constant))
+                            trig.active = true;
+                    }
+                    else
+                    {
+                        foreach (var act in actions.Where(x => x.active || x.running))
+                        {
+                            act.active = false;
+                            act.running = false;
+                            act.Inactive?.Invoke(act);
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var act in actions.Where(x => !x.active))
+                    {
+                        if (!act.constant)
+                            act.active = true;
+
+                        act.running = true;
+                        act.Action?.Invoke(act);
+                    }
+                }
+            }
+
             if (!PlayerAlive && !isDead && CustomPlayer && !PlayerManager.IsPractice)
                 StartCoroutine(Kill());
-
         }
 
         bool canShoot = true;

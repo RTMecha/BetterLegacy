@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Core.Managers;
+﻿using BetterLegacy.Components.Player;
+using BetterLegacy.Core.Managers;
 using SimpleJSON;
 using System;
 using System.Collections.Generic;
@@ -261,6 +262,10 @@ namespace BetterLegacy.Core.Data.Player
                 }
             }
 
+            if (jn["modifiers"] != null && jn["modifiers"].Count > 0)
+                for (int i = 0; i < jn["modifiers"].Count; i++)
+                    playerModel.modifiers.Add(Modifier<RTPlayer>.Parse(jn["modifiers"][i]));
+
             if (jn["custom_objects"] != null && jn["custom_objects"].Count > 0)
                 for (int i = 0; i < jn["custom_objects"].Count; i++)
                 {
@@ -293,11 +298,13 @@ namespace BetterLegacy.Core.Data.Player
                 jn["tail"][i] = tailParts[i].ToJSON();
             }
 
+            if (modifiers.Count > 0)
+                for (int i = 0; i < modifiers.Count; i++)
+                    jn["modifiers"][i] = modifiers[i].ToJSON();
+
             if (customObjects.Count > 0)
                 for (int i = 0; i < customObjects.Count; i++)
-                {
                     jn["custom_objects"][i] = customObjects.ElementAt(i).Value.ToJSON();
-                }
 
             return jn;
         }
@@ -1751,6 +1758,8 @@ namespace BetterLegacy.Core.Data.Player
         public List<Generic> tailParts = new List<Generic>();
 
         public Dictionary<string, CustomObject> customObjects = new Dictionary<string, CustomObject>();
+
+        public List<Modifier<RTPlayer>> modifiers = new List<Modifier<RTPlayer>>();
 
         public static implicit operator bool(PlayerModel exists) => exists != null;
 

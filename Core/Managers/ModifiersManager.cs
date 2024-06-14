@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Core.Data;
+﻿using BetterLegacy.Components.Player;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers.Networking;
 using LSFunctions;
@@ -407,6 +408,136 @@ namespace BetterLegacy.Core.Managers
                 },
                 value = "0"
             }, //timeGreater
+        };
+
+        public static List<Modifier<RTPlayer>> defaultPlayerModifiers = new List<Modifier<RTPlayer>>
+        {
+            new Modifier<RTPlayer>
+            {
+                type = ModifierBase.Type.Action,
+                constant = true,
+                commands = new List<string> { "setCustomActive", "0", "True" },
+                value = "False"
+            },
+            new Modifier<RTPlayer>
+            {
+                type = ModifierBase.Type.Action,
+                constant = true,
+                commands = new List<string> { "kill" },
+                value = "0"
+            },
+            new Modifier<RTPlayer>
+            {
+                type = ModifierBase.Type.Action,
+                constant = true,
+                commands = new List<string> { "hit" },
+                value = "0"
+            },
+            new Modifier<RTPlayer>
+            {
+                type = ModifierBase.Type.Action,
+                constant = true,
+                commands = new List<string> { "signalModifier", "Object Group" },
+                value = "0"
+            },
+            new Modifier<RTPlayer>
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = true,
+                commands = new List<string> { "actionPress" },
+                value = "0"
+            },
+            new Modifier<RTPlayer>
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = true,
+                commands = new List<string> { "actionDown" },
+                value = "0"
+            },
+            new Modifier<RTPlayer>
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = true,
+                commands = new List<string> { "healthEquals" },
+                value = "0"
+            },
+            new Modifier<RTPlayer>
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = true,
+                commands = new List<string> { "healthGreaterEquals" },
+                value = "0"
+            },
+            new Modifier<RTPlayer>
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = true,
+                commands = new List<string> { "healthLesserEquals" },
+                value = "0"
+            },
+            new Modifier<RTPlayer>
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = true,
+                commands = new List<string> { "healthGreater" },
+                value = "0"
+            },
+            new Modifier<RTPlayer>
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = true,
+                commands = new List<string> { "healthLesser" },
+                value = "0"
+            },
+            new Modifier<RTPlayer>
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = true,
+                commands = new List<string> { "healthPerEquals" },
+                value = "0"
+            },
+            new Modifier<RTPlayer>
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = true,
+                commands = new List<string> { "healthPerGreaterEquals" },
+                value = "0"
+            },
+            new Modifier<RTPlayer>
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = true,
+                commands = new List<string> { "healthPerLesserEquals" },
+                value = "0"
+            },
+            new Modifier<RTPlayer>
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = true,
+                commands = new List<string> { "healthPerGreater" },
+                value = "0"
+            },
+            new Modifier<RTPlayer>
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = true,
+                commands = new List<string> { "healthPerLesser" },
+                value = "0"
+            },
+            new Modifier<RTPlayer>
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = true,
+                commands = new List<string> { "isDead" },
+                value = "0"
+            },
+            new Modifier<RTPlayer>
+            {
+                type = ModifierBase.Type.Trigger,
+                constant = true,
+                commands = new List<string> { "isBoosting" },
+                value = "0"
+            },
         };
     }
 }
