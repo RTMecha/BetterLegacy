@@ -121,6 +121,12 @@ namespace BetterLegacy.Core.Data
 
                     if (!prefab.SpriteAssets.ContainsKey(name))
                     {
+                        if (jn["assets"]["spr"][i]["i"] != null)
+                        {
+                            prefab.SpriteAssets.Add(name, SpriteManager.StringToSprite(jn["assets"]["spr"][i]["i"]));
+                            continue;
+                        }
+
                         byte[] imageData = new byte[data.Count];
                         for (int j = 0; j < data.Count; j++)
                         {
@@ -196,11 +202,7 @@ namespace BetterLegacy.Core.Data
             for (int i = 0; i < spriteAssets.Count; i++)
             {
                 jn["assets"]["spr"][i]["n"] = spriteAssets.ElementAt(i).Key;
-                var imageData = spriteAssets.ElementAt(i).Value.texture.EncodeToPNG();
-                for (int j = 0; j < imageData.Length; j++)
-                {
-                    jn["assets"]["spr"][i]["d"][j] = imageData[j];
-                }
+                jn["assets"]["spr"][i]["i"] = SpriteManager.SpriteToString(spriteAssets.ElementAt(i).Value);
             }
 
             return jn;

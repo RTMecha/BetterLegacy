@@ -109,14 +109,9 @@ namespace BetterLegacy.Core.Data
 
         public static Achievement Parse(JSONNode jn, bool parseUnlock = false)
         {
-            var icon = jn["icon"];
-            byte[] imageData = new byte[icon.Count];
-            for (int j = 0; j < icon.Count; j++)
-                imageData[j] = (byte)icon[j].AsInt;
-
             var requirement = AchievementManager.requirements[jn["requirement"] == null ? 0 : Mathf.Clamp(jn["requirement"].AsInt, 0, AchievementManager.requirements.Count - 1)];
 
-            return new Achievement(jn["id"], jn["name"], jn["desc"], jn["difficulty"].AsInt, SpriteManager.LoadSprite(imageData), requirement, jn["hidden"].AsBool)
+            return new Achievement(jn["id"], jn["name"], jn["desc"], jn["difficulty"].AsInt, SpriteManager.StringToSprite(jn["icon"]), requirement, jn["hidden"].AsBool)
             {
                 unlocked = parseUnlock && jn["unlocked"] != null && jn["unlocked"].AsBool,
             };
@@ -134,11 +129,10 @@ namespace BetterLegacy.Core.Data
             if (saveUnlock)
                 jn["unlocked"] = unlocked.ToString();
 
-            jn["requirement"] = RequirementIndex.ToString();
+            if (RequirementIndex != 0)
+                jn["requirement"] = RequirementIndex.ToString();
 
-            var imageData = Icon.texture.EncodeToPNG();
-            for (int j = 0; j < imageData.Length; j++)
-                jn["icon"][j] = imageData[j];
+            jn["icon"] = SpriteManager.SpriteToString(Icon);
 
             return jn;
         }

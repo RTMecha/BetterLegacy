@@ -903,6 +903,12 @@ namespace BetterLegacy.Core.Data
 
                     if (!AssetManager.SpriteAssets.ContainsKey(name) && gameData.beatmapObjects.Has(x => x.text == name))
                     {
+                        if (jn["assets"]["spr"][i]["i"] != null)
+                        {
+                            AssetManager.SpriteAssets.Add(name, SpriteManager.StringToSprite(jn["assets"]["spr"][i]["i"]));
+                            continue;
+                        }
+
                         byte[] imageData = new byte[data.Count];
                         for (int j = 0; j < data.Count; j++)
                         {
@@ -1222,11 +1228,8 @@ namespace BetterLegacy.Core.Data
             for (int i = 0; i < AssetManager.SpriteAssets.Count; i++)
             {
                 jn["assets"]["spr"][i]["n"] = AssetManager.SpriteAssets.ElementAt(i).Key;
-                var imageData = AssetManager.SpriteAssets.ElementAt(i).Value.texture.EncodeToPNG();
-                for (int j = 0; j < imageData.Length; j++)
-                {
-                    jn["assets"]["spr"][i]["d"][j] = imageData[j];
-                }
+
+                jn["assets"]["spr"][i]["i"] = SpriteManager.SpriteToString(AssetManager.SpriteAssets.ElementAt(i).Value);
             }
 
             for (int i = 0; i < levelModifiers.Count; i++)
