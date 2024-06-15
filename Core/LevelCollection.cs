@@ -78,7 +78,7 @@ namespace BetterLegacy.Core
             if (!RTFile.DirectoryExists(path))
                 Directory.CreateDirectory(path);
 
-            collection.Path = $"{RTFile.ApplicationDirectory}beatmaps/arcade/Collection Test/";
+            collection.Path = $"{path}/";
 
             collection.AddLevel(new Level($"{RTFile.ApplicationDirectory}beatmaps/arcade/2581783822/"));
 
@@ -132,6 +132,8 @@ namespace BetterLegacy.Core
             var actualLevel = levels.Find(x => x.id == level.id);
 
             Directory.Delete(System.IO.Path.GetDirectoryName(actualLevel.path), true);
+
+            levels.RemoveAll(x => x.id == level.id);
         }
     }
 }
