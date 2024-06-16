@@ -19,7 +19,7 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// The path of the shapes folder.
         /// </summary>
-        public static string ShapesPath => "beatmaps/shapes/";
+        public static string ShapesPath => $"{RTFile.BepInExAssetsPath}Shapes/";
 
         /// <summary>
         /// The path of the shapes setup file.
@@ -28,6 +28,17 @@ namespace BetterLegacy.Core.Managers
 
         public bool loadedShapes;
         public Transform shapeParent;
+        public static Vector2[] thinTrianglePoints = new Vector2[]
+        {
+            new Vector2(0f, 0.5774f),
+            new Vector2(-0.4908f, -0.2855f),
+            new Vector2(-0.4482f, -0.2588f),
+            new Vector2(0.4482f, -0.2588f),
+            new Vector2(0f, 0.5175f),
+            new Vector2(-0.4482f, -0.2588f),
+            new Vector2(-0.5001f, -0.2949f),
+            new Vector2(0.4866f, -0.2847f),
+        };
 
         /// <summary>
         /// Inits ShapeManager.
@@ -62,7 +73,7 @@ namespace BetterLegacy.Core.Managers
                 Shapes3D.Add(new List<Shape>());
                 for (int j = 0; j < jn["type"][i]["option"].Count; j++)
                 {
-                    var fullPath = RTFile.ApplicationDirectory + jn["type"][i]["option"][j]["path"];
+                    var fullPath = RTFile.ApplicationDirectory + ShapesPath + jn["type"][i]["option"][j]["path"];
 
                     // 2D
                     {
@@ -231,6 +242,16 @@ namespace BetterLegacy.Core.Managers
                     var gameObject = ObjectManager.inst.objectPrefabs[1].options[0].Duplicate(shapeParent, shape.name);
 
                     gameObject.transform.GetChild(0).GetComponent<MeshFilter>().mesh = shape.mesh;
+
+                    if (shape.name == "triangle_outline_thin")
+                    {
+                        var polygonCollider = gameObject.transform.GetChild(0).GetComponent<PolygonCollider2D>();
+                        polygonCollider.points = thinTrianglePoints.Copy();
+                        polygonCollider.pathCount = 1;
+
+                        ObjectManager.inst.objectPrefabs[type].options.Add(gameObject);
+                        continue;
+                    }
 
                     DestroyImmediate(gameObject.transform.GetChild(0).GetComponent<PolygonCollider2D>());
                     gameObject.transform.GetChild(0).gameObject.AddComponent<RTColliderCreator>();
