@@ -15,6 +15,7 @@ namespace BetterLegacy.Core.Data
         {
             var beatmapData = new LevelBeatmapData();
 
+            beatmapData.levelData = new Data.LevelData();
             beatmapData.editorData = new LevelEditorData();
 
             beatmapData.markers = new List<Marker>();

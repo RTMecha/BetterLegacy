@@ -2645,7 +2645,9 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var path = _val.Replace("\\", "/").Replace("/level.vgd", "");
 
-                            if (RTFile.FileExists(path + "/metadata.vgm") && RTFile.FileExists(path + "/audio.ogg") && RTFile.FileExists(path + "/cover.jpg"))
+                            if (RTFile.FileExists(path + "/metadata.vgm") &&
+                                (RTFile.FileExists(path + "/audio.ogg") || RTFile.FileExists(path + "/audio.wav") || RTFile.FileExists(path + "/audio.mp3") || RTFile.FileExists(path + "/level.ogg") || RTFile.FileExists(path + "/level.wav") || RTFile.FileExists(path + "/level.mp3")) &&
+                                RTFile.FileExists(path + "/cover.jpg"))
                             {
                                 var copyTo = path.Replace(Path.GetDirectoryName(path).Replace("\\", "/"), RTFile.ApplicationDirectory + editorListSlash);
 
@@ -2694,6 +2696,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                         catch (Exception ex)
                         {
+                            EditorManager.inst.DisplayNotification($"There was an error in converting the VG level. Press {CoreConfig.Instance.OpenPAPersistentFolder.Value} to open the log folder and send the Player.log file to @rtmecha.", 5f, EditorManager.NotificationType.Error);
                             Debug.LogError(ex);
                             failed = true;
                         }
