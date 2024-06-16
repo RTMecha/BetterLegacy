@@ -207,6 +207,21 @@ namespace BetterLegacy.Core.Helpers
             return entry;
         }
 
+        public static EventTrigger.Entry ScrollDelta(Dropdown dropdown)
+        {
+            return TriggerHelper.CreateEntry(EventTriggerType.Scroll, delegate (BaseEventData baseEventData)
+            {
+                if (!EditorConfig.Instance.ScrollOnEasing.Value)
+                    return;
+
+                var pointerEventData = (PointerEventData)baseEventData;
+                if (pointerEventData.scrollDelta.y > 0f)
+                    dropdown.value = dropdown.value == 0 ? dropdown.options.Count - 1 : dropdown.value - 1;
+                if (pointerEventData.scrollDelta.y < 0f)
+                    dropdown.value = dropdown.value == dropdown.options.Count - 1 ? 0 : dropdown.value + 1;
+            });
+        }
+
         public static void IncreaseDecreaseButtons(InputField inputField, float amount = 0.1f, float multiply = 10f, float min = 0f, float max = 0f, Transform t = null)
         {
             var tf = t ?? inputField.transform;
