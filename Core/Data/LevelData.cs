@@ -22,8 +22,16 @@ namespace BetterLegacy.Core.Data
         public static LevelData Parse(JSONNode jn)
         {
             var levelData = new LevelData();
-            levelData.levelVersion = jn["level_version"];
-            levelData.modVersion = jn["mod_version"];
+
+            if (jn["level_version"] != null)
+                levelData.levelVersion = jn["level_version"];
+            else
+                levelData.levelVersion = ProjectArrhythmia.GameVersion.ToString();
+
+            if (jn["mod_version"] != null)
+                levelData.modVersion = jn["mod_version"];
+            else
+                levelData.modVersion = LegacyPlugin.ModVersion.ToString();
 
             if (!string.IsNullOrEmpty(jn["lock_boost"]))
                 levelData.lockBoost = jn["lock_boost"].AsBool;
