@@ -789,6 +789,92 @@ namespace BetterLegacy.Editor.Managers
                     case "particleSystem":
                         {
                             singleGenerator("LifeTime", 0, 5f);
+
+                            // Shape
+                            {
+                                var dd = dropdownBar.Duplicate(layout, "Shape");
+                                dd.transform.localScale = Vector3.one;
+                                var labelText = dd.transform.Find("Text").GetComponent<Text>();
+                                labelText.text = "Shape";
+
+                                Destroy(dd.transform.Find("Dropdown").GetComponent<HoverTooltip>());
+                                Destroy(dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>());
+
+                                var d = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
+                                d.onValueChanged.RemoveAllListeners();
+                                d.options.Clear();
+                                d.options = new List<Dropdown.OptionData>
+                                {
+                                    new Dropdown.OptionData("Square"),
+                                    new Dropdown.OptionData("Circle"),
+                                    new Dropdown.OptionData("Triangle"),
+                                    new Dropdown.OptionData("Arrow"),
+                                    new Dropdown.OptionData("Text"),
+                                    new Dropdown.OptionData("Hexagon"),
+                                    new Dropdown.OptionData("Image"),
+                                    new Dropdown.OptionData("Pentagon"),
+                                    new Dropdown.OptionData("Misc"),
+                                };
+
+                                d.value = Parser.TryParse(modifier.commands[1], 0);
+
+                                d.onValueChanged.AddListener(delegate (int _val)
+                                {
+                                    if (_val == 4 || _val == 6)
+                                    {
+                                        EditorManager.inst.DisplayNotification("Shape type not available for particle system.", 1.5f, EditorManager.NotificationType.Warning);
+                                        d.value = Parser.TryParse(modifier.commands[1], 0);
+                                        return;
+                                    }
+
+                                    modifier.commands[1] = Mathf.Clamp(_val, 0, ShapeManager.inst.Shapes2D.Count - 1).ToString();
+                                    modifier.active = false;
+                                    StartCoroutine(RenderModifiers(beatmapObject));
+                                    Updater.UpdateProcessor(beatmapObject);
+                                });
+
+                                EditorThemeManager.ApplyLightText(labelText);
+                                EditorThemeManager.ApplyDropdown(d);
+
+                                TriggerHelper.AddEventTriggerParams(d.gameObject, TriggerHelper.ScrollDelta(d));
+                            }
+
+                            // Shape Option
+                            {
+                                var dd = dropdownBar.Duplicate(layout, "Shape");
+                                dd.transform.localScale = Vector3.one;
+                                var labelText = dd.transform.Find("Text").GetComponent<Text>();
+                                labelText.text = "Shape";
+
+                                Destroy(dd.transform.Find("Dropdown").GetComponent<HoverTooltip>());
+                                Destroy(dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>());
+
+                                var d = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
+                                d.onValueChanged.RemoveAllListeners();
+                                d.options.Clear();
+
+                                var type = Parser.TryParse(modifier.commands[1], 0);
+                                for (int i = 0; i < ShapeManager.inst.Shapes2D[type].Count; i++)
+                                {
+                                    var shape = ShapeManager.inst.Shapes2D[type][i].name.Replace("_", " ");
+                                    d.options.Add(new Dropdown.OptionData(shape, ShapeManager.inst.Shapes2D[type][i].Icon));
+                                }
+
+                                d.value = Parser.TryParse(modifier.commands[2], 0);
+
+                                d.onValueChanged.AddListener(delegate (int _val)
+                                {
+                                    modifier.commands[2] = Mathf.Clamp(_val, 0, ShapeManager.inst.Shapes2D[type].Count - 1).ToString();
+                                    modifier.active = false;
+                                    Updater.UpdateProcessor(beatmapObject);
+                                });
+
+                                EditorThemeManager.ApplyLightText(labelText);
+                                EditorThemeManager.ApplyDropdown(d);
+
+                                TriggerHelper.AddEventTriggerParams(d.gameObject, TriggerHelper.ScrollDelta(d));
+                            }
+
                             colorGenerator("Color", 3);
                             singleGenerator("StartOpacity", 4, 1f);
                             singleGenerator("EndOpacity", 5, 0f);
