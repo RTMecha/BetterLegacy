@@ -2664,7 +2664,19 @@ namespace BetterLegacy.Editor.Managers
 
                                 RTFile.WriteToFile(copyTo + "/metadata.lsb", metadataJN.ToString());
 
-                                File.Copy(path + "/audio.ogg", copyTo + "/level.ogg", RTFile.FileExists(copyTo + "/level.ogg"));
+                                if (RTFile.FileExists(path + "/audio.ogg"))
+                                    File.Copy(path + "/audio.ogg", copyTo + "/level.ogg", RTFile.FileExists(copyTo + "/level.ogg"));
+                                if (RTFile.FileExists(path + "/audio.wav"))
+                                    File.Copy(path + "/audio.wav", copyTo + "/level.wav", RTFile.FileExists(copyTo + "/level.wav"));
+                                if (RTFile.FileExists(path + "/audio.mp3"))
+                                    File.Copy(path + "/audio.mp3", copyTo + "/level.mp3", RTFile.FileExists(copyTo + "/level.mp3"));
+
+                                if (RTFile.FileExists(path + "/level.ogg"))
+                                    File.Copy(path + "/level.ogg", copyTo + "/level.ogg", RTFile.FileExists(copyTo + "/level.ogg"));
+                                if (RTFile.FileExists(path + "/level.wav"))
+                                    File.Copy(path + "/level.wav", copyTo + "/level.wav", RTFile.FileExists(copyTo + "/level.wav"));
+                                if (RTFile.FileExists(path + "/level.mp3"))
+                                    File.Copy(path + "/level.mp3", copyTo + "/level.mp3", RTFile.FileExists(copyTo + "/level.mp3"));
 
                                 File.Copy(path + "/cover.jpg", copyTo + "/level.jpg", RTFile.FileExists(copyTo + "/level.jpg"));
 
