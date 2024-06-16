@@ -1,3 +1,6 @@
+1.1.2 > [Jun 16, 2024]
+- Continuing to lay groundwork for future features such as level collections, player modifiers, etc.
+- Fixed VG level converting not working properly.
 1.1.1 > [Jun 13, 2024]
 - Fixed an issue with Pulse and Bullet shapes not rendering correctly.
 - Added a config setting for PA filetype output for Level Combiner. You can output either VG or LS level types.
