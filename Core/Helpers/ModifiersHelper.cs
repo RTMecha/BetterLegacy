@@ -1727,9 +1727,9 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 var mod = levelObject.visualObject.GameObject;
 
-                                if (!modifier.reference.particleSystem && !mod.GetComponent<ParticleSystem>())
+                                if (!modifier.reference.particleSystem)
                                 {
-                                    modifier.reference.particleSystem = mod.AddComponent<ParticleSystem>();
+                                    modifier.reference.particleSystem = mod.GetComponent<ParticleSystem>() ?? mod.AddComponent<ParticleSystem>();
                                     var ps = modifier.reference.particleSystem;
 
                                     var mat = mod.GetComponent<ParticleSystemRenderer>();
@@ -1814,99 +1814,6 @@ namespace BetterLegacy.Core.Helpers
                                     {
                                                 new Keyframe(0f, sizeStart),
                                                 new Keyframe(1f, sizeEnd)
-                                    });
-
-                                    ssss.curve = curve;
-
-                                    sizeOverLifetime.size = ssss;
-                                }
-                                else if (!modifier.reference.particleSystem)
-                                {
-                                    modifier.reference.particleSystem = mod.GetComponent<ParticleSystem>();
-                                    var ps = modifier.reference.particleSystem;
-
-                                    var mat = mod.GetComponent<ParticleSystemRenderer>();
-                                    mat.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
-                                    mat.material.color = Color.white;
-                                    mat.trailMaterial = mat.material;
-                                    mat.renderMode = ParticleSystemRenderMode.Mesh;
-
-                                    var s = int.Parse(modifier.commands[1]);
-                                    var so = int.Parse(modifier.commands[2]);
-
-                                    s = Mathf.Clamp(s, 0, ObjectManager.inst.objectPrefabs.Count - 1);
-                                    so = Mathf.Clamp(so, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
-
-                                    mat.mesh = ObjectManager.inst.objectPrefabs[s == 4 ? 0 : s == 6 ? 0 : s].options[so].GetComponentInChildren<MeshFilter>().mesh;
-
-                                    var psMain = ps.main;
-                                    var psEmission = ps.emission;
-
-                                    psMain.simulationSpace = ParticleSystemSimulationSpace.World;
-
-                                    psMain.startSpeed = float.Parse(modifier.commands[9]);
-
-                                    if (modifier.constant)
-                                        ps.emissionRate = float.Parse(modifier.commands[10]);
-                                    else
-                                    {
-                                        ps.emissionRate = 0f;
-                                        psMain.loop = false;
-                                        psEmission.burstCount = int.Parse(modifier.commands[10]);
-                                        psMain.duration = float.Parse(modifier.commands[11]);
-                                    }
-
-                                    var rotationOverLifetime = ps.rotationOverLifetime;
-                                    rotationOverLifetime.enabled = true;
-                                    rotationOverLifetime.separateAxes = true;
-                                    rotationOverLifetime.xMultiplier = 0f;
-                                    rotationOverLifetime.yMultiplier = 0f;
-                                    rotationOverLifetime.zMultiplier = float.Parse(modifier.commands[8]);
-
-                                    var forceOverLifetime = ps.forceOverLifetime;
-                                    forceOverLifetime.enabled = true;
-                                    forceOverLifetime.space = ParticleSystemSimulationSpace.World;
-                                    forceOverLifetime.xMultiplier = float.Parse(modifier.commands[12]);
-                                    forceOverLifetime.yMultiplier = float.Parse(modifier.commands[13]);
-
-                                    var particlesTrail = ps.trails;
-                                    particlesTrail.enabled = bool.Parse(modifier.commands[14]);
-
-                                    var colorOverLifetime = ps.colorOverLifetime;
-                                    colorOverLifetime.enabled = true;
-                                    var psCol = colorOverLifetime.color;
-
-                                    float alphaStart = float.Parse(modifier.commands[4]);
-                                    float alphaEnd = float.Parse(modifier.commands[5]);
-
-                                    var gradient = new Gradient();
-                                    gradient.alphaKeys = new GradientAlphaKey[2]
-                                    {
-                                        new GradientAlphaKey(alphaStart, 0f),
-                                        new GradientAlphaKey(alphaEnd, 1f)
-                                    };
-                                    gradient.colorKeys = new GradientColorKey[2]
-                                    {
-                                        new GradientColorKey(Color.white, 0f),
-                                        new GradientColorKey(Color.white, 1f)
-                                    };
-
-                                    psCol.gradient = gradient;
-
-                                    colorOverLifetime.color = psCol;
-
-                                    var sizeOverLifetime = ps.sizeOverLifetime;
-                                    sizeOverLifetime.enabled = true;
-
-                                    var ssss = sizeOverLifetime.size;
-
-                                    var sizeStart = float.Parse(modifier.commands[6]);
-                                    var sizeEnd = float.Parse(modifier.commands[7]);
-
-                                    var curve = new AnimationCurve(new Keyframe[2]
-                                    {
-                                        new Keyframe(0f, sizeStart),
-                                        new Keyframe(1f, sizeEnd)
                                     });
 
                                     ssss.curve = curve;
