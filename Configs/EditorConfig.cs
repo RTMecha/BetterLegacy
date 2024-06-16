@@ -39,6 +39,7 @@ namespace BetterLegacy.Configs
             RTEditor.DraggingPlaysSoundBPM = DraggingPlaysSoundOnlyWithBPM.Value;
             RTEditor.ShowModdedUI = ShowModdedFeaturesInEditor.Value;
             EditorThemeManager.currentTheme = (int)EditorTheme.Value;
+            ObjectEditor.TimelineCollapseLength = TimelineCollapseLength.Value;
 
             SetPreviewConfig();
             SetupSettingChanged();
@@ -84,6 +85,7 @@ namespace BetterLegacy.Configs
         public Setting<float> MainZoomAmount { get; set; }
         public Setting<float> KeyframeZoomAmount { get; set; }
         public Setting<float> KeyframeEndLengthOffset { get; set; }
+        public Setting<float> TimelineCollapseLength { get; set; }
         public Setting<bool> TimelineObjectPrefabTypeIcon { get; set; }
         public Setting<bool> EventLabelsRenderLeft { get; set; }
         public Setting<bool> EventKeyframesRenderBinColor { get; set; }
@@ -113,6 +115,7 @@ namespace BetterLegacy.Configs
 
         public Setting<int> AutosaveLimit { get; set; }
         public Setting<float> AutosaveLoopTime { get; set; }
+        public Setting<bool> SaveAsync { get; set; }
         public Setting<bool> LevelLoadsLastTime { get; set; }
         public Setting<bool> LevelPausesOnStart { get; set; }
         public Setting<bool> BackupPreviousLoadedLevel { get; set; }
@@ -1212,6 +1215,7 @@ namespace BetterLegacy.Configs
             MainZoomAmount = Bind(this, "Timeline", "Main Zoom Amount", 0.05f, "Sets the zoom in & out amount for the main timeline.");
             KeyframeZoomAmount = Bind(this, "Timeline", "Keyframe Zoom Amount", 0.05f, "Sets the zoom in & out amount for the keyframe timeline.");
             KeyframeEndLengthOffset = Bind(this, "Timeline", "Keyframe End Length Offset", 2f, "Sets the amount of space you have after the last keyframe in an object.");
+            TimelineCollapseLength = Bind(this, "Timeline", "Timeline Collapse Length", 0.4f, "How small a collapsed timeline object ends up.", 0.05f, 1f);
             TimelineObjectPrefabTypeIcon = Bind(this, "Timeline", "Timeline Object Prefab Type Icon", true, "Shows the object's prefab type's icon.");
             EventLabelsRenderLeft = Bind(this, "Timeline", "Event Labels Render Left", false, "If the Event Layer labels should render on the left side or not.");
             EventKeyframesRenderBinColor = Bind(this, "Timeline", "Event Keyframes Use Bin Color", true, "If the Event Keyframes should use the bin color when not selected or not.");
@@ -1241,6 +1245,7 @@ namespace BetterLegacy.Configs
 
             AutosaveLimit = Bind(this, "Data", "Autosave Limit", 7, "If autosave count reaches this number, delete the first autosave.");
             AutosaveLoopTime = Bind(this, "Data", "Autosave Loop Time", 600f, "The repeat time of autosave.");
+            SaveAsync = Bind(this, "Data", "Save Async", true, "If saving levels should run asynchronously. Having this on will not show logs in the BepInEx log console.");
             LevelLoadsLastTime = Bind(this, "Data", "Level Loads Last Time", true, "Sets the editor position (audio time, layer, etc) to the last saved editor position on level load.");
             LevelPausesOnStart = Bind(this, "Data", "Level Pauses on Start", false, "Editor pauses on level load.");
             BackupPreviousLoadedLevel = Bind(this, "Data", "Backup Previous Loaded Level", false, "Saves the previously loaded level when loading a different level to a level-previous.lsb file.");
@@ -2389,6 +2394,15 @@ namespace BetterLegacy.Configs
             RoundedUI.SettingChanged += EditorThemeChanged;
 
             AutosaveLoopTime.SettingChanged += AutosaveChanged;
+
+            TimelineCollapseLength.SettingChanged += TimelineCollapseLengthChanged;
+        }
+
+        void TimelineCollapseLengthChanged()
+        {
+            ObjectEditor.TimelineCollapseLength = TimelineCollapseLength.Value;
+            if (ObjectEditor.inst)
+                ObjectEditor.inst.RenderTimelineObjects();
         }
 
         void ThemeEventKeyframeChanged()

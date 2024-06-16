@@ -731,8 +731,12 @@ namespace BetterLegacy.Patchers
                 Instance.DisplayNotification("Saving Beatmap!", 1f, EditorManager.NotificationType.Warning);
                 Instance.savingBeatmap = true;
             }
-            Task task;
-            yield return DataManager.inst.StartCoroutineAsync(ProjectData.Writer.SaveData(_path, (GameData)DataManager.inst.gameData), out task);
+
+            if (EditorConfig.Instance.SaveAsync.Value)
+                yield return CoreHelper.StartCoroutineAsync(ProjectData.Writer.SaveData(_path, GameData.Current));
+            else
+                yield return CoreHelper.StartCoroutine(ProjectData.Writer.SaveData(_path, GameData.Current));
+
             yield return new WaitForSeconds(0.5f);
             if (Instance != null)
             {

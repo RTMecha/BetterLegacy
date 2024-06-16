@@ -196,6 +196,8 @@ namespace BetterLegacy.Editor.Managers
 
         public static float TimelineObjectHoverSize { get; set; }
 
+        public static float TimelineCollapseLength { get; set; }
+
         public GameObject tagPrefab;
 
         #endregion
@@ -1466,7 +1468,7 @@ namespace BetterLegacy.Editor.Managers
 
                 float zoom = EditorManager.inst.Zoom;
 
-                offset = offset <= 0.4f ? 0.4f * zoom : offset * zoom;
+                offset = offset <= TimelineCollapseLength ? TimelineCollapseLength * zoom : offset * zoom;
 
                 var rectTransform = (RectTransform)gameObject.transform;
                 rectTransform.sizeDelta = new Vector2(offset, 20f);
@@ -1507,7 +1509,7 @@ namespace BetterLegacy.Editor.Managers
 
             float zoom = EditorManager.inst.Zoom;
 
-            offset = offset <= 0.4f ? 0.4f * zoom : offset * zoom;
+            offset = offset <= TimelineCollapseLength ? TimelineCollapseLength * zoom : offset * zoom;
 
             var rectTransform = (RectTransform)timelineObject.GameObject.transform;
             rectTransform.sizeDelta = new Vector2(offset, 20f);
