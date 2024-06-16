@@ -6812,7 +6812,7 @@ namespace BetterLegacy.Editor.Managers
 
                 new Document.Element("", Document.Element.Type.Text),
                 new Document.Element("<b>SPECIAL THANKS</b>", Document.Element.Type.Text),
-                new Document.Element("Pidge (developer of the game) - Obviously for making the game itself and inspiring some features in the mods.", Document.Element.Type.Text),
+                new Document.Element("Pidge (developer of the game) - Obviously for making the game itself and inspiring some features in BetterLegacy.", Document.Element.Type.Text),
                 new Document.Element("enchart - Massively helped RTMecha get into modding in the first place. Without enchart, none of this would have been possible.", Document.Element.Type.Text),
                 new Document.Element("SleepyzGamer - Helped a lot in finding things", Document.Element.Type.Text),
                 new Document.Element("KarasuTori - For motivating RTMecha to keep going and experimenting with modding.", Document.Element.Type.Text),
@@ -7537,8 +7537,8 @@ namespace BetterLegacy.Editor.Managers
                 new Document.Element("ObjectModifiers adds a trigger / action based system to Beatmap Objects called \"Modifiers\". " +
                     "Modifiers have two types: Triggers check if something is happening and if it is, it activates any Action type modifiers. If there are no Triggers, then the Action modifiers " +
                     "activates. This document is heavily WIP and will be added to over time.", Document.Element.Type.Text),
-                new Document.Element("<b>setPitch</b> - Modifies the speed of the game and the pitch of the audio. If you have EventsCore installed, it sets a multiplied offset from the " +
-                    "audio keyframe's pitch value. However unlike that, setPitch can go into the negatives allowing for reversed audio.", Document.Element.Type.Text),
+                new Document.Element("<b>setPitch</b> - Modifies the speed of the game and the pitch of the audio. It sets a multiplied offset from the " +
+                    "audio keyframe's pitch value. However unlike the event keyframe, setPitch can go into the negatives allowing for reversed audio.", Document.Element.Type.Text),
                 new Document.Element("<b>addPitch</b> - Does the same as above, except adds to the pitch offset.", Document.Element.Type.Text),
                 new Document.Element("<b>setMusicTime</b> - Sets the Audio Time to go to any point in the song, allowing for skipping specific sections of a song.", Document.Element.Type.Text),
                 new Document.Element("<b>playSound</b> - Plays an external sound. The following details what each value in the modifier does." +
