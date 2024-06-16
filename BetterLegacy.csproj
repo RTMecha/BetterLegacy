@@ -4,7 +4,7 @@
     <TargetFramework>net46</TargetFramework>
     <AssemblyName>BetterLegacy</AssemblyName>
     <Description>Make Project Arrhythmia (Legacy branch) better with this all encompassing mod!</Description>
-    <Version>1.1.2</Version>
+    <Version>1.1.3</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
