@@ -448,20 +448,19 @@ namespace BetterLegacy.Editor.Managers
 
             if (tooltipActive)
             {
-                float num = (float)Screen.width / 1920f;
-                num = 1f / num;
+                float num = CoreHelper.ScreenScaleInverse;
                 float x = mouseTooltipRT.sizeDelta.x;
                 float y = mouseTooltipRT.sizeDelta.y;
                 var tooltipOffset = Vector3.zero;
 
                 // flips tooltip if mouse is close to the edge of the screen.
-                if ((Input.mousePosition.x + x + 32f) * num >= 1920f)
+                if ((Input.mousePosition.x + x) * num >= 1920f)
                     tooltipOffset.x -= x + 8f;
                 else
                     tooltipOffset.x = 8f;
 
                 // flips tooltip if mouse is close to the edge of the screen.
-                if ((Input.mousePosition.y + y + 32f) * num >= 1080f)
+                if ((Input.mousePosition.y + y) * num >= 1080f)
                     tooltipOffset.y -= y;
 
                 var position = (Input.mousePosition + tooltipOffset) * num;
