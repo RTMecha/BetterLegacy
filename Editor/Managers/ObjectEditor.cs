@@ -1257,20 +1257,7 @@ namespace BetterLegacy.Editor.Managers
                 SetCurrentObject(timelineObject);
 
             if (ExampleManager.inst && ExampleManager.inst.Visible && UnityEngine.Random.Range(0, 100) > 80)
-            {
-                string[] sayings = new string[]
-                {
-                    "Ooh, a new object! What will this become?",
-                    "What's that gonna be?",
-                    "Hello new object!",
-                    "What will this object be for?",
-                    "Hey, it's a new object!",
-                    $"What are you gonna use this for, {CoreConfig.Instance.DisplayName.Value}?",
-                    "Look at that new object, isn't it cute?",
-                };
-
-                ExampleManager.inst.Say(sayings[UnityEngine.Random.Range(0, sayings.Length)]);
-            }
+                ExampleManager.inst.SayDialogue("CreateObject");
 
             return timelineObject;
         }

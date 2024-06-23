@@ -113,9 +113,6 @@ namespace BetterLegacy.Example
 
         #region Dialogue
 
-        bool previewSay;
-        bool previewSayCanChange = true;
-
         public string lastDialogue;
 
         public AudioClip speakSound;
@@ -131,62 +128,18 @@ namespace BetterLegacy.Example
             "How are you doing there?"
         };
 
-        public Dictionary<string, Dialogue> dialogueDictionary = new Dictionary<string, Dialogue>
-        {
-            { "LoadedLevel", new Dialogue(new string[]
-                {
-                    "Level has loaded! Have fun building.",
-                    "Have fun!",
-                    "I hope you enjoy the building process!",
-                    "What are you building today?",
-                    "Huh?",
-                }, SayAnyways, delegate () { })
-            },
-            { "LoadedNewLevel", new Dialogue(new string[]
-                {
-                    "Yay, a new level!",
-                    "Oh, it's a new level?",
-                    "What's this level gonna be?",
-                }, SayAnyways, delegate () { })
-            },
-            { "OnPreview", new Dialogue(new string[]
-                {
-                    "This looks amazing so far! :3",
-                    "I think it could use a little more something...",
-                    "Huh?",
-                    "This just needs more work... I think..."
-                }, HasLoadedLevel, delegate () { })
-            },
-        };
+        public Dictionary<string, DialogueGroup> dialogueDictionary = new Dictionary<string, DialogueGroup>();
 
-        public List<Dialogue> occasionalDialogues = new List<Dialogue>
-        {
-            new Dialogue("Seems like you have no levels...", LevelCount),
-            new Dialogue("Maybe you should make something.", LevelCount),
-            new Dialogue("Uh oh... I hope your computer isn't crashing...", ObjectsAlive),
-            new Dialogue("Hmmm...", SayAnyways),
-            new Dialogue("What's up?", SayAnyways),
-            new Dialogue("How are you doing so far?", SayAnyways),
-            new Dialogue("Hey! You should probably have a break. Just saying.", TimeLongerThan10Hours),
-            new Dialogue("Go touch some grass.", TimeLongerThan10Hours),
-            new Dialogue("Jeez.", TimeLongerThan10Hours),
+        float repeat = 60f;
+        bool said = false;
+        public bool canSayThing = false;
 
-            new Dialogue("*Caw caw*", UserIsTori),
-            new Dialogue("CrowBirb moment", UserIsTori),
-            new Dialogue("A four dimensional tesseract.", UserIsCubeCube),
-            new Dialogue("Warning! Incoming game.", UserIsCubeCube), // ReBoot reference
-            new Dialogue("penis monkey", UserIsDiggy),
-            new Dialogue("Snufusnargan", UserIsDiggy),
-            new Dialogue("Brand new backer buddy gay friends, YEAH!", UserIsDiggy),
-            new Dialogue("So... where's all the cookies?", UserIsMecha),
-            new Dialogue("Hey, you might want to set a username.", UserIsPlayer),
-            new Dialogue($"Where's your username? Set it via pressing the ConfigManager toggle key {CoreConfig.Instance.OpenConfigKey.Value}, going to the User section of the Core tab and then changing the name there.", UserIsPlayer),
-            new Dialogue("Zzzzzzz...", UserIsSleepyz, delegate ()
-            {
-                var a = inst.allowBlinking;
-                inst.allowBlinking = false;
-                var animation = new RTAnimation("Sleepy");
-                animation.animationHandlers = new List<AnimationHandlerBase>
+        public void Sleep()
+        {
+            var a = allowBlinking;
+            allowBlinking = false;
+            var animation = new RTAnimation("Sleepy");
+            animation.animationHandlers = new List<AnimationHandlerBase>
                 {
                     new AnimationHandler<float>(new List<IKeyframe<float>>
                     {
@@ -200,33 +153,17 @@ namespace BetterLegacy.Example
                         new FloatKeyframe(1.1f, 1f, Ease.Linear),
                     }, delegate (float x)
                     {
-                        inst.eyes.localScale = new Vector3(1f, x, 1f);
+                        eyes.localScale = new Vector3(1f, x, 1f);
                     }),
                 };
 
-                animation.onComplete = delegate ()
-                {
-                    inst.allowBlinking = a;
-                };
+            animation.onComplete = delegate ()
+            {
+                allowBlinking = a;
+            };
 
-                inst.PlayOnce(animation, false);
-            }),
-
-            new Dialogue("THIS IS SO MUCH FUN! :D", BeingDragged),
-            new Dialogue("Oh that's craazy.", BeingDragged),
-            new Dialogue("Oh...", LeftHandBeingDragged),
-            new Dialogue("Maybe you should open a level?", HasNotLoadedLevel),
-            new Dialogue("I wonder what these levels are like...", HasNotLoadedLevel),
-            new Dialogue("Hello...?", ApplicationNotFocused),
-            new Dialogue("Are you there?", ApplicationNotFocused),
-            new Dialogue("Uhhh...", ApplicationNotFocused),
-            new Dialogue("Where'd you go?", ApplicationNotFocused),
-            new Dialogue("Super rare dialogue", () => UnityEngine.Random.Range(0, 10000) > 9990),
-        };
-
-        float repeat = 60f;
-        bool said = false;
-        public bool canSayThing = false;
+            PlayOnce(animation, false);
+        }
 
         public void SayDialogue(string dialogueName)
         {
@@ -234,7 +171,41 @@ namespace BetterLegacy.Example
                 return;
 
             var dialogues = dialogueDictionary[dialogueName].dialogues;
-            Say(dialogues[UnityEngine.Random.Range(0, dialogues.Length)]);
+            var random = UnityEngine.Random.Range(0, dialogues.Length);
+
+            while (!dialogues[random].CanSay)
+                random = UnityEngine.Random.Range(0, dialogues.Length);
+
+            Say(dialogues[random].text);
+        }
+
+        void LoadDialogue()
+        {
+            dialogueDictionary.Clear();
+            var jn = JSON.Parse(RTFile.ReadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Example Parts/dialogue.json"));
+
+            for (int i = 0; i < jn["dialogue_groups"].Count; i++)
+            {
+                var dialogueGroup = jn["dialogue_groups"][i];
+
+                Dialogue[] dialogues = new Dialogue[dialogueGroup["dialogue"].Count];
+                for (int j = 0; j < dialogueGroup["dialogue"].Count; j++)
+                {
+                    var dialogue = dialogueGroup["dialogue"][j];
+                    int dialogueFunction = 0;
+                    if (dialogue["func_index"] != null)
+                        dialogueFunction = dialogue["func_index"].AsInt;
+
+                    dialogues[j] = new Dialogue(dialogue["text"], dialogueFunctions[dialogueFunction], delegate ()
+                    {
+                        if (dialogue["action"] != null)
+                            RTCode.Evaluate(dialogue["action"]);
+                    });
+                }
+
+                if (!dialogueDictionary.ContainsKey(dialogueGroup["name"]))
+                    dialogueDictionary.Add(dialogueGroup["name"], new DialogueGroup(dialogueGroup["name"], dialogues));
+            }
         }
 
         public static bool CanSay() => inst.canSayThing;
@@ -269,65 +240,63 @@ namespace BetterLegacy.Example
 
         public static bool SayAnyways() => true;
 
-        public static bool ObjectsAlive() => DataManager.inst.gameData != null && DataManager.inst.gameData.beatmapObjects.FindAll(x => x.TimeWithinLifespan()).Count > 900;
+        public static bool ObjectsAliveCountHigherThan900() => DataManager.inst.gameData != null && DataManager.inst.gameData.beatmapObjects.FindAll(x => x.TimeWithinLifespan()).Count > 900;
 
-        public static bool LevelCount() => EditorManager.inst && EditorManager.inst.loadedLevels.Count <= 0;
+        public static bool LevelCountIsZero() => EditorManager.inst && EditorManager.inst.loadedLevels.Count <= 0;
+
+        public static bool UserIsMoNsTeR() => CoreConfig.Instance.DisplayName.Value.Replace(" ", "").ToLower() == "monster";
 
         public void RepeatDialogues()
         {
-            if (!talking)
+            if (talking)
+                return;
+
+            float t = time % repeat;
+            if (t > repeat - 1f)
             {
-                float t = time % repeat;
-                if (t > repeat - 1f)
-                {
-                    if (said)
-                        return;
+                if (said)
+                    return;
 
-                    said = true;
-                    int random = UnityEngine.Random.Range(0, occasionalDialogues.Count - 1);
+                said = true;
 
-                    if (occasionalDialogues[random].CanSay)
-                    {
-                        Say(occasionalDialogues[random].text);
-                        occasionalDialogues[random].Action();
-                    }
-                }
-                else
-                    said = false;
+                SayDialogue("OccasionalDialogue");
             }
+            else
+                said = false;
         }
 
         int currentDialogueIndex = 0;
 
-        public int GetCurrentDialogueLength() => CurrentDialogueLength;
 
-        public int CurrentDialogueLength
+        public DialogueFunction[] dialogueFunctions = new DialogueFunction[]
         {
-            get
-            {
-                return CurrentDialogue.Length;
-            }
-        }
+            SayAnyways, // 0
+            HasLoadedLevel, // 1
+            CanSay, // 2
+            ApplicationNotFocused, // 3
+            HasNotLoadedLevel, // 4
+            LeftHandBeingDragged, // 5
+            RightHandBeingDragged, // 6
+            BeingDragged, // 7
+            UserIsSleepyz, // 8
+            UserIsMecha, // 9
+            UserIsDiggy, // 10
+            UserIsCubeCube, // 11
+            UserIsTori, // 12
+            UserIsPlayer, // 13
+            TimeLongerThan10Hours, // 14
+            ObjectsAliveCountHigherThan900, // 15
+            LevelCountIsZero, // 16
+            UserIsMoNsTeR, // 17
+        };
 
         public int CurrentDialogueIndex
         {
-            get
-            {
-                return Mathf.Clamp(currentDialogueIndex, 0, dialogues.Length - 1);
-            }
-            set
-            {
-                currentDialogueIndex = Mathf.Clamp(value, 0, dialogues.Length - 1);
-            }
+            get => Mathf.Clamp(currentDialogueIndex, 0, dialogues.Length - 1);
+            set => currentDialogueIndex = Mathf.Clamp(value, 0, dialogues.Length - 1);
         }
 
-        public string CurrentDialogue
-        {
-            get
-            {
-                return dialogues[CurrentDialogueIndex];
-            }
-        }
+        public string CurrentDialogue => dialogues[CurrentDialogueIndex];
 
         public class Dialogue
         {
@@ -338,23 +307,32 @@ namespace BetterLegacy.Example
                 this.action = action;
             }
 
-            public Dialogue(string[] dialogues, DialogueFunction dialogueFunction, Action action)
-            {
-                this.dialogues = dialogues;
-                this.dialogueFunction = dialogueFunction;
-                this.action = action;
-            }
-
             public bool CanSay => dialogueFunction != null && dialogueFunction.Invoke() && canSay;
 
             public void Action() => action?.Invoke();
 
-            public string[] dialogues;
             public string text;
             public DialogueFunction dialogueFunction;
             public bool canSay = true;
 
             Action action;
+        }
+
+        public class DialogueGroup
+        {
+            public DialogueGroup()
+            {
+
+            }
+
+            public DialogueGroup(string name, Dialogue[] dialogues)
+            {
+                this.name = name;
+                this.dialogues = dialogues;
+            }
+
+            public string name;
+            public Dialogue[] dialogues;
         }
 
         #endregion
@@ -455,9 +433,9 @@ namespace BetterLegacy.Example
 
         public void LoadMemory()
         {
-            if (RTFile.DirectoryExists(RTFile.ApplicationDirectory + "profile") && RTFile.FileExists(RTFile.ApplicationDirectory + "profile/example.txt"))
+            if (RTFile.FileExists(RTFile.ApplicationDirectory + "profile/example_memory.json"))
             {
-                memory = JSON.Parse(FileManager.inst.LoadJSONFile("profile/example.txt"));
+                memory = JSON.Parse(RTFile.ReadFromFile("profile/example_memory.json"));
             }
         }
 
@@ -651,6 +629,7 @@ namespace BetterLegacy.Example
             {
                 LoadMemory();
                 LoadTutorials();
+                LoadDialogue();
             }
             catch
             {
@@ -729,23 +708,6 @@ namespace BetterLegacy.Example
 
             if (chatterBase != null)
                 chatterBase.localPosition = new Vector3(TotalPosition.x, TotalPosition.y - 110f, 0f);
-
-            if (TotalPosition.x < 130f && TotalPosition.y > -80f && EditorManager.inst && !EditorManager.inst.isEditing)
-            {
-                if (previewSayCanChange)
-                {
-                    previewSay = UnityEngine.Random.Range(0, 100) > 45;
-                    previewSayCanChange = false;
-                }
-
-                if (dialogueDictionary["OnPreview"].CanSay && previewSay && !talking)
-                {
-                    dialogueDictionary["OnPreview"].canSay = false;
-                    var dialogues = dialogueDictionary["OnPreview"].dialogues;
-                    Say(dialogues[UnityEngine.Random.Range(0, dialogues.Length - 1)]);
-                }
-            }
-            else { dialogueDictionary["OnPreview"].canSay = true; previewSayCanChange = true; }
         }
 
         void FixedUpdate()
@@ -2223,7 +2185,7 @@ namespace BetterLegacy.Example
             {
                 ResetPositions(1.6f, onComplete: delegate ()
                 {
-                    Say("What would you like me to do?", onComplete: delegate () { talking = false; });
+                    SayDialogue("SpawnText");
                 });
             });
 
@@ -2277,6 +2239,23 @@ namespace BetterLegacy.Example
         //ExampleManager.inst.Say("Hello, I am Example and this is a test!", new Vector2(0f, 200f))
         public void Say(string dialogue, List<IKeyframe<float>> xPos = null, List<IKeyframe<float>> yPos = null, float textLength = 1.5f, float stayTime = 4f, float time = 0.7f, bool stopOthers = true, Action onComplete = null)
         {
+            dialogue = dialogue.Replace("{{username}}", CoreConfig.Instance.DisplayName.Value);
+
+            var regex = new Regex(@"{{Config_(.*?)_(.*?)}}");
+            var match = regex.Match(dialogue);
+            if (match.Success)
+            {
+                var str = match.Groups[1].ToString();
+                BaseConfig baseConfig = str == "CoreConfig" ? CoreConfig.Instance : EditorConfig.Instance;
+
+                var setting = baseConfig.Settings.Find(x => x.Key == match.Groups[2].ToString());
+
+                if (setting != null)
+                {
+                    dialogue = dialogue.Replace("{{Config_" + match.Groups[1].ToString() + "_" + match.Groups[2].ToString() + "}}", setting.BoxedValue.ToString());
+                }
+            }
+
             if (stopOthers)
                 animations.FindAll(x => x.name.Contains("DIALOGUE: ")).ForEach(delegate (RTAnimation anim)
                  {
