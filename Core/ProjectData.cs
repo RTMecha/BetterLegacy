@@ -277,7 +277,7 @@ namespace BetterLegacy.Core
 
         public static class Writer
         {
-            public static IEnumerator SaveData(string _path, GameData _data, Action onSave = null)
+            public static IEnumerator SaveData(string _path, GameData _data, Action onSave = null, bool saveGameDataThemes = false)
             {
                 CoreHelper.Log("Saving Beatmap");
                 var jn = JSON.Parse("{}");
@@ -315,11 +315,7 @@ namespace BetterLegacy.Core
                 for (int i = 0; i < AssetManager.SpriteAssets.Count; i++)
                 {
                     jn["assets"]["spr"][i]["n"] = AssetManager.SpriteAssets.ElementAt(i).Key;
-                    var imageData = AssetManager.SpriteAssets.ElementAt(i).Value.texture.EncodeToPNG();
-                    for (int j = 0; j < imageData.Length; j++)
-                    {
-                        jn["assets"]["spr"][i]["d"][j] = imageData[j];
-                    }
+                    jn["assets"]["spr"][i]["i"] = SpriteManager.SpriteToString(AssetManager.SpriteAssets.ElementAt(i).Value);
                 }
 
                 CoreHelper.Log("Saving Object Prefabs");
@@ -343,7 +339,7 @@ namespace BetterLegacy.Core
                     }
                 }
                 CoreHelper.Log($"Saving themes");
-                var levelThemes = DataManager.inst.CustomBeatmapThemes.Where(x => Parser.TryParse(x.id, 0) != 0 && _data.eventObjects.allEvents[4].Has(y => y.eventValues[0] == Parser.TryParse(x.id, 0))).ToList();
+                var levelThemes = saveGameDataThemes ? _data.beatmapThemes.Where(x => Parser.TryParse(x.Value.id, 0) != 0 && _data.eventObjects.allEvents[4].Has(y => y.eventValues[0] == Parser.TryParse(x.Value.id, 0))).Select(x => x.Value).ToList() : DataManager.inst.CustomBeatmapThemes.Where(x => Parser.TryParse(x.id, 0) != 0 && _data.eventObjects.allEvents[4].Has(y => y.eventValues[0] == Parser.TryParse(x.id, 0))).ToList();
 
                 for (int i = 0; i < levelThemes.Count; i++)
                 {

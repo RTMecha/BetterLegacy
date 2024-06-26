@@ -420,7 +420,7 @@ namespace BetterLegacy.Editor.Managers
                 StartCoroutine(ProjectData.Writer.SaveData(save, combinedGameData, delegate ()
                 {
                     EditorManager.inst.DisplayNotification($"Combined {FontManager.TextTranslater.ArrayToString(list.ToArray())} to {savePath}!", 3f, EditorManager.NotificationType.Success);
-                }));
+                }, true));
             else
                 StartCoroutine(ProjectData.Writer.SaveDataVG(save.Replace(".lsb", ".vgd"), combinedGameData, delegate ()
                 {
