@@ -1999,8 +1999,8 @@ namespace BetterLegacy.Editor.Managers
             var config = EditorConfig.Instance;
 
             // Here we add the Example prefab provided to you.
-            if (!DataManager.inst.gameData.prefabs.Exists(x => x.ID == "toYoutoYoutoYou") && config.PrefabExampleTemplate.Value)
-                DataManager.inst.gameData.prefabs.Add(Prefab.DeepCopy(ExamplePrefab.PAExampleM, false));
+            if (!DataManager.inst.gameData.prefabs.Exists(x => x.ID == LegacyPlugin.ExamplePrefab.ID) && config.PrefabExampleTemplate.Value)
+                DataManager.inst.gameData.prefabs.Add(Prefab.DeepCopy(LegacyPlugin.ExamplePrefab, false));
 
             yield return new WaitForSeconds(0.03f);
 

@@ -70,6 +70,9 @@ namespace BetterLegacy
             digitalGlitchShader = assetBundle.LoadAsset<Shader>("digitalglitch.shader"); // Load asset
         }
 
+
+        public static Prefab ExamplePrefab { get; set; }
+
         void Awake()
         {
             inst = this;
