@@ -15,9 +15,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using BeatmapObject = DataManager.GameData.BeatmapObject;
-using BeatmapTheme = DataManager.BeatmapTheme;
-using Prefab = DataManager.GameData.Prefab;
+using BaseBeatmapObject = DataManager.GameData.BeatmapObject;
+using BaseBeatmapTheme = DataManager.BeatmapTheme;
+using BasePrefab = DataManager.GameData.Prefab;
 
 namespace BetterLegacy.Patchers
 {
@@ -336,6 +336,19 @@ namespace BetterLegacy.Patchers
 
             try
             {
+                var path = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Example Parts/pa_example_m.lsp";
+                if (RTFile.FileExists(path))
+                {
+                    LegacyPlugin.ExamplePrefab = Prefab.Parse(JSON.Parse(RTFile.ReadFromFile(path)));
+                }
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Failed to parse Example prefab.\n{ex}");
+            } // Example Prefab
+
+            try
+            {
                 int num = 0;
                 while (Instance.PrefabTypes.Count < 20)
                 {
@@ -379,9 +392,9 @@ namespace BetterLegacy.Patchers
             JSONNode jn;
             try
             {
-                if (__1 is Core.Data.MetaData)
+                if (__1 is MetaData)
                 {
-                    jn = ((Core.Data.MetaData)__1).ToJSON();
+                    jn = ((MetaData)__1).ToJSON();
 
                     Debug.Log($"{__instance.className}Saving Metadata Full");
                     RTFile.WriteToFile(__0, jn.ToString());
@@ -410,7 +423,7 @@ namespace BetterLegacy.Patchers
                     LSFile.WriteToFile(__0, jn.ToString());
                 }
             }
-            catch (System.Exception)
+            catch (Exception)
             {
                 jn = JSON.Parse("{}");
                 jn["artist"]["name"] = __1.artist.Name;
@@ -441,7 +454,7 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch("GeneratePrefabJSON")]
         [HarmonyPrefix]
-        static bool GeneratePrefabJSON(ref JSONNode __result, Prefab __0)
+        static bool GeneratePrefabJSON(ref JSONNode __result, BasePrefab __0)
         {
             __result = ((Core.Data.Prefab)__0).ToJSON();
             return false;
@@ -683,12 +696,12 @@ namespace BetterLegacy.Patchers
         static bool ParseBeatmapPatch(string _json) => false;
     }
 
-    [HarmonyPatch(typeof(BeatmapTheme))]
+    [HarmonyPatch(typeof(BaseBeatmapTheme))]
     public class DataManagerBeatmapThemePatch
     {
         [HarmonyPatch("Lerp")]
         [HarmonyPrefix]
-        static bool Lerp(BeatmapTheme __instance, ref BeatmapTheme _start, ref BeatmapTheme _end, float _val)
+        static bool Lerp(BaseBeatmapTheme __instance, ref BaseBeatmapTheme _start, ref BaseBeatmapTheme _end, float _val)
         {
             __instance.guiColor = Color.Lerp(_start.guiColor, _end.guiColor, _val);
             __instance.backgroundColor = Color.Lerp(_start.backgroundColor, _end.backgroundColor, _val);
@@ -725,9 +738,9 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch("Parse")]
         [HarmonyPrefix]
-        static bool ParsePrefix(BeatmapTheme __instance, ref BeatmapTheme __result, JSONNode __0, bool __1)
+        static bool ParsePrefix(BaseBeatmapTheme __instance, ref BaseBeatmapTheme __result, JSONNode __0, bool __1)
         {
-            BeatmapTheme beatmapTheme = new BeatmapTheme();
+            BaseBeatmapTheme beatmapTheme = new BaseBeatmapTheme();
             beatmapTheme.id = DataManager.inst.AllThemes.Count().ToString();
             if (__0["id"] != null)
                 beatmapTheme.id = __0["id"];
@@ -890,9 +903,9 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch("DeepCopy")]
         [HarmonyPrefix]
-        static bool DeepCopyPatch(ref BeatmapTheme __result, BeatmapTheme __0, bool __1 = false)
+        static bool DeepCopyPatch(ref BaseBeatmapTheme __result, BaseBeatmapTheme __0, bool __1 = false)
         {
-            var themeCopy = new BeatmapTheme();
+            var themeCopy = new BaseBeatmapTheme();
             themeCopy.name = __0.name;
             themeCopy.playerColors = new List<Color>((from cols in __0.playerColors
                                                       select new Color(cols.r, cols.g, cols.b, cols.a)).ToList());
@@ -902,7 +915,7 @@ namespace BetterLegacy.Patchers
             themeCopy.backgroundColor = __0.backgroundColor;
             themeCopy.backgroundColors = new List<Color>((from cols in __0.backgroundColors
                                                           select new Color(cols.r, cols.g, cols.b, cols.a)).ToList());
-            AccessTools.Field(typeof(BeatmapTheme), "expanded").SetValue(themeCopy, AccessTools.Field(typeof(BeatmapTheme), "expanded").GetValue(__0));
+            AccessTools.Field(typeof(BaseBeatmapTheme), "expanded").SetValue(themeCopy, AccessTools.Field(typeof(BaseBeatmapTheme), "expanded").GetValue(__0));
             if (__1)
             {
                 themeCopy.id = __0.id;
@@ -934,33 +947,33 @@ namespace BetterLegacy.Patchers
         }
     }
 
-    [HarmonyPatch(typeof(BeatmapObject))]
+    [HarmonyPatch(typeof(BaseBeatmapObject))]
     public class DataManagerBeatmapObjectPatch
     {
         [HarmonyPatch("ParseGameObject")]
         [HarmonyPrefix]
-        static bool ParseGameObjectPrefix(ref BeatmapObject __result, JSONNode __0)
+        static bool ParseGameObjectPrefix(ref BaseBeatmapObject __result, JSONNode __0)
         {
             __result = Core.Data.BeatmapObject.Parse(__0);
             return false;
         }
     }
 
-    [HarmonyPatch(typeof(Prefab))]
+    [HarmonyPatch(typeof(BasePrefab))]
     public class DataManagerPrefabPatch
     {
         [HarmonyPatch("DeepCopy")]
         [HarmonyPrefix]
-        static bool DeepCopyPrefix(ref Prefab __result, Prefab __0, bool __1 = true)
+        static bool DeepCopyPrefix(ref BasePrefab __result, BasePrefab __0, bool __1 = true)
         {
-            Prefab prefab = new Prefab();
+            BasePrefab prefab = new BasePrefab();
             prefab.Name = __0.Name;
             prefab.ID = (__1 ? LSText.randomString(16) : __0.ID);
             prefab.MainObjectID = __0.MainObjectID;
             prefab.Type = __0.Type;
             prefab.Offset = __0.Offset;
-            prefab.objects = new List<BeatmapObject>((from obj in __0.objects
-                                                      select BeatmapObject.DeepCopy(obj, false)).ToList());
+            prefab.objects = new List<BaseBeatmapObject>((from obj in __0.objects
+                                                      select BaseBeatmapObject.DeepCopy(obj, false)).ToList());
 
             prefab.prefabObjects = new List<DataManager.GameData.PrefabObject>((from obj in __0.prefabObjects
                                                                                 select DataManager.GameData.PrefabObject.DeepCopy(obj, false)).ToList());
