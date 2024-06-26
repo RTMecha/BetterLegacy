@@ -4382,6 +4382,11 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+                    case "setAchievement":
+                        {
+                            AchievementManager.inst.SetAchievement(modifier.value);
+                            break;
+                        }
                     case "backgroundShape":
                         {
                             if (modifier.reference.shape == 4 || modifier.reference.shape == 6 || modifier.reference.shape == 9 || modifier.Result != null)
