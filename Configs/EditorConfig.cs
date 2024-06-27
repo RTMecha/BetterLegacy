@@ -238,6 +238,14 @@ namespace BetterLegacy.Configs
         public Setting<KeyCode> ScrollwheelVector2LargeAmountKey { get; set; }
         public Setting<KeyCode> ScrollwheelVector2SmallAmountKey { get; set; }
         public Setting<KeyCode> ScrollwheelVector2RegularAmountKey { get; set; }
+
+        public Setting<float> ObjectPositionScroll { get; set; }
+        public Setting<float> ObjectPositionScrollMultiply { get; set; }
+        public Setting<float> ObjectScaleScroll { get; set; }
+        public Setting<float> ObjectScaleScrollMultiply { get; set; }
+        public Setting<float> ObjectRotationScroll { get; set; }
+        public Setting<float> ObjectRotationScrollMultiply { get; set; }
+
         public Setting<bool> ShowModifiedColors { get; set; }
         public Setting<string> ThemeTemplateName { get; set; }
         public Setting<Color> ThemeTemplateGUI { get; set; }
@@ -1367,6 +1375,14 @@ namespace BetterLegacy.Configs
             ScrollwheelVector2LargeAmountKey = BindEnum(this, "Fields", "Scrollwheel Vector2 Large Amount Key", KeyCode.LeftControl, "If this key is being held while you are scrolling over a number field, the number will change by a large amount. If the key is set to None, you will not need to hold a key.");
             ScrollwheelVector2SmallAmountKey = BindEnum(this, "Fields", "Scrollwheel Vector2 Small Amount Key", KeyCode.LeftAlt, "If this key is being held while you are scrolling over a number field, the number will change by a small amount. If the key is set to None, you will not need to hold a key.");
             ScrollwheelVector2RegularAmountKey = BindEnum(this, "Fields", "Scrollwheel Vector2 Regular Amount Key", KeyCode.None, "If this key is being held while you are scrolling over a number field, the number will change by the regular amount. If the key is set to None, you will not need to hold a key.");
+
+            ObjectPositionScroll = Bind(this, "Fields", "Object Position Scroll", 0.1f, "The amount that is added when the Object Keyframe Editor position fields are scrolled on.");
+            ObjectPositionScrollMultiply = Bind(this, "Fields", "Object Position Scroll Multiply", 10f, "The amount that is added (multiply) when the Object Keyframe Editor position fields are scrolled on.");
+            ObjectScaleScroll = Bind(this, "Fields", "Object Scale Scroll", 0.1f, "The amount that is added when the Object Keyframe Editor scale fields are scrolled on.");
+            ObjectScaleScrollMultiply = Bind(this, "Fields", "Object Scale Scroll Multiply", 10f, "The amount that is added (multiply) when the Object Keyframe Editor scale fields are scrolled on.");
+            ObjectRotationScroll = Bind(this, "Fields", "Object Rotation Scroll", 15f, "The amount that is added when the Object Keyframe Editor rotation fields are scrolled on.");
+            ObjectRotationScrollMultiply = Bind(this, "Fields", "Object Rotation Scroll Multiply", 3f, "The amount that is added (multiply) when the Object Keyframe Editor rotation fields are scrolled on.");
+
             ShowModifiedColors = Bind(this, "Fields", "Show Modified Colors", true, "Keyframe colors show any modifications done (such as hue, saturation and value).");
             ThemeTemplateName = Bind(this, "Fields", "Theme Template Name", "New Theme", "Name of the template theme.");
             ThemeTemplateGUI = Bind(this, "Fields", "Theme Template GUI", LSColors.white, "GUI Color of the template theme.");
@@ -2439,10 +2455,7 @@ namespace BetterLegacy.Configs
             CoreHelper.StartCoroutine(EditorThemeManager.RenderElements());
         }
 
-        void MarkerChanged()
-        {
-            MarkerEditor.inst?.RenderMarkers();
-        }
+        void MarkerChanged() => MarkerEditor.inst?.RenderMarkers();
 
         void ModdedEditorChanged()
         {
@@ -2451,9 +2464,7 @@ namespace BetterLegacy.Configs
             AdjustPositionInputsChanged?.Invoke();
 
             if (ObjectEditor.inst && ObjectEditor.inst.SelectedObjectCount == 1 && ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
-            {
                 CoreHelper.StartCoroutine(ObjectEditor.RefreshObjectGUI(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>()));
-            }
 
             if (RTEditor.inst && RTEditor.inst.layerType == RTEditor.LayerType.Events)
             {
@@ -2462,15 +2473,15 @@ namespace BetterLegacy.Configs
                     RTEventEditor.inst.RenderEventsDialog();
             }
 
-            if (PrefabEditorManager.inst)
-            {
-                var prefabSelectorLeft = EditorManager.inst.GetDialog("Prefab Selector").Dialog.Find("data/left");
+            if (!PrefabEditorManager.inst)
+                return;
 
-                if (!prefabSelectorLeft.gameObject.activeInHierarchy)
-                    PrefabEditorManager.inst.UpdateModdedVisbility();
-                else if (ObjectEditor.inst.CurrentSelection.IsPrefabObject)
-                    PrefabEditorManager.inst.RenderPrefabObjectDialog(ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>());
-            }
+            var prefabSelectorLeft = EditorManager.inst.GetDialog("Prefab Selector").Dialog.Find("data/left");
+
+            if (!prefabSelectorLeft.gameObject.activeInHierarchy)
+                PrefabEditorManager.inst.UpdateModdedVisbility();
+            else if (ObjectEditor.inst.CurrentSelection.IsPrefabObject)
+                PrefabEditorManager.inst.RenderPrefabObjectDialog(ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>());
         }
 
         void DraggingChanged()
@@ -2481,10 +2492,11 @@ namespace BetterLegacy.Configs
 
         void TimelineWaveformChanged()
         {
+            if (!RTEditor.inst)
+                return;
+
             if (WaveformRerender.Value)
-            {
                 RTEditor.inst.StartCoroutine(RTEditor.inst.AssignTimelineTexture());
-            }
         }
 
         void ThemePopupChanged()
@@ -2496,16 +2508,22 @@ namespace BetterLegacy.Configs
         {
             ObjectEditor.HideVisualElementsWhenObjectIsEmpty = HideVisualElementsWhenObjectIsEmpty.Value;
 
-            if (ObjEditor.inst)
-            {
-                ObjEditor.inst.zoomBounds = KeyframeZoomBounds.Value;
-                ObjEditor.inst.ObjectLengthOffset = KeyframeEndLengthOffset.Value;
-                ObjEditor.inst.SelectedColor = ObjectSelectionColor.Value;
-            }
+            if (!ObjEditor.inst)
+                return;
+
+            ObjEditor.inst.zoomBounds = KeyframeZoomBounds.Value;
+            ObjEditor.inst.ObjectLengthOffset = KeyframeEndLengthOffset.Value;
+            ObjEditor.inst.SelectedColor = ObjectSelectionColor.Value;
+
+            if (ObjectEditor.inst.SelectedObjectCount == 1 && ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+                CoreHelper.StartCoroutine(ObjectEditor.RefreshObjectGUI(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>()));
         }
 
         void TimelineGridChanged()
         {
+            if (!RTEditor.inst)
+                return;
+
             RTEditor.inst.timelineGridRenderer.enabled = false;
 
             RTEditor.inst.timelineGridRenderer.color = TimelineGridColor.Value;
@@ -2539,9 +2557,7 @@ namespace BetterLegacy.Configs
             AdjustPositionInputsChanged?.Invoke();
 
             if (RTEditor.inst.layerType == RTEditor.LayerType.Events)
-            {
                 RTEventEditor.inst.RenderLayerBins();
-            }
         }
 
         void SetPreviewConfig()
@@ -2579,13 +2595,14 @@ namespace BetterLegacy.Configs
 
         void SetNotificationProperties()
         {
+            if (!EditorManager.inst)
+                return;
+
             CoreHelper.Log("Setting Notification values");
             var notifyRT = EditorManager.inst.notification.transform.AsRT();
             var notifyGroup = EditorManager.inst.notification.GetComponent<VerticalLayoutGroup>();
             notifyRT.sizeDelta = new Vector2(NotificationWidth.Value, 632f);
-            EditorManager.inst.notification.transform.localScale =
-                new Vector3(NotificationSize.Value, NotificationSize.Value,
-                    1f);
+            EditorManager.inst.notification.transform.localScale = new Vector3(NotificationSize.Value, NotificationSize.Value, 1f);
 
             var direction = NotificationDirection.Value;
 

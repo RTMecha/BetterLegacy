@@ -3337,14 +3337,26 @@ namespace BetterLegacy.Editor.Managers
             }
 
             valueEventTrigger.triggers.Clear();
-            if (type != 2)
+
+            switch (type)
             {
-                valueEventTrigger.triggers.Add(TriggerHelper.ScrollDelta(valueInputField, multi: true));
-                valueEventTrigger.triggers.Add(TriggerHelper.ScrollDeltaVector2(kfdialog.GetChild(9).GetChild(0).GetComponent<InputField>(), kfdialog.GetChild(9).GetChild(1).GetComponent<InputField>(), 0.1f, 10f));
-            }
-            else
-            {
-                valueEventTrigger.triggers.Add(TriggerHelper.ScrollDelta(valueInputField, 15f, 3f));
+                case 0:
+                    {
+                        valueEventTrigger.triggers.Add(TriggerHelper.ScrollDelta(valueInputField, EditorConfig.Instance.ObjectPositionScroll.Value, EditorConfig.Instance.ObjectPositionScrollMultiply.Value, multi: true));
+                        valueEventTrigger.triggers.Add(TriggerHelper.ScrollDeltaVector2(kfdialog.GetChild(9).GetChild(0).GetComponent<InputField>(), kfdialog.GetChild(9).GetChild(1).GetComponent<InputField>(), EditorConfig.Instance.ObjectPositionScroll.Value, EditorConfig.Instance.ObjectPositionScrollMultiply.Value));
+                        break;
+                    }
+                case 1:
+                    {
+                        valueEventTrigger.triggers.Add(TriggerHelper.ScrollDelta(valueInputField, EditorConfig.Instance.ObjectScaleScroll.Value, EditorConfig.Instance.ObjectScaleScrollMultiply.Value, multi: true));
+                        valueEventTrigger.triggers.Add(TriggerHelper.ScrollDeltaVector2(kfdialog.GetChild(9).GetChild(0).GetComponent<InputField>(), kfdialog.GetChild(9).GetChild(1).GetComponent<InputField>(), EditorConfig.Instance.ObjectScaleScroll.Value, EditorConfig.Instance.ObjectScaleScrollMultiply.Value));
+                        break;
+                    }
+                case 2:
+                    {
+                        valueEventTrigger.triggers.Add(TriggerHelper.ScrollDelta(valueInputField, EditorConfig.Instance.ObjectRotationScroll.Value, EditorConfig.Instance.ObjectRotationScrollMultiply.Value));
+                        break;
+                    }
             }
 
             int current = i;
