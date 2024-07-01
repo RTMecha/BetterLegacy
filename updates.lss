@@ -1,3 +1,7 @@
+1.1.5 > [Jul 1, 2024]
+- Added custom scroll values for object keyframe editor.
+- Started working on an animation editor. It's going to look similar to the regular object editor, but instead it'll be exclusively used to edit animations of the player and anything else that will need custom animations.
+- Added copyAxisMath modifier. This modifier allows for custom expressions, in case the way the regular copyAxis modifier isn't the way you'd like it to be.
 1.1.4 > [Jun 26, 2024]
 - Reworked Example's dialogue a tiny bit.
 - Optimized dragging.
