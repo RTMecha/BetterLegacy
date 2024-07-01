@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using UnityEngine;
 
@@ -7,6 +8,9 @@ namespace BetterLegacy.Core
 {
     public static class RTMath
     {
+        // from https://stackoverflow.com/questions/355062/is-there-a-string-math-evaluator-in-net
+        public static double Evaluate(string str) => Convert.ToDouble(new DataTable().Compute(str, null));
+
         public static float Lerp(float x, float y, float t) => x + (y - x) * t;
         public static Vector2 Lerp(Vector2 x, Vector2 y, float t) => x + (y - x) * t;
         public static Vector3 Lerp(Vector3 x, Vector3 y, float t) => x + (y - x) * t;
