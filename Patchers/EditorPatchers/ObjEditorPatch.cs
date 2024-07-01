@@ -1751,6 +1751,8 @@ namespace BetterLegacy.Patchers
             EditorThemeManager.AddGraphic(pasteCol.image, ThemeGroup.Paste, true);
             EditorThemeManager.AddGraphic(pasteColText, ThemeGroup.Paste_Text);
 
+            //AnimationEditor.Init();
+
             yield break;
         }
 
