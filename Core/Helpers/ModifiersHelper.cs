@@ -4258,6 +4258,110 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+                    case "copyAxisMath":
+                        {
+                            /*
+                            From Type: (Pos / Sca / Rot)
+                            From Axis: (X / Y / Z)
+                            Object Group
+                            To Type: (Pos / Sca / Rot)
+                            To Axis: (X / Y / Z)
+                            */
+
+                            try
+                            {
+                                if (int.TryParse(modifier.commands[1], out int fromType) && int.TryParse(modifier.commands[2], out int fromAxis)
+                                    && int.TryParse(modifier.commands[3], out int toType) && int.TryParse(modifier.commands[4], out int toAxis)
+                                    && float.TryParse(modifier.commands[5], out float delay) && float.TryParse(modifier.commands[6], out float min)
+                                    && float.TryParse(modifier.commands[7], out float max) && bool.TryParse(modifier.commands[9], out bool useVisual)
+                                    && DataManager.inst.gameData.beatmapObjects.TryFind(x => (x as BeatmapObject).tags.Contains(modifier.value), out DataManager.GameData.BeatmapObject beatmapObject)
+                                    && beatmapObject != null)
+                                {
+                                    var time = AudioManager.inst.CurrentAudioSource.time;
+
+                                    var bm = beatmapObject as BeatmapObject;
+
+                                    fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
+                                    fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].eventValues.Length);
+
+                                    if (!useVisual && Updater.levelProcessor.converter.cachedSequences.ContainsKey(bm.id))
+                                    {
+                                        if (toType >= 0 && toType < 3 && fromType == 0)
+                                        {
+                                            var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].Position3DSequence.Interpolate(time - bm.StartTime - delay);
+                                            var axis = fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z;
+                                            float value = (float)RTMath.Evaluate(modifier.commands[8].Replace("axis", axis.ToString()));
+
+                                            modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
+                                        }
+
+                                        if (toType >= 0 && toType < 3 && fromType == 1)
+                                        {
+                                            var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].ScaleSequence.Interpolate(time - bm.StartTime - delay);
+                                            var axis = fromAxis == 0 ? sequence.x : sequence.y;
+                                            float value = (float)RTMath.Evaluate(modifier.commands[8].Replace("axis", axis.ToString()));
+
+                                            modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
+                                        }
+
+                                        if (toType >= 0 && toType < 3 && fromType == 2)
+                                        {
+                                            float sequence = (float)RTMath.Evaluate(modifier.commands[8].Replace("axis", Updater.levelProcessor.converter.cachedSequences[bm.id].RotationSequence.Interpolate(time - bm.StartTime - delay).ToString()));
+
+                                            modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(sequence, min, max));
+                                        }
+
+                                        if (toType == 3 && toAxis == 0 && fromType == 3 && Updater.levelProcessor.converter.cachedSequences[bm.id].ColorSequence != null &&
+                                            modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null &&
+                                            modifier.reference.levelObject.visualObject.Renderer)
+                                        {
+                                            var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].ColorSequence.Interpolate(time - bm.StartTime - delay);
+
+                                            var renderer = modifier.reference.levelObject.visualObject.Renderer;
+
+                                            renderer.material.color = RTMath.Lerp(renderer.material.color, sequence, (float)RTMath.Evaluate(modifier.commands[8]));
+                                        }
+                                    }
+                                    else if (useVisual && Updater.TryGetObject(bm, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
+                                    {
+                                        var transform = levelObject.visualObject.GameObject.transform;
+
+                                        if (toType >= 0 && toType < 3 && fromType == 0)
+                                        {
+                                            var sequence = transform.position;
+                                            var axis = fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z;
+                                            float value = (float)RTMath.Evaluate(modifier.commands[8].Replace("axis", axis.ToString()));
+
+                                            modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
+                                        }
+
+                                        if (toType >= 0 && toType < 3 && fromType == 1)
+                                        {
+                                            var sequence = transform.lossyScale;
+                                            var axis = fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z;
+                                            float value = (float)RTMath.Evaluate(modifier.commands[8].Replace("axis", axis.ToString()));
+
+                                            modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
+                                        }
+
+                                        if (toType >= 0 && toType < 3 && fromType == 2)
+                                        {
+                                            var sequence = transform.rotation.eulerAngles;
+                                            var axis = fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z;
+                                            float value = (float)RTMath.Evaluate(modifier.commands[8].Replace("axis", axis.ToString()));
+
+                                            modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
+                                        }
+                                    }
+                                }
+                            }
+                            catch
+                            {
+
+                            } // try catch for cases where the math is broken
+
+                            break;
+                        }
                     case "copyPlayerAxis":
                         {
                             /*

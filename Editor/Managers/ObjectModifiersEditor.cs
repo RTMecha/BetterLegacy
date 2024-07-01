@@ -1744,6 +1744,25 @@ namespace BetterLegacy.Editor.Managers
 
                             break;
                         }
+                    case "copyAxisMath":
+                        {
+                            stringGenerator("Object Group", 0);
+
+                            dropdownGenerator("From Type", 1, new List<string> { "Position", "Scale", "Rotation", "Color" });
+                            dropdownGenerator("From Axis", 2, new List<string> { "X", "Y", "Z" });
+
+                            dropdownGenerator("To Type", 3, new List<string> { "Position", "Scale", "Rotation", "Color" });
+                            dropdownGenerator("To Axis (3D)", 4, new List<string> { "X", "Y", "Z" });
+
+                            singleGenerator("Delay", 5, 0f);
+
+                            singleGenerator("Min", 6, -99999f);
+                            singleGenerator("Max", 7, 99999f);
+                            stringGenerator("Expression", 8);
+                            boolGenerator("Use Visual", 9, false);
+
+                            break;
+                        }
                     case "eventOffsetCopyAxis":
                         {
                             dropdownGenerator("From Type", 1, new List<string> { "Position", "Scale", "Rotation", "Color" });
