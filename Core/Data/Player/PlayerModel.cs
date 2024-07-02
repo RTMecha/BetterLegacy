@@ -1916,6 +1916,8 @@ namespace BetterLegacy.Core.Data.Player
                 FlipY
             }
 
+            public PAAnimation boostAnimation;
+            public PAAnimation hitAnimation;
         }
 
         public class Stretch
