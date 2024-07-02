@@ -8,11 +8,15 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
+using LSFunctions;
+
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core;
 
 using BaseMarker = DataManager.GameData.BeatmapData.Marker;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Components;
+using UnityEngine.EventSystems;
 
 namespace BetterLegacy.Editor.Managers
 {
@@ -122,9 +126,17 @@ namespace BetterLegacy.Editor.Managers
                 Destroy(list[i]);
             }
 
-            content.Find("name").gameObject.Duplicate(content, "desc", 3);
+            var desc = content.Find("name").gameObject.Duplicate(content, "desc", 3);
+            desc.transform.AsRT().sizeDelta = new Vector2(351f, 74f);
+            desc.transform.Find("name").AsRT().sizeDelta = new Vector2(351f, 74f);
+            desc.transform.Find("name/Text").GetComponent<Text>().alignment = TextAnchor.UpperLeft;
+            desc.transform.Find("name/Placeholder").GetComponent<Text>().alignment = TextAnchor.UpperLeft;
+            desc.transform.Find("name").GetComponent<InputField>().lineType = InputField.LineType.MultiLineNewline;
+
             var descLabel = content.Find("label").gameObject.Duplicate(content, "label", 3);
             descLabel.transform.GetChild(0).GetComponent<Text>().text = "Description";
+
+            content.Find("layers").GetComponent<ContrastColors>().Init(content.Find("layers").GetChild(0).GetComponent<Text>(), content.Find("layers").GetComponent<Image>())
 
             yield break;
         }
@@ -149,6 +161,8 @@ namespace BetterLegacy.Editor.Managers
         int layer;
         public int Layer { get => Mathf.Clamp(layer, 0, int.MaxValue); set => layer = Mathf.Clamp(value, 0, int.MaxValue); }
 
+        public int CurrentObject { get; set; }
+
         public static string NoEventLabel => "??? (No event yet)";
 
         public PAAnimation testAnimation;
@@ -156,21 +170,32 @@ namespace BetterLegacy.Editor.Managers
         public void Test()
         {
             if (testAnimation == null)
-                testAnimation = new PAAnimation("Test", "Test description", 0f, new List<List<EventKeyframe>>
+                testAnimation = new PAAnimation("Test", "Test description", 0f, new List<PAAnimation.AnimationObject>
                 {
-                    new List<EventKeyframe>
+                    new PAAnimation.AnimationObject
                     {
-                        new EventKeyframe(0f, new float[] { 0f, 0f, 0f }, new float[] { 0f, 0f, 0f }),
-                    }, // Test bin
-                    new List<EventKeyframe>
-                    {
-                        new EventKeyframe(0f, new float[] { 0f, 0f, 0f }, new float[] { 0f, 0f, 0f }),
-                    } // Scale
-                }, new string[]
-                {
-                    "Test bin",
-                    "Scale",
-                }, new List<BaseMarker>
+                        animationBins = new List<PAAnimation.AnimationBin>
+                        {
+                            new PAAnimation.AnimationBin
+                            {
+                                name = "Test bin",
+                                events = new List<EventKeyframe>
+                                {
+                                    new EventKeyframe(0f, new float[] { 0f, 0f, 0f }, new float[] { 0f, 0f, 0f }),
+                                }, // Test bin
+                            },
+                            new PAAnimation.AnimationBin
+                            {
+                                name = "Scale Test",
+                                events = new List<EventKeyframe>
+                                {
+                                    new EventKeyframe(0f, new float[] { 0f, 0f, 0f }, new float[] { 0f, 0f, 0f }),
+                                }, // Scale Test
+                            },
+                        }
+                    }
+                },
+                new List<BaseMarker>
                 {
                     new BaseMarker(true, "Test marker", "Test description for a marker", 0, 2f)
                 });
@@ -179,6 +204,17 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderEditor(PAAnimation animation)
         {
+            var id = content.Find("id/text").GetComponent<Text>();
+            id.text = $"ID: {animation.id}";
+
+            var clickable = content.Find("id").gameObject.GetComponent<Clickable>() ?? content.Find("id").gameObject.AddComponent<Clickable>();
+
+            clickable.onClick = delegate (PointerEventData pointerEventData)
+            {
+                EditorManager.inst.DisplayNotification($"Copied ID from {animation.name}!", 2f, EditorManager.NotificationType.Success);
+                LSText.CopyToClipboard(animation.id);
+            };
+
             var name = content.Find("name/name").GetComponent<InputField>();
             name.onValueChanged.ClearAll();
             name.text = animation.name;
@@ -208,7 +244,9 @@ namespace BetterLegacy.Editor.Managers
             TriggerHelper.AddEventTriggerParams(content.Find("time").gameObject, TriggerHelper.ScrollDelta(time, max: float.MaxValue));
 
             var layers = content.Find("editor/layers").GetComponent<InputField>();
+            var layersImage = content.Find("editor/layers").GetComponent<Image>();
 
+            layersImage.color = EditorManager.inst.layerColors[Mathf.Clamp(Layer, 0, EditorManager.inst.layerColors.Count - 1)];
             layers.onValueChanged.ClearAll();
             layers.text = Layer.ToString();
             layers.onValueChanged.AddListener(delegate (string _val)
@@ -216,21 +254,22 @@ namespace BetterLegacy.Editor.Managers
                 if (int.TryParse(_val, out int result))
                 {
                     Layer = result;
+                    layersImage.color = EditorManager.inst.layerColors[Mathf.Clamp(Layer, 0, EditorManager.inst.layerColors.Count - 1)];
 
-                    RenderBins(animation.binNames);
+                    RenderBins(animation);
                 }
             });
 
-            TriggerHelper.AddEventTriggerParams(layers.gameObject, TriggerHelper.ScrollDeltaInt(layers));
+            TriggerHelper.AddEventTriggerParams(layers.gameObject, TriggerHelper.ScrollDeltaInt(layers, max: int.MaxValue));
 
-            RenderBins(animation.binNames);
+            RenderBins(animation);
         }
 
-        public void RenderBins(params string[] keyframeNames)
+        public void RenderBins(PAAnimation animation)
         {
             var layer = Layer + 1;
 
-            for (int i = 0; i < keyframeNames.Length; i++)
+            for (int i = 0; i < Mathf.Clamp(animation.objects[CurrentObject].animationBins.Count, 4, int.MaxValue); i++)
             {
                 var child = i % 4;
                 var num = Mathf.Clamp(layer * 4, 0, layer * 4);
@@ -240,11 +279,9 @@ namespace BetterLegacy.Editor.Managers
 
                 var text = timelineLeft.GetChild(child).GetComponent<Text>();
 
-                if (i >= num - 4 && i < num)
-                    text.text = keyframeNames[i];
+                if (i >= num - 4 && i < num && i < animation.objects[CurrentObject].animationBins.Count)
+                    text.text = animation.objects[CurrentObject].animationBins[i].name;
                 else if (i < num)
-                    text.text = layer == 69 ? "lol" : layer == 555 ? "Hahaha" : NoEventLabel;
-                else
                     text.text = layer == 69 ? "lol" : layer == 555 ? "Hahaha" : NoEventLabel;
             }
         }

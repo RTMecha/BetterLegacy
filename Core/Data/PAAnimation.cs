@@ -18,19 +18,18 @@ namespace BetterLegacy.Core.Data
         public PAAnimation()
         {
             id = LSText.randomNumString(16);
-            eventKeyframes = new List<List<EventKeyframe>>();
+            objects = new List<AnimationObject>();
             markers = new List<Marker>();
         }
 
-        public PAAnimation(string name, string desc, float startTime, List<List<EventKeyframe>> eventKeyframes, string[] binNames, List<Marker> markers)
+        public PAAnimation(string name, string desc, float startTime, List<AnimationObject> objects, List<Marker> markers)
         {
             id = LSText.randomNumString(16);
             this.name = name;
             this.desc = desc;
             StartTime = startTime;
-            this.eventKeyframes = eventKeyframes;
+            this.objects = objects;
             this.markers = markers;
-            this.binNames = binNames;
         }
 
         public string id;
@@ -38,32 +37,36 @@ namespace BetterLegacy.Core.Data
         public string desc = "This is the default description!";
         float startTime;
         public float StartTime { get => Mathf.Clamp(startTime, 0f, float.MaxValue); set => startTime = Mathf.Clamp(value, 0f, float.MaxValue); }
-        public List<List<EventKeyframe>> eventKeyframes;
         public List<Marker> markers;
-        public string[] binNames;
+
+        public List<AnimationObject> objects;
 
         public static PAAnimation Parse(JSONNode jn)
         {
             var markers = new List<Marker>();
             for (int i = 0; i < jn["markers"].Count; i++)
             {
-                markers.Add(ProjectData.Reader.ParseMarker(jn["marker"][i]));
+                markers.Add(ProjectData.Reader.ParseMarker(jn["markers"][i]));
             }
 
-            var list = new List<List<EventKeyframe>>();
-            string[] binNames = new string[jn["events"].Count];
-            for (int i = 0; i < jn["events"].Count; i++)
+            var list = new List<AnimationObject>();
+            for (int i = 0; i < jn["objs"].Count; i++)
             {
-                list.Add(new List<EventKeyframe>());
+                var animationObject = new AnimationObject();
 
-                binNames[i] = jn["events"][i]["bin"];
-                var defaultValueCount = jn["events"][i]["defval"].AsInt;
+                for (int j = 0; j < jn["objs"][i]["bins"].Count; j++)
+                {
+                    var animationBin = new AnimationBin();
+                    animationBin.name = jn["objs"][i]["bins"][j]["name"];
+                    var defaultValueCount = jn["objs"][i]["bins"][j]["defval"].AsInt;
+                    for (int k = 0; k < jn["objs"][i]["bins"][j]["kf"].Count; k++)
+                        animationBin.events.Add(EventKeyframe.Parse(jn["objs"][i]["bins"][j]["kf"][k], 0, defaultValueCount));
+                }
 
-                for (int j = 0; j < jn["events"][i]["kf"].Count; j++)
-                    list[i].Add(EventKeyframe.Parse(jn["events"][i]["kf"][j], 0, defaultValueCount));
+                list.Add(animationObject);
             }
 
-            return new PAAnimation(jn["name"], jn["desc"], jn["st"].AsFloat, list, binNames, markers)
+            return new PAAnimation(jn["name"], jn["desc"], jn["st"].AsFloat, list, markers)
             {
                 id = jn["id"] ?? LSText.randomNumString(16),
             };
@@ -73,12 +76,52 @@ namespace BetterLegacy.Core.Data
         {
             var jn = JSON.Parse("{}");
             jn["id"] = id;
+            jn["name"] = name;
+            jn["st"] = StartTime.ToString();
             for (int i = 0; i < markers.Count; i++)
             {
-                
+                var marker = markers[i];
+
+                if (!string.IsNullOrEmpty(marker.name))
+                    jn["markers"][i]["name"] = marker.name.ToString();
+
+                if (!string.IsNullOrEmpty(marker.desc) && marker.desc != "Description")
+                    jn["markers"][i]["desc"] = marker.desc.ToString();
+
+                if (marker.color != 0)
+                    jn["markers"][i]["col"] = marker.color.ToString();
+
+                jn["markers"][i]["t"] = marker.time.ToString();
+            }
+
+            for (int i = 0; i < objects.Count; i++)
+            {
+                for (int j = 0; j < objects[i].animationBins.Count; j++)
+                {
+                    jn["objs"][i]["bins"][j]["name"] = objects[i].animationBins[j].name;
+                    jn["objs"][i]["bins"][j]["defval"] = objects[i].animationBins[j].events[0].eventValues.Length;
+
+                    for (int k = 0; k < objects[i].animationBins[j].events.Count; k++)
+                        jn["objs"][i]["bins"][j]["kf"][k] = objects[i].animationBins[j].events[k].ToJSON();
+                }
             }
 
             return jn;
+        }
+
+        public class AnimationObject
+        {
+            /// <summary>
+            /// ID used for comparing objects with their associated animations.
+            /// </summary>
+            public string ReferenceID { get; set; }
+            public List<AnimationBin> animationBins = new List<AnimationBin>();
+        }
+
+        public class AnimationBin
+        {
+            public string name;
+            public List<EventKeyframe> events = new List<EventKeyframe>();
         }
     }
 }
