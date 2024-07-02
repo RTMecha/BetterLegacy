@@ -19,5 +19,7 @@ namespace BetterLegacy.Editor
         public void CombinerSetActive(bool active) => CombinerGameObject?.SetActive(active);
 
         public bool combinerSelected;
+
+        public bool isFolder;
     }
 }

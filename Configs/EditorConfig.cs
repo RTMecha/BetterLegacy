@@ -126,6 +126,7 @@ namespace BetterLegacy.Configs
         public Setting<bool> UpdatePrefabListOnFilesChanged { get; set; }
         public Setting<bool> UpdateThemeListOnFilesChanged { get; set; }
         public Setting<bool> ShowLevelsWithoutCoverNotification { get; set; }
+        public Setting<bool> ShowFoldersInLevelList { get; set; }
         public Setting<string> ZIPLevelExportPath { get; set; }
         public Setting<string> ConvertLevelLSToVGExportPath { get; set; }
         public Setting<string> ConvertPrefabLSToVGExportPath { get; set; }
@@ -149,7 +150,7 @@ namespace BetterLegacy.Configs
         public Setting<bool> ShowHelpOnStartup { get; set; }
         public Setting<float> NotificationWidth { get; set; }
         public Setting<float> NotificationSize { get; set; }
-        public Setting<Direction> NotificationDirection { get; set; }
+        public Setting<VerticalDirection> NotificationDirection { get; set; }
         public Setting<bool> NotificationsDisplay { get; set; }
         public Setting<bool> AdjustPositionInputs { get; set; }
         public Setting<bool> ShowDropdownOnHover { get; set; }
@@ -1264,6 +1265,7 @@ namespace BetterLegacy.Configs
             UpdatePrefabListOnFilesChanged = Bind(this, "Data", "Update Prefab List on Files Changed", false, "When you add a prefab to your prefab path, the editor will automatically update the prefab list for you.");
             UpdateThemeListOnFilesChanged = Bind(this, "Data", "Update Theme List on Files Changed", false, "When you add a theme to your theme path, the editor will automatically update the theme list for you.");
             ShowLevelsWithoutCoverNotification = Bind(this, "Data", "Show Levels Without Cover Notification", false, "Sends an error notification for what levels don't have covers.");
+            ShowFoldersInLevelList = Bind(this, "Data", "Show Folders In Level List", true, "If folders should appear in the level list UI. This allows you to quickly navigate level folders.");
             ZIPLevelExportPath = Bind(this, "Data", "ZIP Level Export Path", "", "The custom path to export a zipped level to. If no path is set then it will export to beatmaps/exports.");
             ConvertLevelLSToVGExportPath = Bind(this, "Data", "Convert Level LS to VG Export Path", "", "The custom path to export a level to. If no path is set then it will export to beatmaps/exports.");
             ConvertPrefabLSToVGExportPath = Bind(this, "Data", "Convert Prefab LS to VG Export Path", "", "The custom path to export a prefab to. If no path is set then it will export to beatmaps/exports.");
@@ -1287,7 +1289,7 @@ namespace BetterLegacy.Configs
             ShowHelpOnStartup = Bind(this, "Editor GUI", "Show Help on Startup", true, "If the help info box should appear on startup.");
             NotificationWidth = Bind(this, "Editor GUI", "Notification Width", 221f, "Width of the notifications.");
             NotificationSize = Bind(this, "Editor GUI", "Notification Size", 1f, "Total size of the notifications.");
-            NotificationDirection = BindEnum(this, "Editor GUI", "Notification Direction", Direction.Down, "Direction the notifications popup from.");
+            NotificationDirection = BindEnum(this, "Editor GUI", "Notification Direction", VerticalDirection.Down, "Direction the notifications popup from.");
             NotificationsDisplay = Bind(this, "Editor GUI", "Notifications Display", true, "If the notifications should display. Does not include the help box.");
             AdjustPositionInputs = Bind(this, "Editor GUI", "Adjust Position Inputs", true, "If position keyframe input fields should be adjusted so they're in a proper row rather than having Z Axis below X Axis without a label. Drawback with doing this is it makes the fields smaller than normal.");
             ShowDropdownOnHover = Bind(this, "Editor GUI", "Show Dropdowns on Hover", false, "If your mouse enters a dropdown bar, it will automatically show the dropdown list.");
@@ -2606,8 +2608,8 @@ namespace BetterLegacy.Configs
 
             var direction = NotificationDirection.Value;
 
-            notifyRT.anchoredPosition = new Vector2(8f, direction == Direction.Up ? 408f : 410f);
-            notifyGroup.childAlignment = direction != Direction.Up ? TextAnchor.LowerLeft : TextAnchor.UpperLeft;
+            notifyRT.anchoredPosition = new Vector2(8f, direction == VerticalDirection.Up ? 408f : 410f);
+            notifyGroup.childAlignment = direction != VerticalDirection.Up ? TextAnchor.LowerLeft : TextAnchor.UpperLeft;
         }
 
         void UpdateDefaultThemeValues()

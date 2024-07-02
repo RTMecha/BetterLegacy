@@ -758,7 +758,7 @@ namespace BetterLegacy.Editor.Managers
                     ((Text)textComponent).text = text;
 
                 notif.transform.SetParent(EditorManager.inst.notification.transform);
-                if (config.NotificationDirection.Value == Direction.Down)
+                if (config.NotificationDirection.Value == VerticalDirection.Down)
                     notif.transform.SetAsFirstSibling();
                 notif.transform.localScale = Vector3.one;
 
@@ -789,7 +789,7 @@ namespace BetterLegacy.Editor.Managers
                 Destroy(gameObject, time);
                 gameObject.transform.Find("text").GetComponent<TextMeshProUGUI>().text = text;
                 gameObject.transform.SetParent(EditorManager.inst.notification.transform);
-                if (config.NotificationDirection.Value == Direction.Down)
+                if (config.NotificationDirection.Value == VerticalDirection.Down)
                     gameObject.transform.SetAsFirstSibling();
                 gameObject.transform.localScale = Vector3.one;
 
@@ -824,13 +824,13 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.notification.transform.localScale =
                 new Vector3(config.NotificationSize.Value, config.NotificationSize.Value, 1f);
 
-            if (config.NotificationDirection.Value == Direction.Down)
+            if (config.NotificationDirection.Value == VerticalDirection.Down)
             {
                 notifyRT.anchoredPosition = new Vector2(8f, 408f);
                 notifyGroup.childAlignment = TextAnchor.LowerLeft;
             }
 
-            if (config.NotificationDirection.Value == Direction.Up)
+            if (config.NotificationDirection.Value == VerticalDirection.Up)
             {
                 notifyRT.anchoredPosition = new Vector2(8f, 410f);
                 notifyGroup.childAlignment = TextAnchor.UpperLeft;
@@ -2798,6 +2798,28 @@ namespace BetterLegacy.Editor.Managers
                 }
 
                 EditorManager.inst.DisplayNotification("Modifiers have been deactivated.", 1.4f, EditorManager.NotificationType.Success);
+            });
+            
+            EditorHelper.AddEditorDropdown("Reset object variables", "", "Edit", saveAs.Find("Panel/x/Image").GetComponent<Image>().sprite, delegate ()
+            {
+                if (!GameData.IsValid)
+                    return;
+
+                if (!EditorManager.inst.hasLoadedLevel)
+                {
+                    EditorManager.inst.DisplayNotification("Load a level first!", 1f, EditorManager.NotificationType.Warning);
+                    return;
+                }
+
+                var beatmapObjects = GameData.Current.BeatmapObjects.Where(x => x.integerVariable != 0);
+                for (int i = 0; i < beatmapObjects.Count(); i++)
+                {
+                    var beatmapObject = beatmapObjects.ElementAt(i);
+
+                    beatmapObject.integerVariable = 0;
+                }
+
+                EditorManager.inst.DisplayNotification("Reset all integer variables to 0.", 1.4f, EditorManager.NotificationType.Success);
             });
 
             EditorHelper.AddEditorDropdown("Get Example", "", "View", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_example-white.png"), delegate ()
@@ -8083,14 +8105,91 @@ namespace BetterLegacy.Editor.Managers
 
             var list = new List<Coroutine>();
             var files = Directory.GetDirectories(RTFile.ApplicationDirectory + editorListPath);
+            var showLevelFolders = config.ShowFoldersInLevelList.Value;
+            var currentPath = editorPath;
+
+            // Back
+            if (showLevelFolders && Path.GetDirectoryName(RTFile.ApplicationDirectory + editorListPath).Replace("\\", "/") != RTFile.ApplicationDirectory + "beatmaps")
+            {
+                var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(transform, $"back");
+                var folderButtonStorageFolder = gameObjectFolder.GetComponent<FunctionButtonStorage>();
+                var folderButtonFunctionFolder = gameObjectFolder.AddComponent<FolderButtonFunction>();
+
+                var hoverUIFolder = gameObjectFolder.AddComponent<HoverUI>();
+                hoverUIFolder.size = buttonHoverSize;
+                hoverUIFolder.animatePos = false;
+                hoverUIFolder.animateSca = true;
+
+                folderButtonStorageFolder.text.text = "< Up a folder";
+
+                folderButtonStorageFolder.text.horizontalOverflow = horizontalOverflow;
+                folderButtonStorageFolder.text.verticalOverflow = verticalOverflow;
+                folderButtonStorageFolder.text.fontSize = fontSize;
+
+                folderButtonStorageFolder.button.onClick.ClearAll();
+                folderButtonFunctionFolder.onClick = (PointerEventData eventData) =>
+                {
+                    if (editorPathField.text == currentPath)
+                    {
+                        editorPathField.text = Path.GetDirectoryName(RTFile.ApplicationDirectory + editorListPath).Replace("\\", "/").Replace(RTFile.ApplicationDirectory + "beatmaps/", "");
+                        UpdateEditorPath(false);
+                    }
+                };
+
+                EditorThemeManager.ApplySelectable(folderButtonStorageFolder.button, ThemeGroup.List_Button_1);
+                EditorThemeManager.ApplyLightText(folderButtonStorageFolder.text);
+            }
 
             foreach (var file in files)
             {
-                if (!RTFile.FileExists(file + "/level.lsb"))
-                    continue;
-
                 var path = file.Replace("\\", "/");
                 var name = Path.GetFileName(path);
+
+                if (!RTFile.FileExists(file + "/level.lsb"))
+                {
+                    if (showLevelFolders)
+                    {
+                        var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(transform, $"Folder [{name}]");
+                        var folderButtonStorageFolder = gameObjectFolder.GetComponent<FunctionButtonStorage>();
+                        var folderButtonFunctionFolder = gameObjectFolder.AddComponent<FolderButtonFunction>();
+
+                        var editorWrapperFolder = new EditorWrapper(gameObjectFolder, null, path, null);
+                        editorWrapperFolder.isFolder = true;
+
+                        var hoverUIFolder = gameObjectFolder.AddComponent<HoverUI>();
+                        hoverUIFolder.size = buttonHoverSize;
+                        hoverUIFolder.animatePos = false;
+                        hoverUIFolder.animateSca = true;
+
+                        folderButtonStorageFolder.text.text = name;
+
+                        folderButtonStorageFolder.text.horizontalOverflow = horizontalOverflow;
+                        folderButtonStorageFolder.text.verticalOverflow = verticalOverflow;
+                        folderButtonStorageFolder.text.fontSize = fontSize;
+
+                        folderButtonStorageFolder.button.onClick.ClearAll();
+                        folderButtonFunctionFolder.onClick = (PointerEventData eventData) =>
+                        {
+                            if (path.Contains(RTFile.ApplicationDirectory + "beatmaps/"))
+                            {
+                                editorPathField.text = path.Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
+                                UpdateEditorPath(false);
+                            }
+                            else
+                            {
+                                EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                            }
+                        };
+
+                        EditorThemeManager.ApplySelectable(folderButtonStorageFolder.button, ThemeGroup.List_Button_1);
+                        EditorThemeManager.ApplyLightText(folderButtonStorageFolder.text);
+
+                        EditorManager.inst.loadedLevels.Add(editorWrapperFolder);
+                    }
+
+                    continue;
+                }
+
                 var metadataStr = RTFile.ReadFromFile(file + "/metadata.lsb");
 
                 if (metadataStr == null)
@@ -8246,10 +8345,7 @@ namespace BetterLegacy.Editor.Managers
                         });
                     });
                 }
-
-                EditorThemeManager.ApplySelectable(folderButtonStorage.button, ThemeGroup.List_Button_1);
-                EditorThemeManager.ApplyLightText(folderButtonStorage.text);
-
+                
                 if (!RTFile.FileExists($"{file}/level.jpg"))
                 {
                     anyFailed = true;
@@ -9270,49 +9366,49 @@ namespace BetterLegacy.Editor.Managers
                 case 0:
                     {
                         EditorManager.inst.loadedLevels = (levelAscend ? EditorManager.inst.loadedLevels.OrderBy(x => x.albumArt != SteamWorkshop.inst.defaultSteamImageSprite) :
-                            EditorManager.inst.loadedLevels.OrderByDescending(x => x.albumArt != SteamWorkshop.inst.defaultSteamImageSprite)).ToList();
+                            EditorManager.inst.loadedLevels.OrderByDescending(x => x.albumArt != SteamWorkshop.inst.defaultSteamImageSprite)).OrderBy(x => x is EditorWrapper editorWrapper && !editorWrapper.isFolder).ToList();
                         break;
                     }
                 case 1:
                     {
-                        EditorManager.inst.loadedLevels = (levelAscend ? EditorManager.inst.loadedLevels.OrderBy(x => x.metadata.artist.Name) :
-                            EditorManager.inst.loadedLevels.OrderByDescending(x => x.metadata.artist.Name)).ToList();
+                        EditorManager.inst.loadedLevels = (levelAscend ? EditorManager.inst.loadedLevels.OrderBy(x => x.metadata?.artist?.Name) :
+                            EditorManager.inst.loadedLevels.OrderByDescending(x => x.metadata?.artist?.Name)).OrderBy(x => x is EditorWrapper editorWrapper && !editorWrapper.isFolder).ToList();
                         break;
                     }
                 case 2:
                     {
-                        EditorManager.inst.loadedLevels = (levelAscend ? EditorManager.inst.loadedLevels.OrderBy(x => x.metadata.creator.steam_name) :
-                            EditorManager.inst.loadedLevels.OrderByDescending(x => x.metadata.creator.steam_name)).ToList();
+                        EditorManager.inst.loadedLevels = (levelAscend ? EditorManager.inst.loadedLevels.OrderBy(x => x.metadata?.creator?.steam_name) :
+                            EditorManager.inst.loadedLevels.OrderByDescending(x => x.metadata?.creator?.steam_name)).OrderBy(x => x is EditorWrapper editorWrapper && !editorWrapper.isFolder).ToList();
                         break;
                     }
                 case 3:
                     {
                         EditorManager.inst.loadedLevels = (levelAscend ? EditorManager.inst.loadedLevels.OrderBy(x => x.folder) :
-                            EditorManager.inst.loadedLevels.OrderByDescending(x => x.folder)).ToList();
+                            EditorManager.inst.loadedLevels.OrderByDescending(x => x.folder)).OrderBy(x => x is EditorWrapper editorWrapper && !editorWrapper.isFolder).ToList();
                         break;
                     }
                 case 4:
                     {
-                        EditorManager.inst.loadedLevels = (levelAscend ? EditorManager.inst.loadedLevels.OrderBy(x => x.metadata.song.title) :
-                            EditorManager.inst.loadedLevels.OrderByDescending(x => x.metadata.song.title)).ToList();
+                        EditorManager.inst.loadedLevels = (levelAscend ? EditorManager.inst.loadedLevels.OrderBy(x => x.metadata?.song?.title) :
+                            EditorManager.inst.loadedLevels.OrderByDescending(x => x.metadata?.song?.title)).OrderBy(x => x is EditorWrapper editorWrapper && !editorWrapper.isFolder).ToList();
                         break;
                     }
                 case 5:
                     {
-                        EditorManager.inst.loadedLevels = (levelAscend ? EditorManager.inst.loadedLevels.OrderBy(x => x.metadata.song.difficulty) :
-                            EditorManager.inst.loadedLevels.OrderByDescending(x => x.metadata.song.difficulty)).ToList();
+                        EditorManager.inst.loadedLevels = (levelAscend ? EditorManager.inst.loadedLevels.OrderBy(x => x.metadata?.song?.difficulty) :
+                            EditorManager.inst.loadedLevels.OrderByDescending(x => x.metadata?.song?.difficulty)).OrderBy(x => x is EditorWrapper editorWrapper && !editorWrapper.isFolder).ToList();
                         break;
                     }
                 case 6:
                     {
-                        EditorManager.inst.loadedLevels = (levelAscend ? EditorManager.inst.loadedLevels.OrderBy(x => x.metadata.beatmap.date_edited) :
-                            EditorManager.inst.loadedLevels.OrderByDescending(x => x.metadata.beatmap.date_edited)).ToList();
+                        EditorManager.inst.loadedLevels = (levelAscend ? EditorManager.inst.loadedLevels.OrderBy(x => x.metadata?.beatmap?.date_edited) :
+                            EditorManager.inst.loadedLevels.OrderByDescending(x => x.metadata?.beatmap?.date_edited)).OrderBy(x => x is EditorWrapper editorWrapper && !editorWrapper.isFolder).ToList();
                         break;
                     }
                 case 7:
                     {
-                        EditorManager.inst.loadedLevels = (levelAscend ? EditorManager.inst.loadedLevels.OrderBy(x => ((MetaData)x.metadata).LevelBeatmap.date_created) :
-                            EditorManager.inst.loadedLevels.OrderByDescending(x => ((MetaData)x.metadata).LevelBeatmap.date_created)).ToList();
+                        EditorManager.inst.loadedLevels = (levelAscend ? EditorManager.inst.loadedLevels.OrderBy(x => x.metadata is MetaData metadata ? metadata.LevelBeatmap.date_created : "") :
+                            EditorManager.inst.loadedLevels.OrderByDescending(x => x.metadata is MetaData metadata ? metadata.LevelBeatmap.date_created : "")).OrderBy(x => x is EditorWrapper editorWrapper && !editorWrapper.isFolder).ToList();
                         break;
                     }
             }
@@ -9337,19 +9433,25 @@ namespace BetterLegacy.Editor.Managers
                     "Unknown difficulty",
                 };
 
-                string difficultyName = difficultyNames[Mathf.Clamp(metadata.song.difficulty, 0, difficultyNames.Length - 1)];
-
                 ((EditorWrapper)metadataWrapper).SetActive((RTFile.FileExists(folder + "/level.ogg") ||
                     RTFile.FileExists(folder + "/level.wav") ||
                     RTFile.FileExists(folder + "/level.mp3")) && CoreHelper.SearchString(EditorManager.inst.openFileSearch, Path.GetFileName(folder)) ||
-                        CoreHelper.SearchString(EditorManager.inst.openFileSearch, metadata.song.title) ||
+                        (metadata == null || metadata != null &&
+                        (CoreHelper.SearchString(EditorManager.inst.openFileSearch, metadata.song.title) ||
                         CoreHelper.SearchString(EditorManager.inst.openFileSearch, metadata.artist.Name) ||
                         CoreHelper.SearchString(EditorManager.inst.openFileSearch, metadata.creator.steam_name) ||
                         CoreHelper.SearchString(EditorManager.inst.openFileSearch, metadata.song.description) ||
-                        CoreHelper.SearchString(EditorManager.inst.openFileSearch, difficultyName));
+                        CoreHelper.SearchString(EditorManager.inst.openFileSearch, difficultyNames[Mathf.Clamp(metadata.song.difficulty, 0, difficultyNames.Length - 1)]))));
 
                 ((EditorWrapper)metadataWrapper).GameObject.transform.SetSiblingIndex(num);
                 num++;
+            }
+
+            var transform = EditorManager.inst.GetDialog("Open File Popup").Dialog.Find("mask/content");
+
+            if (transform.Find("back"))
+            {
+                transform.Find("back").SetAsFirstSibling();
             }
 
             yield break;
@@ -11145,8 +11247,8 @@ namespace BetterLegacy.Editor.Managers
 
             var direction = EditorConfig.Instance.NotificationDirection.Value;
 
-            notifyRT.anchoredPosition = new Vector2(8f, direction == Direction.Up ? 408f : 410f);
-            notifyGroup.childAlignment = direction != Direction.Up ? TextAnchor.LowerLeft : TextAnchor.UpperLeft;
+            notifyRT.anchoredPosition = new Vector2(8f, direction == VerticalDirection.Up ? 408f : 410f);
+            notifyGroup.childAlignment = direction != VerticalDirection.Up ? TextAnchor.LowerLeft : TextAnchor.UpperLeft;
         }
 
         public static Color GetObjectColor(BaseBeatmapObject beatmapObject, bool ignoreTransparency)
