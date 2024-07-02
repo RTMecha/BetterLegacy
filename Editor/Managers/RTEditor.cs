@@ -2832,6 +2832,11 @@ namespace BetterLegacy.Editor.Managers
                 ConfigManager.inst.Show();
             });
 
+            titleBar.Find("Steam/Text").GetComponent<Text>().text = "Upload";
+            var steamLayoutElement = titleBar.Find("Steam").GetComponent<LayoutElement>();
+            steamLayoutElement.minWidth = 95f;
+            steamLayoutElement.preferredWidth = 95f;
+
             titleBar.Find("Help/Help Dropdown/Join Discord/Text").GetComponent<Text>().text = "Modder's Discord";
             titleBar.Find("Help/Help Dropdown/Watch Tutorials/Text").AsRT().sizeDelta = new Vector2(200f, 0f);
             titleBar.Find("Help/Help Dropdown/Watch Tutorials/Text").GetComponent<Text>().text = "Watch Mod Showcases";
