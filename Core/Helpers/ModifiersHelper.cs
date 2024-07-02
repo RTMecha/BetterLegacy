@@ -2326,10 +2326,30 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "followMousePosition":
                         {
+                            if (modifier.value == "0")
+                                modifier.value = "1";
+
                             Vector2 mousePosition = Input.mousePosition;
                             mousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
 
-                            modifier.reference.positionOffset = mousePosition;
+                            float p = Time.deltaTime * 60f;
+                            float po = 1f - Mathf.Pow(1f - Mathf.Clamp(Parser.TryParse(modifier.value, 1f), 0.001f, 1f), p);
+                            float ro = 1f - Mathf.Pow(1f - Mathf.Clamp(Parser.TryParse(modifier.commands[1], 1f), 0.001f, 1f), p);
+
+                            if (modifier.Result == null)
+                                modifier.Result = Vector2.zero;
+
+                            var dragPos = (Vector2)modifier.Result;
+
+                            var target = new Vector2(mousePosition.x, mousePosition.y);
+
+                            modifier.reference.rotationOffset = new Vector3(0f, 0f, (target.x - dragPos.x) * ro);
+
+                            dragPos += (target - dragPos) * po;
+
+                            modifier.Result = dragPos;
+
+                            modifier.reference.positionOffset = dragPos;
 
                             break;
                         }
@@ -4290,7 +4310,7 @@ namespace BetterLegacy.Core.Helpers
                                         {
                                             var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].Position3DSequence.Interpolate(time - bm.StartTime - delay);
                                             var axis = fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z;
-                                            float value = (float)RTMath.Evaluate(modifier.commands[8].Replace("axis", axis.ToString()));
+                                            float value = (float)RTMath.Evaluate(modifier.commands[8].Replace("axis", axis.ToString()).Replace("deltaTime", Time.deltaTime.ToString()));
 
                                             modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                         }
@@ -4299,14 +4319,14 @@ namespace BetterLegacy.Core.Helpers
                                         {
                                             var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].ScaleSequence.Interpolate(time - bm.StartTime - delay);
                                             var axis = fromAxis == 0 ? sequence.x : sequence.y;
-                                            float value = (float)RTMath.Evaluate(modifier.commands[8].Replace("axis", axis.ToString()));
+                                            float value = (float)RTMath.Evaluate(modifier.commands[8].Replace("axis", axis.ToString()).Replace("deltaTime", Time.deltaTime.ToString()));
 
                                             modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                         }
 
                                         if (toType >= 0 && toType < 3 && fromType == 2)
                                         {
-                                            float sequence = (float)RTMath.Evaluate(modifier.commands[8].Replace("axis", Updater.levelProcessor.converter.cachedSequences[bm.id].RotationSequence.Interpolate(time - bm.StartTime - delay).ToString()));
+                                            float sequence = (float)RTMath.Evaluate(modifier.commands[8].Replace("axis", Updater.levelProcessor.converter.cachedSequences[bm.id].RotationSequence.Interpolate(time - bm.StartTime - delay).ToString()).Replace("deltaTime", Time.deltaTime.ToString()));
 
                                             modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(sequence, min, max));
                                         }
@@ -4319,7 +4339,7 @@ namespace BetterLegacy.Core.Helpers
 
                                             var renderer = modifier.reference.levelObject.visualObject.Renderer;
 
-                                            renderer.material.color = RTMath.Lerp(renderer.material.color, sequence, (float)RTMath.Evaluate(modifier.commands[8]));
+                                            renderer.material.color = RTMath.Lerp(renderer.material.color, sequence, (float)RTMath.Evaluate(modifier.commands[8].Replace("deltaTime", Time.deltaTime.ToString())));
                                         }
                                     }
                                     else if (useVisual && Updater.TryGetObject(bm, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
@@ -4330,7 +4350,7 @@ namespace BetterLegacy.Core.Helpers
                                         {
                                             var sequence = transform.position;
                                             var axis = fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z;
-                                            float value = (float)RTMath.Evaluate(modifier.commands[8].Replace("axis", axis.ToString()));
+                                            float value = (float)RTMath.Evaluate(modifier.commands[8].Replace("axis", axis.ToString()).Replace("deltaTime", Time.deltaTime.ToString()));
 
                                             modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                         }
@@ -4339,7 +4359,7 @@ namespace BetterLegacy.Core.Helpers
                                         {
                                             var sequence = transform.lossyScale;
                                             var axis = fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z;
-                                            float value = (float)RTMath.Evaluate(modifier.commands[8].Replace("axis", axis.ToString()));
+                                            float value = (float)RTMath.Evaluate(modifier.commands[8].Replace("axis", axis.ToString()).Replace("deltaTime", Time.deltaTime.ToString()));
 
                                             modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                         }
@@ -4348,7 +4368,7 @@ namespace BetterLegacy.Core.Helpers
                                         {
                                             var sequence = transform.rotation.eulerAngles;
                                             var axis = fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z;
-                                            float value = (float)RTMath.Evaluate(modifier.commands[8].Replace("axis", axis.ToString()));
+                                            float value = (float)RTMath.Evaluate(modifier.commands[8].Replace("axis", axis.ToString()).Replace("deltaTime", Time.deltaTime.ToString()));
 
                                             modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                         }
