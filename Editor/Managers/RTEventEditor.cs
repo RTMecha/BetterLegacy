@@ -1415,6 +1415,7 @@ namespace BetterLegacy.Editor.Managers
                 var perspectiveZoom = GenerateUIElement("zoom", "Single", cameraDepth.transform, 10, "Zoom");
 
                 EditorThemeManager.AddInputFields(depth["UI"], true, "Event Editor");
+                EditorThemeManager.AddInputFields(perspectiveZoom["UI"], true, "Event Editor");
             }
 
             var windowBase = GenerateEventDialog("windowbase");
