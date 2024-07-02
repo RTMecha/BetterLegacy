@@ -37,6 +37,14 @@
         Editor,
     }
 
+    public enum LoadingDisplayType
+    {
+        Doggo,
+        Waveform,
+        Percentage,
+        EqualsBar
+    }
+
     public enum LevelSort
     {
         Cover,
@@ -65,10 +73,17 @@
         LegacyFast,
         BetaFast
     }
-    public enum Direction
+
+    public enum VerticalDirection
     {
         Up,
         Down
+    }
+
+    public enum HorizontalDirection
+    {
+        Left,
+        Right
     }
 
     public enum Easings
