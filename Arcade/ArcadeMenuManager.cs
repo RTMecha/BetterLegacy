@@ -685,6 +685,7 @@ namespace BetterLegacy.Arcade
 
             }
         }
+
         /// <summary>
         /// Control system.
         /// </summary>
@@ -2772,7 +2773,7 @@ namespace BetterLegacy.Arcade
                     title.enableWordWrapping = true;
                     title.overflowMode = TextOverflowModes.Truncate;
                     title.color = textColor;
-                    title.text = $"{level.metadata.artist.Name} - {level.metadata.song.title}";
+                    title.text = level.metadata.LevelBeatmap.name;
 
                     var iconBase = gameObject.transform.Find("Icon Base").GetComponent<Image>();
                     iconBase.rectTransform.anchoredPosition = new Vector2(-90f, 30f);
@@ -3012,7 +3013,7 @@ namespace BetterLegacy.Arcade
                                 titleText.enableWordWrapping = true;
                                 titleText.overflowMode = TextOverflowModes.Truncate;
                                 titleText.color = textColor;
-                                titleText.text = $"{artist} - {title}";
+                                titleText.text = $"{title}";
 
                                 var iconBase = gameObject.transform.Find("Icon Base").GetComponent<Image>();
                                 iconBase.rectTransform.anchoredPosition = new Vector2(-90f, 30f);
@@ -3368,7 +3369,7 @@ namespace BetterLegacy.Arcade
                     title.enableWordWrapping = true;
                     title.overflowMode = TextOverflowModes.Truncate;
                     title.color = textColor;
-                    title.text = $"{level.metadata.artist.Name} - {level.metadata.song.title}";
+                    title.text = level.metadata.LevelBeatmap.name;
 
                     var iconBase = gameObject.transform.Find("Icon Base").GetComponent<Image>();
                     iconBase.rectTransform.anchoredPosition = new Vector2(-690f, 0f);
