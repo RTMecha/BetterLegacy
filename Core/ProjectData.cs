@@ -291,7 +291,7 @@ namespace BetterLegacy.Core
                     var marker = _data.beatmapData.markers[i];
                     jn["ed"]["markers"][i]["active"] = "True"; // this has to stay here due to unmodded not handling "active" being null for some weird reason.
 
-                    if (!string.IsNullOrEmpty(jn["ed"]["markers"][i]["name"]))
+                    if (!string.IsNullOrEmpty(marker.name))
                         jn["ed"]["markers"][i]["name"] = marker.name.ToString();
 
                     if (!string.IsNullOrEmpty(marker.desc) && marker.desc != "Description")
