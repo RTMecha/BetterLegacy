@@ -2009,6 +2009,12 @@ namespace BetterLegacy.Editor.Managers
 
                             break;
                         }
+                    case "followMousePosition":
+                        {
+                            singleGenerator("Position Focus", 0, 1f);
+                            singleGenerator("Rotation Delay", 1, 1f);
+                            break;
+                        }
                 }
 
                 /* List of modifiers that have no values:
