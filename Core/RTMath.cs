@@ -4,12 +4,30 @@ using System.Data;
 using System.Linq;
 using UnityEngine;
 
+using BetterLegacy.Core.Managers;
+
 namespace BetterLegacy.Core
 {
     public static class RTMath
     {
         // from https://stackoverflow.com/questions/355062/is-there-a-string-math-evaluator-in-net
         public static double Evaluate(string str) => Convert.ToDouble(new DataTable().Compute(str, null));
+
+        public static string Replace(string input)
+        {
+            return input
+                .Replace("player1PosX", PlayerManager.Players.Count <= 0 || PlayerManager.Players[0].Player == null ? "0" : PlayerManager.Players[0].Player.rb.position.x.ToString())
+                .Replace("player1PosY", PlayerManager.Players.Count <= 0 || PlayerManager.Players[0].Player == null ? "0" : PlayerManager.Players[0].Player.rb.position.y.ToString())
+                .Replace("player2PosX", PlayerManager.Players.Count <= 1 || PlayerManager.Players[1].Player == null ? "0" : PlayerManager.Players[1].Player.rb.position.x.ToString())
+                .Replace("player2PosY", PlayerManager.Players.Count <= 1 || PlayerManager.Players[1].Player == null ? "0" : PlayerManager.Players[1].Player.rb.position.y.ToString())
+                .Replace("player3PosX", PlayerManager.Players.Count <= 2 || PlayerManager.Players[2].Player == null ? "0" : PlayerManager.Players[2].Player.rb.position.x.ToString())
+                .Replace("player3PosY", PlayerManager.Players.Count <= 2 || PlayerManager.Players[2].Player == null ? "0" : PlayerManager.Players[2].Player.rb.position.y.ToString())
+                .Replace("player4PosX", PlayerManager.Players.Count <= 3 || PlayerManager.Players[3].Player == null ? "0" : PlayerManager.Players[3].Player.rb.position.x.ToString())
+                .Replace("player4PosY", PlayerManager.Players.Count <= 3 || PlayerManager.Players[3].Player == null ? "0" : PlayerManager.Players[3].Player.rb.position.y.ToString())
+                .Replace("actionMoveX", InputDataManager.inst.menuActions.Move.X.ToString())
+                .Replace("actionMoveY", InputDataManager.inst.menuActions.Move.Y.ToString())
+                .Replace("deltaTime", Time.deltaTime.ToString());
+        }
 
         public static float Lerp(float x, float y, float t) => x + (y - x) * t;
         public static Vector2 Lerp(Vector2 x, Vector2 y, float t) => x + (y - x) * t;
