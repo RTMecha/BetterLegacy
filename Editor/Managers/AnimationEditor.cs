@@ -136,7 +136,7 @@ namespace BetterLegacy.Editor.Managers
             var descLabel = content.Find("label").gameObject.Duplicate(content, "label", 3);
             descLabel.transform.GetChild(0).GetComponent<Text>().text = "Description";
 
-            content.Find("layers").GetComponent<ContrastColors>().Init(content.Find("layers").GetChild(0).GetComponent<Text>(), content.Find("layers").GetComponent<Image>())
+            content.Find("editor/layers").GetComponent<ContrastColors>().Init(content.Find("editor/layers").GetChild(0).GetComponent<Text>(), content.Find("editor/layers").GetComponent<Image>());
 
             yield break;
         }
