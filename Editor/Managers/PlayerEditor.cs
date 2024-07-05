@@ -1794,12 +1794,13 @@ namespace BetterLegacy.Editor.Managers
             var createNewText = createNew.transform.GetChild(0).GetComponent<Text>();
             createNewText.text = "Create custom object";
 
-            EditorThemeManager.AddGraphic(createNewButton.image, ThemeGroup.Add, true);
-            EditorThemeManager.AddGraphic(createNewText, ThemeGroup.Add_Text);
+            EditorThemeManager.ApplyGraphic(createNewButton.image, ThemeGroup.Add, true);
+            EditorThemeManager.ApplyGraphic(createNewText, ThemeGroup.Add_Text);
 
             int num = 0;
             foreach (var customObject in currentModel.customObjects)
             {
+                int index = num;
                 var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(ModelsPopup.Content, customObject.Value.name);
                 var text = gameObject.transform.GetChild(0).GetComponent<Text>();
                 text.text = customObject.Value.name;
@@ -1812,6 +1813,51 @@ namespace BetterLegacy.Editor.Managers
                     StartCoroutine(RefreshEditor());
                     EditorManager.inst.HideDialog("Player Models Popup");
                 });
+
+                var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(gameObject.transform, "Delete");
+                UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(280f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
+                var deleteStorage = delete.GetComponent<DeleteButtonStorage>();
+                deleteStorage.button.onClick.ClearAll();
+                deleteStorage.button.onClick.AddListener(delegate ()
+                {
+                    RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this custom object?", delegate ()
+                    {
+                        currentModel.customObjects.Remove(customObject.Key);
+                        StartCoroutine(RefreshCustomObjects());
+                        StartCoroutine(RefreshEditor());
+                        EditorManager.inst.HideDialog("Warning Popup");
+                    }, delegate ()
+                    {
+                        EditorManager.inst.HideDialog("Warning Popup");
+                    });
+                });
+
+                EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
+                EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
+
+                var duplicate = EditorPrefabHolder.Instance.Function1Button.Duplicate(gameObject.transform, "Duplicate");
+                UIManager.SetRectTransform(duplicate.transform.AsRT(), new Vector2(180f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(120f, 32f));
+                var duplicateStorage = duplicate.GetComponent<FunctionButtonStorage>();
+                duplicateStorage.button.onClick.ClearAll();
+                duplicateStorage.button.onClick.AddListener(delegate ()
+                {
+                    var duplicateObject = PlayerModel.CustomObject.DeepCopy(currentModel, customObject.Value);
+                    while (currentModel.customObjects.ContainsKey(duplicateObject.id)) // Ensure ID is not in list.
+                        duplicateObject.id = LSText.randomNumString(16);
+
+                    var id = duplicateObject.id;
+                    currentModel.customObjects.Add(id, duplicateObject);
+
+                    CustomObjectID = id;
+
+                    StartCoroutine(RefreshCustomObjects());
+                    StartCoroutine(RefreshEditor());
+                });
+
+                duplicateStorage.text.text = "Duplicate";
+
+                EditorThemeManager.ApplyGraphic(duplicateStorage.button.image, ThemeGroup.Paste, true);
+                EditorThemeManager.ApplyGraphic(duplicateStorage.text, ThemeGroup.Paste_Text);
 
                 num++;
             }
