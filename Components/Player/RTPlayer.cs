@@ -77,6 +77,13 @@ namespace BetterLegacy.Components.Player
                 JumpIntensity = levelData.jumpIntensity;
                 MaxJumpCount = levelData.maxJumpCount;
                 CustomPlayer.MaxHealth = levelData.maxHealth;
+
+                if (CoreHelper.InEditor && PlayerManager.Players.Count > 0)
+                {
+                    foreach (var customPlayer in PlayerManager.Players)
+                        if (customPlayer.PlayerModel)
+                            customPlayer.Health = customPlayer.PlayerModel.basePart.health;
+                }
             }
             catch (Exception ex)
             {
