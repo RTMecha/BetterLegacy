@@ -45,7 +45,7 @@ namespace BetterLegacy.Core.Data
             if (!string.IsNullOrEmpty(jn["jump_gravity"]))
                 levelData.jumpGravity = jn["jump_gravity"].AsFloat;
             
-            if (!string.IsNullOrEmpty(jn["jump_gravity"]))
+            if (!string.IsNullOrEmpty(jn["jump_intensity"]))
                 levelData.jumpIntensity = jn["jump_intensity"].AsFloat;
 
             if (!string.IsNullOrEmpty(jn["max_jump"]))
