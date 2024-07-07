@@ -82,6 +82,11 @@ namespace BetterLegacy.Configs
         #region Game
 
         /// <summary>
+        /// Sets the timeline active / inactive.
+        /// </summary>
+        public Setting<bool> HideTimeline { get; set; }
+
+        /// <summary>
         /// Sets the players and GUI elements active / inactive.
         /// </summary>
         public Setting<bool> ShowGUI { get; set; }
@@ -129,6 +134,7 @@ namespace BetterLegacy.Configs
 
             #region Game
 
+            HideTimeline = Bind(this, "Game", "Hide Timeline", false, "Sets the timeline active / inactive.");
             ShowGUI = Bind(this, "Game", "Players & GUI Active", true, "Sets the players and GUI elements active / inactive.");
             ShowGUIToggle = BindEnum(this, "Game", "Players & GUI Toggle Key", KeyCode.F9, "Press this key to toggle the players / GUI on or off.");
             ShowIntro = Bind(this, "Game", "Show Intro", true, "Sets the Intro GUI active state while it's on-screen.");

@@ -1186,24 +1186,9 @@ namespace BetterLegacy.Core.Managers
         // 22 - 0
         public static void updateTimelineActive(float x)
         {
-            var active = false;
+            var active = (int)x == 0;
 
-            if ((int)x == 0)
-            {
-                active = true;
-            }
-            if ((int)x == 1)
-            {
-                active = false;
-            }
-
-            var zen = false;
-            if (DataManager.inst.GetSettingEnum("ArcadeDifficulty", 1) == 0 || EditorManager.inst != null)
-            {
-                zen = true;
-            }
-
-            inst.timelineActive = active && !zen || active && EventsConfig.Instance.ShowGUI.Value;
+            inst.timelineActive = !EventsConfig.Instance.HideTimeline.Value && active && EventsConfig.Instance.ShowGUI.Value;
         }
 
         // 22 - 1
