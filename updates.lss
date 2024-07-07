@@ -1,3 +1,10 @@
+1.1.6 > [Jul 7, 2024]
+- Added Hide Timeline config in the Events > Game tab.
+- Custom player objects can now be deleted and duplicated via the custom object selector window.
+- Renamed "Steam" to "Upload" in the editor.
+- Level folder can now be set directly in the level list.
+- Added delay values to followMousePosition modifier.
+- Added the rest of the global player editor values.
 1.1.5 > [Jul 1, 2024]
 - Added custom scroll values for object keyframe editor.
 - Started working on an animation editor. It's going to look similar to the regular object editor, but instead it'll be exclusively used to edit animations of the player and anything else that will need custom animations.
