@@ -401,7 +401,8 @@ namespace BetterLegacy.Example
         public List<ExampleCommand> commands = new List<ExampleCommand>();
 
         public InputField chatter;
-        public Transform chatterBase;
+        public RectTransform chatterBase;
+        public RectTransform autocompleteContent;
 
         public bool chatting = false;
 
@@ -574,7 +575,12 @@ namespace BetterLegacy.Example
         public static void Init()
         {
             if (inst || !ExampleConfig.Instance.ExampleSpawns.Value)
+            {
+                if (inst)
+                    inst.Say("I'm already here!");
+
                 return;
+            }
 
             onInit?.Invoke();
         }
@@ -670,9 +676,6 @@ namespace BetterLegacy.Example
 
             if (floatingParent != null)
                 floatingParent.localPosition = new Vector3(0f, (Ease.SineInOut(floatingLevel) - 0.5f) * 2f, 0f);
-
-            if (chatterBase != null)
-                chatterBase.localPosition = new Vector3(TotalPosition.x, TotalPosition.y - 110f, 0f);
         }
 
         void FixedUpdate()
@@ -2083,22 +2086,78 @@ namespace BetterLegacy.Example
         {
             var uiField = UIManager.GenerateUIInputField("Discussion", baseCanvas.transform);
 
-            chatterBase = ((GameObject)uiField["GameObject"]).transform;
+            chatterBase = ((GameObject)uiField["GameObject"]).transform.AsRT();
             chatter = (InputField)uiField["InputField"];
 
-            chatter.textComponent.color = new Color(0.1188679f, 0.1188679f, 0.1188679f, 1f);
+            chatterBase.AsRT().anchoredPosition = Vector2.zero;
+            chatterBase.AsRT().sizeDelta = new Vector2(800f, 64f);
 
-            ((RectTransform)chatterBase).sizeDelta = new Vector2(200f, 32f);
+            chatter.textComponent.alignment = TextAnchor.MiddleLeft;
+            chatter.textComponent.fontSize = 40;
 
             chatter.onValueChanged.AddListener(delegate (string _val)
             {
-                Debug.LogFormat("{0}Chatter: {1}", className, _val);
+
             });
 
             chatter.onEndEdit.AddListener(delegate (string _val)
             {
                 HandleChatting();
             });
+
+            EditorThemeManager.ApplyInputField(chatter, roundedSide: SpriteManager.RoundedSide.Top);
+
+            var autocomplete = Creator.NewUIObject("Autocomplete", chatterBase);
+            UIManager.SetRectTransform(autocomplete.transform.AsRT(), new Vector2(0f, -32f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 1f), new Vector2(768f, 300f));
+
+            EditorThemeManager.ApplyGraphic(autocomplete.AddComponent<Image>(), ThemeGroup.Background_2, true, roundedSide: SpriteManager.RoundedSide.Bottom);
+
+            var scrollrect = autocomplete.AddComponent<ScrollRect>();
+            scrollrect.decelerationRate = 0.135f;
+            scrollrect.elasticity = 0.1f;
+            scrollrect.horizontal = false;
+            scrollrect.movementType = ScrollRect.MovementType.Elastic;
+            scrollrect.scrollSensitivity = 20f;
+
+            var scrollbar = Creator.NewUIObject("Scrollbar", autocomplete.transform);
+            var scrollbarImage = scrollbar.AddComponent<Image>();
+            UIManager.SetRectTransform(scrollbar.transform.AsRT(), Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(0f, 0.5f), new Vector2(32f, 0f));
+
+            var scrollbarComponent = scrollbar.AddComponent<Scrollbar>();
+            scrollbarComponent.direction = Scrollbar.Direction.BottomToTop;
+
+            var slidingArea = Creator.NewUIObject("Sliding Area", scrollbar.transform);
+            UIManager.SetRectTransform(slidingArea.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-20f, -20f));
+
+            var handle = Creator.NewUIObject("Handle", slidingArea.transform);
+            UIManager.SetRectTransform(handle.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(20f, 20f));
+            var handleImage = handle.AddComponent<Image>();
+            scrollbarComponent.handleRect = handle.transform.AsRT();
+            scrollbarComponent.targetGraphic = handleImage;
+
+            scrollrect.verticalScrollbar = scrollbarComponent;
+
+            var mask = Creator.NewUIObject("Mask", autocomplete.transform);
+            UIManager.SetRectTransform(mask.transform.AsRT(), new Vector2(0f, 0f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 0f));
+            var maskImage = mask.AddComponent<Image>();
+            var maskComponent = mask.AddComponent<Mask>();
+            maskComponent.showMaskGraphic = false;
+
+            var content = Creator.NewUIObject("Content", mask.transform);
+            var contentSizeFitter = content.AddComponent<ContentSizeFitter>();
+            contentSizeFitter.horizontalFit = ContentSizeFitter.FitMode.MinSize;
+            contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.MinSize;
+
+            var gridLayoutGroup = content.AddComponent<GridLayoutGroup>();
+            gridLayoutGroup.cellSize = new Vector2(768f, 32f);
+            gridLayoutGroup.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+            gridLayoutGroup.constraintCount = 1;
+            gridLayoutGroup.spacing = new Vector2(0f, 8f);
+            gridLayoutGroup.startAxis = GridLayoutGroup.Axis.Vertical;
+            gridLayoutGroup.startCorner = GridLayoutGroup.Corner.UpperLeft;
+            gridLayoutGroup.childAlignment = TextAnchor.UpperLeft;
+
+            autocompleteContent = content.transform.AsRT();
 
             chatterBase.gameObject.SetActive(false);
 
