@@ -153,13 +153,13 @@ namespace BetterLegacy.Editor.Managers
             }));
         }
 
-        public static void ApplyInputField(InputField inputField, ThemeGroup group = ThemeGroup.Input_Field)
+        public static void ApplyInputField(InputField inputField, ThemeGroup group = ThemeGroup.Input_Field, SpriteManager.RoundedSide roundedSide = SpriteManager.RoundedSide.W)
         {
             inputField.image.fillCenter = true;
             ApplyElement(new Element(group, inputField.gameObject, new List<Component>
             {
                 inputField.image,
-            }, true, 1, SpriteManager.RoundedSide.W));
+            }, true, 1, roundedSide));
 
             ApplyElement(new Element(EditorTheme.GetGroup($"{EditorTheme.GetString(group)} Text"), inputField.textComponent.gameObject, new List<Component>
             {
