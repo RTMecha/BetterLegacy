@@ -121,13 +121,6 @@ namespace BetterLegacy.Example
         public Image dialogueImage;
         public Transform dialogueBase;
 
-        public string[] dialogues = new string[]
-        {
-            "Hey!",
-            "You should go touch some grass.",
-            "How are you doing there?"
-        };
-
         public Dictionary<string, DialogueGroup> dialogueDictionary = new Dictionary<string, DialogueGroup>();
 
         float repeat = 60f;
@@ -188,7 +181,7 @@ namespace BetterLegacy.Example
             {
                 var dialogueGroup = jn["dialogue_groups"][i];
 
-                Dialogue[] dialogues = new Dialogue[dialogueGroup["dialogue"].Count];
+                ExampleDialogue[] dialogues = new ExampleDialogue[dialogueGroup["dialogue"].Count];
                 for (int j = 0; j < dialogueGroup["dialogue"].Count; j++)
                 {
                     var dialogue = dialogueGroup["dialogue"][j];
@@ -196,7 +189,7 @@ namespace BetterLegacy.Example
                     if (dialogue["func_index"] != null)
                         dialogueFunction = dialogue["func_index"].AsInt;
 
-                    dialogues[j] = new Dialogue(dialogue["text"], dialogueFunctions[dialogueFunction], delegate ()
+                    dialogues[j] = new ExampleDialogue(dialogue["text"], dialogueFunctions[dialogueFunction], delegate ()
                     {
                         if (dialogue["action"] != null)
                             RTCode.Evaluate(dialogue["action"]);
@@ -227,6 +220,7 @@ namespace BetterLegacy.Example
         public static bool UserIsMecha() => CoreConfig.Instance.DisplayName.Value == "RTMecha";
 
         public static bool UserIsDiggy() =>
+            CoreConfig.Instance.DisplayName.Value.Replace(" ", "").ToLower() == "diggy" ||
             CoreConfig.Instance.DisplayName.Value.Replace(" ", "").ToLower() == "diggydog" ||
             CoreConfig.Instance.DisplayName.Value.Replace(" ", "").ToLower() == "diggydog176";
 
@@ -265,9 +259,6 @@ namespace BetterLegacy.Example
                 said = false;
         }
 
-        int currentDialogueIndex = 0;
-
-
         public DialogueFunction[] dialogueFunctions = new DialogueFunction[]
         {
             SayAnyways, // 0
@@ -289,51 +280,6 @@ namespace BetterLegacy.Example
             LevelCountIsZero, // 16
             UserIsMoNsTeR, // 17
         };
-
-        public int CurrentDialogueIndex
-        {
-            get => Mathf.Clamp(currentDialogueIndex, 0, dialogues.Length - 1);
-            set => currentDialogueIndex = Mathf.Clamp(value, 0, dialogues.Length - 1);
-        }
-
-        public string CurrentDialogue => dialogues[CurrentDialogueIndex];
-
-        public class Dialogue
-        {
-            public Dialogue(string text, DialogueFunction dialogueFunction, Action action = null)
-            {
-                this.text = text;
-                this.dialogueFunction = dialogueFunction;
-                this.action = action;
-            }
-
-            public bool CanSay => dialogueFunction != null && dialogueFunction.Invoke() && canSay;
-
-            public void Action() => action?.Invoke();
-
-            public string text;
-            public DialogueFunction dialogueFunction;
-            public bool canSay = true;
-
-            Action action;
-        }
-
-        public class DialogueGroup
-        {
-            public DialogueGroup()
-            {
-
-            }
-
-            public DialogueGroup(string name, Dialogue[] dialogues)
-            {
-                this.name = name;
-                this.dialogues = dialogues;
-            }
-
-            public string name;
-            public Dialogue[] dialogues;
-        }
 
         #endregion
 
@@ -442,6 +388,17 @@ namespace BetterLegacy.Example
         #endregion
 
         #region Talk
+
+        void LoadCommands()
+        {
+            commands.Clear();
+            var jn = JSON.Parse(RTFile.ReadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Example Parts/commands.json"));
+
+            for (int i = 0; i < jn["commands"].Count; i++)
+                commands.Add(ExampleCommand.Parse(jn["commands"][i]));
+        }
+
+        public List<ExampleCommand> commands = new List<ExampleCommand>();
 
         public InputField chatter;
         public Transform chatterBase;
@@ -559,7 +516,14 @@ namespace BetterLegacy.Example
             else inst.chatting = false;
         };
 
-        public void HandleChatting() => chatAction();
+        public void HandleChatting()
+        {
+            if (chatter == null)
+                return;
+
+            for (int i = 0; i < commands.Count; i++)
+                commands[i].CheckResponse(chatter.text);
+        }
 
         public bool RegexMatch(Regex regex, string text, out Match match)
         {
@@ -630,10 +594,11 @@ namespace BetterLegacy.Example
                 LoadMemory();
                 LoadTutorials();
                 LoadDialogue();
+                LoadCommands();
             }
-            catch
+            catch (Exception ex)
             {
-
+                CoreHelper.LogError($"Could not load Example data.\nException: {ex}");
             }
 
             StartCoroutine(SpawnExample());
