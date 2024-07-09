@@ -42,7 +42,7 @@ You can install the mods via the [Project Launcher](https://github.com/RTMecha/P
 1. Extract the contents of the BepInEx ZIP file to the **Project Arrhythmia folder** you opened earlier.
 1. Launch Project Arrhythmia once and then close it.
 1. In the Project Arrhythmia folder, go to `BepInEx` > `plugins`.
-	- ℹ️ _If you do not see the folder, then you haven't installed BepInEx properly. Try following the previous steps again, or ask for help in the [Discord](https://discord.gg/5XfVScJSK5)._
+	- ℹ️ _If you do not see the folder, then you haven't installed BepInEx properly. Try following the previous steps again, or ask for help in the [Discord](https://discord.gg/J7b2etAsVK)._
 1. Download the current release of BetterLegacy and place it into the `plugins` folder.
 1. In the Project Arrhythmia folder, go to Project Arrhythmia_Data > Plugins.
 1. Make a backup of the steam_api64.dll file somewhere outside of the Project Arrhythmia folder, just in case.
