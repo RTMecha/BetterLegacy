@@ -148,6 +148,14 @@ namespace BetterLegacy.Core.Helpers
         #region Unity
 
         /// <summary>
+        /// Loads an AssetBundle from the Assets folder.
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        public static AssetBundle LoadAssetBundle(string file)
+            => AssetBundle.LoadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}{file}");
+
+        /// <summary>
         /// Destroys a Unity Object from anywhere, includes instant and delay time.
         /// </summary>
         /// <param name="obj">Unity Object to destroy.</param>
