@@ -130,7 +130,7 @@ namespace BetterLegacy.Patchers
                 "Keyframe Offsets > Song Length Count",
                 "Text Object Count",
                 "Text Symbol Total Count",
-                "Objects in Current Layer Count",
+                "Timeline Objects in Current Layer Count",
                 "Markers Count",
                 "Objects Alive Count",
                 "Time in Editor",
@@ -352,9 +352,9 @@ namespace BetterLegacy.Patchers
 
                     info["Text Symbol Total Count"].text = $"[ {num} ]  ";
                 }
-                if (info.ContainsKey("Objects in Current Layer Count") && info["Objects in Current Layer Count"])
+                if (info.ContainsKey("Timeline Objects in Current Layer Count") && info["Timeline Objects in Current Layer Count"])
                 {
-                    info["Objects in Current Layer Count"].text = $"[ {DataManager.inst.gameData.beatmapObjects.Where(x => x.editorData.layer == EditorManager.inst.layer).Count()} ]  ";
+                    info["Timeline Objects in Current Layer Count"].text = $"[ {RTEditor.inst.timelineObjects.Where(x => x.Layer == EditorManager.inst.layer).Count()} ]  ";
                 }
                 if (info.ContainsKey("Markers Count") && info["Markers Count"])
                 {
