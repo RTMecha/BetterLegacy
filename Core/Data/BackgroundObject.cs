@@ -69,6 +69,8 @@ namespace BetterLegacy.Core.Data
         public float reactiveRotIntensity;
         public float reactiveColIntensity;
 
+        public List<string> tags = new List<string>();
+
         public Vector2 rotation = Vector2.zero;
         public Shape shape;
         public float zscale = 10f;
@@ -353,6 +355,10 @@ namespace BetterLegacy.Core.Data
                 reactiveCol = reactiveCol,
             };
 
+            if (jn["tags"] != null)
+                for (int i = 0; i < jn["tags"].Count; i++)
+                    bg.tags.Add(jn["tags"][i]);
+
             for (int i = 0; i < jn["modifiers"].Count; i++)
             {
                 bg.modifiers.Add(new List<Modifier<BackgroundObject>>());
@@ -373,6 +379,11 @@ namespace BetterLegacy.Core.Data
             if (!active)
                 jn["active"] = active.ToString();
             jn["name"] = name.ToString();
+
+            if (tags != null && tags.Count > 0)
+                for (int i = 0; i < tags.Count; i++)
+                    jn["tags"][i] = tags[i];
+
             //jn["kind"] = kind.ToString(); // Unused so no need to save to JSON. Luckily Legacy should handle this being missing.
             jn["pos"]["x"] = pos.x.ToString();
             jn["pos"]["y"] = pos.y.ToString();
