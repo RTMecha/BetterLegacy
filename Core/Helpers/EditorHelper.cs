@@ -1,5 +1,8 @@
-﻿using BetterLegacy.Editor.Managers;
+﻿using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Optimization;
+using BetterLegacy.Editor.Managers;
 using System.Collections;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -85,6 +88,113 @@ namespace BetterLegacy.Core.Helpers
             yield return new WaitForSeconds(delay);
 
             CoreHelper.StartCoroutine(RTEditor.inst.LoadLevel(fullPath));
+        }
+
+        public static bool SelectAllObjects()
+        {
+            if (!GameData.IsValid || !EditorManager.inst || !EditorManager.inst.hasLoadedLevel)
+                return false;
+
+            if (RTEditor.inst.timelineObjects.Count == 1)
+            {
+                ObjectEditor.inst.SetCurrentObject(RTEditor.inst.timelineObjects[0]);
+            }
+            else if (RTEditor.inst.timelineObjects.Count > 1)
+            {
+                for (int i = 0; i < RTEditor.inst.timelineObjects.Count; i++)
+                    RTEditor.inst.timelineObjects[i].selected = true;
+
+                ObjectEditor.inst.CurrentSelection = RTEditor.inst.timelineObjects.Last();
+
+                EditorManager.inst.ClearDialogs();
+                EditorManager.inst.ShowDialog("Multi Object Editor", false);
+            }
+
+            return true;
+        }
+
+        public static bool SelectAllObjectsOnCurrentLayer()
+        {
+            if (!GameData.IsValid || !EditorManager.inst || !EditorManager.inst.hasLoadedLevel)
+                return false;
+
+            var layer = RTEditor.inst.Layer;
+
+            ObjectEditor.inst.DeselectAllObjects();
+
+            if (RTEditor.inst.timelineObjects.Count == 1)
+            {
+                if (RTEditor.inst.timelineObjects[0].Layer == layer)
+                    ObjectEditor.inst.SetCurrentObject(RTEditor.inst.timelineObjects[0]);
+            }
+            else if (RTEditor.inst.timelineObjects.Count > 1)
+            {
+                for (int i = 0; i < RTEditor.inst.timelineObjects.Count; i++)
+                    if (RTEditor.inst.timelineObjects[i].Layer == layer)
+                        RTEditor.inst.timelineObjects[i].selected = true;
+
+                ObjectEditor.inst.CurrentSelection = RTEditor.inst.timelineObjects.Last();
+
+                EditorManager.inst.ClearDialogs();
+                EditorManager.inst.ShowDialog("Multi Object Editor", false);
+            }
+
+            return true;
+        }
+
+        public static bool MirrorSelectedObjects()
+        {
+            if (!GameData.IsValid || !EditorManager.inst || !EditorManager.inst.hasLoadedLevel)
+                return false;
+
+            foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    for (int j = 0; j < beatmapObject.events[i].Count; j++)
+                    {
+                        beatmapObject.events[i][j].eventValues[0] = -beatmapObject.events[i][j].eventValues[0];
+                        beatmapObject.events[i][j].eventRandomValues[0] = -beatmapObject.events[i][j].eventRandomValues[0];
+                    }
+                }
+
+                Updater.UpdateProcessor(beatmapObject, "Keyframes");
+            }
+
+            return true;
+        }
+
+        public static bool FlipSelectedObjects()
+        {
+            if (!GameData.IsValid || !EditorManager.inst || !EditorManager.inst.hasLoadedLevel)
+                return false;
+
+            foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+            {
+                for (int i = 0; i < 2; i++)
+                {
+                    for (int j = 0; j < beatmapObject.events[i].Count; j++)
+                    {
+                        beatmapObject.events[i][j].eventValues[1] = -beatmapObject.events[i][j].eventValues[1];
+                        beatmapObject.events[i][j].eventRandomValues[1] = -beatmapObject.events[i][j].eventRandomValues[1];
+                    }
+                }
+
+                Updater.UpdateProcessor(beatmapObject, "Keyframes");
+            }
+
+            return true;
+        }
+
+        public static bool RefreshKeyframesFromSelection()
+        {
+            if (!GameData.IsValid || !EditorManager.inst || !EditorManager.inst.hasLoadedLevel)
+                return false;
+
+            foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                Updater.UpdateProcessor(beatmapObject, "Keyframes");
+
+            return true;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Configs;
+﻿using BetterLegacy.Components;
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
@@ -34,6 +35,8 @@ namespace BetterLegacy.Example
         public bool Visible => baseCanvas && baseCanvas.activeSelf;
 
         public static bool DebugsOn => false;
+
+        public GameObject blocker;
 
         #region Sprites
 
@@ -400,6 +403,7 @@ namespace BetterLegacy.Example
 
         public List<ExampleCommand> commands = new List<ExampleCommand>();
 
+        public GameObject autocomplete;
         public InputField chatter;
         public RectTransform chatterBase;
         public RectTransform autocompleteContent;
@@ -532,6 +536,8 @@ namespace BetterLegacy.Example
             return match.Success;
         }
 
+        public GameObject commandAutocompletePrefab;
+
         #endregion
 
         #region Options
@@ -636,6 +642,9 @@ namespace BetterLegacy.Example
                 }
 
             update?.Invoke();
+
+            if (autocomplete && chatter)
+                autocomplete.SetActive(!string.IsNullOrEmpty(chatter.text));
 
             if (animations == null || !Visible)
                 return;
@@ -1059,6 +1068,13 @@ namespace BetterLegacy.Example
             baseCanvas = uiCanvas.GameObject;
             canvas = uiCanvas.Canvas;
             canvasGroup = uiCanvas.CanvasGroup;
+
+            blocker = Creator.NewUIObject("Interaction Blocker", baseCanvas.transform);
+            blocker.transform.AsRT().anchoredPosition = Vector2.zero;
+            blocker.transform.AsRT().sizeDelta = new Vector2(10000f, 10000f);
+            var blockerImage = blocker.AddComponent<Image>();
+            blockerImage.color = new Color(1f, 1f, 1f, 0f);
+            blocker.SetActive(false);
 
             #endregion
 
@@ -2025,6 +2041,9 @@ namespace BetterLegacy.Example
             {
                 SetupOptionButton("Chat", delegate ()
                 {
+                    //Say("Sorry, I can't chat at the moment...");
+                    //return;
+
                     if (!chatterBase.gameObject.activeSelf)
                         Say("What do you want to talk about?");
 
@@ -2082,22 +2101,95 @@ namespace BetterLegacy.Example
             EditorThemeManager.ApplyGraphic(text, ThemeGroup.Function_2_Text);
         }
 
+        IEnumerator SetupCommandsAutocomplete()
+        {
+            LSHelpers.DeleteChildren(autocompleteContent);
+
+            foreach (var command in commands.Where(x => x.autocomplete))
+            {
+                var autocomplete = commandAutocompletePrefab.Duplicate(autocompleteContent, "Autocomplete");
+                autocomplete.SetActive(true);
+
+                var autocompleteButton = autocomplete.GetComponent<Button>();
+                autocompleteButton.onClick.ClearAll();
+                autocompleteButton.onClick.AddListener(delegate ()
+                {
+                    chatter.text = command.name;
+                    command.response?.Invoke(command.name);
+                    SearchCommandAutocomplete(command.name);
+                });
+
+                EditorThemeManager.ApplySelectable(autocompleteButton, ThemeGroup.List_Button_1);
+
+                var autocompleteName = autocomplete.transform.Find("Name").GetComponent<Text>();
+                autocompleteName.text = command.name.ToUpper();
+                autocompleteName.fontSize = 28;
+                autocompleteName.fontStyle = FontStyle.Bold;
+                EditorThemeManager.ApplyLightText(autocompleteName);
+                var autocompleteDesc = autocomplete.transform.Find("Desc").GetComponent<Text>();
+                autocompleteDesc.text = command.desc;
+                EditorThemeManager.ApplyLightText(autocompleteDesc);
+            }
+
+            yield break;
+        }
+
+        public void SearchCommandAutocomplete(string searchTerm)
+        {
+            CoreHelper.Log($"Typing: {searchTerm}");
+            int num = 0;
+            for (int i = 0; i < commands.Count; i++)
+            {
+                if (!commands[i].autocomplete)
+                    continue;
+                
+                try
+                {
+                    autocompleteContent.GetChild(num).gameObject.SetActive(CoreHelper.SearchString(searchTerm, commands[i].name));
+                }
+                catch
+                {
+
+                }
+                num++;
+            }
+        }
+
         IEnumerator SpawnChatter()
         {
-            var uiField = UIManager.GenerateUIInputField("Discussion", baseCanvas.transform);
+            chatterBase = Creator.NewUIObject("Discussion Base", baseCanvas.transform).transform.AsRT();
+            chatterBase.transform.AsRT().anchoredPosition = Vector2.zero;
+            chatterBase.transform.AsRT().sizeDelta = new Vector2(800f, 96f);
+            chatterBase.transform.localScale = Vector2.one;
 
-            chatterBase = ((GameObject)uiField["GameObject"]).transform.AsRT();
+            var chatterImage = chatterBase.gameObject.AddComponent<Image>();
+            EditorThemeManager.ApplyGraphic(chatterImage, ThemeGroup.Background_1, true, roundedSide: SpriteManager.RoundedSide.Top);
+
+            var draggable = chatterBase.gameObject.AddComponent<SelectGUI>();
+            draggable.OverrideDrag = true;
+            draggable.target = chatterBase;
+            draggable.ogPos = chatterBase.anchoredPosition;
+
+            var title = UIManager.GenerateUIText("Title", chatterBase.transform);
+            var titleText = (Text)title["Text"];
+            titleText.text = "Example Commands";
+            titleText.rectTransform.anchoredPosition = new Vector2(8f, -16f);
+            titleText.rectTransform.sizeDelta = new Vector2(800f, 100f);
+
+            var uiField = UIManager.GenerateUIInputField("Discussion", chatterBase);
+
+            var chatterField = ((GameObject)uiField["GameObject"]).transform.AsRT();
             chatter = (InputField)uiField["InputField"];
 
-            chatterBase.AsRT().anchoredPosition = Vector2.zero;
-            chatterBase.AsRT().sizeDelta = new Vector2(800f, 64f);
+            chatterField.AsRT().anchoredPosition = new Vector2(0f, -32);
+            chatterField.AsRT().sizeDelta = new Vector2(800f, 64f);
 
             chatter.textComponent.alignment = TextAnchor.MiddleLeft;
             chatter.textComponent.fontSize = 40;
 
             chatter.onValueChanged.AddListener(delegate (string _val)
             {
-
+                SearchCommandAutocomplete(_val);
             });
 
             chatter.onEndEdit.AddListener(delegate (string _val)
@@ -2105,10 +2197,10 @@ namespace BetterLegacy.Example
                 HandleChatting();
             });
 
-            EditorThemeManager.ApplyInputField(chatter, roundedSide: SpriteManager.RoundedSide.Top);
+            EditorThemeManager.ApplyInputField(chatter);
 
-            var autocomplete = Creator.NewUIObject("Autocomplete", chatterBase);
-            UIManager.SetRectTransform(autocomplete.transform.AsRT(), new Vector2(0f, -32f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 1f), new Vector2(768f, 300f));
+            autocomplete = Creator.NewUIObject("Autocomplete", chatterBase);
+            UIManager.SetRectTransform(autocomplete.transform.AsRT(), new Vector2(-16f, -64f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 1f), new Vector2(768f, 300f));
 
             EditorThemeManager.ApplyGraphic(autocomplete.AddComponent<Image>(), ThemeGroup.Background_2, true, roundedSide: SpriteManager.RoundedSide.Bottom);
 
@@ -2137,6 +2229,8 @@ namespace BetterLegacy.Example
 
             scrollrect.verticalScrollbar = scrollbarComponent;
 
+            EditorThemeManager.ApplyScrollbar(scrollbarComponent);
+
             var mask = Creator.NewUIObject("Mask", autocomplete.transform);
             UIManager.SetRectTransform(mask.transform.AsRT(), new Vector2(0f, 0f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 0f));
             var maskImage = mask.AddComponent<Image>();
@@ -2144,12 +2238,13 @@ namespace BetterLegacy.Example
             maskComponent.showMaskGraphic = false;
 
             var content = Creator.NewUIObject("Content", mask.transform);
+            UIManager.SetRectTransform(content.transform.AsRT(), new Vector2(0f, 0f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 0f));
             var contentSizeFitter = content.AddComponent<ContentSizeFitter>();
             contentSizeFitter.horizontalFit = ContentSizeFitter.FitMode.MinSize;
             contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.MinSize;
 
             var gridLayoutGroup = content.AddComponent<GridLayoutGroup>();
-            gridLayoutGroup.cellSize = new Vector2(768f, 32f);
+            gridLayoutGroup.cellSize = new Vector2(768f, 86f);
             gridLayoutGroup.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
             gridLayoutGroup.constraintCount = 1;
             gridLayoutGroup.spacing = new Vector2(0f, 8f);
@@ -2158,6 +2253,20 @@ namespace BetterLegacy.Example
             gridLayoutGroup.childAlignment = TextAnchor.UpperLeft;
 
             autocompleteContent = content.transform.AsRT();
+            scrollrect.content = autocompleteContent;
+
+            commandAutocompletePrefab = Creator.NewUIObject("Autocomplete Prefab", chatterBase);
+            commandAutocompletePrefab.SetActive(false);
+            var commandAutocompletePrefabImage = commandAutocompletePrefab.AddComponent<Image>();
+
+            commandAutocompletePrefab.AddComponent<Button>().image = commandAutocompletePrefabImage;
+
+            var commandAutocompletePrefabName = UIManager.GenerateUIText("Name", commandAutocompletePrefab.transform);
+            UIManager.SetRectTransform((RectTransform)commandAutocompletePrefabName["RectTransform"], Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
+            var commandAutocompletePrefabDesc = UIManager.GenerateUIText("Desc", commandAutocompletePrefab.transform);
+            UIManager.SetRectTransform((RectTransform)commandAutocompletePrefabDesc["RectTransform"], new Vector2(0f, -16f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, -32f));
+
+            StartCoroutine(SetupCommandsAutocomplete());
 
             chatterBase.gameObject.SetActive(false);
 
