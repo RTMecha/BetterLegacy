@@ -1763,6 +1763,107 @@ namespace BetterLegacy.Editor.Managers
 
                             break;
                         }
+                    case "copyAxisGroup":
+                        {
+                            stringGenerator("Expression", 0);
+
+                            dropdownGenerator("To Type", 1, new List<string> { "Position", "Scale", "Rotation" });
+                            dropdownGenerator("To Axis", 2, new List<string> { "X", "Y", "Z" });
+
+                            int a = 0;
+                            for (int i = 3; i < modifier.commands.Count; i += 8)
+                            {
+                                int groupIndex = i;
+                                var label = stringInput.Duplicate(layout, "group label");
+                                label.transform.localScale = Vector3.one;
+                                var groupLabel = label.transform.Find("Text").GetComponent<Text>();
+                                groupLabel.text = $"Group {a + 1}";
+                                label.transform.Find("Text").AsRT().sizeDelta = new Vector2(268f, 32f);
+                                Destroy(label.transform.Find("Input").gameObject);
+
+                                var deleteGroup = gameObject.transform.Find("Label/Delete").gameObject.Duplicate(label.transform, "delete");
+                                deleteGroup.GetComponent<LayoutElement>().ignoreLayout = false;
+                                var deleteGroupButton = deleteGroup.GetComponent<DeleteButtonStorage>();
+                                deleteGroupButton.button.onClick.ClearAll();
+                                deleteGroupButton.button.onClick.AddListener(delegate ()
+                                {
+                                    for (int j = 0; j < 8; j++)
+                                    {
+                                        modifier.commands.RemoveAt(groupIndex);
+                                    }
+
+                                    Updater.UpdateProcessor(beatmapObject);
+                                    StartCoroutine(RenderModifiers(beatmapObject));
+                                });
+
+                                EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete, deleteGroup, new List<Component>
+                                {
+                                    deleteGroupButton.button.image,
+                                }, true, 1, SpriteManager.RoundedSide.W));
+
+                                EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete_Text, deleteGroupButton.image.gameObject, new List<Component>
+                                {
+                                    deleteGroupButton.image,
+                                }));
+
+                                stringGenerator("Name", i);
+                                stringGenerator("Object Group", i + 1);
+                                dropdownGenerator("From Type", i + 2, new List<string> { "Position", "Scale", "Rotation", "Color", "Variable" });
+                                dropdownGenerator("From Axis", i + 3, new List<string> { "X", "Y", "Z" });
+                                singleGenerator("Delay", i + 4, 0f);
+                                singleGenerator("Min", i + 5, -9999f);
+                                singleGenerator("Max", i + 6, 9999f);
+                                boolGenerator("Use Visual", 7, false);
+
+                                a++;
+                            }
+
+                            var baseAdd = new GameObject("add");
+                            baseAdd.transform.SetParent(layout);
+                            baseAdd.transform.localScale = Vector3.one;
+
+                            var baseAddRT = baseAdd.AddComponent<RectTransform>();
+                            baseAddRT.sizeDelta = new Vector2(0f, 32f);
+
+                            var add = PrefabEditor.inst.CreatePrefab.Duplicate(baseAddRT, "add");
+                            var addText = add.transform.GetChild(0).GetComponent<Text>();
+                            addText.text = "Add Group";
+                            add.transform.AsRT().anchoredPosition = new Vector2(-6f, 0f);
+                            add.transform.AsRT().anchorMax = new Vector2(0.5f, 0.5f);
+                            add.transform.AsRT().anchorMin = new Vector2(0.5f, 0.5f);
+                            add.transform.AsRT().sizeDelta = new Vector2(300f, 32f);
+
+                            var addButton = add.GetComponent<Button>();
+                            addButton.onClick.ClearAll();
+                            addButton.onClick.AddListener(delegate ()
+                            {
+                                var lastIndex = modifier.commands.Count - 1;
+
+                                modifier.commands.Add($"var_{a}");
+                                modifier.commands.Add("Object Group");
+                                modifier.commands.Add("0");
+                                modifier.commands.Add("0");
+                                modifier.commands.Add("0");
+                                modifier.commands.Add("-9999");
+                                modifier.commands.Add("9999");
+                                modifier.commands.Add("False");
+
+                                Updater.UpdateProcessor(beatmapObject);
+                                StartCoroutine(RenderModifiers(beatmapObject));
+                            });
+
+                            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Add, add, new List<Component>
+                            {
+                                addButton.image,
+                            }, true, 1, SpriteManager.RoundedSide.W));
+
+                            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Add_Text, addText.gameObject, new List<Component>
+                            {
+                                addText,
+                            }));
+
+                            break;
+                        }
                     case "eventOffsetCopyAxis":
                         {
                             dropdownGenerator("From Type", 1, new List<string> { "Position", "Scale", "Rotation", "Color" });
@@ -1927,6 +2028,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 var deleteGroup = gameObject.transform.Find("Label/Delete").gameObject.Duplicate(label.transform, "delete");
                                 var deleteGroupButton = deleteGroup.GetComponent<DeleteButtonStorage>();
+                                deleteGroup.GetComponent<LayoutElement>().ignoreLayout = false;
                                 deleteGroupButton.button.onClick.ClearAll();
                                 deleteGroupButton.button.onClick.AddListener(delegate ()
                                 {

@@ -4382,6 +4382,86 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+                    case "copyAxisGroup":
+                        {
+                            var evaluation = modifier.value;
+
+                            var toType = Parser.TryParse(modifier.commands[1], 0);
+                            var toAxis = Parser.TryParse(modifier.commands[2], 0);
+
+                            try
+                            {
+                                var cachedSequences = Updater.levelProcessor.converter.cachedSequences;
+
+                                var time = AudioManager.inst.CurrentAudioSource.time;
+
+                                for (int i = 3; i < modifier.commands.Count; i += 8)
+                                {
+                                    var name = modifier.commands[i];
+                                    var group = modifier.commands[i + 1];
+                                    var fromType = Parser.TryParse(modifier.commands[i + 2], 0);
+                                    var fromAxis = Parser.TryParse(modifier.commands[i + 3], 0);
+                                    var delay = Parser.TryParse(modifier.commands[i + 4], 0f);
+                                    var min = Parser.TryParse(modifier.commands[i + 5], 0);
+                                    var max = Parser.TryParse(modifier.commands[i + 6], 0);
+                                    var useVisual = Parser.TryParse(modifier.commands[i + 7], false);
+
+                                    var beatmapObject = GameData.Current.BeatmapObjects.Find(x => x.tags.Contains(group));
+
+                                    if (!beatmapObject)
+                                        continue;
+
+                                    LevelObject levelObject = null;
+                                    Updater.TryGetObject(beatmapObject, out levelObject);
+
+                                    var containsKey = cachedSequences.ContainsKey(beatmapObject.id);
+
+                                    switch (fromType)
+                                    {
+                                        case 0:
+                                            {
+                                                var vector = containsKey && !useVisual ?
+                                                    cachedSequences[beatmapObject.id].Position3DSequence.Interpolate(time - beatmapObject.StartTime - delay) :
+                                                    levelObject != null && levelObject.visualObject != null && useVisual ? levelObject.visualObject.GameObject.transform.position : Vector3.zero;
+
+                                                evaluation = evaluation.Replace(name, Mathf.Clamp(fromAxis == 0 ? vector.x : fromAxis == 1 ? vector.y : vector.z, min, max).ToString());
+                                                break;
+                                            }
+                                        case 1:
+                                            {
+                                                var value = containsKey ? cachedSequences[beatmapObject.id].ScaleSequence.Interpolate(time - beatmapObject.StartTime - delay) : Vector2.zero;
+                                                var vector = !useVisual ? new Vector3(value.x, value.y, 0f) :
+                                                    levelObject != null && levelObject.visualObject != null && useVisual ? levelObject.visualObject.GameObject.transform.lossyScale : Vector3.zero;
+
+                                                evaluation = evaluation.Replace(name, Mathf.Clamp(fromAxis == 0 ? vector.x : fromAxis == 1 ? vector.y : vector.z, min, max).ToString());
+                                                break;
+                                            }
+                                        case 2:
+                                            {
+                                                var value = containsKey ? cachedSequences[beatmapObject.id].RotationSequence.Interpolate(time - beatmapObject.StartTime - delay) : 0f;
+                                                var vector = !useVisual ? new Vector3(value, value, value) :
+                                                    levelObject != null && levelObject.visualObject != null && useVisual ? levelObject.visualObject.GameObject.transform.rotation.eulerAngles : Vector3.zero;
+
+                                                evaluation = evaluation.Replace(name, Mathf.Clamp(fromAxis == 0 ? vector.x : fromAxis == 1 ? vector.y : vector.z, min, max).ToString());
+                                                break;
+                                            }
+                                        case 4:
+                                            {
+                                                evaluation = evaluation.Replace(name, Mathf.Clamp(beatmapObject.integerVariable, min, max).ToString());
+                                                break;
+                                            }
+                                    }
+                                }
+
+                                modifier.reference.SetTransform(toType, toAxis, (float)RTMath.Evaluate(RTMath.Replace(evaluation)));
+                            }
+                            catch
+                            {
+
+                            }
+
+                            break;
+                        }
                     case "copyPlayerAxis":
                         {
                             /*
