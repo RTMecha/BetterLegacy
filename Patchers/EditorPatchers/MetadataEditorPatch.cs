@@ -520,7 +520,7 @@ namespace BetterLegacy.Patchers
             content.Find("agreement/text").GetComponent<Text>().text = "If you want to upload to the Steam Workshop, you can convert the level to the current level format for vanilla PA and upload it to the workshop. Beware any modded features not in current PA will not be saved. " +
                 "However, if you want to include modded features, then it's recommended to upload to the arcade server or zip the level.";
 
-            bool hasID = !string.IsNullOrEmpty(metadata.ID);
+            bool hasID = !string.IsNullOrEmpty(metadata.serverID);
             content.Find("id/id").GetComponent<Text>().text = hasID ? $"ID: {metadata.ID} (Click this text to copy)" : "No ID assigned.";
             var idClickable = content.Find("id").GetComponent<Clickable>() ?? content.Find("id").gameObject.AddComponent<Clickable>();
             idClickable.onClick = delegate (PointerEventData eventData)
