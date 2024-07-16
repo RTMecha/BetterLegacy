@@ -521,7 +521,7 @@ namespace BetterLegacy.Patchers
                 "However, if you want to include modded features, then it's recommended to upload to the arcade server or zip the level.";
 
             bool hasID = !string.IsNullOrEmpty(metadata.serverID);
-            content.Find("id/id").GetComponent<Text>().text = hasID ? $"ID: {metadata.ID} (Click this text to copy)" : "No ID assigned.";
+            content.Find("id/id").GetComponent<Text>().text = !string.IsNullOrEmpty(metadata.ID) ? $"Level ID: {metadata.ID} (Click this text to copy)" : "No ID assigned.";
             var idClickable = content.Find("id").GetComponent<Clickable>() ?? content.Find("id").gameObject.AddComponent<Clickable>();
             idClickable.onClick = delegate (PointerEventData eventData)
             {
@@ -707,7 +707,13 @@ namespace BetterLegacy.Patchers
                     if (RTFile.FileExists(path))
                         File.Delete(path);
 
-                    EditorManager.inst?.DisplayNotification("Upload failed.", 2f, EditorManager.NotificationType.Error);
+                    RTEditor.inst.ShowWarningPopup($"Upload failed. Error code: {onError}", delegate ()
+                    {
+                        EditorManager.inst.HideDialog("Warning Popup");
+                    }, delegate ()
+                    {
+                        EditorManager.inst.HideDialog("Warning Popup");
+                    }, "Login", "Cancel");
                 }));
             }
             catch (Exception ex)
