@@ -11,10 +11,13 @@ using HarmonyLib;
 using LSFunctions;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Text;
+using SimpleJSON;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -29,6 +32,8 @@ namespace BetterLegacy.Patchers
         static GameObject difficultyToggle;
 
         static GameObject tagPrefab;
+
+        static JSONObject authData;
 
         [HarmonyPatch("Awake")]
         [HarmonyPrefix]
@@ -269,6 +274,10 @@ namespace BetterLegacy.Patchers
             var levelNameInput = levelName.transform.Find("input").GetComponent<InputField>();
             ((Text)levelNameInput.placeholder).text = "Level Name";
             EditorThemeManager.AddInputField(levelNameInput);
+
+            var authPath = Path.Combine(Application.persistentDataPath, "auth.json");
+            if (RTFile.FileExists(authPath))
+                authData = JSON.Parse(RTFile.ReadFromFile(authPath)).AsObject;
         }
 
         static void SetToggleList()
@@ -686,6 +695,10 @@ namespace BetterLegacy.Patchers
 
                 ZipFile.CreateFromDirectory(GameManager.inst.basePath, path);
 
+                var headers = new Dictionary<string, string>();
+                if (authData != null && authData["access_token"] != null)
+                    headers["Authorization"] = $"Bearer {authData["access_token"].Value}";
+
                 Instance.StartCoroutine(AlephNetworkManager.UploadBytes($"{AlephNetworkManager.ArcadeServerURL}api/level/upload/level", File.ReadAllBytes(path), delegate (string id)
                 {
                     MetaData.Current.serverID = id;
@@ -728,7 +741,7 @@ namespace BetterLegacy.Patchers
                             EditorManager.inst.DisplayNotification($"Upload failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
                             break;
                     }
-                }));
+                }, headers));
             }
             catch (Exception ex)
             {
@@ -740,13 +753,15 @@ namespace BetterLegacy.Patchers
 
         private static void CreateLoginListener()
         {
-            _listener = new HttpListener();
-            _listener.Prefixes.Add("http://localhost:1234/");
-            _listener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
-            _listener.Start();
-
-            MetadataEditor.inst.StartCoroutine(StartListenerCoroutine());
-            EditorManager.inst.DisplayNotification("START", 10f, EditorManager.NotificationType.Success);
+            if (_listener == null)
+            {
+                _listener = new HttpListener();
+                _listener.Prefixes.Add("http://localhost:1234/");
+                _listener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
+                _listener.Start();
+            }
+            
+            Instance.StartCoroutine(StartListenerCoroutine());
         }
 
         private static IEnumerator StartListenerCoroutine()
@@ -761,18 +776,45 @@ namespace BetterLegacy.Patchers
 
         private static void ProcessRequest(HttpListenerContext context)
         {
-            EditorManager.inst.DisplayNotification($"Method: {context.Request.HttpMethod}", 10f, EditorManager.NotificationType.Warning);
-            EditorManager.inst.DisplayNotification($"LocalUrl: {context.Request.Url.LocalPath}", 10f, EditorManager.NotificationType.Warning);
-            
-            foreach (var key in context.Request.QueryString.AllKeys) {
-                EditorManager.inst.DisplayNotification($"Key: {key}, Value: {context.Request.QueryString.GetValues(key)?[0]}", 10f, EditorManager.NotificationType.Warning);
+            var query = context.Request.QueryString;
+            if (query["success"] != "true")
+            {
+                SendResponse(context.Response, HttpStatusCode.Unauthorized, "Unauthorized");
+                return;
             }
 
-            context.Response.StatusCode = 200;
-            context.Response.Close();
+            var username = query["username"];
+            var accessToken = query["access_token"];
+            var refreshToken = query["refresh_token"];
             
-            EditorManager.inst.DisplayNotification("STOP", 10f, EditorManager.NotificationType.Success);
-            _listener.Stop();
+            if (username == null || accessToken == null || refreshToken == null)
+            {
+                SendResponse(context.Response, HttpStatusCode.BadRequest, "Bad Request");
+                return;
+            }
+
+            authData = new JSONObject
+            {
+                ["username"] = username,
+                ["access_token"] = accessToken,
+                ["refresh_token"] = refreshToken
+            };
+            
+            RTFile.WriteToFile(Path.Combine(Application.persistentDataPath, "auth.json"), authData.ToString());
+            EditorManager.inst.DisplayNotification($"Successfully logged in as {username}!", 8f, EditorManager.NotificationType.Success);
+            SendResponse(context.Response, HttpStatusCode.OK, "Success! You can close this page and go back to the game now.");
+        }
+        
+        private static void SendResponse(HttpListenerResponse response, HttpStatusCode code, string message = null)
+        {
+            response.StatusCode = (int)code;
+            if (message != null)
+            {
+                response.ContentType = "text/plain";
+                var body = Encoding.UTF8.GetBytes(message);
+                response.OutputStream.Write(body, 0, body.Length);
+            }
+            response.Close();
         }
 
         public static void RenderTags()

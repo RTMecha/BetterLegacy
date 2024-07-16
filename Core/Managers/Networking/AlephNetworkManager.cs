@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Net;
 
 using UnityEngine;
@@ -111,7 +112,7 @@ namespace BetterLegacy.Core.Managers.Networking
                 onComplete?.Invoke(www.downloadHandler.text);
         }
 
-        public static IEnumerator UploadBytes(string url, byte[] bytes, Action<string> onComplete, Action<string, long> onError)
+        public static IEnumerator UploadBytes(string url, byte[] bytes, Action<string> onComplete, Action<string, long> onError, Dictionary<string, string> headers = null)
         {
             var form = new WWWForm();
             form.AddBinaryData("file", bytes);
@@ -119,6 +120,11 @@ namespace BetterLegacy.Core.Managers.Networking
             using var www = UnityWebRequest.Post(url, form);
 
             www.certificateHandler = new ForceAcceptAll();
+            
+            if (headers != null)
+                foreach (var header in headers)
+                    www.SetRequestHeader(header.Key, header.Value);
+            
             yield return www.SendWebRequest();
 
             if (www.isNetworkError || www.isHttpError)
