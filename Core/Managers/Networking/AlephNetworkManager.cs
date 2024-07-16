@@ -25,6 +25,8 @@ namespace BetterLegacy.Core.Managers.Networking
 
         void Awake() => inst = this;
 
+        public static string ArcadeServerURL => "https://localhost:7206/";
+
         #region Client
 
         public static IEnumerator DownloadClient(string path, Action<byte[]> callback)

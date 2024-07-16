@@ -685,7 +685,7 @@ namespace BetterLegacy.Patchers
 
                 ZipFile.CreateFromDirectory(GameManager.inst.basePath, path);
 
-                Instance.StartCoroutine(AlephNetworkManager.UploadBytes("https://localhost:7206/api/upload/level", File.ReadAllBytes(path), delegate (string id)
+                Instance.StartCoroutine(AlephNetworkManager.UploadBytes($"{AlephNetworkManager.ArcadeServerURL}api/upload/level", File.ReadAllBytes(path), delegate (string id)
                 {
                     MetaData.Current.serverID = id;
                     MetaData.Current.beatmap.version_number++;
