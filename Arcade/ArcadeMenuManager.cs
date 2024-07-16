@@ -2898,10 +2898,9 @@ namespace BetterLegacy.Arcade
 
         public int OnlineLevelCount { get; set; }
 
-        public static string BaseURL => $"";
-        public static string SearchURL => $"{BaseURL}search";
-        public static string CoverURL => $"{BaseURL}cover/";
-        public static string DownloadURL => $"{BaseURL}zip/";
+        public static string SearchURL => $"{AlephNetworkManager.ArcadeServerURL}search";
+        public static string CoverURL => $"{AlephNetworkManager.ArcadeServerURL}cover/";
+        public static string DownloadURL => $"{AlephNetworkManager.ArcadeServerURL}zip/";
 
         public void SetOnlineLevelsPage(int page)
         {
@@ -2916,7 +2915,7 @@ namespace BetterLegacy.Arcade
         bool loadingOnlineLevels;
         public IEnumerator SearchOnlineLevels()
         {
-            if (string.IsNullOrEmpty(BaseURL))
+            if (string.IsNullOrEmpty(AlephNetworkManager.ArcadeServerURL))
                 yield break;
 
             var page = CurrentPage[1];
