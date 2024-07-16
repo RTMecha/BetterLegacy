@@ -722,7 +722,6 @@ namespace BetterLegacy.Patchers
                         {
                             EditorManager.inst.HideDialog("Warning Popup");
                         }, "Login", "Cancel");
-                        return;
                     }
                 }));
             }
