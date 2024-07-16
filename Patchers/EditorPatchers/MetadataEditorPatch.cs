@@ -685,7 +685,7 @@ namespace BetterLegacy.Patchers
 
                 ZipFile.CreateFromDirectory(GameManager.inst.basePath, path);
 
-                Instance.StartCoroutine(AlephNetworkManager.UploadBytes($"{AlephNetworkManager.ArcadeServerURL}api/upload/level", File.ReadAllBytes(path), delegate (string id)
+                Instance.StartCoroutine(AlephNetworkManager.UploadBytes($"{AlephNetworkManager.ArcadeServerURL}api/level/upload/level", File.ReadAllBytes(path), delegate (string id)
                 {
                     MetaData.Current.serverID = id;
                     MetaData.Current.beatmap.version_number++;
@@ -713,13 +713,17 @@ namespace BetterLegacy.Patchers
                         return;
                     }
 
-                    RTEditor.inst.ShowWarningPopup($"Upload failed. Error code: {onError}", delegate ()
+                    if (responseCode == 401)
                     {
-                        EditorManager.inst.HideDialog("Warning Popup");
-                    }, delegate ()
-                    {
-                        EditorManager.inst.HideDialog("Warning Popup");
-                    }, "Login", "Cancel");
+                        RTEditor.inst.ShowWarningPopup($"Upload failed. Error code: {onError}", () =>
+                        {
+                            EditorManager.inst.HideDialog("Warning Popup");
+                        }, () =>
+                        {
+                            EditorManager.inst.HideDialog("Warning Popup");
+                        }, "Login", "Cancel");
+                        return;
+                    }
                 }));
             }
             catch (Exception ex)
