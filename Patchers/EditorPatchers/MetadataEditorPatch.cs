@@ -606,76 +606,11 @@ namespace BetterLegacy.Patchers
                     EditorManager.NotificationType.Success);
             });
 
-            bool active = false;
-
             var upload = submitBase.Find("upload").GetComponent<Button>();
             upload.onClick.ClearAll();
             upload.onClick.AddListener(delegate ()
             {
-                if (!active)
-                {
-                    EditorManager.inst.DisplayNotification("Not implemented yet!", 2f, EditorManager.NotificationType.Warning);
-                    return;
-                }
-
-                var exportPath = EditorConfig.Instance.ZIPLevelExportPath.Value;
-
-                if (string.IsNullOrEmpty(exportPath))
-                {
-                    if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/exports"))
-                        Directory.CreateDirectory(RTFile.ApplicationDirectory + "beatmaps/exports");
-                    exportPath = RTFile.ApplicationDirectory + "beatmaps/exports/";
-                }
-
-                if (exportPath[exportPath.Length - 1] != '/')
-                    exportPath += "/";
-
-                if (!RTFile.DirectoryExists(Path.GetDirectoryName(exportPath)))
-                {
-                    EditorManager.inst.DisplayNotification("Directory does not exist.", 2f, EditorManager.NotificationType.Error);
-                    return;
-                }
-
-                var path = exportPath + EditorManager.inst.currentLoadedLevel + "-server-upload.zip";
-
-                try
-                {
-                    MetaData.Current.LevelBeatmap.date_published = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
-
-                    var jn = MetaData.Current.ToJSON();
-                    RTFile.WriteToFile(GameManager.inst.basePath + "metadata.lsb", jn.ToString());
-
-                    if (RTFile.FileExists(path))
-                        File.Delete(path);
-
-                    ZipFile.CreateFromDirectory(GameManager.inst.basePath, path);
-
-                    Instance.StartCoroutine(AlephNetworkManager.UploadBytes("", File.ReadAllBytes(path), delegate (string id)
-                    {
-                        MetaData.Current.serverID = id;
-                        MetaData.Current.beatmap.version_number++;
-
-                        var jn = MetaData.Current.ToJSON();
-                        RTFile.WriteToFile(GameManager.inst.basePath + "metadata.lsb", jn.ToString());
-
-                        if (RTFile.FileExists(path))
-                            File.Delete(path);
-
-                        Instance.Render();
-
-                    }, delegate (string onError)
-                    {
-                        MetaData.Current.LevelBeatmap.date_published = "";
-                        var jn = MetaData.Current.ToJSON();
-                        RTFile.WriteToFile(GameManager.inst.basePath + "metadata.lsb", jn.ToString());
-
-                        EditorManager.inst?.DisplayNotification("Upload failed.", 2f, EditorManager.NotificationType.Error);
-                    }));
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError($"{Instance.className}There was an error in creating the ZIP file.\n{ex}");
-                }
+                UploadLevel();
             });
 
             var zip = submitBase.Find("zip").GetComponent<Button>();
@@ -717,6 +652,68 @@ namespace BetterLegacy.Patchers
             });
 
             return false;
+        }
+
+        public static void UploadLevel()
+        {
+            var exportPath = EditorConfig.Instance.ZIPLevelExportPath.Value;
+
+            if (string.IsNullOrEmpty(exportPath))
+            {
+                if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/exports"))
+                    Directory.CreateDirectory(RTFile.ApplicationDirectory + "beatmaps/exports");
+                exportPath = RTFile.ApplicationDirectory + "beatmaps/exports/";
+            }
+
+            if (exportPath[exportPath.Length - 1] != '/')
+                exportPath += "/";
+
+            if (!RTFile.DirectoryExists(Path.GetDirectoryName(exportPath)))
+            {
+                EditorManager.inst.DisplayNotification("Directory does not exist.", 2f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            var path = exportPath + EditorManager.inst.currentLoadedLevel + "-server-upload.zip";
+
+            try
+            {
+                MetaData.Current.LevelBeatmap.date_published = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+
+                if (RTFile.FileExists(path))
+                    File.Delete(path);
+
+                ZipFile.CreateFromDirectory(GameManager.inst.basePath, path);
+
+                Instance.StartCoroutine(AlephNetworkManager.UploadBytes("https://localhost:7206/api/upload/level", File.ReadAllBytes(path), delegate (string id)
+                {
+                    MetaData.Current.serverID = id;
+                    MetaData.Current.beatmap.version_number++;
+
+                    var jn = MetaData.Current.ToJSON();
+                    RTFile.WriteToFile(GameManager.inst.basePath + "metadata.lsb", jn.ToString());
+
+                    if (RTFile.FileExists(path))
+                        File.Delete(path);
+
+                    Instance.Render();
+
+                }, delegate (string onError)
+                {
+                    MetaData.Current.LevelBeatmap.date_published = "";
+                    var jn = MetaData.Current.ToJSON();
+                    RTFile.WriteToFile(GameManager.inst.basePath + "metadata.lsb", jn.ToString());
+
+                    if (RTFile.FileExists(path))
+                        File.Delete(path);
+
+                    EditorManager.inst?.DisplayNotification("Upload failed.", 2f, EditorManager.NotificationType.Error);
+                }));
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"{Instance.className}There was an error in creating the ZIP file.\n{ex}");
+            }
         }
 
         public static void RenderTags()
