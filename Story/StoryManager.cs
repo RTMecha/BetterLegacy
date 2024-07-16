@@ -22,6 +22,11 @@ namespace BetterLegacy.Story
 
         public static void Init() => new GameObject(nameof(StoryManager), typeof(StoryManager)).transform.SetParent(SystemManager.inst.transform);
 
+        void Awake()
+        {
+            Load();
+        }
+
         public List<StoryLevel> storyLevels = new List<StoryLevel>();
 
         public StoryLevel LoadLevel(string name)
@@ -49,6 +54,12 @@ namespace BetterLegacy.Story
 
         public IEnumerator ILoad()
         {
+            if (!RTFile.DirectoryExists($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Story"))
+            {
+                Loaded = false;
+                yield break;
+            }
+
             yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{StoryAssetsPath}covers.asset", delegate (AssetBundle assetBundle)
             {
                 covers = assetBundle;
@@ -64,31 +75,33 @@ namespace BetterLegacy.Story
                 songs = assetBundle;
             }));
 
-            var allAssetNames = covers.GetAllAssetNames();
+            //var allAssetNames = covers.GetAllAssetNames();
 
-            for (int i = 0; i < allAssetNames.Length; i++)
-            {
-                var fileName = Path.GetFileName(allAssetNames[i]);
+            //for (int i = 0; i < allAssetNames.Length; i++)
+            //{
+            //    var fileName = Path.GetFileName(allAssetNames[i]);
 
-                var name = fileName.Replace(".jpg", "");
+            //    var name = fileName.Replace(".jpg", "");
 
-                var icon = covers.LoadAsset<Sprite>(fileName);
-                var song = songs.LoadAsset<AudioClip>($"{name}.ogg");
-                var level = levels.LoadAsset<TextAsset>($"{name}level.json");
-                var metadata = levels.LoadAsset<TextAsset>($"{name}metadata.json");
-                var players = levels.LoadAsset<TextAsset>($"{name}players.json");
+            //    var icon = covers.LoadAsset<Sprite>(fileName);
+            //    var song = songs.LoadAsset<AudioClip>($"{name}.ogg");
+            //    var level = levels.LoadAsset<TextAsset>($"{name}level.json");
+            //    var metadata = levels.LoadAsset<TextAsset>($"{name}metadata.json");
+            //    var players = levels.LoadAsset<TextAsset>($"{name}players.json");
 
-                var storyLevel = new StoryLevel
-                {
-                    icon = icon,
-                    song = song,
-                    json = level.text,
-                    jsonMetadata = metadata.text,
-                    jsonPlayers = players.text,
-                };
+            //    var storyLevel = new StoryLevel
+            //    {
+            //        icon = icon,
+            //        song = song,
+            //        json = level.text,
+            //        jsonMetadata = metadata.text,
+            //        jsonPlayers = players.text,
+            //    };
 
-                storyLevels.Add(storyLevel);
-            }
+            //    storyLevels.Add(storyLevel);
+            //}
+
+            Loaded = true;
         }
     }
 }
