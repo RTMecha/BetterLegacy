@@ -717,6 +717,8 @@ namespace BetterLegacy.Patchers
                     {
                         RTEditor.inst.ShowWarningPopup($"Upload failed. Error code: {onError}", () =>
                         {
+                            Application.OpenURL($"{AlephNetworkManager.ArcadeServerURL}api/auth/login");
+
                             EditorManager.inst.HideDialog("Warning Popup");
                         }, () =>
                         {
