@@ -698,7 +698,7 @@ namespace BetterLegacy.Patchers
 
                     Instance.Render();
 
-                }, delegate (string onError)
+                }, delegate (string onError, long responseCode)
                 {
                     MetaData.Current.LevelBeatmap.date_published = "";
                     var jn = MetaData.Current.ToJSON();
@@ -706,6 +706,12 @@ namespace BetterLegacy.Patchers
 
                     if (RTFile.FileExists(path))
                         File.Delete(path);
+
+                    if (responseCode == 404)
+                    {
+                        EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
+                        return;
+                    }
 
                     RTEditor.inst.ShowWarningPopup($"Upload failed. Error code: {onError}", delegate ()
                     {

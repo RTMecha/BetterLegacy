@@ -111,7 +111,7 @@ namespace BetterLegacy.Core.Managers.Networking
                 onComplete?.Invoke(www.downloadHandler.text);
         }
 
-        public static IEnumerator UploadBytes(string url, byte[] bytes, Action<string> onComplete, Action<string> onError)
+        public static IEnumerator UploadBytes(string url, byte[] bytes, Action<string> onComplete, Action<string, long> onError)
         {
             var form = new WWWForm();
             form.AddBinaryData("file", bytes);
@@ -122,12 +122,12 @@ namespace BetterLegacy.Core.Managers.Networking
             yield return www.SendWebRequest();
 
             if (www.isNetworkError || www.isHttpError)
-                onError?.Invoke(www.error);
+                onError?.Invoke(www.error, www.responseCode);
             else
                 onComplete?.Invoke(www.downloadHandler.text);
         }
 
-        public static IEnumerator UploadBytes(string url, byte[] bytes, Action<float> percentage, Action<string> onComplete, Action<string> onError)
+        public static IEnumerator UploadBytes(string url, byte[] bytes, Action<float> percentage, Action<string> onComplete, Action<string, long> onError)
         {
             var form = new WWWForm();
             form.AddBinaryData("file", bytes);
@@ -145,7 +145,7 @@ namespace BetterLegacy.Core.Managers.Networking
             }
 
             if (www.isNetworkError || www.isHttpError)
-                onError?.Invoke(www.error);
+                onError?.Invoke(www.error, www.responseCode);
             else
                 onComplete?.Invoke(www.downloadHandler.text);
         }
