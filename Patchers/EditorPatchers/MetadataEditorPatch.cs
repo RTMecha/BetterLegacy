@@ -14,6 +14,7 @@ using System.Collections;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -707,23 +708,25 @@ namespace BetterLegacy.Patchers
                     if (RTFile.FileExists(path))
                         File.Delete(path);
 
-                    if (responseCode == 404)
+                    switch (responseCode)
                     {
-                        EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
-                        return;
-                    }
-
-                    if (responseCode == 401)
-                    {
-                        RTEditor.inst.ShowWarningPopup($"Upload failed. Error code: {onError}", () =>
-                        {
-                            Application.OpenURL($"{AlephNetworkManager.ArcadeServerURL}api/auth/login");
-
-                            EditorManager.inst.HideDialog("Warning Popup");
-                        }, () =>
-                        {
-                            EditorManager.inst.HideDialog("Warning Popup");
-                        }, "Login", "Cancel");
+                        case 404:
+                            EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
+                            return;
+                        case 401:
+                            RTEditor.inst.ShowWarningPopup($"Upload failed. Error code: {onError}", () =>
+                            {
+                                Application.OpenURL($"{AlephNetworkManager.ArcadeServerURL}api/auth/login");
+                                CreateLoginListener();
+                                EditorManager.inst.HideDialog("Warning Popup");
+                            }, () =>
+                            {
+                                EditorManager.inst.HideDialog("Warning Popup");
+                            }, "Login", "Cancel");
+                            break;
+                        default:
+                            EditorManager.inst.DisplayNotification($"Upload failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
+                            break;
                     }
                 }));
             }
@@ -731,6 +734,45 @@ namespace BetterLegacy.Patchers
             {
                 Debug.LogError($"{Instance.className}There was an error in creating the ZIP file.\n{ex}");
             }
+        }
+
+        private static HttpListener _listener;
+
+        private static void CreateLoginListener()
+        {
+            _listener = new HttpListener();
+            _listener.Prefixes.Add("http://localhost:1234/");
+            _listener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
+            _listener.Start();
+
+            MetadataEditor.inst.StartCoroutine(StartListenerCoroutine());
+            EditorManager.inst.DisplayNotification("START", 10f, EditorManager.NotificationType.Success);
+        }
+
+        private static IEnumerator StartListenerCoroutine()
+        {
+            while (_listener.IsListening)
+            {
+                var task = _listener.GetContextAsync();
+                yield return new WaitUntil(() => task.IsCompleted);
+                ProcessRequest(task.Result);
+            }
+        }
+
+        private static void ProcessRequest(HttpListenerContext context)
+        {
+            EditorManager.inst.DisplayNotification($"Method: {context.Request.HttpMethod}", 10f, EditorManager.NotificationType.Warning);
+            EditorManager.inst.DisplayNotification($"LocalUrl: {context.Request.Url.LocalPath}", 10f, EditorManager.NotificationType.Warning);
+            
+            foreach (var key in context.Request.QueryString.AllKeys) {
+                EditorManager.inst.DisplayNotification($"Key: {key}, Value: {context.Request.QueryString.GetValues(key)?[0]}", 10f, EditorManager.NotificationType.Warning);
+            }
+
+            context.Response.StatusCode = 200;
+            context.Response.Close();
+            
+            EditorManager.inst.DisplayNotification("STOP", 10f, EditorManager.NotificationType.Success);
+            _listener.Stop();
         }
 
         public static void RenderTags()
