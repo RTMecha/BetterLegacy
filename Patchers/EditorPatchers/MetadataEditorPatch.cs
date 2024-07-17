@@ -20,6 +20,7 @@ using System.Text;
 using SimpleJSON;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Networking;
 using UnityEngine.UI;
 
 namespace BetterLegacy.Patchers
@@ -618,7 +619,7 @@ namespace BetterLegacy.Patchers
 
             var upload = submitBase.Find("upload").GetComponent<Button>();
             upload.onClick.ClearAll();
-            upload.onClick.AddListener(delegate ()
+            upload.onClick.AddListener(delegate
             {
                 UploadLevel();
             });
@@ -699,7 +700,7 @@ namespace BetterLegacy.Patchers
                 if (authData != null && authData["access_token"] != null)
                     headers["Authorization"] = $"Bearer {authData["access_token"].Value}";
 
-                Instance.StartCoroutine(AlephNetworkManager.UploadBytes($"{AlephNetworkManager.ArcadeServerURL}api/level/upload/level", File.ReadAllBytes(path), delegate (string id)
+                Instance.StartCoroutine(AlephNetworkManager.UploadBytes($"{AlephNetworkManager.ArcadeServerURL}api/level", File.ReadAllBytes(path), delegate (string id)
                 {
                     MetaData.Current.serverID = id;
                     MetaData.Current.beatmap.version_number++;
@@ -710,8 +711,8 @@ namespace BetterLegacy.Patchers
                     if (RTFile.FileExists(path))
                         File.Delete(path);
 
+                    EditorManager.inst.DisplayNotification($"Level uploaded! ID: {id}", 3f, EditorManager.NotificationType.Success);
                     Instance.Render();
-
                 }, delegate (string onError, long responseCode)
                 {
                     MetaData.Current.LevelBeatmap.date_published = "";
@@ -727,16 +728,15 @@ namespace BetterLegacy.Patchers
                             EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
                             return;
                         case 401:
-                            RTEditor.inst.ShowWarningPopup($"Upload failed. Error code: {onError}", () =>
+                        {
+                            if (authData != null && authData["access_token"] != null && authData["refresh_token"] != null)
                             {
-                                Application.OpenURL($"{AlephNetworkManager.ArcadeServerURL}api/auth/login");
-                                CreateLoginListener();
-                                EditorManager.inst.HideDialog("Warning Popup");
-                            }, () =>
-                            {
-                                EditorManager.inst.HideDialog("Warning Popup");
-                            }, "Login", "Cancel");
+                                Instance.StartCoroutine(RefreshTokens());
+                                return;
+                            }
+                            ShowLoginPopup();
                             break;
+                        }
                         default:
                             EditorManager.inst.DisplayNotification($"Upload failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
                             break;
@@ -745,7 +745,54 @@ namespace BetterLegacy.Patchers
             }
             catch (Exception ex)
             {
-                Debug.LogError($"{Instance.className}There was an error in creating the ZIP file.\n{ex}");
+                Debug.LogError($"{Instance.className}There was an error while creating the ZIP file.\n{ex}");
+            }
+        }
+
+        public static void ShowLoginPopup()
+        {
+            RTEditor.inst.ShowWarningPopup("You are not logged in.", () =>
+            {
+                Application.OpenURL($"{AlephNetworkManager.ArcadeServerURL}api/auth/login");
+                CreateLoginListener();
+                EditorManager.inst.HideDialog("Warning Popup");
+            }, () =>
+            {
+                EditorManager.inst.HideDialog("Warning Popup");
+            }, "Login", "Cancel");
+        }
+
+        public static IEnumerator RefreshTokens()
+        {
+            EditorManager.inst.DisplayNotification("Access token expired. Refreshing...", 5f, EditorManager.NotificationType.Warning);
+
+            var form = new WWWForm();
+            form.AddField("AccessToken", authData["access_token"].Value);
+            form.AddField("RefreshToken", authData["refresh_token"].Value);
+
+            using var www = UnityWebRequest.Post($"{AlephNetworkManager.ArcadeServerURL}api/auth/refresh", form);
+            www.certificateHandler = new AlephNetworkManager.ForceAcceptAll();
+            yield return www.SendWebRequest();
+
+            if (www.isNetworkError)
+                EditorManager.inst.DisplayNotification($"Upload failed. Error: {www.error}", 5f, EditorManager.NotificationType.Error);
+            else
+            {
+                if (www.isHttpError)
+                {
+                    EditorManager.inst.DisplayNotification(www.downloadHandler.text, 5f, EditorManager.NotificationType.Error);
+                    ShowLoginPopup();
+                    yield break;
+                }
+
+                var jn = JSON.Parse(www.downloadHandler.text);
+                authData["access_token"] = jn["accessToken"].Value;
+                authData["refresh_token"] = jn["refreshToken"].Value;
+                authData["access_token_expiry_time"] = jn["accessTokenExpiryTime"].Value;
+                
+                RTFile.WriteToFile(Path.Combine(Application.persistentDataPath, "auth.json"), authData.ToString());
+                EditorManager.inst.DisplayNotification("Refreshed tokens! Uploading...", 5f, EditorManager.NotificationType.Success);
+                UploadLevel();
             }
         }
 
@@ -783,11 +830,14 @@ namespace BetterLegacy.Patchers
                 return;
             }
 
+            var id = query["id"];
             var username = query["username"];
+            var steamId = query["steam_id"];
             var accessToken = query["access_token"];
             var refreshToken = query["refresh_token"];
+            var accessTokenExpiryTime = query["access_token_expiry_time"];
             
-            if (username == null || accessToken == null || refreshToken == null)
+            if (id == null || username == null || steamId == null || accessToken == null || refreshToken == null || accessTokenExpiryTime == null)
             {
                 SendResponse(context.Response, HttpStatusCode.BadRequest, "Bad Request");
                 return;
@@ -795,9 +845,12 @@ namespace BetterLegacy.Patchers
 
             authData = new JSONObject
             {
+                ["id"] = id,
                 ["username"] = username,
+                ["steam_id"] = steamId,
                 ["access_token"] = accessToken,
-                ["refresh_token"] = refreshToken
+                ["refresh_token"] = refreshToken,
+                ["access_token_expiry_time"] = accessTokenExpiryTime
             };
             
             RTFile.WriteToFile(Path.Combine(Application.persistentDataPath, "auth.json"), authData.ToString());
