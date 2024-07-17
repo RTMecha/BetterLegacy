@@ -38,6 +38,7 @@ namespace BetterLegacy.Core.Data
 
         public string collectionID;
         public int index;
+        public string uploaderName;
         public string serverID;
         public string arcadeID;
         public string prevID;
@@ -105,6 +106,7 @@ namespace BetterLegacy.Core.Data
                 linkType = orig.LevelSong.linkType,
             },
             serverID = orig.serverID,
+            uploaderName = orig.uploaderName,
             index = orig.index,
             collectionID = orig.collectionID,
         };
@@ -378,6 +380,9 @@ namespace BetterLegacy.Core.Data
 
                 if (!string.IsNullOrEmpty(jn["storyline"]["next_level"]))
                     result.nextID = jn["storyline"]["next_level"];
+
+                if (!string.IsNullOrEmpty(jn["uploader_name"]))
+                    result.uploaderName = jn["uploader_name"];
             }
             catch
             {
@@ -462,20 +467,13 @@ namespace BetterLegacy.Core.Data
             if (!string.IsNullOrEmpty(nextID))
                 jn["storyline"]["next_level"] = nextID;
 
+            if (!string.IsNullOrEmpty(uploaderName))
+                jn["uploader_name"] = uploaderName;
+
             return jn;
         }
 
         #endregion
-
-        /// <summary>
-        /// For future "more credits" section of an arcade level.
-        /// </summary>
-        public List<LevelArtist> Artists { get; set; } = new List<LevelArtist>();
-
-        /// <summary>
-        /// For future "more credits" section of an arcade level.
-        /// </summary>
-        public List<LevelCreator> Creators { get; set; } = new List<LevelCreator>();
 
         public LevelArtist LevelArtist => (LevelArtist)artist;
         public LevelCreator LevelCreator => (LevelCreator)creator;
@@ -498,7 +496,6 @@ namespace BetterLegacy.Core.Data
         #endregion
     }
 
-    [Serializable]
     public class LevelArtist : BaseArtist
     {
         public LevelArtist() : base()
@@ -525,7 +522,6 @@ namespace BetterLegacy.Core.Data
         #endregion
     }
 
-    [Serializable]
     public class LevelCreator : BaseCreator
     {
         public LevelCreator() : base()
@@ -564,7 +560,6 @@ namespace BetterLegacy.Core.Data
         #endregion
     }
 
-    [Serializable]
     public class LevelSong : BaseSong
     {
         public LevelSong() : base()
@@ -593,7 +588,6 @@ namespace BetterLegacy.Core.Data
         #endregion
     }
 
-    [Serializable]
     public class LevelBeatmap : BaseBeatmap
     {
         public LevelBeatmap() : base()
