@@ -276,6 +276,14 @@ namespace BetterLegacy.Patchers
             ((Text)levelNameInput.placeholder).text = "Level Name";
             EditorThemeManager.AddInputField(levelNameInput);
 
+            var uploaderName = creator.Find("name").gameObject.Duplicate(creator, "uploader_name", 1);
+            var uploaderNameTitle = uploaderName.transform.Find("title").GetComponent<Text>();
+            uploaderNameTitle.text = "Uploader Name";
+            EditorThemeManager.AddLightText(uploaderNameTitle);
+            var uploaderNameInput = uploaderName.transform.Find("input").GetComponent<InputField>();
+            ((Text)uploaderNameInput.placeholder).text = "Uploader Name";
+            EditorThemeManager.AddInputField(uploaderNameInput);
+
             var authPath = Path.Combine(Application.persistentDataPath, "auth.json");
             if (RTFile.FileExists(authPath))
                 authData = JSON.Parse(RTFile.ReadFromFile(authPath)).AsObject;
@@ -397,6 +405,14 @@ namespace BetterLegacy.Patchers
                     metadata.artist.LinkType = oldVal;
                     Instance.Render();
                 }), false);
+            });
+
+            var uploaderName = content.Find("creator/uploader_name/input").GetComponent<InputField>();
+            uploaderName.onValueChanged.ClearAll();
+            uploaderName.text = metadata.uploaderName;
+            uploaderName.onValueChanged.AddListener((string _val) =>
+            {
+                metadata.uploaderName = _val;
             });
 
             var creatorName = content.Find("creator/name/input").GetComponent<InputField>();
