@@ -2898,9 +2898,9 @@ namespace BetterLegacy.Arcade
 
         public int OnlineLevelCount { get; set; }
 
-        public static string SearchURL => $"{AlephNetworkManager.ArcadeServerURL}search";
-        public static string CoverURL => $"{AlephNetworkManager.ArcadeServerURL}cover/";
-        public static string DownloadURL => $"{AlephNetworkManager.ArcadeServerURL}zip/";
+        public static string SearchURL => $"{AlephNetworkManager.ArcadeServerURL}api/level/search";
+        public static string CoverURL => $"{AlephNetworkManager.ArcadeServerURL}api/level/cover/";
+        public static string DownloadURL => $"{AlephNetworkManager.ArcadeServerURL}api/level/zip/";
 
         public void SetOnlineLevelsPage(int page)
         {
