@@ -8152,45 +8152,45 @@ namespace BetterLegacy.Editor.Managers
 
                 if (!RTFile.FileExists(file + "/level.lsb"))
                 {
-                    if (showLevelFolders)
+                    if (!showLevelFolders)
+                        continue;
+
+                    var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(transform, $"Folder [{name}]");
+                    var folderButtonStorageFolder = gameObjectFolder.GetComponent<FunctionButtonStorage>();
+                    var folderButtonFunctionFolder = gameObjectFolder.AddComponent<FolderButtonFunction>();
+
+                    var editorWrapperFolder = new EditorWrapper(gameObjectFolder, null, path, null);
+                    editorWrapperFolder.isFolder = true;
+
+                    var hoverUIFolder = gameObjectFolder.AddComponent<HoverUI>();
+                    hoverUIFolder.size = buttonHoverSize;
+                    hoverUIFolder.animatePos = false;
+                    hoverUIFolder.animateSca = true;
+
+                    folderButtonStorageFolder.text.text = name;
+
+                    folderButtonStorageFolder.text.horizontalOverflow = horizontalOverflow;
+                    folderButtonStorageFolder.text.verticalOverflow = verticalOverflow;
+                    folderButtonStorageFolder.text.fontSize = fontSize;
+
+                    folderButtonStorageFolder.button.onClick.ClearAll();
+                    folderButtonFunctionFolder.onClick = (PointerEventData eventData) =>
                     {
-                        var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(transform, $"Folder [{name}]");
-                        var folderButtonStorageFolder = gameObjectFolder.GetComponent<FunctionButtonStorage>();
-                        var folderButtonFunctionFolder = gameObjectFolder.AddComponent<FolderButtonFunction>();
-
-                        var editorWrapperFolder = new EditorWrapper(gameObjectFolder, null, path, null);
-                        editorWrapperFolder.isFolder = true;
-
-                        var hoverUIFolder = gameObjectFolder.AddComponent<HoverUI>();
-                        hoverUIFolder.size = buttonHoverSize;
-                        hoverUIFolder.animatePos = false;
-                        hoverUIFolder.animateSca = true;
-
-                        folderButtonStorageFolder.text.text = name;
-
-                        folderButtonStorageFolder.text.horizontalOverflow = horizontalOverflow;
-                        folderButtonStorageFolder.text.verticalOverflow = verticalOverflow;
-                        folderButtonStorageFolder.text.fontSize = fontSize;
-
-                        folderButtonStorageFolder.button.onClick.ClearAll();
-                        folderButtonFunctionFolder.onClick = (PointerEventData eventData) =>
+                        if (path.Contains(RTFile.ApplicationDirectory + "beatmaps/"))
                         {
-                            if (path.Contains(RTFile.ApplicationDirectory + "beatmaps/"))
-                            {
-                                editorPathField.text = path.Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
-                                UpdateEditorPath(false);
-                            }
-                            else
-                            {
-                                EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                            }
-                        };
+                            editorPathField.text = path.Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
+                            UpdateEditorPath(false);
+                        }
+                        else
+                        {
+                            EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                        }
+                    };
 
-                        EditorThemeManager.ApplySelectable(folderButtonStorageFolder.button, ThemeGroup.List_Button_1);
-                        EditorThemeManager.ApplyLightText(folderButtonStorageFolder.text);
+                    EditorThemeManager.ApplySelectable(folderButtonStorageFolder.button, ThemeGroup.List_Button_1);
+                    EditorThemeManager.ApplyLightText(folderButtonStorageFolder.text);
 
-                        EditorManager.inst.loadedLevels.Add(editorWrapperFolder);
-                    }
+                    EditorManager.inst.loadedLevels.Add(editorWrapperFolder);
 
                     continue;
                 }
