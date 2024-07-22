@@ -15,7 +15,9 @@ namespace BetterLegacy.Patchers
         static void AwakePostfix()
         {
             Debug.unityLogger.logEnabled = CoreConfig.Instance.DebugsOn.Value;
-            ExampleManager.Init();
+
+            if (!ExampleManager.inst) // Don't call Init due to SystemManager.inst.Awake() being called every time a scene is loaded. This prevents Example from saying he's already here.
+                ExampleManager.Init();
         }
 
         [HarmonyPatch("Update")]
