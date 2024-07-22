@@ -2923,7 +2923,7 @@ namespace BetterLegacy.Arcade
 
             var search = OnlineSearchTerm;
 
-            string query = string.IsNullOrEmpty(search) && page == 0 ? SearchURL : string.IsNullOrEmpty(search) && page != 0 ? $"{SearchURL}?page={page}" : !string.IsNullOrEmpty(search) && page == 0 ? $"{SearchURL}?q={ReplaceSpace(search)}" : !string.IsNullOrEmpty(search) ? $"{SearchURL}?q={ReplaceSpace(search)}&page={page}" : "";
+            string query = string.IsNullOrEmpty(search) && page == 0 ? SearchURL : string.IsNullOrEmpty(search) && page != 0 ? $"{SearchURL}?page={page}" : !string.IsNullOrEmpty(search) && page == 0 ? $"{SearchURL}?query={ReplaceSpace(search)}" : !string.IsNullOrEmpty(search) ? $"{SearchURL}?query={ReplaceSpace(search)}&page={page}" : "";
 
             CoreHelper.Log($"Search query: {query}");
 
