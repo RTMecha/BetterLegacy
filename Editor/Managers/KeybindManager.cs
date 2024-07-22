@@ -2144,7 +2144,7 @@ namespace BetterLegacy.Editor.Managers
                 && ObjectEditor.inst.CurrentSelection.IsBeatmapObject
                 && ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.selected).Count() > 0)
             {
-                foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalSelections)
+                foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.selected))
                 {
                     if (timelineObject.Index != 0)
                         timelineObject.Time = RTEditor.SnapToBPM(timelineObject.Time);
