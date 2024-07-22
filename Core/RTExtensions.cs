@@ -677,6 +677,8 @@ namespace BetterLegacy.Core
 
         public static void SetSlider(this Slider slider, float value) => slider.value = value;
 
+        public static Text PlaceholderText(this InputField inputField) => (Text)inputField.placeholder;
+
         public static void ClearAll(this Button.ButtonClickedEvent b)
         {
             b.m_Calls.m_ExecutingCalls.Clear();

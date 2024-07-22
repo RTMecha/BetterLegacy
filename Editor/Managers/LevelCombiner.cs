@@ -44,6 +44,8 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
+        public static void Init() => Creator.NewGameObject("LevelCombiner", EditorManager.inst.transform.parent).AddComponent<LevelCombiner>();
+
         void Awake()
         {
             if (inst == null)

@@ -187,55 +187,30 @@ namespace BetterLegacy.Editor.Managers
 
             // Manager initializations
             PlayerEditor.Init();
+            ObjectModifiersEditor.Init();
+            LevelCombiner.Init();
+            ProjectPlannerManager.Init();
 
-            // Object Modifiers Editor
-            {
-                var gameObject = new GameObject("ObjectModifiersEditor");
-                gameObject.transform.SetParent(GameObject.Find("Editor Systems").transform);
-                gameObject.AddComponent<ObjectModifiersEditor>();
-            }
-
-            // Level Combiner
-            {
-                var gameObject = new GameObject("LevelCombiner");
-                gameObject.transform.SetParent(GameObject.Find("Editor Systems").transform);
-                gameObject.AddComponent<LevelCombiner>();
-            }
-
-            // Project Planner
-            {
-                var gameObject = new GameObject("ProjectPlanner");
-                gameObject.transform.SetParent(GameObject.Find("Editor Systems").transform);
-                gameObject.AddComponent<ProjectPlannerManager>();
-            }
-
-            mousePicker = new GameObject("picker");
-            mousePicker.transform.SetParent(EditorManager.inst.dialogs.parent);
+            mousePicker = Creator.NewUIObject("picker", EditorManager.inst.dialogs.parent);
             mousePicker.transform.localScale = Vector3.one;
-            mousePicker.layer = 5;
-            mousePickerRT = mousePicker.AddComponent<RectTransform>();
+            mousePickerRT = mousePicker.transform.AsRT();
 
-            var img = new GameObject("image");
-            img.transform.SetParent(mousePicker.transform);
+            var img = Creator.NewUIObject("image", mousePickerRT);
             img.transform.localScale = Vector3.one;
-            img.layer = 5;
 
-            var imgRT = img.AddComponent<RectTransform>();
-            imgRT.anchoredPosition = new Vector2(-930f, -520f);
-            imgRT.sizeDelta = new Vector2(32f, 32f);
+            img.transform.AsRT().anchoredPosition = new Vector2(-930f, -520f);
+            img.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
 
             var image = img.AddComponent<Image>();
 
-            dropperSprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_dropper.png");
+            dropperSprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_dropper.png");
             image.sprite = dropperSprite;
 
-            doggoObject = GameObject.Find("Editor Systems/Editor GUI/sizer/main/Popups/File Info Popup/loading");
-            doggoImage = doggoObject.GetComponent<Image>();
             timelineTime = EditorManager.inst.timelineTime.GetComponent<Text>();
             SetNotificationProperties();
 
             timelineSlider = EditorManager.inst.timelineSlider.GetComponent<Slider>();
-            TriggerHelper.AddEventTriggerParams(timelineSlider.gameObject, TriggerHelper.CreateEntry(EventTriggerType.PointerDown, delegate (BaseEventData eventData)
+            TriggerHelper.AddEventTriggerParams(timelineSlider.gameObject, TriggerHelper.CreateEntry(EventTriggerType.PointerDown, (BaseEventData eventData) =>
             {
                 if (!EditorConfig.Instance.DraggingMainCursorFix.Value)
                     return;
@@ -243,7 +218,7 @@ namespace BetterLegacy.Editor.Managers
                 changingTime = true;
                 newTime = timelineSlider.value / EditorManager.inst.Zoom;
                 AudioManager.inst.SetMusicTime(Mathf.Clamp(timelineSlider.value / EditorManager.inst.Zoom, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
-            }), TriggerHelper.CreateEntry(EventTriggerType.PointerUp, delegate (BaseEventData eventData)
+            }), TriggerHelper.CreateEntry(EventTriggerType.PointerUp, (BaseEventData eventData) =>
             {
                 if (!EditorConfig.Instance.DraggingMainCursorFix.Value)
                     return;
@@ -266,77 +241,13 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddLightText(mouseTooltipText);
             EditorThemeManager.AddGraphic(mouseTooltipRT.Find("bg/Image").GetComponent<Image>(), ThemeGroup.Light_Text);
             EditorThemeManager.AddLightText(mouseTooltipRT.Find("bg/title").GetComponent<Text>());
-
-            ModCompatibility.sharedFunctions.AddSet("ParentPickerDisable", (Action)delegate ()
-            {
-                parentPickerEnabled = false;
-                prefabPickerEnabled = false;
-            });
-
-            ModCompatibility.sharedFunctions.AddSet("ShowWarningPopup", (Action<string, UnityAction, UnityAction, string, string>)ShowWarningPopup);
         }
 
         void Update()
         {
             timeEditing = Time.time - timeOffset + savedTimeEditng;
 
-            for (int i = 0; i < timelineObjects.Count; i++)
-            {
-                var timelineObject = timelineObjects[i];
-                if (timelineObject.Data != null && timelineObject.GameObject && timelineObject.Image)
-                {
-                    bool isCurrentLayer = timelineObject.Layer == Layer && layerType == LayerType.Objects;
-                    timelineObject.GameObject.SetActive(isCurrentLayer);
-                    if (isCurrentLayer)
-                    {
-                        timelineObject.Image.color = timelineObject.selected ? ObjEditor.inst.SelectedColor :
-                            timelineObject.IsBeatmapObject && !string.IsNullOrEmpty(timelineObject.GetData<BeatmapObject>().prefabID) ? timelineObject.GetData<BeatmapObject>().Prefab.TypeColor :
-                            timelineObject.IsPrefabObject ? timelineObject.GetData<PrefabObject>().Prefab.TypeColor : ObjEditor.inst.NormalColor;
-                    }
-                }
-            }
-
-            var theme = EditorThemeManager.CurrentTheme;
-            var objectKeyframesRenderBinColor = EditorConfig.Instance.EventKeyframesRenderBinColor.Value;
-            if (ObjectEditor.inst && ObjectEditor.inst.CurrentSelection && ObjectEditor.inst.CurrentSelection.IsBeatmapObject && ObjectEditor.inst.CurrentSelection.InternalSelections.Count > 0)
-                foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalSelections)
-                {
-                    if (timelineObject.Data != null && timelineObject.GameObject && timelineObject.Image)
-                    {
-                        timelineObject.GameObject.SetActive(true);
-
-                        var color = objectKeyframesRenderBinColor &&
-                            theme.ContainsGroup($"Object Keyframe Color {timelineObject.Type + 1}") ?
-                            theme.GetColor($"Object Keyframe Color {timelineObject.Type + 1}") : ObjEditor.inst.NormalColor;
-                        color.a = 1f;
-
-                        timelineObject.Image.color = timelineObject.selected ? !objectKeyframesRenderBinColor ? ObjEditor.inst.SelectedColor : EventEditor.inst.Selected : color;
-                    }
-                }
-
-            var eventKeyframesRenderBinColor = EditorConfig.Instance.EventKeyframesRenderBinColor.Value;
-            for (int i = 0; i < timelineKeyframes.Count; i++)
-            {
-                var timelineObject = timelineKeyframes[i];
-                if (timelineObject.Data != null && timelineObject.GameObject && timelineObject.Image)
-                {
-                    int limit = timelineObject.Type / RTEventEditor.EventLimit;
-                    bool isCurrentLayer = limit == Layer && layerType == LayerType.Events;
-                    bool active = isCurrentLayer && (ShowModdedUI || timelineObject.Type < 10);
-
-                    timelineObject.GameObject.SetActive(active);
-
-                    if (active)
-                    {
-                        var color = eventKeyframesRenderBinColor &&
-                            theme.ContainsGroup($"Event Color {timelineObject.Type % RTEventEditor.EventLimit + 1} Keyframe") ?
-                            theme.GetColor($"Event Color {timelineObject.Type % RTEventEditor.EventLimit + 1} Keyframe") : ObjEditor.inst.NormalColor;
-                        color.a = 1f;
-
-                        timelineObject.Image.color = timelineObject.selected ? !eventKeyframesRenderBinColor ? ObjEditor.inst.SelectedColor : EventEditor.inst.Selected : color;
-                    }
-                }
-            }
+            UpdateTimelineObjectColors();
 
             if (Input.GetMouseButtonDown(1) && (parentPickerEnabled || prefabPickerEnabled))
             {
@@ -346,12 +257,8 @@ namespace BetterLegacy.Editor.Managers
 
             mousePicker?.SetActive(parentPickerEnabled || prefabPickerEnabled);
 
-            if (mousePicker != null && mousePickerRT != null && (parentPickerEnabled || prefabPickerEnabled))
-            {
-                float num = (float)Screen.width / 1920f;
-                num = 1f / num;
-                mousePickerRT.anchoredPosition = Input.mousePosition * num;
-            }
+            if (mousePicker && mousePickerRT && (parentPickerEnabled || prefabPickerEnabled))
+                mousePickerRT.anchoredPosition = Input.mousePosition * CoreHelper.ScreenScaleInverse;
             UpdateTooltip();
 
             if (!changingTime && EditorConfig.Instance.DraggingMainCursorFix.Value)
@@ -381,7 +288,7 @@ namespace BetterLegacy.Editor.Managers
             if (GameManager.inst.timeline && timelinePreview)
                 timelinePreview.gameObject.SetActive(GameManager.inst.timeline.activeSelf);
 
-            if (GameManager.inst.gameState == GameManager.State.Playing && timelinePreview && AudioManager.inst.CurrentAudioSource.clip != null && GameManager.inst.timeline && GameManager.inst.timeline.activeSelf)
+            if (CoreHelper.Playing && timelinePreview && AudioManager.inst.CurrentAudioSource.clip != null && GameManager.inst.timeline && GameManager.inst.timeline.activeSelf)
             {
                 float num = AudioManager.inst.CurrentAudioSource.time * 400f / AudioManager.inst.CurrentAudioSource.clip.length;
                 if (timelinePosition)
@@ -404,10 +311,6 @@ namespace BetterLegacy.Editor.Managers
                 timelinePreviewRightCap.color = GameStorageManager.inst.timelineRightCap.color;
                 timelinePreviewLine.color = GameStorageManager.inst.timelineLine.color;
             }
-
-            ModCompatibility.sharedFunctions.AddSet("ParentPickerActive", parentPickerEnabled);
-            ModCompatibility.sharedFunctions.AddSet("PrefabPickerActive", prefabPickerEnabled);
-            ModCompatibility.sharedFunctions.AddSet("SelectinMultiple", selectingMultiple);
 
             if (CoreHelper.AprilFools && UnityEngine.Random.Range(0, 10000) > 9996)
             {
@@ -514,7 +417,8 @@ namespace BetterLegacy.Editor.Managers
 
         public TextMeshProUGUI tooltipText;
 
-        // Mouse Picker
+        #region Mouse Picker
+
         public GameObject mousePicker;
         RectTransform mousePickerRT;
         public GameObject mouseTooltip;
@@ -524,7 +428,10 @@ namespace BetterLegacy.Editor.Managers
         public bool prefabPickerEnabled = false;
         public bool selectingMultiple = false;
 
-        // Timelime Bar
+        #endregion
+
+        #region Timeline Bar
+
         public GameObject timelineBar;
         public InputField timeField;
         public Text timelineTime;
@@ -533,16 +440,20 @@ namespace BetterLegacy.Editor.Managers
         public Image editorLayerImage;
         public Toggle eventLayerToggle;
 
+        #endregion
+
         public GameObject defaultIF;
 
         public string objectSearchTerm = "";
 
         public Transform titleBar;
 
-        // File Info
+        #region File Info
+
         public Text fileInfoText;
-        public GameObject doggoObject;
         public Image doggoImage;
+
+        #endregion
 
         public Image timelineSliderHandle;
         public Image timelineSliderRuler;
@@ -850,26 +761,10 @@ namespace BetterLegacy.Editor.Managers
         #region Timeline
 
         Image timelineImage;
-        public Image TimelineImage
-        {
-            get
-            {
-                if (!timelineImage)
-                    timelineImage = EditorManager.inst.timeline.GetComponent<Image>();
-                return timelineImage;
-            }
-        }
+        public Image TimelineImage => timelineImage ?? EditorManager.inst.timeline.GetComponent<Image>();
 
         Image timelineOverlayImage;
-        public Image TimelineOverlayImage
-        {
-            get
-            {
-                if (!timelineOverlayImage)
-                    timelineOverlayImage = EditorManager.inst.timelineWaveformOverlay.GetComponent<Image>();
-                return timelineOverlayImage;
-            }
-        }
+        public Image TimelineOverlayImage => timelineOverlayImage ?? EditorManager.inst.timelineWaveformOverlay.GetComponent<Image>();
 
         /// <summary>
         /// Sets the main timeline zoom and position.
@@ -954,6 +849,70 @@ namespace BetterLegacy.Editor.Managers
         public static Sprite GetKeyframeIcon(DataManager.LSAnimation a, DataManager.LSAnimation b)
             => ObjEditor.inst.KeyframeSprites[a.Name.Contains("Out") && b.Name.Contains("In") ? 3 : a.Name.Contains("Out") ? 2 : b.Name.Contains("In") ? 1 : 0];
 
+        void UpdateTimelineObjectColors()
+        {
+            for (int i = 0; i < timelineObjects.Count; i++)
+            {
+                var timelineObject = timelineObjects[i];
+
+                if (timelineObject.Data == null || !timelineObject.GameObject || !timelineObject.Image)
+                    continue;
+
+                bool isCurrentLayer = timelineObject.Layer == Layer && layerType == LayerType.Objects;
+                timelineObject.GameObject.SetActive(isCurrentLayer);
+
+                if (!isCurrentLayer)
+                    continue;
+
+                timelineObject.Image.color = timelineObject.selected ? ObjEditor.inst.SelectedColor :
+                    timelineObject.IsBeatmapObject && !string.IsNullOrEmpty(timelineObject.GetData<BeatmapObject>().prefabID) ? timelineObject.GetData<BeatmapObject>().Prefab.TypeColor :
+                    timelineObject.IsPrefabObject ? timelineObject.GetData<PrefabObject>().Prefab.TypeColor : ObjEditor.inst.NormalColor;
+            }
+
+            var theme = EditorThemeManager.CurrentTheme;
+            var objectKeyframesRenderBinColor = EditorConfig.Instance.EventKeyframesRenderBinColor.Value;
+            if (ObjectEditor.inst && ObjectEditor.inst.CurrentSelection && ObjectEditor.inst.CurrentSelection.IsBeatmapObject && ObjectEditor.inst.CurrentSelection.InternalSelections.Count > 0)
+                foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalSelections)
+                {
+                    if (timelineObject.Data == null || !timelineObject.GameObject || !timelineObject.Image)
+                        continue;
+
+                    timelineObject.GameObject.SetActive(true);
+
+                    var color = objectKeyframesRenderBinColor &&
+                        theme.ContainsGroup($"Object Keyframe Color {timelineObject.Type + 1}") ?
+                        theme.GetColor($"Object Keyframe Color {timelineObject.Type + 1}") : ObjEditor.inst.NormalColor;
+                    color.a = 1f;
+
+                    timelineObject.Image.color = timelineObject.selected ? !objectKeyframesRenderBinColor ? ObjEditor.inst.SelectedColor : EventEditor.inst.Selected : color;
+                }
+
+            var eventKeyframesRenderBinColor = EditorConfig.Instance.EventKeyframesRenderBinColor.Value;
+            for (int i = 0; i < timelineKeyframes.Count; i++)
+            {
+                var timelineObject = timelineKeyframes[i];
+
+                if (timelineObject.Data == null || !timelineObject.GameObject || !timelineObject.Image)
+                    continue;
+
+                int limit = timelineObject.Type / RTEventEditor.EventLimit;
+                bool isCurrentLayer = limit == Layer && layerType == LayerType.Events;
+                bool active = isCurrentLayer && (ShowModdedUI || timelineObject.Type < 10);
+
+                timelineObject.GameObject.SetActive(active);
+
+                if (!active)
+                    continue;
+
+                var color = eventKeyframesRenderBinColor &&
+                    theme.ContainsGroup($"Event Color {timelineObject.Type % RTEventEditor.EventLimit + 1} Keyframe") ?
+                    theme.GetColor($"Event Color {timelineObject.Type % RTEventEditor.EventLimit + 1} Keyframe") : ObjEditor.inst.NormalColor;
+                color.a = 1f;
+
+                timelineObject.Image.color = timelineObject.selected ? !eventKeyframesRenderBinColor ? ObjEditor.inst.SelectedColor : EventEditor.inst.Selected : color;
+            }
+        }
+
         #endregion
 
         #region Timeline Textures
@@ -961,38 +920,37 @@ namespace BetterLegacy.Editor.Managers
         public IEnumerator AssignTimelineTexture()
         {
             var config = EditorConfig.Instance;
+            var path = $"{GameManager.inst.basePath}waveform-{config.WaveformMode.Value.ToString().ToLower()}.png";
+            var settingsPath = $"{RTFile.ApplicationDirectory}settings/waveform-{config.WaveformMode.Value.ToString().ToLower()}.png";
 
             SetTimelineSprite(null);
 
-            if ((!EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading && !RTFile.FileExists($"{RTFile.ApplicationDirectory}settings/waveform-{config.WaveformMode.Value.ToString().ToLower()}.png") ||
-                !RTFile.FileExists(GameManager.inst.basePath + $"waveform-{config.WaveformMode.Value.ToString().ToLower()}.png")) && !config.WaveformRerender.Value || config.WaveformRerender.Value)
+            if ((!EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading && !RTFile.FileExists(settingsPath) ||
+                !RTFile.FileExists(path)) && !config.WaveformRerender.Value || config.WaveformRerender.Value)
             {
                 int num = Mathf.Clamp((int)AudioManager.inst.CurrentAudioSource.clip.length * 48, 100, 15000);
                 Texture2D waveform = null;
 
                 if (config.WaveformMode.Value == WaveformType.Legacy)
-                    yield return this.StartCoroutineAsync(Legacy(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, config.WaveformBottomColor.Value, delegate (Texture2D _tex) { waveform = _tex; }));
+                    yield return CoreHelper.StartCoroutineAsync(Legacy(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, config.WaveformBottomColor.Value, (Texture2D _tex) => { waveform = _tex; }));
                 if (config.WaveformMode.Value == WaveformType.Beta)
-                    yield return this.StartCoroutineAsync(Beta(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, delegate (Texture2D _tex) { waveform = _tex; }));
+                    yield return CoreHelper.StartCoroutineAsync(Beta(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, (Texture2D _tex) => { waveform = _tex; }));
                 if (config.WaveformMode.Value == WaveformType.BetaFast)
-                    yield return this.StartCoroutineAsync(BetaFast(AudioManager.inst.CurrentAudioSource.clip, 1f, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, delegate (Texture2D _tex) { waveform = _tex; }));
+                    yield return CoreHelper.StartCoroutineAsync(BetaFast(AudioManager.inst.CurrentAudioSource.clip, 1f, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, (Texture2D _tex) => { waveform = _tex; }));
                 if (config.WaveformMode.Value == WaveformType.LegacyFast)
-                    yield return this.StartCoroutineAsync(LegacyFast(AudioManager.inst.CurrentAudioSource.clip, 1f, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, config.WaveformBottomColor.Value, delegate (Texture2D _tex) { waveform = _tex; }));
-
-                while (waveform == null)
-                    yield return null;
+                    yield return CoreHelper.StartCoroutineAsync(LegacyFast(AudioManager.inst.CurrentAudioSource.clip, 1f, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, config.WaveformBottomColor.Value, (Texture2D _tex) => { waveform = _tex; }));
 
                 var waveSprite = Sprite.Create(waveform, new Rect(0f, 0f, (float)num, 300f), new Vector2(0.5f, 0.5f), 100f);
                 SetTimelineSprite(waveSprite);
 
                 if (config.WaveformSaves.Value)
-                    this.StartCoroutineAsync(SaveWaveform(config));
+                    CoreHelper.StartCoroutineAsync(SaveWaveform(config));
             }
             else
             {
-                this.StartCoroutineAsync(AlephNetworkManager.DownloadImageTexture("file://" + (!EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading ?
-                $"{RTFile.ApplicationDirectory}settings/waveform-{config.WaveformMode.Value.ToString().ToLower()}.png" :
-                GameManager.inst.basePath + $"waveform-{config.WaveformMode.Value.ToString().ToLower()}.png"), delegate (Texture2D texture2D)
+                CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadImageTexture("file://" + (!EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading ?
+                settingsPath :
+                path), (Texture2D texture2D) =>
                 {
                     SetTimelineSprite(SpriteManager.CreateSprite(texture2D));
                 }));
@@ -1028,11 +986,11 @@ namespace BetterLegacy.Editor.Managers
             int num = 100;
             var texture2D = new Texture2D(textureWidth, textureHeight, EditorConfig.Instance.WaveformTextureFormat.Value, false);
             yield return Ninja.JumpBack;
+
             var array = new Color[texture2D.width * texture2D.height];
             for (int i = 0; i < array.Length; i++)
-            {
                 array[i] = background;
-            }
+
             texture2D.SetPixels(array);
             num = clip.frequency / num;
             float[] array2 = new float[clip.samples * clip.channels];
@@ -1042,9 +1000,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 array3[j] = 0f;
                 for (int k = 0; k < num; k++)
-                {
                     array3[j] += Mathf.Abs(array2[j * num + k]);
-                }
                 array3[j] /= (float)num;
             }
             for (int l = 0; l < array3.Length - 1; l++)
@@ -1067,16 +1023,16 @@ namespace BetterLegacy.Editor.Managers
         public IEnumerator Legacy(AudioClip clip, int textureWidth, int textureHeight, Color background, Color _top, Color _bottom, Action<Texture2D> action)
         {
             yield return Ninja.JumpToUnity;
+
             CoreHelper.Log("Generating Legacy Waveform");
             int num = 160;
             num = clip.frequency / num;
             var texture2D = new Texture2D(textureWidth, textureHeight, EditorConfig.Instance.WaveformTextureFormat.Value, false);
+
             yield return Ninja.JumpBack;
             Color[] array = new Color[texture2D.width * texture2D.height];
             for (int i = 0; i < array.Length; i++)
-            {
                 array[i] = background;
-            }
 
             texture2D.SetPixels(array);
             float[] array3 = new float[clip.samples];
@@ -1283,11 +1239,6 @@ namespace BetterLegacy.Editor.Managers
                 // Makes the editor path always in the beatmaps folder.
                 editorListPath = $"beatmaps/{editorPath}";
                 editorListSlash = $"beatmaps/{editorPath}/";
-
-                if (ModCompatibility.sharedFunctions.ContainsKey("EditorPath"))
-                    ModCompatibility.sharedFunctions["EditorPath"] = editorPath;
-                else
-                    ModCompatibility.sharedFunctions.Add("EditorPath", editorPath);
             }
         }
         static string editorPath = "editor";
@@ -1335,11 +1286,6 @@ namespace BetterLegacy.Editor.Managers
                 // Makes the themes path always in the beatmaps folder.
                 themeListPath = $"beatmaps/{themePath}";
                 themeListSlash = $"beatmaps/{themePath}/";
-
-                if (ModCompatibility.sharedFunctions.ContainsKey("ThemePath"))
-                    ModCompatibility.sharedFunctions["ThemePath"] = themePath;
-                else
-                    ModCompatibility.sharedFunctions.Add("ThemePath", themePath);
             }
         }
         static string themePath = "themes";
@@ -1389,11 +1335,6 @@ namespace BetterLegacy.Editor.Managers
                 // Makes the prefabs path always in the beatmaps folder.
                 prefabListPath = $"beatmaps/{prefabPath}";
                 prefabListSlash = $"beatmaps/{prefabPath}/";
-
-                if (ModCompatibility.sharedFunctions.ContainsKey("PrefabPath"))
-                    ModCompatibility.sharedFunctions["PrefabPath"] = prefabPath;
-                else
-                    ModCompatibility.sharedFunctions.Add("PrefabPath", prefabPath);
             }
         }
         static string prefabPath = "prefabs";
@@ -1646,7 +1587,7 @@ namespace BetterLegacy.Editor.Managers
                 }
                 if (_dup)
                 {
-                    EditorManager.inst.Paste(0f);
+                    EditorManager.inst.Paste();
                 }
             }
 
@@ -1799,10 +1740,10 @@ namespace BetterLegacy.Editor.Managers
                             list.Add(timelineObject);
                         var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
 
-                        EditorManager.inst.history.Add(new History.Command("Delete Keyframes", delegate ()
+                        EditorManager.inst.history.Add(new History.Command("Delete Keyframes", () =>
                         {
                             StartCoroutine(ObjectEditor.inst.DeleteKeyframes());
-                        }, delegate ()
+                        }, () =>
                         {
                             ObjectEditor.inst.PasteKeyframes(beatmapObject, list, false);
                         }));
@@ -1839,10 +1780,10 @@ namespace BetterLegacy.Editor.Managers
                         list.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()).ToList(),
                         list.Where(x => x.IsPrefabObject).Select(x => x.GetData<PrefabObject>()).ToList());
 
-                    EditorManager.inst.history.Add(new History.Command("Delete Objects", delegate ()
+                    EditorManager.inst.history.Add(new History.Command("Delete Objects", () =>
                     {
                         Delete();
-                    }, delegate ()
+                    }, () =>
                     {
                         ObjectEditor.inst.DeselectAllObjects();
                         StartCoroutine(ObjectEditor.inst.AddPrefabExpandedToLevel(prefab, true, 0f, true, retainID: true));
@@ -1864,10 +1805,10 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
                         list.Add(timelineObject);
 
-                    EditorManager.inst.history.Add(new History.Command("Delete Event Keyframes", delegate ()
+                    EditorManager.inst.history.Add(new History.Command("Delete Event Keyframes", () =>
                     {
                         StartCoroutine(RTEventEditor.inst.DeleteKeyframes(list));
-                    }, delegate ()
+                    }, () =>
                     {
                         RTEventEditor.inst.PasteEvents(list, false);
                     }));
@@ -1902,6 +1843,9 @@ namespace BetterLegacy.Editor.Managers
 
         #region Layers
 
+        /// <summary>
+        /// The current editor layer.
+        /// </summary>
         public int Layer
         {
             get => Mathf.Clamp(EditorManager.inst.layer, 0, int.MaxValue);
@@ -1931,6 +1875,11 @@ namespace BetterLegacy.Editor.Managers
             SetLayer(Layer);
         }
 
+        /// <summary>
+        /// Sets the current editor layer.
+        /// </summary>
+        /// <param name="layer">The layer to set.</param>
+        /// <param name="setHistory">If the action should be undoable.</param>
         public void SetLayer(int layer, bool setHistory = true)
         {
             DataManager.inst.UpdateSettingInt("EditorLayer", layer);
@@ -2041,19 +1990,19 @@ namespace BetterLegacy.Editor.Managers
             var inSize = size == Vector2.zero ? new Vector2(600f, 450f) : size;
             popup.transform.AsRT().anchoredPosition = defaultPosition;
             popup.transform.AsRT().sizeDelta = inSize;
-            popupInstance.TopPanel = (RectTransform)popup.transform.Find("Panel");
+            popupInstance.TopPanel = popup.transform.Find("Panel").AsRT();
             popupInstance.TopPanel.sizeDelta = new Vector2(inSize.x + 32f, 32f);
             var text = popupInstance.TopPanel.Find("Text").GetComponent<Text>();
             text.text = title;
 
-            ((RectTransform)popup.transform.Find("search-box")).sizeDelta = new Vector2(inSize.x, 32f);
+            popup.transform.Find("search-box").AsRT().sizeDelta = new Vector2(inSize.x, 32f);
             popupInstance.Grid = popup.transform.Find("mask/content").GetComponent<GridLayoutGroup>();
             popupInstance.Grid.cellSize = new Vector2(inSize.x - 5f, 32f);
             popup.transform.Find("Scrollbar").AsRT().sizeDelta = new Vector2(32f, inSize.y);
 
             popupInstance.Close = popupInstance.TopPanel.Find("x").GetComponent<Button>();
             popupInstance.Close.onClick.ClearAll();
-            popupInstance.Close.onClick.AddListener(delegate ()
+            popupInstance.Close.onClick.AddListener(() =>
             {
                 EditorManager.inst.HideDialog(name);
                 close?.Invoke();
@@ -2099,8 +2048,6 @@ namespace BetterLegacy.Editor.Managers
 
         void SetupTimelineBar()
         {
-            var __instance = EditorManager.inst;
-
             timelineBar = GameObject.Find("TimelineBar/GameObject");
 
             for (int i = 1; i <= 5; i++)
@@ -2122,7 +2069,7 @@ namespace BetterLegacy.Editor.Managers
             defaultIF = t.gameObject;
             defaultIF.SetActive(true);
             t.SetParent(transform);
-            __instance.speedText.transform.parent.SetParent(transform);
+            EditorManager.inst.speedText.transform.parent.SetParent(transform);
 
             if (defaultIF.TryGetComponent(out InputField frick))
             {
@@ -2142,35 +2089,25 @@ namespace BetterLegacy.Editor.Managers
 
                 timeObj.transform.SetAsFirstSibling();
                 timeObj.SetActive(true);
-                ((Text)timeField.placeholder).text = "Set time...";
-                ((Text)timeField.placeholder).alignment = TextAnchor.MiddleCenter;
-                ((Text)timeField.placeholder).fontSize = 16;
-                ((Text)timeField.placeholder).horizontalOverflow = HorizontalWrapMode.Overflow;
-                timeField.text = AudioManager.inst.CurrentAudioSource.time.ToString();
+                timeField.PlaceholderText().text = "Set time...";
+                timeField.PlaceholderText().alignment = TextAnchor.MiddleCenter;
+                timeField.PlaceholderText().fontSize = 16;
+                timeField.PlaceholderText().horizontalOverflow = HorizontalWrapMode.Overflow;
+                //timeField.text = AudioManager.inst.CurrentAudioSource.time.ToString();
                 timeField.characterValidation = InputField.CharacterValidation.Decimal;
 
-                timeField.onValueChanged.AddListener(delegate (string _value)
+                timeField.onValueChanged.AddListener((string _val) =>
                 {
-                    if (float.TryParse(_value, out float num))
-                    {
+                    if (float.TryParse(_val, out float num))
                         AudioManager.inst.CurrentAudioSource.time = num;
-                    }
                 });
 
-                TriggerHelper.AddEventTrigger(timeObj, new List<EventTrigger.Entry> { TriggerHelper.ScrollDelta(timeField) });
+                TriggerHelper.AddEventTriggerParams(timeObj, TriggerHelper.ScrollDelta(timeField));
             }
 
-            var layersObj = Instantiate(timeObj);
+            var layersObj = timeObj.Duplicate(timelineBar.transform, "layers", 7);
             {
-                layersObj.transform.SetParent(timelineBar.transform);
-                layersObj.name = "layers";
-                layersObj.transform.SetSiblingIndex(7);
                 layersObj.transform.localScale = Vector3.one;
-
-                for (int i = 0; i < layersObj.transform.childCount; i++)
-                {
-                    layersObj.transform.GetChild(i).localScale = Vector3.one;
-                }
 
                 TooltipHelper.AssignTooltip(layersObj, "Editor Layer", 3f);
 
@@ -2185,54 +2122,50 @@ namespace BetterLegacy.Editor.Managers
 
                 editorLayerField.characterValidation = InputField.CharacterValidation.None;
                 editorLayerField.contentType = InputField.ContentType.Standard;
-                ((Text)editorLayerField.placeholder).text = "Set layer...";
-                ((Text)editorLayerField.placeholder).alignment = TextAnchor.MiddleCenter;
-                ((Text)editorLayerField.placeholder).fontSize = 16;
-                ((Text)editorLayerField.placeholder).horizontalOverflow = HorizontalWrapMode.Overflow;
+                editorLayerField.PlaceholderText().text = "Set layer...";
+                editorLayerField.PlaceholderText().alignment = TextAnchor.MiddleCenter;
+                editorLayerField.PlaceholderText().fontSize = 16;
+                editorLayerField.PlaceholderText().horizontalOverflow = HorizontalWrapMode.Overflow;
                 editorLayerField.onValueChanged.RemoveAllListeners();
-                editorLayerField.onValueChanged.AddListener(delegate (string _value)
+                editorLayerField.onValueChanged.AddListener((string _val) =>
                 {
-                    if (int.TryParse(_value, out int num))
+                    if (int.TryParse(_val, out int num))
                         SetLayer(Mathf.Clamp(num - 1, 0, int.MaxValue));
                 });
 
                 editorLayerImage.color = GetLayerColor(EditorManager.inst.layer);
 
                 TriggerHelper.AddEventTriggerParams(layersObj,
-                    TriggerHelper.ScrollDeltaInt(editorLayerField, 1, 1, int.MaxValue), TriggerHelper.CreateEntry(EventTriggerType.PointerDown, delegate (BaseEventData eventData)
+                    TriggerHelper.ScrollDeltaInt(editorLayerField, 1, 1, int.MaxValue), TriggerHelper.CreateEntry(EventTriggerType.PointerDown, (BaseEventData eventData) =>
                     {
-                        var pointerEventData = (PointerEventData)eventData;
-                        if (pointerEventData.button == PointerEventData.InputButton.Middle)
+                        if (((PointerEventData)eventData).button == PointerEventData.InputButton.Middle)
                             CoreHelper.ListObjectLayers();
                     }));
             }
 
-            var pitchObj = Instantiate(timeObj);
+            var pitchObj = timeObj.Duplicate(timelineBar.transform, "pitch", 5);
             {
-                pitchObj.transform.SetParent(GameObject.Find("Editor Systems/Editor GUI/sizer/main/TimelineBar/GameObject").transform);
-                pitchObj.transform.SetSiblingIndex(5);
-                pitchObj.name = "pitch";
                 pitchObj.transform.localScale = Vector3.one;
                 TooltipHelper.AssignTooltip(pitchObj, "Pitch", 3f);
 
                 pitchField = pitchObj.GetComponent<InputField>();
-                ((Text)pitchField.placeholder).text = "Pitch";
-                ((Text)pitchField.placeholder).alignment = TextAnchor.MiddleCenter;
-                ((Text)pitchField.placeholder).fontSize = 16;
-                ((Text)pitchField.placeholder).horizontalOverflow = HorizontalWrapMode.Overflow;
+                pitchField.PlaceholderText().text = "Pitch";
+                pitchField.PlaceholderText().alignment = TextAnchor.MiddleCenter;
+                pitchField.PlaceholderText().fontSize = 16;
+                pitchField.PlaceholderText().horizontalOverflow = HorizontalWrapMode.Overflow;
                 pitchField.onValueChanged.RemoveAllListeners();
-                pitchField.onValueChanged.AddListener(delegate (string _val)
+                pitchField.onValueChanged.AddListener((string _val) =>
                 {
                     if (float.TryParse(_val, out float num))
                         AudioManager.inst.SetPitch(num);
                 });
 
-                TriggerHelper.AddEventTrigger(pitchObj, new List<EventTrigger.Entry> { TriggerHelper.ScrollDelta(pitchField, 0.1f, 10f) });
+                TriggerHelper.AddEventTriggerParams(pitchObj, TriggerHelper.ScrollDelta(pitchField, 0.1f, 10f));
 
                 //Triggers.AddTooltip(pitchObj, "Change the pitch of the song", "", new List<string> { "Up / Down Arrow" }, clear: true);
 
                 pitchObj.GetComponent<LayoutElement>().minWidth = 64f;
-                pitchObj.transform.Find("Text").GetComponent<Text>().alignment = TextAnchor.MiddleCenter;
+                pitchField.textComponent.alignment = TextAnchor.MiddleCenter;
 
                 pitchObj.AddComponent<InputFieldSwapper>();
             }
@@ -2264,7 +2197,7 @@ namespace BetterLegacy.Editor.Managers
             rightPitchButton.transition = Selectable.Transition.ColorTint;
             EditorThemeManager.AddSelectable(rightPitchButton, ThemeGroup.Function_2, false);
 
-            // Leave this group empty since the color is already handled via the custom layer colors. This is only here for the rounded edges.
+            // Leave this group empty since the color is already handled via the custom layer colors. This is only here for the rounded corners.
             EditorThemeManager.AddGraphic(editorLayerField.image, ThemeGroup.Null, true);
             EditorThemeManager.AddGraphic(eventLayerToggle.image, ThemeGroup.Event_Check, true);
             EditorThemeManager.AddGraphic(eventLayerToggle.transform.Find("Background/Text").GetComponent<Text>(), ThemeGroup.Event_Check_Text);
@@ -2303,8 +2236,8 @@ namespace BetterLegacy.Editor.Managers
         {
             var tltrig = EditorManager.inst.timeline.GetComponent<EventTrigger>();
 
-            tltrig.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerEnter, delegate (BaseEventData eventData) { isOverMainTimeline = true; }));
-            tltrig.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerExit, delegate (BaseEventData eventData) { isOverMainTimeline = false; }));
+            tltrig.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerEnter, (BaseEventData eventData) => { isOverMainTimeline = true; }));
+            tltrig.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerExit, (BaseEventData eventData) => { isOverMainTimeline = false; }));
             tltrig.triggers.Add(TriggerHelper.StartDragTrigger());
             tltrig.triggers.Add(TriggerHelper.DragTrigger());
             tltrig.triggers.Add(TriggerHelper.EndDragTrigger());
@@ -2314,12 +2247,12 @@ namespace BetterLegacy.Editor.Managers
                 int type = i;
                 var et = EventEditor.inst.EventHolders.transform.GetChild(i).GetComponent<EventTrigger>();
                 et.triggers.Clear();
-                et.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerEnter, delegate (BaseEventData eventData) { isOverMainTimeline = true; }));
-                et.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerExit, delegate (BaseEventData eventData) { isOverMainTimeline = false; }));
+                et.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerEnter, (BaseEventData eventData) => { isOverMainTimeline = true; }));
+                et.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerExit, (BaseEventData eventData) => { isOverMainTimeline = false; }));
                 et.triggers.Add(TriggerHelper.StartDragTrigger());
                 et.triggers.Add(TriggerHelper.DragTrigger());
                 et.triggers.Add(TriggerHelper.EndDragTrigger());
-                et.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerDown, delegate (BaseEventData eventData)
+                et.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerDown, (BaseEventData eventData) =>
                 {
                     var pointerEventData = (PointerEventData)eventData;
 
@@ -2347,9 +2280,9 @@ namespace BetterLegacy.Editor.Managers
                 }));
             }
 
-            TriggerHelper.AddEventTriggerParams(EditorManager.inst.timelineScrollbar, TriggerHelper.CreateEntry(EventTriggerType.Scroll, delegate (BaseEventData baseEventData)
+            TriggerHelper.AddEventTriggerParams(EditorManager.inst.timelineScrollbar, TriggerHelper.CreateEntry(EventTriggerType.Scroll, (BaseEventData eventData) =>
             {
-                var pointerEventData = (PointerEventData)baseEventData;
+                var pointerEventData = (PointerEventData)eventData;
 
                 var scrollBar = EditorManager.inst.timelineScrollRectBar;
                 float multiply = Input.GetKey(KeyCode.LeftAlt) ? 0.1f : Input.GetKey(KeyCode.LeftControl) ? 10f : 1f;
@@ -2376,14 +2309,10 @@ namespace BetterLegacy.Editor.Managers
 
         void SetupSelectGUI()
         {
-            var __instance = EditorManager.inst;
-
-            var openFilePopup = __instance.GetDialog("Open File Popup").Dialog;
-            var newFilePopup = __instance.GetDialog("New File Popup").Dialog;
-            var parentSelector = __instance.GetDialog("Parent Selector").Dialog;
-            var saveAsPopup = __instance.GetDialog("Save As Popup").Dialog;
-            var quickActionsPopup = __instance.GetDialog("Quick Actions Popup").Dialog;
-            var prefabPopup = __instance.GetDialog("Prefab Popup").Dialog;
+            var openFilePopup = EditorManager.inst.GetDialog("Open File Popup").Dialog;
+            var parentSelector = EditorManager.inst.GetDialog("Parent Selector").Dialog;
+            var saveAsPopup = EditorManager.inst.GetDialog("Save As Popup").Dialog;
+            var quickActionsPopup = EditorManager.inst.GetDialog("Quick Actions Popup").Dialog;
 
             var openFilePopupSelect = openFilePopup.gameObject.AddComponent<SelectGUI>();
             openFilePopupSelect.target = openFilePopup;
@@ -2409,66 +2338,39 @@ namespace BetterLegacy.Editor.Managers
             var persistent = dialog.Find("persistent").gameObject.GetComponent<Button>();
             dialog.Find("persistent/text").gameObject.GetComponent<Text>().text = "No Autokill";
             persistent.onClick.ClearAll();
-            persistent.onClick.AddListener(delegate ()
-            {
-                ObjectEditor.inst.CreateNewNoAutokillObject();
-            });
+            persistent.onClick.AddListener(() => { ObjectEditor.inst.CreateNewNoAutokillObject(); });
 
             var empty = dialog.Find("empty").gameObject.GetComponent<Button>();
             empty.onClick.ClearAll();
-            empty.onClick.AddListener(delegate ()
-            {
-                ObjectEditor.inst.CreateNewEmptyObject();
-            });
+            empty.onClick.AddListener(() => { ObjectEditor.inst.CreateNewEmptyObject(); });
 
             var decoration = dialog.Find("decoration").gameObject.GetComponent<Button>();
             decoration.onClick.ClearAll();
-            decoration.onClick.AddListener(delegate ()
-            {
-                ObjectEditor.inst.CreateNewDecorationObject();
-            });
+            decoration.onClick.AddListener(() => { ObjectEditor.inst.CreateNewDecorationObject(); });
 
             var helper = dialog.Find("helper").gameObject.GetComponent<Button>();
             helper.onClick.ClearAll();
-            helper.onClick.AddListener(delegate ()
-            {
-                ObjectEditor.inst.CreateNewHelperObject();
-            });
+            helper.onClick.AddListener(() => { ObjectEditor.inst.CreateNewHelperObject(); });
 
             var normal = dialog.Find("normal").gameObject.GetComponent<Button>();
             normal.onClick.ClearAll();
-            normal.onClick.AddListener(delegate ()
-            {
-                ObjectEditor.inst.CreateNewNormalObject();
-            });
+            normal.onClick.AddListener(() => { ObjectEditor.inst.CreateNewNormalObject(); });
 
             var circle = dialog.Find("shapes/circle").gameObject.GetComponent<Button>();
             circle.onClick.ClearAll();
-            circle.onClick.AddListener(delegate ()
-            {
-                ObjectEditor.inst.CreateNewCircleObject();
-            });
+            circle.onClick.AddListener(() => { ObjectEditor.inst.CreateNewCircleObject(); });
 
             var triangle = dialog.Find("shapes/triangle").gameObject.GetComponent<Button>();
             triangle.onClick.ClearAll();
-            triangle.onClick.AddListener(delegate ()
-            {
-                ObjectEditor.inst.CreateNewTriangleObject();
-            });
+            triangle.onClick.AddListener(() => { ObjectEditor.inst.CreateNewTriangleObject(); });
 
             var text = dialog.Find("shapes/text").gameObject.GetComponent<Button>();
             text.onClick.ClearAll();
-            text.onClick.AddListener(delegate ()
-            {
-                ObjectEditor.inst.CreateNewTextObject();
-            });
+            text.onClick.AddListener(() => { ObjectEditor.inst.CreateNewTextObject(); });
 
             var hexagon = dialog.Find("shapes/hexagon").gameObject.GetComponent<Button>();
             hexagon.onClick.ClearAll();
-            hexagon.onClick.AddListener(delegate ()
-            {
-                ObjectEditor.inst.CreateNewHexagonObject();
-            });
+            hexagon.onClick.AddListener(() => { ObjectEditor.inst.CreateNewHexagonObject(); });
         }
 
         void SetupDropdowns()
@@ -2481,9 +2383,9 @@ namespace BetterLegacy.Editor.Managers
             GameObject.Find("Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/left/theme/name").GetComponent<InputField>().characterValidation = InputField.CharacterValidation.None;
             GameObject.Find("Editor GUI/sizer/main/EditorDialogs/PrefabDialog/data/name/input").GetComponent<InputField>().characterValidation = InputField.CharacterValidation.None;
 
-            EditorHelper.AddEditorDropdown("Quit to Arcade", "", "File", titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, delegate ()
+            EditorHelper.AddEditorDropdown("Quit to Arcade", "", "File", titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
             {
-                ShowWarningPopup("Are you sure you want to quit to the arcade? Any unsaved progress will be lost!", delegate ()
+                ShowWarningPopup("Are you sure you want to quit to the arcade? Any unsaved progress will be lost!", () =>
                 {
                     DG.Tweening.DOTween.Clear();
                     Updater.UpdateObjects(false);
@@ -2495,48 +2397,47 @@ namespace BetterLegacy.Editor.Managers
                     DataManager.inst.UpdateSettingBool("IsArcade", true);
 
                     SceneManager.inst.LoadScene("Input Select");
+                }, () =>
+                {
+                    EditorManager.inst.HideDialog("Warning Popup");
+                });
+            }, 7);
+
+            EditorHelper.AddEditorDropdown("Switch to Arcade Mode", "", "File", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_right_small.png"), () =>
+            {
+                if (!EditorManager.inst.hasLoadedLevel)
+                {
+                    EditorManager.inst.DisplayNotification("Load a level before switching to Arcade Mode!", 2f, EditorManager.NotificationType.Error);
+                    return;
+                }
+
+                ShowWarningPopup("Are you sure you want to switch to Arcade Mode? Any unsaved progress will be lost!", () =>
+                {
+                    LevelManager.OnLevelEnd = () =>
+                    {
+                        DG.Tweening.DOTween.Clear();
+                        DataManager.inst.gameData = null;
+                        DataManager.inst.gameData = new GameData();
+                        Updater.OnLevelEnd();
+                        SceneManager.inst.LoadScene("Editor");
+                    };
+                    LevelManager.Load(GameManager.inst.basePath + "level.lsb", false);
                 }, delegate ()
                 {
                     EditorManager.inst.HideDialog("Warning Popup");
                 });
             }, 7);
 
-            EditorHelper.AddEditorDropdown("Switch to Arcade Mode", "", "File", SpriteManager.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_right_small.png"), delegate ()
-            {
-                if (EditorManager.inst.hasLoadedLevel)
-                {
-                    ShowWarningPopup("Are you sure you want to switch to Arcade Mode? Any unsaved progress will be lost!", delegate ()
-                    {
-                        LevelManager.OnLevelEnd = delegate ()
-                        {
-                            DG.Tweening.DOTween.Clear();
-                            DataManager.inst.gameData = null;
-                            DataManager.inst.gameData = new GameData();
-                            Updater.OnLevelEnd();
-                            SceneManager.inst.LoadScene("Editor");
-                        };
-                        LevelManager.Load(GameManager.inst.basePath + "level.lsb", false);
-                    }, delegate ()
-                    {
-                        EditorManager.inst.HideDialog("Warning Popup");
-                    });
-                }
-                else
-                {
-                    EditorManager.inst.DisplayNotification("Load a level before switching to Arcade Mode!", 2f, EditorManager.NotificationType.Error);
-                }
-            }, 7);
-
-            EditorHelper.AddEditorDropdown("Open Level Browser", "", "File", titleBar.Find("File/File Dropdown/Open/Image").GetComponent<Image>().sprite, delegate ()
+            EditorHelper.AddEditorDropdown("Open Level Browser", "", "File", titleBar.Find("File/File Dropdown/Open/Image").GetComponent<Image>().sprite, () =>
             {
                 EditorManager.inst.ShowDialog("Browser Popup");
                 RefreshFileBrowserLevels();
             }, 3);
 
-            EditorHelper.AddEditorDropdown("Convert VG to LS", "", "File", SearchSprite, delegate ()
+            EditorHelper.AddEditorDropdown("Convert VG to LS", "", "File", SearchSprite, () =>
             {
                 EditorManager.inst.ShowDialog("Browser Popup");
-                RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".lsp", ".vgp", "lst", ".vgt", ".lsb", ".vgd" }, onSelectFile: delegate (string _val)
+                RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".lsp", ".vgp", "lst", ".vgt", ".lsb", ".vgd" }, onSelectFile: (string _val) =>
                 {
                     bool failed = false;
                     if (_val.Contains(".lsp"))
@@ -2723,10 +2624,10 @@ namespace BetterLegacy.Editor.Managers
                 });
             }, 4);
 
-            EditorHelper.AddEditorDropdown("Add File to Level Folder", "", "File", SearchSprite, delegate ()
+            EditorHelper.AddEditorDropdown("Add File to Level Folder", "", "File", SearchSprite, () =>
             {
                 EditorManager.inst.ShowDialog("Browser Popup");
-                RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".ogg", ".wav", ".png", ".jpg", ".mp4", ".mov" }, onSelectFile: delegate (string _val)
+                RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".ogg", ".wav", ".png", ".jpg", ".mp4", ".mov" }, onSelectFile: (string _val) =>
                 {
                     if (_val.Contains(".mp4") || _val.Contains(".mov"))
                     {
@@ -2747,19 +2648,19 @@ namespace BetterLegacy.Editor.Managers
                 });
             }, 5);
 
-            EditorHelper.AddEditorDropdown("Clear Sprite Data", "", "Edit", titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, delegate ()
+            EditorHelper.AddEditorDropdown("Clear Sprite Data", "", "Edit", titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
             {
-                ShowWarningPopup("Are you sure you want to clear sprite data? Any Image Shapes that use a stored image will have their images cleared and you will need to set them again.", delegate ()
+                ShowWarningPopup("Are you sure you want to clear sprite data? Any Image Shapes that use a stored image will have their images cleared and you will need to set them again.", () =>
                 {
                     AssetManager.SpriteAssets.Clear();
                     EditorManager.inst.HideDialog("Warning Popup");
-                }, delegate ()
+                }, () =>
                 {
                     EditorManager.inst.HideDialog("Warning Popup");
                 });
             });
 
-            EditorHelper.AddEditorDropdown("Reset Event Offsets", "", "Edit", saveAs.Find("Panel/x/Image").GetComponent<Image>().sprite, delegate ()
+            EditorHelper.AddEditorDropdown("Reset Event Offsets", "", "Edit", saveAs.Find("Panel/x/Image").GetComponent<Image>().sprite, () =>
             {
                 if (!ModCompatibility.sharedFunctions.ContainsKey("EventsCoreEventOffsets"))
                     return;
@@ -2773,7 +2674,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.DisplayNotification("Event Offsets have been reset.", 1.4f, EditorManager.NotificationType.Success);
             });
             
-            EditorHelper.AddEditorDropdown("Deactivate Modifiers", "", "Edit", saveAs.Find("Panel/x/Image").GetComponent<Image>().sprite, delegate ()
+            EditorHelper.AddEditorDropdown("Deactivate Modifiers", "", "Edit", saveAs.Find("Panel/x/Image").GetComponent<Image>().sprite, () =>
             {
                 if (!GameData.IsValid)
                     return;
@@ -2800,7 +2701,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.DisplayNotification("Modifiers have been deactivated.", 1.4f, EditorManager.NotificationType.Success);
             });
             
-            EditorHelper.AddEditorDropdown("Reset object variables", "", "Edit", saveAs.Find("Panel/x/Image").GetComponent<Image>().sprite, delegate ()
+            EditorHelper.AddEditorDropdown("Reset object variables", "", "Edit", saveAs.Find("Panel/x/Image").GetComponent<Image>().sprite, () =>
             {
                 if (!GameData.IsValid)
                     return;
@@ -2822,12 +2723,12 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.DisplayNotification("Reset all integer variables to 0.", 1.4f, EditorManager.NotificationType.Success);
             });
 
-            EditorHelper.AddEditorDropdown("Get Example", "", "View", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_example-white.png"), delegate ()
+            EditorHelper.AddEditorDropdown("Get Example", "", "View", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_example-white.png"), () =>
             {
                 ExampleManager.Init();
             });
             
-            EditorHelper.AddEditorDropdown("Show Config Manager", "", "View", null, delegate ()
+            EditorHelper.AddEditorDropdown("Show Config Manager", "", "View", null, () =>
             {
                 ConfigManager.inst.Show();
             });
@@ -2847,26 +2748,39 @@ namespace BetterLegacy.Editor.Managers
 
         void SetupDoggo()
         {
-            var loading = new GameObject("loading");
+            //var loading = new GameObject("loading");
             var fileInfoPopup = EditorManager.inst.GetDialog("File Info Popup").Dialog;
 
             fileInfoText = fileInfoPopup.Find("text").GetComponent<Text>();
 
-            loading.transform.SetParent(fileInfoPopup);
-            loading.layer = 5;
-            loading.transform.localScale = Vector3.one;
+            //loading.transform.SetParent(fileInfoPopup);
+            //loading.layer = 5;
+            //loading.transform.localScale = Vector3.one;
 
-            var rtLoading = loading.AddComponent<RectTransform>();
-            loading.AddComponent<CanvasRenderer>();
-            var iLoading = loading.AddComponent<Image>();
-            var leLoading = loading.AddComponent<LayoutElement>();
+            //var rtLoading = loading.AddComponent<RectTransform>();
+            //loading.AddComponent<CanvasRenderer>();
+            //var iLoading = loading.AddComponent<Image>();
+            //var leLoading = loading.AddComponent<LayoutElement>();
 
-            rtLoading.anchoredPosition = new Vector2(0f, -75f);
-            rtLoading.sizeDelta = new Vector2(122f, 122f);
-            iLoading.sprite = EditorManager.inst.loadingImage.sprite;
-            leLoading.ignoreLayout = true;
+            //rtLoading.anchoredPosition = new Vector2(0f, -75f);
+            //rtLoading.sizeDelta = new Vector2(122f, 122f);
+            //iLoading.sprite = EditorManager.inst.loadingImage.sprite;
+            //leLoading.ignoreLayout = true;
 
-            fileInfoPopup.AsRT().sizeDelta = new Vector2(500f, 320f);
+            //fileInfoPopup.AsRT().sizeDelta = new Vector2(500f, 320f);
+
+            var doggoObject = Creator.NewUIObject("loading", fileInfoPopup);
+            doggoObject.transform.localScale = Vector3.one;
+
+            doggoImage = doggoObject.AddComponent<Image>();
+            var doggoLayout = doggoObject.AddComponent<LayoutElement>();
+            doggoLayout.ignoreLayout = true;
+
+            doggoObject.transform.AsRT().anchoredPosition = new Vector2(0f, -75f);
+            doggoObject.transform.AsRT().sizeDelta = new Vector2(122f, 122f);
+            doggoImage.sprite = EditorManager.inst.loadingImage.sprite;
+
+            fileInfoPopup.transform.AsRT().sizeDelta = new Vector2(500f, 320f);
         }
 
         Dropdown levelOrderDropdown;

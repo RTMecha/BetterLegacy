@@ -391,8 +391,6 @@ namespace BetterLegacy.Patchers
                     RTEditor.inst.pitchField.text = ModCompatibility.sharedFunctions.ContainsKey("EventsCorePitchOffset") ?
                         ((float)ModCompatibility.sharedFunctions["EventsCorePitchOffset"]).ToString() : AudioManager.inst.pitch.ToString();
 
-                if (RTEditor.inst.doggoImage)
-                    RTEditor.inst.doggoImage.sprite = Instance.loadingImage.sprite;
             }
 
             var multi = Instance.GetDialog("Multi Object Editor").Dialog;
@@ -1152,6 +1150,34 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
+        [HarmonyPatch("OpenMetadata")]
+        [HarmonyPrefix]
+        static bool OpenMetadataPrefix()
+        {
+            var inst = Instance;
+
+            if (!inst.hasLoadedLevel)
+            {
+                inst.DisplayNotification("Load a level first before trying to upload!", 5f, EditorManager.NotificationType.Error);
+                return false;
+            }
+
+            inst.ClearDialogs(new EditorManager.EditorDialog.DialogType[1]);
+            inst.StartCoroutine(inst.GetAlbumSprite(inst.currentLoadedLevel, (Sprite cover) =>
+            {
+                inst.GetDialog("Metadata Editor").Dialog.transform.Find("Scroll View/Viewport/Content/creator/cover_art/image").GetComponent<Image>().sprite = cover;
+                MetadataEditor.inst.currentLevelCover = cover;
+            }, (string err) =>
+            {
+                inst.GetDialog("Metadata Editor").Dialog.transform.Find("Scroll View/Viewport/Content/creator/cover_art/image").GetComponent<Image>().sprite = LegacyPlugin.AtanPlaceholder;
+                MetadataEditor.inst.currentLevelCover = LegacyPlugin.AtanPlaceholder;
+            }));
+
+            MetadataEditor.inst.Render();
+            MetadataEditor.inst.OpenDialog();
+            return false;
+        }
+
         [HarmonyPatch("GetSprite")]
         [HarmonyPrefix]
         static bool GetSpritePrefix(ref IEnumerator __result, string __0, EditorManager.SpriteLimits __1, Action<Sprite> __2, Action<string> __3)
@@ -1186,6 +1212,23 @@ namespace BetterLegacy.Patchers
 
             Instance.timelineScrollRectBar.value = (EditorConfig.Instance.UseMouseAsZoomPoint.Value ? Instance.GetTimelineTime(0f) : AudioManager.inst.CurrentAudioSource.time) / AudioManager.inst.CurrentAudioSource.clip.length;
             Debug.LogFormat("{0}Set Timeline Zoom -> [{1}]", new object[] { Instance.className, Instance.Zoom });
+            return false;
+        }
+
+        [HarmonyPatch("LoadingIconUpdate")]
+        [HarmonyPrefix]
+        static bool LoadingIconUpdatePrefix()
+        {
+            var inst = Instance;
+            if (inst.currentLoadingSprite >= inst.loadingSprites.Length)
+                inst.currentLoadingSprite = 0;
+
+            var sprite = inst.loadingSprites[inst.currentLoadingSprite];
+            if (RTEditor.inst.doggoImage)
+                RTEditor.inst.doggoImage.sprite = sprite;
+            inst.loadingImage.sprite = sprite;
+            inst.currentLoadingSprite++;
+
             return false;
         }
 

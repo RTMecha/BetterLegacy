@@ -31,6 +31,8 @@ namespace BetterLegacy.Editor.Managers
         public GameObject modifierCardPrefab;
         public GameObject modifierAddPrefab;
 
+        public static void Init() => Creator.NewGameObject("ObjectModifiersEditor", EditorManager.inst.transform.parent).AddComponent<ObjectModifiersEditor>();
+
         void Awake()
         {
             inst = this;

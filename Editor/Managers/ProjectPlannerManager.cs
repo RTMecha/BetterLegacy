@@ -108,6 +108,8 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
+        public static void Init() => Creator.NewGameObject("ProjectPlanner", EditorManager.inst.transform.parent).AddComponent<ProjectPlannerManager>();
+
         void Awake()
         {
             inst = this;
