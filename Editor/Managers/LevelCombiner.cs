@@ -248,6 +248,9 @@ namespace BetterLegacy.Editor.Managers
             int num = 0;
             foreach (var editorWrapper in EditorManager.inst.loadedLevels.Select(x => x as EditorWrapper))
             {
+                if (editorWrapper.isFolder)
+                    continue;
+
                 var folder = editorWrapper.folder;
                 var metadata = editorWrapper.metadata;
 
