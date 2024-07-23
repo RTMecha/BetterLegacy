@@ -205,6 +205,8 @@ namespace BetterLegacy.Core.Helpers
             yield break;
         }
 
+        public static List<Dropdown.OptionData> StringToOptionData(params string[] str) => str.Select(x => new Dropdown.OptionData(x)).ToList();
+
         #endregion
 
         /// <summary>
