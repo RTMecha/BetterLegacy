@@ -7,12 +7,16 @@ using UnityEngine;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers.Networking;
+using System.IO.Compression;
 
 namespace BetterLegacy.Story
 {
     public class StoryManager : MonoBehaviour
     {
+        public static StoryManager inst;
+
         public static string StoryAssetsPath => $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Story/";
+        public static string StoryAssetsURL => $"{AlephNetworkManager.ArcadeServerURL}api/story/download";
 
         public static AssetBundle covers = null;
         public static AssetBundle levels = null;
@@ -20,14 +24,52 @@ namespace BetterLegacy.Story
 
         public static bool Loaded { get; set; }
 
+        public static bool HasFiles => RTFile.FileExists($"{StoryAssetsPath}covers.asset") && RTFile.FileExists($"{StoryAssetsPath}levels.asset") && RTFile.FileExists($"{StoryAssetsPath}ost.asset");
+
+        public bool AssetBundlesLoaded => covers != null && levels != null && songs != null;
+
         public static void Init() => new GameObject(nameof(StoryManager), typeof(StoryManager)).transform.SetParent(SystemManager.inst.transform);
 
-        void Awake()
+        void Awake() => inst = this;
+
+        public void Clear(bool unloadAllLoadedObjects = true)
         {
-            Load();
+            if (covers)
+                covers.Unload(unloadAllLoadedObjects);
+            covers = null;
+            if (levels)
+                levels.Unload(unloadAllLoadedObjects);
+            levels = null;
+            if (songs)
+                songs.Unload(unloadAllLoadedObjects);
+            songs = null;
+
+            Loaded = false;
         }
 
         public List<StoryLevel> storyLevels = new List<StoryLevel>();
+
+        public IEnumerator Download(System.Action onComplete = null)
+        {
+            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadBytes(StoryAssetsURL, (float percentage) => { }, (byte[] bytes) =>
+            {
+                var directory = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Story/test";
+                var zip = $"{directory}/story.zip";
+
+                if (!RTFile.DirectoryExists(directory))
+                    Directory.CreateDirectory(directory);
+
+                File.WriteAllBytes(zip, bytes);
+
+                ZipFile.ExtractToDirectory(zip, directory);
+
+                File.Delete(zip);
+            }, (string onError) => { }));
+
+            onComplete?.Invoke();
+
+            yield break;
+        }
 
         public StoryLevel LoadLevel(string name)
         {
@@ -54,23 +96,26 @@ namespace BetterLegacy.Story
 
         public IEnumerator ILoad()
         {
-            if (!RTFile.DirectoryExists($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Story"))
+            if (!HasFiles)
             {
+                if (AssetBundlesLoaded)
+                    Clear();
+
                 Loaded = false;
                 yield break;
             }
 
-            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{StoryAssetsPath}covers.asset", delegate (AssetBundle assetBundle)
+            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{StoryAssetsPath}covers.asset", (AssetBundle assetBundle) =>
             {
                 covers = assetBundle;
             }));
 
-            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{StoryAssetsPath}levels.asset", delegate (AssetBundle assetBundle)
+            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{StoryAssetsPath}levels.asset", (AssetBundle assetBundle) =>
             {
                 levels = assetBundle;
             }));
 
-            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{StoryAssetsPath}ost.asset", delegate (AssetBundle assetBundle)
+            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{StoryAssetsPath}ost.asset", (AssetBundle assetBundle) =>
             {
                 songs = assetBundle;
             }));
