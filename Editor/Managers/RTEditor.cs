@@ -148,6 +148,36 @@ namespace BetterLegacy.Editor.Managers
                 deleteButtonStorage.button = prefabHolder.DeleteButton.GetComponent<Button>();
                 deleteButtonStorage.baseImage = deleteButtonStorage.button.image;
                 deleteButtonStorage.image = prefabHolder.DeleteButton.transform.GetChild(0).GetComponent<Image>();
+
+                timelineBar = GameObject.Find("TimelineBar/GameObject");
+                timeDefault = timelineBar.transform.GetChild(0).gameObject;
+                timeDefault.name = "Time Default";
+
+                var defaultInputField = timelineBar.transform.Find("Time");
+                defaultIF = defaultInputField.gameObject;
+                defaultIF.SetActive(true);
+                defaultInputField.SetParent(transform);
+                EditorManager.inst.speedText.transform.parent.SetParent(transform);
+
+                if (defaultIF.TryGetComponent(out InputField frick))
+                    frick.textComponent.fontSize = 18;
+
+                tagPrefab = Creator.NewUIObject("Tag", transform);
+                var tagPrefabImage = tagPrefab.AddComponent<Image>();
+                tagPrefabImage.color = new Color(1f, 1f, 1f, 1f);
+                var tagPrefabLayout = tagPrefab.AddComponent<HorizontalLayoutGroup>();
+                tagPrefabLayout.childControlWidth = false;
+                tagPrefabLayout.childForceExpandWidth = false;
+
+                var input = defaultIF.Duplicate(tagPrefab.transform, "Input");
+                input.transform.localScale = Vector3.one;
+                input.transform.AsRT().sizeDelta = new Vector2(136f, 32f);
+                var text = input.transform.Find("Text").GetComponent<Text>();
+                text.alignment = TextAnchor.MiddleCenter;
+                text.fontSize = 17;
+
+                var delete = prefabHolder.DeleteButton.Duplicate(tagPrefab.transform, "Delete");
+                UIManager.SetRectTransform(delete.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.one, Vector2.one, new Vector2(32f, 32f));
             }
 
             prefabHolder.Function1Button = GameObject.Find("Editor Systems/Editor GUI/sizer/main/TimelineBar/GameObject/event").Duplicate(prefabHolder.PrefabParent, "function 1 button");
@@ -212,7 +242,7 @@ namespace BetterLegacy.Editor.Managers
             SetNotificationProperties();
 
             timelineSlider = EditorManager.inst.timelineSlider.GetComponent<Slider>();
-            TriggerHelper.AddEventTriggerParams(timelineSlider.gameObject, TriggerHelper.CreateEntry(EventTriggerType.PointerDown, (BaseEventData eventData) =>
+            TriggerHelper.AddEventTriggerParams(timelineSlider.gameObject, TriggerHelper.CreateEntry(EventTriggerType.PointerDown, eventData =>
             {
                 if (!EditorConfig.Instance.DraggingMainCursorFix.Value)
                     return;
@@ -220,7 +250,7 @@ namespace BetterLegacy.Editor.Managers
                 changingTime = true;
                 newTime = timelineSlider.value / EditorManager.inst.Zoom;
                 AudioManager.inst.SetMusicTime(Mathf.Clamp(timelineSlider.value / EditorManager.inst.Zoom, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
-            }), TriggerHelper.CreateEntry(EventTriggerType.PointerUp, (BaseEventData eventData) =>
+            }), TriggerHelper.CreateEntry(EventTriggerType.PointerUp, eventData =>
             {
                 if (!EditorConfig.Instance.DraggingMainCursorFix.Value)
                     return;
@@ -343,10 +373,6 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public bool tooltipActive;
-        public float tooltipTime;
-        public float tooltipTimeOffset;
-        public float maxTooltipTime = 2f;
         void UpdateTooltip()
         {
             tooltipTime = Time.time - tooltipTimeOffset;
@@ -388,36 +414,91 @@ namespace BetterLegacy.Editor.Managers
 
         #region Variables
 
-        public bool changingTime;
-        public float newTime;
-
-        public Transform wholeTimeline;
-
-        public Sprite dropperSprite;
+        public GameObject timeDefault;
 
         public Transform popups;
 
-        public InputField editorPathField;
-        public InputField themePathField;
-        public InputField prefabPathField;
-
-        public bool choosingLevelTemplate;
-        public int currentLevelTemplate = -1;
-
-        public float dragOffset = -1f;
-        public int dragBinOffset = -100;
+        public GameObject tagPrefab;
 
         public EditorThemeManager.Element PreviewCover { get; set; }
 
-        public static bool DraggingPlaysSound { get; set; }
-        public static bool DraggingPlaysSoundBPM { get; set; }
         public static bool ShowModdedUI { get; set; }
 
         public bool ienumRunning;
 
-        public Slider timelineSlider;
+        public GameObject defaultIF;
+
+        public string objectSearchTerm = "";
+
+        public Transform titleBar;
+
+        public string propertiesSearch;
+
+        public static EditorProperty.EditorPropCategory currentCategory = EditorProperty.EditorPropCategory.General;
+
+        public static List<Dropdown> EasingDropdowns { get; set; } = new List<Dropdown>();
+
+        List<MultiColorButton> multiColorButtons = new List<MultiColorButton>();
+        int currentMultiColorSelection = 0;
+
+        #region Dragging
+
+        public float dragOffset = -1f;
+        public int dragBinOffset = -100;
+
+        public static bool DraggingPlaysSound { get; set; }
+        public static bool DraggingPlaysSoundBPM { get; set; }
+
+        #endregion
+
+        #region Tooltip
 
         public TextMeshProUGUI tooltipText;
+
+        public bool tooltipActive;
+        public float tooltipTime;
+        public float tooltipTimeOffset;
+        public float maxTooltipTime = 2f;
+
+        #endregion
+
+        #region Timeline
+
+        public Slider timelineSlider;
+
+        public Image timelineSliderHandle;
+        public Image timelineSliderRuler;
+        public Image keyframeTimelineSliderHandle;
+        public Image keyframeTimelineSliderRuler;
+
+        public bool isOverMainTimeline;
+        public bool changingTime;
+        public float newTime;
+
+        public GridRenderer timelineGridRenderer;
+        public Transform wholeTimeline;
+
+        #endregion
+
+        #region Loading and sorting
+
+        public bool canUpdateThemes = true;
+        public bool canUpdatePrefabs = true;
+
+        public Dropdown levelOrderDropdown;
+        public Toggle levelAscendToggle;
+        public InputField editorPathField;
+        public InputField themePathField;
+        public InputField prefabPathField;
+
+        public bool themesLoading = false;
+
+        public GameObject themeAddButton;
+
+        public bool prefabsLoading = false;
+        public GameObject prefabExternalAddButton;
+
+        #endregion
 
         #region Mouse Picker
 
@@ -444,12 +525,6 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        public GameObject defaultIF;
-
-        public string objectSearchTerm = "";
-
-        public Transform titleBar;
-
         #region File Info
 
         public Text fileInfoText;
@@ -457,10 +532,9 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        public Image timelineSliderHandle;
-        public Image timelineSliderRuler;
-        public Image keyframeTimelineSliderHandle;
-        public Image keyframeTimelineSliderRuler;
+        #region Sprites
+
+        public Sprite dropperSprite;
 
         Sprite searchSprite;
         public Sprite SearchSprite
@@ -475,24 +549,96 @@ namespace BetterLegacy.Editor.Managers
 
         public static Sprite ReloadSprite { get; set; }
 
-        public string propertiesSearch;
+        #endregion
 
-        public static EditorProperty.EditorPropCategory currentCategory = EditorProperty.EditorPropCategory.General;
+        #region Key selection
 
-        // Key
         public bool selectingKey = false;
         public Action onKeySet;
         public Action<KeyCode> setKey;
 
+        #endregion
+
+        #region Timeline
+
+        public Image timelinePreviewPlayer;
+        public Image timelinePreviewLine;
+        public Image timelinePreviewLeftCap;
+        public Image timelinePreviewRightCap;
+        public List<Image> checkpointImages = new List<Image>();
+
         public Transform timelinePreview;
         public RectTransform timelinePosition;
 
+        #endregion
+
+        #region Documentation
+
         public List<Document> documentations = new List<Document>();
 
-        public bool canUpdateThemes = true;
-        public bool canUpdatePrefabs = true;
+        public Text documentationTitle;
+        public string documentationSearch;
+        public Transform documentationContent;
+        public Popup documentationPopup;
 
-        public static List<Dropdown> EasingDropdowns { get; set; } = new List<Dropdown>();
+        #endregion
+
+        #region Debugger
+
+        public Popup debuggerPopup;
+        public List<string> debugs = new List<string>();
+        public List<GameObject> customFunctions = new List<GameObject>();
+        public string debugSearch;
+
+        static Type UEInspector => ModCompatibility.UnityExplorerInstalled ? AccessTools.TypeByName("UnityExplorer.InspectorManager") : null;
+        static Type UEUIManager => ModCompatibility.UnityExplorerInstalled ? AccessTools.TypeByName("UnityExplorer.UI.UIManager") : null;
+
+        #endregion
+
+        #region Autosave
+
+        public bool autoSaving = false;
+
+        public string autosaveSearch;
+        public Transform autosaveContent;
+        public InputField autosaveSearchField;
+
+        public static float timeSinceAutosaved;
+
+        #endregion
+
+        #region Screenshots
+
+        public Transform screenshotContent;
+        public InputField screenshotPageField;
+
+        public int screenshotPage;
+        public int screenshotsPerPage = 5;
+
+        public int CurrentScreenshotPage => screenshotPage + 1;
+        public int MinScreenshots => MaxScreenshots - screenshotsPerPage;
+        public int MaxScreenshots => CurrentScreenshotPage * screenshotsPerPage;
+
+        public int screenshotCount;
+
+        #endregion
+
+        #region New level creator
+
+        public bool choosingLevelTemplate;
+        public int currentLevelTemplate = -1;
+
+        public Transform newLevelTemplateContent;
+        public GameObject newLevelTemplatePrefab;
+        public Sprite newLevelTemplateBaseSprite;
+        public InputField nameInput;
+        public Sprite currentTemplateSprite;
+
+        public bool fromNewLevel;
+
+        public List<string> NewLevelTemplates { get; set; } = new List<string>();
+
+        #endregion
 
         #endregion
 
@@ -800,10 +946,7 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorManager.inst.zoomSlider.onValueChanged.ClearAll();
                 EditorManager.inst.zoomSlider.value = EditorManager.inst.zoomFloat;
-                EditorManager.inst.zoomSlider.onValueChanged.AddListener(delegate (float _val)
-                {
-                    EditorManager.inst.Zoom = _val;
-                });
+                EditorManager.inst.zoomSlider.onValueChanged.AddListener(_val => { EditorManager.inst.Zoom = _val; });
 
                 if (log)
                     CoreHelper.Log($"SET MAIN ZOOM\n" +
@@ -1257,7 +1400,7 @@ namespace BetterLegacy.Editor.Managers
             if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + editorListPath))
             {
                 editorPathField.interactable = false;
-                ShowWarningPopup("No directory exists for this path. Do you want to create a new folder?", delegate ()
+                ShowWarningPopup("No directory exists for this path. Do you want to create a new folder?", () =>
                 {
                     Directory.CreateDirectory(RTFile.ApplicationDirectory + editorListPath);
 
@@ -1267,7 +1410,7 @@ namespace BetterLegacy.Editor.Managers
 
                     EditorManager.inst.HideDialog("Warning Popup");
                     editorPathField.interactable = true;
-                }, delegate ()
+                }, () =>
                 {
                     EditorManager.inst.HideDialog("Warning Popup");
                     editorPathField.interactable = true;
@@ -1304,7 +1447,7 @@ namespace BetterLegacy.Editor.Managers
             if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + themeListPath))
             {
                 themePathField.interactable = false;
-                ShowWarningPopup("No directory exists for this path. Do you want to create a new folder?", delegate ()
+                ShowWarningPopup("No directory exists for this path. Do you want to create a new folder?", () =>
                 {
                     Directory.CreateDirectory(RTFile.ApplicationDirectory + themeListPath);
 
@@ -1315,7 +1458,7 @@ namespace BetterLegacy.Editor.Managers
 
                     EditorManager.inst.HideDialog("Warning Popup");
                     themePathField.interactable = true;
-                }, delegate ()
+                }, () =>
                 {
                     EditorManager.inst.HideDialog("Warning Popup");
                     themePathField.interactable = true;
@@ -1353,7 +1496,7 @@ namespace BetterLegacy.Editor.Managers
             if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + prefabListPath))
             {
                 prefabPathField.interactable = false;
-                ShowWarningPopup("No directory exists for this path. Do you want to create a new folder?", delegate ()
+                ShowWarningPopup("No directory exists for this path. Do you want to create a new folder?", () =>
                 {
                     Directory.CreateDirectory(RTFile.ApplicationDirectory + prefabListPath);
 
@@ -1363,7 +1506,7 @@ namespace BetterLegacy.Editor.Managers
 
                     EditorManager.inst.HideDialog("Warning Popup");
                     prefabPathField.interactable = true;
-                }, delegate ()
+                }, () =>
                 {
                     EditorManager.inst.HideDialog("Warning Popup");
                     prefabPathField.interactable = true;
@@ -1384,9 +1527,9 @@ namespace BetterLegacy.Editor.Managers
 
             levelOrderDropdown.onValueChanged.ClearAll();
             levelOrderDropdown.value = levelFilter;
-            levelOrderDropdown.onValueChanged.AddListener(delegate (int _value)
+            levelOrderDropdown.onValueChanged.AddListener(_val =>
             {
-                levelFilter = _value;
+                levelFilter = _val;
                 StartCoroutine(RefreshLevelList());
                 SaveGlobalSettings();
             });
@@ -1399,9 +1542,9 @@ namespace BetterLegacy.Editor.Managers
 
             levelAscendToggle.onValueChanged.ClearAll();
             levelAscendToggle.isOn = levelAscend;
-            levelAscendToggle.onValueChanged.AddListener(delegate (bool _value)
+            levelAscendToggle.onValueChanged.AddListener(_val =>
             {
-                levelAscend = _value;
+                levelAscend = _val;
                 StartCoroutine(RefreshLevelList());
                 SaveGlobalSettings();
             });
@@ -1427,15 +1570,11 @@ namespace BetterLegacy.Editor.Managers
             jn["paths"]["prefabs"] = PrefabPath;
 
             for (int i = 0; i < MarkerEditor.inst.markerColors.Count; i++)
-            {
                 jn["marker_colors"][i] = LSColors.ColorToHex(MarkerEditor.inst.markerColors[i]);
-            }
 
             EditorManager.inst.layerColors.RemoveAt(5);
             for (int i = 0; i < EditorManager.inst.layerColors.Count; i++)
-            {
                 jn["layer_colors"][i] = LSColors.ColorToHex(EditorManager.inst.layerColors[i]);
-            }
 
             RTFile.WriteToFile(EditorSettingsPath, jn.ToString(3));
         }
@@ -1475,16 +1614,12 @@ namespace BetterLegacy.Editor.Managers
             {
                 MarkerEditor.inst.markerColors.Clear();
                 for (int i = 0; i < jn["marker_colors"].Count; i++)
-                {
                     MarkerEditor.inst.markerColors.Add(LSColors.HexToColor(jn["marker_colors"][i]));
-                }
             }
             else
             {
                 for (int i = 0; i < MarkerEditor.inst.markerColors.Count; i++)
-                {
                     jn["marker_colors"][i] = LSColors.ColorToHex(MarkerEditor.inst.markerColors[i]);
-                }
 
                 RTFile.WriteToFile(EditorSettingsPath, jn.ToString(3));
             }
@@ -1493,16 +1628,12 @@ namespace BetterLegacy.Editor.Managers
             {
                 EditorManager.inst.layerColors.Clear();
                 for (int i = 0; i < jn["layer_colors"].Count; i++)
-                {
                     EditorManager.inst.layerColors.Add(LSColors.HexToColor(jn["layer_colors"][i]));
-                }
             }
             else
             {
                 for (int i = 0; i < EditorManager.inst.layerColors.Count; i++)
-                {
                     jn["layer_colors"][i] = LSColors.ColorToHex(EditorManager.inst.layerColors[i]);
-                }
 
                 RTFile.WriteToFile(EditorSettingsPath, jn.ToString(3));
             }
@@ -1550,20 +1681,16 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public void OnPrefabPathChanged(object sender, FileSystemEventArgs e)
+        void OnPrefabPathChanged(object sender, FileSystemEventArgs e)
         {
             if (canUpdatePrefabs && EditorConfig.Instance.UpdatePrefabListOnFilesChanged.Value)
-            {
                 StartCoroutine(UpdatePrefabs());
-            }
         }
 
-        public void OnThemePathChanged(object sender, FileSystemEventArgs e)
+        void OnThemePathChanged(object sender, FileSystemEventArgs e)
         {
             if (canUpdateThemes && EditorConfig.Instance.UpdateThemeListOnFilesChanged.Value)
-            {
                 StartCoroutine(LoadThemes(EventEditor.inst.dialogRight.GetChild(4).gameObject.activeInHierarchy));
-            }
         }
 
         public FileSystemWatcher PrefabWatcher { get; set; }
@@ -1872,22 +1999,20 @@ namespace BetterLegacy.Editor.Managers
 
         public static Color GetLayerColor(int _layer) => _layer < EditorManager.inst.layerColors.Count ? EditorManager.inst.layerColors[_layer] : Color.white;
 
-        public void SetLayer(LayerType layerType)
-        {
-            this.layerType = layerType;
-            Layer = 0;
-            SetLayer(Layer);
-        }
+        public void SetLayer(LayerType layerType) => SetLayer(0, layerType);
+
+        public void SetLayer(int layer, bool setHistory = true) => SetLayer(layer, layerType, setHistory);
 
         /// <summary>
         /// Sets the current editor layer.
         /// </summary>
         /// <param name="layer">The layer to set.</param>
         /// <param name="setHistory">If the action should be undoable.</param>
-        public void SetLayer(int layer, bool setHistory = true)
+        public void SetLayer(int layer, LayerType layerType, bool setHistory = true)
         {
             DataManager.inst.UpdateSettingInt("EditorLayer", layer);
-            int oldLayer = Layer;
+            var oldLayer = Layer;
+            var oldLayerType = this.layerType;
 
             Layer = layer;
             TimelineOverlayImage.color = GetLayerColor(layer);
@@ -1895,21 +2020,15 @@ namespace BetterLegacy.Editor.Managers
 
             editorLayerField.onValueChanged.RemoveAllListeners();
             editorLayerField.text = (layer + 1).ToString();
-            editorLayerField.onValueChanged.AddListener(delegate (string _value)
+            editorLayerField.onValueChanged.AddListener(_val =>
             {
-                if (int.TryParse(_value, out int num))
+                if (int.TryParse(_val, out int num))
                     SetLayer(Mathf.Clamp(num - 1, 0, int.MaxValue));
             });
 
-            if (eventLayerToggle)
-            {
-                eventLayerToggle.onValueChanged.ClearAll();
-                eventLayerToggle.isOn = layerType == LayerType.Events;
-                eventLayerToggle.onValueChanged.AddListener(delegate (bool _val)
-                {
-                    SetLayer(_val ? LayerType.Events : LayerType.Objects);
-                });
-            }
+            eventLayerToggle.onValueChanged.ClearAll();
+            eventLayerToggle.isOn = layerType == LayerType.Events;
+            eventLayerToggle.onValueChanged.AddListener(_val => { SetLayer(_val ? LayerType.Events : LayerType.Objects); });
 
             RTEventEditor.inst.SetEventActive(layerType == LayerType.Events);
 
@@ -1951,17 +2070,18 @@ namespace BetterLegacy.Editor.Managers
             prevLayerType = layerType;
             prevLayer = layer;
 
-            int tmpLayer = Layer;
+            var tmpLayer = Layer;
+            var tmpLayerType = this.layerType;
             if (setHistory)
             {
-                EditorManager.inst.history.Add(new History.Command("Change Layer", delegate ()
+                EditorManager.inst.history.Add(new History.Command("Change Layer", () =>
                 {
                     CoreHelper.Log($"Redone layer: {tmpLayer}");
-                    SetLayer(tmpLayer, false);
-                }, delegate ()
+                    SetLayer(tmpLayer, tmpLayerType, false);
+                }, () =>
                 {
                     CoreHelper.Log($"Undone layer: {oldLayer}");
-                    SetLayer(oldLayer, false);
+                    SetLayer(oldLayer, oldLayerType, false);
                 }), false);
             }
         }
@@ -1972,12 +2092,8 @@ namespace BetterLegacy.Editor.Managers
 
         public static GameObject GenerateSpacer(string name, Transform parent, Vector2 size)
         {
-            var spacer = new GameObject(name);
-            spacer.transform.SetParent(parent);
-            spacer.transform.localScale = Vector3.one;
-
-            var spacerRT = spacer.AddComponent<RectTransform>();
-            spacerRT.sizeDelta = size;
+            var spacer = Creator.NewUIObject(name, parent);
+            spacer.transform.AsRT().sizeDelta = size;
 
             return spacer;
         }
@@ -1986,8 +2102,7 @@ namespace BetterLegacy.Editor.Managers
         {
             var popupInstance = new Popup();
             popupInstance.Name = name;
-            var popup = EditorManager.inst.GetDialog("Parent Selector").Dialog.gameObject
-                .Duplicate(popups, name);
+            var popup = EditorManager.inst.GetDialog("Parent Selector").Dialog.gameObject.Duplicate(popups, name);
             popupInstance.GameObject = popup;
             popup.transform.localPosition = Vector3.zero;
 
@@ -2014,8 +2129,8 @@ namespace BetterLegacy.Editor.Managers
 
             popupInstance.SearchField = popup.transform.Find("search-box/search").GetComponent<InputField>();
             popupInstance.SearchField.onValueChanged.ClearAll();
-            popupInstance.SearchField.onValueChanged.AddListener((string _val) => refreshSearch?.Invoke(_val));
-            ((Text)popupInstance.SearchField.placeholder).text = placeholderText;
+            popupInstance.SearchField.onValueChanged.AddListener(_val => refreshSearch?.Invoke(_val));
+            popupInstance.SearchField.PlaceholderText().text = placeholderText;
             popupInstance.Content = popup.transform.Find("mask/content");
 
             EditorHelper.AddEditorPopup(name, popup);
@@ -2039,140 +2154,98 @@ namespace BetterLegacy.Editor.Managers
             return popupInstance;
         }
 
-        public class Popup
-        {
-            public string Name { get; set; }
-            public GameObject GameObject { get; set; }
-            public Button Close { get; set; }
-            public InputField SearchField { get; set; }
-            public Transform Content { get; set; }
-            public GridLayoutGroup Grid { get; set; }
-            public RectTransform TopPanel { get; set; }
-        }
-
         void SetupTimelineBar()
         {
-            timelineBar = GameObject.Find("TimelineBar/GameObject");
-
             for (int i = 1; i <= 5; i++)
                 timelineBar.transform.Find(i.ToString()).SetParent(transform);
 
             Destroy(GameObject.Find("TimelineBar/GameObject/6").GetComponent<EventTrigger>());
 
             eventLayerToggle = GameObject.Find("TimelineBar/GameObject/6").GetComponent<Toggle>();
-            eventLayerToggle.onValueChanged.ClearAll();
-            eventLayerToggle.onValueChanged.AddListener(delegate (bool _val)
+
+            var timeObj = defaultIF.Duplicate(timelineBar.transform, "Time Input", 0);
+            timeObj.transform.localScale = Vector3.one;
+
+            timeField = timeObj.GetComponent<InputField>();
+
+            //Triggers.AddTooltip(timeObj, "Shows the exact current time of song.", "Type in the input field to go to a precise time in the level.");
+            TooltipHelper.AssignTooltip(timeObj, "Time Input", 3f);
+
+            timeObj.SetActive(true);
+            timeField.PlaceholderText().text = "Set time...";
+            timeField.PlaceholderText().alignment = TextAnchor.MiddleCenter;
+            timeField.PlaceholderText().fontSize = 16;
+            timeField.PlaceholderText().horizontalOverflow = HorizontalWrapMode.Overflow;
+            timeField.characterValidation = InputField.CharacterValidation.Decimal;
+
+            timeField.onValueChanged.AddListener(_val =>
             {
-                layerType = _val ? LayerType.Events : LayerType.Objects;
+                if (float.TryParse(_val, out float num))
+                    AudioManager.inst.CurrentAudioSource.time = num;
             });
 
-            var timeDefault = timelineBar.transform.GetChild(0).gameObject;
-            timeDefault.name = "Time Default";
-
-            var t = timelineBar.transform.Find("Time");
-            defaultIF = t.gameObject;
-            defaultIF.SetActive(true);
-            t.SetParent(transform);
-            EditorManager.inst.speedText.transform.parent.SetParent(transform);
-
-            if (defaultIF.TryGetComponent(out InputField frick))
-            {
-                frick.textComponent.fontSize = 19;
-            }
-
-            var timeObj = Instantiate(t.gameObject);
-            {
-                timeObj.transform.SetParent(timelineBar.transform);
-                timeObj.transform.localScale = Vector3.one;
-                timeObj.name = "Time Input";
-
-                timeField = timeObj.GetComponent<InputField>();
-
-                //Triggers.AddTooltip(timeObj, "Shows the exact current time of song.", "Type in the input field to go to a precise time in the level.");
-                TooltipHelper.AssignTooltip(timeObj, "Time Input", 3f);
-
-                timeObj.transform.SetAsFirstSibling();
-                timeObj.SetActive(true);
-                timeField.PlaceholderText().text = "Set time...";
-                timeField.PlaceholderText().alignment = TextAnchor.MiddleCenter;
-                timeField.PlaceholderText().fontSize = 16;
-                timeField.PlaceholderText().horizontalOverflow = HorizontalWrapMode.Overflow;
-                //timeField.text = AudioManager.inst.CurrentAudioSource.time.ToString();
-                timeField.characterValidation = InputField.CharacterValidation.Decimal;
-
-                timeField.onValueChanged.AddListener((string _val) =>
-                {
-                    if (float.TryParse(_val, out float num))
-                        AudioManager.inst.CurrentAudioSource.time = num;
-                });
-
-                TriggerHelper.AddEventTriggerParams(timeObj, TriggerHelper.ScrollDelta(timeField));
-            }
+            TriggerHelper.AddEventTriggerParams(timeObj, TriggerHelper.ScrollDelta(timeField));
 
             var layersObj = timeObj.Duplicate(timelineBar.transform, "layers", 7);
+            layersObj.transform.localScale = Vector3.one;
+
+            TooltipHelper.AssignTooltip(layersObj, "Editor Layer", 3f);
+
+            editorLayerField = layersObj.GetComponent<InputField>();
+            editorLayerField.textComponent.alignment = TextAnchor.MiddleCenter;
+
+            editorLayerField.text = GetLayerString(EditorManager.inst.layer);
+
+            editorLayerImage = editorLayerField.image;
+
+            layersObj.AddComponent<ContrastColors>().Init(editorLayerField.textComponent, editorLayerImage);
+
+            editorLayerField.characterValidation = InputField.CharacterValidation.None;
+            editorLayerField.contentType = InputField.ContentType.Standard;
+            editorLayerField.PlaceholderText().text = "Set layer...";
+            editorLayerField.PlaceholderText().alignment = TextAnchor.MiddleCenter;
+            editorLayerField.PlaceholderText().fontSize = 16;
+            editorLayerField.PlaceholderText().horizontalOverflow = HorizontalWrapMode.Overflow;
+            editorLayerField.onValueChanged.RemoveAllListeners();
+            editorLayerField.onValueChanged.AddListener(_val =>
             {
-                layersObj.transform.localScale = Vector3.one;
+                if (int.TryParse(_val, out int num))
+                    SetLayer(Mathf.Clamp(num - 1, 0, int.MaxValue));
+            });
 
-                TooltipHelper.AssignTooltip(layersObj, "Editor Layer", 3f);
+            editorLayerImage.color = GetLayerColor(EditorManager.inst.layer);
 
-                editorLayerField = layersObj.GetComponent<InputField>();
-                editorLayerField.textComponent.alignment = TextAnchor.MiddleCenter;
-
-                editorLayerField.text = GetLayerString(EditorManager.inst.layer);
-
-                editorLayerImage = editorLayerField.image;
-
-                layersObj.AddComponent<ContrastColors>().Init(editorLayerField.textComponent, editorLayerImage);
-
-                editorLayerField.characterValidation = InputField.CharacterValidation.None;
-                editorLayerField.contentType = InputField.ContentType.Standard;
-                editorLayerField.PlaceholderText().text = "Set layer...";
-                editorLayerField.PlaceholderText().alignment = TextAnchor.MiddleCenter;
-                editorLayerField.PlaceholderText().fontSize = 16;
-                editorLayerField.PlaceholderText().horizontalOverflow = HorizontalWrapMode.Overflow;
-                editorLayerField.onValueChanged.RemoveAllListeners();
-                editorLayerField.onValueChanged.AddListener((string _val) =>
+            TriggerHelper.AddEventTriggerParams(layersObj,
+                TriggerHelper.ScrollDeltaInt(editorLayerField, 1, 1, int.MaxValue), TriggerHelper.CreateEntry(EventTriggerType.PointerDown, eventData =>
                 {
-                    if (int.TryParse(_val, out int num))
-                        SetLayer(Mathf.Clamp(num - 1, 0, int.MaxValue));
-                });
-
-                editorLayerImage.color = GetLayerColor(EditorManager.inst.layer);
-
-                TriggerHelper.AddEventTriggerParams(layersObj,
-                    TriggerHelper.ScrollDeltaInt(editorLayerField, 1, 1, int.MaxValue), TriggerHelper.CreateEntry(EventTriggerType.PointerDown, (BaseEventData eventData) =>
-                    {
-                        if (((PointerEventData)eventData).button == PointerEventData.InputButton.Middle)
-                            CoreHelper.ListObjectLayers();
-                    }));
-            }
+                    if (((PointerEventData)eventData).button == PointerEventData.InputButton.Middle)
+                        CoreHelper.ListObjectLayers();
+                }));
 
             var pitchObj = timeObj.Duplicate(timelineBar.transform, "pitch", 5);
+            pitchObj.transform.localScale = Vector3.one;
+            TooltipHelper.AssignTooltip(pitchObj, "Pitch", 3f);
+
+            pitchField = pitchObj.GetComponent<InputField>();
+            pitchField.PlaceholderText().text = "Pitch";
+            pitchField.PlaceholderText().alignment = TextAnchor.MiddleCenter;
+            pitchField.PlaceholderText().fontSize = 16;
+            pitchField.PlaceholderText().horizontalOverflow = HorizontalWrapMode.Overflow;
+            pitchField.onValueChanged.ClearAll();
+            pitchField.onValueChanged.AddListener(_val =>
             {
-                pitchObj.transform.localScale = Vector3.one;
-                TooltipHelper.AssignTooltip(pitchObj, "Pitch", 3f);
+                if (float.TryParse(_val, out float num))
+                    AudioManager.inst.SetPitch(num);
+            });
 
-                pitchField = pitchObj.GetComponent<InputField>();
-                pitchField.PlaceholderText().text = "Pitch";
-                pitchField.PlaceholderText().alignment = TextAnchor.MiddleCenter;
-                pitchField.PlaceholderText().fontSize = 16;
-                pitchField.PlaceholderText().horizontalOverflow = HorizontalWrapMode.Overflow;
-                pitchField.onValueChanged.RemoveAllListeners();
-                pitchField.onValueChanged.AddListener((string _val) =>
-                {
-                    if (float.TryParse(_val, out float num))
-                        AudioManager.inst.SetPitch(num);
-                });
+            TriggerHelper.AddEventTriggerParams(pitchObj, TriggerHelper.ScrollDelta(pitchField, 0.1f, 10f));
 
-                TriggerHelper.AddEventTriggerParams(pitchObj, TriggerHelper.ScrollDelta(pitchField, 0.1f, 10f));
+            //Triggers.AddTooltip(pitchObj, "Change the pitch of the song", "", new List<string> { "Up / Down Arrow" }, clear: true);
 
-                //Triggers.AddTooltip(pitchObj, "Change the pitch of the song", "", new List<string> { "Up / Down Arrow" }, clear: true);
+            pitchObj.GetComponent<LayoutElement>().minWidth = 64f;
+            pitchField.textComponent.alignment = TextAnchor.MiddleCenter;
 
-                pitchObj.GetComponent<LayoutElement>().minWidth = 64f;
-                pitchField.textComponent.alignment = TextAnchor.MiddleCenter;
-
-                pitchObj.AddComponent<InputFieldSwapper>();
-            }
+            pitchObj.AddComponent<InputFieldSwapper>();
 
             var timelineBarBase = timelineBar.transform.parent.gameObject;
             EditorThemeManager.AddGraphic(timelineBarBase.GetComponent<Image>(), ThemeGroup.Timeline_Bar);
@@ -2235,13 +2308,12 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddSelectable(playTestButton, ThemeGroup.Function_2, false);
         }
 
-        public bool isOverMainTimeline;
         void SetupTimelineTriggers()
         {
             var tltrig = EditorManager.inst.timeline.GetComponent<EventTrigger>();
 
-            tltrig.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerEnter, (BaseEventData eventData) => { isOverMainTimeline = true; }));
-            tltrig.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerExit, (BaseEventData eventData) => { isOverMainTimeline = false; }));
+            tltrig.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerEnter, eventData => { isOverMainTimeline = true; }));
+            tltrig.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerExit, eventData => { isOverMainTimeline = false; }));
             tltrig.triggers.Add(TriggerHelper.StartDragTrigger());
             tltrig.triggers.Add(TriggerHelper.DragTrigger());
             tltrig.triggers.Add(TriggerHelper.EndDragTrigger());
@@ -2251,12 +2323,12 @@ namespace BetterLegacy.Editor.Managers
                 int type = i;
                 var et = EventEditor.inst.EventHolders.transform.GetChild(i).GetComponent<EventTrigger>();
                 et.triggers.Clear();
-                et.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerEnter, (BaseEventData eventData) => { isOverMainTimeline = true; }));
-                et.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerExit, (BaseEventData eventData) => { isOverMainTimeline = false; }));
+                et.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerEnter, eventData => { isOverMainTimeline = true; }));
+                et.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerExit, eventData => { isOverMainTimeline = false; }));
                 et.triggers.Add(TriggerHelper.StartDragTrigger());
                 et.triggers.Add(TriggerHelper.DragTrigger());
                 et.triggers.Add(TriggerHelper.EndDragTrigger());
-                et.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerDown, (BaseEventData eventData) =>
+                et.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.PointerDown, eventData =>
                 {
                     var pointerEventData = (PointerEventData)eventData;
 
@@ -2284,7 +2356,7 @@ namespace BetterLegacy.Editor.Managers
                 }));
             }
 
-            TriggerHelper.AddEventTriggerParams(EditorManager.inst.timelineScrollbar, TriggerHelper.CreateEntry(EventTriggerType.Scroll, (BaseEventData eventData) =>
+            TriggerHelper.AddEventTriggerParams(EditorManager.inst.timelineScrollbar, TriggerHelper.CreateEntry(EventTriggerType.Scroll, eventData =>
             {
                 var pointerEventData = (PointerEventData)eventData;
 
@@ -2426,7 +2498,7 @@ namespace BetterLegacy.Editor.Managers
                         SceneManager.inst.LoadScene("Editor");
                     };
                     LevelManager.Load(GameManager.inst.basePath + "level.lsb", false);
-                }, delegate ()
+                }, () =>
                 {
                     EditorManager.inst.HideDialog("Warning Popup");
                 });
@@ -2441,7 +2513,7 @@ namespace BetterLegacy.Editor.Managers
             EditorHelper.AddEditorDropdown("Convert VG to LS", "", "File", SearchSprite, () =>
             {
                 EditorManager.inst.ShowDialog("Browser Popup");
-                RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".lsp", ".vgp", "lst", ".vgt", ".lsb", ".vgd" }, onSelectFile: (string _val) =>
+                RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".lsp", ".vgp", "lst", ".vgt", ".lsb", ".vgd" }, onSelectFile: _val =>
                 {
                     bool failed = false;
                     if (_val.Contains(".lsp"))
@@ -2631,7 +2703,7 @@ namespace BetterLegacy.Editor.Managers
             EditorHelper.AddEditorDropdown("Add File to Level Folder", "", "File", SearchSprite, () =>
             {
                 EditorManager.inst.ShowDialog("Browser Popup");
-                RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".ogg", ".wav", ".png", ".jpg", ".mp4", ".mov" }, onSelectFile: (string _val) =>
+                RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".ogg", ".wav", ".png", ".jpg", ".mp4", ".mov" }, onSelectFile: _val =>
                 {
                     if (_val.Contains(".mp4") || _val.Contains(".mov"))
                     {
@@ -2779,8 +2851,6 @@ namespace BetterLegacy.Editor.Managers
             fileInfoPopup.transform.AsRT().sizeDelta = new Vector2(500f, 320f);
         }
 
-        Dropdown levelOrderDropdown;
-        Toggle levelAscendToggle;
         void SetupPaths()
         {
             var sortList = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View/Viewport/Content/autokill/tod-dropdown")
@@ -2809,9 +2879,9 @@ namespace BetterLegacy.Editor.Managers
             Destroy(sortList.GetComponent<HideDropdownOptions>());
             levelOrderDropdown.onValueChanged.ClearAll();
             levelOrderDropdown.options.Clear();
-            levelOrderDropdown.options = new string[] { "Cover", "Artist", "Creator", "Folder", "Title", "Difficulty", "Date Edited", "Date Created" }.Select(x => new Dropdown.OptionData(x)).ToList();
+            levelOrderDropdown.options = CoreHelper.StringToOptionData("Cover", "Artist", "Creator", "Folder", "Title", "Difficulty", "Date Edited", "Date Created");
             levelOrderDropdown.value = levelFilter;
-            levelOrderDropdown.onValueChanged.AddListener((int _val) =>
+            levelOrderDropdown.onValueChanged.AddListener(_val =>
             {
                 levelFilter = _val;
                 StartCoroutine(RefreshLevelList());
@@ -2830,7 +2900,7 @@ namespace BetterLegacy.Editor.Managers
             levelAscendToggle = checkDes.transform.Find("toggle").GetComponent<Toggle>();
             levelAscendToggle.onValueChanged.ClearAll();
             levelAscendToggle.isOn = levelAscend;
-            levelAscendToggle.onValueChanged.AddListener((bool _val) =>
+            levelAscendToggle.onValueChanged.AddListener(_val =>
             {
                 levelAscend = _val;
                 StartCoroutine(RefreshLevelList());
@@ -2863,25 +2933,19 @@ namespace BetterLegacy.Editor.Managers
             editorPathField.textComponent.alignment = TextAnchor.MiddleLeft;
             editorPathField.textComponent.fontSize = 16;
             editorPathField.text = EditorPath;
-            editorPathField.onValueChanged.AddListener((string _val) =>
-            {
-                EditorPath = _val;
-            });
-            editorPathField.onEndEdit.AddListener((string _val) =>
-            {
-                UpdateEditorPath(false);
-            });
+            editorPathField.onValueChanged.AddListener(_val => { EditorPath = _val; });
+            editorPathField.onEndEdit.AddListener(_val => { UpdateEditorPath(false); });
 
             EditorThemeManager.AddInputField(editorPathField);
 
             var levelClickable = levelPathGameObject.AddComponent<Clickable>();
-            levelClickable.onDown = (PointerEventData pointerEventData) =>
+            levelClickable.onDown = pointerEventData =>
             {
                 if (pointerEventData.button != PointerEventData.InputButton.Right)
                     return;
 
                 EditorManager.inst.ShowDialog("Browser Popup");
-                RTFileBrowser.inst.UpdateBrowser(RTFile.ApplicationDirectory + "beatmaps", onSelectFolder: (string _val) =>
+                RTFileBrowser.inst.UpdateBrowser(RTFile.ApplicationDirectory + "beatmaps", onSelectFolder: _val =>
                 {
                     if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
                     {
@@ -2909,10 +2973,7 @@ namespace BetterLegacy.Editor.Managers
 
             var levelListReloaderButton = levelListReloader.GetComponent<Button>();
             levelListReloaderButton.onClick.ClearAll();
-            levelListReloaderButton.onClick.AddListener(() =>
-            {
-                UpdateEditorPath(true);
-            });
+            levelListReloaderButton.onClick.AddListener(() => { UpdateEditorPath(true); });
 
             EditorThemeManager.AddSelectable(levelListReloaderButton, ThemeGroup.Function_2, false);
 
@@ -2929,7 +2990,7 @@ namespace BetterLegacy.Editor.Managers
             themePathGameObject.transform.AsRT().anchoredPosition = new Vector2(80f, 0f);
             themePathGameObject.transform.AsRT().sizeDelta = new Vector2(160f, 34f);
 
-            themePathGameObject.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip
+            (themePathGameObject.GetComponent<HoverTooltip>() ?? themePathGameObject.AddComponent<HoverTooltip>()).tooltipLangauges.Add(new HoverTooltip.Tooltip
             {
                 keys = new List<string> { "Right click to select a folder", },
                 desc = "Theme list path",
@@ -2943,25 +3004,19 @@ namespace BetterLegacy.Editor.Managers
             themePathField.textComponent.alignment = TextAnchor.MiddleLeft;
             themePathField.textComponent.fontSize = 16;
             themePathField.text = ThemePath;
-            themePathField.onValueChanged.AddListener((string _val) =>
-            {
-                ThemePath = _val;
-            });
-            themePathField.onEndEdit.AddListener((string _val) =>
-            {
-                UpdateThemePath(false);
-            });
+            themePathField.onValueChanged.AddListener(_val => { ThemePath = _val; });
+            themePathField.onEndEdit.AddListener(_val => { UpdateThemePath(false); });
 
             EditorThemeManager.AddInputField(themePathField);
 
             var themeClickable = themePathGameObject.AddComponent<Clickable>();
-            themeClickable.onDown = (PointerEventData pointerEventData) =>
+            themeClickable.onDown = pointerEventData =>
             {
                 if (pointerEventData.button != PointerEventData.InputButton.Right)
                     return;
 
                 EditorManager.inst.ShowDialog("Browser Popup");
-                RTFileBrowser.inst.UpdateBrowser(RTFile.ApplicationDirectory + "beatmaps", onSelectFolder: (string _val) =>
+                RTFileBrowser.inst.UpdateBrowser(RTFile.ApplicationDirectory + "beatmaps", onSelectFolder: _val =>
                 {
                     if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
                     {
@@ -2980,7 +3035,7 @@ namespace BetterLegacy.Editor.Managers
             themeListReload.transform.AsRT().anchoredPosition = new Vector2(166f, 35f);
             themeListReload.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
 
-            themeListReload.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip
+            (themeListReload.GetComponent<HoverTooltip>() ?? themeListReload.AddComponent<HoverTooltip>()).tooltipLangauges.Add(new HoverTooltip.Tooltip
             {
                 desc = "Refresh theme list",
                 hint = "Clicking this will reload the theme list."
@@ -2988,10 +3043,7 @@ namespace BetterLegacy.Editor.Managers
 
             var themeListReloadButton = themeListReload.GetComponent<Button>();
             themeListReloadButton.onClick.ClearAll();
-            themeListReloadButton.onClick.AddListener(() =>
-            {
-                UpdateThemePath(true);
-            });
+            themeListReloadButton.onClick.AddListener(() => { UpdateThemePath(true); });
 
             EditorThemeManager.AddSelectable(themeListReloadButton, ThemeGroup.Function_2, false);
 
@@ -3006,7 +3058,7 @@ namespace BetterLegacy.Editor.Managers
 
             themePageStorage.inputField.onValueChanged.ClearAll();
             themePageStorage.inputField.text = "0";
-            themePageStorage.inputField.onValueChanged.AddListener((string _val) =>
+            themePageStorage.inputField.onValueChanged.AddListener(_val =>
             {
                 if (int.TryParse(_val, out int p))
                 {
@@ -3018,10 +3070,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             themePageStorage.leftGreaterButton.onClick.ClearAll();
-            themePageStorage.leftGreaterButton.onClick.AddListener(() =>
-            {
-                themePageStorage.inputField.text = "0";
-            });
+            themePageStorage.leftGreaterButton.onClick.AddListener(() => { themePageStorage.inputField.text = "0"; });
 
             themePageStorage.leftButton.onClick.ClearAll();
             themePageStorage.leftButton.onClick.AddListener(() =>
@@ -3074,25 +3123,19 @@ namespace BetterLegacy.Editor.Managers
             prefabPathField.textComponent.alignment = TextAnchor.MiddleLeft;
             prefabPathField.textComponent.fontSize = 16;
             prefabPathField.text = PrefabPath;
-            prefabPathField.onValueChanged.AddListener((string _val) =>
-            {
-                PrefabPath = _val;
-            });
-            prefabPathField.onEndEdit.AddListener((string _val) =>
-            {
-                UpdatePrefabPath(false);
-            });
+            prefabPathField.onValueChanged.AddListener(_val => { PrefabPath = _val; });
+            prefabPathField.onEndEdit.AddListener(_val => { UpdatePrefabPath(false); });
 
             EditorThemeManager.AddInputField(prefabPathField);
 
             var prefabPathClickable = prefabPathGameObject.AddComponent<Clickable>();
-            prefabPathClickable.onDown = (PointerEventData pointerEventData) =>
+            prefabPathClickable.onDown = pointerEventData =>
             {
                 if (pointerEventData.button != PointerEventData.InputButton.Right)
                     return;
 
                 EditorManager.inst.ShowDialog("Browser Popup");
-                RTFileBrowser.inst.UpdateBrowser(RTFile.ApplicationDirectory + "beatmaps", onSelectFolder: (string _val) =>
+                RTFileBrowser.inst.UpdateBrowser(RTFile.ApplicationDirectory + "beatmaps", onSelectFolder: _val =>
                 {
                     if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
                     {
@@ -3109,10 +3152,10 @@ namespace BetterLegacy.Editor.Managers
 
             var prefabListReload = GameObject.Find("TimelineBar/GameObject/play")
                 .Duplicate(EditorManager.inst.GetDialog("Prefab Popup").Dialog.Find("external prefabs"), "reload prefabs");
-            ((RectTransform)prefabListReload.transform).anchoredPosition = config.PrefabExternalPrefabRefreshPos.Value;
-            ((RectTransform)prefabListReload.transform).sizeDelta = new Vector2(32f, 32f);
+            prefabListReload.transform.AsRT().anchoredPosition = config.PrefabExternalPrefabRefreshPos.Value;
+            prefabListReload.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
 
-            prefabListReload.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip
+            (prefabListReload.GetComponent<HoverTooltip>() ?? prefabListReload.AddComponent<HoverTooltip>()).tooltipLangauges.Add(new HoverTooltip.Tooltip
             {
                 desc = "Refresh prefab list",
                 hint = "Clicking this will reload the prefab list."
@@ -3120,10 +3163,7 @@ namespace BetterLegacy.Editor.Managers
 
             var prefabListReloadButton = prefabListReload.GetComponent<Button>();
             prefabListReloadButton.onClick.ClearAll();
-            prefabListReloadButton.onClick.AddListener(() =>
-            {
-                UpdatePrefabPath(true);
-            });
+            prefabListReloadButton.onClick.AddListener(() => { UpdatePrefabPath(true); } );
 
             EditorThemeManager.AddSelectable(prefabListReloadButton, ThemeGroup.Function_2, false);
 
@@ -3181,7 +3221,7 @@ namespace BetterLegacy.Editor.Managers
 
         void SetupTimelinePreview()
         {
-            GameManager.inst.playerGUI.transform.Find("Interface").gameObject.SetActive(false);
+            GameManager.inst.playerGUI.transform.Find("Interface").gameObject.SetActive(false); // Set the Interface inactive so the duplicate doesn't get in the way of the editor.
             var gui = GameManager.inst.playerGUI.Duplicate(EditorManager.inst.dialogs.parent);
             GameManager.inst.playerGUI.transform.Find("Interface").gameObject.SetActive(true);
             gui.transform.SetSiblingIndex(0);
@@ -3231,7 +3271,6 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public GridRenderer timelineGridRenderer;
         void SetupTimelineGrid()
         {
             var grid = new GameObject("grid");
@@ -3266,11 +3305,6 @@ namespace BetterLegacy.Editor.Managers
             gridCanvasGroup.interactable = false;
         }
 
-        public Image timelinePreviewPlayer;
-        public Image timelinePreviewLine;
-        public Image timelinePreviewLeftCap;
-        public Image timelinePreviewRightCap;
-        public List<Image> checkpointImages = new List<Image>();
         public void UpdateTimeline()
         {
             if (!timelinePreview || !AudioManager.inst.CurrentAudioSource.clip || DataManager.inst.gameData.beatmapData == null)
@@ -3297,16 +3331,16 @@ namespace BetterLegacy.Editor.Managers
             var newFilePopup = newFilePopupBase.Find("New File Popup");
 
             var newFilePopupDetection = newFilePopup.gameObject.AddComponent<Clickable>();
-            newFilePopupDetection.onEnable = delegate (bool _val)
+            newFilePopupDetection.onEnable = _val =>
             {
-                if (!_val)
-                {
-                    if (choosingLevelTemplate)
-                        EditorManager.inst.HideDialog("Open File Popup");
+                if (_val)
+                    return;
 
-                    choosingLevelTemplate = false;
-                    EditorManager.inst.HideDialog("New Level Template Dialog");
-                }
+                if (choosingLevelTemplate)
+                    EditorManager.inst.HideDialog("Open File Popup");
+
+                choosingLevelTemplate = false;
+                EditorManager.inst.HideDialog("New Level Template Dialog");
             };
 
             EditorThemeManager.AddGraphic(newFilePopup.GetComponent<Image>(), ThemeGroup.Background_1, true);
@@ -3346,13 +3380,11 @@ namespace BetterLegacy.Editor.Managers
             browseLocalText.text = "Local Browser";
             var browseLocalButton = browseLocal.GetComponent<Button>();
             browseLocalButton.onClick.ClearAll();
-            browseLocalButton.onClick.AddListener(delegate ()
+            browseLocalButton.onClick.AddListener(() =>
             {
                 string text = FileBrowser.OpenSingleFile("Select a song to use!", RTFile.ApplicationDirectory, "ogg", "wav", "mp3");
                 if (!string.IsNullOrEmpty(text))
-                {
                     path.text = text;
-                }
             });
 
             var browseInternal = browseLocal.gameObject.Duplicate(browseBase.transform, "internal browse");
@@ -3360,15 +3392,15 @@ namespace BetterLegacy.Editor.Managers
             browseInternalText.text = "In-game Browser";
             var browseInternalButton = browseInternal.GetComponent<Button>();
             browseInternalButton.onClick.ClearAll();
-            browseInternalButton.onClick.AddListener(delegate ()
+            browseInternalButton.onClick.AddListener(() =>
             {
                 EditorManager.inst.ShowDialog("Browser Popup");
-                RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".ogg", ".wav", ".mp3" }, onSelectFile: delegate (string _val)
+                RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".ogg", ".wav", ".mp3" }, onSelectFile: _val =>
                 {
                     if (!string.IsNullOrEmpty(_val))
                     {
-                        EditorManager.inst.HideDialog("Browser Popup");
                         path.text = _val;
+                        EditorManager.inst.HideDialog("Browser Popup");
                     }
                 });
             });
@@ -3378,10 +3410,10 @@ namespace BetterLegacy.Editor.Managers
             chooseTemplateText.text = "Choose Template";
             var chooseTemplateButton = chooseTemplate.GetComponent<Button>();
             chooseTemplateButton.onClick.ClearAll();
-            chooseTemplateButton.onClick.AddListener(delegate ()
+            chooseTemplateButton.onClick.AddListener(() =>
             {
-                EditorManager.inst.ShowDialog("New Level Template Dialog");
                 RefreshNewLevelTemplates();
+                EditorManager.inst.ShowDialog("New Level Template Dialog");
             });
             chooseTemplate.transform.AsRT().sizeDelta = new Vector2(384f, 32f);
 
@@ -3416,11 +3448,6 @@ namespace BetterLegacy.Editor.Managers
             CreateNewLevelTemplateDialog();
         }
 
-        public Transform newLevelTemplateContent;
-        public GameObject newLevelTemplatePrefab;
-        public Sprite newLevelTemplateBaseSprite;
-        public InputField nameInput;
-        public Sprite currentTemplateSprite;
         void CreateNewLevelTemplateDialog()
         {
             var editorDialogObject = Instantiate(EditorManager.inst.GetDialog("Multi Keyframe Editor (Object)").Dialog.gameObject);
@@ -3503,7 +3530,7 @@ namespace BetterLegacy.Editor.Managers
             noLevelText.text = "No Preview";
             noLevel.SetActive(false);
 
-            StartCoroutine(AlephNetworkManager.DownloadImageTexture(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "default_template.png", (Texture2D texture2D) =>
+            StartCoroutine(AlephNetworkManager.DownloadImageTexture($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}default_template.png", texture2D =>
             {
                 newLevelTemplateBaseSprite = SpriteManager.CreateSprite(texture2D);
             }));
@@ -3583,22 +3610,22 @@ namespace BetterLegacy.Editor.Managers
                 }, () =>
                 {
                     EditorManager.inst.ShowDialog("Browser Popup");
-                    RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".png" }, onSelectFile: delegate (string _val)
+                    RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".png" }, onSelectFile: _val =>
                     {
-                        if (!string.IsNullOrEmpty(_val))
+                        if (string.IsNullOrEmpty(_val))
+                            return;
+
+                        EditorManager.inst.HideDialog("Browser Popup");
+                        var sprite = SpriteManager.LoadSprite(_val);
+
+                        if (sprite.texture.width != 480 || sprite.texture.height != 270)
                         {
-                            EditorManager.inst.HideDialog("Browser Popup");
-                            var sprite = SpriteManager.LoadSprite(_val);
-
-                            if (sprite.texture.width != 480 || sprite.texture.height != 270)
-                            {
-                                EditorManager.inst.DisplayNotification("Preview image resolution must be 480p x 270p", 3f, EditorManager.NotificationType.Warning);
-                                return;
-                            }
-
-                            currentTemplateSprite = sprite;
-                            previewImage.sprite = currentTemplateSprite;
+                            EditorManager.inst.DisplayNotification("Preview image resolution must be 480p x 270p", 3f, EditorManager.NotificationType.Warning);
+                            return;
                         }
+
+                        currentTemplateSprite = sprite;
+                        previewImage.sprite = currentTemplateSprite;
                     });
                     EditorManager.inst.HideDialog("Warning Popup");
                 }, "System Browser", "Editor Browser");
@@ -3607,13 +3634,9 @@ namespace BetterLegacy.Editor.Managers
 
         void CreatePreviewCover()
         {
-            var gameObject = new GameObject("Preview Cover");
-            gameObject.transform.SetParent(EditorManager.inst.dialogs.parent);
-            gameObject.transform.localScale = Vector3.one;
+            var gameObject = Creator.NewUIObject("Preview Cover", EditorManager.inst.dialogs.parent, 1);
 
-            gameObject.transform.SetSiblingIndex(1);
-
-            var rectTransform = gameObject.AddComponent<RectTransform>();
+            var rectTransform = gameObject.transform.AsRT();
             var image = gameObject.AddComponent<Image>();
 
             rectTransform.anchoredPosition = Vector2.zero;
@@ -3627,13 +3650,13 @@ namespace BetterLegacy.Editor.Managers
 
         void CreateObjectSearch()
         {
-            var objectSearchPopup = GeneratePopup("Object Search Popup", "Object Search", Vector2.zero, new Vector2(600f, 450f), delegate (string _val)
+            var objectSearchPopup = GeneratePopup("Object Search Popup", "Object Search", Vector2.zero, new Vector2(600f, 450f), _val =>
             {
                 objectSearchTerm = _val;
                 RefreshObjectSearch(x => ObjectEditor.inst.SetCurrentObject(ObjectEditor.inst.GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)));
             }, placeholderText: "Search for object...");
 
-            EditorHelper.AddEditorDropdown("Search Objects", "", "Edit", SearchSprite, delegate ()
+            EditorHelper.AddEditorDropdown("Search Objects", "", "Edit", SearchSprite, () =>
             {
                 EditorManager.inst.ShowDialog("Object Search Popup");
                 RefreshObjectSearch(x => ObjectEditor.inst.SetCurrentObject(ObjectEditor.inst.GetTimelineObject(x), Input.GetKey(KeyCode.LeftControl)));
@@ -3648,21 +3671,12 @@ namespace BetterLegacy.Editor.Managers
 
             var main = warningPopup.transform.GetChild(0);
 
-            var spacer1 = new GameObject
-            {
-                name = "spacerL",
-                transform =
-                {
-                    parent = main,
-                    localScale = Vector3.one
-                }
-            };
-            var spacer1RT = spacer1.AddComponent<RectTransform>();
+            var spacer1 = Creator.NewUIObject("spacerL", main);
             spacer1.AddComponent<LayoutElement>();
             var horiz = spacer1.AddComponent<HorizontalLayoutGroup>();
             horiz.spacing = 22f;
 
-            spacer1RT.sizeDelta = new Vector2(292f, 40f);
+            spacer1.transform.AsRT().sizeDelta = new Vector2(292f, 40f);
 
             var submit1 = main.Find("submit");
             submit1.SetParent(spacer1.transform);
@@ -3685,10 +3699,8 @@ namespace BetterLegacy.Editor.Managers
             var submit2Button = submit2.GetComponent<Button>();
 
             submit1Button.onClick.ClearAll();
-            submit1Button.onClick.RemoveAllListeners();
 
             submit2Button.onClick.ClearAll();
-            submit2Button.onClick.RemoveAllListeners();
 
             Destroy(main.Find("level-name").gameObject);
 
@@ -3705,10 +3717,7 @@ namespace BetterLegacy.Editor.Managers
             var close = panel.Find("x").GetComponent<Button>();
             close.onClick.ClearAll();
             close.onClick.RemoveAllListeners();
-            close.onClick.AddListener(delegate ()
-            {
-                EditorManager.inst.HideDialog("Warning Popup");
-            });
+            close.onClick.AddListener(() => { EditorManager.inst.HideDialog("Warning Popup"); });
 
             var title = panel.Find("Text").GetComponent<Text>();
             title.text = "Warning!";
@@ -6264,7 +6273,7 @@ namespace BetterLegacy.Editor.Managers
         public void GenerateLabels(Transform parent, params string[] labels)
         {
             var labelBase = Creator.NewUIObject("label", parent);
-            var labelHLG = labelBase.AddComponent<HorizontalLayoutGroup>();
+            labelBase.AddComponent<HorizontalLayoutGroup>();
             var labelPrefab = EditorManager.inst.folderButtonPrefab.transform.GetChild(0).gameObject;
 
             for (int i = 0; i < labels.Length; i++)
@@ -6296,10 +6305,7 @@ namespace BetterLegacy.Editor.Managers
                 var button = EditorPrefabHolder.Instance.Function1Button.Duplicate(p.transform, b.Name);
                 var buttonStorage = button.GetComponent<FunctionButtonStorage>();
                 buttonStorage.button.onClick.ClearAll();
-                buttonStorage.button.onClick.AddListener(delegate ()
-                {
-                    b.Action?.Invoke();
-                });
+                buttonStorage.button.onClick.AddListener(() => { b.Action?.Invoke(); });
                 buttonStorage.text.fontSize = b.FontSize;
                 buttonStorage.text.text = b.Name;
 
@@ -6315,9 +6321,9 @@ namespace BetterLegacy.Editor.Managers
             var inputFieldStorage = gameObject.GetComponent<InputFieldStorage>();
 
             inputFieldStorage.inputField.image.rectTransform.sizeDelta = new Vector2(length, 32f);
-            ((Text)inputFieldStorage.inputField.placeholder).text = placeholder;
+            inputFieldStorage.inputField.PlaceholderText().text = placeholder;
 
-            ((RectTransform)gameObject.transform).sizeDelta = new Vector2(428f, 32f);
+            gameObject.transform.AsRT().sizeDelta = new Vector2(428f, 32f);
 
             inputFieldStorage.inputField.text = value;
 
@@ -6342,36 +6348,6 @@ namespace BetterLegacy.Editor.Managers
 
             return inputFieldStorage.inputField;
         }
-
-        List<MultiColorButton> multiColorButtons = new List<MultiColorButton>();
-        class MultiColorButton
-        {
-            public Button Button { get; set; }
-            public Image Image { get; set; }
-            public GameObject Selected { get; set; }
-        }
-
-        public class ButtonFunction
-        {
-            public ButtonFunction(string name, Action action)
-            {
-                Name = name;
-                Action = action;
-            }
-            
-            public ButtonFunction(string name, int fontSize, Action action)
-            {
-                Name = name;
-                FontSize = fontSize;
-                Action = action;
-            }
-
-            public string Name { get; set; }
-            public int FontSize { get; set; } = 16;
-            public Action Action { get; set; }
-        }
-
-        int currentMultiColorSelection = 0;
 
         void UpdateMultiColorButtons()
         {
@@ -6401,7 +6377,7 @@ namespace BetterLegacy.Editor.Managers
 
             var searchField = editorProperties.transform.Find("search-box").GetChild(0).GetComponent<InputField>();
             searchField.onValueChanged.RemoveAllListeners();
-            searchField.onValueChanged.AddListener(delegate (string _val)
+            searchField.onValueChanged.AddListener(_val =>
             {
                 propertiesSearch = _val;
                 RenderPropertiesWindow();
@@ -6431,11 +6407,12 @@ namespace BetterLegacy.Editor.Managers
 
             // Categories
             {
-                Action<string, EditorProperty.EditorPropCategory> categoryTabGenerator = delegate (string name, EditorProperty.EditorPropCategory editorPropCategory)
+                Action<string, EditorProperty.EditorPropCategory> categoryTabGenerator = (string name, EditorProperty.EditorPropCategory editorPropCategory) =>
                 {
                     var gameObject = prefabTMP.Duplicate(editorProperties.transform.Find("crumbs"), name);
-                    gameObject.layer = 5;
-                    var rectTransform = (RectTransform)gameObject.transform;
+                    gameObject.transform.AsRT().sizeDelta = new Vector2(100f, 32f);
+                    gameObject.transform.AsRT().anchorMin = new Vector2(-0.1f, -0.1f);
+
                     var button = gameObject.GetComponent<Button>();
 
                     var hoverUI = gameObject.AddComponent<HoverUI>();
@@ -6445,16 +6422,13 @@ namespace BetterLegacy.Editor.Managers
                     hoverUI.animatePos = true;
                     hoverUI.animateSca = false;
 
-                    rectTransform.sizeDelta = new Vector2(100f, 32f);
-                    rectTransform.anchorMin = new Vector2(-0.1f, -0.1f);
-
                     var hoverTooltip = gameObject.GetComponent<HoverTooltip>();
 
                     hoverTooltip.tooltipLangauges.Clear();
                     hoverTooltip.tooltipLangauges.Add(TooltipHelper.NewTooltip("Click on this to switch category.", ""));
 
                     button.onClick.ClearAll();
-                    button.onClick.AddListener(delegate ()
+                    button.onClick.AddListener(() =>
                     {
                         currentCategory = editorPropCategory;
                         RenderPropertiesWindow();
@@ -6462,7 +6436,6 @@ namespace BetterLegacy.Editor.Managers
 
                     var textGameObject = gameObject.transform.GetChild(0).gameObject;
                     textGameObject.transform.SetParent(gameObject.transform);
-                    textGameObject.layer = 5;
                     var textText = textGameObject.GetComponent<Text>();
 
                     textGameObject.transform.AsRT().anchoredPosition = Vector2.zero;
@@ -6473,9 +6446,7 @@ namespace BetterLegacy.Editor.Managers
 
                     gameObject.AddComponent<ContrastColors>().Init(textText, gameObject.GetComponent<Image>());
 
-                    int category = (int)editorPropCategory + 1;
-
-                    EditorThemeManager.AddSelectable(button, EditorThemeManager.EditorTheme.GetGroup($"Tab Color {category}"));
+                    EditorThemeManager.AddSelectable(button, EditorThemeManager.EditorTheme.GetGroup($"Tab Color {(int)editorPropCategory + 1}"));
                 };
 
                 categoryTabGenerator("General", EditorProperty.EditorPropCategory.General);
@@ -6487,17 +6458,14 @@ namespace BetterLegacy.Editor.Managers
                 categoryTabGenerator("Preview", EditorProperty.EditorPropCategory.Preview);
             }
 
-            EditorHelper.AddEditorDropdown("Preferences", "", "Edit", SpriteManager.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_preferences-white.png"), delegate ()
+            EditorHelper.AddEditorDropdown("Preferences", "", "Edit", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_preferences-white.png"), () =>
             {
                 OpenPropertiesWindow();
             });
 
             var x = editorPropertiesPanel.Find("x").GetComponent<Button>();
             x.onClick.RemoveAllListeners();
-            x.onClick.AddListener(delegate ()
-            {
-                ClosePropertiesWindow();
-            });
+            x.onClick.AddListener(() => { ClosePropertiesWindow(); });
 
             EditorHelper.AddEditorPopup("Editor Properties Popup", editorProperties);
 
@@ -6509,11 +6477,6 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddScrollbar(editorProperties.transform.Find("Scrollbar").GetComponent<Scrollbar>(), scrollbarRoundedSide: SpriteManager.RoundedSide.Bottom_Right_I);
             EditorThemeManager.AddInputField(editorProperties.transform.Find("search-box/search").GetComponent<InputField>(), ThemeGroup.Search_Field_1, roundedSide: SpriteManager.RoundedSide.Bottom);
         }
-
-        public Text documentationTitle;
-        public string documentationSearch;
-        public Transform documentationContent;
-        public Popup documentationPopup;
 
         Document GenerateDocument(string name, string description, List<Document.Element> elements)
         {
@@ -6542,13 +6505,13 @@ namespace BetterLegacy.Editor.Managers
 
         void CreateDocumentation() // NEED TO UPDATE!
         {
-            documentationPopup = GeneratePopup("Documentation Popup", "Documentation", Vector2.zero, new Vector2(600f, 450f), delegate (string _val)
+            documentationPopup = GeneratePopup("Documentation Popup", "Documentation", Vector2.zero, new Vector2(600f, 450f), _val =>
             {
                 documentationSearch = _val;
                 RefreshDocumentation();
             }, placeholderText: "Search for document...");
 
-            EditorHelper.AddEditorDropdown("Wiki / Documentation", "", "Help", SpriteManager.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_question.png"), delegate ()
+            EditorHelper.AddEditorDropdown("Wiki / Documentation", "", "Help", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_question.png"), () =>
             {
                 EditorManager.inst.ShowDialog("Documentation Popup");
                 RefreshDocumentation();
@@ -6617,7 +6580,7 @@ namespace BetterLegacy.Editor.Managers
                 new Document.Element("Keijiro Takahashi's KinoGlitch (AnalogGlitch and DigitalGlitch events)", Document.Element.Type.Text),
                 new Document.Element("<b>Source code</b>:\nhttps://github.com/keijiro/KinoGlitch", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         Application.OpenURL("https://github.com/keijiro/KinoGlitch");
                     }
@@ -6627,7 +6590,7 @@ namespace BetterLegacy.Editor.Managers
                 new Document.Element("WestHillApps' UniBpmAnalyzer", Document.Element.Type.Text),
                 new Document.Element("<b>Source code</b>:\nhttps://github.com/WestHillApps/UniBpmAnalyzer", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         Application.OpenURL("https://github.com/WestHillApps/UniBpmAnalyzer");
                     }
@@ -6637,14 +6600,14 @@ namespace BetterLegacy.Editor.Managers
                 new Document.Element("Nick Vogt's ColliderCreator (used for creating proper collision for the custom shapes)", Document.Element.Type.Text),
                 new Document.Element("<b>Website</b>:\nhttps://www.h3xed.com/", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         Application.OpenURL("https://www.h3xed.com/");
                     }
                 },
                 new Document.Element("<b>Source code</b>:\nhttps://www.h3xed.com/programming/automatically-create-polygon-collider-2d-from-2d-mesh-in-unity", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         Application.OpenURL("https://www.h3xed.com/programming/automatically-create-polygon-collider-2d-from-2d-mesh-in-unity");
                     }
@@ -6654,7 +6617,7 @@ namespace BetterLegacy.Editor.Managers
                 new Document.Element("Crafty Font for the Pixellet font.", Document.Element.Type.Text),
                 new Document.Element("<b>Website</b>:\nhttps://craftyfont.gumroad.com/", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         Application.OpenURL("https://craftyfont.gumroad.com/");
                     }
@@ -6664,7 +6627,7 @@ namespace BetterLegacy.Editor.Managers
                 new Document.Element("HAWTPIXEL for the File Deletion font.", Document.Element.Type.Text),
                 new Document.Element("<b>Website</b>:\nhttps://www.hawtpixel.com/", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         Application.OpenURL("https://www.hawtpixel.com/");
                     }
@@ -6674,7 +6637,7 @@ namespace BetterLegacy.Editor.Managers
                 new Document.Element("Sans Sans font.", Document.Element.Type.Text),
                 new Document.Element("<b>Website</b>:\nhttps://font.download/font/sans", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         Application.OpenURL("https://font.download/font/sans");
                     }
@@ -6684,7 +6647,7 @@ namespace BetterLegacy.Editor.Managers
                 new Document.Element("Fontworks for the RocknRoll font.", Document.Element.Type.Text),
                 new Document.Element("<b>Website</b>:\nhttps://github.com/fontworks-fonts/RocknRoll", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         Application.OpenURL("https://github.com/fontworks-fonts/RocknRoll");
                     }
@@ -6694,7 +6657,7 @@ namespace BetterLegacy.Editor.Managers
                 new Document.Element("ManiackersDesign for the Monomaniac One font.", Document.Element.Type.Text),
                 new Document.Element("<b>Website</b>:\nhttps://github.com/ManiackersDesign/monomaniac", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         Application.OpenURL("https://github.com/ManiackersDesign/monomaniac");
                     }
@@ -6904,230 +6867,230 @@ namespace BetterLegacy.Editor.Managers
                 new Document.Element("<b>[VANILLA]</b> < i> - For making text <i>italic</i>. Use </ i> to clear.", Document.Element.Type.Text),
                 new Document.Element("<b>- FONTS -</b>", Document.Element.Type.Text),
                 new Document.Element(RTFile.BepInExAssetsPath + "Documentation/doc_fonts.png", Document.Element.Type.Image)
-                { Function = delegate () {
+                { Function = () => {
                     RTFile.OpenInFileBrowser.OpenFile(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "Documentation/doc_fonts.png");
                 }},
                 new Document.Element("To use a font, do <font=Font Name>. To clear, do </font>. Click on one of the fonts below to copy the <font=Font Name> to your clipboard. " +
                     "Click on the image above to open the folder to the documentation assets folder where a higher resolution screenshot is located.", Document.Element.Type.Text),
                 new Document.Element("<b>[MODDED]</b> Adam Warren Pro Bold - A comic style font.", Document.Element.Type.Text)
-                { Function = delegate () {
+                { Function = () => {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard("<font=Adam Warren Pro Bold>");
                 }},
                 new Document.Element("<b>[MODDED]</b> Adam Warren Pro BoldItalic - A comic style font.", Document.Element.Type.Text)
-                { Function = delegate () {
+                { Function = () => {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard("<font=Adam Warren Pro BoldItalic>");
                 }},
                 new Document.Element("<b>[MODDED]</b> Adam Warren Pro - A comic style font.", Document.Element.Type.Text)
-                { Function = delegate () {
+                { Function = () => {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard("<font=Adam Warren Pro>");
                 }},
                 new Document.Element("<b>[MODDED]</b> Arrhythmia - The font from the earliest builds of Project Arrhythmia.", Document.Element.Type.Text)
-                { Function = delegate () {
+                { Function = () => {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard("<font=Arrhythmia>");
                 }},
                 new Document.Element("<b>[MODDED]</b> BadaBoom BB - A comic style font.", Document.Element.Type.Text)
-                { Function = delegate () {
+                { Function = () => {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard("<font=BadaBoom BB>");
                 }},
                 new Document.Element("<b>[MODDED]</b> Matoran Language 1 - The language used by the Matoran in the BIONICLE series.", Document.Element.Type.Text)
-                { Function = delegate () {
+                { Function = () => {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard("<font=Matoran Language 1>");
                 }},
                 new Document.Element("<b>[MODDED]</b> Matoran Language 2 - The language used by the Matoran in the BIONICLE series.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard("<font=Matoran Language 2>");
                 }},
                 new Document.Element("<b>[MODDED]</b> Determination Mono - The font UNDERTALE/deltarune uses for its interfaces.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard("<font=Determination Mono>");
                 }},
                 new Document.Element("<b>[MODDED]</b> determination sans - sans undertale.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard("<font=determination sans>");
                 }},
                 new Document.Element($"<b>[MODDED]</b> Determination Wingdings - Beware the man who speaks in hands.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard($"<font=Determination Wingdings>");
                 }},
                 new Document.Element("<b>[MODDED]</b> Flow Circular - A fun line font suggested by ManIsLiS.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard("<font=Flow Circular>");
                 }},
                 new Document.Element("<b>[MODDED]</b> Fredoka One - The font from the Vitamin Games website.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard("<font=Fredoka One>");
                 }},
                 new Document.Element("<b>[MODDED]</b> Ancient Autobot - The launguage used by ancient Autobots in the original Transformers cartoon.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard("<font=Ancient Autobot>");
                 }},
                 new Document.Element("<b>[MODDED]</b> Hachicro - The font used by UNDERTALE's hit text.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard("<font=Hachicro>");
                 }},
                 new Document.Element($"<b>[MODDED]</b> Inconsolata Variable - The default PA font.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard($"<font=Inconsolata Variable>");
                 }},
                 new Document.Element($"<b>[VANILLA]</b> LiberationSans SDF - An extra font unmodded Legacy has.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard($"<font=LiberationSans SDF>");
                 }},
                 new Document.Element($"<b>[MODDED]</b> Komika Hand - A comic style font.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard($"<font=font>");
                 }},
                 new Document.Element($"<b>[MODDED]</b> Komika Hand Bold - A comic style font.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard($"<font=Komika Hand Bold>");
                 }},
                 new Document.Element($"<b>[MODDED]</b> Komika Slick - A comic style font.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard($"<font=Komika Slick>");
                 }},
                 new Document.Element($"<b>[MODDED]</b> Komika Slim - A comic style font.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard($"<font=Komika Slim>");
                 }},
                 new Document.Element($"<b>[MODDED]</b> Komika Hand BoldItalic - A comic style font.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard($"<font=Komika Hand BoldItalic>");
                 }},
                 new Document.Element($"<b>[MODDED]</b> Komika Hand Italic - A comic style font.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard($"<font=Komika Hand Italic>");
                 }},
                 new Document.Element($"<b>[MODDED]</b> Komika Jam - A comic style font.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard($"<font=Komika Jam>");
                 }},
                 new Document.Element($"<b>[MODDED]</b> Komika Jam Italic - A comic style font.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard($"<font=Komika Jam Italic>");
                 }},
                 new Document.Element($"<b>[MODDED]</b> Komika Slick Italic - A comic style font.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard($"<font=Komika Slick Italic>");
                 }},
                 new Document.Element($"<b>[MODDED]</b> Komika Slim Italic - A comic style font.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard($"<font=Komika Slim Italic>");
                 }},
                 new Document.Element($"<b>[MODDED]</b> Minecraft Text Bold - The font used for the text UI in Minecraft.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard($"<font=Minecraft Text Bold>");
                 }},
                 new Document.Element($"<b>[MODDED]</b> font - The font used for the text UI in Minecraft.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied Minecraft Text BoldItalic!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard($"<font=Minecraft Text BoldItalic>");
                 }},
                 new Document.Element($"<b>[MODDED]</b> Minecraft Text Italic - The font used for the text UI in Minecraft.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard($"<font=Minecraft Text Italic>");
                 }},
                 new Document.Element($"<b>[MODDED]</b> Minecraft Text - The font used for the text UI in Minecraft.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard($"<font=Minecraft Text>");
                 }},
                 new Document.Element($"<b>[MODDED]</b> Minecraftory - Geometry Dash font mainly used in Geometry Dash SubZero.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard($"<font=Minecraftory>");
                 }},
                 new Document.Element($"<b>[MODDED]</b> Monster Friend Back - A font based on UNDERTALE's title.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard($"<font=Monster Friend Back>");
                 }},
                 new Document.Element($"<b>[MODDED]</b> Monster Friend Fore - A font based on UNDERTALE's title.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard($"<font=Monster Friend Fore>");
                 }},
                 new Document.Element($"<b>[MODDED]</b> About Friend - A font suggested by Ama.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard($"<font=About Friend>");
                 }},
                 new Document.Element("<b>[MODDED]</b> Oxygene - The font from the title of Geometry Dash.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard("<font=Oxygene>");
                 }},
                 new Document.Element($"<b>[MODDED]</b> Piraka Theory - The language used by the Piraka in the BIONICLE series.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard($"<font=Piraka Theory>");
                 }},
                 new Document.Element($"<b>[MODDED]</b> Piraka - The language used by the Piraka in the BIONICLE series.", Document.Element.Type.Text)
-                { Function = delegate ()
+                { Function = () =>
                 {
                     EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                     LSText.CopyToClipboard($"<font=Piraka>");
                 }},
                 new Document.Element("<b>[MODDED]</b> Pusab - The font from the hit game Geometry Dash. And yes, it is the right one.", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                         LSText.CopyToClipboard("<font=Pusab>");
@@ -7135,7 +7098,7 @@ namespace BetterLegacy.Editor.Managers
                 },
                 new Document.Element($"<b>[MODDED]</b> Rahkshi - The font used for promoting the Rahkshi sets in the BIONICLE series.", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                         LSText.CopyToClipboard($"<font=Rahkshi>");
@@ -7143,7 +7106,7 @@ namespace BetterLegacy.Editor.Managers
                 },
                 new Document.Element($"<b>[MODDED]</b> Revue - The font used early 2000s Transformers titles.", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                         LSText.CopyToClipboard($"<font=Revue>");
@@ -7152,7 +7115,7 @@ namespace BetterLegacy.Editor.Managers
                 new Document.Element($"<b>[MODDED]</b> Transdings - A font that contains a ton of Transformer insignias / logos. Below is an image featuring each letter " +
                     $"of the alphabet.", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                         LSText.CopyToClipboard($"<font=Transdings>");
@@ -7161,7 +7124,7 @@ namespace BetterLegacy.Editor.Managers
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_tf.png", Document.Element.Type.Image),
                 new Document.Element($"<b>[MODDED]</b> Transformers Movie - A font based on the Transformers movies title font.", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                         LSText.CopyToClipboard($"<font=Transformers Movie>");
@@ -7169,7 +7132,7 @@ namespace BetterLegacy.Editor.Managers
                 },
                 new Document.Element($"<b>[MODDED]</b> Nexa Book - A font suggested by CubeCube.", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                         LSText.CopyToClipboard($"<font=Nexa Book>");
@@ -7177,7 +7140,7 @@ namespace BetterLegacy.Editor.Managers
                 },
                 new Document.Element($"<b>[MODDED]</b> Nexa Bold - A font suggested by CubeCube.", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                         LSText.CopyToClipboard($"<font=Nexa Bold>");
@@ -7185,7 +7148,7 @@ namespace BetterLegacy.Editor.Managers
                 },
                 new Document.Element($"<b>[MODDED]</b> Angsana - A font suggested by KarasuTori. Supports non-English languages like Thai.", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                         LSText.CopyToClipboard($"<font=Angsana>");
@@ -7193,7 +7156,7 @@ namespace BetterLegacy.Editor.Managers
                 },
                 new Document.Element($"<b>[MODDED]</b> Angsana Bold - A font suggested by KarasuTori. Supports non-English languages like Thai.", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                         LSText.CopyToClipboard($"<font=Angsana Bold>");
@@ -7201,7 +7164,7 @@ namespace BetterLegacy.Editor.Managers
                 },
                 new Document.Element($"<b>[MODDED]</b> Angsana Italic - A font suggested by KarasuTori. Supports non-English languages like Thai.", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                         LSText.CopyToClipboard($"<font=Angsana Italic>");
@@ -7209,7 +7172,7 @@ namespace BetterLegacy.Editor.Managers
                 },
                 new Document.Element($"<b>[MODDED]</b> Angsana Bold Italic - A font suggested by KarasuTori. Supports non-English languages like Thai.", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                         LSText.CopyToClipboard($"<font=Angsana Bold Italic>");
@@ -7217,7 +7180,7 @@ namespace BetterLegacy.Editor.Managers
                 },
                 new Document.Element($"<b>[MODDED]</b> VAG Rounded - A font suggested by KarasuTori. Supports non-English languages like Russian.", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                         LSText.CopyToClipboard($"<font=VAG Rounded>");
@@ -7225,7 +7188,7 @@ namespace BetterLegacy.Editor.Managers
                 },
                 new Document.Element($"<b>[MODDED]</b> Comic Sans - You know the font.", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                         LSText.CopyToClipboard($"<font=Comic Sans>");
@@ -7233,7 +7196,7 @@ namespace BetterLegacy.Editor.Managers
                 },
                 new Document.Element($"<b>[MODDED]</b> Comic Sans Bold - You know the font.", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                         LSText.CopyToClipboard($"<font=Comic Sans Bold>");
@@ -7241,7 +7204,7 @@ namespace BetterLegacy.Editor.Managers
                 },
                 new Document.Element($"<b>[MODDED]</b> Comic Sans Hairline - You know the font.", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                         LSText.CopyToClipboard($"<font=Comic Sans Hairline>");
@@ -7249,7 +7212,7 @@ namespace BetterLegacy.Editor.Managers
                 },
                 new Document.Element($"<b>[MODDED]</b> Comic Sans Light - You know the font.", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                         LSText.CopyToClipboard($"<font=Comic Sans Light>");
@@ -7257,7 +7220,7 @@ namespace BetterLegacy.Editor.Managers
                 },
                 new Document.Element($"<b>[MODDED]</b> Pixellet - Neat pixel font that supports Thai.", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                         LSText.CopyToClipboard($"<font=Pixellet>");
@@ -7265,7 +7228,7 @@ namespace BetterLegacy.Editor.Managers
                 },
                 new Document.Element($"<b>[MODDED]</b> File Deletion - A font pretty similar to the current PA title font.", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                         LSText.CopyToClipboard($"<font=File Deletion>");
@@ -7273,7 +7236,7 @@ namespace BetterLegacy.Editor.Managers
                 },
                 new Document.Element($"<b>[MODDED]</b> Sans Sans - Sans Sans.", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                         LSText.CopyToClipboard($"<font=Sans Sans>");
@@ -7281,7 +7244,7 @@ namespace BetterLegacy.Editor.Managers
                 },
                 new Document.Element($"<b>[MODDED]</b> Monomaniac One - Japanese support font.", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                         LSText.CopyToClipboard($"<font=Monomaniac One>");
@@ -7289,7 +7252,7 @@ namespace BetterLegacy.Editor.Managers
                 },
                 new Document.Element($"<b>[MODDED]</b> RocknRoll One - Japanese support font.", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                         LSText.CopyToClipboard($"<font=RocknRoll One>");
@@ -7458,14 +7421,6 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public Popup debuggerPopup;
-        public List<string> debugs = new List<string>();
-        public List<CustomFunction> customFunctions = new List<CustomFunction>();
-        public string debugSearch;
-        public class CustomFunction
-        {
-            public GameObject GameObject { get; set; }
-        }
         public GameObject GenerateDebugButton(string name, string hint, Action action)
         {
             var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(debuggerPopup.Content, "Function");
@@ -7479,10 +7434,7 @@ namespace BetterLegacy.Editor.Managers
 
             var button = gameObject.GetComponent<Button>();
             button.onClick.ClearAll();
-            button.onClick.AddListener(delegate ()
-            {
-                action?.Invoke();
-            });
+            button.onClick.AddListener(() => { action?.Invoke(); });
 
             EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
             var text = gameObject.transform.GetChild(0).GetComponent<Text>();
@@ -7503,15 +7455,12 @@ namespace BetterLegacy.Editor.Managers
             .Invoke(inspector, new object[] { obj, null });
         }
 
-        static Type UEInspector => ModCompatibility.UnityExplorerInstalled ? AccessTools.TypeByName("UnityExplorer.InspectorManager") : null;
-        static Type UEUIManager => ModCompatibility.UnityExplorerInstalled ? AccessTools.TypeByName("UnityExplorer.UI.UIManager") : null;
-
         void CreateDebug()
         {
             if (!ModCompatibility.UnityExplorerInstalled)
                 return;
 
-            debuggerPopup = GeneratePopup("Debugger Popup", "Debugger (Only use this if you know what you're doing)", Vector2.zero, new Vector2(600f, 450f), delegate (string _val)
+            debuggerPopup = GeneratePopup("Debugger Popup", "Debugger (Only use this if you know what you're doing)", Vector2.zero, new Vector2(600f, 450f), _val =>
             {
                 debugSearch = _val;
                 RefreshDebugger();
@@ -7521,7 +7470,7 @@ namespace BetterLegacy.Editor.Managers
                 .Duplicate(debuggerPopup.TopPanel, "reload");
             UIManager.SetRectTransform(reload.transform.AsRT(), new Vector2(-42f, 0f), Vector2.one, Vector2.one, Vector2.one, new Vector2(32f, 32f));
 
-            reload.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip
+            (reload.GetComponent<HoverTooltip>() ?? reload.AddComponent<HoverTooltip>()).tooltipLangauges.Add(new HoverTooltip.Tooltip
             {
                 desc = "Refresh the function list",
                 hint = "Clicking this will reload the function list."
@@ -7529,25 +7478,19 @@ namespace BetterLegacy.Editor.Managers
 
             var reloadButton = reload.GetComponent<Button>();
             reloadButton.onClick.ClearAll();
-            reloadButton.onClick.AddListener(delegate ()
-            {
-                ReloadFunctions();
-            });
+            reloadButton.onClick.AddListener(() => { ReloadFunctions(); });
 
             EditorThemeManager.AddSelectable(reloadButton, ThemeGroup.Function_2, false);
 
-            string refreshImage = RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_refresh-white.png";
+            reloadButton.image.sprite = ReloadSprite;
 
-            if (RTFile.FileExists(refreshImage))
-                reloadButton.image.sprite = SpriteManager.LoadSprite(refreshImage);
-
-            EditorHelper.AddEditorDropdown("Debugger", "", "View", SpriteManager.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "debugger.png"), delegate ()
+            EditorHelper.AddEditorDropdown("Debugger", "", "View", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}debugger.png"), () =>
             {
                 EditorManager.inst.ShowDialog("Debugger Popup");
                 RefreshDebugger();
             });
 
-            EditorHelper.AddEditorDropdown("Show Explorer", "", "View", SearchSprite, delegate ()
+            EditorHelper.AddEditorDropdown("Show Explorer", "", "View", SearchSprite, () =>
             {
                 var ui = UEUIManager;
                 ui.GetProperty("ShowMenu").SetValue(ui, true);
@@ -7556,87 +7499,62 @@ namespace BetterLegacy.Editor.Managers
             GenerateDebugButton(
                 "Inspect DataManager",
                 "DataManager is a pretty important storage component of Project Arrhythmia. It contains the GameData, all the external Beatmap Themes, etc.",
-                delegate ()
-            {
-                Inspect(DataManager.inst);
-            });
+                () => { Inspect(DataManager.inst); });
 
             GenerateDebugButton(
                 "Inspect EditorManager",
                 "EditorManager handles the main unmodded editor related things.",
-                delegate ()
-                {
-                    Inspect(EditorManager.inst);
-                });
+                () => { Inspect(EditorManager.inst); });
 
             GenerateDebugButton(
                 "Inspect RTEditor",
                 "EditorManager handles the main modded editor related things.",
-                delegate ()
-                {
-                    Inspect(inst);
-                });
+                () => { Inspect(inst); });
 
             GenerateDebugButton(
                 "Inspect ObjEditor",
                 "ObjEditor is the component that handles regular object editor stuff.",
-                delegate ()
-                {
-                    Inspect(ObjEditor.inst);
-                });
+                () => { Inspect(ObjEditor.inst); });
 
             GenerateDebugButton(
                 "Inspect ObjectEditor",
                 "ObjectEditor is the component that handles modded object editor stuff.",
-                delegate ()
-                {
-                    Inspect(ObjectEditor.inst);
-                });
+                () => { Inspect(ObjectEditor.inst); });
 
             GenerateDebugButton(
                 "Inspect ObjectManager",
                 "ObjectManager is the component that handles regular object stuff.",
-                delegate ()
-                {
-                    Inspect(ObjectManager.inst);
-                });
+                () => { Inspect(ObjectManager.inst); });
 
             GenerateDebugButton(
                 "Inspect GameManager",
                 "GameManager normally handles all the level loading, however now it's handled by LevelManager.",
-                delegate ()
-                {
-                    Inspect(GameManager.inst);
-                });
+                () => { Inspect(GameManager.inst); });
 
             GenerateDebugButton(
                 "Inspect Object Editor UI",
                 "Take a closer look at the Object Editor UI since the parent tree for it is pretty deep.",
-                delegate ()
-                {
-                    Inspect(ObjEditor.inst.ObjectView);
-                });
+                () => { Inspect(ObjEditor.inst.ObjectView); });
 
             GenerateDebugButton(
                 "Inspect LevelProcessor",
                 "LevelProcessor is the main handler for updating object animation and spawning / despawning objects.",
-                delegate ()
-                {
-                    Inspect(Updater.levelProcessor);
-                });
+                () => { Inspect(Updater.levelProcessor); });
 
             GenerateDebugButton(
-                "Inspect GameData",
+                "Inspect Current GameData",
                 "GameData stores all the main level data.",
-                delegate ()
-                {
-                    Inspect(GameData.Current);
-                });
+                () => { Inspect(GameData.Current); });
+
+            GenerateDebugButton(
+                "Inspect Current MetaData",
+                "MetaData stores all the extra level info.",
+                () => { Inspect(MetaData.Current); });
 
             GenerateDebugButton(
                 "Current Event Keyframe",
                 "The current selected Event Keyframe. Based on the type and index number.",
-                delegate ()
+                () =>
                 {
                     if (EventEditor.inst.currentEventType >= GameData.Current.eventObjects.allEvents.Count || EventEditor.inst.currentEvent >= GameData.Current.eventObjects.allEvents[EventEditor.inst.currentEventType].Count)
                         return;
@@ -7653,7 +7571,7 @@ namespace BetterLegacy.Editor.Managers
             if (!RTFile.DirectoryExists(functions))
                 return;
 
-            customFunctions.ForEach(x => Destroy(x.GameObject));
+            customFunctions.ForEach(x => Destroy(gameObject));
             customFunctions.Clear();
             debugs.RemoveAll(x => x.Contains("Custom Code Function"));
 
@@ -7662,26 +7580,15 @@ namespace BetterLegacy.Editor.Managers
             {
                 var file = files[i];
 
-                var gameObject = GenerateDebugButton(
+                customFunctions.Add(GenerateDebugButton(
                     $"Custom Code Function: {Path.GetFileName(file)}",
                     "A custom code file. Make sure you know what you're doing before using this.",
-                    delegate ()
-                    {
-                        RTCode.Evaluate(RTFile.ReadFromFile(file));
-                    });
-
-                customFunctions.Add(new CustomFunction
-                {
-                    GameObject = gameObject
-                });
+                    () => { RTCode.Evaluate(RTFile.ReadFromFile(file)); }));
             }
 
             RefreshDebugger();
         }
 
-        public string autosaveSearch;
-        public Transform autosaveContent;
-        public InputField autosaveSearchField;
         void CreateAutosavePopup()
         {
             var autosavePopup = GeneratePopup("Autosave Popup", "Autosaves", new Vector2(572f, 0f), new Vector2(460f, 350f), placeholderText: "Search autosaves...");
@@ -7817,39 +7724,33 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
         }
-
-        public Transform screenshotContent;
-        public InputField screenshotPageField;
         void CreateScreenshotsView()
         {
-            var editorDialogObject = Instantiate(EditorManager.inst.GetDialog("Multi Keyframe Editor (Object)").Dialog.gameObject);
-            var editorDialogTransform = editorDialogObject.transform;
+            var editorDialogObject = EditorManager.inst.GetDialog("Multi Keyframe Editor (Object)").Dialog.gameObject.Duplicate(EditorManager.inst.dialogs);
             editorDialogObject.name = "ScreenshotDialog";
-            editorDialogObject.layer = 5;
-            editorDialogTransform.SetParent(GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs").transform);
-            editorDialogTransform.localScale = Vector3.one;
-            editorDialogTransform.position = new Vector3(1537.5f, 714.945f, 0f) * EditorManager.inst.ScreenScale;
-            editorDialogTransform.AsRT().sizeDelta = new Vector2(0f, 32f);
+            editorDialogObject.transform.position = new Vector3(1537.5f, 714.945f, 0f) * EditorManager.inst.ScreenScale;
+            editorDialogObject.transform.localScale = Vector3.one;
+            editorDialogObject.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
 
-            var editorDialogTitle = editorDialogTransform.GetChild(0);
+            var editorDialogTitle = editorDialogObject.transform.GetChild(0);
             editorDialogTitle.GetComponent<Image>().color = LSColors.HexToColor("00FF8C");
             var title = editorDialogTitle.GetChild(0).GetComponent<Text>();
             title.text = "- Screenshots -";
 
-            var editorDialogSpacer = editorDialogTransform.GetChild(1);
+            var editorDialogSpacer = editorDialogObject.transform.GetChild(1);
             editorDialogSpacer.AsRT().sizeDelta = new Vector2(765f, 54f);
 
-            Destroy(editorDialogTransform.GetChild(2).gameObject);
+            Destroy(editorDialogObject.transform.GetChild(2).gameObject);
 
             EditorHelper.AddEditorDialog("Screenshot Dialog", editorDialogObject);
 
-            var page = EditorPrefabHolder.Instance.NumberInputField.Duplicate(editorDialogTransform.Find("spacer"));
+            var page = EditorPrefabHolder.Instance.NumberInputField.Duplicate(editorDialogObject.transform.Find("spacer"));
             var pageStorage = page.GetComponent<InputFieldStorage>();
             screenshotPageField = pageStorage.inputField;
 
             pageStorage.inputField.onValueChanged.ClearAll();
             pageStorage.inputField.text = screenshotPage.ToString();
-            pageStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+            pageStorage.inputField.onValueChanged.AddListener(_val =>
             {
                 if (int.TryParse(_val, out int p))
                 {
@@ -7859,28 +7760,28 @@ namespace BetterLegacy.Editor.Managers
             });
 
             pageStorage.leftGreaterButton.onClick.ClearAll();
-            pageStorage.leftGreaterButton.onClick.AddListener(delegate ()
+            pageStorage.leftGreaterButton.onClick.AddListener(() =>
             {
                 if (int.TryParse(pageStorage.inputField.text, out int p))
                     pageStorage.inputField.text = "0";
             });
 
             pageStorage.leftButton.onClick.ClearAll();
-            pageStorage.leftButton.onClick.AddListener(delegate ()
+            pageStorage.leftButton.onClick.AddListener(() =>
             {
                 if (int.TryParse(pageStorage.inputField.text, out int p))
                     pageStorage.inputField.text = Mathf.Clamp(p - 1, 0, screenshotCount / screenshotsPerPage).ToString();
             });
 
             pageStorage.rightButton.onClick.ClearAll();
-            pageStorage.rightButton.onClick.AddListener(delegate ()
+            pageStorage.rightButton.onClick.AddListener(() =>
             {
                 if (int.TryParse(pageStorage.inputField.text, out int p))
                     pageStorage.inputField.text = Mathf.Clamp(p + 1, 0, screenshotCount / screenshotsPerPage).ToString();
             });
 
             pageStorage.rightGreaterButton.onClick.ClearAll();
-            pageStorage.rightGreaterButton.onClick.AddListener(delegate ()
+            pageStorage.rightGreaterButton.onClick.AddListener(() =>
             {
                 if (int.TryParse(pageStorage.inputField.text, out int p))
                     pageStorage.inputField.text = (screenshotCount / screenshotsPerPage).ToString();
@@ -7894,11 +7795,9 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddSelectable(pageStorage.rightButton, ThemeGroup.Function_2, false);
             EditorThemeManager.AddSelectable(pageStorage.rightGreaterButton, ThemeGroup.Function_2, false);
 
-            var scrollView = Instantiate(GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View"));
+            var scrollView = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View").Duplicate(editorDialogObject.transform, "Scroll View");
             screenshotContent = scrollView.transform.Find("Viewport/Content");
-            scrollView.transform.SetParent(editorDialogTransform);
             scrollView.transform.localScale = Vector3.one;
-            scrollView.name = "Scroll View";
 
             LSHelpers.DeleteChildren(screenshotContent);
 
@@ -7910,7 +7809,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.AddGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
 
-            EditorHelper.AddEditorDropdown("View Screenshots", "", "View", SearchSprite, delegate ()
+            EditorHelper.AddEditorDropdown("View Screenshots", "", "View", SearchSprite, () =>
             {
                 EditorManager.inst.ShowDialog("Screenshot Dialog");
                 RefreshScreenshots();
@@ -7928,10 +7827,6 @@ namespace BetterLegacy.Editor.Managers
 
             fileInfoText?.SetText(text);
         }
-
-        public bool themesLoading = false;
-
-        public bool autoSaving = false;
 
         public IEnumerator LoadLevels()
         {
@@ -8038,17 +7933,15 @@ namespace BetterLegacy.Editor.Managers
                     folderButtonStorageFolder.text.fontSize = fontSize;
 
                     folderButtonStorageFolder.button.onClick.ClearAll();
-                    folderButtonFunctionFolder.onClick = (PointerEventData eventData) =>
+                    folderButtonFunctionFolder.onClick = eventData =>
                     {
-                        if (path.Contains(RTFile.ApplicationDirectory + "beatmaps/"))
-                        {
-                            editorPathField.text = path.Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
-                            UpdateEditorPath(false);
-                        }
-                        else
+                        if (!path.Contains(RTFile.ApplicationDirectory + "beatmaps/"))
                         {
                             EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                            return;
                         }
+                        editorPathField.text = path.Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
+                        UpdateEditorPath(false);
                     };
 
                     EditorThemeManager.ApplySelectable(folderButtonStorageFolder.button, ThemeGroup.List_Button_1);
@@ -8104,7 +7997,7 @@ namespace BetterLegacy.Editor.Managers
                 });
 
                 folderButtonStorage.button.onClick.ClearAll();
-                folderButtonFunction.onClick = (PointerEventData eventData) =>
+                folderButtonFunction.onClick = eventData =>
                 {
                     if (choosingLevelTemplate)
                     {
@@ -8200,15 +8093,15 @@ namespace BetterLegacy.Editor.Managers
 
                     var deleteButton = delete.GetComponent<Button>();
                     deleteButton.onClick.ClearAll();
-                    deleteButton.onClick.AddListener(delegate ()
+                    deleteButton.onClick.AddListener(() =>
                     {
-                        ShowWarningPopup("Are you sure you want to delete this level? (It will be moved to a recycling folder)", delegate ()
+                        ShowWarningPopup("Are you sure you want to delete this level? (It will be moved to a recycling folder)", () =>
                         {
                             DeleteLevelFunction(levelName);
                             EditorManager.inst.DisplayNotification("Deleted level!", 2f, EditorManager.NotificationType.Success);
                             EditorManager.inst.GetLevelList();
                             EditorManager.inst.HideDialog("Warning Popup");
-                        }, delegate ()
+                        }, () =>
                         {
                             EditorManager.inst.HideDialog("Warning Popup");
                         });
@@ -8227,7 +8120,7 @@ namespace BetterLegacy.Editor.Managers
                     continue;
                 }
 
-                list.Add(StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{file}/level.jpg", delegate (Texture2D cover)
+                list.Add(StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{file}/level.jpg", cover =>
                 {
                     if (!cover)
                     {
@@ -8246,7 +8139,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             if (list.Count >= 1)
-                yield return StartCoroutine(LSHelpers.WaitForMultipleCoroutines(list, delegate
+                yield return StartCoroutine(LSHelpers.WaitForMultipleCoroutines(list, () =>
                 {
                     if (anyFailed && config.ShowLevelsWithoutCoverNotification.Value)
                         EditorManager.inst.DisplayNotification($"Levels {FontManager.TextTranslater.ArrayToString(failedLevels.ToArray())} do not have covers!", 2f * (failedLevels.Count * 0.10f), EditorManager.NotificationType.Error);
@@ -8299,9 +8192,7 @@ namespace BetterLegacy.Editor.Managers
             SetLayer(0);
 
             for (int i = 0; i < ObjEditor.inst.TimelineParents.Count; i++)
-            {
                 LSHelpers.DeleteChildren(ObjEditor.inst.TimelineParents[i]);
-            }
 
             WindowController.ResetTitle();
 
@@ -8352,21 +8243,18 @@ namespace BetterLegacy.Editor.Managers
             string errorMessage = "";
             bool hadError = false;
             if (RTFile.FileExists(fullPath + "/level.ogg"))
-            {
                 yield return this.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip($"file://{fullPath}/level.ogg", AudioType.OGGVORBIS, x => song = x, onError => { hadError = true; errorMessage = onError; }));
-            }
             else if (RTFile.FileExists(fullPath + "/level.wav"))
-            {
-                yield return this.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + fullPath + "/level.wav", AudioType.WAV, x => song = x, delegate (string onError) { hadError = true; errorMessage = onError; }));
-            }
+                yield return this.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + fullPath + "/level.wav", AudioType.WAV, x => song = x, onError => { hadError = true; errorMessage = onError; }));
             else if (RTFile.FileExists(fullPath + "/level.mp3"))
-            {
                 yield return song = LSAudio.CreateAudioClipUsingMP3File(fullPath + "/level.mp3");
-            }
 
             // Wait for the song.
             while (song == null && !hadError)
+            {
+                CoreHelper.LogError($"bruh");
                 yield return null;
+            }
 
             if (hadError)
             {
@@ -8516,7 +8404,6 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
-        public GameObject themeAddButton;
         public IEnumerator LoadThemes(bool refreshGUI = false)
         {
             if (themesLoading)
@@ -8548,7 +8435,7 @@ namespace BetterLegacy.Editor.Managers
                 themeAddButton.SetActive(true);
                 tf.localScale = Vector2.one;
                 var button = themeAddButton.GetComponent<Button>();
-                button.onClick.AddListener(delegate ()
+                button.onClick.AddListener(() =>
                 {
                     ThemeEditorManager.inst.RenderThemeEditor();
                 });
@@ -8576,7 +8463,7 @@ namespace BetterLegacy.Editor.Managers
                 }
 
                 themePanel.UseButton.onClick.ClearAll();
-                themePanel.UseButton.onClick.AddListener(delegate ()
+                themePanel.UseButton.onClick.AddListener(() =>
                 {
                     if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => RTEventEditor.inst.SelectedKeyframes.Min(y => y.Type) == x.Type))
                     {
@@ -8595,10 +8482,7 @@ namespace BetterLegacy.Editor.Managers
                 });
 
                 themePanel.EditButton.onClick.ClearAll();
-                themePanel.EditButton.onClick.AddListener(delegate ()
-                {
-                    ThemeEditorManager.inst.RenderThemeEditor(Parser.TryParse(beatmapTheme.id, 0));
-                });
+                themePanel.EditButton.onClick.AddListener(() => { ThemeEditorManager.inst.RenderThemeEditor(Parser.TryParse(beatmapTheme.id, 0)); });
 
                 themePanel.DeleteButton.onClick.ClearAll();
                 themePanel.DeleteButton.interactable = false;
@@ -8633,9 +8517,7 @@ namespace BetterLegacy.Editor.Managers
                     var str = FontManager.TextTranslater.ArrayToString(array);
 
                     if (EditorManager.inst != null)
-                    {
                         EditorManager.inst.DisplayNotification($"Unable to Load theme [{orig.name}] due to conflicting themes: {str}", 2f * array.Length, EditorManager.NotificationType.Error);
-                    }
                 }
                 else
                 {
@@ -8653,35 +8535,25 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     themePanel.UseButton.onClick.ClearAll();
-                    themePanel.UseButton.onClick.AddListener(delegate ()
+                    themePanel.UseButton.onClick.AddListener(() =>
                     {
                         if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => RTEventEditor.inst.SelectedKeyframes.Min(y => y.Type) == x.Type))
                         {
                             foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
-                            {
                                 timelineObject.GetData<EventKeyframe>().eventValues[0] = Parser.TryParse(orig.id, 0);
-                            }
                         }
                         else
-                        {
                             DataManager.inst.gameData.eventObjects.allEvents[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].eventValues[0] = Parser.TryParse(orig.id, 0);
-                        }
                         EventManager.inst.updateEvents();
                         EventEditor.inst.RenderThemePreview(dialogTmp);
                     });
 
                     themePanel.EditButton.onClick.ClearAll();
-                    themePanel.EditButton.onClick.AddListener(delegate ()
-                    {
-                        ThemeEditorManager.inst.RenderThemeEditor(Parser.TryParse(orig.id, 0));
-                    });
+                    themePanel.EditButton.onClick.AddListener(() => { ThemeEditorManager.inst.RenderThemeEditor(Parser.TryParse(orig.id, 0)); });
 
                     themePanel.DeleteButton.onClick.ClearAll();
                     themePanel.DeleteButton.interactable = true;
-                    themePanel.DeleteButton.onClick.AddListener(delegate ()
-                    {
-                        ThemeEditorManager.inst.DeleteThemeDelegate(orig);
-                    });
+                    themePanel.DeleteButton.onClick.AddListener(() => { ThemeEditorManager.inst.DeleteThemeDelegate(orig); });
                     themePanel.Name.text = orig.name;
 
                     themePanel.SetActive(false);
@@ -8716,8 +8588,6 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
-        public bool prefabsLoading = false;
-        public GameObject prefabExternalAddButton;
         public IEnumerator LoadPrefabs(PrefabEditor __instance)
         {
             if (prefabsLoading)
@@ -8748,31 +8618,30 @@ namespace BetterLegacy.Editor.Managers
                 hover.animatePos = false;
                 hover.size = hoverSize;
 
-                prefabExternalAddButton.GetComponentAndPerformAction(delegate (Button x)
+                var button = prefabExternalAddButton.GetComponent<Button>();
+                button.onClick.ClearAll();
+                button.onClick.AddListener(() =>
                 {
-                    x.NewOnClickListener(delegate ()
+                    if (PrefabEditorManager.inst.savingToPrefab && PrefabEditorManager.inst.prefabToSaveFrom != null)
                     {
-                        if (PrefabEditorManager.inst.savingToPrefab && PrefabEditorManager.inst.prefabToSaveFrom != null)
-                        {
-                            PrefabEditorManager.inst.savingToPrefab = false;
-                            PrefabEditorManager.inst.SavePrefab(PrefabEditorManager.inst.prefabToSaveFrom);
+                        PrefabEditorManager.inst.savingToPrefab = false;
+                        PrefabEditorManager.inst.SavePrefab(PrefabEditorManager.inst.prefabToSaveFrom);
 
-                            EditorManager.inst.HideDialog("Prefab Popup");
+                        EditorManager.inst.HideDialog("Prefab Popup");
 
-                            PrefabEditorManager.inst.prefabToSaveFrom = null;
+                        PrefabEditorManager.inst.prefabToSaveFrom = null;
 
-                            EditorManager.inst.DisplayNotification("Applied all changes to new External Prefab.", 2f, EditorManager.NotificationType.Success);
+                        EditorManager.inst.DisplayNotification("Applied all changes to new External Prefab.", 2f, EditorManager.NotificationType.Success);
 
-                            return;
-                        }
+                        return;
+                    }
 
-                        PrefabEditor.inst.OpenDialog();
-                        PrefabEditorManager.inst.createInternal = false;
-                    });
-
-                    EditorThemeManager.AddGraphic(x.image, ThemeGroup.Add, true);
-                    EditorThemeManager.AddGraphic(text, ThemeGroup.Add_Text);
+                    PrefabEditor.inst.OpenDialog();
+                    PrefabEditorManager.inst.createInternal = false;
                 });
+
+                EditorThemeManager.AddGraphic(button.image, ThemeGroup.Add, true);
+                EditorThemeManager.AddGraphic(text, ThemeGroup.Add_Text);
             }
             else
             {
@@ -8896,10 +8765,6 @@ namespace BetterLegacy.Editor.Managers
             autoSaving = false;
         }
 
-        public static float timeSinceAutosaved;
-
-        public bool fromNewLevel;
-
         public void CreateNewLevel()
         {
             if (string.IsNullOrEmpty(EditorManager.inst.newAudioFile))
@@ -8967,6 +8832,7 @@ namespace BetterLegacy.Editor.Managers
             metaData.beatmap.game_version = "4.1.16";
             metaData.arcadeID = LSText.randomNumString(16);
             metaData.song.title = EditorManager.inst.newLevelName;
+            metaData.uploaderName = SteamWrapper.inst.user.displayName;
             metaData.creator.steam_name = SteamWrapper.inst.user.displayName;
             metaData.creator.steam_id = SteamWrapper.inst.user.id;
             metaData.LevelBeatmap.name = EditorManager.inst.newLevelName;
@@ -9064,16 +8930,15 @@ namespace BetterLegacy.Editor.Managers
                 var buttonPrefab = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(content, "Clear Parents");
                 buttonPrefab.transform.GetChild(0).GetComponent<Text>().text = "Clear Parents";
 
-                buttonPrefab.GetComponentAndPerformAction(delegate (Button b)
+                var button = buttonPrefab.GetComponent<Button>();
+                button.onClick.ClearAll();
+                button.onClick.AddListener(() =>
                 {
-                    b.NewOnClickListener(delegate ()
+                    foreach (var bm in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                     {
-                        foreach (var bm in ObjectEditor.inst.SelectedObjects.FindAll(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
-                        {
-                            bm.parent = "";
-                            Updater.UpdateProcessor(bm);
-                        }
-                    });
+                        bm.parent = "";
+                        Updater.UpdateProcessor(bm);
+                    }
                 });
 
                 var x = EditorManager.inst.GetDialog("Object Search Popup").Dialog.Find("Panel/x/Image").GetComponent<Image>().sprite;
@@ -9084,9 +8949,9 @@ namespace BetterLegacy.Editor.Managers
 
             var searchBar = dialog.Find("search-box/search").GetComponent<InputField>();
             searchBar.onValueChanged.ClearAll();
-            searchBar.onValueChanged.AddListener(delegate (string _value)
+            searchBar.onValueChanged.AddListener(_val =>
             {
-                objectSearchTerm = _value;
+                objectSearchTerm = _val;
                 RefreshObjectSearch(onSelect, clearParent);
             });
 
@@ -9108,12 +8973,9 @@ namespace BetterLegacy.Editor.Managers
                     var buttonText = buttonPrefab.transform.GetChild(0).GetComponent<Text>();
                     buttonText.text = nm;
 
-                    var b = buttonPrefab.GetComponent<Button>();
-                    b.onClick.RemoveAllListeners();
-                    b.onClick.AddListener(delegate ()
-                    {
-                        onSelect?.Invoke((BeatmapObject)beatmapObject);
-                    });
+                    var button = buttonPrefab.GetComponent<Button>();
+                    button.onClick.ClearAll();
+                    button.onClick.AddListener(() => { onSelect?.Invoke((BeatmapObject)beatmapObject); });
 
                     var image = buttonPrefab.transform.Find("Image").GetComponent<Image>();
                     image.color = GetObjectColor(beatmapObject, false);
@@ -9123,7 +8985,7 @@ namespace BetterLegacy.Editor.Managers
 
                     image.sprite = ShapeManager.inst.Shapes2D[shape][shapeOption].Icon;
 
-                    EditorThemeManager.ApplySelectable(b, ThemeGroup.List_Button_1);
+                    EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
                     EditorThemeManager.ApplyLightText(buttonText);
 
                     string desc = "";
@@ -9203,10 +9065,7 @@ namespace BetterLegacy.Editor.Managers
 
             var close = warningPopup.Find("Panel/x").GetComponent<Button>();
             close.onClick.ClearAll();
-            close.onClick.AddListener(delegate ()
-            {
-                cancelDelegate?.Invoke();
-            });
+            close.onClick.AddListener(() => { cancelDelegate?.Invoke(); });
 
             warningPopup.Find("Level Name").GetComponent<Text>().text = warning;
 
@@ -9219,8 +9078,8 @@ namespace BetterLegacy.Editor.Managers
             submit1.Find("text").GetComponent<Text>().text = confirm;
             submit2.Find("text").GetComponent<Text>().text = cancel;
 
-            submit1Button.onClick.RemoveAllListeners();
-            submit2Button.onClick.RemoveAllListeners();
+            submit1Button.onClick.ClearAll();
+            submit2Button.onClick.ClearAll();
 
             submit1Button.onClick.AddListener(confirmDelegate);
             submit2Button.onClick.AddListener(cancelDelegate);
@@ -9285,10 +9144,10 @@ namespace BetterLegacy.Editor.Managers
             #endregion
 
             int num = 0;
-            foreach (var metadataWrapper in EditorManager.inst.loadedLevels)
+            foreach (var editorWrapper in EditorManager.inst.loadedLevels.Where(x => x is EditorWrapper).Select(x => x as EditorWrapper))
             {
-                var folder = metadataWrapper.folder;
-                var metadata = metadataWrapper.metadata;
+                var folder = editorWrapper.folder;
+                var metadata = editorWrapper.metadata;
 
                 string[] difficultyNames = new string[]
                 {
@@ -9302,17 +9161,16 @@ namespace BetterLegacy.Editor.Managers
                     "Unknown difficulty",
                 };
 
-                ((EditorWrapper)metadataWrapper).SetActive((RTFile.FileExists(folder + "/level.ogg") ||
-                    RTFile.FileExists(folder + "/level.wav") ||
-                    RTFile.FileExists(folder + "/level.mp3")) && CoreHelper.SearchString(EditorManager.inst.openFileSearch, Path.GetFileName(folder)) ||
-                        (metadata == null || metadata != null &&
+                editorWrapper.SetActive(editorWrapper.isFolder && CoreHelper.SearchString(EditorManager.inst.openFileSearch, Path.GetFileName(folder)) ||
+                    CoreHelper.SearchString(EditorManager.inst.openFileSearch, Path.GetFileName(folder)) ||
+                        metadata == null || metadata != null &&
                         (CoreHelper.SearchString(EditorManager.inst.openFileSearch, metadata.song.title) ||
                         CoreHelper.SearchString(EditorManager.inst.openFileSearch, metadata.artist.Name) ||
                         CoreHelper.SearchString(EditorManager.inst.openFileSearch, metadata.creator.steam_name) ||
                         CoreHelper.SearchString(EditorManager.inst.openFileSearch, metadata.song.description) ||
-                        CoreHelper.SearchString(EditorManager.inst.openFileSearch, difficultyNames[Mathf.Clamp(metadata.song.difficulty, 0, difficultyNames.Length - 1)]))));
+                        CoreHelper.SearchString(EditorManager.inst.openFileSearch, difficultyNames[Mathf.Clamp(metadata.song.difficulty, 0, difficultyNames.Length - 1)])));
 
-                ((EditorWrapper)metadataWrapper).GameObject.transform.SetSiblingIndex(num);
+                editorWrapper.GameObject.transform.SetSiblingIndex(num);
                 num++;
             }
 
@@ -9330,20 +9188,15 @@ namespace BetterLegacy.Editor.Managers
         {
             var transform = __instance.GetDialog("Parent Selector").Dialog.Find("mask/content");
 
-            foreach (object obj2 in transform)
-            {
-                Destroy(((Transform)obj2).gameObject);
-            }
+            LSHelpers.DeleteChildren(transform);
 
-            var noParent = __instance.folderButtonPrefab.Duplicate(transform);
-            noParent.name = "No Parent";
-            noParent.transform.SetParent(transform);
+            var noParent = __instance.folderButtonPrefab.Duplicate(transform, "No Parent");
             noParent.transform.localScale = Vector3.one;
             var noParentText = noParent.transform.GetChild(0).GetComponent<Text>();
             noParentText.text = "No Parent";
             var noParentButton = noParent.GetComponent<Button>();
             noParentButton.onClick.ClearAll();
-            noParentButton.onClick.AddListener(delegate ()
+            noParentButton.onClick.AddListener(() =>
             {
                 var list = ObjectEditor.inst.SelectedObjects;
                 foreach (var timelineObject in list)
@@ -9373,7 +9226,7 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.ApplySelectable(noParentButton, ThemeGroup.List_Button_1);
             EditorThemeManager.ApplyLightText(noParentText);
 
-            if (string.IsNullOrEmpty(__instance.parentSearch) || "camera".Contains(__instance.parentSearch.ToLower()))
+            if (CoreHelper.SearchString(__instance.parentSearch, "camera"))
             {
                 var cam = __instance.folderButtonPrefab.Duplicate(transform, "Camera");
                 var camText = cam.transform.GetChild(0).GetComponent<Text>();
@@ -9381,7 +9234,7 @@ namespace BetterLegacy.Editor.Managers
 
                 camText.text = "Camera";
                 camButton.onClick.ClearAll();
-                camButton.onClick.AddListener(delegate ()
+                camButton.onClick.AddListener(() =>
                 {
                     var list = ObjectEditor.inst.SelectedObjects;
                     foreach (var timelineObject in list)
@@ -9447,7 +9300,7 @@ namespace BetterLegacy.Editor.Managers
 
                     objectToParentText.text = s;
                     objectToParentButton.onClick.ClearAll();
-                    objectToParentButton.onClick.AddListener(delegate ()
+                    objectToParentButton.onClick.AddListener(() =>
                     {
                         string id = obj.id;
 
@@ -9791,6 +9644,7 @@ namespace BetterLegacy.Editor.Managers
                 }
 
                 // Vector2
+                for (int i = 0; i < 2; i++)
                 {
                     var bar = singleInput.Duplicate(parent, "input [VECTOR2]");
 
@@ -9838,6 +9692,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // Vector3
                 {
+                    editorPropertiesPrefabs.Add(null);
                     editorPropertiesPrefabs.Add(null);
                 }
 
@@ -10041,10 +9896,7 @@ namespace BetterLegacy.Editor.Managers
                                 var toggle = gameObject.transform.Find("toggle").GetComponent<Toggle>();
                                 toggle.onValueChanged.RemoveAllListeners();
                                 toggle.isOn = (bool)prop.configEntry.BoxedValue;
-                                toggle.onValueChanged.AddListener(delegate (bool _val)
-                                {
-                                    prop.configEntry.BoxedValue = _val;
-                                });
+                                toggle.onValueChanged.AddListener(_val => { prop.configEntry.BoxedValue = _val; });
 
                                 EditorThemeManager.ApplyToggle(toggle);
 
@@ -10064,7 +9916,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 inputField.onValueChanged.RemoveAllListeners();
                                 inputField.text = prop.configEntry.BoxedValue.ToString();
-                                inputField.onValueChanged.AddListener(delegate (string _val)
+                                inputField.onValueChanged.AddListener(_val =>
                                 {
                                     if (int.TryParse(_val, out int result))
                                         prop.configEntry.BoxedValue = result;
@@ -10114,7 +9966,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 inputField.onValueChanged.RemoveAllListeners();
                                 inputField.text = prop.configEntry.BoxedValue.ToString();
-                                inputField.onValueChanged.AddListener(delegate (string _val)
+                                inputField.onValueChanged.AddListener(_val =>
                                 {
                                     if (float.TryParse(_val, out float result))
                                         prop.configEntry.BoxedValue = result;
@@ -10169,23 +10021,20 @@ namespace BetterLegacy.Editor.Managers
                                 Action<int> setSlider = null;
                                 Action<int> setInputField = null;
 
-                                setSlider = delegate (int value)
+                                setSlider = value =>
                                 {
                                     prop.configEntry.BoxedValue = value;
                                     slider.onValueChanged.ClearAll();
                                     slider.value = (int)prop.configEntry.BoxedValue;
-                                    slider.onValueChanged.AddListener(delegate (float _val)
-                                    {
-                                        setInputField?.Invoke((int)_val);
-                                    });
+                                    slider.onValueChanged.AddListener(_val => { setInputField?.Invoke((int)_val); });
                                 };
 
-                                setInputField = delegate (int value)
+                                setInputField = value =>
                                 {
                                     prop.configEntry.BoxedValue = value;
                                     inputField.onValueChanged.ClearAll();
                                     inputField.text = prop.configEntry.BoxedValue.ToString();
-                                    inputField.onValueChanged.AddListener(delegate (string _val)
+                                    inputField.onValueChanged.AddListener(_val =>
                                     {
                                         if (int.TryParse(_val, out int result))
                                             setSlider?.Invoke(result);
@@ -10194,14 +10043,11 @@ namespace BetterLegacy.Editor.Managers
 
                                 slider.onValueChanged.ClearAll();
                                 slider.value = (int)prop.configEntry.BoxedValue;
-                                slider.onValueChanged.AddListener(delegate (float _val)
-                                {
-                                    setInputField?.Invoke((int)_val);
-                                });
+                                slider.onValueChanged.AddListener(_val => { setInputField?.Invoke((int)_val); });
 
                                 inputField.onValueChanged.ClearAll();
                                 inputField.text = prop.configEntry.BoxedValue.ToString();
-                                inputField.onValueChanged.AddListener(delegate (string _val)
+                                inputField.onValueChanged.AddListener(_val =>
                                 {
                                     if (int.TryParse(_val, out int result))
                                         setSlider?.Invoke(result);
@@ -10250,23 +10096,20 @@ namespace BetterLegacy.Editor.Managers
                                 Action<float> setSlider = null;
                                 Action<float> setInputField = null;
 
-                                setSlider = delegate (float value)
+                                setSlider = value =>
                                 {
                                     prop.configEntry.BoxedValue = value;
                                     slider.onValueChanged.ClearAll();
                                     slider.value = (float)prop.configEntry.BoxedValue * 10f;
-                                    slider.onValueChanged.AddListener(delegate (float _val)
-                                    {
-                                        setInputField?.Invoke(_val / 10f);
-                                    });
+                                    slider.onValueChanged.AddListener(_val => { setInputField?.Invoke(_val / 10f); });
                                 };
 
-                                setInputField = delegate (float value)
+                                setInputField = value =>
                                 {
                                     prop.configEntry.BoxedValue = value / 10f;
                                     inputField.onValueChanged.ClearAll();
                                     inputField.text = prop.configEntry.BoxedValue.ToString();
-                                    inputField.onValueChanged.AddListener(delegate (string _val)
+                                    inputField.onValueChanged.AddListener(_val =>
                                     {
                                         if (float.TryParse(_val, out float result))
                                             setSlider?.Invoke(result);
@@ -10275,14 +10118,11 @@ namespace BetterLegacy.Editor.Managers
 
                                 slider.onValueChanged.ClearAll();
                                 slider.value = (float)prop.configEntry.BoxedValue * 10f;
-                                slider.onValueChanged.AddListener(delegate (float _val)
-                                {
-                                    setInputField?.Invoke(_val / 10f);
-                                });
+                                slider.onValueChanged.AddListener(_val => { setInputField?.Invoke(_val / 10f); });
 
                                 inputField.onValueChanged.ClearAll();
                                 inputField.text = prop.configEntry.BoxedValue.ToString();
-                                inputField.onValueChanged.AddListener(delegate (string _val)
+                                inputField.onValueChanged.AddListener(_val =>
                                 {
                                     if (float.TryParse(_val, out float result))
                                         setSlider?.Invoke(result);
@@ -10290,13 +10130,13 @@ namespace BetterLegacy.Editor.Managers
 
                                 EditorThemeManager.ApplyInputField(inputField);
 
-                                slider.onValueChanged.AddListener(delegate (float _val)
+                                slider.onValueChanged.AddListener(_val =>
                                 {
-                                    if (!LSHelpers.IsUsingInputField())
-                                    {
-                                        prop.configEntry.BoxedValue = _val / 10f;
-                                        inputField.text = _val.ToString();
-                                    }
+                                    if (LSHelpers.IsUsingInputField())
+                                        return;
+
+                                    prop.configEntry.BoxedValue = _val / 10f;
+                                    inputField.text = _val.ToString();
                                 });
 
                                 if (config.MinValue != 0f && config.MaxValue != 0f)
@@ -10336,32 +10176,37 @@ namespace BetterLegacy.Editor.Managers
 
                                 inputField.onValueChanged.RemoveAllListeners();
                                 inputField.text = prop.configEntry.BoxedValue.ToString();
-                                inputField.onValueChanged.AddListener(delegate (string _val)
-                                {
-                                    prop.configEntry.BoxedValue = _val;
-                                });
+                                inputField.onValueChanged.AddListener(_val => { prop.configEntry.BoxedValue = _val; });
 
                                 EditorThemeManager.ApplyInputField(inputField);
 
                                 break;
                             }
                         case EditorProperty.ValueType.Vector2:
+                        case EditorProperty.ValueType.Vector2Int:
                             {
-                                if (prop.configEntry.BoxedValue.GetType() != typeof(Vector2))
+                                var type = prop.configEntry.BoxedValue.GetType();
+                                if (type != typeof(Vector2) && type != typeof(Vector2Int))
                                 {
                                     Destroy(gameObject);
                                     continue;
                                 }
 
+                                var isInteger = type == typeof(Vector2Int);
+
                                 var vector2 = gameObject.transform.Find("input");
 
-                                var vtmp = (Vector2)prop.configEntry.BoxedValue;
-
                                 var vxif = vector2.transform.Find("x").GetComponent<InputField>();
-                                vxif.onValueChanged.RemoveAllListeners();
-                                vxif.text = vtmp.x.ToString();
-                                vxif.onValueChanged.AddListener(delegate (string _val)
+                                vxif.onValueChanged.ClearAll();
+                                vxif.text = (prop.configEntry.BoxedValue is Vector2 vector2Val ? vector2Val.x : ((Vector2Int)prop.configEntry.BoxedValue).x).ToString();
+                                vxif.onValueChanged.AddListener(_val =>
                                 {
+                                    if (prop.configEntry.BoxedValue is Vector2Int vector2Int && int.TryParse(_val, out int intResult))
+                                    {
+                                        prop.configEntry.BoxedValue = new Vector2Int(intResult, vector2Int.y);
+                                        return;
+                                    }
+
                                     if (float.TryParse(_val, out float result))
                                     {
                                         var vector2Value = (Vector2)prop.configEntry.BoxedValue;
@@ -10381,10 +10226,16 @@ namespace BetterLegacy.Editor.Managers
                                 EditorThemeManager.ApplySelectable(rightX, ThemeGroup.Function_2, false);
 
                                 var vyif = vector2.transform.Find("y").GetComponent<InputField>();
-                                vyif.onValueChanged.RemoveAllListeners();
-                                vyif.text = vtmp.y.ToString();
-                                vyif.onValueChanged.AddListener(delegate (string _val)
+                                vyif.onValueChanged.ClearAll();
+                                vyif.text = (prop.configEntry.BoxedValue is Vector2 vector2Val1 ? vector2Val1.y : ((Vector2Int)prop.configEntry.BoxedValue).y).ToString();
+                                vyif.onValueChanged.AddListener(_val =>
                                 {
+                                    if (prop.configEntry.BoxedValue is Vector2Int vector2Int && int.TryParse(_val, out int intResult))
+                                    {
+                                        prop.configEntry.BoxedValue = new Vector2Int(vector2Int.x, intResult);
+                                        return;
+                                    }
+
                                     if (float.TryParse(_val, out float result))
                                     {
                                         var vector2Value = (Vector2)prop.configEntry.BoxedValue;
@@ -10403,15 +10254,27 @@ namespace BetterLegacy.Editor.Managers
                                 EditorThemeManager.ApplySelectable(leftY, ThemeGroup.Function_2, false);
                                 EditorThemeManager.ApplySelectable(rightY, ThemeGroup.Function_2, false);
 
-                                TriggerHelper.AddEventTrigger(vxif.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDelta(vxif) });
-                                TriggerHelper.AddEventTrigger(vyif.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDelta(vyif) });
+                                if (isInteger)
+                                {
+                                    TriggerHelper.AddEventTriggerParams(vxif.gameObject, TriggerHelper.ScrollDeltaInt(vxif));
+                                    TriggerHelper.AddEventTriggerParams(vyif.gameObject, TriggerHelper.ScrollDeltaInt(vyif));
 
-                                TriggerHelper.IncreaseDecreaseButtons(vxif);
-                                TriggerHelper.IncreaseDecreaseButtons(vyif);
+                                    TriggerHelper.IncreaseDecreaseButtonsInt(vxif);
+                                    TriggerHelper.IncreaseDecreaseButtonsInt(vyif);
+                                }
+                                else
+                                {
+                                    TriggerHelper.AddEventTrigger(vxif.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDelta(vxif) });
+                                    TriggerHelper.AddEventTrigger(vyif.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDelta(vyif) });
+
+                                    TriggerHelper.IncreaseDecreaseButtons(vxif);
+                                    TriggerHelper.IncreaseDecreaseButtons(vyif);
+                                }
 
                                 break;
                             }
                         case EditorProperty.ValueType.Vector3:
+                        case EditorProperty.ValueType.Vector3Int:
                             {
                                 Debug.Log("lol");
                                 break;
@@ -10433,14 +10296,11 @@ namespace BetterLegacy.Editor.Managers
                                     var selectorText = selector.Find("text").GetComponent<Text>();
                                     var button = selector.GetComponent<Button>();
                                     button.onClick.ClearAll();
-                                    button.onClick.AddListener(delegate ()
+                                    button.onClick.AddListener(() =>
                                     {
                                         selectingKey = true;
                                         selectorText.text = "Press...";
-                                        setKey = delegate (KeyCode key)
-                                        {
-                                            prop.configEntry.BoxedValue = key;
-                                        };
+                                        setKey = key => { prop.configEntry.BoxedValue = key; };
 
                                         onKeySet = RenderPropertiesWindow;
                                     });
@@ -10474,10 +10334,7 @@ namespace BetterLegacy.Editor.Managers
                                 }
 
                                 dropdown.value = (int)prop.configEntry.BoxedValue;
-                                dropdown.onValueChanged.AddListener(delegate (int _val)
-                                {
-                                    prop.configEntry.BoxedValue = _val;
-                                });
+                                dropdown.onValueChanged.AddListener(_val => { prop.configEntry.BoxedValue = _val; });
 
                                 EditorThemeManager.ApplyDropdown(dropdown);
 
@@ -10503,20 +10360,18 @@ namespace BetterLegacy.Editor.Managers
                                 var hexField = gameObject.transform.Find("input").GetComponent<InputField>();
                                 hexField.onValueChanged.RemoveAllListeners();
                                 hexField.text = CoreHelper.ColorToHex((Color)prop.configEntry.BoxedValue);
-                                hexField.onValueChanged.AddListener(delegate (string _val)
+                                hexField.onValueChanged.AddListener(_val =>
                                 {
                                     string hex = _val;
                                     if (hex.Length == 6)
                                         hex += "FF";
+                                    if (hex.Length != 8)
+                                        return;
+                                    prop.configEntry.BoxedValue = LSColors.HexToColorAlpha(hex);
+                                    configColorImage.color = (Color)prop.configEntry.BoxedValue;
+                                    dropperImage.color = CoreHelper.InvertColorHue(CoreHelper.InvertColorValue((Color)prop.configEntry.BoxedValue));
 
-                                    if (hex.Length == 8)
-                                    {
-                                        prop.configEntry.BoxedValue = LSColors.HexToColorAlpha(hex);
-                                        configColorImage.color = (Color)prop.configEntry.BoxedValue;
-                                        dropperImage.color = CoreHelper.InvertColorHue(CoreHelper.InvertColorValue((Color)prop.configEntry.BoxedValue));
-
-                                        TriggerHelper.AddEventTriggerParams(configColor, TriggerHelper.CreatePreviewClickTrigger(configColorImage, dropperImage, hexField, (Color)prop.configEntry.BoxedValue, "Editor Properties Popup"));
-                                    }
+                                    TriggerHelper.AddEventTriggerParams(configColor, TriggerHelper.CreatePreviewClickTrigger(configColorImage, dropperImage, hexField, (Color)prop.configEntry.BoxedValue, "Editor Properties Popup"));
                                 });
 
                                 TriggerHelper.AddEventTriggerParams(configColor, TriggerHelper.CreatePreviewClickTrigger(configColorImage, dropperImage, hexField, (Color)prop.configEntry.BoxedValue, "Editor Properties Popup"));
@@ -10530,10 +10385,7 @@ namespace BetterLegacy.Editor.Managers
                                 TooltipHelper.AddHoverTooltip(gameObject, prop.name, prop.description, new List<string> { "Function" });
 
                                 var button = gameObject.GetComponent<Button>();
-                                button.onClick.AddListener(delegate ()
-                                {
-                                    prop.action?.Invoke();
-                                });
+                                button.onClick.AddListener(() => { prop.action?.Invoke(); });
 
                                 EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
 
@@ -10546,34 +10398,19 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
-        public void RefreshFileBrowserLevels()
-        {
-            if (RTFileBrowser.inst)
-            {
-                RTFileBrowser.inst.UpdateBrowser(RTFile.ApplicationDirectory, ".lsb", "level", x => StartCoroutine(LoadLevel(x.Replace("\\", "/").Replace("/level.lsb", ""))));
-            }
-        }
+        public void RefreshFileBrowserLevels() => RTFileBrowser.inst?.UpdateBrowser(RTFile.ApplicationDirectory, ".lsb", "level", x => StartCoroutine(LoadLevel(x.Replace("\\", "/").Replace("/level.lsb", ""))));
 
         public void RefreshDocumentation()
         {
             if (documentations.Count > 0)
                 foreach (var document in documentations)
                 {
-                    if (string.IsNullOrEmpty(documentationSearch) || document.Name.ToLower().Contains(documentationSearch.ToLower()))
+                    var active = string.IsNullOrEmpty(documentationSearch) || document.Name.ToLower().Contains(documentationSearch.ToLower());
+                    document.PopupButton?.SetActive(active);
+                    if (active && document.PopupButton && document.PopupButton.TryGetComponent(out Button button))
                     {
-                        document.PopupButton?.SetActive(true);
-                        if (document.PopupButton && document.PopupButton.TryGetComponent(out Button button))
-                        {
-                            button.onClick.ClearAll();
-                            button.onClick.AddListener(delegate ()
-                            {
-                                SelectDocumentation(document);
-                            });
-                        }
-                    }
-                    else
-                    {
-                        document.PopupButton?.SetActive(false);
+                        button.onClick.ClearAll();
+                        button.onClick.AddListener(() => { SelectDocumentation(document); });
                     }
                 }
         }
@@ -10597,19 +10434,16 @@ namespace BetterLegacy.Editor.Managers
                             if (element.Data is not string || string.IsNullOrEmpty((string)element.Data))
                                 break;
 
-                            var bar = Instantiate(singleInput);
+                            var bar = singleInput.Duplicate(documentationContent, "element");
                             DestroyImmediate(bar.GetComponent<InputField>());
                             DestroyImmediate(bar.GetComponent<EventInfo>());
                             DestroyImmediate(bar.GetComponent<EventTrigger>());
 
                             LSHelpers.DeleteChildren(bar.transform);
-                            bar.transform.SetParent(documentationContent);
                             bar.transform.localScale = Vector3.one;
-                            bar.name = "element";
                             bar.transform.AsRT().sizeDelta = new Vector2(722f, 22f * LSText.WordWrap((string)element.Data, 67).Count);
 
-                            var l = Instantiate(label);
-                            l.transform.SetParent(bar.transform);
+                            var l = label.Duplicate(bar.transform, "label");
                             l.transform.localScale = Vector3.one;
                             var text = l.transform.GetChild(0).GetComponent<Text>();
                             text.text = (string)element.Data;
@@ -10617,9 +10451,8 @@ namespace BetterLegacy.Editor.Managers
                             EditorThemeManager.ApplyLightText(text);
 
                             l.transform.AsRT().sizeDelta = new Vector2(722f, 22f);
-                            l.transform.GetChild(0).AsRT().sizeDelta = new Vector2(722f, 22f);
-
                             l.transform.GetChild(0).AsRT().anchoredPosition = new Vector2(10f, -5f);
+                            l.transform.GetChild(0).AsRT().sizeDelta = new Vector2(722f, 22f);
 
                             var barImage = bar.GetComponent<Image>();
                             barImage.enabled = true;
@@ -10644,16 +10477,14 @@ namespace BetterLegacy.Editor.Managers
                             if (element.Data is not string)
                                 break;
 
-                            var bar = Instantiate(singleInput);
+                            var bar = singleInput.Duplicate(documentationContent, "element");
                             LSHelpers.DeleteChildren(bar.transform);
                             DestroyImmediate(bar.GetComponent<InputField>());
                             DestroyImmediate(bar.GetComponent<EventInfo>());
                             DestroyImmediate(bar.GetComponent<EventTrigger>());
                             DestroyImmediate(bar.GetComponent<HorizontalLayoutGroup>());
 
-                            bar.transform.SetParent(documentationContent);
                             bar.transform.localScale = Vector3.one;
-                            bar.name = "element";
 
                             var imageObj = bar.Duplicate(bar.transform, "image");
                             imageObj.transform.AsRT().anchoredPosition = Vector2.zero;
@@ -10695,15 +10526,13 @@ namespace BetterLegacy.Editor.Managers
                 // Spacer
                 if (num != document.elements.Count - 1)
                 {
-                    var bar = Instantiate(singleInput);
+                    var bar = singleInput.Duplicate(documentationContent, "spacer");
                     Destroy(bar.GetComponent<InputField>());
                     Destroy(bar.GetComponent<EventInfo>());
                     Destroy(bar.GetComponent<EventTrigger>());
 
                     LSHelpers.DeleteChildren(bar.transform);
-                    bar.transform.SetParent(documentationContent);
                     bar.transform.localScale = Vector3.one;
-                    bar.name = "spacer";
                     bar.transform.AsRT().sizeDelta = new Vector2(764f, 2f);
 
                     var barImage = bar.GetComponent<Image>();
@@ -10719,22 +10548,16 @@ namespace BetterLegacy.Editor.Managers
 
         public void RefreshDebugger()
         {
-            var parent = EditorManager.inst.GetDialog("Debugger Popup").Dialog.transform.Find("mask/content");
-
             for (int i = 0; i < debugs.Count; i++)
-            {
-                var current = parent.GetChild(i);
-
-                current.gameObject.SetActive(string.IsNullOrEmpty(debugSearch) || debugs[i].ToLower().Contains(debugSearch.ToLower()));
-            }
+                debuggerPopup.Content.GetChild(i).gameObject.SetActive(CoreHelper.SearchString(debugSearch, debugs[i]));
         }
 
         public void RefreshAutosaveList(EditorWrapper editorWrapper)
         {
             autosaveSearchField.onValueChanged.ClearAll();
-            autosaveSearchField.onValueChanged.AddListener(delegate (string _value)
+            autosaveSearchField.onValueChanged.AddListener(_val =>
             {
-                autosaveSearch = _value;
+                autosaveSearch = _val;
                 RefreshAutosaveList(editorWrapper);
             });
 
@@ -10757,7 +10580,7 @@ namespace BetterLegacy.Editor.Managers
                 folderButtonStorage.text.text = Path.GetFileName(file);
 
                 folderButtonStorage.button.onClick.ClearAll();
-                folderButtonStorage.button.onClick.AddListener(delegate ()
+                folderButtonStorage.button.onClick.AddListener(() =>
                 {
                     StartCoroutine(LoadLevel(editorWrapper.folder, file.Replace("\\", "/").Replace(editorWrapper.folder + "/", "")));
                     EditorManager.inst.HideDialog("Open File Popup");
@@ -10771,23 +10594,21 @@ namespace BetterLegacy.Editor.Managers
                 UIManager.SetRectTransform(backup.transform.AsRT(), new Vector2(450f, 0f), new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(1f, 0.5f), new Vector2(80f, 28f));
                 backupHolder.text.text = "Backup";
                 backupHolder.button.onClick.ClearAll();
-                backupHolder.button.onClick.AddListener(delegate ()
+                backupHolder.button.onClick.AddListener(() =>
                 {
                     var fi = new FileInfo(tmpFile);
 
                     tmpFile = tmpFile.Contains("autosave_") ? tmpFile.Replace("autosave_", "backup_") : tmpFile.Replace("backup_", "autosave_");
 
                     if (fi.Exists)
-                    {
                         fi.MoveTo(tmpFile);
-                    }
 
                     var fileName = Path.GetFileName(tmpFile);
                     folderButtonStorage.text.text = fileName;
                     gameObject.name = $"Folder [{fileName}]";
 
                     folderButtonStorage.button.onClick.ClearAll();
-                    folderButtonStorage.button.onClick.AddListener(delegate ()
+                    folderButtonStorage.button.onClick.AddListener(() =>
                     {
                         StartCoroutine(LoadLevel(editorWrapper.folder, tmpFile.Replace("\\", "/").Replace(editorWrapper.folder + "/", "")));
                         EditorManager.inst.HideDialog("Open File Popup");
@@ -10804,7 +10625,7 @@ namespace BetterLegacy.Editor.Managers
         {
             NewLevelTemplates.Clear();
             LSHelpers.DeleteChildren(newLevelTemplateContent);
-            List<Text> texts = new List<Text>();
+            var texts = new List<Text>();
 
             var baseLevelTemplateGameObject = newLevelTemplatePrefab.Duplicate(newLevelTemplateContent);
             var basePreviewBase = baseLevelTemplateGameObject.transform.Find("Preview Base");
@@ -10815,7 +10636,7 @@ namespace BetterLegacy.Editor.Managers
 
             var baseButton = baseLevelTemplateGameObject.GetComponent<Button>();
             baseButton.onClick.ClearAll();
-            baseButton.onClick.AddListener(delegate ()
+            baseButton.onClick.AddListener(() =>
             {
                 currentLevelTemplate = -1;
                 EditorManager.inst.DisplayNotification($"Set level template to default.", 1.6f, EditorManager.NotificationType.Success);
@@ -10827,7 +10648,7 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.ApplyGraphic(basePreviewBase.GetComponent<Image>(), ThemeGroup.Null, true);
             EditorThemeManager.ApplyLightText(baseTitle);
 
-            var baseDirectory = RTFile.ApplicationDirectory + "beatmaps/templates";
+            var baseDirectory = $"{RTFile.ApplicationDirectory}beatmaps/templates";
 
             if (!RTFile.DirectoryExists(baseDirectory))
                 return;
@@ -10851,7 +10672,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var button = levelTemplateGameObject.GetComponent<Button>();
                 button.onClick.ClearAll();
-                button.onClick.AddListener(delegate ()
+                button.onClick.AddListener(() =>
                 {
                     currentLevelTemplate = index;
                     EditorManager.inst.DisplayNotification($"Set level template to {fileName} [{currentLevelTemplate}]", 2f, EditorManager.NotificationType.Success);
@@ -10923,7 +10744,7 @@ namespace BetterLegacy.Editor.Managers
                         new FloatKeyframe(0f, active ? dialogAnimation.PosStart.x : dialogAnimation.PosEnd.x, Ease.Linear),
                         new FloatKeyframe(active ? dialogAnimation.PosXStartDuration : dialogAnimation.PosXEndDuration, active ? dialogAnimation.PosEnd.x : dialogAnimation.PosStart.x, active ? Ease.GetEaseFunction(dialogAnimation.PosXStartEase) : Ease.GetEaseFunction(dialogAnimation.PosXEndEase)),
                         new FloatKeyframe(active ? dialogAnimation.PosXStartDuration : dialogAnimation.PosXEndDuration + 0.01f, active ? dialogAnimation.PosEnd.x : dialogAnimation.PosStart.x, Ease.Linear),
-                    }, delegate (float x)
+                    }, x =>
                     {
                         if (dialogAnimation.PosActive)
                         {
@@ -10937,7 +10758,7 @@ namespace BetterLegacy.Editor.Managers
                         new FloatKeyframe(0f, active ? dialogAnimation.PosStart.y : dialogAnimation.PosEnd.y, Ease.Linear),
                         new FloatKeyframe(active ? dialogAnimation.PosYStartDuration : dialogAnimation.PosYEndDuration, active ? dialogAnimation.PosEnd.y : dialogAnimation.PosStart.y, active ? Ease.GetEaseFunction(dialogAnimation.PosYStartEase) : Ease.GetEaseFunction(dialogAnimation.PosYEndEase)),
                         new FloatKeyframe(active ? dialogAnimation.PosYStartDuration : dialogAnimation.PosYEndDuration + 0.01f, active ? dialogAnimation.PosEnd.y : dialogAnimation.PosStart.y, Ease.Linear),
-                    }, delegate (float x)
+                    }, x =>
                     {
                         if (dialogAnimation.PosActive)
                         {
@@ -10951,7 +10772,7 @@ namespace BetterLegacy.Editor.Managers
                         new FloatKeyframe(0f, active ? dialogAnimation.ScaStart.x : dialogAnimation.ScaEnd.x, Ease.Linear),
                         new FloatKeyframe(active ? dialogAnimation.ScaXStartDuration : dialogAnimation.ScaXEndDuration, active ? dialogAnimation.ScaEnd.x : dialogAnimation.ScaStart.x, active ? Ease.GetEaseFunction(dialogAnimation.ScaXStartEase) : Ease.GetEaseFunction(dialogAnimation.ScaXEndEase)),
                         new FloatKeyframe(active ? dialogAnimation.ScaXStartDuration : dialogAnimation.ScaXEndDuration + 0.01f, active ? dialogAnimation.ScaEnd.x : dialogAnimation.ScaStart.x, Ease.Linear),
-                    }, delegate (float x)
+                    }, x =>
                     {
                         if (dialogAnimation.ScaActive)
                         {
@@ -10960,9 +10781,7 @@ namespace BetterLegacy.Editor.Managers
                             dialog.localScale = pos;
 
                             for (int i = 0; i < scrollbar.Count; i++)
-                            {
                                 scrollbar[i].value = scrollAmounts[i];
-                            }
                         }
                     }),
                     new AnimationHandler<float>(new List<IKeyframe<float>>
@@ -10970,7 +10789,7 @@ namespace BetterLegacy.Editor.Managers
                         new FloatKeyframe(0f, active ? dialogAnimation.ScaStart.y : dialogAnimation.ScaEnd.y, Ease.Linear),
                         new FloatKeyframe(active ? dialogAnimation.ScaYStartDuration : dialogAnimation.ScaYEndDuration, active ? dialogAnimation.ScaEnd.y : dialogAnimation.ScaStart.y, active ? Ease.GetEaseFunction(dialogAnimation.ScaYStartEase) : Ease.GetEaseFunction(dialogAnimation.ScaYEndEase)),
                         new FloatKeyframe(active ? dialogAnimation.ScaYStartDuration : dialogAnimation.ScaYEndDuration + 0.01f, active ? dialogAnimation.ScaEnd.y : dialogAnimation.ScaStart.y, Ease.Linear),
-                    }, delegate (float x)
+                    }, x =>
                     {
                         if (dialogAnimation.ScaActive)
                         {
@@ -10979,9 +10798,7 @@ namespace BetterLegacy.Editor.Managers
                             dialog.localScale = pos;
 
                             for (int i = 0; i < scrollbar.Count; i++)
-                            {
                                 scrollbar[i].value = scrollAmounts[i];
-                            }
                         }
                     }),
                     new AnimationHandler<float>(new List<IKeyframe<float>>
@@ -10989,17 +10806,15 @@ namespace BetterLegacy.Editor.Managers
                         new FloatKeyframe(0f, active ? dialogAnimation.RotStart : dialogAnimation.RotEnd, Ease.Linear),
                         new FloatKeyframe(active ? dialogAnimation.RotStartDuration : dialogAnimation.RotEndDuration, active ? dialogAnimation.RotEnd : dialogAnimation.RotStart, active ? Ease.GetEaseFunction(dialogAnimation.RotStartEase) : Ease.GetEaseFunction(dialogAnimation.RotEndEase)),
                         new FloatKeyframe(active ? dialogAnimation.RotStartDuration : dialogAnimation.RotEndDuration + 0.01f, active ? dialogAnimation.RotEnd : dialogAnimation.RotStart, Ease.Linear),
-                    }, delegate (float x)
+                    }, x =>
                     {
                         if (dialogAnimation.RotActive)
-                        {
                             dialog.localRotation = Quaternion.Euler(0f, 0f, x);
-                        }
                     }),
                 };
                 animation.id = LSText.randomNumString(16);
 
-                animation.onComplete = delegate ()
+                animation.onComplete = () =>
                 {
                     dialog.gameObject.SetActive(active);
 
@@ -11045,14 +10860,6 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public int screenshotPage;
-        public int screenshotsPerPage = 5;
-
-        public int CurrentScreenshotPage => screenshotPage + 1;
-        public int MinScreenshots => MaxScreenshots - screenshotsPerPage;
-        public int MaxScreenshots => CurrentScreenshotPage * screenshotsPerPage;
-
-        public int screenshotCount;
         public void RefreshScreenshots()
         {
             var directory = RTFile.ApplicationDirectory + CoreConfig.Instance.ScreenshotsPath.Value;
@@ -11073,24 +10880,19 @@ namespace BetterLegacy.Editor.Managers
 
                 var index = i;
 
-                var gameObject = new GameObject("screenshot");
-                gameObject.transform.SetParent(screenshotContent);
+                var gameObject = Creator.NewUIObject("screenshot", screenshotContent);
                 gameObject.transform.localScale = Vector3.one;
-                var rectTransform = gameObject.AddComponent<RectTransform>();
-                rectTransform.sizeDelta = new Vector2(720f, 405f);
+                gameObject.transform.AsRT().sizeDelta = new Vector2(720f, 405f);
 
                 var image = gameObject.AddComponent<Image>();
                 image.enabled = false;
 
                 var button = gameObject.AddComponent<Button>();
                 button.onClick.ClearAll();
-                button.onClick.AddListener(delegate ()
-                {
-                    System.Diagnostics.Process.Start(files[index]);
-                });
+                button.onClick.AddListener(() => { System.Diagnostics.Process.Start(files[index]); });
                 button.colors = UIManager.SetColorBlock(button.colors, Color.white, new Color(0.9f, 0.9f, 0.9f), new Color(0.7f, 0.7f, 0.7f), Color.white, Color.red);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{files[i]}", delegate (Texture2D texture2D)
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{files[i]}", texture2D =>
                 {
                     if (!image)
                         return;
@@ -11169,14 +10971,6 @@ namespace BetterLegacy.Editor.Managers
 
         #region Editor Properties
 
-        public void AddOtherProperty(BaseSetting setting)
-        {
-            if (otherProperties.Has(x => x.name == setting.Key))
-                return;
-
-            otherProperties.Add(new EditorProperty(setting));
-        }
-
         public static List<EditorProperty> EditorProperties => new List<EditorProperty>()
         {
             #region General
@@ -11249,6 +11043,7 @@ namespace BetterLegacy.Editor.Managers
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.TimelineObjectPrefabTypeIcon),
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.EventLabelsRenderLeft),
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.EventKeyframesRenderBinColor),
+            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ObjectKeyframesRenderBinColor),
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.WaveformGenerate),
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.WaveformSaves),
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.WaveformRerender),
@@ -11258,10 +11053,7 @@ namespace BetterLegacy.Editor.Managers
             new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.WaveformBottomColor),
             new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.WaveformTextureFormat),
             new EditorProperty("Render Waveform", EditorProperty.ValueType.Function, EditorProperty.EditorPropCategory.Timeline,
-                delegate ()
-                {
-                    inst.StartCoroutine(inst.AssignTimelineTexture());
-                }, "Renders the timeline waveform."),
+                () => { inst.StartCoroutine(inst.AssignTimelineTexture()); }, "Renders the timeline waveform."),
 
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.TimelineGridEnabled),
             new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.TimelineGridColor),
@@ -11317,6 +11109,7 @@ namespace BetterLegacy.Editor.Managers
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.AdjustPositionInputs),
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ShowDropdownOnHover),
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.HideVisualElementsWhenObjectIsEmpty),
+            new EditorProperty(EditorProperty.ValueType.Vector2Int, EditorConfig.Instance.RenderDepthRange),
             new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.OpenLevelPosition),
             new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.OpenLevelScale),
             new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.OpenLevelEditorPathPos),
@@ -13142,6 +12935,37 @@ namespace BetterLegacy.Editor.Managers
             },
         };
 
+        public class Popup
+        {
+            public string Name { get; set; }
+            public GameObject GameObject { get; set; }
+            public Button Close { get; set; }
+            public InputField SearchField { get; set; }
+            public Transform Content { get; set; }
+            public GridLayoutGroup Grid { get; set; }
+            public RectTransform TopPanel { get; set; }
+        }
+
+        class MultiColorButton
+        {
+            public Button Button { get; set; }
+            public Image Image { get; set; }
+            public GameObject Selected { get; set; }
+        }
+
+        public class ButtonFunction
+        {
+            public ButtonFunction(string name, Action action)
+            {
+                Name = name;
+                Action = action;
+            }
+
+            public string Name { get; set; }
+            public int FontSize { get; set; } = 16;
+            public Action Action { get; set; }
+        }
+
         public class DialogAnimation : Exists
         {
             public DialogAnimation(string name)
@@ -13222,8 +13046,6 @@ namespace BetterLegacy.Editor.Managers
             public string RotStartEase => RotOpenEaseConfig.Value.ToString();
             public string RotEndEase => RotCloseEaseConfig.Value.ToString();
         }
-
-        public List<string> NewLevelTemplates { get; set; } = new List<string>();
 
         public class EditorProperty : Exists
         {
@@ -13312,7 +13134,9 @@ namespace BetterLegacy.Editor.Managers
                 FloatSlider,
                 String,
                 Vector2,
+                Vector2Int,
                 Vector3,
+                Vector3Int,
                 Enum,
                 Color,
                 Function
