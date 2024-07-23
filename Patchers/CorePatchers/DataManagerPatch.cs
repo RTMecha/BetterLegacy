@@ -7,6 +7,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Menus;
+using BetterLegacy.Story;
 using HarmonyLib;
 using LSFunctions;
 using SimpleJSON;
@@ -42,6 +43,7 @@ namespace BetterLegacy.Patchers
             AchievementManager.Init();
             LevelManager.Init();
             PlayerManager.Init();
+            StoryManager.Init();
 
             AudioManager.inst.gameObject.AddComponent<SoundManager>();
             ArcadeManager.inst.gameObject.AddComponent<RTArcade>();
