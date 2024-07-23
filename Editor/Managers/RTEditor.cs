@@ -156,6 +156,8 @@ namespace BetterLegacy.Editor.Managers
             functionButton1Storage.button.onClick.ClearAll();
             functionButton1Storage.text = prefabHolder.Function1Button.transform.GetChild(0).GetComponent<Text>();
 
+            ReloadSprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_refresh-white.png");
+
             if (!RTFile.FileExists(EditorSettingsPath))
                 CreateGlobalSettings();
             else
@@ -470,6 +472,8 @@ namespace BetterLegacy.Editor.Managers
                 return searchSprite;
             }
         }
+
+        public static Sprite ReloadSprite { get; set; }
 
         public string propertiesSearch;
 
@@ -2748,35 +2752,27 @@ namespace BetterLegacy.Editor.Managers
 
         void SetupDoggo()
         {
-            //var loading = new GameObject("loading");
             var fileInfoPopup = EditorManager.inst.GetDialog("File Info Popup").Dialog;
 
             fileInfoText = fileInfoPopup.Find("text").GetComponent<Text>();
 
-            //loading.transform.SetParent(fileInfoPopup);
-            //loading.layer = 5;
-            //loading.transform.localScale = Vector3.one;
+            var doggoBase = Creator.NewUIObject("loading base", fileInfoPopup);
+            var doggoLayout = doggoBase.AddComponent<LayoutElement>();
+            doggoLayout.ignoreLayout = true;
+            doggoBase.transform.AsRT().anchoredPosition = new Vector2(0f, -75f);
+            doggoBase.transform.AsRT().sizeDelta = new Vector2(122f, 122f);
 
-            //var rtLoading = loading.AddComponent<RectTransform>();
-            //loading.AddComponent<CanvasRenderer>();
-            //var iLoading = loading.AddComponent<Image>();
-            //var leLoading = loading.AddComponent<LayoutElement>();
+            var doggoBaseImage = doggoBase.AddComponent<Image>();
+            var doggoMask = doggoBase.AddComponent<Mask>();
+            doggoMask.showMaskGraphic = false;
+            EditorThemeManager.AddGraphic(doggoBaseImage, ThemeGroup.Null, true);
 
-            //rtLoading.anchoredPosition = new Vector2(0f, -75f);
-            //rtLoading.sizeDelta = new Vector2(122f, 122f);
-            //iLoading.sprite = EditorManager.inst.loadingImage.sprite;
-            //leLoading.ignoreLayout = true;
-
-            //fileInfoPopup.AsRT().sizeDelta = new Vector2(500f, 320f);
-
-            var doggoObject = Creator.NewUIObject("loading", fileInfoPopup);
+            var doggoObject = Creator.NewUIObject("loading", doggoBase.transform);
             doggoObject.transform.localScale = Vector3.one;
 
             doggoImage = doggoObject.AddComponent<Image>();
-            var doggoLayout = doggoObject.AddComponent<LayoutElement>();
-            doggoLayout.ignoreLayout = true;
 
-            doggoObject.transform.AsRT().anchoredPosition = new Vector2(0f, -75f);
+            doggoObject.transform.AsRT().anchoredPosition = Vector2.zero;
             doggoObject.transform.AsRT().sizeDelta = new Vector2(122f, 122f);
             doggoImage.sprite = EditorManager.inst.loadingImage.sprite;
 
@@ -2798,35 +2794,26 @@ namespace BetterLegacy.Editor.Managers
             var sortListRT = sortList.transform.AsRT();
             sortListRT.anchoredPosition = config.OpenLevelDropdownPosition.Value;
             var sortListTip = sortList.GetComponent<HoverTooltip>();
+            sortListTip.tooltipLangauges.Add(new HoverTooltip.Tooltip
             {
-                sortListTip.tooltipLangauges[0].desc = "Sort the order of your levels.";
-                sortListTip.tooltipLangauges[0].hint = "<b>Cover</b> Sort by if level has a set cover. (Default)" +
+                desc = "Sort the order of your levels.",
+                hint = "<b>Cover</b> Sort by if level has a set cover. (Default)" +
                     "<br><b>Artist</b> Sort by song artist." +
                     "<br><b>Creator</b> Sort by level creator." +
                     "<br><b>Folder</b> Sort by level folder name." +
                     "<br><b>Title</b> Sort by song title." +
                     "<br><b>Difficulty</b> Sort by level difficulty." +
-                    "<br><b>Date Edited</b> Sort by date edited / created.";
-            }
+                    "<br><b>Date Edited</b> Sort by date edited / created."
+            });
 
             Destroy(sortList.GetComponent<HideDropdownOptions>());
             levelOrderDropdown.onValueChanged.ClearAll();
             levelOrderDropdown.options.Clear();
-            levelOrderDropdown.options = new List<Dropdown.OptionData>
-            {
-                new Dropdown.OptionData("Cover"),
-                new Dropdown.OptionData("Artist"),
-                new Dropdown.OptionData("Creator"),
-                new Dropdown.OptionData("Folder"),
-                new Dropdown.OptionData("Title"),
-                new Dropdown.OptionData("Difficulty"),
-                new Dropdown.OptionData("Date Edited"),
-                new Dropdown.OptionData("Date Created")
-            };
+            levelOrderDropdown.options = new string[] { "Cover", "Artist", "Creator", "Folder", "Title", "Difficulty", "Date Edited", "Date Created" }.Select(x => new Dropdown.OptionData(x)).ToList();
             levelOrderDropdown.value = levelFilter;
-            levelOrderDropdown.onValueChanged.AddListener(delegate (int _value)
+            levelOrderDropdown.onValueChanged.AddListener((int _val) =>
             {
-                levelFilter = _value;
+                levelFilter = _val;
                 StartCoroutine(RefreshLevelList());
                 SaveGlobalSettings();
             });
@@ -2843,9 +2830,9 @@ namespace BetterLegacy.Editor.Managers
             levelAscendToggle = checkDes.transform.Find("toggle").GetComponent<Toggle>();
             levelAscendToggle.onValueChanged.ClearAll();
             levelAscendToggle.isOn = levelAscend;
-            levelAscendToggle.onValueChanged.AddListener(delegate (bool _value)
+            levelAscendToggle.onValueChanged.AddListener((bool _val) =>
             {
-                levelAscend = _value;
+                levelAscend = _val;
                 StartCoroutine(RefreshLevelList());
                 SaveGlobalSettings();
             });
@@ -2854,345 +2841,305 @@ namespace BetterLegacy.Editor.Managers
 
             TooltipHelper.AddHoverTooltip(levelAscendToggle.gameObject, new List<HoverTooltip.Tooltip> { sortListTip.tooltipLangauges[0] });
 
-            // Editor Path
-            {
-                var editorPathGO = GameObject.Find("TimelineBar/GameObject/Time Input")
+            #region Level Path
+
+            var levelPathGameObject = GameObject.Find("TimelineBar/GameObject/Time Input")
                     .Duplicate(EditorManager.inst.GetDialog("Open File Popup").Dialog, "editor path");
-                ((RectTransform)editorPathGO.transform).anchoredPosition = config.OpenLevelEditorPathPos.Value;
-                ((RectTransform)editorPathGO.transform).sizeDelta = new Vector2(config.OpenLevelEditorPathLength.Value, 32f);
+            ((RectTransform)levelPathGameObject.transform).anchoredPosition = config.OpenLevelEditorPathPos.Value;
+            ((RectTransform)levelPathGameObject.transform).sizeDelta = new Vector2(config.OpenLevelEditorPathLength.Value, 32f);
 
-                var levelListTip = editorPathGO.GetComponent<HoverTooltip>() ?? editorPathGO.AddComponent<HoverTooltip>();
+            (levelPathGameObject.GetComponent<HoverTooltip>() ?? levelPathGameObject.AddComponent<HoverTooltip>()).tooltipLangauges.Add(new HoverTooltip.Tooltip
+            {
+                keys = new List<string> { "Right click to select a folder" },
+                desc = "Level list path",
+                hint = "Input the path you want to load levels from within the beatmaps folder. For example: inputting \"editor\" into the input field will load levels from beatmaps/editor. You can also set it to sub-directories, like: \"editor/pa levels\" will take levels from \"beatmaps/editor/pa levels\"."
+            });
+            TooltipHelper.AssignTooltip(levelPathGameObject, "Editor Path", 3f);
 
-                var llTip = new HoverTooltip.Tooltip();
+            editorPathField = levelPathGameObject.GetComponent<InputField>();
+            editorPathField.characterValidation = InputField.CharacterValidation.None;
+            editorPathField.onValueChanged.ClearAll();
+            editorPathField.onEndEdit.ClearAll();
+            editorPathField.textComponent.alignment = TextAnchor.MiddleLeft;
+            editorPathField.textComponent.fontSize = 16;
+            editorPathField.text = EditorPath;
+            editorPathField.onValueChanged.AddListener((string _val) =>
+            {
+                EditorPath = _val;
+            });
+            editorPathField.onEndEdit.AddListener((string _val) =>
+            {
+                UpdateEditorPath(false);
+            });
 
-                llTip.keys = new List<string>
+            EditorThemeManager.AddInputField(editorPathField);
+
+            var levelClickable = levelPathGameObject.AddComponent<Clickable>();
+            levelClickable.onDown = (PointerEventData pointerEventData) =>
+            {
+                if (pointerEventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                EditorManager.inst.ShowDialog("Browser Popup");
+                RTFileBrowser.inst.UpdateBrowser(RTFile.ApplicationDirectory + "beatmaps", onSelectFolder: (string _val) =>
                 {
-                    "Right click to select a folder",
-                };
-                llTip.desc = "Level list path";
-                llTip.hint = "Input the path you want to load levels from within the beatmaps folder. For example: inputting \"editor\" into the input field will load levels from beatmaps/editor. You can also set it to sub-directories, like: \"editor/pa levels\" will take levels from \"beatmaps/editor/pa levels\".";
+                    if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
+                    {
+                        EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                        return;
+                    }
 
-                levelListTip.tooltipLangauges.Add(llTip);
-                TooltipHelper.AssignTooltip(editorPathGO, "Editor Path", 3f);
-
-                editorPathField = editorPathGO.GetComponent<InputField>();
-                editorPathField.characterValidation = InputField.CharacterValidation.None;
-                editorPathField.onValueChanged.ClearAll();
-                editorPathField.onEndEdit.ClearAll();
-                editorPathField.textComponent.alignment = TextAnchor.MiddleLeft;
-                editorPathField.textComponent.fontSize = 16;
-                editorPathField.text = EditorPath;
-                editorPathField.onValueChanged.AddListener(delegate (string _val)
-                {
-                    EditorPath = _val;
-                });
-                editorPathField.onEndEdit.AddListener(delegate (string _val)
-                {
+                    editorPathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
+                    EditorManager.inst.DisplayNotification($"Set Editor path to {EditorPath}!", 2f, EditorManager.NotificationType.Success);
+                    EditorManager.inst.HideDialog("Browser Popup");
                     UpdateEditorPath(false);
                 });
+            };
 
-                EditorThemeManager.AddInputField(editorPathField);
+            var levelListReloader = GameObject.Find("TimelineBar/GameObject/play")
+                .Duplicate(EditorManager.inst.GetDialog("Open File Popup").Dialog, "reload");
+            levelListReloader.transform.AsRT().anchoredPosition = config.OpenLevelListRefreshPosition.Value;
+            levelListReloader.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
 
-                var clickable = editorPathGO.AddComponent<Clickable>();
-                clickable.onDown = delegate (PointerEventData pointerEventData)
-                {
-                    if (pointerEventData.button == PointerEventData.InputButton.Right)
-                    {
-                        EditorManager.inst.ShowDialog("Browser Popup");
-                        RTFileBrowser.inst.UpdateBrowser(RTFile.ApplicationDirectory + "beatmaps", onSelectFolder: delegate (string _val)
-                        {
-                            if (_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
-                            {
-                                editorPathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
-                                EditorManager.inst.DisplayNotification($"Set Editor path to {EditorPath}!", 2f, EditorManager.NotificationType.Success);
-                                EditorManager.inst.HideDialog("Browser Popup");
-                                UpdateEditorPath(false);
-                            }
-                            else
-                            {
-                                EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                            }
-                        });
-                    }
-                };
-
-                var levelListReloader = GameObject.Find("TimelineBar/GameObject/play")
-                    .Duplicate(EditorManager.inst.GetDialog("Open File Popup").Dialog, "reload");
-                ((RectTransform)levelListReloader.transform).anchoredPosition = config.OpenLevelListRefreshPosition.Value;
-                ((RectTransform)levelListReloader.transform).sizeDelta = new Vector2(32f, 32f);
-
-                var levelListRTip = levelListReloader.AddComponent<HoverTooltip>();
-                var llRTip = new HoverTooltip.Tooltip();
-
-                llRTip.desc = "Refresh level list";
-                llRTip.hint = "Clicking this will reload the level list.";
-
-                levelListRTip.tooltipLangauges.Add(llRTip);
-
-                var levelListRButton = levelListReloader.GetComponent<Button>();
-                levelListRButton.onClick.ClearAll();
-                levelListRButton.onClick.AddListener(delegate ()
-                {
-                    UpdateEditorPath(true);
-                });
-
-                EditorThemeManager.AddSelectable(levelListRButton, ThemeGroup.Function_2, false);
-
-                string refreshImage = RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_refresh-white.png";
-
-                if (RTFile.FileExists(refreshImage))
-                    levelListRButton.image.sprite = SpriteManager.LoadSprite(refreshImage);
-            }
-
-            // Theme Path
+            (levelListReloader.GetComponent<HoverTooltip>() ?? levelListReloader.AddComponent<HoverTooltip>()).tooltipLangauges.Add(new HoverTooltip.Tooltip
             {
-                var themePathSpacer = EditorManager.inst.GetDialog("Event Editor").Dialog.Find("data/right/theme").GetChild(2).gameObject
-                    .Duplicate(EditorManager.inst.GetDialog("Event Editor").Dialog.Find("data/right/theme"), "themepathers", 8);
+                desc = "Refresh level list",
+                hint = "Clicking this will reload the level list."
+            });
 
-                var themePathGO = timeField.gameObject.Duplicate(themePathSpacer.transform, "themes path");
-                themePathGO.transform.AsRT().anchoredPosition = new Vector2(80f, 0f);
-                themePathGO.transform.AsRT().sizeDelta = new Vector2(160f, 34f);
+            var levelListReloaderButton = levelListReloader.GetComponent<Button>();
+            levelListReloaderButton.onClick.ClearAll();
+            levelListReloaderButton.onClick.AddListener(() =>
+            {
+                UpdateEditorPath(true);
+            });
 
-                var themePathTip = themePathGO.AddComponent<HoverTooltip>();
-                var llTip = new HoverTooltip.Tooltip();
+            EditorThemeManager.AddSelectable(levelListReloaderButton, ThemeGroup.Function_2, false);
 
-                llTip.keys = new List<string>
+            levelListReloaderButton.image.sprite = ReloadSprite;
+
+            #endregion
+
+            #region Theme Path
+
+            var themePathBase = EditorManager.inst.GetDialog("Event Editor").Dialog.Find("data/right/theme").GetChild(2).gameObject
+                .Duplicate(EditorManager.inst.GetDialog("Event Editor").Dialog.Find("data/right/theme"), "themepathers", 8);
+
+            var themePathGameObject = timeField.gameObject.Duplicate(themePathBase.transform, "themes path");
+            themePathGameObject.transform.AsRT().anchoredPosition = new Vector2(80f, 0f);
+            themePathGameObject.transform.AsRT().sizeDelta = new Vector2(160f, 34f);
+
+            themePathGameObject.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip
+            {
+                keys = new List<string> { "Right click to select a folder", },
+                desc = "Theme list path",
+                hint = "Input the path you want to load themes from within the beatmaps folder. For example: inputting \"themes\" into the input field will load themes from beatmaps/themes. You can also set it to sub-directories, like: \"themes/pa colors\" will take levels from \"beatmaps/themes/pa colors\"."
+            });
+
+            themePathField = themePathGameObject.GetComponent<InputField>();
+            themePathField.characterValidation = InputField.CharacterValidation.None;
+            themePathField.onValueChanged.ClearAll();
+            themePathField.onEndEdit.ClearAll();
+            themePathField.textComponent.alignment = TextAnchor.MiddleLeft;
+            themePathField.textComponent.fontSize = 16;
+            themePathField.text = ThemePath;
+            themePathField.onValueChanged.AddListener((string _val) =>
+            {
+                ThemePath = _val;
+            });
+            themePathField.onEndEdit.AddListener((string _val) =>
+            {
+                UpdateThemePath(false);
+            });
+
+            EditorThemeManager.AddInputField(themePathField);
+
+            var themeClickable = themePathGameObject.AddComponent<Clickable>();
+            themeClickable.onDown = (PointerEventData pointerEventData) =>
+            {
+                if (pointerEventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                EditorManager.inst.ShowDialog("Browser Popup");
+                RTFileBrowser.inst.UpdateBrowser(RTFile.ApplicationDirectory + "beatmaps", onSelectFolder: (string _val) =>
                 {
-                    "Right click to select a folder",
-                };
-                llTip.desc = "Theme list path";
-                llTip.hint = "Input the path you want to load themes from within the beatmaps folder. For example: inputting \"themes\" into the input field will load themes from beatmaps/themes. You can also set it to sub-directories, like: \"themes/pa colors\" will take levels from \"beatmaps/themes/pa colors\".";
+                    if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
+                    {
+                        EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                        return;
+                    }
 
-                themePathTip.tooltipLangauges.Add(llTip);
-
-                themePathField = themePathGO.GetComponent<InputField>();
-                themePathField.characterValidation = InputField.CharacterValidation.None;
-                themePathField.onValueChanged.ClearAll();
-                themePathField.onEndEdit.ClearAll();
-                themePathField.textComponent.alignment = TextAnchor.MiddleLeft;
-                themePathField.textComponent.fontSize = 16;
-                themePathField.text = ThemePath;
-                themePathField.onValueChanged.AddListener(delegate (string _val)
-                {
-                    ThemePath = _val;
-                });
-                themePathField.onEndEdit.AddListener(delegate (string _val)
-                {
+                    themePathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
+                    EditorManager.inst.DisplayNotification($"Set Theme path to {ThemePath}!", 2f, EditorManager.NotificationType.Success);
+                    EditorManager.inst.HideDialog("Browser Popup");
                     UpdateThemePath(false);
                 });
+            };
 
-                EditorThemeManager.AddInputField(themePathField);
+            var themeListReload = GameObject.Find("TimelineBar/GameObject/play").Duplicate(themePathBase.transform, "reload themes");
+            themeListReload.transform.AsRT().anchoredPosition = new Vector2(166f, 35f);
+            themeListReload.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
 
-                var clickable = themePathGO.AddComponent<Clickable>();
-                clickable.onDown = delegate (PointerEventData pointerEventData)
-                {
-                    if (pointerEventData.button == PointerEventData.InputButton.Right)
-                    {
-                        EditorManager.inst.ShowDialog("Browser Popup");
-                        RTFileBrowser.inst.UpdateBrowser(RTFile.ApplicationDirectory + "beatmaps", onSelectFolder: delegate (string _val)
-                        {
-                            if (_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
-                            {
-                                themePathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
-                                EditorManager.inst.DisplayNotification($"Set Theme path to {ThemePath}!", 2f, EditorManager.NotificationType.Success);
-                                EditorManager.inst.HideDialog("Browser Popup");
-                                UpdateThemePath(false);
-                            }
-                            else
-                            {
-                                EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                            }
-                        });
-                    }
-                };
-
-                var themePathReloader = GameObject.Find("TimelineBar/GameObject/play").Duplicate(themePathSpacer.transform, "reload themes");
-                ((RectTransform)themePathReloader.transform).anchoredPosition = new Vector2(166f, 35f);
-                ((RectTransform)themePathReloader.transform).sizeDelta = new Vector2(32f, 32f);
-
-                var levelListRTip = themePathReloader.AddComponent<HoverTooltip>();
-                var llRTip = new HoverTooltip.Tooltip();
-
-                llRTip.desc = "Refresh theme list";
-                llRTip.hint = "Clicking this will reload the theme list.";
-
-                levelListRTip.tooltipLangauges.Add(llRTip);
-
-                var levelListRButton = themePathReloader.GetComponent<Button>();
-                levelListRButton.onClick.ClearAll();
-                levelListRButton.onClick.AddListener(delegate ()
-                {
-                    UpdateThemePath(true);
-                });
-
-                EditorThemeManager.AddSelectable(levelListRButton, ThemeGroup.Function_2, false);
-
-                string refreshImage = RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_refresh-white.png";
-
-                if (RTFile.FileExists(refreshImage))
-                    levelListRButton.image.sprite = SpriteManager.LoadSprite(refreshImage);
-
-                var page = EditorPrefabHolder.Instance.NumberInputField.Duplicate(themePathSpacer.transform, "page");
-                UIManager.SetRectTransform(page.transform.AsRT(), new Vector2(205f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
-                var pageStorage = page.GetComponent<InputFieldStorage>();
-                ThemeEditorManager.eventPageStorage = pageStorage;
-                page.GetComponent<HorizontalLayoutGroup>().spacing = 2f;
-                pageStorage.inputField.image.rectTransform.sizeDelta = new Vector2(60f, 32f);
-
-                pageStorage.inputField.onValueChanged.ClearAll();
-                pageStorage.inputField.text = "0";
-                pageStorage.inputField.onValueChanged.AddListener(delegate (string _val)
-                {
-                    if (int.TryParse(_val, out int p))
-                    {
-                        ThemeEditorManager.inst.eventThemePage = Mathf.Clamp(p, 0, ThemeEditorManager.inst.ThemesCount / ThemeEditorManager.eventThemesPerPage);
-
-                        StartCoroutine(ThemeEditorManager.inst.RenderThemeList(
-                            EditorManager.inst.GetDialog("Event Editor").Dialog.Find("data/right/theme/theme-search").GetComponent<InputField>().text));
-                    }
-                });
-
-                pageStorage.leftGreaterButton.onClick.ClearAll();
-                pageStorage.leftGreaterButton.onClick.AddListener(delegate ()
-                {
-                    if (int.TryParse(pageStorage.inputField.text, out int p))
-                        pageStorage.inputField.text = "0";
-                });
-
-                pageStorage.leftButton.onClick.ClearAll();
-                pageStorage.leftButton.onClick.AddListener(delegate ()
-                {
-                    if (int.TryParse(pageStorage.inputField.text, out int p))
-                        pageStorage.inputField.text = Mathf.Clamp(p - 1, 0, ThemeEditorManager.inst.ThemesCount / ThemeEditorManager.eventThemesPerPage).ToString();
-                });
-
-                pageStorage.rightButton.onClick.ClearAll();
-                pageStorage.rightButton.onClick.AddListener(delegate ()
-                {
-                    if (int.TryParse(pageStorage.inputField.text, out int p))
-                        pageStorage.inputField.text = Mathf.Clamp(p + 1, 0, ThemeEditorManager.inst.ThemesCount / ThemeEditorManager.eventThemesPerPage).ToString();
-                });
-
-                pageStorage.rightGreaterButton.onClick.ClearAll();
-                pageStorage.rightGreaterButton.onClick.AddListener(delegate ()
-                {
-                    if (int.TryParse(pageStorage.inputField.text, out int p))
-                        pageStorage.inputField.text = (ThemeEditorManager.inst.ThemesCount / ThemeEditorManager.eventThemesPerPage).ToString();
-                });
-
-                Destroy(pageStorage.middleButton.gameObject);
-
-                EditorThemeManager.AddInputField(pageStorage.inputField);
-                EditorThemeManager.AddSelectable(pageStorage.leftGreaterButton, ThemeGroup.Function_2, false);
-                EditorThemeManager.AddSelectable(pageStorage.leftButton, ThemeGroup.Function_2, false);
-                EditorThemeManager.AddSelectable(pageStorage.rightButton, ThemeGroup.Function_2, false);
-                EditorThemeManager.AddSelectable(pageStorage.rightGreaterButton, ThemeGroup.Function_2, false);
-            }
-
-            // Prefab Path
+            themeListReload.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip
             {
-                var prefabPathGO = timeField.gameObject.Duplicate(EditorManager.inst.GetDialog("Prefab Popup").Dialog.Find("external prefabs"), "prefabs path");
+                desc = "Refresh theme list",
+                hint = "Clicking this will reload the theme list."
+            });
 
-                ((RectTransform)prefabPathGO.transform).anchoredPosition = config.PrefabExternalPrefabPathPos.Value;
-                ((RectTransform)prefabPathGO.transform).sizeDelta = new Vector2(config.PrefabExternalPrefabPathLength.Value, 32f);
+            var themeListReloadButton = themeListReload.GetComponent<Button>();
+            themeListReloadButton.onClick.ClearAll();
+            themeListReloadButton.onClick.AddListener(() =>
+            {
+                UpdateThemePath(true);
+            });
 
-                var levelListTip = prefabPathGO.AddComponent<HoverTooltip>();
-                var llTip = new HoverTooltip.Tooltip();
+            EditorThemeManager.AddSelectable(themeListReloadButton, ThemeGroup.Function_2, false);
 
-                llTip.keys = new List<string>
+            themeListReloadButton.image.sprite = ReloadSprite;
+
+            var themePage = EditorPrefabHolder.Instance.NumberInputField.Duplicate(themePathBase.transform, "page");
+            UIManager.SetRectTransform(themePage.transform.AsRT(), new Vector2(205f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+            var themePageStorage = themePage.GetComponent<InputFieldStorage>();
+            ThemeEditorManager.eventPageStorage = themePageStorage;
+            themePage.GetComponent<HorizontalLayoutGroup>().spacing = 2f;
+            themePageStorage.inputField.image.rectTransform.sizeDelta = new Vector2(60f, 32f);
+
+            themePageStorage.inputField.onValueChanged.ClearAll();
+            themePageStorage.inputField.text = "0";
+            themePageStorage.inputField.onValueChanged.AddListener((string _val) =>
+            {
+                if (int.TryParse(_val, out int p))
                 {
-                    "Right click to select a folder",
-                };
-                llTip.desc = "Prefab list path";
-                llTip.hint = "Input the path you want to load prefabs from within the beatmaps folder. For example: inputting \"prefabs\" into the input field will load levels from beatmaps/prefabs. You can also set it to sub-directories, like: \"prefabs/pa characters\" will take levels from \"beatmaps/prefabs/pa characters\".";
+                    ThemeEditorManager.inst.eventThemePage = Mathf.Clamp(p, 0, ThemeEditorManager.inst.ThemesCount / ThemeEditorManager.eventThemesPerPage);
 
-                levelListTip.tooltipLangauges.Add(llTip);
+                    StartCoroutine(ThemeEditorManager.inst.RenderThemeList(
+                        EditorManager.inst.GetDialog("Event Editor").Dialog.Find("data/right/theme/theme-search").GetComponent<InputField>().text));
+                }
+            });
 
-                prefabPathField = prefabPathGO.GetComponent<InputField>();
-                prefabPathField.characterValidation = InputField.CharacterValidation.None;
-                prefabPathField.onValueChanged.ClearAll();
-                prefabPathField.onEndEdit.ClearAll();
-                prefabPathField.textComponent.alignment = TextAnchor.MiddleLeft;
-                prefabPathField.textComponent.fontSize = 16;
-                prefabPathField.text = PrefabPath;
-                prefabPathField.onValueChanged.AddListener(delegate (string _val)
+            themePageStorage.leftGreaterButton.onClick.ClearAll();
+            themePageStorage.leftGreaterButton.onClick.AddListener(() =>
+            {
+                themePageStorage.inputField.text = "0";
+            });
+
+            themePageStorage.leftButton.onClick.ClearAll();
+            themePageStorage.leftButton.onClick.AddListener(() =>
+            {
+                if (int.TryParse(themePageStorage.inputField.text, out int p))
+                    themePageStorage.inputField.text = Mathf.Clamp(p - 1, 0, ThemeEditorManager.inst.ThemesCount / ThemeEditorManager.eventThemesPerPage).ToString();
+            });
+
+            themePageStorage.rightButton.onClick.ClearAll();
+            themePageStorage.rightButton.onClick.AddListener(() =>
+            {
+                if (int.TryParse(themePageStorage.inputField.text, out int p))
+                    themePageStorage.inputField.text = Mathf.Clamp(p + 1, 0, ThemeEditorManager.inst.ThemesCount / ThemeEditorManager.eventThemesPerPage).ToString();
+            });
+
+            themePageStorage.rightGreaterButton.onClick.ClearAll();
+            themePageStorage.rightGreaterButton.onClick.AddListener(() =>
+            {
+                themePageStorage.inputField.text = (ThemeEditorManager.inst.ThemesCount / ThemeEditorManager.eventThemesPerPage).ToString();
+            });
+
+            Destroy(themePageStorage.middleButton.gameObject);
+
+            EditorThemeManager.AddInputField(themePageStorage.inputField);
+            EditorThemeManager.AddSelectable(themePageStorage.leftGreaterButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.AddSelectable(themePageStorage.leftButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.AddSelectable(themePageStorage.rightButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.AddSelectable(themePageStorage.rightGreaterButton, ThemeGroup.Function_2, false);
+
+            #endregion
+
+            #region Prefab Path
+
+            var prefabPathGameObject = timeField.gameObject.Duplicate(EditorManager.inst.GetDialog("Prefab Popup").Dialog.Find("external prefabs"), "prefabs path");
+
+            prefabPathGameObject.transform.AsRT().anchoredPosition = config.PrefabExternalPrefabPathPos.Value;
+            prefabPathGameObject.transform.AsRT().sizeDelta = new Vector2(config.PrefabExternalPrefabPathLength.Value, 32f);
+
+            prefabPathGameObject.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip
+            {
+                keys = new List<string> { "Right click to select a folder", },
+                desc = "Prefab list path",
+                hint = "Input the path you want to load prefabs from within the beatmaps folder. For example: inputting \"prefabs\" into the input field will load levels from beatmaps/prefabs. You can also set it to sub-directories, like: \"prefabs/pa characters\" will take levels from \"beatmaps/prefabs/pa characters\"."
+            });
+
+            prefabPathField = prefabPathGameObject.GetComponent<InputField>();
+            prefabPathField.characterValidation = InputField.CharacterValidation.None;
+            prefabPathField.onValueChanged.ClearAll();
+            prefabPathField.onEndEdit.ClearAll();
+            prefabPathField.textComponent.alignment = TextAnchor.MiddleLeft;
+            prefabPathField.textComponent.fontSize = 16;
+            prefabPathField.text = PrefabPath;
+            prefabPathField.onValueChanged.AddListener((string _val) =>
+            {
+                PrefabPath = _val;
+            });
+            prefabPathField.onEndEdit.AddListener((string _val) =>
+            {
+                UpdatePrefabPath(false);
+            });
+
+            EditorThemeManager.AddInputField(prefabPathField);
+
+            var prefabPathClickable = prefabPathGameObject.AddComponent<Clickable>();
+            prefabPathClickable.onDown = (PointerEventData pointerEventData) =>
+            {
+                if (pointerEventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                EditorManager.inst.ShowDialog("Browser Popup");
+                RTFileBrowser.inst.UpdateBrowser(RTFile.ApplicationDirectory + "beatmaps", onSelectFolder: (string _val) =>
                 {
-                    PrefabPath = _val;
-                });
-                prefabPathField.onEndEdit.AddListener(delegate (string _val)
-                {
+                    if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
+                    {
+                        EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                        return;
+                    }
+
+                    prefabPathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
+                    EditorManager.inst.DisplayNotification($"Set Prefab path to {PrefabPath}!", 2f, EditorManager.NotificationType.Success);
+                    EditorManager.inst.HideDialog("Browser Popup");
                     UpdatePrefabPath(false);
                 });
+            };
 
-                EditorThemeManager.AddInputField(prefabPathField);
+            var prefabListReload = GameObject.Find("TimelineBar/GameObject/play")
+                .Duplicate(EditorManager.inst.GetDialog("Prefab Popup").Dialog.Find("external prefabs"), "reload prefabs");
+            ((RectTransform)prefabListReload.transform).anchoredPosition = config.PrefabExternalPrefabRefreshPos.Value;
+            ((RectTransform)prefabListReload.transform).sizeDelta = new Vector2(32f, 32f);
 
-                var clickable = prefabPathGO.AddComponent<Clickable>();
-                clickable.onDown = delegate (PointerEventData pointerEventData)
-                {
-                    if (pointerEventData.button == PointerEventData.InputButton.Right)
-                    {
-                        EditorManager.inst.ShowDialog("Browser Popup");
-                        RTFileBrowser.inst.UpdateBrowser(RTFile.ApplicationDirectory + "beatmaps", onSelectFolder: delegate (string _val)
-                        {
-                            if (_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
-                            {
-                                prefabPathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
-                                EditorManager.inst.DisplayNotification($"Set Prefab path to {PrefabPath}!", 2f, EditorManager.NotificationType.Success);
-                                EditorManager.inst.HideDialog("Browser Popup");
-                                UpdatePrefabPath(false);
-                            }
-                            else
-                            {
-                                EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                            }
-                        });
-                    }
-                };
+            prefabListReload.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip
+            {
+                desc = "Refresh prefab list",
+                hint = "Clicking this will reload the prefab list."
+            });
 
-                var levelListReloader = GameObject.Find("TimelineBar/GameObject/play")
-                    .Duplicate(EditorManager.inst.GetDialog("Prefab Popup").Dialog.Find("external prefabs"), "reload prefabs");
-                ((RectTransform)levelListReloader.transform).anchoredPosition = config.PrefabExternalPrefabRefreshPos.Value;
-                ((RectTransform)levelListReloader.transform).sizeDelta = new Vector2(32f, 32f);
+            var prefabListReloadButton = prefabListReload.GetComponent<Button>();
+            prefabListReloadButton.onClick.ClearAll();
+            prefabListReloadButton.onClick.AddListener(() =>
+            {
+                UpdatePrefabPath(true);
+            });
 
-                var levelListRTip = levelListReloader.AddComponent<HoverTooltip>();
-                var llRTip = new HoverTooltip.Tooltip();
+            EditorThemeManager.AddSelectable(prefabListReloadButton, ThemeGroup.Function_2, false);
 
-                llRTip.desc = "Refresh prefab list";
-                llRTip.hint = "Clicking this will reload the prefab list.";
+            prefabListReloadButton.image.sprite = ReloadSprite;
 
-                levelListRTip.tooltipLangauges.Add(llRTip);
-
-                var levelListRButton = levelListReloader.GetComponent<Button>();
-                levelListRButton.onClick.ClearAll();
-                levelListRButton.onClick.AddListener(delegate ()
-                {
-                    UpdatePrefabPath(true);
-                });
-
-                EditorThemeManager.AddSelectable(levelListRButton, ThemeGroup.Function_2, false);
-
-                string refreshImage = RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_refresh-white.png";
-
-                if (RTFile.FileExists(refreshImage))
-                    levelListRButton.image.sprite = SpriteManager.LoadSprite(refreshImage);
-            }
+            #endregion
         }
 
         void SetupFileBrowser()
         {
             var fileBrowser = EditorManager.inst.GetDialog("New File Popup").Dialog.Find("Browser Popup").gameObject.Duplicate(EditorManager.inst.GetDialog("New File Popup").Dialog.parent, "Browser Popup");
             fileBrowser.gameObject.SetActive(false);
-            fileBrowser.transform.localPosition = Vector3.zero;
-            ((RectTransform)fileBrowser.transform).anchoredPosition = Vector3.zero;
-            ((RectTransform)fileBrowser.transform).anchorMax = new Vector2(0.5f, 0.5f);
-            ((RectTransform)fileBrowser.transform).anchorMin = new Vector2(0.5f, 0.5f);
-            ((RectTransform)fileBrowser.transform).pivot = new Vector2(0.5f, 0.5f);
+            UIManager.SetRectTransform(fileBrowser.transform.AsRT(), Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(600f, 364f));
             var close = fileBrowser.transform.Find("Panel/x").GetComponent<Button>();
             close.onClick.ClearAll();
-            close.onClick.AddListener(delegate ()
-            {
-                EditorManager.inst.HideDialog("Browser Popup");
-            });
+            close.onClick.AddListener(() => { EditorManager.inst.HideDialog("Browser Popup"); });
             fileBrowser.transform.Find("GameObject").gameObject.SetActive(false);
 
             var selectGUI = fileBrowser.AddComponent<SelectGUI>();
@@ -3263,16 +3210,19 @@ namespace BetterLegacy.Editor.Managers
 
             try
             {
-                timelineSliderHandle = GameObject.Find("Editor Systems/Editor GUI/sizer/main/whole-timeline/Slider_Parent/Slider/Handle Slide Area/Image/Handle").GetComponent<Image>();
+                var wholeTimeline = EditorManager.inst.timeline.transform.parent.parent;
+
+                timelineSliderHandle = wholeTimeline.Find("Slider_Parent/Slider/Handle Slide Area/Image/Handle").GetComponent<Image>();
                 timelineSliderHandle.color = config.TimelineCursorColor.Value;
 
-                timelineSliderRuler = GameObject.Find("Editor Systems/Editor GUI/sizer/main/whole-timeline/Slider_Parent/Slider/Handle Slide Area/Image").GetComponent<Image>();
+                timelineSliderRuler = wholeTimeline.Find("Slider_Parent/Slider/Handle Slide Area/Image").GetComponent<Image>();
                 timelineSliderRuler.color = config.TimelineCursorColor.Value;
 
-                keyframeTimelineSliderHandle = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/timeline/Scroll View/Viewport/Content/time_slider/Handle Slide Area/Handle/Image").GetComponent<Image>();
+                var keyframeTimelineHandle = EditorManager.inst.GetDialog("Object Editor").Dialog.Find("timeline/Scroll View/Viewport/Content/time_slider/Handle Slide Area/Handle");
+                keyframeTimelineSliderHandle = keyframeTimelineHandle.Find("Image").GetComponent<Image>();
                 keyframeTimelineSliderHandle.color = config.KeyframeCursorColor.Value;
 
-                keyframeTimelineSliderRuler = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/timeline/Scroll View/Viewport/Content/time_slider/Handle Slide Area/Handle").GetComponent<Image>();
+                keyframeTimelineSliderRuler = keyframeTimelineHandle.GetComponent<Image>();
                 keyframeTimelineSliderRuler.color = config.KeyframeCursorColor.Value;
             }
             catch (Exception ex)
