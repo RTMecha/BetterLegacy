@@ -1718,13 +1718,13 @@ namespace BetterLegacy.Editor.Managers
         {
             if (ObjectEditor.inst.SelectedBeatmapObjects.Count <= 0)
             {
-                EditorManager.inst.DisplayNotification("Can't save prefab without any objects in it!", 2f, EditorManager.NotificationType.Error, false);
+                EditorManager.inst.DisplayNotification("Can't save prefab without any objects in it!", 2f, EditorManager.NotificationType.Error);
                 return;
             }
 
             if (string.IsNullOrEmpty(PrefabEditor.inst.NewPrefabName))
             {
-                EditorManager.inst.DisplayNotification("Can't save prefab without a name!", 2f, EditorManager.NotificationType.Error, false);
+                EditorManager.inst.DisplayNotification("Can't save prefab without a name!", 2f, EditorManager.NotificationType.Error);
                 return;
             }
 
@@ -1746,7 +1746,10 @@ namespace BetterLegacy.Editor.Managers
             }
 
             if (createInternal)
+            {
                 ImportPrefabIntoLevel(prefab);
+                EditorManager.inst.DisplayNotification($"Saving Prefab to level [{prefab.Name}]!", 2f, EditorManager.NotificationType.Warning);
+            }
             else
                 SavePrefab(prefab);
 
