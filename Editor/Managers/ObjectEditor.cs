@@ -74,7 +74,7 @@ namespace BetterLegacy.Editor.Managers
                     RenderObjectKeyframesDialog(beatmapObject);
 
                     // Keyframes affect both physical object and timeline object.
-                    RenderTimelineObject(new TimelineObject(beatmapObject));
+                    RenderTimelineObject(GetTimelineObject(beatmapObject));
                     if (UpdateObjects)
                         Updater.UpdateProcessor(beatmapObject, "Keyframes");
                 });
@@ -176,20 +176,17 @@ namespace BetterLegacy.Editor.Managers
                 RenderKeyframes(beatmapObject);
             }
 
-            if (ObjEditor.inst.zoomFloat != prevZoom)
+            float timelineCalc = ObjEditor.inst.objTimelineSlider.value;
+            if (AudioManager.inst.CurrentAudioSource.clip != null)
             {
-                float timelineCalc = ObjEditor.inst.objTimelineSlider.value;
-                if (AudioManager.inst.CurrentAudioSource.clip != null)
-                {
-                    float time = -beatmapObject.StartTime + AudioManager.inst.CurrentAudioSource.time;
-                    float objectLifeLength = beatmapObject.GetObjectLifeLength(ObjEditor.inst.ObjectLengthOffset);
+                float time = -beatmapObject.StartTime + AudioManager.inst.CurrentAudioSource.time;
+                float objectLifeLength = beatmapObject.GetObjectLifeLength(ObjEditor.inst.ObjectLengthOffset);
 
-                    timelineCalc = time / objectLifeLength;
-                }
-
-                timelinePosScrollbar.value =
-                    position >= 0f ? position : timelineCalc;
+                timelineCalc = time / objectLifeLength;
             }
+
+            timelinePosScrollbar.value =
+                position >= 0f ? position : timelineCalc;
 
             ObjEditor.inst.zoomSlider.onValueChanged.ClearAll();
             ObjEditor.inst.zoomSlider.value = ObjEditor.inst.zoomFloat;
@@ -567,7 +564,7 @@ namespace BetterLegacy.Editor.Managers
 
                 Destroy(timelineObject.GameObject);
 
-                RenderTimelineObject(new TimelineObject(beatmapObject));
+                RenderTimelineObject(GetTimelineObject(beatmapObject));
                 if (UpdateObjects)
                     Updater.UpdateProcessor(beatmapObject, "Keyframes");
                 return;
@@ -630,7 +627,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             RenderObjectKeyframesDialog(beatmapObject);
-            RenderTimelineObject(new TimelineObject(beatmapObject));
+            RenderTimelineObject(GetTimelineObject(beatmapObject));
 
             if (UpdateObjects)
             {
@@ -1449,7 +1446,7 @@ namespace BetterLegacy.Editor.Managers
 
             beatmapObject.events[type].Add(eventKeyframe);
 
-            RenderTimelineObject(new TimelineObject(beatmapObject));
+            RenderTimelineObject(GetTimelineObject(beatmapObject));
             Updater.UpdateProcessor(beatmapObject, "Autokill");
             if (openDialog)
             {
@@ -3903,7 +3900,7 @@ namespace BetterLegacy.Editor.Managers
                     RenderKeyframes(beatmapObject);
 
                     // Keyframe Time affects both physical object and timeline object.
-                    RenderTimelineObject(new TimelineObject(beatmapObject));
+                    RenderTimelineObject(GetTimelineObject(beatmapObject));
                     if (UpdateObjects)
                         Updater.UpdateProcessor(beatmapObject, "Keyframes");
                 }
