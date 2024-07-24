@@ -106,6 +106,55 @@ namespace BetterLegacy.Editor.Managers
         public Texture2D horizontalDrag;
         public Texture2D verticalDrag;
 
+        #region Editor
+
+        public Image editorTitlePanel;
+
+        public InputField documentEditorName;
+        public InputField documentEditorText;
+
+        public InputField todoEditorText;
+
+        public InputField characterEditorName;
+        public InputField characterEditorGender;
+        public InputField characterEditorDescription;
+        public Button characterEditorProfileSelector;
+        public Transform characterEditorTraitsContent;
+        public Transform characterEditorLoreContent;
+        public Transform characterEditorAbilitiesContent;
+
+        public InputField timelineEditorName;
+        public InputField eventEditorName;
+        public InputField eventEditorDescription;
+        public InputField eventEditorPath;
+        public Dropdown eventEditorType;
+
+        public InputField scheduleEditorDescription;
+        public InputField scheduleEditorYear;
+        public Dropdown scheduleEditorMonth;
+        public InputField scheduleEditorDay;
+        public InputField scheduleEditorHour;
+        public InputField scheduleEditorMinute;
+
+        public InputField noteEditorName;
+        public InputField noteEditorText;
+        public Transform noteEditorColorsParent;
+        public Transform colorBase;
+        public List<Toggle> noteEditorColors = new List<Toggle>();
+        public Button noteEditorReset;
+
+        public InputField ostEditorPath;
+        public InputField ostEditorName;
+        public Button ostEditorPlay;
+        public Button ostEditorUseGlobal;
+        public Text ostEditorUseGlobalText;
+        public Button ostEditorStop;
+        public InputField ostEditorIndex;
+
+        public List<GameObject> editors = new List<GameObject>();
+
+        #endregion
+
         #endregion
 
         public static void Init() => Creator.NewGameObject("ProjectPlanner", EditorManager.inst.transform.parent).AddComponent<ProjectPlannerManager>();
@@ -119,19 +168,11 @@ namespace BetterLegacy.Editor.Managers
             planner = plannerBase.GetChild(0);
             topBarBase = planner.GetChild(0);
 
-            EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Background_1, planner.gameObject, new List<Component>
-            {
-                planner.GetComponent<Image>(),
-            }));
+            EditorThemeManager.AddGraphic(planner.GetComponent<Image>(), ThemeGroup.Background_1);
+            EditorThemeManager.AddGraphic(topBarBase.GetComponent<Image>(), ThemeGroup.Background_1);
 
-            EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Background_1, topBarBase.gameObject, new List<Component>
-            {
-                topBarBase.GetComponent<Image>(),
-            }));
-
-            var assets = new GameObject("Planner Assets");
+            var assets = Creator.NewGameObject("Planner Assets", transform);
             assetsParent = assets.transform;
-            assetsParent.transform.SetParent(transform);
 
             tabPrefab = topBarBase.GetChild(0).gameObject;
             tabPrefab.transform.SetParent(assetsParent);
@@ -156,17 +197,14 @@ namespace BetterLegacy.Editor.Managers
 
             var closeButton = close.GetComponent<Button>();
             closeButton.onClick.ClearAll();
-            closeButton.onClick.AddListener(delegate ()
-            {
-                Close();
-            });
+            closeButton.onClick.AddListener(() => { Close(); });
 
             EditorThemeManager.AddSelectable(closeButton, ThemeGroup.Close);
 
             var closeX = close.transform.GetChild(0).gameObject;
             EditorThemeManager.AddGraphic(close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
 
-            EditorHelper.AddEditorDropdown("Open Project Planner", "", "Edit", SpriteManager.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_planner.png"), delegate ()
+            EditorHelper.AddEditorDropdown("Open Project Planner", "", "Edit", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_planner.png"), () =>
             {
                 Open();
                 EditorManager.inst.HideAllDropdowns();
@@ -200,25 +238,12 @@ namespace BetterLegacy.Editor.Managers
             var handleImage = scrollBarVertical.Find("Sliding Area/Handle").GetComponent<Image>();
             handleImage.color = new Color(0.878f, 0.878f, 0.878f, 1f);
             handleImage.sprite = null;
-
-            EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Background_1, scrollBarVertical.gameObject, new List<Component>
-            {
-                scrollBarVertical.GetComponent<Image>(),
-            }, true, 1, SpriteManager.RoundedSide.Bottom_Right_I));
-
-            var scrollbarHandle = scrollBarVertical.transform.Find("Sliding Area/Handle").gameObject;
-            EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Scrollbar_1_Handle, handleImage.gameObject, new List<Component>
-            {
-                handleImage,
-                scrollBarVertical.GetComponent<Scrollbar>()
-            }, true, 1, SpriteManager.RoundedSide.W, true));
+            
+            EditorThemeManager.AddScrollbar(scrollBarVertical.GetComponent<Scrollbar>(), scrollBarVertical.GetComponent<Image>(), scrollbarRoundedSide: SpriteManager.RoundedSide.Bottom_Right_I);
 
             contentBase.Find("Image").AsRT().anchoredPosition = new Vector2(690f, /*-94f*/ -104f);
             contentBase.Find("Image").AsRT().sizeDelta = new Vector2(1384f, 48f);
-            EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Background_1, contentBase.Find("Image").gameObject, new List<Component>
-            {
-                contentBase.Find("Image").GetComponent<Image>(),
-            }));
+            EditorThemeManager.AddGraphic(contentBase.Find("Image").GetComponent<Image>(), ThemeGroup.Background_1);
 
             // List handlers
             {
@@ -231,7 +256,7 @@ namespace BetterLegacy.Editor.Managers
                 var searchField = searchBase.transform.GetChild(0).GetComponent<InputField>();
                 searchField.onValueChanged.ClearAll();
                 ((Text)searchField.placeholder).text = "Search...";
-                searchField.onValueChanged.AddListener(delegate (string _val)
+                searchField.onValueChanged.AddListener(_val =>
                 {
                     CoreHelper.Log($"Searching {_val}");
                     SearchTerm = _val;
@@ -250,7 +275,7 @@ namespace BetterLegacy.Editor.Managers
                 var addNewItemText = addNewItemStorage.text;
                 addNewItemText.text = "Add New Item";
                 addNewItemStorage.button.onClick.ClearAll();
-                addNewItemStorage.button.onClick.AddListener(delegate ()
+                addNewItemStorage.button.onClick.AddListener(() =>
                 {
                     CoreHelper.Log($"Create new {tabNames[CurrentTab]}");
                     var path = $"{RTFile.ApplicationDirectory}beatmaps/{PlannersPath}";
@@ -409,10 +434,7 @@ namespace BetterLegacy.Editor.Managers
 
                 addNewItemStorage.button.transition = Selectable.Transition.ColorTint;
                 EditorThemeManager.AddSelectable(addNewItemStorage.button, ThemeGroup.Function_2);
-                EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Function_2_Text, addNewItemText.gameObject, new List<Component>
-                {
-                    addNewItemText,
-                }));
+                EditorThemeManager.AddGraphic(addNewItemText, ThemeGroup.Function_2_Text);
 
                 var reload = EditorPrefabHolder.Instance.Function2Button.Duplicate(contentBase, "reload", 2);
                 reload.SetActive(true);
@@ -422,17 +444,11 @@ namespace BetterLegacy.Editor.Managers
                 var reloadText = reloadStorage.text;
                 reloadText.text = "Reload";
                 reloadStorage.button.onClick.ClearAll();
-                reloadStorage.button.onClick.AddListener(delegate ()
-                {
-                    Load();
-                });
+                reloadStorage.button.onClick.AddListener(() => { Load(); });
 
                 reloadStorage.button.transition = Selectable.Transition.ColorTint;
                 EditorThemeManager.AddSelectable(reloadStorage.button, ThemeGroup.Function_2);
-                EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Function_2_Text, reloadText.gameObject, new List<Component>
-                {
-                    reloadText,
-                }));
+                EditorThemeManager.AddGraphic(reloadText, ThemeGroup.Function_2_Text);
             }
 
             gradientSprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "linear_gradient.png");
@@ -557,16 +573,13 @@ namespace BetterLegacy.Editor.Managers
 
                 // Timeline
                 {
-                    var prefab = new GameObject("timeline prefab");
-                    prefab.transform.SetParent(assetsParent);
-                    prefab.transform.localScale = Vector3.one;
+                    var prefab = Creator.NewUIObject("timeline prefab", assetsParent);
 
-                    var prefabRT = prefab.AddComponent<RectTransform>();
-                    UIManager.SetRectTransform(prefabRT, Vector2.zero, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), Vector2.zero);
+                    UIManager.SetRectTransform(prefab.transform.AsRT(), Vector2.zero, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), Vector2.zero);
                     var prefabImage = prefab.AddComponent<Image>();
                     prefabImage.color = new Color(0f, 0f, 0f, 0.2f);
 
-                    var editPrefab = closePrefab.Duplicate(prefabRT, "edit");
+                    var editPrefab = closePrefab.Duplicate(prefab.transform, "edit");
                     UIManager.SetRectTransform(editPrefab.transform.AsRT(), new Vector2(-38f, -12f), Vector2.one, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(20f, 20f));
                     editPrefab.transform.GetChild(0).AsRT().sizeDelta = new Vector2(0f, 0f);
                     var editPrefabButton = editPrefab.GetComponent<Button>();
@@ -575,39 +588,21 @@ namespace BetterLegacy.Editor.Managers
                     spritePrefabImage.color = new Color(0.037f, 0.037f, 0.037f, 1f);
                     spritePrefabImage.sprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_edit.png");
 
-                    var deletePrefab = EditorPrefabHolder.Instance.DeleteButton.Duplicate(prefabRT, "delete");
+                    var deletePrefab = EditorPrefabHolder.Instance.DeleteButton.Duplicate(prefab.transform, "delete");
                     UIManager.SetRectTransform(deletePrefab.transform.AsRT(), new Vector2(-12f, -12f), Vector2.one, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(20f, 20f));
 
-                    var prefabScroll = new GameObject("Scroll");
-                    prefabScroll.transform.SetParent(prefabRT);
-                    prefabScroll.transform.localScale = Vector3.one;
-                    var prefabScrollRT = prefabScroll.AddComponent<RectTransform>();
-                    prefabScrollRT.anchoredPosition = new Vector2(590f, -125f);
-                    prefabScrollRT.anchorMax = new Vector2(0f, 1f);
-                    prefabScrollRT.anchorMin = new Vector2(0f, 1f);
-                    prefabScrollRT.sizeDelta = new Vector2(1180f, 200f);
+                    var prefabScroll = Creator.NewUIObject("Scroll", prefab.transform);
+                    UIManager.SetRectTransform(prefabScroll.transform.AsRT(), new Vector2(590f, -125f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), new Vector2(1180f, 200f));
                     var prefabScrollRect = prefabScroll.AddComponent<ScrollRect>();
 
-                    var prefabViewport = new GameObject("Viewport");
-                    prefabViewport.transform.SetParent(prefabScrollRT);
-                    prefabViewport.transform.localScale = Vector3.one;
-                    var prefabViewportRT = prefabViewport.AddComponent<RectTransform>();
-                    prefabViewportRT.anchoredPosition = Vector3.zero;
-                    prefabViewportRT.anchorMax = Vector3.one;
-                    prefabViewportRT.anchorMin = Vector3.zero;
-                    prefabViewportRT.pivot = new Vector2(0f, 1f);
+                    var prefabViewport = Creator.NewUIObject("Viewport", prefabScroll.transform);
+                    UIManager.SetRectTransform(prefabViewport.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0f, 1f), new Vector2(0f, 0f));
                     var prefabViewportImage = prefabViewport.AddComponent<Image>();
                     var prefabViewportMask = prefabViewport.AddComponent<Mask>();
                     prefabViewportMask.showMaskGraphic = false;
 
-                    var prefabContent = new GameObject("Content");
-                    prefabContent.transform.SetParent(prefabViewportRT);
-                    prefabContent.transform.localScale = Vector3.one;
-                    var prefabContentRT = prefabContent.AddComponent<RectTransform>();
-                    prefabContentRT.anchoredPosition = Vector3.zero;
-                    prefabContentRT.anchorMax = new Vector2(0f, 1f);
-                    prefabContentRT.anchorMin = new Vector2(0f, 1f);
-                    prefabContentRT.pivot = new Vector2(0f, 1f);
+                    var prefabContent = Creator.NewUIObject("Content", prefabViewport.transform);
+                    UIManager.SetRectTransform(prefabContent.transform.AsRT(), Vector2.zero, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(100f, 100f));
                     var prefabContentGLG = prefabContent.AddComponent<GridLayoutGroup>();
                     prefabContentGLG.cellSize = new Vector2(422f, 200f);
                     prefabContentGLG.constraint = GridLayoutGroup.Constraint.FixedRowCount;
@@ -616,11 +611,11 @@ namespace BetterLegacy.Editor.Managers
                     var prefabContentCSF = prefabContent.AddComponent<ContentSizeFitter>();
                     prefabContentCSF.horizontalFit = ContentSizeFitter.FitMode.MinSize;
 
-                    prefabScrollRect.content = prefabContentRT;
-                    prefabScrollRect.viewport = prefabViewportRT;
+                    prefabScrollRect.content = prefabContent.transform.AsRT();
+                    prefabScrollRect.viewport = prefabViewport.transform.AsRT();
                     prefabScrollRect.vertical = false;
 
-                    var scrollBar = GameObject.Find("Editor Systems/Editor GUI/sizer/main/whole-timeline/Scrollbar").Duplicate(prefabRT, "Scrollbar");
+                    var scrollBar = GameObject.Find("Editor Systems/Editor GUI/sizer/main/whole-timeline/Scrollbar").Duplicate(prefab.transform, "Scrollbar");
                     scrollBar.transform.AsRT().anchoredPosition = Vector2.zero;
                     scrollBar.transform.AsRT().pivot = new Vector2(0.5f, 0f);
                     scrollBar.transform.AsRT().sizeDelta = new Vector2(0f, 25f);
@@ -665,9 +660,6 @@ namespace BetterLegacy.Editor.Managers
                     spriteImage.sprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_edit.png");
 
                     var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(timelineButtonPrefab.transform, "delete");
-                    delete.transform.AsRT().anchoredPosition = new Vector2(-16f, -16f);
-                    delete.transform.AsRT().pivot = new Vector2(0.5f, 0.5f);
-                    delete.transform.AsRT().sizeDelta = new Vector2(24f, 24f);
                     UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(-16f, -16f), Vector2.one, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(24f, 24f));
 
                     timelineAddPrefab = baseCardPrefab.Duplicate(assetsParent, "timeline add prefab");
@@ -678,14 +670,15 @@ namespace BetterLegacy.Editor.Managers
                     timelineAddPrefab.GetComponent<Image>().sprite = null;
 
                     DestroyImmediate(albumArtAdd.gameObject);
-                    artistAdd.SetParent(prefabRT);
-                    artistAdd.AsRT().anchoredPosition = new Vector2(-56f, 105f);
+                    artistAdd.SetParent(prefab.transform);
+                    artistAdd.AsRT().anchoredPosition = new Vector2(-240f, 95f);
                     artistAdd.AsRT().sizeDelta = new Vector2(-128f, 40f);
                     artistAdd.name = "name";
 
                     var tmpArtistAdd = artistAdd.GetComponent<TextMeshProUGUI>();
                     tmpArtistAdd.alignment = TextAlignmentOptions.TopLeft;
                     tmpArtistAdd.color = Color.white;
+                    tmpArtistAdd.fontSize = 30;
 
                     titleAdd.AsRT().anchoredPosition = Vector2.zero;
                     titleAdd.AsRT().sizeDelta = new Vector2(0f, 400f);
@@ -730,30 +723,19 @@ namespace BetterLegacy.Editor.Managers
 
                 // Note
                 {
-                    var prefab = new GameObject("note prefab");
-                    prefab.transform.SetParent(assetsParent);
-                    prefab.transform.localScale = Vector3.one;
+                    var prefab = Creator.NewUIObject("note prefab", assetsParent);
 
-                    var prefabRT = prefab.AddComponent<RectTransform>();
-                    prefabRT.sizeDelta = new Vector2(300f, 150f);
+                    prefab.transform.AsRT().sizeDelta = new Vector2(300f, 150f);
                     var prefabImage = prefab.AddComponent<Image>();
                     prefabImage.color = new Color(0.251f, 0.251f, 0.251f, 1f);
 
                     //var inputField = prefab.AddComponent<TMP_InputField>();
 
-                    var prefabPanel = new GameObject("panel");
-                    prefabPanel.transform.SetParent(prefabRT);
-                    prefabPanel.transform.localScale = Vector3.one;
-
-                    var prefabPanelRT = prefabPanel.AddComponent<RectTransform>();
-                    prefabPanelRT.anchoredPosition = Vector2.zero;
-                    prefabPanelRT.anchorMax = Vector2.one;
-                    prefabPanelRT.anchorMin = new Vector2(0f, 1f);
-                    prefabPanelRT.pivot = Vector2.zero;
-                    prefabPanelRT.sizeDelta = new Vector2(0f, 32f);
+                    var prefabPanel = Creator.NewUIObject("panel", prefab.transform);
+                    UIManager.SetRectTransform(prefabPanel.transform.AsRT(), Vector2.zero, Vector2.one, new Vector2(0f, 1f), Vector2.zero, new Vector2(0f, 32f));
                     var prefabPanelImage = prefabPanel.AddComponent<Image>();
 
-                    var noteTitle = baseCardPrefab.transform.Find("title").gameObject.Duplicate(prefabPanelRT, "title");
+                    var noteTitle = baseCardPrefab.transform.Find("title").gameObject.Duplicate(prefabPanel.transform, "title");
                     noteTitle.transform.AsRT().anchoredPosition = new Vector2(-26f, 0f);
                     noteTitle.transform.AsRT().sizeDelta = new Vector2(-70f, 40f);
 
@@ -762,11 +744,11 @@ namespace BetterLegacy.Editor.Managers
                     tmpNoteTitle.enableWordWrapping = false;
                     tmpNoteTitle.fontSize = 16;
 
-                    var toggle = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/SettingsDialog/snap/toggle/toggle").Duplicate(prefabPanelRT, "active");
+                    var toggle = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/SettingsDialog/snap/toggle/toggle").Duplicate(prefabPanel.transform, "active");
                     UIManager.SetRectTransform(toggle.transform.AsRT(), Vector2.zero, new Vector2(0.87f, 0.5f), new Vector2(0.87f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero);
                     UIManager.SetRectTransform(toggle.transform.GetChild(0).AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(24f, 24f));
 
-                    var editPrefab = closePrefab.Duplicate(prefabPanelRT, "edit");
+                    var editPrefab = closePrefab.Duplicate(prefabPanel.transform, "edit");
                     UIManager.SetRectTransform(editPrefab.transform.AsRT(), new Vector2(-44f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(26f, 26f));
                     editPrefab.transform.GetChild(0).AsRT().sizeDelta = new Vector2(4f, 4f);
                     var editPrefabButton = editPrefab.GetComponent<Button>();
@@ -775,17 +757,14 @@ namespace BetterLegacy.Editor.Managers
                     spritePrefabImage.color = new Color(0.037f, 0.037f, 0.037f, 1f);
                     spritePrefabImage.sprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_edit.png");
 
-                    var closeB = closePrefab.Duplicate(prefabPanelRT, "close");
+                    var closeB = closePrefab.Duplicate(prefabPanel.transform, "close");
                     UIManager.SetRectTransform(closeB.transform.AsRT(), new Vector2(-16f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(26f, 26f));
 
-                    var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(prefabPanelRT, "delete");
+                    var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(prefabPanel.transform, "delete");
                     UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(-16f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(26f, 26f));
 
-                    var noteText = baseCardPrefab.transform.Find("artist").gameObject.Duplicate(prefabRT, "text");
-                    noteText.transform.AsRT().anchoredPosition = Vector2.zero;
-                    noteText.transform.AsRT().anchorMax = Vector2.one;
-                    noteText.transform.AsRT().anchorMin = Vector2.zero;
-                    noteText.transform.AsRT().sizeDelta = new Vector2(-16f, 0f);
+                    var noteText = baseCardPrefab.transform.Find("artist").gameObject.Duplicate(prefab.transform, "text");
+                    UIManager.SetRectTransform(noteText.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-16f, 0f));
 
                     var tmpNoteText = noteText.GetComponent<TextMeshProUGUI>();
                     tmpNoteText.alignment = TextAlignmentOptions.TopLeft;
@@ -846,46 +825,28 @@ namespace BetterLegacy.Editor.Managers
                 verticalDrag.Apply();
             }
 
-            // Notes
-            {
-                var notesParent = new GameObject("notes");
-                notesParent.transform.SetParent(plannerBase);
-                notesParent.transform.localScale = Vector3.one;
-
-                var notesParentRT = notesParent.AddComponent<RectTransform>();
-
-                this.notesParent = notesParentRT;
-            }
+            notesParent = Creator.NewUIObject("notes", plannerBase).transform.AsRT(); // floating notes
 
             // Document Full View
             {
-                var fullView = new GameObject("full view");
+                var fullView = Creator.NewUIObject("full view", contentBase);
                 documentFullView = fullView;
-                fullView.transform.SetParent(contentBase);
-                fullView.transform.localScale = Vector3.one;
-                var fullViewRT = fullView.AddComponent<RectTransform>();
                 var fullViewImage = fullView.AddComponent<Image>();
                 fullViewImage.color = new Color(0.082f, 0.082f, 0.078f, 1f);
-                fullViewRT.anchoredPosition = new Vector2(690f, -548f);
-                fullViewRT.sizeDelta = new Vector2(1384f, 936f);
-                fullViewRT.anchorMax = new Vector2(0f, 1f);
-                fullViewRT.anchorMin = new Vector2(0f, 1f);
+                UIManager.SetRectTransform(fullView.transform.AsRT(), new Vector2(690f, -548f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), new Vector2(1384f, 936f));
 
-                EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Background_1, fullView, new List<Component>
-                {
-                    fullViewImage,
-                }));
+                EditorThemeManager.AddGraphic(fullViewImage, ThemeGroup.Background_1);
 
                 documentInputField = fullView.AddComponent<TMP_InputField>();
 
-                var docText = baseCardPrefab.transform.Find("artist").gameObject.Duplicate(fullViewRT, "text");
+                var docText = baseCardPrefab.transform.Find("artist").gameObject.Duplicate(fullView.transform, "text");
                 docText.transform.AsRT().anchoredPosition = new Vector2(0f, -50f);
                 docText.transform.AsRT().sizeDelta = new Vector2(-32f, 840f);
                 var t = docText.GetComponent<TextMeshProUGUI>();
 
                 documentInputField.textComponent = t;
 
-                var docTitle = baseCardPrefab.transform.Find("artist").gameObject.Duplicate(fullViewRT, "title");
+                var docTitle = baseCardPrefab.transform.Find("artist").gameObject.Duplicate(fullView.transform, "title");
 
                 docTitle.transform.AsRT().anchoredPosition = new Vector2(0f, 15f);
                 docTitle.transform.AsRT().sizeDelta = new Vector2(-32, 840f);
@@ -905,47 +866,26 @@ namespace BetterLegacy.Editor.Managers
 
             // Editor
             {
-                var editorBase = new GameObject("editor base");
-                editorBase.transform.SetParent(contentBase);
-                editorBase.transform.localScale = Vector3.one;
-                var editorBaseRT = editorBase.AddComponent<RectTransform>();
-                editorBaseRT.anchoredPosition = new Vector2(691f, -40f);
-                editorBaseRT.sizeDelta = new Vector2(537f, 936f);
+                var editorBase = Creator.NewUIObject("editor base", contentBase);
+                editorBase.transform.AsRT().anchoredPosition = new Vector2(691f, -40f);
+                editorBase.transform.AsRT().sizeDelta = new Vector2(537f, 936f);
                 var editorBaseImage = editorBase.AddComponent<Image>();
                 editorBaseImage.color = new Color(0.078f, 0.067f, 0.067f, 1f);
 
-                EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Background_3, editorBase, new List<Component>
-                {
-                    editorBaseImage,
-                }));
+                EditorThemeManager.AddGraphic(editorBaseImage, ThemeGroup.Background_3);
 
-                var editor = new GameObject("editor");
-                editor.transform.SetParent(editorBaseRT);
-                editor.transform.localScale = Vector3.one;
-                var editorRT = editor.AddComponent<RectTransform>();
-                editorRT.anchoredPosition = Vector3.zero;
-                editorRT.sizeDelta = new Vector2(524f, 936f);
+                var editor = Creator.NewUIObject("editor", editorBase.transform);
+                editor.transform.AsRT().anchoredPosition = Vector3.zero;
+                editor.transform.AsRT().sizeDelta = new Vector2(524f, 936f);
 
-                var panel = new GameObject("panel");
-                panel.transform.SetParent(editorRT);
-                panel.transform.localScale = Vector3.one;
-                var panelRT = panel.AddComponent<RectTransform>();
-                panelRT.anchoredPosition = new Vector2(0f, 436f);
-                panelRT.anchorMax = new Vector2(1f, 0.5f);
-                panelRT.anchorMin = new Vector2(0f, 0.5f);
-                panelRT.sizeDelta = new Vector2(14f, 64f);
+                var panel = Creator.NewUIObject("panel", editor.transform);
+                UIManager.SetRectTransform(panel.transform.AsRT(), new Vector2(0f, 436f), new Vector2(1f, 0.5f), new Vector2(0f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(14f, 64f));
                 editorTitlePanel = panel.AddComponent<Image>();
                 editorTitlePanel.color = new Color(0.310f, 0.467f, 0.737f, 1f);
-                EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Null, panel, new List<Component>
-                {
-                    editorTitlePanel,
-                }, true, 1, SpriteManager.RoundedSide.W));
+                EditorThemeManager.AddGraphic(editorTitlePanel, ThemeGroup.Null, true);
 
-                var editorTitle = baseCardPrefab.transform.Find("artist").gameObject.Duplicate(panelRT, "title");
-                editorTitle.transform.AsRT().anchoredPosition = Vector2.zero;
-                editorTitle.transform.AsRT().anchorMax = Vector2.one;
-                editorTitle.transform.AsRT().anchorMin = Vector2.zero;
-                editorTitle.transform.AsRT().sizeDelta = new Vector2(569f, 0f);
+                var editorTitle = baseCardPrefab.transform.Find("artist").gameObject.Duplicate(panel.transform, "title");
+                UIManager.SetRectTransform(editorTitle.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(569f, 0f));
                 var tmpEditorTitle = editorTitle.GetComponent<TextMeshProUGUI>();
                 tmpEditorTitle.alignment = TextAlignmentOptions.Center;
                 tmpEditorTitle.fontSize = 32;
@@ -955,15 +895,8 @@ namespace BetterLegacy.Editor.Managers
 
                 // Document
                 {
-                    var g1 = new GameObject("Document");
-                    g1.transform.SetParent(editorRT);
-                    g1.transform.localScale = Vector3.one;
-
-                    var g1RT = g1.AddComponent<RectTransform>();
-                    g1RT.anchoredPosition = new Vector2(0f, -32f);
-                    g1RT.anchorMax = Vector2.one;
-                    g1RT.anchorMin = Vector2.zero;
-                    g1RT.sizeDelta = new Vector2(0f, -64f);
+                    var g1 = Creator.NewUIObject("Document", editor.transform);
+                    UIManager.SetRectTransform(g1.transform.AsRT(), new Vector2(0f, -32f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, -64f));
 
                     var vlg = g1.AddComponent<VerticalLayoutGroup>();
                     vlg.childControlHeight = false;
@@ -972,7 +905,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -984,7 +917,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text1 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1RT, "text");
+                    var text1 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "text");
                     text1.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text1.gameObject.SetActive(true);
 
@@ -993,7 +926,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1005,7 +938,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text2 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1RT, "text");
+                    var text2 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "text");
                     text2.transform.AsRT().sizeDelta = new Vector2(537f, 720f);
                     text2.gameObject.SetActive(true);
 
@@ -1021,15 +954,8 @@ namespace BetterLegacy.Editor.Managers
 
                 // TODO
                 {
-                    var g1 = new GameObject("TODO");
-                    g1.transform.SetParent(editorRT);
-                    g1.transform.localScale = Vector3.one;
-
-                    var g1RT = g1.AddComponent<RectTransform>();
-                    g1RT.anchoredPosition = new Vector2(0f, -32f);
-                    g1RT.anchorMax = Vector2.one;
-                    g1RT.anchorMin = Vector2.zero;
-                    g1RT.sizeDelta = new Vector2(0f, -64f);
+                    var g1 = Creator.NewUIObject("TODO", editor.transform);
+                    UIManager.SetRectTransform(g1.transform.AsRT(), new Vector2(0f, -32f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, -64f));
 
                     var vlg = g1.AddComponent<VerticalLayoutGroup>();
                     vlg.childControlHeight = false;
@@ -1038,7 +964,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1050,7 +976,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text1 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1RT, "text");
+                    var text1 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "text");
                     text1.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text1.gameObject.SetActive(true);
 
@@ -1063,15 +989,8 @@ namespace BetterLegacy.Editor.Managers
 
                 // Character
                 {
-                    var g1 = new GameObject("Character");
-                    g1.transform.SetParent(editorRT);
-                    g1.transform.localScale = Vector3.one;
-
-                    var g1RT = g1.AddComponent<RectTransform>();
-                    g1RT.anchoredPosition = new Vector2(0f, -32f);
-                    g1RT.anchorMax = Vector2.one;
-                    g1RT.anchorMin = Vector2.zero;
-                    g1RT.sizeDelta = new Vector2(0f, -64f);
+                    var g1 = Creator.NewUIObject("Character", editor.transform);
+                    UIManager.SetRectTransform(g1.transform.AsRT(), new Vector2(0f, -32f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, -64f));
 
                     var vlg = g1.AddComponent<VerticalLayoutGroup>();
                     vlg.childControlHeight = false;
@@ -1080,7 +999,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1092,7 +1011,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text1 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1RT, "name");
+                    var text1 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "name");
                     text1.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text1.gameObject.SetActive(true);
 
@@ -1101,7 +1020,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1113,7 +1032,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text2 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1RT, "gender");
+                    var text2 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "gender");
                     text2.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text2.gameObject.SetActive(true);
 
@@ -1122,7 +1041,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1134,7 +1053,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text3 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1RT, "description");
+                    var text3 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "description");
                     text3.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text3.gameObject.SetActive(true);
 
@@ -1146,7 +1065,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1158,7 +1077,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var reload = EditorPrefabHolder.Instance.Function2Button.Duplicate(g1RT);
+                    var reload = EditorPrefabHolder.Instance.Function2Button.Duplicate(g1.transform);
                     var pickProfileStorage = reload.GetComponent<FunctionButtonStorage>();
                     reload.SetActive(true);
                     reload.name = "pick profile";
@@ -1166,15 +1085,12 @@ namespace BetterLegacy.Editor.Managers
                     reload.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
                     pickProfileStorage.text.text = "Select";
                     characterEditorProfileSelector = pickProfileStorage.button;
-                    EditorThemeManager.ApplySelectable(characterEditorProfileSelector, ThemeGroup.Function_2);
-                    EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Function_2_Text, pickProfileStorage.text.gameObject, new List<Component>
-                    {
-                        pickProfileStorage.text,
-                    }));
+                    EditorThemeManager.AddSelectable(characterEditorProfileSelector, ThemeGroup.Function_2);
+                    EditorThemeManager.AddGraphic(pickProfileStorage.text, ThemeGroup.Function_2_Text);
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1188,12 +1104,8 @@ namespace BetterLegacy.Editor.Managers
 
                     // Character Traits
                     {
-                        var tagScrollView = new GameObject("Character Traits Scroll View");
-                        tagScrollView.transform.SetParent(g1RT);
-                        tagScrollView.transform.localScale = Vector3.one;
-
-                        var tagScrollViewRT = tagScrollView.AddComponent<RectTransform>();
-                        tagScrollViewRT.sizeDelta = new Vector2(522f, 120f);
+                        var tagScrollView = Creator.NewUIObject("Character Traits Scroll View", g1.transform);
+                        tagScrollView.transform.AsRT().sizeDelta = new Vector2(522f, 120f);
                         var scroll = tagScrollView.AddComponent<ScrollRect>();
 
                         scroll.horizontal = false;
@@ -1202,23 +1114,12 @@ namespace BetterLegacy.Editor.Managers
                         var image = tagScrollView.AddComponent<Image>();
                         image.color = new Color(1f, 1f, 1f, 0.01f);
 
-                        var mask = tagScrollView.AddComponent<Mask>();
+                        tagScrollView.AddComponent<Mask>();
 
-                        var tagViewport = new GameObject("Viewport");
-                        tagViewport.transform.SetParent(tagScrollViewRT);
-                        tagViewport.transform.localScale = Vector3.one;
+                        var tagViewport = Creator.NewUIObject("Viewport", tagScrollView.transform);
+                        UIManager.SetRectTransform(tagViewport.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
 
-                        var tagViewPortRT = tagViewport.AddComponent<RectTransform>();
-                        tagViewPortRT.anchoredPosition = Vector2.zero;
-                        tagViewPortRT.anchorMax = Vector2.one;
-                        tagViewPortRT.anchorMin = Vector2.zero;
-                        tagViewPortRT.sizeDelta = Vector2.zero;
-
-                        var tagContent = new GameObject("Content");
-                        tagContent.transform.SetParent(tagViewPortRT);
-                        tagContent.transform.localScale = Vector3.one;
-
-                        var tagContentRT = tagContent.AddComponent<RectTransform>();
+                        var tagContent = Creator.NewUIObject("Content", tagViewport.transform);
 
                         var tagContentGLG = tagContent.AddComponent<GridLayoutGroup>();
                         tagContentGLG.cellSize = new Vector2(536f, 32f);
@@ -1231,15 +1132,15 @@ namespace BetterLegacy.Editor.Managers
                         tagContentCSF.horizontalFit = ContentSizeFitter.FitMode.MinSize;
                         tagContentCSF.verticalFit = ContentSizeFitter.FitMode.MinSize;
 
-                        scroll.viewport = tagViewPortRT;
-                        scroll.content = tagContentRT;
+                        scroll.viewport = tagViewport.transform.AsRT();
+                        scroll.content = tagContent.transform.AsRT();
 
-                        characterEditorTraitsContent = tagContentRT;
+                        characterEditorTraitsContent = tagContent.transform.AsRT();
                     }
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1253,12 +1154,8 @@ namespace BetterLegacy.Editor.Managers
 
                     // Lore
                     {
-                        var tagScrollView = new GameObject("Lore Scroll View");
-                        tagScrollView.transform.SetParent(g1RT);
-                        tagScrollView.transform.localScale = Vector3.one;
-
-                        var tagScrollViewRT = tagScrollView.AddComponent<RectTransform>();
-                        tagScrollViewRT.sizeDelta = new Vector2(522f, 120f);
+                        var tagScrollView = Creator.NewUIObject("Lore Scroll View", g1.transform);
+                        tagScrollView.transform.AsRT().sizeDelta = new Vector2(522f, 120f);
                         var scroll = tagScrollView.AddComponent<ScrollRect>();
 
                         scroll.horizontal = false;
@@ -1267,23 +1164,12 @@ namespace BetterLegacy.Editor.Managers
                         var image = tagScrollView.AddComponent<Image>();
                         image.color = new Color(1f, 1f, 1f, 0.01f);
 
-                        var mask = tagScrollView.AddComponent<Mask>();
+                        tagScrollView.AddComponent<Mask>();
 
-                        var tagViewport = new GameObject("Viewport");
-                        tagViewport.transform.SetParent(tagScrollViewRT);
-                        tagViewport.transform.localScale = Vector3.one;
+                        var tagViewport = Creator.NewUIObject("Viewport", tagScrollView.transform);
+                        UIManager.SetRectTransform(tagViewport.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
 
-                        var tagViewPortRT = tagViewport.AddComponent<RectTransform>();
-                        tagViewPortRT.anchoredPosition = Vector2.zero;
-                        tagViewPortRT.anchorMax = Vector2.one;
-                        tagViewPortRT.anchorMin = Vector2.zero;
-                        tagViewPortRT.sizeDelta = Vector2.zero;
-
-                        var tagContent = new GameObject("Content");
-                        tagContent.transform.SetParent(tagViewPortRT);
-                        tagContent.transform.localScale = Vector3.one;
-
-                        var tagContentRT = tagContent.AddComponent<RectTransform>();
+                        var tagContent = Creator.NewUIObject("Content", tagViewport.transform);
 
                         var tagContentGLG = tagContent.AddComponent<GridLayoutGroup>();
                         tagContentGLG.cellSize = new Vector2(536f, 32f);
@@ -1296,15 +1182,15 @@ namespace BetterLegacy.Editor.Managers
                         tagContentCSF.horizontalFit = ContentSizeFitter.FitMode.MinSize;
                         tagContentCSF.verticalFit = ContentSizeFitter.FitMode.MinSize;
 
-                        scroll.viewport = tagViewPortRT;
-                        scroll.content = tagContentRT;
+                        scroll.viewport = tagViewport.transform.AsRT();
+                        scroll.content = tagContent.transform.AsRT();
 
-                        characterEditorLoreContent = tagContentRT;
+                        characterEditorLoreContent = tagContent.transform.AsRT();
                     }
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1318,12 +1204,8 @@ namespace BetterLegacy.Editor.Managers
 
                     // Abilities
                     {
-                        var tagScrollView = new GameObject("Abilities Scroll View");
-                        tagScrollView.transform.SetParent(g1RT);
-                        tagScrollView.transform.localScale = Vector3.one;
-
-                        var tagScrollViewRT = tagScrollView.AddComponent<RectTransform>();
-                        tagScrollViewRT.sizeDelta = new Vector2(522f, 120f);
+                        var tagScrollView = Creator.NewUIObject("Abilities Scroll View", g1.transform);
+                        tagScrollView.transform.AsRT().sizeDelta = new Vector2(522f, 120f);
                         var scroll = tagScrollView.AddComponent<ScrollRect>();
 
                         scroll.horizontal = false;
@@ -1332,23 +1214,12 @@ namespace BetterLegacy.Editor.Managers
                         var image = tagScrollView.AddComponent<Image>();
                         image.color = new Color(1f, 1f, 1f, 0.01f);
 
-                        var mask = tagScrollView.AddComponent<Mask>();
+                        tagScrollView.AddComponent<Mask>();
 
-                        var tagViewport = new GameObject("Viewport");
-                        tagViewport.transform.SetParent(tagScrollViewRT);
-                        tagViewport.transform.localScale = Vector3.one;
+                        var tagViewport = Creator.NewUIObject("Viewport", tagScrollView.transform);
+                        UIManager.SetRectTransform(tagViewport.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
 
-                        var tagViewPortRT = tagViewport.AddComponent<RectTransform>();
-                        tagViewPortRT.anchoredPosition = Vector2.zero;
-                        tagViewPortRT.anchorMax = Vector2.one;
-                        tagViewPortRT.anchorMin = Vector2.zero;
-                        tagViewPortRT.sizeDelta = Vector2.zero;
-
-                        var tagContent = new GameObject("Content");
-                        tagContent.transform.SetParent(tagViewPortRT);
-                        tagContent.transform.localScale = Vector3.one;
-
-                        var tagContentRT = tagContent.AddComponent<RectTransform>();
+                        var tagContent = Creator.NewUIObject("Content", tagViewport.transform);
 
                         var tagContentGLG = tagContent.AddComponent<GridLayoutGroup>();
                         tagContentGLG.cellSize = new Vector2(536f, 32f);
@@ -1361,31 +1232,29 @@ namespace BetterLegacy.Editor.Managers
                         tagContentCSF.horizontalFit = ContentSizeFitter.FitMode.MinSize;
                         tagContentCSF.verticalFit = ContentSizeFitter.FitMode.MinSize;
 
-                        scroll.viewport = tagViewPortRT;
-                        scroll.content = tagContentRT;
+                        scroll.viewport = tagViewport.transform.AsRT();
+                        scroll.content = tagContent.transform.AsRT();
 
-                        characterEditorAbilitiesContent = tagContentRT;
+                        characterEditorAbilitiesContent = tagContent.transform.AsRT();
                     }
 
                     // Tag Prefab
                     {
-                        tagPrefab = new GameObject("Tag");
-                        tagPrefab.transform.SetParent(assetsParent);
-                        var tagPrefabRT = tagPrefab.AddComponent<RectTransform>();
+                        tagPrefab = Creator.NewUIObject("Tag", assetsParent);
                         var tagPrefabImage = tagPrefab.AddComponent<Image>();
                         tagPrefabImage.color = new Color(1f, 1f, 1f, 0.12f);
                         var tagPrefabLayout = tagPrefab.AddComponent<HorizontalLayoutGroup>();
                         tagPrefabLayout.childControlWidth = false;
                         tagPrefabLayout.childForceExpandWidth = false;
 
-                        var input = RTEditor.inst.defaultIF.Duplicate(tagPrefabRT, "Input");
+                        var input = RTEditor.inst.defaultIF.Duplicate(tagPrefab.transform, "Input");
                         input.transform.localScale = Vector3.one;
-                        ((RectTransform)input.transform).sizeDelta = new Vector2(500f, 32f);
+                        input.transform.AsRT().sizeDelta = new Vector2(500f, 32f);
                         var text = input.transform.Find("Text").GetComponent<Text>();
                         text.alignment = TextAnchor.MiddleLeft;
                         text.fontSize = 17;
 
-                        var delete = EditorPrefabHolder.Instance.DeleteButton.gameObject.Duplicate(tagPrefabRT, "Delete");
+                        var delete = EditorPrefabHolder.Instance.DeleteButton.gameObject.Duplicate(tagPrefab.transform, "Delete");
                         UIManager.SetRectTransform(delete.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.one, Vector2.one, new Vector2(32f, 32f));
                     }
 
@@ -1395,15 +1264,8 @@ namespace BetterLegacy.Editor.Managers
 
                 // Timeline
                 {
-                    var g1 = new GameObject("Timeline");
-                    g1.transform.SetParent(editorRT);
-                    g1.transform.localScale = Vector3.one;
-
-                    var g1RT = g1.AddComponent<RectTransform>();
-                    g1RT.anchoredPosition = new Vector2(0f, -32f);
-                    g1RT.anchorMax = Vector2.one;
-                    g1RT.anchorMin = Vector2.zero;
-                    g1RT.sizeDelta = new Vector2(0f, -64f);
+                    var g1 = Creator.NewUIObject("Timeline", editor.transform);
+                    UIManager.SetRectTransform(g1.transform.AsRT(), new Vector2(0f, -32f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, -64f));
 
                     var vlg = g1.AddComponent<VerticalLayoutGroup>();
                     vlg.childControlHeight = false;
@@ -1412,7 +1274,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1424,7 +1286,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text1 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1RT, "text");
+                    var text1 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "text");
                     text1.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text1.gameObject.SetActive(true);
 
@@ -1437,15 +1299,8 @@ namespace BetterLegacy.Editor.Managers
 
                 // Event
                 {
-                    var g1 = new GameObject("Event");
-                    g1.transform.SetParent(editorRT);
-                    g1.transform.localScale = Vector3.one;
-
-                    var g1RT = g1.AddComponent<RectTransform>();
-                    g1RT.anchoredPosition = new Vector2(0f, -32f);
-                    g1RT.anchorMax = Vector2.one;
-                    g1RT.anchorMin = Vector2.zero;
-                    g1RT.sizeDelta = new Vector2(0f, -64f);
+                    var g1 = Creator.NewUIObject("Event", editor.transform);
+                    UIManager.SetRectTransform(g1.transform.AsRT(), new Vector2(0f, -32f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, -64f));
 
                     var vlg = g1.AddComponent<VerticalLayoutGroup>();
                     vlg.childControlHeight = false;
@@ -1454,7 +1309,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1466,7 +1321,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text1 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1RT, "name");
+                    var text1 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "name");
                     text1.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text1.gameObject.SetActive(true);
 
@@ -1475,7 +1330,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1487,7 +1342,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text2 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1RT, "description");
+                    var text2 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "description");
                     text2.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text2.gameObject.SetActive(true);
 
@@ -1499,7 +1354,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1511,7 +1366,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text3 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1RT, "path");
+                    var text3 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "path");
                     text3.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text3.gameObject.SetActive(true);
 
@@ -1520,7 +1375,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1532,15 +1387,9 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var renderType = ObjEditor.inst.ObjectView.transform.Find("autokill/tod-dropdown").gameObject.Duplicate(g1RT, "type");
+                    var renderType = ObjEditor.inst.ObjectView.transform.Find("autokill/tod-dropdown").gameObject.Duplicate(g1.transform, "type");
                     eventEditorType = renderType.GetComponent<Dropdown>();
-                    eventEditorType.options.Clear();
-                    eventEditorType.options = new List<Dropdown.OptionData>
-                    {
-                        new Dropdown.OptionData("Level"),
-                        new Dropdown.OptionData("Cutscene"),
-                        new Dropdown.OptionData("Story"),
-                    };
+                    eventEditorType.options = CoreHelper.StringToOptionData("Level", "Cutscene", "Story");
                     EditorThemeManager.AddDropdown(eventEditorType);
 
                     g1.SetActive(false);
@@ -1549,15 +1398,8 @@ namespace BetterLegacy.Editor.Managers
 
                 // Schedule
                 {
-                    var g1 = new GameObject("Event");
-                    g1.transform.SetParent(editorRT);
-                    g1.transform.localScale = Vector3.one;
-
-                    var g1RT = g1.AddComponent<RectTransform>();
-                    g1RT.anchoredPosition = new Vector2(0f, -32f);
-                    g1RT.anchorMax = Vector2.one;
-                    g1RT.anchorMin = Vector2.zero;
-                    g1RT.sizeDelta = new Vector2(0f, -64f);
+                    var g1 = Creator.NewUIObject("Schedule", editor.transform);
+                    UIManager.SetRectTransform(g1.transform.AsRT(), new Vector2(0f, -32f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, -64f));
 
                     var vlg = g1.AddComponent<VerticalLayoutGroup>();
                     vlg.childControlHeight = false;
@@ -1566,7 +1408,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1578,7 +1420,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text1 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1RT, "name");
+                    var text1 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "name");
                     text1.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text1.gameObject.SetActive(true);
 
@@ -1587,7 +1429,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1599,7 +1441,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text2 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1RT, "year");
+                    var text2 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "year");
                     text2.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text2.gameObject.SetActive(true);
 
@@ -1608,7 +1450,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1620,29 +1462,14 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var renderType = ObjEditor.inst.ObjectView.transform.Find("autokill/tod-dropdown").gameObject.Duplicate(g1RT, "month");
+                    var renderType = ObjEditor.inst.ObjectView.transform.Find("autokill/tod-dropdown").gameObject.Duplicate(g1.transform, "month");
                     scheduleEditorMonth = renderType.GetComponent<Dropdown>();
-                    scheduleEditorMonth.options.Clear();
-                    scheduleEditorMonth.options = new List<Dropdown.OptionData>
-                    {
-                        new Dropdown.OptionData("January"),
-                        new Dropdown.OptionData("February"),
-                        new Dropdown.OptionData("March"),
-                        new Dropdown.OptionData("April"),
-                        new Dropdown.OptionData("May"),
-                        new Dropdown.OptionData("June"),
-                        new Dropdown.OptionData("July"),
-                        new Dropdown.OptionData("August"),
-                        new Dropdown.OptionData("September"),
-                        new Dropdown.OptionData("October"),
-                        new Dropdown.OptionData("November"),
-                        new Dropdown.OptionData("December"),
-                    };
+                    scheduleEditorMonth.options = CoreHelper.StringToOptionData("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December");
                     EditorThemeManager.AddDropdown(scheduleEditorMonth);
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1654,7 +1481,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text3 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1RT, "day");
+                    var text3 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "day");
                     text3.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text3.gameObject.SetActive(true);
 
@@ -1663,7 +1490,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1675,7 +1502,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text4 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1RT, "hour");
+                    var text4 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "hour");
                     text4.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text4.gameObject.SetActive(true);
 
@@ -1684,7 +1511,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1696,7 +1523,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text5 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1RT, "minute");
+                    var text5 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "minute");
                     text5.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text5.gameObject.SetActive(true);
 
@@ -1709,15 +1536,8 @@ namespace BetterLegacy.Editor.Managers
 
                 // Note
                 {
-                    var g1 = new GameObject("Note");
-                    g1.transform.SetParent(editorRT);
-                    g1.transform.localScale = Vector3.one;
-
-                    var g1RT = g1.AddComponent<RectTransform>();
-                    g1RT.anchoredPosition = new Vector2(0f, -32f);
-                    g1RT.anchorMax = Vector2.one;
-                    g1RT.anchorMin = Vector2.zero;
-                    g1RT.sizeDelta = new Vector2(0f, -64f);
+                    var g1 = Creator.NewUIObject("Note", editor.transform);
+                    UIManager.SetRectTransform(g1.transform.AsRT(), new Vector2(0f, -32f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, -64f));
 
                     var vlg = g1.AddComponent<VerticalLayoutGroup>();
                     vlg.childControlHeight = false;
@@ -1726,7 +1546,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1738,7 +1558,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text1 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1RT, "text");
+                    var text1 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "text");
                     text1.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text1.gameObject.SetActive(true);
 
@@ -1747,7 +1567,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1759,7 +1579,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text2 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1RT, "text");
+                    var text2 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "text");
                     text2.transform.AsRT().sizeDelta = new Vector2(537f, 360f);
                     text2.gameObject.SetActive(true);
 
@@ -1771,7 +1591,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1785,7 +1605,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var colorBase = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/right/color/color");
                     this.colorBase = colorBase.transform;
-                    var colors = colorBase.Duplicate(g1RT, "colors");
+                    var colors = colorBase.Duplicate(g1.transform, "colors");
                     noteEditorColorsParent = colors.transform;
                     noteEditorColorsParent.AsRT().sizeDelta = new Vector2(537f, 64f);
 
@@ -1798,20 +1618,13 @@ namespace BetterLegacy.Editor.Managers
                         var toggle = col.GetComponent<Toggle>();
                         noteEditorColors.Add(toggle);
 
-                        EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Null, col, new List<Component>
-                        {
-                            toggle.image,
-                        }, true, 1, SpriteManager.RoundedSide.W));
-
-                        EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Background_3, toggle.graphic.gameObject, new List<Component>
-                        {
-                            toggle.graphic,
-                        }));
+                        EditorThemeManager.AddGraphic(toggle.image, ThemeGroup.Null, true);
+                        EditorThemeManager.AddGraphic(toggle.graphic, ThemeGroup.Background_3);
                     }
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(300f, 32f);
@@ -1823,7 +1636,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var reset = EditorPrefabHolder.Instance.Function2Button.gameObject.Duplicate(g1RT);
+                    var reset = EditorPrefabHolder.Instance.Function2Button.gameObject.Duplicate(g1.transform);
                     var resetStorage = reset.GetComponent<FunctionButtonStorage>();
                     reset.SetActive(true);
                     reset.name = "reset";
@@ -1831,11 +1644,8 @@ namespace BetterLegacy.Editor.Managers
                     reset.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
                     resetStorage.text.text = "Reset";
                     noteEditorReset = resetStorage.button;
-                    EditorThemeManager.ApplySelectable(noteEditorReset, ThemeGroup.Function_2);
-                    EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Function_2_Text, resetStorage.text.gameObject, new List<Component>
-                    {
-                        resetStorage.text,
-                    }));
+                    EditorThemeManager.AddSelectable(noteEditorReset, ThemeGroup.Function_2);
+                    EditorThemeManager.AddGraphic(resetStorage.text, ThemeGroup.Function_2_Text);
 
                     g1.SetActive(false);
                     editors.Add(g1);
@@ -1843,15 +1653,8 @@ namespace BetterLegacy.Editor.Managers
 
                 // OST
                 {
-                    var g1 = new GameObject("OST");
-                    g1.transform.SetParent(editorRT);
-                    g1.transform.localScale = Vector3.one;
-
-                    var g1RT = g1.AddComponent<RectTransform>();
-                    g1RT.anchoredPosition = new Vector2(0f, -32f);
-                    g1RT.anchorMax = Vector2.one;
-                    g1RT.anchorMin = Vector2.zero;
-                    g1RT.sizeDelta = new Vector2(0f, -64f);
+                    var g1 = Creator.NewUIObject("OST", editor.transform);
+                    UIManager.SetRectTransform(g1.transform.AsRT(), new Vector2(0f, -32f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, -64f));
 
                     var vlg = g1.AddComponent<VerticalLayoutGroup>();
                     vlg.childControlHeight = false;
@@ -1860,7 +1663,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1872,7 +1675,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text1 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1RT, "path");
+                    var text1 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "path");
                     text1.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text1.gameObject.SetActive(true);
 
@@ -1881,7 +1684,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1893,7 +1696,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text2 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1RT, "name");
+                    var text2 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "name");
                     text2.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text2.gameObject.SetActive(true);
 
@@ -1902,7 +1705,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(334.4f, 32f);
@@ -1914,7 +1717,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var play = EditorPrefabHolder.Instance.Function2Button.Duplicate(g1RT);
+                    var play = EditorPrefabHolder.Instance.Function2Button.Duplicate(g1.transform);
                     var playStorage = play.GetComponent<FunctionButtonStorage>();
                     play.SetActive(true);
                     play.name = "play";
@@ -1922,15 +1725,12 @@ namespace BetterLegacy.Editor.Managers
                     play.transform.AsRT().sizeDelta = new Vector2(200f, 32f);
                     playStorage.text.text = "Play";
                     ostEditorPlay = playStorage.button;
-                    EditorThemeManager.ApplySelectable(ostEditorPlay, ThemeGroup.Function_2);
-                    EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Function_2_Text, playStorage.text.gameObject, new List<Component>
-                    {
-                        playStorage.text,
-                    }));
+                    EditorThemeManager.AddSelectable(ostEditorPlay, ThemeGroup.Function_2);
+                    EditorThemeManager.AddGraphic(playStorage.text, ThemeGroup.Function_2_Text);
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1942,7 +1742,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var stop = EditorPrefabHolder.Instance.Function2Button.Duplicate(g1RT);
+                    var stop = EditorPrefabHolder.Instance.Function2Button.Duplicate(g1.transform);
                     var stopStorage = stop.GetComponent<FunctionButtonStorage>();
                     stop.SetActive(true);
                     stop.name = "stop";
@@ -1951,14 +1751,11 @@ namespace BetterLegacy.Editor.Managers
                     stopStorage.text.text = "Stop";
                     ostEditorStop = stopStorage.button;
                     EditorThemeManager.ApplySelectable(ostEditorStop, ThemeGroup.Function_2);
-                    EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Function_2_Text, stopStorage.text.gameObject, new List<Component>
-                    {
-                        stopStorage.text,
-                    }));
+                    EditorThemeManager.AddGraphic(stopStorage.text, ThemeGroup.Function_2_Text);
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -1970,7 +1767,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var global = EditorPrefabHolder.Instance.Function2Button.Duplicate(g1RT);
+                    var global = EditorPrefabHolder.Instance.Function2Button.Duplicate(g1.transform);
                     var globalStorage = global.GetComponent<FunctionButtonStorage>();
                     global.SetActive(true);
                     global.name = "global";
@@ -1980,15 +1777,12 @@ namespace BetterLegacy.Editor.Managers
                     ostEditorUseGlobal = globalStorage.button;
                     ostEditorUseGlobalText = globalStorage.text;
                     ostEditorUseGlobalText.text = "False";
-                    EditorThemeManager.ApplySelectable(ostEditorUseGlobal, ThemeGroup.Function_2);
-                    EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Function_2_Text, ostEditorUseGlobalText.gameObject, new List<Component>
-                    {
-                        ostEditorUseGlobalText,
-                    }));
+                    EditorThemeManager.AddSelectable(ostEditorUseGlobal, ThemeGroup.Function_2);
+                    EditorThemeManager.AddGraphic(ostEditorUseGlobalText, ThemeGroup.Function_2_Text);
 
                     // Label
                     {
-                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1RT, "label");
+                        var label = ObjEditor.inst.ObjectView.transform.Find("label").gameObject.Duplicate(g1.transform, "label");
                         label.transform.AsRT().pivot = new Vector2(0f, 1f);
                         label.transform.AsRT().sizeDelta = new Vector2(537f, 32f);
                         label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(234.4f, 32f);
@@ -2000,7 +1794,7 @@ namespace BetterLegacy.Editor.Managers
                             Destroy(label.transform.GetChild(1).gameObject);
                     }
 
-                    var text3 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1RT, "index");
+                    var text3 = ObjEditor.inst.ObjectView.transform.Find("shapesettings/5").gameObject.Duplicate(g1.transform, "index");
                     text3.transform.AsRT().sizeDelta = new Vector2(537f, 64f);
                     text3.gameObject.SetActive(true);
 
@@ -2015,55 +1809,6 @@ namespace BetterLegacy.Editor.Managers
             RenderTabs();
             Load();
         }
-
-        #region Editor Variables
-
-        public Image editorTitlePanel;
-
-        public InputField documentEditorName;
-        public InputField documentEditorText;
-
-        public InputField todoEditorText;
-
-        public InputField characterEditorName;
-        public InputField characterEditorGender;
-        public InputField characterEditorDescription;
-        public Button characterEditorProfileSelector;
-        public Transform characterEditorTraitsContent;
-        public Transform characterEditorLoreContent;
-        public Transform characterEditorAbilitiesContent;
-
-        public InputField timelineEditorName;
-        public InputField eventEditorName;
-        public InputField eventEditorDescription;
-        public InputField eventEditorPath;
-        public Dropdown eventEditorType;
-
-        public InputField scheduleEditorDescription;
-        public InputField scheduleEditorYear;
-        public Dropdown scheduleEditorMonth;
-        public InputField scheduleEditorDay;
-        public InputField scheduleEditorHour;
-        public InputField scheduleEditorMinute;
-
-        public InputField noteEditorName;
-        public InputField noteEditorText;
-        public Transform noteEditorColorsParent;
-        public Transform colorBase;
-        public List<Toggle> noteEditorColors = new List<Toggle>();
-        public Button noteEditorReset;
-
-        public InputField ostEditorPath;
-        public InputField ostEditorName;
-        public Button ostEditorPlay;
-        public Button ostEditorUseGlobal;
-        public Text ostEditorUseGlobalText;
-        public Button ostEditorStop;
-        public InputField ostEditorIndex;
-
-        public List<GameObject> editors = new List<GameObject>();
-
-        #endregion
 
         void Update()
         {
@@ -2486,7 +2231,7 @@ namespace BetterLegacy.Editor.Managers
 
                 tab.onValueChanged.ClearAll();
                 tab.isOn = index == CurrentTab;
-                tab.onValueChanged.AddListener(delegate (bool value)
+                tab.onValueChanged.AddListener(_val =>
                 {
                     CurrentTab = index;
                     RenderTabs();
@@ -2535,16 +2280,13 @@ namespace BetterLegacy.Editor.Managers
             documentEditorName.onValueChanged.ClearAll();
             documentEditorName.onEndEdit.ClearAll();
             documentEditorName.text = document.Name;
-            documentEditorName.onValueChanged.AddListener(delegate (string _val)
+            documentEditorName.onValueChanged.AddListener(_val =>
             {
                 document.Name = _val;
                 document.NameUI.text = _val;
                 documentTitle.text = document.Name;
             });
-            documentEditorName.onEndEdit.AddListener(delegate (string _val)
-            {
-                SaveDocuments();
-            });
+            documentEditorName.onEndEdit.AddListener(_val => { SaveDocuments(); });
 
             HandleDocumentEditor(document);
             HandleDocumentEditorPreview(document);
@@ -2555,17 +2297,14 @@ namespace BetterLegacy.Editor.Managers
             documentEditorText.onValueChanged.ClearAll();
             documentEditorText.onEndEdit.ClearAll();
             documentEditorText.text = document.Text;
-            documentEditorText.onValueChanged.AddListener(delegate (string _val)
+            documentEditorText.onValueChanged.AddListener(_val =>
             {
                 document.Text = _val;
                 document.TextUI.text = _val;
 
                 HandleDocumentEditorPreview(document);
             });
-            documentEditorText.onEndEdit.AddListener(delegate (string _val)
-            {
-                SaveDocuments();
-            });
+            documentEditorText.onEndEdit.AddListener(_val => { SaveDocuments(); });
         }
 
         void HandleDocumentEditorPreview(DocumentItem document)
@@ -2576,17 +2315,14 @@ namespace BetterLegacy.Editor.Managers
             documentInputField.onValueChanged.RemoveAllListeners();
             documentInputField.onEndEdit.RemoveAllListeners();
             documentInputField.text = document.Text;
-            documentInputField.onValueChanged.AddListener(delegate (string _val)
+            documentInputField.onValueChanged.AddListener(_val =>
             {
                 document.Text = _val;
                 document.TextUI.text = _val;
 
                 HandleDocumentEditor(document);
             });
-            documentInputField.onEndEdit.AddListener(delegate (string _val)
-            {
-                SaveDocuments();
-            });
+            documentInputField.onEndEdit.AddListener(_val => { SaveDocuments(); });
         }
 
         public void OpenTODOEditor(TODOItem todo)
@@ -2596,16 +2332,13 @@ namespace BetterLegacy.Editor.Managers
 
             todoEditorText.onValueChanged.ClearAll();
             todoEditorText.text = todo.Text;
-            todoEditorText.onValueChanged.AddListener(delegate (string _val)
+            todoEditorText.onValueChanged.AddListener(_val =>
             {
                 todo.Text = _val;
                 todo.TextUI.text = _val;
             });
             todoEditorText.onEndEdit.ClearAll();
-            todoEditorText.onEndEdit.AddListener(delegate (string _val)
-            {
-                SaveTODO();
-            });
+            todoEditorText.onEndEdit.AddListener(_val => { SaveTODO(); });
         }
 
         public void OpenCharacterEditor(CharacterItem character)
@@ -2615,48 +2348,39 @@ namespace BetterLegacy.Editor.Managers
 
             characterEditorName.onValueChanged.ClearAll();
             characterEditorName.text = character.Name;
-            characterEditorName.onValueChanged.AddListener(delegate (string _val)
+            characterEditorName.onValueChanged.AddListener(_val =>
             {
                 character.Name = _val;
                 character.DetailsUI.text = character.FormatDetails;
             });
             characterEditorName.onEndEdit.ClearAll();
-            characterEditorName.onEndEdit.AddListener(delegate (string _val)
-            {
-                character.Save();
-            });
+            characterEditorName.onEndEdit.AddListener(_val => { character.Save(); });
 
             characterEditorGender.onValueChanged.ClearAll();
             characterEditorGender.text = character.Gender;
-            characterEditorGender.onValueChanged.AddListener(delegate (string _val)
+            characterEditorGender.onValueChanged.AddListener(_val =>
             {
                 character.Gender = _val;
                 character.DetailsUI.text = character.FormatDetails;
             });
             characterEditorGender.onEndEdit.ClearAll();
-            characterEditorGender.onEndEdit.AddListener(delegate (string _val)
-            {
-                character.Save();
-            });
+            characterEditorGender.onEndEdit.AddListener(_val => { character.Save(); });
 
             characterEditorDescription.onValueChanged.ClearAll();
             characterEditorDescription.text = character.Description;
-            characterEditorDescription.onValueChanged.AddListener(delegate (string _val)
+            characterEditorDescription.onValueChanged.AddListener(_val =>
             {
                 character.Description = _val;
                 character.DescriptionUI.text = character.Description;
             });
             characterEditorDescription.onEndEdit.ClearAll();
-            characterEditorDescription.onEndEdit.AddListener(delegate (string _val)
-            {
-                character.Save();
-            });
+            characterEditorDescription.onEndEdit.AddListener(_val => { character.Save(); });
 
             characterEditorProfileSelector.onClick.ClearAll();
-            characterEditorProfileSelector.onClick.AddListener(delegate ()
+            characterEditorProfileSelector.onClick.AddListener(() =>
             {
                 var editorPath = RTFile.ApplicationDirectory;
-                string jpgFile = FileBrowser.OpenSingleFile("Select an image!", editorPath, new string[] { "png", "jpg" });
+                string jpgFile = FileBrowser.OpenSingleFile("Select an image!", editorPath, "png", "jpg");
 
                 if (!string.IsNullOrEmpty(jpgFile))
                 {
@@ -2690,19 +2414,16 @@ namespace BetterLegacy.Editor.Managers
                     input.onValueChanged.ClearAll();
                     input.onEndEdit.ClearAll();
                     input.text = tag;
-                    input.onValueChanged.AddListener(delegate (string _val)
+                    input.onValueChanged.AddListener(_val =>
                     {
                         character.CharacterTraits[index] = _val;
                         character.DetailsUI.text = character.FormatDetails;
                     });
-                    input.onEndEdit.AddListener(delegate (string _val)
-                    {
-                        character.Save();
-                    });
+                    input.onEndEdit.AddListener(_val => { character.Save(); });
 
                     var delete = gameObject.transform.Find("Delete").GetComponent<Button>();
                     delete.onClick.ClearAll();
-                    delete.onClick.AddListener(delegate ()
+                    delete.onClick.AddListener(() =>
                     {
                         character.CharacterTraits.RemoveAt(index);
                         character.DetailsUI.text = character.FormatDetails;
@@ -2718,7 +2439,7 @@ namespace BetterLegacy.Editor.Managers
                 add.transform.Find("Text").GetComponent<Text>().text = "Add Trait";
                 var addButton = add.GetComponent<Button>();
                 addButton.onClick.ClearAll();
-                addButton.onClick.AddListener(delegate ()
+                addButton.onClick.AddListener(() =>
                 {
                     character.CharacterTraits.Add("New Detail");
                     character.DetailsUI.text = character.FormatDetails;
@@ -2741,19 +2462,16 @@ namespace BetterLegacy.Editor.Managers
                     input.onValueChanged.ClearAll();
                     input.onEndEdit.ClearAll();
                     input.text = tag;
-                    input.onValueChanged.AddListener(delegate (string _val)
+                    input.onValueChanged.AddListener(_val =>
                     {
                         character.CharacterLore[index] = _val;
                         character.DetailsUI.text = character.FormatDetails;
                     });
-                    input.onEndEdit.AddListener(delegate (string _val)
-                    {
-                        character.Save();
-                    });
+                    input.onEndEdit.AddListener(_val => { character.Save(); });
 
                     var delete = gameObject.transform.Find("Delete").GetComponent<Button>();
                     delete.onClick.ClearAll();
-                    delete.onClick.AddListener(delegate ()
+                    delete.onClick.AddListener(() =>
                     {
                         character.CharacterLore.RemoveAt(index);
                         character.DetailsUI.text = character.FormatDetails;
@@ -2769,7 +2487,7 @@ namespace BetterLegacy.Editor.Managers
                 add.transform.Find("Text").GetComponent<Text>().text = "Add Lore";
                 var addButton = add.GetComponent<Button>();
                 addButton.onClick.ClearAll();
-                addButton.onClick.AddListener(delegate ()
+                addButton.onClick.AddListener(() =>
                 {
                     character.CharacterLore.Add("New Detail");
                     character.DetailsUI.text = character.FormatDetails;
@@ -2792,19 +2510,16 @@ namespace BetterLegacy.Editor.Managers
                     input.onValueChanged.ClearAll();
                     input.onEndEdit.ClearAll();
                     input.text = tag;
-                    input.onValueChanged.AddListener(delegate (string _val)
+                    input.onValueChanged.AddListener(_val =>
                     {
                         character.CharacterAbilities[index] = _val;
                         character.DetailsUI.text = character.FormatDetails;
                     });
-                    input.onEndEdit.AddListener(delegate (string _val)
-                    {
-                        character.Save();
-                    });
+                    input.onEndEdit.AddListener(_val => { character.Save(); });
 
                     var delete = gameObject.transform.Find("Delete").GetComponent<Button>();
                     delete.onClick.ClearAll();
-                    delete.onClick.AddListener(delegate ()
+                    delete.onClick.AddListener(() =>
                     {
                         character.CharacterAbilities.RemoveAt(index);
                         character.DetailsUI.text = character.FormatDetails;
@@ -2820,7 +2535,7 @@ namespace BetterLegacy.Editor.Managers
                 add.transform.Find("Text").GetComponent<Text>().text = "Add Ability";
                 var addButton = add.GetComponent<Button>();
                 addButton.onClick.ClearAll();
-                addButton.onClick.AddListener(delegate ()
+                addButton.onClick.AddListener(() =>
                 {
                     character.CharacterAbilities.Add("New Detail");
                     character.DetailsUI.text = character.FormatDetails;
@@ -2838,16 +2553,13 @@ namespace BetterLegacy.Editor.Managers
 
             timelineEditorName.onValueChanged.ClearAll();
             timelineEditorName.text = timeline.Name;
-            timelineEditorName.onValueChanged.AddListener(delegate (string _val)
+            timelineEditorName.onValueChanged.AddListener(_val =>
             {
                 timeline.Name = _val;
                 timeline.NameUI.text = _val;
             });
             timelineEditorName.onEndEdit.ClearAll();
-            timelineEditorName.onEndEdit.AddListener(delegate (string _val)
-            {
-                SaveTimelines();
-            });
+            timelineEditorName.onEndEdit.AddListener(_val => { SaveTimelines(); });
         }
 
         public void OpenEventEditor(TimelineItem.Event level)
@@ -2858,45 +2570,33 @@ namespace BetterLegacy.Editor.Managers
 
             eventEditorName.onValueChanged.ClearAll();
             eventEditorName.text = level.Name;
-            eventEditorName.onValueChanged.AddListener(delegate (string _val)
+            eventEditorName.onValueChanged.AddListener(_val =>
             {
                 level.Name = _val;
                 level.NameUI.text = $"{level.ElementType}: {level.Name}";
             });
             eventEditorName.onEndEdit.ClearAll();
-            eventEditorName.onEndEdit.AddListener(delegate (string _val)
-            {
-                SaveTimelines();
-            });
+            eventEditorName.onEndEdit.AddListener(_val => { SaveTimelines(); });
 
             eventEditorDescription.onValueChanged.ClearAll();
             eventEditorDescription.text = level.Description;
-            eventEditorDescription.onValueChanged.AddListener(delegate (string _val)
+            eventEditorDescription.onValueChanged.AddListener(_val =>
             {
                 level.Description = _val;
                 level.DescriptionUI.text = _val;
             });
             eventEditorDescription.onEndEdit.ClearAll();
-            eventEditorDescription.onEndEdit.AddListener(delegate (string _val)
-            {
-                SaveTimelines();
-            });
+            eventEditorDescription.onEndEdit.AddListener(_val => { SaveTimelines(); });
 
             eventEditorPath.onValueChanged.ClearAll();
             eventEditorPath.text = level.Path == null ? "" : level.Path;
-            eventEditorPath.onValueChanged.AddListener(delegate (string _val)
-            {
-                level.Path = _val;
-            });
+            eventEditorPath.onValueChanged.AddListener(_val => { level.Path = _val; });
             eventEditorPath.onEndEdit.ClearAll();
-            eventEditorPath.onEndEdit.AddListener(delegate (string _val)
-            {
-                SaveTimelines();
-            });
+            eventEditorPath.onEndEdit.AddListener(_val => { SaveTimelines(); });
 
             eventEditorType.onValueChanged.ClearAll();
             eventEditorType.value = (int)level.ElementType;
-            eventEditorType.onValueChanged.AddListener(delegate (int _val)
+            eventEditorType.onValueChanged.AddListener(_val =>
             {
                 level.ElementType = (TimelineItem.Event.Type)_val;
                 level.NameUI.text = $"{level.ElementType}: {level.Name}";
@@ -2911,21 +2611,18 @@ namespace BetterLegacy.Editor.Managers
 
             scheduleEditorDescription.onValueChanged.ClearAll();
             scheduleEditorDescription.text = schedule.Description;
-            scheduleEditorDescription.onValueChanged.AddListener(delegate (string _val)
+            scheduleEditorDescription.onValueChanged.AddListener(_val =>
             {
                 schedule.Description = _val;
                 schedule.TextUI.text = schedule.Text;
                 schedule.hasBeenChecked = false;
             });
             scheduleEditorDescription.onEndEdit.ClearAll();
-            scheduleEditorDescription.onEndEdit.AddListener(delegate (string _val)
-            {
-                SaveSchedules();
-            });
+            scheduleEditorDescription.onEndEdit.AddListener(_val => { SaveSchedules(); });
 
             scheduleEditorYear.onValueChanged.ClearAll();
             scheduleEditorYear.text = schedule.DateTime.Year.ToString();
-            scheduleEditorYear.onValueChanged.AddListener(delegate (string _val)
+            scheduleEditorYear.onValueChanged.AddListener(_val =>
             {
                 if (int.TryParse(_val, out int year))
                 {
@@ -2943,7 +2640,7 @@ namespace BetterLegacy.Editor.Managers
 
             scheduleEditorMonth.onValueChanged.ClearAll();
             scheduleEditorMonth.value = schedule.DateTime.Month - 1;
-            scheduleEditorMonth.onValueChanged.AddListener(delegate (int _val)
+            scheduleEditorMonth.onValueChanged.AddListener(_val =>
             {
                 var dateTime = schedule.DateTime;
 
@@ -2958,7 +2655,7 @@ namespace BetterLegacy.Editor.Managers
 
             scheduleEditorDay.onValueChanged.ClearAll();
             scheduleEditorDay.text = schedule.DateTime.Day.ToString();
-            scheduleEditorDay.onValueChanged.AddListener(delegate (string _val)
+            scheduleEditorDay.onValueChanged.AddListener(_val =>
             {
                 if (int.TryParse(_val, out int day))
                 {
@@ -2976,7 +2673,7 @@ namespace BetterLegacy.Editor.Managers
 
             scheduleEditorHour.onValueChanged.ClearAll();
             scheduleEditorHour.text = schedule.DateTime.Hour.ToString();
-            scheduleEditorHour.onValueChanged.AddListener(delegate (string _val)
+            scheduleEditorHour.onValueChanged.AddListener(_val =>
             {
                 if (int.TryParse(_val, out int hour))
                 {
@@ -2996,7 +2693,7 @@ namespace BetterLegacy.Editor.Managers
 
             scheduleEditorMinute.onValueChanged.ClearAll();
             scheduleEditorMinute.text = schedule.DateTime.Minute.ToString();
-            scheduleEditorMinute.onValueChanged.AddListener(delegate (string _val)
+            scheduleEditorMinute.onValueChanged.AddListener(_val =>
             {
                 if (int.TryParse(_val, out int minute))
                 {
@@ -3020,29 +2717,23 @@ namespace BetterLegacy.Editor.Managers
 
             noteEditorName.onValueChanged.ClearAll();
             noteEditorName.text = note.Name;
-            noteEditorName.onValueChanged.AddListener(delegate (string _val)
+            noteEditorName.onValueChanged.AddListener(_val =>
             {
                 note.Name = _val;
                 note.TitleUI.text = $"Note - {note.Name}";
             });
             noteEditorName.onEndEdit.ClearAll();
-            noteEditorName.onEndEdit.AddListener(delegate (string _val)
-            {
-                SaveNotes();
-            });
+            noteEditorName.onEndEdit.AddListener(_val => { SaveNotes(); });
 
             noteEditorText.onValueChanged.ClearAll();
             noteEditorText.text = note.Text;
-            noteEditorText.onValueChanged.AddListener(delegate (string _val)
+            noteEditorText.onValueChanged.AddListener(_val =>
             {
                 note.Text = _val;
                 note.TextUI.text = _val;
             });
             noteEditorText.onEndEdit.ClearAll();
-            noteEditorText.onEndEdit.AddListener(delegate (string _val)
-            {
-                SaveNotes();
-            });
+            noteEditorText.onEndEdit.AddListener(_val => { SaveNotes(); });
 
             noteEditorColors.Clear();
             LSHelpers.DeleteChildren(noteEditorColorsParent);
@@ -3056,7 +2747,7 @@ namespace BetterLegacy.Editor.Managers
             SetNoteColors(note);
 
             noteEditorReset.onClick.ClearAll();
-            noteEditorReset.onClick.AddListener(delegate ()
+            noteEditorReset.onClick.AddListener(() =>
             {
                 note.Position = Vector2.zero;
                 note.Scale = Vector2.one;
@@ -3077,7 +2768,7 @@ namespace BetterLegacy.Editor.Managers
                 toggle.isOn = index == note.Color;
                 toggle.image.color = color;
                 ((Image)toggle.graphic).color = new Color(0.078f, 0.067f, 0.067f, 1f);
-                toggle.onValueChanged.AddListener(delegate (bool _val)
+                toggle.onValueChanged.AddListener(_val =>
                 {
                     note.Color = index;
                     SetNoteColors(note);
@@ -3095,42 +2786,27 @@ namespace BetterLegacy.Editor.Managers
             ostEditorPath.onValueChanged.ClearAll();
             ostEditorPath.onEndEdit.ClearAll();
             ostEditorPath.text = ost.Path;
-            ostEditorPath.onValueChanged.AddListener(delegate (string _val)
-            {
-                ost.Path = _val;
-            });
-            ostEditorPath.onEndEdit.AddListener(delegate (string _val)
-            {
-                SaveOST();
-            });
+            ostEditorPath.onValueChanged.AddListener(_val => { ost.Path = _val; });
+            ostEditorPath.onEndEdit.AddListener(_val => { SaveOST(); });
 
             ostEditorName.onValueChanged.ClearAll();
             ostEditorName.onEndEdit.ClearAll();
             ostEditorName.text = ost.Name;
-            ostEditorName.onValueChanged.AddListener(delegate (string _val)
+            ostEditorName.onValueChanged.AddListener(_val =>
             {
                 ost.Name = _val;
                 ost.TextUI.text = _val;
             });
-            ostEditorName.onEndEdit.AddListener(delegate (string _val)
-            {
-                SaveOST();
-            });
+            ostEditorName.onEndEdit.AddListener(_val => { SaveOST(); });
 
             ostEditorPlay.onClick.ClearAll();
-            ostEditorPlay.onClick.AddListener(delegate ()
-            {
-                ost.Play();
-            });
+            ostEditorPlay.onClick.AddListener(ost.Play);
 
             ostEditorStop.onClick.ClearAll();
-            ostEditorStop.onClick.AddListener(delegate ()
-            {
-                StopOST();
-            });
+            ostEditorStop.onClick.AddListener(StopOST);
 
             ostEditorUseGlobal.onClick.ClearAll();
-            ostEditorUseGlobal.onClick.AddListener(delegate ()
+            ostEditorUseGlobal.onClick.AddListener(() =>
             {
                 ost.UseGlobal = !ost.UseGlobal;
                 ostEditorUseGlobalText.text = ost.UseGlobal.ToString();
@@ -3141,7 +2817,7 @@ namespace BetterLegacy.Editor.Managers
 
             ostEditorIndex.onValueChanged.ClearAll();
             ostEditorIndex.text = ost.Index.ToString();
-            ostEditorIndex.onValueChanged.AddListener(delegate (string _val)
+            ostEditorIndex.onValueChanged.AddListener(_val =>
             {
                 if (int.TryParse(_val, out int num))
                 {
@@ -3175,9 +2851,7 @@ namespace BetterLegacy.Editor.Managers
             var list = planners.Where(x => x.PlannerType == PlannerItem.Type.OST && x is OSTItem).Select(x => x as OSTItem).ToList();
 
             for (int i = 0; i < list.Count; i++)
-            {
                 list[i].playing = false;
-            }
 
             playing = false;
         }
@@ -3229,10 +2903,7 @@ namespace BetterLegacy.Editor.Managers
 
             var button = gameObject.GetComponent<Button>();
             button.onClick.ClearAll();
-            button.onClick.AddListener(delegate ()
-            {
-                OpenDocumentEditor(document);
-            });
+            button.onClick.AddListener(() => { OpenDocumentEditor(document); });
 
             EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
 
@@ -3246,27 +2917,16 @@ namespace BetterLegacy.Editor.Managers
 
             var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
             delete.button.onClick.ClearAll();
-            delete.button.onClick.AddListener(delegate ()
+            delete.button.onClick.AddListener(() =>
             {
                 planners.RemoveAll(x => x is DocumentItem && x.ID == document.ID);
                 SaveDocuments();
                 Destroy(gameObject);
             });
 
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete, delete.gameObject, new List<Component>
-            {
-                delete.button.image,
-            }, true, 1, SpriteManager.RoundedSide.W));
-
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete_Text, delete.image.gameObject, new List<Component>
-            {
-                delete.image,
-            }));
-
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Background_1, gameObject.transform.Find("gradient").gameObject, new List<Component>
-            {
-                gameObject.transform.Find("gradient").GetComponent<Image>(),
-            }));
+            EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
+            EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
+            EditorThemeManager.ApplyGraphic(gameObject.transform.Find("gradient").GetComponent<Image>(), ThemeGroup.Background_1);
 
             return gameObject;
         }
@@ -3279,10 +2939,7 @@ namespace BetterLegacy.Editor.Managers
 
             var button = gameObject.GetComponent<Button>();
             button.onClick.ClearAll();
-            button.onClick.AddListener(delegate ()
-            {
-                OpenTODOEditor(todo);
-            });
+            button.onClick.AddListener(() => { OpenTODOEditor(todo); });
 
             EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
 
@@ -3294,7 +2951,7 @@ namespace BetterLegacy.Editor.Managers
             todo.CheckedUI = toggle;
             toggle.onValueChanged.ClearAll();
             toggle.isOn = todo.Checked;
-            toggle.onValueChanged.AddListener(delegate (bool _val)
+            toggle.onValueChanged.AddListener(_val =>
             {
                 todo.Checked = _val;
                 SaveTODO();
@@ -3304,22 +2961,15 @@ namespace BetterLegacy.Editor.Managers
 
             var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
             delete.button.onClick.ClearAll();
-            delete.button.onClick.AddListener(delegate ()
+            delete.button.onClick.AddListener(() =>
             {
                 planners.RemoveAll(x => x is TODOItem && x.ID == todo.ID);
                 SaveTODO();
                 Destroy(gameObject);
             });
 
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete, delete.gameObject, new List<Component>
-            {
-                delete.button.image,
-            }, true, 1, SpriteManager.RoundedSide.W));
-
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete_Text, delete.image.gameObject, new List<Component>
-            {
-                delete.image,
-            }));
+            EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
+            EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
 
             return gameObject;
         }
@@ -3332,7 +2982,7 @@ namespace BetterLegacy.Editor.Managers
 
             var button = gameObject.GetComponent<Button>();
             button.onClick.ClearAll();
-            button.onClick.AddListener(delegate ()
+            button.onClick.AddListener(() =>
             {
                 OpenCharacterEditor(character);
             });
@@ -3354,7 +3004,7 @@ namespace BetterLegacy.Editor.Managers
 
             var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
             delete.button.onClick.ClearAll();
-            delete.button.onClick.AddListener(delegate ()
+            delete.button.onClick.AddListener(() =>
             {
                 planners.RemoveAll(x => x is CharacterItem && x.ID == character.ID);
 
@@ -3380,15 +3030,8 @@ namespace BetterLegacy.Editor.Managers
                 Destroy(gameObject);
             });
 
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete, delete.gameObject, new List<Component>
-            {
-                delete.button.image,
-            }, true, 1, SpriteManager.RoundedSide.W));
-
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete_Text, delete.image.gameObject, new List<Component>
-            {
-                delete.image,
-            }));
+            EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
+            EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
 
             return gameObject;
         }
@@ -3425,10 +3068,7 @@ namespace BetterLegacy.Editor.Managers
 
             var edit = gameObject.transform.Find("edit").GetComponent<Button>();
             edit.onClick.ClearAll();
-            edit.onClick.AddListener(delegate ()
-            {
-                OpenTimelineEditor(timeline);
-            });
+            edit.onClick.AddListener(() => { OpenTimelineEditor(timeline); });
 
             EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Function_3, edit.gameObject, new List<Component>
             {
@@ -3442,22 +3082,15 @@ namespace BetterLegacy.Editor.Managers
 
             var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
             delete.button.onClick.ClearAll();
-            delete.button.onClick.AddListener(delegate ()
+            delete.button.onClick.AddListener(() =>
             {
                 planners.RemoveAll(x => x is TimelineItem && x.ID == timeline.ID);
                 SaveTimelines();
                 Destroy(gameObject);
             });
 
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete, delete.gameObject, new List<Component>
-            {
-                delete.button.image,
-            }, true, 1, SpriteManager.RoundedSide.W));
-
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete_Text, delete.image.gameObject, new List<Component>
-            {
-                delete.image,
-            }));
+            EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
+            EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
 
             timeline.UpdateTimeline();
 
@@ -3472,10 +3105,7 @@ namespace BetterLegacy.Editor.Managers
 
             var button = gameObject.GetComponent<Button>();
             button.onClick.ClearAll();
-            button.onClick.AddListener(delegate ()
-            {
-                OpenScheduleEditor(schedule);
-            });
+            button.onClick.AddListener(() => { OpenScheduleEditor(schedule); });
 
             EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
 
@@ -3485,22 +3115,15 @@ namespace BetterLegacy.Editor.Managers
 
             var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
             delete.button.onClick.ClearAll();
-            delete.button.onClick.AddListener(delegate ()
+            delete.button.onClick.AddListener(() =>
             {
                 planners.RemoveAll(x => x is ScheduleItem && x.ID == schedule.ID);
                 SaveSchedules();
                 Destroy(gameObject);
             });
 
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete, delete.gameObject, new List<Component>
-            {
-                delete.button.image,
-            }, true, 1, SpriteManager.RoundedSide.W));
-
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete_Text, delete.image.gameObject, new List<Component>
-            {
-                delete.image,
-            }));
+            EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
+            EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
 
             return gameObject;
         }
@@ -3514,91 +3137,53 @@ namespace BetterLegacy.Editor.Managers
 
             var noteDraggable = gameObject.AddComponent<NoteDraggable>();
             noteDraggable.note = note;
-            noteDraggable.onClick = delegate ()
-            {
-                OpenNoteEditor(note);
-            };
+            noteDraggable.onClick = () => { OpenNoteEditor(note); };
 
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Background_3, gameObject, new List<Component>
-            {
-                gameObject.GetComponent<Image>(),
-            }, true, 1, SpriteManager.RoundedSide.Bottom));
+            EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Background_3, true, roundedSide: SpriteManager.RoundedSide.Bottom);
 
-            // Left
+            string[] names = new string[] { "left", "right", "up", "down" };
+            for (int i = 0; i < 4; i++)
             {
-                var left = new GameObject("left");
-                left.transform.SetParent(gameObject.transform);
-                left.transform.localScale = Vector3.one;
-                var leftRT = left.AddComponent<RectTransform>();
-                leftRT.anchoredPosition = Vector2.zero;
-                leftRT.anchorMax = new Vector2(1f, 1f);
-                leftRT.anchorMin = new Vector2(1f, 0f);
-                leftRT.pivot = new Vector2(0.5f, 0.5f);
-                leftRT.sizeDelta = new Vector2(4f, 0f);
+                var anchoredPositon = Vector2.zero;
+                var anchorMax = Vector2.zero;
+                var anchorMin = Vector2.zero;
+                var sizeDelta = new Vector2(4f, 0f);
+
+                switch (i)
+                {
+                    case 0:
+                        anchorMax = Vector2.one;
+                        anchorMin = new Vector2(1f, 0f);
+                        break;
+                    case 1:
+                        anchorMax = new Vector2(0f, 1f);
+                        anchorMin = Vector2.zero;
+                        break;
+                    case 2:
+                        anchoredPositon = new Vector2(0f, 30f);
+                        anchorMax = Vector2.one;
+                        anchorMin = new Vector2(0f, 1f);
+                        sizeDelta = new Vector2(0f, 4f);
+                        break;
+                    case 3:
+                        anchorMax = new Vector2(1f, 0f);
+                        anchorMin = Vector2.zero;
+                        sizeDelta = new Vector2(0f, 4f);
+                        break;
+                }
+
+                var left = Creator.NewUIObject(names[i], gameObject.transform);
+                UIManager.SetRectTransform(left.transform.AsRT(), anchoredPositon, anchorMax, anchorMin, new Vector2(0.5f, 0.5f), sizeDelta);
                 var leftImage = left.AddComponent<Image>();
                 leftImage.color = new Color(1f, 1f, 1f, DisplayEdges ? 1f : 0f);
                 var noteDraggableLeft = left.AddComponent<NoteDraggable>();
-                noteDraggableLeft.part = NoteDraggable.DragPart.Left;
-                noteDraggableLeft.note = note;
-            }
-
-            // Right
-            {
-                var left = new GameObject("right");
-                left.transform.SetParent(gameObject.transform);
-                left.transform.localScale = Vector3.one;
-                var leftRT = left.AddComponent<RectTransform>();
-                leftRT.anchoredPosition = Vector2.zero;
-                leftRT.anchorMax = new Vector2(0f, 1f);
-                leftRT.anchorMin = new Vector2(0f, 0f);
-                leftRT.pivot = new Vector2(0.5f, 0.5f);
-                leftRT.sizeDelta = new Vector2(4f, 0f);
-                var leftImage = left.AddComponent<Image>();
-                leftImage.color = new Color(1f, 1f, 1f, DisplayEdges ? 1f : 0f);
-                var noteDraggableLeft = left.AddComponent<NoteDraggable>();
-                noteDraggableLeft.part = NoteDraggable.DragPart.Right;
-                noteDraggableLeft.note = note;
-            }
-
-            // Up
-            {
-                var left = new GameObject("up");
-                left.transform.SetParent(gameObject.transform);
-                left.transform.localScale = Vector3.one;
-                var leftRT = left.AddComponent<RectTransform>();
-                leftRT.anchoredPosition = new Vector2(0f, 30f);
-                leftRT.anchorMax = Vector2.one;
-                leftRT.anchorMin = new Vector2(0f, 1f);
-                leftRT.pivot = new Vector2(0.5f, 0.5f);
-                leftRT.sizeDelta = new Vector2(0f, 4f);
-                var leftImage = left.AddComponent<Image>();
-                leftImage.color = new Color(1f, 1f, 1f, DisplayEdges ? 1f : 0f);
-                var noteDraggableLeft = left.AddComponent<NoteDraggable>();
-                noteDraggableLeft.part = NoteDraggable.DragPart.Up;
-                noteDraggableLeft.note = note;
-            }
-
-            // Down
-            {
-                var left = new GameObject("down");
-                left.transform.SetParent(gameObject.transform);
-                left.transform.localScale = Vector3.one;
-                var leftRT = left.AddComponent<RectTransform>();
-                leftRT.anchoredPosition = Vector2.zero;
-                leftRT.anchorMax = new Vector2(1f, 0f);
-                leftRT.anchorMin = new Vector2(0f, 0f);
-                leftRT.pivot = new Vector2(0.5f, 0.5f);
-                leftRT.sizeDelta = new Vector2(0f, 4f);
-                var leftImage = left.AddComponent<Image>();
-                leftImage.color = new Color(1f, 1f, 1f, DisplayEdges ? 1f : 0f);
-                var noteDraggableLeft = left.AddComponent<NoteDraggable>();
-                noteDraggableLeft.part = NoteDraggable.DragPart.Down;
+                noteDraggableLeft.part = (NoteDraggable.DragPart)(i + 1);
                 noteDraggableLeft.note = note;
             }
 
             var edit = gameObject.transform.Find("panel/edit").GetComponent<Button>();
             edit.onClick.ClearAll();
-            edit.onClick.AddListener(delegate ()
+            edit.onClick.AddListener(() =>
             {
                 CurrentTab = 5;
                 Open();
@@ -3607,15 +3192,8 @@ namespace BetterLegacy.Editor.Managers
                 OpenNoteEditor(note);
             });
 
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Function_3, edit.gameObject, new List<Component>
-            {
-                edit.image,
-            }, true, 1, SpriteManager.RoundedSide.W));
-
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Function_3_Text, edit.transform.GetChild(0).gameObject, new List<Component>
-            {
-                edit.transform.GetChild(0).GetComponent<Image>(),
-            }));
+            EditorThemeManager.ApplyGraphic(edit.image, ThemeGroup.Function_3, true);
+            EditorThemeManager.ApplyGraphic(edit.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Function_3_Text);
 
             note.TitleUI = gameObject.transform.Find("panel/title").GetComponent<TextMeshProUGUI>();
             note.TitleUI.text = $"Note - {note.Name}";
@@ -3626,15 +3204,12 @@ namespace BetterLegacy.Editor.Managers
             note.TextUI.text = note.Text;
             EditorThemeManager.ApplyLightText(note.TextUI);
 
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Background_3, note.TopBar.gameObject, new List<Component>
-            {
-                 note.TopBar,
-            }, true, 1, SpriteManager.RoundedSide.Top));
+            EditorThemeManager.ApplyGraphic(note.TopBar, ThemeGroup.Background_3, true);
             note.TitleUI.gameObject.AddComponent<ContrastColors>().Init(note.TitleUI, note.TopBar);
 
             note.ActiveUI.onValueChanged.ClearAll();
             note.ActiveUI.isOn = note.Active;
-            note.ActiveUI.onValueChanged.AddListener(delegate (bool _val)
+            note.ActiveUI.onValueChanged.AddListener(_val =>
             {
                 note.Active = _val;
                 SaveNotes();
@@ -3644,35 +3219,22 @@ namespace BetterLegacy.Editor.Managers
 
             var delete = gameObject.transform.Find("panel/delete").GetComponent<DeleteButtonStorage>();
             delete.button.onClick.ClearAll();
-            delete.button.onClick.AddListener(delegate ()
+            delete.button.onClick.AddListener(() =>
             {
                 planners.RemoveAll(x => x is NoteItem && x.ID == note.ID);
                 SaveNotes();
                 Destroy(gameObject);
             });
 
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete, delete.gameObject, new List<Component>
-            {
-                delete.button.image,
-            }, true, 1, SpriteManager.RoundedSide.W));
-
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete_Text, delete.image.gameObject, new List<Component>
-            {
-                delete.image,
-            }));
+            EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
+            EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
 
             var close = gameObject.transform.Find("panel/close").GetComponent<Button>();
             close.onClick.ClearAll();
-            close.onClick.AddListener(delegate ()
-            {
-                note.ActiveUI.isOn = false;
-            });
+            close.onClick.AddListener(() => { note.ActiveUI.isOn = false; });
 
             EditorThemeManager.ApplySelectable(close, ThemeGroup.Close);
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Close_X, close.transform.GetChild(0).gameObject, new List<Component>
-            {
-                close.transform.GetChild(0).GetComponent<Image>(),
-            }));
+            EditorThemeManager.ApplyGraphic(close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
 
             gameObject.AddComponent<NoteCloseDelete>().Init(delete.gameObject, close.gameObject);
 
@@ -3687,10 +3249,7 @@ namespace BetterLegacy.Editor.Managers
 
             var button = gameObject.GetComponent<Button>();
             button.onClick.ClearAll();
-            button.onClick.AddListener(delegate ()
-            {
-                OpenOSTEditor(ost);
-            });
+            button.onClick.AddListener(() => { OpenOSTEditor(ost); });
 
             EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
 
@@ -3700,7 +3259,7 @@ namespace BetterLegacy.Editor.Managers
 
             var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
             delete.button.onClick.ClearAll();
-            delete.button.onClick.AddListener(delegate ()
+            delete.button.onClick.AddListener(() =>
             {
                 planners.RemoveAll(x => x is OSTItem && x.ID == ost.ID);
                 SaveOST();
@@ -3711,15 +3270,8 @@ namespace BetterLegacy.Editor.Managers
                 Destroy(gameObject);
             });
 
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete, delete.gameObject, new List<Component>
-            {
-                delete.button.image,
-            }, true, 1, SpriteManager.RoundedSide.W));
-
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete_Text, delete.image.gameObject, new List<Component>
-            {
-                delete.image,
-            }));
+            EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
+            EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
 
             return gameObject;
         }

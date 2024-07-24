@@ -37,10 +37,7 @@ namespace BetterLegacy.Core.Helpers
         {
             var entry = new EventTrigger.Entry();
             entry.eventID = triggerType;
-            entry.callback.AddListener(delegate (BaseEventData eventData)
-            {
-                action?.Invoke(eventData);
-            });
+            entry.callback.AddListener(eventData => { action?.Invoke(eventData); });
             return entry;
         }
 
@@ -48,7 +45,7 @@ namespace BetterLegacy.Core.Helpers
         {
             var entry = new EventTrigger.Entry();
             entry.eventID = EventTriggerType.Scroll;
-            entry.callback.AddListener(delegate (BaseEventData eventData)
+            entry.callback.AddListener(eventData =>
             {
                 var pointerEventData = (PointerEventData)eventData;
 
@@ -90,7 +87,7 @@ namespace BetterLegacy.Core.Helpers
         {
             var entry = new EventTrigger.Entry();
             entry.eventID = EventTriggerType.Scroll;
-            entry.callback.AddListener(delegate (BaseEventData eventData)
+            entry.callback.AddListener(eventData =>
             {
                 var pointerEventData = (PointerEventData)eventData;
 
@@ -120,7 +117,7 @@ namespace BetterLegacy.Core.Helpers
         {
             var entry = new EventTrigger.Entry();
             entry.eventID = EventTriggerType.Scroll;
-            entry.callback.AddListener(delegate (BaseEventData eventData)
+            entry.callback.AddListener(eventData =>
             {
                 var pointerEventData = (PointerEventData)eventData;
                 if (Input.GetKey(KeyCode.LeftShift) && float.TryParse(ifx.text, out float x) && float.TryParse(ify.text, out float y))
@@ -172,7 +169,7 @@ namespace BetterLegacy.Core.Helpers
         {
             var entry = new EventTrigger.Entry();
             entry.eventID = EventTriggerType.Scroll;
-            entry.callback.AddListener(delegate (BaseEventData eventData)
+            entry.callback.AddListener(eventData =>
             {
                 var pointerEventData = (PointerEventData)eventData;
                 if (Input.GetKey(KeyCode.LeftShift) && int.TryParse(ifx.text, out int x) && int.TryParse(ify.text, out int y))
@@ -209,7 +206,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static EventTrigger.Entry ScrollDelta(Dropdown dropdown)
         {
-            return TriggerHelper.CreateEntry(EventTriggerType.Scroll, delegate (BaseEventData baseEventData)
+            return CreateEntry(EventTriggerType.Scroll, baseEventData =>
             {
                 if (!EditorConfig.Instance.ScrollOnEasing.Value)
                     return;
@@ -232,7 +229,7 @@ namespace BetterLegacy.Core.Helpers
             var btL = tf.Find(">").GetComponent<Button>();
 
             btR.onClick.ClearAll();
-            btR.onClick.AddListener(delegate ()
+            btR.onClick.AddListener(() =>
             {
                 if (float.TryParse(inputField.text, out float result))
                 {
@@ -246,7 +243,7 @@ namespace BetterLegacy.Core.Helpers
             });
 
             btL.onClick.ClearAll();
-            btL.onClick.AddListener(delegate ()
+            btL.onClick.AddListener(() =>
             {
                 if (float.TryParse(inputField.text, out float result))
                 {
@@ -262,7 +259,7 @@ namespace BetterLegacy.Core.Helpers
             if (tf.TryFind("<<", out Transform btLargeRTF) && btLargeRTF.gameObject.TryGetComponent(out Button btLargeR))
             {
                 btLargeR.onClick.ClearAll();
-                btLargeR.onClick.AddListener(delegate ()
+                btLargeR.onClick.AddListener(() =>
                 {
                     if (float.TryParse(inputField.text, out float result))
                     {
@@ -279,7 +276,7 @@ namespace BetterLegacy.Core.Helpers
             if (tf.TryFind(">>", out Transform btLargeLTF) && btLargeLTF.gameObject.TryGetComponent(out Button btLargeL))
             {
                 btLargeL.onClick.ClearAll();
-                btLargeL.onClick.AddListener(delegate ()
+                btLargeL.onClick.AddListener(() =>
                 {
                     if (float.TryParse(inputField.text, out float result))
                     {
@@ -303,8 +300,8 @@ namespace BetterLegacy.Core.Helpers
             var btR = tf.Find("<").GetComponent<Button>();
             var btL = tf.Find(">").GetComponent<Button>();
 
-            btR.onClick.RemoveAllListeners();
-            btR.onClick.AddListener(delegate ()
+            btR.onClick.ClearAll();
+            btR.onClick.AddListener(() =>
             {
                 if (float.TryParse(inputField.text, out float result))
                 {
@@ -317,8 +314,8 @@ namespace BetterLegacy.Core.Helpers
                 }
             });
 
-            btL.onClick.RemoveAllListeners();
-            btL.onClick.AddListener(delegate ()
+            btL.onClick.ClearAll();
+            btL.onClick.AddListener(() =>
             {
                 if (float.TryParse(inputField.text, out float result))
                 {
@@ -335,14 +332,14 @@ namespace BetterLegacy.Core.Helpers
         public static void IncreaseDecreaseButtons(InputFieldStorage inputFieldStorage, float amount = 0.1f, float multiply = 10f, float min = 0f, float max = 0f)
         {
             inputFieldStorage.leftButton.onClick.ClearAll();
-            inputFieldStorage.leftButton.onClick.AddListener(delegate ()
+            inputFieldStorage.leftButton.onClick.AddListener(() =>
             {
                 if (float.TryParse(inputFieldStorage.inputField.text, out float result))
                     inputFieldStorage.inputField.text = RTMath.ClampZero(result - amount, min, max).ToString();
             });
 
             inputFieldStorage.rightButton.onClick.ClearAll();
-            inputFieldStorage.rightButton.onClick.AddListener(delegate ()
+            inputFieldStorage.rightButton.onClick.AddListener(() =>
             {
                 if (float.TryParse(inputFieldStorage.inputField.text, out float result))
                     inputFieldStorage.inputField.text = RTMath.ClampZero(result + amount, min, max).ToString();
@@ -352,14 +349,14 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             inputFieldStorage.leftGreaterButton.onClick.ClearAll();
-            inputFieldStorage.leftGreaterButton.onClick.AddListener(delegate ()
+            inputFieldStorage.leftGreaterButton.onClick.AddListener(() =>
             {
                 if (float.TryParse(inputFieldStorage.inputField.text, out float result))
                     inputFieldStorage.inputField.text = RTMath.ClampZero(result - (amount * multiply), min, max).ToString();
             });
 
             inputFieldStorage.rightGreaterButton.onClick.ClearAll();
-            inputFieldStorage.rightGreaterButton.onClick.AddListener(delegate ()
+            inputFieldStorage.rightGreaterButton.onClick.AddListener(() =>
             {
                 if (float.TryParse(inputFieldStorage.inputField.text, out float result))
                     inputFieldStorage.inputField.text = RTMath.ClampZero(result + (amount * multiply), min, max).ToString();
@@ -369,14 +366,14 @@ namespace BetterLegacy.Core.Helpers
         public static void IncreaseDecreaseButtonsInt(InputFieldStorage inputFieldStorage, int amount = 1, int multiply = 10, float min = 0f, float max = 0f)
         {
             inputFieldStorage.leftButton.onClick.ClearAll();
-            inputFieldStorage.leftButton.onClick.AddListener(delegate ()
+            inputFieldStorage.leftButton.onClick.AddListener(() =>
             {
                 if (int.TryParse(inputFieldStorage.inputField.text, out int result))
                     inputFieldStorage.inputField.text = RTMath.ClampZero(result - amount, min, max).ToString();
             });
 
             inputFieldStorage.rightButton.onClick.ClearAll();
-            inputFieldStorage.rightButton.onClick.AddListener(delegate ()
+            inputFieldStorage.rightButton.onClick.AddListener(() =>
             {
                 if (int.TryParse(inputFieldStorage.inputField.text, out int result))
                     inputFieldStorage.inputField.text = RTMath.ClampZero(result + amount, min, max).ToString();
@@ -386,14 +383,14 @@ namespace BetterLegacy.Core.Helpers
                 return;
 
             inputFieldStorage.leftGreaterButton.onClick.ClearAll();
-            inputFieldStorage.leftGreaterButton.onClick.AddListener(delegate ()
+            inputFieldStorage.leftGreaterButton.onClick.AddListener(() =>
             {
                 if (int.TryParse(inputFieldStorage.inputField.text, out int result))
                     inputFieldStorage.inputField.text = RTMath.ClampZero(result - (amount * multiply), min, max).ToString();
             });
 
             inputFieldStorage.rightGreaterButton.onClick.ClearAll();
-            inputFieldStorage.rightGreaterButton.onClick.AddListener(delegate ()
+            inputFieldStorage.rightGreaterButton.onClick.AddListener(() =>
             {
                 if (int.TryParse(inputFieldStorage.inputField.text, out int result))
                     inputFieldStorage.inputField.text = RTMath.ClampZero(result + (amount * multiply), min, max).ToString();
@@ -413,12 +410,12 @@ namespace BetterLegacy.Core.Helpers
             var editorManager = EditorManager.inst;
             var entry = new EventTrigger.Entry();
             entry.eventID = EventTriggerType.BeginDrag;
-            entry.callback.AddListener(delegate (BaseEventData eventData)
+            entry.callback.AddListener(eventData =>
             {
                 var pointerEventData = (PointerEventData)eventData;
                 editorManager.SelectionBoxImage.gameObject.SetActive(true);
                 editorManager.DragStartPos = pointerEventData.position * editorManager.ScreenScaleInverse;
-                editorManager.SelectionRect = default(Rect);
+                editorManager.SelectionRect = default;
             });
             return entry;
         }
@@ -428,7 +425,7 @@ namespace BetterLegacy.Core.Helpers
             var editorManager = EditorManager.inst;
             var entry = new EventTrigger.Entry();
             entry.eventID = EventTriggerType.Drag;
-            entry.callback.AddListener(delegate (BaseEventData eventData)
+            entry.callback.AddListener(eventData =>
             {
                 var vector = ((PointerEventData)eventData).position * editorManager.ScreenScaleInverse;
 
@@ -450,7 +447,7 @@ namespace BetterLegacy.Core.Helpers
 
             var entry = new EventTrigger.Entry();
             entry.eventID = EventTriggerType.EndDrag;
-            entry.callback.AddListener(delegate (BaseEventData eventData)
+            entry.callback.AddListener(eventData =>
             {
                 EditorManager.inst.DragEndPos = ((PointerEventData)eventData).position;
                 EditorManager.inst.SelectionBoxImage.gameObject.SetActive(false);
@@ -470,7 +467,7 @@ namespace BetterLegacy.Core.Helpers
         {
             var entry = new EventTrigger.Entry();
             entry.eventID = EventTriggerType.BeginDrag;
-            entry.callback.AddListener(delegate (BaseEventData eventData)
+            entry.callback.AddListener(eventData =>
             {
                 if (timelineObject.Index == 0)
                 {
@@ -499,7 +496,7 @@ namespace BetterLegacy.Core.Helpers
         {
             var entry = new EventTrigger.Entry();
             entry.eventID = EventTriggerType.EndDrag;
-            entry.callback.AddListener(delegate (BaseEventData eventData)
+            entry.callback.AddListener(eventData =>
             {
                 ObjectEditor.inst.UpdateKeyframeOrder(beatmapObject);
 
@@ -517,7 +514,7 @@ namespace BetterLegacy.Core.Helpers
         {
             var entry = new EventTrigger.Entry();
             entry.eventID = EventTriggerType.PointerDown;
-            entry.callback.AddListener(delegate (BaseEventData eventData)
+            entry.callback.AddListener(eventData =>
             {
                 if ((eventData as PointerEventData).button == PointerEventData.InputButton.Middle)
                     AudioManager.inst.SetMusicTime(beatmapObject.StartTime + timelineObject.Time);
@@ -533,7 +530,7 @@ namespace BetterLegacy.Core.Helpers
         {
             var entry = new EventTrigger.Entry();
             entry.eventID = EventTriggerType.BeginDrag;
-            entry.callback.AddListener(delegate (BaseEventData eventData)
+            entry.callback.AddListener(eventData =>
             {
                 int bin = timelineObject.Bin;
 
@@ -559,7 +556,7 @@ namespace BetterLegacy.Core.Helpers
         {
             var entry = new EventTrigger.Entry();
             entry.eventID = EventTriggerType.EndDrag;
-            entry.callback.AddListener(delegate (BaseEventData eventData)
+            entry.callback.AddListener(eventData =>
             {
                 ObjEditor.inst.beatmapObjectsDrag = false;
 
@@ -585,137 +582,137 @@ namespace BetterLegacy.Core.Helpers
         {
             var entry = new EventTrigger.Entry();
             entry.eventID = EventTriggerType.PointerUp;
-            entry.callback.AddListener(delegate (BaseEventData eventData)
+            entry.callback.AddListener(eventData =>
             {
                 var pointerEventData = (PointerEventData)eventData;
-                if (!ObjEditor.inst.beatmapObjectsDrag)
+                if (ObjEditor.inst.beatmapObjectsDrag)
+                    return;
+
+                CoreHelper.Log($"Selecting [ {timelineObject.ID} ]");
+
+                if (!RTEditor.inst.parentPickerEnabled && !RTEditor.inst.prefabPickerEnabled)
                 {
-                    CoreHelper.Log($"Selecting [ {timelineObject.ID} ]");
+                    if (InputDataManager.inst.editorActions.MultiSelect.IsPressed)
+                        ObjectEditor.inst.AddSelectedObject(timelineObject);
+                    else
+                        ObjectEditor.inst.SetCurrentObject(timelineObject);
 
-                    if (!RTEditor.inst.parentPickerEnabled && !RTEditor.inst.prefabPickerEnabled)
+                    float timelineTime = EditorManager.inst.GetTimelineTime();
+                    ObjEditor.inst.mouseOffsetXForDrag = timelineObject.Time - timelineTime;
+                    return;
+                }
+
+                if (RTEditor.inst.prefabPickerEnabled && timelineObject.IsBeatmapObject && pointerEventData.button != PointerEventData.InputButton.Right)
+                {
+                    var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                    if (string.IsNullOrEmpty(beatmapObject.prefabInstanceID))
                     {
-                        if (InputDataManager.inst.editorActions.MultiSelect.IsPressed)
-                            ObjectEditor.inst.AddSelectedObject(timelineObject);
-                        else
-                            ObjectEditor.inst.SetCurrentObject(timelineObject);
-
-                        float timelineTime = EditorManager.inst.GetTimelineTime();
-                        ObjEditor.inst.mouseOffsetXForDrag = timelineObject.Time - timelineTime;
+                        EditorManager.inst.DisplayNotification("Object is not assigned to a prefab!", 2f, EditorManager.NotificationType.Error);
                         return;
                     }
 
-                    if (RTEditor.inst.prefabPickerEnabled && timelineObject.IsBeatmapObject && pointerEventData.button != PointerEventData.InputButton.Right)
+                    if (RTEditor.inst.selectingMultiple)
                     {
-                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                        if (string.IsNullOrEmpty(beatmapObject.prefabInstanceID))
+                        foreach (var otherTimelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
-                            EditorManager.inst.DisplayNotification("Object is not assigned to a prefab!", 2f, EditorManager.NotificationType.Error);
-                            return;
+                            var otherBeatmapObject = otherTimelineObject.GetData<BeatmapObject>();
+
+                            otherBeatmapObject.prefabID = beatmapObject.prefabID;
+                            otherBeatmapObject.prefabInstanceID = beatmapObject.prefabInstanceID;
+                            ObjectEditor.inst.RenderTimelineObject(otherTimelineObject);
                         }
+                    }
+                    else if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+                    {
+                        var currentBeatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
 
-                        if (RTEditor.inst.selectingMultiple)
-                        {
-                            foreach (var otherTimelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            {
-                                var otherBeatmapObject = otherTimelineObject.GetData<BeatmapObject>();
-
-                                otherBeatmapObject.prefabID = beatmapObject.prefabID;
-                                otherBeatmapObject.prefabInstanceID = beatmapObject.prefabInstanceID;
-                                ObjectEditor.inst.RenderTimelineObject(otherTimelineObject);
-                            }
-                        }
-                        else if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
-                        {
-                            var currentBeatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
-
-                            currentBeatmapObject.prefabID = beatmapObject.prefabID;
-                            currentBeatmapObject.prefabInstanceID = beatmapObject.prefabInstanceID;
-                            ObjectEditor.inst.RenderTimelineObject(ObjectEditor.inst.CurrentSelection);
-                            ObjectEditor.inst.OpenDialog(currentBeatmapObject);
-                        }
-
-                        RTEditor.inst.prefabPickerEnabled = false;
-
-                        return;
+                        currentBeatmapObject.prefabID = beatmapObject.prefabID;
+                        currentBeatmapObject.prefabInstanceID = beatmapObject.prefabInstanceID;
+                        ObjectEditor.inst.RenderTimelineObject(ObjectEditor.inst.CurrentSelection);
+                        ObjectEditor.inst.OpenDialog(currentBeatmapObject);
                     }
 
-                    if (RTEditor.inst.prefabPickerEnabled && timelineObject.IsPrefabObject && pointerEventData.button != PointerEventData.InputButton.Right)
+                    RTEditor.inst.prefabPickerEnabled = false;
+
+                    return;
+                }
+
+                if (RTEditor.inst.prefabPickerEnabled && timelineObject.IsPrefabObject && pointerEventData.button != PointerEventData.InputButton.Right)
+                {
+                    var prefabObject = timelineObject.GetData<PrefabObject>();
+                    var prefabInstanceID = LSText.randomString(16);
+
+                    if (RTEditor.inst.selectingMultiple)
                     {
-                        var prefabObject = timelineObject.GetData<PrefabObject>();
-                        var prefabInstanceID = LSText.randomString(16);
-
-                        if (RTEditor.inst.selectingMultiple)
+                        foreach (var otherTimelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
-                            foreach (var otherTimelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            {
-                                var otherBeatmapObject = otherTimelineObject.GetData<BeatmapObject>();
+                            var otherBeatmapObject = otherTimelineObject.GetData<BeatmapObject>();
 
-                                otherBeatmapObject.prefabID = prefabObject.prefabID;
-                                otherBeatmapObject.prefabInstanceID = prefabInstanceID;
-                                ObjectEditor.inst.RenderTimelineObject(otherTimelineObject);
-                            }
+                            otherBeatmapObject.prefabID = prefabObject.prefabID;
+                            otherBeatmapObject.prefabInstanceID = prefabInstanceID;
+                            ObjectEditor.inst.RenderTimelineObject(otherTimelineObject);
                         }
-                        else if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
-                        {
-                            var currentBeatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
+                    }
+                    else if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+                    {
+                        var currentBeatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
 
-                            currentBeatmapObject.prefabID = prefabObject.prefabID;
-                            currentBeatmapObject.prefabInstanceID = prefabInstanceID;
-                            ObjectEditor.inst.RenderTimelineObject(ObjectEditor.inst.CurrentSelection);
-                            ObjectEditor.inst.OpenDialog(currentBeatmapObject);
-                        }
-
-                        RTEditor.inst.prefabPickerEnabled = false;
-
-                        return;
+                        currentBeatmapObject.prefabID = prefabObject.prefabID;
+                        currentBeatmapObject.prefabInstanceID = prefabInstanceID;
+                        ObjectEditor.inst.RenderTimelineObject(ObjectEditor.inst.CurrentSelection);
+                        ObjectEditor.inst.OpenDialog(currentBeatmapObject);
                     }
 
-                    if (RTEditor.inst.parentPickerEnabled && timelineObject.IsBeatmapObject && pointerEventData.button != PointerEventData.InputButton.Right)
+                    RTEditor.inst.prefabPickerEnabled = false;
+
+                    return;
+                }
+
+                if (RTEditor.inst.parentPickerEnabled && timelineObject.IsBeatmapObject && pointerEventData.button != PointerEventData.InputButton.Right)
+                {
+                    if (RTEditor.inst.selectingMultiple)
                     {
-                        if (RTEditor.inst.selectingMultiple)
+                        bool success = false;
+                        foreach (var otherTimelineObject in ObjectEditor.inst.SelectedObjects)
                         {
-                            bool success = false;
-                            foreach (var otherTimelineObject in ObjectEditor.inst.SelectedObjects)
+                            if (otherTimelineObject.IsPrefabObject)
                             {
-                                if (otherTimelineObject.IsPrefabObject)
-                                {
-                                    var prefabObject = otherTimelineObject.GetData<PrefabObject>();
-                                    prefabObject.parent = timelineObject.ID;
-                                    Updater.UpdatePrefab(prefabObject);
-                                    PrefabEditorManager.inst.RenderPrefabObjectDialog(prefabObject);
+                                var prefabObject = otherTimelineObject.GetData<PrefabObject>();
+                                prefabObject.parent = timelineObject.ID;
+                                Updater.UpdatePrefab(prefabObject);
+                                PrefabEditorManager.inst.RenderPrefabObjectDialog(prefabObject);
 
-                                    success = true;
-                                    continue;
-                                }
-                                success = SetParent(otherTimelineObject, timelineObject);
+                                success = true;
+                                continue;
                             }
-
-                            if (!success)
-                                EditorManager.inst.DisplayNotification("Cannot set parent to child / self!", 1f, EditorManager.NotificationType.Warning);
-                            else
-                                RTEditor.inst.parentPickerEnabled = false;
-
-                            return;
+                            success = SetParent(otherTimelineObject, timelineObject);
                         }
 
-                        if (ObjectEditor.inst.CurrentSelection.IsPrefabObject)
-                        {
-                            var prefabObject = ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>();
-                            prefabObject.parent = timelineObject.ID;
-                            Updater.UpdatePrefab(prefabObject);
-                            PrefabEditorManager.inst.RenderPrefabObjectDialog(prefabObject);
-                            RTEditor.inst.parentPickerEnabled = false;
-
-                            return;
-                        }
-
-                        var tryParent = SetParent(ObjectEditor.inst.CurrentSelection, timelineObject);
-
-                        if (!tryParent)
+                        if (!success)
                             EditorManager.inst.DisplayNotification("Cannot set parent to child / self!", 1f, EditorManager.NotificationType.Warning);
                         else
                             RTEditor.inst.parentPickerEnabled = false;
+
+                        return;
                     }
+
+                    if (ObjectEditor.inst.CurrentSelection.IsPrefabObject)
+                    {
+                        var prefabObject = ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>();
+                        prefabObject.parent = timelineObject.ID;
+                        Updater.UpdatePrefab(prefabObject);
+                        PrefabEditorManager.inst.RenderPrefabObjectDialog(prefabObject);
+                        RTEditor.inst.parentPickerEnabled = false;
+
+                        return;
+                    }
+
+                    var tryParent = SetParent(ObjectEditor.inst.CurrentSelection, timelineObject);
+
+                    if (!tryParent)
+                        EditorManager.inst.DisplayNotification("Cannot set parent to child / self!", 1f, EditorManager.NotificationType.Warning);
+                    else
+                        RTEditor.inst.parentPickerEnabled = false;
                 }
             });
             return entry;
@@ -775,7 +772,7 @@ namespace BetterLegacy.Core.Helpers
         {
             var entry = new EventTrigger.Entry();
             entry.eventID = EventTriggerType.PointerClick;
-            entry.callback.AddListener(delegate (BaseEventData eventData)
+            entry.callback.AddListener(eventData =>
             {
                 if (!EventEditor.inst.eventDrag && (eventData as PointerEventData).button != PointerEventData.InputButton.Middle)
                     (InputDataManager.inst.editorActions.MultiSelect.IsPressed ? (Action<int, int>)EventEditor.inst.AddedSelectedEvent : EventEditor.inst.SetCurrentEvent)(kf.Type, kf.Index);
@@ -829,12 +826,11 @@ namespace BetterLegacy.Core.Helpers
         {
             var entry = new EventTrigger.Entry();
             entry.eventID = EventTriggerType.PointerDown;
-            entry.callback.AddListener(delegate (BaseEventData eventData)
+            entry.callback.AddListener(eventData =>
             {
                 if ((eventData as PointerEventData).button == PointerEventData.InputButton.Middle)
-                {
                     AudioManager.inst.SetMusicTime(timelineObject.Time);
-                }
+
             });
             return entry;
         }
@@ -845,15 +841,13 @@ namespace BetterLegacy.Core.Helpers
 
         public static EventTrigger.Entry CreatePreviewClickTrigger(Image _preview, Image _dropper, InputField _hex, Color _col, string popupName = "")
         {
-            EventTrigger.Entry previewClickTrigger = new EventTrigger.Entry();
+            var previewClickTrigger = new EventTrigger.Entry();
             previewClickTrigger.eventID = EventTriggerType.PointerClick;
-            previewClickTrigger.callback.AddListener(delegate (BaseEventData eventData)
+            previewClickTrigger.callback.AddListener(eventData =>
             {
                 EditorManager.inst.ShowDialog("Color Picker");
                 if (!string.IsNullOrEmpty(popupName))
-                {
                     EditorManager.inst.HideDialog(popupName);
-                }
 
                 var colorPickerTF = EditorManager.inst.GetDialog("Color Picker").Dialog.Find("content/Color Picker");
                 var colorPicker = colorPickerTF.GetComponent<ColorPicker>();
@@ -862,8 +856,8 @@ namespace BetterLegacy.Core.Helpers
 
                 var save = colorPickerTF.Find("info/hex/save").GetComponent<Button>();
 
-                save.onClick.RemoveAllListeners();
-                save.onClick.AddListener(delegate ()
+                save.onClick.ClearAll();
+                save.onClick.AddListener(() =>
                 {
                     EditorManager.inst.ClearPopups();
                     if (!string.IsNullOrEmpty(popupName))

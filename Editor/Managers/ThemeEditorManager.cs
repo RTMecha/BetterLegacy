@@ -180,7 +180,7 @@ namespace BetterLegacy.Editor.Managers
         {
             try
             {
-                var themesPopup = RTEditor.inst.GeneratePopup("Theme Popup", "Beatmap Themes", Vector2.zero, new Vector2(600f, 450f), delegate (string _val)
+                var themesPopup = RTEditor.inst.GeneratePopup("Theme Popup", "Beatmap Themes", Vector2.zero, new Vector2(600f, 450f), _val =>
                 {
                     themeSearch = _val;
                     RefreshThemeSearch();
@@ -190,7 +190,7 @@ namespace BetterLegacy.Editor.Managers
 
                 themesPopup.Grid.cellSize = new Vector2(600f, 362f);
 
-                EditorHelper.AddEditorDropdown("View Themes", "", "View", RTEditor.inst.SearchSprite, delegate ()
+                EditorHelper.AddEditorDropdown("View Themes", "", "View", RTEditor.inst.SearchSprite, () =>
                 {
                     EditorManager.inst.ShowDialog("Theme Popup");
                     RefreshThemeSearch();
@@ -203,7 +203,7 @@ namespace BetterLegacy.Editor.Managers
                     pageStorage = page.GetComponent<InputFieldStorage>();
                     pageStorage.inputField.onValueChanged.ClearAll();
                     pageStorage.inputField.text = themePage.ToString();
-                    pageStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+                    pageStorage.inputField.onValueChanged.AddListener(_val =>
                     {
                         if (int.TryParse(_val, out int p))
                         {
@@ -213,28 +213,28 @@ namespace BetterLegacy.Editor.Managers
                     });
 
                     pageStorage.leftGreaterButton.onClick.ClearAll();
-                    pageStorage.leftGreaterButton.onClick.AddListener(delegate ()
+                    pageStorage.leftGreaterButton.onClick.AddListener(() =>
                     {
                         if (int.TryParse(pageStorage.inputField.text, out int p))
                             pageStorage.inputField.text = "0";
                     });
 
                     pageStorage.leftButton.onClick.ClearAll();
-                    pageStorage.leftButton.onClick.AddListener(delegate ()
+                    pageStorage.leftButton.onClick.AddListener(() =>
                     {
                         if (int.TryParse(pageStorage.inputField.text, out int p))
                             pageStorage.inputField.text = Mathf.Clamp(p - 1, 0, AllThemes.Count / themesPerPage).ToString();
                     });
 
                     pageStorage.rightButton.onClick.ClearAll();
-                    pageStorage.rightButton.onClick.AddListener(delegate ()
+                    pageStorage.rightButton.onClick.AddListener(() =>
                     {
                         if (int.TryParse(pageStorage.inputField.text, out int p))
                             pageStorage.inputField.text = Mathf.Clamp(p + 1, 0, AllThemes.Count / themesPerPage).ToString();
                     });
 
                     pageStorage.rightGreaterButton.onClick.ClearAll();
-                    pageStorage.rightGreaterButton.onClick.AddListener(delegate ()
+                    pageStorage.rightGreaterButton.onClick.AddListener(() =>
                     {
                         if (int.TryParse(pageStorage.inputField.text, out int p))
                             pageStorage.inputField.text = (DataManager.inst.AllThemes.Count / themesPerPage).ToString();
@@ -568,23 +568,15 @@ namespace BetterLegacy.Editor.Managers
                         var use = viewThemeStorage.useButton;
                         var useStorage = use.GetComponent<FunctionButtonStorage>();
                         use.onClick.ClearAll();
-                        use.onClick.AddListener(delegate ()
+                        use.onClick.AddListener(() =>
                         {
                             if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => x.Type == 4))
-                            {
                                 foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
-                                {
                                     timelineObject.GetData<EventKeyframe>().eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
-                                }
-                            }
                             else if (EventEditor.inst.currentEventType == 4)
-                            {
                                 DataManager.inst.gameData.eventObjects.allEvents[4][EventEditor.inst.currentEvent].eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
-                            }
                             else if (DataManager.inst.gameData.eventObjects.allEvents[4].Count > 0)
-                            {
                                 DataManager.inst.gameData.eventObjects.allEvents[4].FindLast(x => x.eventTime < AudioManager.inst.CurrentAudioSource.time).eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
-                            }
 
                             EventManager.inst.updateEvents();
                         });
@@ -592,7 +584,7 @@ namespace BetterLegacy.Editor.Managers
                         var convert = viewThemeStorage.convertButton;
                         var convertStorage = convert.GetComponent<FunctionButtonStorage>();
                         convert.onClick.ClearAll();
-                        convert.onClick.AddListener(delegate ()
+                        convert.onClick.AddListener(() =>
                         {
                             var exportPath = EditorConfig.Instance.ConvertThemeLSToVGExportPath.Value;
 
@@ -728,7 +720,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void DeleteThemeDelegate(DataManager.BeatmapTheme themeTmp)
         {
-            RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this theme?", delegate ()
+            RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this theme?", () =>
             {
                 ThemeEditor.inst.DeleteTheme(themeTmp);
                 EventEditor.inst.previewTheme.id = null;
@@ -739,10 +731,7 @@ namespace BetterLegacy.Editor.Managers
                 EventEditor.inst.showTheme = false;
                 EventEditor.inst.dialogLeft.Find("theme").gameObject.SetActive(false);
                 EditorManager.inst.HideDialog("Warning Popup");
-            }, delegate ()
-            {
-                EditorManager.inst.HideDialog("Warning Popup");
-            });
+            }, () => { EditorManager.inst.HideDialog("Warning Popup"); });
         }
 
         public BeatmapTheme PreviewTheme { get => (BeatmapTheme)EventEditor.inst.previewTheme; set => EventEditor.inst.previewTheme = value; }
@@ -782,16 +771,13 @@ namespace BetterLegacy.Editor.Managers
             shuffle.gameObject.SetActive(__0 != -1 && !(__0 < DataManager.inst.BeatmapThemes.Count));
             if (__0 != -1 && !(__0 < DataManager.inst.BeatmapThemes.Count))
             {
-                shuffle.onClick.AddListener(delegate ()
+                shuffle.onClick.AddListener(() =>
                 {
                     RTEditor.inst.ShowWarningPopup("Are you sure you want to shuffle the theme ID? Any levels that use this theme will need to have their theme keyframes reassigned.", delegate ()
                     {
                         PreviewTheme.id = LSText.randomNumString(BeatmapTheme.IDLength);
                         EditorManager.inst.HideDialog("Warning Popup");
-                    }, delegate ()
-                    {
-                        EditorManager.inst.HideDialog("Warning Popup");
-                    });
+                    }, () => { EditorManager.inst.HideDialog("Warning Popup"); });
                 });
             }
 
@@ -803,23 +789,20 @@ namespace BetterLegacy.Editor.Managers
 
             name.onValueChanged.RemoveAllListeners();
             name.text = PreviewTheme.name;
-            name.onValueChanged.AddListener(delegate (string val)
-            {
-                PreviewTheme.name = val;
-            });
+            name.onValueChanged.AddListener(_val => { PreviewTheme.name = _val; });
             cancel.onClick.RemoveAllListeners();
-            cancel.onClick.AddListener(delegate ()
+            cancel.onClick.AddListener(() =>
             {
                 Instance.showTheme = false;
                 theme.gameObject.SetActive(false);
             });
-            createNew.onClick.RemoveAllListeners();
-            update.onClick.RemoveAllListeners();
+            createNew.onClick.ClearAll();
+            update.onClick.ClearAll();
 
             createNew.gameObject.SetActive(true);
             update.gameObject.SetActive(!(__0 < DataManager.inst.BeatmapThemes.Count));
 
-            createNew.onClick.AddListener(delegate ()
+            createNew.onClick.AddListener(() =>
             {
                 PreviewTheme.id = null;
                 ThemeEditor.inst.SaveTheme(BeatmapTheme.DeepCopy(PreviewTheme));
@@ -830,7 +813,7 @@ namespace BetterLegacy.Editor.Managers
                 theme.gameObject.SetActive(false);
             });
 
-            update.onClick.AddListener(delegate ()
+            update.onClick.AddListener(() =>
             {
                 RTEditor.inst.canUpdateThemes = false;
 
@@ -877,35 +860,24 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     themePanel.UseButton.onClick.ClearAll();
-                    themePanel.UseButton.onClick.AddListener(delegate ()
+                    themePanel.UseButton.onClick.AddListener(() =>
                     {
                         if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => RTEventEditor.inst.SelectedKeyframes.Min(y => y.Type) == x.Type))
-                        {
                             foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
-                            {
                                 timelineObject.GetData<EventKeyframe>().eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
-                            }
-                        }
                         else
-                        {
                             DataManager.inst.gameData.eventObjects.allEvents[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
-                        }
+
                         EventManager.inst.updateEvents();
                         EventEditor.inst.RenderThemePreview(dialogTmp);
                     });
 
                     themePanel.EditButton.onClick.ClearAll();
-                    themePanel.EditButton.onClick.AddListener(delegate ()
-                    {
-                        RenderThemeEditor(Parser.TryParse(beatmapTheme.id, 0));
-                    });
+                    themePanel.EditButton.onClick.AddListener(() => { RenderThemeEditor(Parser.TryParse(beatmapTheme.id, 0)); });
 
                     themePanel.DeleteButton.onClick.ClearAll();
                     themePanel.DeleteButton.interactable = true;
-                    themePanel.DeleteButton.onClick.AddListener(delegate ()
-                    {
-                        DeleteThemeDelegate(beatmapTheme);
-                    });
+                    themePanel.DeleteButton.onClick.AddListener(() => { DeleteThemeDelegate(beatmapTheme); });
                     themePanel.Name.text = beatmapTheme.name;
                 }
 
@@ -916,7 +888,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             saveUse.onClick.ClearAll();
-            saveUse.onClick.AddListener(delegate ()
+            saveUse.onClick.AddListener(() =>
             {
                 RTEditor.inst.canUpdateThemes = false;
 
@@ -970,40 +942,27 @@ namespace BetterLegacy.Editor.Managers
                     themePanel.Path = RTFile.ApplicationDirectory + RTEditor.themeListSlash + beatmapTheme.name.ToLower().Replace(" ", "_") + ".lst";
 
                     for (int j = 0; j < themePanel.Colors.Count; j++)
-                    {
                         themePanel.Colors[j].color = beatmapTheme.GetObjColor(j);
-                    }
 
                     themePanel.UseButton.onClick.ClearAll();
-                    themePanel.UseButton.onClick.AddListener(delegate ()
+                    themePanel.UseButton.onClick.AddListener(() =>
                     {
                         if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => RTEventEditor.inst.SelectedKeyframes.Min(y => y.Type) == x.Type))
-                        {
                             foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
-                            {
                                 timelineObject.GetData<EventKeyframe>().eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
-                            }
-                        }
                         else
-                        {
                             DataManager.inst.gameData.eventObjects.allEvents[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
-                        }
+
                         EventManager.inst.updateEvents();
                         EventEditor.inst.RenderThemePreview(dialogTmp);
                     });
 
                     themePanel.EditButton.onClick.ClearAll();
-                    themePanel.EditButton.onClick.AddListener(delegate ()
-                    {
-                        RenderThemeEditor(Parser.TryParse(beatmapTheme.id, 0));
-                    });
+                    themePanel.EditButton.onClick.AddListener(() => { RenderThemeEditor(Parser.TryParse(beatmapTheme.id, 0)); });
 
                     themePanel.DeleteButton.onClick.ClearAll();
                     themePanel.DeleteButton.interactable = true;
-                    themePanel.DeleteButton.onClick.AddListener(delegate ()
-                    {
-                        DeleteThemeDelegate(beatmapTheme);
-                    });
+                    themePanel.DeleteButton.onClick.AddListener(() => { DeleteThemeDelegate(beatmapTheme); });
                     themePanel.Name.text = beatmapTheme.name;
                 }
 
@@ -1024,10 +983,10 @@ namespace BetterLegacy.Editor.Managers
             bgHex.onValueChanged.RemoveAllListeners();
             bgHex.text = LSColors.ColorToHex(PreviewTheme.backgroundColor);
             bgPreview.color = PreviewTheme.backgroundColor;
-            bgHex.onValueChanged.AddListener(delegate (string val)
+            bgHex.onValueChanged.AddListener(_val =>
             {
-                bgPreview.color = val.Length == 6 ? LSColors.HexToColor(val) : LSColors.pink500;
-                PreviewTheme.backgroundColor = val.Length == 6 ? LSColors.HexToColor(val) : LSColors.pink500;
+                bgPreview.color = _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
+                PreviewTheme.backgroundColor = _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
 
                 bgDropper.color = CoreHelper.InvertColorHue(CoreHelper.InvertColorValue(PreviewTheme.backgroundColor));
                 bgPreviewET.triggers.Clear();
@@ -1049,10 +1008,10 @@ namespace BetterLegacy.Editor.Managers
             guiHex.contentType = InputField.ContentType.Standard;
             guiHex.text = EditorConfig.Instance.SavingSavesThemeOpacity.Value ? CoreHelper.ColorToHex(PreviewTheme.guiColor) : LSColors.ColorToHex(PreviewTheme.guiColor);
             guiPreview.color = PreviewTheme.guiColor;
-            guiHex.onValueChanged.AddListener(delegate (string val)
+            guiHex.onValueChanged.AddListener(_val =>
             {
-                guiPreview.color = val.Length == 8 ? LSColors.HexToColorAlpha(val) : val.Length == 6 ? LSColors.HexToColor(val) : LSColors.pink500;
-                PreviewTheme.guiColor = val.Length == 8 ? LSColors.HexToColorAlpha(val) : val.Length == 6 ? LSColors.HexToColor(val) : LSColors.pink500;
+                guiPreview.color = _val.Length == 8 ? LSColors.HexToColorAlpha(_val) : _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
+                PreviewTheme.guiColor = _val.Length == 8 ? LSColors.HexToColorAlpha(_val) : _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
 
                 guiDropper.color = CoreHelper.InvertColorHue(CoreHelper.InvertColorValue(PreviewTheme.guiColor));
                 guiPreviewET.triggers.Clear();
@@ -1074,10 +1033,10 @@ namespace BetterLegacy.Editor.Managers
             guiaccentHex.contentType = InputField.ContentType.Standard;
             guiaccentHex.text = EditorConfig.Instance.SavingSavesThemeOpacity.Value ? CoreHelper.ColorToHex(PreviewTheme.guiAccentColor) : LSColors.ColorToHex(PreviewTheme.guiAccentColor);
             guiaccentPreview.color = PreviewTheme.guiAccentColor;
-            guiaccentHex.onValueChanged.AddListener(delegate (string val)
+            guiaccentHex.onValueChanged.AddListener(_val =>
             {
-                guiaccentPreview.color = val.Length == 8 ? LSColors.HexToColorAlpha(val) : val.Length == 6 ? LSColors.HexToColor(val) : LSColors.pink500;
-                PreviewTheme.guiAccentColor = val.Length == 8 ? LSColors.HexToColorAlpha(val) : val.Length == 6 ? LSColors.HexToColor(val) : LSColors.pink500;
+                guiaccentPreview.color = _val.Length == 8 ? LSColors.HexToColorAlpha(_val) : _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
+                PreviewTheme.guiAccentColor = _val.Length == 8 ? LSColors.HexToColorAlpha(_val) : _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
 
                 guiaccentDropper.color = CoreHelper.InvertColorHue(CoreHelper.InvertColorValue(PreviewTheme.guiAccentColor));
                 guiaccentPreviewET.triggers.Clear();
@@ -1128,9 +1087,9 @@ namespace BetterLegacy.Editor.Managers
                     hex.contentType = InputField.ContentType.Standard;
                     hex.text = allowAlpha ? CoreHelper.ColorToHex(colors[indexTmp]) : LSColors.ColorToHex(colors[indexTmp]);
                     preview.color = colors[indexTmp];
-                    hex.onValueChanged.AddListener(delegate (string val)
+                    hex.onValueChanged.AddListener(_val =>
                     {
-                        var color = val.Length == 8 && allowAlpha ? LSColors.HexToColorAlpha(val) : val.Length == 6 ? LSColors.HexToColor(val) : LSColors.pink500;
+                        var color = _val.Length == 8 && allowAlpha ? LSColors.HexToColorAlpha(_val) : _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
                         preview.color = color;
                         colors[indexTmp] = color;
 
