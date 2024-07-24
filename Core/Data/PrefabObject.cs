@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Core.Helpers;
+using BetterLegacy.Editor;
 using LSFunctions;
 using SimpleJSON;
 using System.Collections.Generic;
@@ -81,6 +82,8 @@ namespace BetterLegacy.Core.Data
         public bool desync;
 
         public bool fromModifier;
+
+        public TimelineObject timelineObject;
 
         #region Methods
 
