@@ -1109,6 +1109,12 @@ namespace BetterLegacy.Patchers
                 });
             }
 
+            // Markers
+            {
+                var markers = Creator.NewUIObject("Markers", ObjEditor.inst.objTimelineSlider.transform);
+                UIManager.SetRectTransform(markers.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
+            }
+
             // Editor Themes
             {
                 EditorThemeManager.AddGraphic(dialog.GetComponent<Image>(), ThemeGroup.Background_1);

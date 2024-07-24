@@ -1886,6 +1886,16 @@ namespace BetterLegacy.Editor.Managers
 
             inst.RenderObjectKeyframesDialog(beatmapObject);
 
+            try
+            {
+                if (EditorConfig.Instance.ShowMarkersInObjectEditor.Value)
+                    inst.RenderMarkers(beatmapObject);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Error {ex}");
+            }
+
             if (ObjectModifiersEditor.inst)
                 inst.StartCoroutine(ObjectModifiersEditor.inst.RenderModifiers(beatmapObject));
 
@@ -4360,6 +4370,51 @@ namespace BetterLegacy.Editor.Managers
                     if (UpdateObjects)
                         Updater.UpdateProcessor(beatmapObject, "Keyframes");
                 });
+            }
+        }
+
+        public void RenderMarkers(BeatmapObject beatmapObject)
+        {
+            var parent = ObjEditor.inst.objTimelineSlider.transform.Find("Markers");
+
+            var dottedLine = ObjEditor.inst.KeyframeEndPrefab.GetComponent<Image>().sprite;
+            LSHelpers.DeleteChildren(parent);
+
+            for (int i = 0; i < GameData.Current.beatmapData.markers.Count; i++)
+            {
+                var marker = (Marker)GameData.Current.beatmapData.markers[i];
+                var length = beatmapObject.GetObjectLifeLength(ObjEditor.inst.ObjectLengthOffset);
+                if (marker.time < beatmapObject.StartTime || marker.time > beatmapObject.StartTime + length)
+                    continue;
+                int index = i;
+
+                var gameObject = MarkerEditor.inst.markerPrefab.Duplicate(parent, $"Marker {index}");
+                var pos = (marker.time - beatmapObject.StartTime) / length;
+                UIManager.SetRectTransform(gameObject.transform.AsRT(), new Vector2(0f, -12f), new Vector2(pos, 1f), new Vector2(pos, 1f), new Vector2(0.5f, 1f), new Vector2(12f, 12f));
+
+                gameObject.GetComponent<Image>().color = MarkerEditor.inst.markerColors[Mathf.Clamp(marker.color, 0, MarkerEditor.inst.markerColors.Count - 1)];
+                gameObject.GetComponentInChildren<Text>().text = marker.name;
+                var line = gameObject.transform.Find("line").GetComponent<Image>();
+                line.rectTransform.sizeDelta = new Vector2(5f, 301f);
+                line.sprite = dottedLine;
+                line.type = Image.Type.Tiled;
+
+                TriggerHelper.AddEventTriggerParams(gameObject, TriggerHelper.CreateEntry(EventTriggerType.PointerClick, eventData =>
+                {
+                    var pointerEventData = (PointerEventData)eventData;
+
+                    if (pointerEventData.button == PointerEventData.InputButton.Left && RTMarkerEditor.inst.timelineMarkers.TryFind(x => x.Marker.id == marker.id, out TimelineMarker timelineMarker))
+                    {
+                        RTMarkerEditor.inst.SetCurrentMarker(timelineMarker);
+                        AudioManager.inst.SetMusicTimeWithDelay(Mathf.Clamp(timelineMarker.Marker.time, 0f, AudioManager.inst.CurrentAudioSource.clip.length), 0.05f);
+                    }
+
+                    if (pointerEventData.button == PointerEventData.InputButton.Right)
+                        RTMarkerEditor.inst.DeleteMarker(index);
+
+                    if (pointerEventData.button == PointerEventData.InputButton.Middle)
+                        AudioManager.inst.SetMusicTime(marker.time);
+                }));
             }
         }
 

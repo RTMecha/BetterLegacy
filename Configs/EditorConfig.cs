@@ -156,6 +156,8 @@ namespace BetterLegacy.Configs
         public Setting<bool> ShowDropdownOnHover { get; set; }
         public Setting<bool> HideVisualElementsWhenObjectIsEmpty { get; set; }
         public Setting<Vector2Int> RenderDepthRange { get; set; }
+        public Setting<bool> ShowMarkersInObjectEditor { get; set; }
+
         public Setting<Vector2> OpenLevelPosition { get; set; }
         public Setting<Vector2> OpenLevelScale { get; set; }
         public Setting<Vector2> OpenLevelEditorPathPos { get; set; }
@@ -1301,6 +1303,8 @@ namespace BetterLegacy.Configs
             ShowDropdownOnHover = Bind(this, "Editor GUI", "Show Dropdowns on Hover", false, "If your mouse enters a dropdown bar, it will automatically show the dropdown list.");
             HideVisualElementsWhenObjectIsEmpty = Bind(this, "Editor GUI", "Hide Visual Elements When Object Is Empty", true, "If the Beatmap Object is empty, anything related to the visuals of the object doesn't show.");
             RenderDepthRange = Bind(this, "Editor GUI", "Render Depth Range", new Vector2Int(219, -98), "The range the Render Depth slider will show. Vanilla Legacy range is 30 and 0.");
+            ShowMarkersInObjectEditor = Bind(this, "Editor GUI", "Show Markers in Object Editor", false, "If markers should display in the object editor. (Experimental)");
+
             OpenLevelPosition = Bind(this, "Editor GUI", "Open Level Position", Vector2.zero, "The position of the Open Level popup.");
             OpenLevelScale = Bind(this, "Editor GUI", "Open Level Scale", new Vector2(600f, 400f), "The size of the Open Level popup.");
             OpenLevelEditorPathPos = Bind(this, "Editor GUI", "Open Level Editor Path Pos", new Vector2(275f, 16f), "The position of the editor path input field.");
