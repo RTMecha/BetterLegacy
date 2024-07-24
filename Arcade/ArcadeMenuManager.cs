@@ -2915,7 +2915,7 @@ namespace BetterLegacy.Arcade
         bool loadingOnlineLevels;
         public IEnumerator SearchOnlineLevels()
         {
-            if (string.IsNullOrEmpty(AlephNetworkManager.ArcadeServerURL))
+            if (!AlephNetworkManager.ServerFinished)
                 yield break;
 
             var page = CurrentPage[1];

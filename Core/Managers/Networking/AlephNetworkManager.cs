@@ -26,6 +26,8 @@ namespace BetterLegacy.Core.Managers.Networking
 
         void Awake() => inst = this;
 
+        public static bool ServerFinished => false;
+
         public static string ArcadeServerURL => "https://localhost:7206/";
 
         #region Client
