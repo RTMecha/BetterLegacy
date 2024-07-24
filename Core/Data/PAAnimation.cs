@@ -9,7 +9,7 @@ using LSFunctions;
 
 using SimpleJSON;
 
-using Marker = DataManager.GameData.BeatmapData.Marker;
+using BaseMarker = DataManager.GameData.BeatmapData.Marker;
 
 namespace BetterLegacy.Core.Data
 {
@@ -19,10 +19,10 @@ namespace BetterLegacy.Core.Data
         {
             id = LSText.randomNumString(16);
             objects = new List<AnimationObject>();
-            markers = new List<Marker>();
+            markers = new List<BaseMarker>();
         }
 
-        public PAAnimation(string name, string desc, float startTime, List<AnimationObject> objects, List<Marker> markers)
+        public PAAnimation(string name, string desc, float startTime, List<AnimationObject> objects, List<BaseMarker> markers)
         {
             id = LSText.randomNumString(16);
             this.name = name;
@@ -37,17 +37,15 @@ namespace BetterLegacy.Core.Data
         public string desc = "This is the default description!";
         float startTime;
         public float StartTime { get => Mathf.Clamp(startTime, 0f, float.MaxValue); set => startTime = Mathf.Clamp(value, 0f, float.MaxValue); }
-        public List<Marker> markers;
+        public List<BaseMarker> markers;
 
         public List<AnimationObject> objects;
 
         public static PAAnimation Parse(JSONNode jn)
         {
-            var markers = new List<Marker>();
+            var markers = new List<BaseMarker>();
             for (int i = 0; i < jn["markers"].Count; i++)
-            {
-                markers.Add(ProjectData.Reader.ParseMarker(jn["markers"][i]));
-            }
+                markers.Add(Marker.Parse(jn["markers"][i]));
 
             var list = new List<AnimationObject>();
             for (int i = 0; i < jn["objs"].Count; i++)

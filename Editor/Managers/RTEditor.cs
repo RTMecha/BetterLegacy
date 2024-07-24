@@ -217,7 +217,9 @@ namespace BetterLegacy.Editor.Managers
             SetupMiscEditorThemes();
             CreateScreenshotsView();
 
-            // Manager initializations
+            // Editor initializations
+            RTMarkerEditor.Init();
+
             PlayerEditor.Init();
             ObjectModifiersEditor.Init();
             LevelCombiner.Init();
@@ -934,15 +936,12 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.zoomVal =
                     LSMath.InterpolateOverCurve(EditorManager.inst.ZoomCurve, EditorManager.inst.zoomBounds.x, EditorManager.inst.zoomBounds.y, EditorManager.inst.zoomFloat);
 
-                if (EditorManager.inst.zoomFloat != prevZoom)
-                {
-                    if (render)
-                        EditorManager.inst.RenderTimeline();
+                if (render)
+                    EditorManager.inst.RenderTimeline();
 
-                    if (AudioManager.inst.CurrentAudioSource.clip != null)
-                        EditorManager.inst.timelineScrollRectBar.value =
-                            position >= 0f ? position : (EditorConfig.Instance.UseMouseAsZoomPoint.Value ? timelineTime : AudioManager.inst.CurrentAudioSource.time) / AudioManager.inst.CurrentAudioSource.clip.length;
-                }
+                if (AudioManager.inst.CurrentAudioSource.clip != null)
+                    EditorManager.inst.timelineScrollRectBar.value =
+                        position >= 0f ? position : (EditorConfig.Instance.UseMouseAsZoomPoint.Value ? timelineTime : AudioManager.inst.CurrentAudioSource.time) / AudioManager.inst.CurrentAudioSource.clip.length;
 
                 EditorManager.inst.zoomSlider.onValueChanged.ClearAll();
                 EditorManager.inst.zoomSlider.value = EditorManager.inst.zoomFloat;
@@ -2015,6 +2014,7 @@ namespace BetterLegacy.Editor.Managers
             var oldLayerType = this.layerType;
 
             Layer = layer;
+            this.layerType = layerType;
             TimelineOverlayImage.color = GetLayerColor(layer);
             editorLayerImage.color = GetLayerColor(layer);
 
@@ -2181,7 +2181,7 @@ namespace BetterLegacy.Editor.Managers
             timeField.onValueChanged.AddListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
-                    AudioManager.inst.CurrentAudioSource.time = num;
+                    AudioManager.inst.CurrentAudioSource.time = Mathf.Clamp(num, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
             });
 
             TriggerHelper.AddEventTriggerParams(timeObj, TriggerHelper.ScrollDelta(timeField));
@@ -8358,7 +8358,7 @@ namespace BetterLegacy.Editor.Managers
             EventEditor.inst.CreateEventObjects();
             BackgroundManager.inst.UpdateBackgrounds();
             GameManager.inst.UpdateTheme();
-            MarkerEditor.inst.CreateMarkers();
+            RTMarkerEditor.inst.CreateMarkers();
             EventManager.inst.updateEvents();
 
             RTEventManager.inst.SetResetOffsets();
@@ -10957,14 +10957,6 @@ namespace BetterLegacy.Editor.Managers
         {
             gameObject.SetActive(active);
             gameObject.transform.parent.GetChild(gameObject.transform.GetSiblingIndex() - 1).gameObject.SetActive(active);
-        }
-
-        public void OrderMarkers()
-        {
-            DataManager.inst.gameData.beatmapData.markers = (from x in DataManager.inst.gameData.beatmapData.markers
-                                                             orderby x.time
-                                                             select x).ToList();
-            MarkerEditor.inst.CreateMarkers();
         }
 
         #endregion

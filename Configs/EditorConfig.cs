@@ -2459,7 +2459,7 @@ namespace BetterLegacy.Configs
             CoreHelper.StartCoroutine(EditorThemeManager.RenderElements());
         }
 
-        void MarkerChanged() => MarkerEditor.inst?.RenderMarkers();
+        void MarkerChanged() => RTMarkerEditor.inst?.RenderMarkers();
 
         void ModdedEditorChanged()
         {

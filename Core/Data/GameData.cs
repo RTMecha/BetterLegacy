@@ -1058,7 +1058,7 @@ namespace BetterLegacy.Core.Data
             if (beatmapData.markers.Count > 0)
                 for (int i = 0; i < beatmapData.markers.Count; i++)
                 {
-                    jn["markers"][i] = beatmapData.markers[i].ToJSONVG();
+                    jn["markers"][i] = ((Marker)beatmapData.markers[i]).ToJSONVG();
                 }
             else
                 jn["markers"] = new JSONArray();

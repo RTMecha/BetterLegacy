@@ -250,27 +250,6 @@ namespace BetterLegacy.Core
                 }
             }
 
-            public static BaseMarker ParseMarker(JSONNode jn)
-            {
-                try
-                {
-                    bool active = jn["active"].AsBool;
-
-                    string name = jn["name"] != null ? jn["name"] : "Marker";
-
-                    string desc = jn["desc"] != null ? jn["desc"] : "";
-                    float time = jn["t"].AsFloat;
-
-                    int color = jn["col"] != null ? jn["col"].AsInt : 0;
-
-                    return new BaseMarker(active, name, desc, color, time);
-                }
-                catch
-                {
-                    return new BaseMarker(true, "Marker", "", 0, 0f);
-                }
-            }
-
             public static BaseCheckpoint ParseCheckpoint(JSONNode jn)
                 => new BaseCheckpoint(jn["active"].AsBool, jn["name"], jn["t"].AsFloat, new Vector2(jn["pos"]["x"].AsFloat, jn["pos"]["y"].AsFloat));
         }
@@ -287,21 +266,7 @@ namespace BetterLegacy.Core
 
                 CoreHelper.Log("Saving Markers");
                 for (int i = 0; i < _data.beatmapData.markers.Count; i++)
-                {
-                    var marker = _data.beatmapData.markers[i];
-                    jn["ed"]["markers"][i]["active"] = "True"; // this has to stay here due to unmodded not handling "active" being null for some weird reason.
-
-                    if (!string.IsNullOrEmpty(marker.name))
-                        jn["ed"]["markers"][i]["name"] = marker.name.ToString();
-
-                    if (!string.IsNullOrEmpty(marker.desc) && marker.desc != "Description")
-                        jn["ed"]["markers"][i]["desc"] = marker.desc.ToString();
-
-                    if (_data.beatmapData.markers[i].color != 0)
-                        jn["ed"]["markers"][i]["col"] = marker.color.ToString();
-
-                    jn["ed"]["markers"][i]["t"] = marker.time.ToString();
-                }
+                    jn["ed"]["markers"][i] = ((Marker)_data.beatmapData.markers[i]).ToJSON();
 
                 for (int i = 0; i < _data.levelModifiers.Count; i++)
                 {
@@ -500,7 +465,7 @@ namespace BetterLegacy.Core
                 if (_data.beatmapData.markers.Count > 0)
                     for (int i = 0; i < _data.beatmapData.markers.Count; i++)
                     {
-                        jn["markers"][i] = _data.beatmapData.markers[i].ToJSONVG();
+                        jn["markers"][i] = ((Marker)_data.beatmapData.markers[i]).ToJSONVG();
                     }
                 else
                     jn["markers"] = new JSONArray();

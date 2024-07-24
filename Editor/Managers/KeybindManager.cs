@@ -1745,12 +1745,17 @@ namespace BetterLegacy.Editor.Managers
         {
             if (DataManager.inst.gameData.beatmapData.markers.Count > 0)
             {
-                RTEditor.inst.OrderMarkers();
+                RTMarkerEditor.inst.OrderMarkers();
 
-                var currentMarker = DataManager.inst.gameData.beatmapData.markers.FindLastIndex(x => x.time <= AudioManager.inst.CurrentAudioSource.time + 0.005f);
+                var currentMarker = GameData.Current.beatmapData.markers.FindLastIndex(x => x.time <= AudioManager.inst.CurrentAudioSource.time + 0.005f);
 
                 if (currentMarker + 1 >= 0)
-                    SetCurrentMarker(Mathf.Clamp(currentMarker + 1, 0, DataManager.inst.gameData.beatmapData.markers.Count - 1), true, EditorConfig.Instance.BringToSelection.Value);
+                {
+                    var marker = (Marker)GameData.Current.beatmapData.markers[Mathf.Clamp(currentMarker + 1, 0, DataManager.inst.gameData.beatmapData.markers.Count - 1)];
+
+                    if (RTMarkerEditor.inst.timelineMarkers.TryFind(x => x.Marker.id == marker.id, out TimelineMarker timelineMarker))
+                        RTMarkerEditor.inst.SetCurrentMarker(timelineMarker, true, EditorConfig.Instance.BringToSelection.Value, true);
+                }
             }
         }
 
@@ -1758,12 +1763,17 @@ namespace BetterLegacy.Editor.Managers
         {
             if (DataManager.inst.gameData.beatmapData.markers.Count > 0)
             {
-                RTEditor.inst.OrderMarkers();
+                RTMarkerEditor.inst.OrderMarkers();
 
                 var currentMarker = DataManager.inst.gameData.beatmapData.markers.FindLastIndex(x => x.time < AudioManager.inst.CurrentAudioSource.time - 0.005f);
 
                 if (currentMarker >= 0)
-                    SetCurrentMarker(Mathf.Clamp(currentMarker, 0, DataManager.inst.gameData.beatmapData.markers.Count - 1), true, EditorConfig.Instance.BringToSelection.Value);
+                {
+                    var marker = (Marker)GameData.Current.beatmapData.markers[Mathf.Clamp(currentMarker, 0, DataManager.inst.gameData.beatmapData.markers.Count - 1)];
+
+                    if (RTMarkerEditor.inst.timelineMarkers.TryFind(x => x.Marker.id == marker.id, out TimelineMarker timelineMarker))
+                        RTMarkerEditor.inst.SetCurrentMarker(timelineMarker, true, EditorConfig.Instance.BringToSelection.Value, true);
+                }
             }
         }
 
@@ -2328,23 +2338,6 @@ namespace BetterLegacy.Editor.Managers
         #endregion
 
         #region Functions
-
-        public static void SetCurrentMarker(int _marker, bool _bringTo = false, bool _showDialog = false)
-        {
-            DataManager.inst.UpdateSettingInt("EditorMarker", _marker);
-            MarkerEditor.inst.currentMarker = _marker;
-
-            if (_showDialog)
-                MarkerEditor.inst.OpenDialog(_marker);
-
-            if (_bringTo)
-            {
-                float time = DataManager.inst.gameData.beatmapData.markers[MarkerEditor.inst.currentMarker].time;
-                AudioManager.inst.SetMusicTime(Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
-                AudioManager.inst.CurrentAudioSource.Pause();
-                EditorManager.inst.UpdatePlayButton();
-            }
-        }
 
         public static KeyCode WatchKeyCode()
         {

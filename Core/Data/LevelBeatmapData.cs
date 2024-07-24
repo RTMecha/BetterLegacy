@@ -32,7 +32,7 @@ namespace BetterLegacy.Core.Data
 
                 var time = jnmarker["t"].AsFloat;
 
-                beatmapData.markers.Add(new Marker(true, name, desc, col, time));
+                beatmapData.markers.Add(new Data.Marker(true, name, desc, col, time));
             }
             return beatmapData;
         }
@@ -46,24 +46,8 @@ namespace BetterLegacy.Core.Data
 
             beatmapData.markers = new List<Marker>();
             for (int i = 0; i < jn["ed"]["markers"].Count; i++)
-            {
-                bool active = jn["ed"]["markers"][i]["active"].AsBool;
-                string name = "";
-                if (jn["ed"]["markers"][i]["name"] != null)
-                    name = jn["ed"]["markers"][i]["name"];
+                beatmapData.markers.Add(Data.Marker.Parse(jn["ed"]["markers"][i]));
 
-                string desc = "";
-                if (jn["ed"]["markers"][i]["desc"] != null)
-                    desc = jn["ed"]["markers"][i]["desc"];
-
-                float time = jn["ed"]["markers"][i]["t"].AsFloat;
-
-                int color = 0;
-                if (jn["ed"]["markers"][i]["col"] != null)
-                    color = jn["ed"]["markers"][i]["col"].AsInt;
-
-                beatmapData.markers.Add(new Marker(active, name, desc, color, time));
-            }
             return beatmapData;
         }
 

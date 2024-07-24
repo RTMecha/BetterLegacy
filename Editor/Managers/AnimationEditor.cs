@@ -197,7 +197,7 @@ namespace BetterLegacy.Editor.Managers
                 },
                 new List<BaseMarker>
                 {
-                    new BaseMarker(true, "Test marker", "Test description for a marker", 0, 2f)
+                    new Marker("Test marker", "Test description for a marker", 0, 2f)
                 });
             RenderEditor(testAnimation);
         }
