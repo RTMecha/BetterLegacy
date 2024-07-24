@@ -17,10 +17,7 @@ namespace BetterLegacy.Patchers
         public static Text loadingText;
         [HarmonyPatch(nameof(SceneManager.Awake))]
         [HarmonyPrefix]
-        static void AwakePrefix(SceneManager __instance)
-        {
-            loadingText = __instance.icon.GetComponent<Text>();
-        }
+        static void AwakePrefix(SceneManager __instance) => loadingText = __instance.icon.GetComponent<Text>();
 
         [HarmonyPatch(nameof(SceneManager.UpdateSpinner))]
         [HarmonyPrefix]
@@ -38,20 +35,6 @@ namespace BetterLegacy.Patchers
 
             return false;
         }
-
-        //[HarmonyPatch(nameof(SceneManager.DisplayLoadingScreen))]
-        //[HarmonyPrefix]
-        //static void DisplayLoadingScreenPrefix(string __0)
-        //{
-        //    ExampleManager.onSceneLoad?.Invoke(__0);
-        //    CoreHelper.CurrentSceneType = __0 == "Editor" ? SceneType.Editor : __0 == "Game" ? SceneType.Game : SceneType.Interface;
-        //    CoreHelper.Log($"Set Scene\nType: {CoreHelper.CurrentSceneType}\nName: {__0}");
-        //    loading = true;
-        //}
-
-        //[HarmonyPatch(nameof(SceneManager.DisplayLoadingScreen))]
-        //[HarmonyPostfix]
-        //static void DisplayLoadingScreenPostfix() => loading = false;
 
         [HarmonyPatch(nameof(SceneManager.DisplayLoadingScreen))]
         [HarmonyPrefix]
