@@ -9,6 +9,8 @@ namespace BetterLegacy.Components.Editor
     /// </summary>
     public class GridRenderer : Graphic
     {
+        public bool isTimeline;
+
         public Vector2 gridCellSpacing = new Vector2(1f, 1f);
         public Vector2Int gridCellSize = new Vector2Int(1, 1);
         public Vector2 gridSize = new Vector2(1f, 1f);
@@ -50,7 +52,7 @@ namespace BetterLegacy.Components.Editor
         public static float multi = 154f;
         void DrawCell(int x, int y, int index, VertexHelper vh)
         {
-            float posX = cellWidth * x + (RTEditor.inst.bpmOffset * multi);
+            float posX = (cellWidth * x) + (isTimeline ? (RTEditor.inst.bpmOffset * multi) : 0f);
             float posY = cellHeight * y;
 
             var simpleVert = UIVertex.simpleVert;
@@ -91,6 +93,11 @@ namespace BetterLegacy.Components.Editor
             vh.AddTriangle(tri + 7, tri + 6, tri + 2);
             vh.AddTriangle(tri + 3, tri, tri + 4);
             vh.AddTriangle(tri + 4, tri + 7, tri + 3);
+        }
+
+        public void UpdateUI()
+        {
+            base.SetVerticesDirty();
         }
     }
 }

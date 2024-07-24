@@ -1176,6 +1176,11 @@ namespace BetterLegacy.Configs
         public Setting<float> ObjectDraggerScalerOffset { get; set; }
         public Setting<float> ObjectDraggerScalerScale { get; set; }
 
+        public Setting<bool> PreviewGridEnabled { get; set; }
+        public Setting<float> PreviewGridSize { get; set; }
+        public Setting<float> PreviewGridThickness { get; set; }
+        public Setting<Color> PreviewGridColor { get; set; }
+
         #endregion
 
         #endregion
@@ -2315,6 +2320,11 @@ namespace BetterLegacy.Configs
             ObjectDraggerScalerOffset = Bind(this, "Preview", "Object Dragger Scaler Offset", 6f, "The distance of the Object Draggers' scale arrows.");
             ObjectDraggerScalerScale = Bind(this, "Preview", "Object Dragger Scaler Scale", 1.6f, "The size of the Object Draggers' scale arrows.");
 
+            PreviewGridEnabled = Bind(this, "Preview", "Grid Enabled", false, "If the preview grid should be enabled.");
+            PreviewGridSize = Bind(this, "Preview", "Grid Size", 0.5f, "The overall size of the preview grid.");
+            PreviewGridThickness = Bind(this, "Preview", "Grid Thickness", 0.1f, "The line thickness of the preview grid.", 0.01f, 2f);
+            PreviewGridColor = Bind(this, "Preview", "Grid Color", Color.white, "The color of the preview grid.");
+
             #endregion
 
             Save();
@@ -2416,6 +2426,19 @@ namespace BetterLegacy.Configs
             AutosaveLoopTime.SettingChanged += AutosaveChanged;
 
             TimelineCollapseLength.SettingChanged += TimelineCollapseLengthChanged;
+
+            PreviewGridEnabled.SettingChanged += PreviewGridChanged;
+            PreviewGridSize.SettingChanged += PreviewGridChanged;
+            PreviewGridThickness.SettingChanged += PreviewGridChanged;
+            PreviewGridColor.SettingChanged += PreviewGridChanged;
+        }
+
+        void PreviewGridChanged()
+        {
+            if (RTEditor.inst && RTEditor.inst.previewGrid)
+            {
+                RTEditor.inst.UpdateGrid();
+            }
         }
 
         void TimelineCollapseLengthChanged()

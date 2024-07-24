@@ -204,6 +204,7 @@ namespace BetterLegacy.Editor.Managers
             SetupPaths();
             SetupTimelinePreview();
             SetupTimelineElements();
+            SetupGrid();
             SetupTimelineGrid();
             SetupNewFilePopup();
             CreatePreviewCover();
@@ -304,6 +305,26 @@ namespace BetterLegacy.Editor.Managers
             {
                 newTime = timelineSlider.value / EditorManager.inst.Zoom;
                 AudioManager.inst.SetMusicTime(Mathf.Clamp(timelineSlider.value / EditorManager.inst.Zoom, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
+            }
+
+            try
+            {
+                if (previewGrid)
+                {
+                    var enabled = EditorConfig.Instance.PreviewGridEnabled.Value && EditorManager.inst.isEditing;
+                    previewGrid.enabled = enabled;
+
+                    if (enabled)
+                    {
+                        var camPos = EventManager.inst.camPos;
+                        previewGrid.rectTransform.anchoredPosition =
+                            new Vector2(-40f / previewGrid.gridSize.x, -40f / previewGrid.gridSize.y) + new Vector2((int)(camPos.x / 40f) * 40f, (int)(camPos.y / 40f) * 40f);
+                    }
+                }
+            }
+            catch
+            {
+
             }
 
             if (selectingKey)
@@ -415,6 +436,8 @@ namespace BetterLegacy.Editor.Managers
         }
 
         #region Variables
+
+        public GridRenderer previewGrid;
 
         public GameObject timeDefault;
 
@@ -3273,25 +3296,17 @@ namespace BetterLegacy.Editor.Managers
 
         void SetupTimelineGrid()
         {
-            var grid = new GameObject("grid");
-            grid.transform.SetParent(EditorManager.inst.timeline.transform);
-            grid.transform.localScale = Vector3.one;
-            grid.transform.SetSiblingIndex(0);
-
-            var gridRT = grid.AddComponent<RectTransform>();
+            var grid = Creator.NewUIObject("grid", EditorManager.inst.timeline.transform, 0);
 
             grid.AddComponent<CanvasRenderer>();
 
             var gridLayout = grid.AddComponent<LayoutElement>();
             gridLayout.ignoreLayout = true;
 
-            gridRT.anchoredPosition = Vector3.zero;
-            gridRT.anchorMax = Vector3.one;
-            gridRT.anchorMin = Vector3.zero;
-            gridRT.pivot = Vector3.zero;
-            gridRT.sizeDelta = Vector3.zero;
+            UIManager.SetRectTransform(grid.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, Vector2.zero);
 
             timelineGridRenderer = grid.AddComponent<GridRenderer>();
+            timelineGridRenderer.isTimeline = true;
 
             var config = EditorConfig.Instance;
 
@@ -3303,6 +3318,47 @@ namespace BetterLegacy.Editor.Managers
             var gridCanvasGroup = grid.AddComponent<CanvasGroup>();
             gridCanvasGroup.blocksRaycasts = false;
             gridCanvasGroup.interactable = false;
+        }
+
+        void SetupGrid()
+        {
+            try
+            {
+                LSRenderManager.inst.FrontWorldCanvas.transform.localPosition = new Vector3(0f, 0f, -10000f);
+                var grid = Creator.NewUIObject("Grid", LSRenderManager.inst.FrontWorldCanvas);
+                
+                previewGrid = grid.AddComponent<GridRenderer>();
+                previewGrid.gridCellSize = new Vector2Int(80, 80);
+                previewGrid.gridCellSpacing = new Vector2(10f, 10f);
+                previewGrid.gridSize = new Vector2(1f, 1f);
+                previewGrid.color = new Color(1f, 1f, 1f);
+                previewGrid.thickness = 0.1f;
+
+                grid.transform.AsRT().anchoredPosition = new Vector2(-40f, -40f);
+                grid.transform.AsRT().sizeDelta = Vector2.one;
+
+
+                UpdateGrid();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"SetupGrid Exception {ex}");
+            }
+        }
+
+        public void UpdateGrid()
+        {
+            if (!previewGrid)
+                return;
+
+            if (!EditorConfig.Instance.PreviewGridEnabled.Value)
+                return;
+
+            var gridSize = EditorConfig.Instance.PreviewGridSize.Value;
+            previewGrid.gridSize = new Vector2(gridSize, gridSize);
+            previewGrid.color = EditorConfig.Instance.PreviewGridColor.Value;
+            previewGrid.thickness = EditorConfig.Instance.PreviewGridThickness.Value;
+            previewGrid.SetVerticesDirty();
         }
 
         public void UpdateTimeline()
@@ -12113,6 +12169,10 @@ namespace BetterLegacy.Editor.Managers
             new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.ObjectDraggerRotatorRadius),
             new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.ObjectDraggerScalerOffset),
             new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.ObjectDraggerScalerScale),
+            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.PreviewGridEnabled),
+            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.PreviewGridSize),
+            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.PreviewGridThickness),
+            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.PreviewGridColor),
 
             #endregion
         };
