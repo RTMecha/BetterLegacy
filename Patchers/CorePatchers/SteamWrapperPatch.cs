@@ -6,7 +6,7 @@ namespace BetterLegacy.Patchers
     [HarmonyPatch(typeof(SteamWrapper.Achievements))]
     public class SteamWrapperAchievementsPatch
     {
-        [HarmonyPatch("SetAchievement")]
+        [HarmonyPatch(nameof(SteamWrapper.Achievements.SetAchievement))]
         [HarmonyPrefix]
         static bool SetAchievementPrefix(string __0)
         {
@@ -17,7 +17,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("GetAchievement")]
+        [HarmonyPatch(nameof(SteamWrapper.Achievements.GetAchievement))]
         [HarmonyPrefix]
         static bool GetAchievementPrefix(ref bool __result, string __0)
         {
@@ -25,7 +25,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("ClearAchievement")]
+        [HarmonyPatch(nameof(SteamWrapper.Achievements.ClearAchievement))]
         [HarmonyPrefix]
         static bool ClearAchievementPrefix(string __0)
         {

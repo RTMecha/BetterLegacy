@@ -23,11 +23,11 @@ using BasePrefab = DataManager.GameData.Prefab;
 namespace BetterLegacy.Patchers
 {
     [HarmonyPatch(typeof(DataManager))]
-    public class DataManagerPatch : MonoBehaviour
+    public class DataManagerPatch
     {
         public static DataManager Instance { get => DataManager.inst; set => DataManager.inst = value; }
 
-        [HarmonyPatch("Start")]
+        [HarmonyPatch(nameof(DataManager.Start))]
         [HarmonyPostfix]
         static void StartPostfix(DataManager __instance)
         {
@@ -377,7 +377,7 @@ namespace BetterLegacy.Patchers
             }
         }
 
-        [HarmonyPatch("SaveData", typeof(string), typeof(DataManager.GameData))]
+        [HarmonyPatch(nameof(DataManager.SaveData), typeof(string), typeof(DataManager.GameData))]
         [HarmonyPrefix]
         static bool SaveDataPrefix(DataManager __instance, ref IEnumerator __result, string __0, DataManager.GameData __1)
         {
@@ -386,7 +386,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("SaveMetadata", typeof(string), typeof(DataManager.MetaData))]
+        [HarmonyPatch(nameof(DataManager.SaveMetadata), typeof(string), typeof(DataManager.MetaData))]
         [HarmonyPrefix]
         static bool SaveMetadataPrefix(ref LSError __result, DataManager __instance, string __0, DataManager.MetaData __1)
         {
@@ -454,17 +454,17 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("GeneratePrefabJSON")]
+        [HarmonyPatch(nameof(DataManager.GeneratePrefabJSON))]
         [HarmonyPrefix]
-        static bool GeneratePrefabJSON(ref JSONNode __result, BasePrefab __0)
+        static bool GeneratePrefabJSONPrefix(ref JSONNode __result, BasePrefab __0)
         {
-            __result = ((Core.Data.Prefab)__0).ToJSON();
+            __result = ((Prefab)__0).ToJSON();
             return false;
         }
 
         #region PlayerPrefs Patches
 
-        [HarmonyPatch("HasKey")]
+        [HarmonyPatch(nameof(DataManager.HasKey))]
         [HarmonyPrefix]
         static bool HasKeyPrefix(ref bool __result, string __0)
         {
@@ -472,7 +472,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("SettingHasKey")]
+        [HarmonyPatch(nameof(DataManager.SettingHasKey))]
         [HarmonyPrefix]
         static bool SettingHasKeyPrefix(ref bool __result, string __0)
         {
@@ -480,7 +480,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("UpdateSettingEnum")]
+        [HarmonyPatch(nameof(DataManager.UpdateSettingEnum))]
         [HarmonyPrefix]
         static bool UpdateSettingEnumPrefix(string __0, int __1)
         {
@@ -488,7 +488,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("GetSettingEnum")]
+        [HarmonyPatch(nameof(DataManager.GetSettingEnum))]
         [HarmonyPrefix]
         static bool GetSettingEnumPrefix(ref int __result, string __0, int __1)
         {
@@ -502,7 +502,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("UpdateSettingString")]
+        [HarmonyPatch(nameof(DataManager.UpdateSettingString))]
         [HarmonyPrefix]
         static bool UpdateSettingStringPrefix(string __0, string __1)
         {
@@ -510,7 +510,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("GetSettingString", new Type[] { typeof(string) })]
+        [HarmonyPatch(nameof(DataManager.GetSettingString), new Type[] { typeof(string) })]
         [HarmonyPrefix]
         static bool GetSettingStringPrefix1(ref string __result, string __0)
         {
@@ -524,7 +524,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("GetSettingString", new Type[] { typeof(string), typeof(string) })]
+        [HarmonyPatch(nameof(DataManager.GetSettingString), new Type[] { typeof(string), typeof(string) })]
         [HarmonyPrefix]
         static bool GetSettingStringPrefix2(ref string __result, string __0, string __1)
         {
@@ -538,7 +538,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("UpdateSettingInt")]
+        [HarmonyPatch(nameof(DataManager.UpdateSettingInt))]
         [HarmonyPrefix]
         static bool UpdateSettingIntPrefix(string __0, int __1)
         {
@@ -547,7 +547,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("GetSettingInt", new Type[] { typeof(string) })]
+        [HarmonyPatch(nameof(DataManager.GetSettingInt), new Type[] { typeof(string) })]
         [HarmonyPrefix]
         static bool GetSettingIntPrefix1(ref int __result, string __0)
         {
@@ -561,7 +561,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("GetSettingInt", new Type[] { typeof(string), typeof(int) })]
+        [HarmonyPatch(nameof(DataManager.GetSettingInt), new Type[] { typeof(string), typeof(int) })]
         [HarmonyPrefix]
         static bool GetSettingIntPrefix2(ref int __result, string __0, int __1)
         {
@@ -575,7 +575,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("UpdateSettingFloat")]
+        [HarmonyPatch(nameof(DataManager.UpdateSettingFloat))]
         [HarmonyPrefix]
         static bool UpdateSettingFloatPrefix(string __0, float __1)
         {
@@ -583,7 +583,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("GetSettingFloat", new Type[] { typeof(string) })]
+        [HarmonyPatch(nameof(DataManager.GetSettingFloat), new Type[] { typeof(string) })]
         [HarmonyPrefix]
         static bool GetSettingFloatPrefix1(ref float __result, string __0)
         {
@@ -597,7 +597,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("GetSettingFloat", new Type[] { typeof(string), typeof(float) })]
+        [HarmonyPatch(nameof(DataManager.GetSettingFloat), new Type[] { typeof(string), typeof(float) })]
         [HarmonyPrefix]
         static bool GetSettingFloatPrefix2(ref float __result, string __0, float __1)
         {
@@ -611,7 +611,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("UpdateSettingBool")]
+        [HarmonyPatch(nameof(DataManager.UpdateSettingBool))]
         [HarmonyPrefix]
         static bool UpdateSettingBoolPrefix(string __0, bool __1)
         {
@@ -620,7 +620,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("GetSettingBool", new Type[] { typeof(string) })]
+        [HarmonyPatch(nameof(DataManager.GetSettingBool), new Type[] { typeof(string) })]
         [HarmonyPrefix]
         static bool GetSettingBoolPrefix1(ref bool __result, string __0)
         {
@@ -634,7 +634,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("GetSettingBool", new Type[] { typeof(string), typeof(bool) })]
+        [HarmonyPatch(nameof(DataManager.GetSettingBool), new Type[] { typeof(string), typeof(bool) })]
         [HarmonyPrefix]
         static bool GetSettingBoolPrefix2(ref bool __result, string __0, bool __1)
         {
@@ -648,7 +648,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("UpdateSettingVector2D")]
+        [HarmonyPatch(nameof(DataManager.UpdateSettingVector2D))]
         [HarmonyPrefix]
         static bool UpdateSettingVector2DPrefix(string __0, int __1, Vector2[] __2)
         {
@@ -658,7 +658,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("GetSettingVector2D")]
+        [HarmonyPatch(nameof(DataManager.GetSettingVector2D))]
         [HarmonyPrefix]
         static bool GetSettingVector2DPrefix(ref Vector2 __result, string __0)
         {
@@ -673,7 +673,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("GetSettingVector2DIndex")]
+        [HarmonyPatch(nameof(DataManager.GetSettingVector2DIndex))]
         [HarmonyPrefix]
         static bool GetSettingVector2DIndexPrefix(ref int __result, string __0)
         {
@@ -693,17 +693,17 @@ namespace BetterLegacy.Patchers
     [HarmonyPatch(typeof(DataManager.GameData))]
     public class DataManagerGameDataPatch : MonoBehaviour
     {
-        [HarmonyPatch("ParseBeatmap")]
+        [HarmonyPatch(nameof(DataManager.GameData.ParseBeatmap))]
         [HarmonyPrefix]
-        static bool ParseBeatmapPatch(string _json) => false;
+        static bool ParseBeatmapPrefix() => false;
     }
 
     [HarmonyPatch(typeof(BaseBeatmapTheme))]
     public class DataManagerBeatmapThemePatch
     {
-        [HarmonyPatch("Lerp")]
+        [HarmonyPatch(nameof(BaseBeatmapTheme.Lerp))]
         [HarmonyPrefix]
-        static bool Lerp(BaseBeatmapTheme __instance, ref BaseBeatmapTheme _start, ref BaseBeatmapTheme _end, float _val)
+        static bool LerpPrefix(BaseBeatmapTheme __instance, ref BaseBeatmapTheme _start, ref BaseBeatmapTheme _end, float _val)
         {
             __instance.guiColor = Color.Lerp(_start.guiColor, _end.guiColor, _val);
             __instance.backgroundColor = Color.Lerp(_start.backgroundColor, _end.backgroundColor, _val);
@@ -738,11 +738,11 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("Parse")]
+        [HarmonyPatch(nameof(BaseBeatmapTheme.Parse))]
         [HarmonyPrefix]
         static bool ParsePrefix(BaseBeatmapTheme __instance, ref BaseBeatmapTheme __result, JSONNode __0, bool __1)
         {
-            BaseBeatmapTheme beatmapTheme = new BaseBeatmapTheme();
+            var beatmapTheme = new BaseBeatmapTheme();
             beatmapTheme.id = DataManager.inst.AllThemes.Count().ToString();
             if (__0["id"] != null)
                 beatmapTheme.id = __0["id"];
@@ -903,9 +903,9 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("DeepCopy")]
+        [HarmonyPatch(nameof(BaseBeatmapTheme.DeepCopy))]
         [HarmonyPrefix]
-        static bool DeepCopyPatch(ref BaseBeatmapTheme __result, BaseBeatmapTheme __0, bool __1 = false)
+        static bool DeepCopyPrefix(ref BaseBeatmapTheme __result, BaseBeatmapTheme __0, bool __1 = false)
         {
             var themeCopy = new BaseBeatmapTheme();
             themeCopy.name = __0.name;
@@ -952,11 +952,11 @@ namespace BetterLegacy.Patchers
     [HarmonyPatch(typeof(BaseBeatmapObject))]
     public class DataManagerBeatmapObjectPatch
     {
-        [HarmonyPatch("ParseGameObject")]
+        [HarmonyPatch(nameof(BaseBeatmapObject.ParseGameObject))]
         [HarmonyPrefix]
         static bool ParseGameObjectPrefix(ref BaseBeatmapObject __result, JSONNode __0)
         {
-            __result = Core.Data.BeatmapObject.Parse(__0);
+            __result = BeatmapObject.Parse(__0);
             return false;
         }
     }
@@ -964,11 +964,11 @@ namespace BetterLegacy.Patchers
     [HarmonyPatch(typeof(BasePrefab))]
     public class DataManagerPrefabPatch
     {
-        [HarmonyPatch("DeepCopy")]
+        [HarmonyPatch(nameof(BasePrefab.DeepCopy))]
         [HarmonyPrefix]
         static bool DeepCopyPrefix(ref BasePrefab __result, BasePrefab __0, bool __1 = true)
         {
-            BasePrefab prefab = new BasePrefab();
+            var prefab = new BasePrefab();
             prefab.Name = __0.Name;
             prefab.ID = (__1 ? LSText.randomString(16) : __0.ID);
             prefab.MainObjectID = __0.MainObjectID;

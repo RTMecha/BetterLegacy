@@ -20,7 +20,7 @@ namespace BetterLegacy.Patchers
     [HarmonyPatch(typeof(InterfaceController))]
     public class InterfaceControllerPatch : MonoBehaviour
     {
-        [HarmonyPatch("Start")]
+        [HarmonyPatch(nameof(InterfaceController.Start))]
         [HarmonyPrefix]
         static bool StartPrefix(InterfaceController __instance)
         {
@@ -73,7 +73,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("LoadInterface", new Type[] { typeof(string) })]
+        [HarmonyPatch(nameof(InterfaceController.LoadInterface), new Type[] { typeof(string) })]
         [HarmonyPrefix]
         static bool LoadInterfacePrefix(string _filename)
         {
@@ -81,7 +81,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("Update")]
+        [HarmonyPatch(nameof(InterfaceController.Update))]
         [HarmonyPrefix]
         static bool UpdatePrefix(InterfaceController __instance)
         {
@@ -263,7 +263,7 @@ namespace BetterLegacy.Patchers
             MenuManager.inst.ParseLilScript(text, switchBranch);
         }
 
-        [HarmonyPatch("handleEvent")]
+        [HarmonyPatch(nameof(InterfaceController.handleEvent))]
         [HarmonyPrefix]
         static bool handleEventPrefix(ref IEnumerator __result, ref string __0, string __1, bool __2 = false)
         {
@@ -271,7 +271,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("AddElement")]
+        [HarmonyPatch(nameof(InterfaceController.AddElement))]
         [HarmonyPrefix]
         static bool AddElementPrefix(ref IEnumerator __result, Element __0, bool __1)
         {
@@ -279,7 +279,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("ParseLilScript")]
+        [HarmonyPatch(nameof(InterfaceController.ParseLilScript))]
         [HarmonyPrefix]
         static bool ParseLilScriptPrefix(string __0)
         {

@@ -33,7 +33,7 @@ namespace BetterLegacy.Patchers
     {
         static ObjEditor Instance { get => ObjEditor.inst; set => ObjEditor.inst = value; }
 
-        [HarmonyPatch("Awake")]
+        [HarmonyPatch(nameof(ObjEditor.Awake))]
         [HarmonyPrefix]
         static bool AwakePrefix(ObjEditor __instance)
         {
@@ -1756,7 +1756,7 @@ namespace BetterLegacy.Patchers
             yield break;
         }
 
-        [HarmonyPatch("Start")]
+        [HarmonyPatch(nameof(ObjEditor.Start))]
         [HarmonyPrefix]
         static bool StartPrefix()
         {
@@ -1791,16 +1791,13 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("Update")]
+        [HarmonyPatch(nameof(ObjEditor.Update))]
         [HarmonyPrefix]
-        static bool UpdatePrefix(ObjEditor __instance)
-        {
-            return false;
-        }
+        static bool UpdatePrefix() => false;
 
-        [HarmonyPatch("SetMainTimelineZoom")]
+        [HarmonyPatch(nameof(ObjEditor.SetMainTimelineZoom))]
         [HarmonyPrefix]
-        static bool SetMainTimelineZoom(float __0, bool __1 = true)
+        static bool SetMainTimelineZoomPrefix(float __0, bool __1 = true)
         {
             var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
             if (__1)
@@ -1831,23 +1828,23 @@ namespace BetterLegacy.Patchers
             yield break;
         }
 
-        [HarmonyPatch("SetCurrentObj")]
+        [HarmonyPatch(nameof(ObjEditor.SetCurrentObj))]
         [HarmonyPrefix]
         static bool SetCurrentObjPrefix() => false;
 
-        [HarmonyPatch("UpdateHighlightedKeyframe")]
+        [HarmonyPatch(nameof(ObjEditor.UpdateHighlightedKeyframe))]
         [HarmonyPrefix]
         static bool UpdateHighlightedKeyframePrefix() => false;
 
-        [HarmonyPatch("DeRenderObject")]
+        [HarmonyPatch(nameof(ObjEditor.DeRenderObject))]
         [HarmonyPrefix]
         static bool DeRenderObjectPrefix() => false;
 
-        [HarmonyPatch("RenderTimelineObject")]
+        [HarmonyPatch(nameof(ObjEditor.RenderTimelineObject))]
         [HarmonyPrefix]
         static bool RenderTimelineObjectPrefix() => false;
 
-        [HarmonyPatch("RenderTimelineObjects")]
+        [HarmonyPatch(nameof(ObjEditor.RenderTimelineObjects))]
         [HarmonyPrefix]
         static bool RenderTimelineObjectsPrefix()
         {
@@ -1855,35 +1852,35 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("DeleteObject")]
+        [HarmonyPatch(nameof(ObjEditor.DeleteObject))]
         [HarmonyPrefix]
         static bool DeleteObjectPrefix() => false;
 
-        [HarmonyPatch("DeleteObjects")]
+        [HarmonyPatch(nameof(ObjEditor.DeleteObjects))]
         [HarmonyPrefix]
         static bool DeleteObjectsPrefix() => false;
 
-        [HarmonyPatch("AddPrefabExpandedToLevel")]
+        [HarmonyPatch(nameof(ObjEditor.AddPrefabExpandedToLevel))]
         [HarmonyPrefix]
         static bool AddPrefabExpandedToLevelPrefix() => false;
 
-        [HarmonyPatch("AddSelectedObject")]
+        [HarmonyPatch(nameof(ObjEditor.AddSelectedObject))]
         [HarmonyPrefix]
         static bool AddSelectedObjectPrefix() => false;
 
-        [HarmonyPatch("AddSelectedObjectOnly")]
+        [HarmonyPatch(nameof(ObjEditor.AddSelectedObjectOnly))]
         [HarmonyPrefix]
         static bool AddSelectedObjectOnlyPrefix() => false;
 
-        [HarmonyPatch("ContainedInSelectedObjects")]
+        [HarmonyPatch(nameof(ObjEditor.ContainedInSelectedObjects))]
         [HarmonyPrefix]
         static bool ContainedInSelectedObjectsPrefix() => false;
 
-        [HarmonyPatch("RefreshParentGUI")]
+        [HarmonyPatch(nameof(ObjEditor.RefreshParentGUI))]
         [HarmonyPrefix]
         static bool RefreshParentGUIPrefix() => false;
 
-        [HarmonyPatch("CopyAllSelectedEvents")]
+        [HarmonyPatch(nameof(ObjEditor.CopyAllSelectedEvents))]
         [HarmonyPrefix]
         static bool CopyAllSelectedEventsPrefix()
         {
@@ -1892,7 +1889,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("PasteKeyframes")]
+        [HarmonyPatch(nameof(ObjEditor.PasteKeyframes))]
         [HarmonyPrefix]
         static bool PasteKeyframesPrefix()
         {
@@ -1901,7 +1898,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("OpenDialog")]
+        [HarmonyPatch(nameof(ObjEditor.OpenDialog))]
         [HarmonyPrefix]
         static bool OpenDialogPrefix()
         {
@@ -1909,7 +1906,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("SetCurrentKeyframe", new Type[] { typeof(int), typeof(bool) })]
+        [HarmonyPatch(nameof(ObjEditor.SetCurrentKeyframe), new Type[] { typeof(int), typeof(bool) })]
         [HarmonyPrefix]
         static bool SetCurrentKeyframePrefix(int __0, bool __1 = false)
         {
@@ -1918,7 +1915,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("SetCurrentKeyframe", new Type[] { typeof(int), typeof(int), typeof(bool), typeof(bool) })]
+        [HarmonyPatch(nameof(ObjEditor.SetCurrentKeyframe), new Type[] { typeof(int), typeof(int), typeof(bool), typeof(bool) })]
         [HarmonyPrefix]
         static bool SetCurrentKeyframePrefix(int __0, int __1, bool __2 = false, bool __3 = false)
         {
@@ -1927,7 +1924,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("AddCurrentKeyframe")]
+        [HarmonyPatch(nameof(ObjEditor.AddCurrentKeyframe))]
         [HarmonyPrefix]
         static bool AddCurrentKeyframePrefix(int __0, bool __1 = false)
         {
@@ -1936,7 +1933,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("ResizeKeyframeTimeline")]
+        [HarmonyPatch(nameof(ObjEditor.ResizeKeyframeTimeline))]
         [HarmonyPrefix]
         static bool ResizeKeyframeTimelinePrefix()
         {
@@ -1945,7 +1942,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("SetAudioTime")]
+        [HarmonyPatch(nameof(ObjEditor.SetAudioTime))]
         [HarmonyPrefix]
         static bool SetAudioTimePrefix(float __0)
         {
@@ -1957,7 +1954,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("GetKeyframeIcon")]
+        [HarmonyPatch(nameof(ObjEditor.GetKeyframeIcon))]
         [HarmonyPrefix]
         static bool GetKeyframeIconPrefix(ref Sprite __result, DataManager.LSAnimation __0, DataManager.LSAnimation __1)
         {
@@ -1965,7 +1962,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("CreateKeyframes")]
+        [HarmonyPatch(nameof(ObjEditor.CreateKeyframes))]
         [HarmonyPrefix]
         static bool CreateKeyframesPrefix()
         {
@@ -1974,7 +1971,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("CreateKeyframeStartDragTrigger")]
+        [HarmonyPatch(nameof(ObjEditor.CreateKeyframeStartDragTrigger))]
         [HarmonyPrefix]
         static bool CreateKeyframeStartDragTriggerPrefix(ref EventTrigger.Entry __result, EventTriggerType __0, int __1, int __2)
         {
@@ -1982,7 +1979,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("CreateKeyframeEndDragTrigger")]
+        [HarmonyPatch(nameof(ObjEditor.CreateKeyframeEndDragTrigger))]
         [HarmonyPrefix]
         static bool CreateKeyframeEndDragTriggerPrefix(ref EventTrigger.Entry __result, EventTriggerType __0, int __1, int __2)
         {
@@ -1990,7 +1987,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("DeRenderSelectedObjects")]
+        [HarmonyPatch(nameof(ObjEditor.DeRenderSelectedObjects))]
         [HarmonyPrefix]
         static bool DeRenderSelectedObjectsPrefix()
         {
@@ -1998,7 +1995,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("CopyObject")]
+        [HarmonyPatch(nameof(ObjEditor.CopyObject))]
         [HarmonyPrefix]
         static bool CopyObjectPrefix()
         {
@@ -2027,7 +2024,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("PasteObject")]
+        [HarmonyPatch(nameof(ObjEditor.PasteObject))]
         [HarmonyPrefix]
         static bool PasteObjectPrefix(float __0)
         {
@@ -2035,11 +2032,11 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("AddEvent")]
+        [HarmonyPatch(nameof(ObjEditor.AddEvent))]
         [HarmonyPrefix]
         static bool AddEventPrefix(ref int __result, float __0, int __1, BaseEventKeyframe __2) => false;
 
-        [HarmonyPatch("ToggleLockCurrentSelection")]
+        [HarmonyPatch(nameof(ObjEditor.ToggleLockCurrentSelection))]
         [HarmonyPrefix]
         static bool ToggleLockCurrentSelectionPrefix()
         {
@@ -2056,7 +2053,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("UpdateKeyframeOrder")]
+        [HarmonyPatch(nameof(ObjEditor.UpdateKeyframeOrder))]
         [HarmonyPrefix]
         static bool UpdateKeyframeOrderPrefix(bool _setCurrent = true)
         {
@@ -2065,7 +2062,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("SnapToBPM")]
+        [HarmonyPatch(nameof(ObjEditor.SnapToBPM))]
         [HarmonyPrefix]
         static bool SnapToBPMPrefix(ref float __result, float __0)
         {
@@ -2073,7 +2070,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("posCalc")]
+        [HarmonyPatch(nameof(ObjEditor.posCalc))]
         [HarmonyPrefix]
         static bool posCalcPrefix(ref float __result, float __0)
         {
@@ -2081,7 +2078,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("timeCalc")]
+        [HarmonyPatch(nameof(ObjEditor.timeCalc))]
         [HarmonyPrefix]
         static bool timeCalcPrefix(ref float __result)
         {
@@ -2089,7 +2086,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("RefreshKeyframeGUI")]
+        [HarmonyPatch(nameof(ObjEditor.RefreshKeyframeGUI))]
         [HarmonyPrefix]
         static bool RefreshKeyframeGUIPrefix()
         {
@@ -2098,7 +2095,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("CreateNewNormalObject")]
+        [HarmonyPatch(nameof(ObjEditor.CreateNewNormalObject))]
         [HarmonyPrefix]
         static bool CreateNewNormalObjectPrefix(bool __0)
         {
@@ -2106,7 +2103,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("CreateNewCircleObject")]
+        [HarmonyPatch(nameof(ObjEditor.CreateNewCircleObject))]
         [HarmonyPrefix]
         static bool CreateNewCircleObjectPrefix(bool __0)
         {
@@ -2114,7 +2111,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("CreateNewTriangleObject")]
+        [HarmonyPatch(nameof(ObjEditor.CreateNewTriangleObject))]
         [HarmonyPrefix]
         static bool CreateNewTriangleObjectPrefix(bool __0)
         {
@@ -2122,7 +2119,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("CreateNewTextObject")]
+        [HarmonyPatch(nameof(ObjEditor.CreateNewTextObject))]
         [HarmonyPrefix]
         static bool CreateNewTextObjectPrefix(bool __0)
         {
@@ -2130,7 +2127,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("CreateNewHexagonObject")]
+        [HarmonyPatch(nameof(ObjEditor.CreateNewHexagonObject))]
         [HarmonyPrefix]
         static bool CreateNewHexagonObjectPrefix(bool __0)
         {
@@ -2138,7 +2135,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("CreateNewHelperObject")]
+        [HarmonyPatch(nameof(ObjEditor.CreateNewHelperObject))]
         [HarmonyPrefix]
         static bool CreateNewHelperObjectPrefix(bool __0)
         {
@@ -2146,7 +2143,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("CreateNewDecorationObject")]
+        [HarmonyPatch(nameof(ObjEditor.CreateNewDecorationObject))]
         [HarmonyPrefix]
         static bool CreateNewDecorationObjectPrefix(bool __0)
         {
@@ -2154,7 +2151,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("CreateNewEmptyObject")]
+        [HarmonyPatch(nameof(ObjEditor.CreateNewEmptyObject))]
         [HarmonyPrefix]
         static bool CreateNewEmptyObjectPrefix(bool __0)
         {
@@ -2162,7 +2159,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("CreateNewPersistentObject")]
+        [HarmonyPatch(nameof(ObjEditor.CreateNewPersistentObject))]
         [HarmonyPrefix]
         static bool CreateNewPersistentObjectPrefix(bool __0)
         {
@@ -2170,7 +2167,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("Zoom", MethodType.Setter)]
+        [HarmonyPatch(nameof(ObjEditor.Zoom), MethodType.Setter)]
         [HarmonyPrefix]
         static bool ZoomSetterPrefix(ref float value)
         {

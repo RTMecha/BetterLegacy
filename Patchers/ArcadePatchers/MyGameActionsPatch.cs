@@ -8,17 +8,12 @@ namespace BetterLegacy.Patchers
     [HarmonyPatch(typeof(MyGameActions))]
     public class MyGameActionsPatch : MonoBehaviour
     {
-        [HarmonyPatch("CreateWithJoystickBindings")]
+        [HarmonyPatch(nameof(MyGameActions.CreateWithJoystickBindings))]
         [HarmonyPrefix]
-        private static bool CreateWithJoystickBindingsPatch(ref MyGameActions __result)
+        static bool CreateWithJoystickBindingsPrefix(ref MyGameActions __result)
         {
-            __result = CreateWithJoystickBindings();
-            return false;
-        }
+            var myGameActions = new MyGameActions();
 
-        public static MyGameActions CreateWithJoystickBindings()
-        {
-            MyGameActions myGameActions = new MyGameActions();
             myGameActions.Up.AddDefaultBinding(InputControlType.DPadUp);
             myGameActions.Up.AddDefaultBinding(InputControlType.LeftStickUp);
             myGameActions.Down.AddDefaultBinding(InputControlType.DPadDown);
@@ -36,170 +31,64 @@ namespace BetterLegacy.Patchers
             myGameActions.Pause.AddDefaultBinding(InputControlType.Command);
             myGameActions.Escape.AddDefaultBinding(InputControlType.Action2);
             myGameActions.Escape.AddDefaultBinding(InputControlType.Action4);
-            return myGameActions;
-        }
 
-        [HarmonyPatch("CreateWithKeyboardBindings")]
-        [HarmonyPrefix]
-        private static bool CreateWithKeyboardBindingsPatch(ref MyGameActions __result, int __0 = -1)
-        {
-            __result = CreateWithKeyboardBindings(__0);
+            __result = myGameActions;
             return false;
         }
 
-        public static MyGameActions CreateWithKeyboardBindings(int _playerIndex = -1)
+        [HarmonyPatch(nameof(MyGameActions.CreateWithKeyboardBindings))]
+        [HarmonyPrefix]
+        static bool CreateWithKeyboardBindingsPrefix(ref MyGameActions __result, int __0 = -1)
         {
-            MyGameActions myGameActions = new MyGameActions();
-            if (_playerIndex == -1)
+            var myGameActions = new MyGameActions();
+
+            if (__0 == -1)
             {
-                myGameActions.Up.AddDefaultBinding(new Key[]
-                {
-                    Key.UpArrow
-                });
-                myGameActions.Up.AddDefaultBinding(new Key[]
-                {
-                    Key.W
-                });
-                myGameActions.Down.AddDefaultBinding(new Key[]
-                {
-                    Key.DownArrow
-                });
-                myGameActions.Down.AddDefaultBinding(new Key[]
-                {
-                    Key.S
-                });
-                myGameActions.Left.AddDefaultBinding(new Key[]
-                {
-                    Key.LeftArrow
-                });
-                myGameActions.Left.AddDefaultBinding(new Key[]
-                {
-                    Key.A
-                });
-                myGameActions.Right.AddDefaultBinding(new Key[]
-                {
-                    Key.RightArrow
-                });
-                myGameActions.Right.AddDefaultBinding(new Key[]
-                {
-                    Key.D
-                });
-                myGameActions.Boost.AddDefaultBinding(new Key[]
-                {
-                    Key.Space
-                });
-                myGameActions.Boost.AddDefaultBinding(new Key[]
-                {
-                    Key.Return
-                });
-                myGameActions.Join.AddDefaultBinding(new Key[]
-                {
-                    Key.Space
-                });
-                myGameActions.Join.AddDefaultBinding(new Key[]
-                {
-                    Key.A
-                });
-                myGameActions.Join.AddDefaultBinding(new Key[]
-                {
-                    Key.S
-                });
-                myGameActions.Join.AddDefaultBinding(new Key[]
-                {
-                    Key.D
-                });
-                myGameActions.Join.AddDefaultBinding(new Key[]
-                {
-                    Key.W
-                });
-                myGameActions.Join.AddDefaultBinding(new Key[]
-                {
-                    Key.LeftArrow
-                });
-                myGameActions.Join.AddDefaultBinding(new Key[]
-                {
-                    Key.RightArrow
-                });
-                myGameActions.Join.AddDefaultBinding(new Key[]
-                {
-                    Key.DownArrow
-                });
-                myGameActions.Join.AddDefaultBinding(new Key[]
-                {
-                    Key.UpArrow
-                });
-                myGameActions.Pause.AddDefaultBinding(new Key[]
-                {
-                    Key.Escape
-                });
-                myGameActions.Escape.AddDefaultBinding(new Key[]
-                {
-                    Key.Escape
-                });
+                myGameActions.Up.AddDefaultBinding(Key.UpArrow);
+                myGameActions.Up.AddDefaultBinding(Key.W);
+                myGameActions.Down.AddDefaultBinding(Key.DownArrow);
+                myGameActions.Down.AddDefaultBinding(Key.S);
+                myGameActions.Left.AddDefaultBinding(Key.LeftArrow);
+                myGameActions.Left.AddDefaultBinding(Key.A);
+                myGameActions.Right.AddDefaultBinding(Key.RightArrow);
+                myGameActions.Right.AddDefaultBinding(Key.D);
+                myGameActions.Boost.AddDefaultBinding(Key.Space);
+                myGameActions.Boost.AddDefaultBinding(Key.Return);
+                myGameActions.Join.AddDefaultBinding(Key.Space);
+                myGameActions.Join.AddDefaultBinding(Key.A);
+                myGameActions.Join.AddDefaultBinding(Key.S);
+                myGameActions.Join.AddDefaultBinding(Key.D);
+                myGameActions.Join.AddDefaultBinding(Key.W);
+                myGameActions.Join.AddDefaultBinding(Key.LeftArrow);
+                myGameActions.Join.AddDefaultBinding(Key.RightArrow);
+                myGameActions.Join.AddDefaultBinding(Key.DownArrow);
+                myGameActions.Join.AddDefaultBinding(Key.UpArrow);
+                myGameActions.Pause.AddDefaultBinding(Key.Escape);
+                myGameActions.Escape.AddDefaultBinding(Key.Escape);
             }
-            else if (_playerIndex == 0)
+            else if (__0 == 0)
             {
-                myGameActions.Up.AddDefaultBinding(new Key[]
-                {
-                    Key.W
-                });
-                myGameActions.Down.AddDefaultBinding(new Key[]
-                {
-                    Key.S
-                });
-                myGameActions.Left.AddDefaultBinding(new Key[]
-                {
-                    Key.A
-                });
-                myGameActions.Right.AddDefaultBinding(new Key[]
-                {
-                    Key.D
-                });
-                myGameActions.Boost.AddDefaultBinding(new Key[]
-                {
-                    Key.Space
-                });
-                myGameActions.Join.AddDefaultBinding(new Key[]
-                {
-                    Key.Space
-                });
-                myGameActions.Pause.AddDefaultBinding(new Key[]
-                {
-                    Key.Escape
-                });
-                myGameActions.Escape.AddDefaultBinding(new Key[]
-                {
-                    Key.Escape
-                });
+                myGameActions.Up.AddDefaultBinding(Key.W);
+                myGameActions.Down.AddDefaultBinding(Key.S);
+                myGameActions.Left.AddDefaultBinding(Key.A);
+                myGameActions.Right.AddDefaultBinding(Key.D);
+                myGameActions.Boost.AddDefaultBinding(Key.Space);
+                myGameActions.Join.AddDefaultBinding(Key.Space);
+                myGameActions.Pause.AddDefaultBinding(Key.Escape);
+                myGameActions.Escape.AddDefaultBinding(Key.Escape);
             }
-            else if (_playerIndex == 0)
+            else if (__0 == 1)
             {
-                myGameActions.Up.AddDefaultBinding(new Key[]
-                {
-                    Key.UpArrow
-                });
-                myGameActions.Down.AddDefaultBinding(new Key[]
-                {
-                    Key.DownArrow
-                });
-                myGameActions.Left.AddDefaultBinding(new Key[]
-                {
-                    Key.LeftArrow
-                });
-                myGameActions.Right.AddDefaultBinding(new Key[]
-                {
-                    Key.RightArrow
-                });
-                myGameActions.Pause.AddDefaultBinding(new Key[]
-                {
-                    Key.Escape
-                });
-                myGameActions.Escape.AddDefaultBinding(new Key[]
-                {
-                    Key.Escape
-                });
+                myGameActions.Up.AddDefaultBinding(Key.UpArrow);
+                myGameActions.Down.AddDefaultBinding(Key.DownArrow);
+                myGameActions.Left.AddDefaultBinding(Key.LeftArrow);
+                myGameActions.Right.AddDefaultBinding(Key.RightArrow);
+                myGameActions.Pause.AddDefaultBinding(Key.Escape);
+                myGameActions.Escape.AddDefaultBinding(Key.Escape);
             }
-            return myGameActions;
+
+            __result = myGameActions;
+            return false;
         }
     }
 }

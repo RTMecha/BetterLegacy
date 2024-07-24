@@ -27,7 +27,7 @@ namespace BetterLegacy.Patchers
 
         static GameObject colorPrefab;
 
-        [HarmonyPatch("Awake")]
+        [HarmonyPatch(nameof(SettingEditor.Awake))]
         [HarmonyPrefix]
         static bool AwakePostfix(SettingEditor __instance)
         {
@@ -43,12 +43,7 @@ namespace BetterLegacy.Patchers
 
             var transform = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/SettingsDialog").transform;
 
-            //var dialog = EditorManager.inst.GetDialog("Settings Editor").Dialog;
-
-            EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Background_1, transform.gameObject, new List<Component>
-            {
-                transform.GetComponent<Image>(),
-            }));
+            EditorThemeManager.AddGraphic(transform.GetComponent<Image>(), ThemeGroup.Background_1);
 
             var snap = transform.Find("snap");
 
@@ -64,22 +59,13 @@ namespace BetterLegacy.Patchers
             snap.Find("toggle/title").AsRT().sizeDelta = new Vector2(100f, 32f);
             snap.Find("bpm/title").AsRT().sizeDelta = new Vector2(100f, 32f);
 
-            EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Light_Text, snap.transform.Find("title_/Panel/icon").gameObject, new List<Component>
-            {
-                snap.transform.Find("title_/Panel/icon").GetComponent<Image>(),
-            }));
+            EditorThemeManager.AddGraphic(snap.transform.Find("title_/Panel/icon").GetComponent<Image>(), ThemeGroup.Light_Text);
             EditorThemeManager.AddLightText(snap.transform.Find("title_/title").GetComponent<Text>());
 
             var bpmSlider = snap.Find("bpm/slider").GetComponent<Slider>();
-            EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Slider_2, bpmSlider.transform.Find("Background").gameObject, new List<Component>
-            {
-                bpmSlider.transform.Find("Background").GetComponent<Image>(),
-            }, true, 1, SpriteManager.RoundedSide.W));
+            EditorThemeManager.AddGraphic(bpmSlider.transform.Find("Background").GetComponent<Image>(), ThemeGroup.Slider_2, true);
+            EditorThemeManager.AddGraphic(bpmSlider.image, ThemeGroup.Slider_2_Handle, true);
 
-            EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Slider_2_Handle, bpmSlider.gameObject, new List<Component>
-            {
-                bpmSlider.image,
-            }, true, 1, SpriteManager.RoundedSide.W));
             EditorThemeManager.AddInputField(snap.Find("bpm/input").GetComponent<InputField>());
 
             var snapOffset = snap.Find("bpm").gameObject.Duplicate(transform.Find("snap"), "bpm offset");
@@ -89,15 +75,9 @@ namespace BetterLegacy.Patchers
             EditorThemeManager.AddLightText(snapOffsetText);
 
             var bpmOffsetSlider = snapOffset.transform.Find("slider").GetComponent<Slider>();
-            EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Slider_2, bpmOffsetSlider.transform.Find("Background").gameObject, new List<Component>
-            {
-                bpmOffsetSlider.transform.Find("Background").GetComponent<Image>(),
-            }, true, 1, SpriteManager.RoundedSide.W));
+            EditorThemeManager.AddGraphic(bpmOffsetSlider.transform.Find("Background").GetComponent<Image>(), ThemeGroup.Slider_2, true);
+            EditorThemeManager.AddGraphic(bpmOffsetSlider.image, ThemeGroup.Slider_2_Handle, true);
 
-            EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Slider_2_Handle, bpmOffsetSlider.gameObject, new List<Component>
-            {
-                bpmOffsetSlider.image,
-            }, true, 1, SpriteManager.RoundedSide.W));
             EditorThemeManager.AddInputField(snapOffset.transform.Find("input").GetComponent<InputField>());
 
             snap.AsRT().sizeDelta = new Vector2(765f, 140f);
@@ -106,16 +86,14 @@ namespace BetterLegacy.Patchers
             var editorInformationText = title1.transform.Find("title").GetComponent<Text>();
             editorInformationText.text = "Editor Information";
 
-            EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Light_Text, title1.transform.Find("Panel/icon").gameObject, new List<Component>
-            {
-                title1.transform.Find("Panel/icon").GetComponent<Image>(),
-            }));
+            EditorThemeManager.AddGraphic(title1.transform.Find("Panel/icon").GetComponent<Image>(), ThemeGroup.Light_Text);
             EditorThemeManager.AddLightText(editorInformationText);
 
             info.Clear();
             var scrollView = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View").gameObject.Duplicate(transform, "Scroll View");
             scrollView.transform.AsRT().sizeDelta = new Vector2(765f, 120f);
-            LSHelpers.DeleteChildren(scrollView.transform.Find("Viewport/Content"));
+            var content = scrollView.transform.Find("Viewport/Content");
+            LSHelpers.DeleteChildren(content);
 
             string[] array = new string[]
             {
@@ -143,26 +121,17 @@ namespace BetterLegacy.Patchers
 
             for (int i = 0; i < array.Length; i++)
             {
-                var baseInfo = new GameObject("Info");
-                baseInfo.transform.SetParent(scrollView.transform.Find("Viewport/Content"));
-                baseInfo.transform.localScale = Vector3.one;
-                var iRT = baseInfo.AddComponent<RectTransform>();
-                iRT.sizeDelta = new Vector2(750f, 32f);
+                var baseInfo = Creator.NewUIObject("Info", content);
+                baseInfo.transform.AsRT().sizeDelta = new Vector2(750f, 32f);
                 var iImage = baseInfo.AddComponent<Image>();
 
                 iImage.color = new Color(1f, 1f, 1f, 0.12f);
 
-                EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.List_Button_1_Normal, baseInfo, new List<Component>
-                {
-                    iImage,
-                }, true, 1, SpriteManager.RoundedSide.W));
+                EditorThemeManager.AddGraphic(iImage, ThemeGroup.List_Button_1_Normal, true);
 
-                var iHLG = baseInfo.AddComponent<HorizontalLayoutGroup>();
+                baseInfo.AddComponent<HorizontalLayoutGroup>();
 
-                var title = new GameObject("Title");
-                title.transform.SetParent(iRT);
-                title.transform.localScale = Vector3.one;
-                title.AddComponent<RectTransform>();
+                var title = Creator.NewUIObject("Title", baseInfo.transform);
 
                 var titleText = title.AddComponent<Text>();
                 titleText.font = FontManager.inst.DefaultFont;
@@ -172,10 +141,7 @@ namespace BetterLegacy.Patchers
 
                 EditorThemeManager.AddLightText(titleText);
 
-                var infoGO = new GameObject("Title");
-                infoGO.transform.SetParent(iRT);
-                infoGO.transform.localScale = Vector3.one;
-                infoGO.AddComponent<RectTransform>();
+                var infoGO = Creator.NewUIObject("Title", baseInfo.transform);
 
                 var infoText = infoGO.AddComponent<Text>();
                 infoText.font = FontManager.inst.DefaultFont;
@@ -189,26 +155,21 @@ namespace BetterLegacy.Patchers
             }
 
             // Doggo
-            var loadingDoggo = new GameObject("loading doggo");
-            loadingDoggo.transform.parent = transform;
-            var loadingDoggoRect = loadingDoggo.AddComponent<RectTransform>();
-            loadingDoggo.AddComponent<CanvasRenderer>();
+            var loadingDoggo = Creator.NewUIObject("loading doggo", transform);
             doggo = loadingDoggo.AddComponent<Image>();
             var loadingDoggoLE = loadingDoggo.AddComponent<LayoutElement>();
 
-            loadingDoggoRect.anchoredPosition = new Vector2(UnityEngine.Random.Range(-320f, 320f), UnityEngine.Random.Range(-300f, -275f));
+            loadingDoggo.transform.AsRT().anchoredPosition = new Vector2(UnityEngine.Random.Range(-320f, 320f), UnityEngine.Random.Range(-300f, -275f));
             float sizeRandom = 64f * UnityEngine.Random.Range(0.5f, 1f);
-            loadingDoggoRect.sizeDelta = new Vector2(sizeRandom, sizeRandom);
+            loadingDoggo.transform.AsRT().sizeDelta = new Vector2(sizeRandom, sizeRandom);
 
             loadingDoggoLE.ignoreLayout = true;
 
             var title2 = transform.Find("snap").GetChild(0).gameObject.Duplicate(transform, "marker colors title");
             var markerColorsText = title2.transform.Find("title").GetComponent<Text>();
             markerColorsText.text = "Marker Colors";
-            EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Light_Text, title2.transform.Find("Panel/icon").gameObject, new List<Component>
-            {
-                title2.transform.Find("Panel/icon").GetComponent<Image>(),
-            }));
+
+            EditorThemeManager.AddGraphic(title2.transform.Find("Panel/icon").GetComponent<Image>(), ThemeGroup.Light_Text);
 
             EditorThemeManager.AddLightText(markerColorsText);
 
@@ -224,10 +185,8 @@ namespace BetterLegacy.Patchers
             var title3 = transform.Find("snap").GetChild(0).gameObject.Duplicate(transform, "layer colors title");
             var layerColorsText = title3.transform.Find("title").GetComponent<Text>();
             layerColorsText.text = "Layer Colors";
-            EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Light_Text, title3.transform.Find("Panel/icon").gameObject, new List<Component>
-            {
-                title3.transform.Find("Panel/icon").GetComponent<Image>(),
-            }));
+
+            EditorThemeManager.AddGraphic(title3.transform.Find("Panel/icon").GetComponent<Image>(), ThemeGroup.Light_Text);
 
             EditorThemeManager.AddLightText(layerColorsText);
 
@@ -274,9 +233,9 @@ namespace BetterLegacy.Patchers
             var analyzeBPMStorage = analyzeBPM.GetComponent<FunctionButtonStorage>();
             analyzeBPMStorage.text.text = "Analyze BPM";
             analyzeBPMStorage.button.onClick.ClearAll();
-            analyzeBPMStorage.button.onClick.AddListener(delegate ()
+            analyzeBPMStorage.button.onClick.AddListener(() =>
             {
-                CoreHelper.StartCoroutineAsync(UniBpmAnalyzer.IAnalyzeBPM(AudioManager.inst.CurrentAudioSource.clip, delegate (int bpm)
+                CoreHelper.StartCoroutineAsync(UniBpmAnalyzer.IAnalyzeBPM(AudioManager.inst.CurrentAudioSource.clip, bpm =>
                 {
                     EditorManager.inst.DisplayNotification($"Detected a BPM of {bpm}! Applied it to editor settings.", 2f, EditorManager.NotificationType.Success);
 
@@ -288,7 +247,7 @@ namespace BetterLegacy.Patchers
             EditorThemeManager.AddGraphic(analyzeBPMStorage.text, ThemeGroup.Function_2_Text);
         }
 
-        [HarmonyPatch("Update")]
+        [HarmonyPatch(nameof(SettingEditor.Update))]
         [HarmonyPostfix]
         static void UpdatePostfix()
         {
@@ -393,9 +352,9 @@ namespace BetterLegacy.Patchers
 
         static void SetBPMSlider(Slider slider, InputField input)
         {
-            slider.onValueChanged.RemoveAllListeners();
+            slider.onValueChanged.ClearAll();
             slider.value = SettingEditor.inst.SnapBPM;
-            slider.onValueChanged.AddListener(delegate (float _val)
+            slider.onValueChanged.AddListener(_val =>
             {
                 DataManager.inst.metaData.song.BPM = _val;
                 SettingEditor.inst.SnapBPM = _val;
@@ -406,9 +365,9 @@ namespace BetterLegacy.Patchers
 
         static void SetBPMInputField(Slider slider, InputField input)
         {
-            input.onValueChanged.RemoveAllListeners();
+            input.onValueChanged.ClearAll();
             input.text = SettingEditor.inst.SnapBPM.ToString();
-            input.onValueChanged.AddListener(delegate (string _val)
+            input.onValueChanged.AddListener(_val =>
             {
                 var bpm = Parser.TryParse(_val, 120f);
                 DataManager.inst.metaData.song.BPM = bpm;
@@ -420,9 +379,9 @@ namespace BetterLegacy.Patchers
 
         static void SetBPMOffsetSlider(Slider slider, InputField input)
         {
-            slider.onValueChanged.RemoveAllListeners();
+            slider.onValueChanged.ClearAll();
             slider.value = RTEditor.inst.bpmOffset;
-            slider.onValueChanged.AddListener(delegate (float _val)
+            slider.onValueChanged.AddListener(_val =>
             {
                 RTEditor.inst.bpmOffset = _val;
                 SetBPMOffsetInputField(slider, input);
@@ -433,9 +392,9 @@ namespace BetterLegacy.Patchers
 
         static void SetBPMOffsetInputField(Slider slider, InputField input)
         {
-            input.onValueChanged.RemoveAllListeners();
+            input.onValueChanged.ClearAll();
             input.text = RTEditor.inst.bpmOffset.ToString();
-            input.onValueChanged.AddListener(delegate (string _val)
+            input.onValueChanged.AddListener(_val =>
             {
                 var bpm = Parser.TryParse(_val, 0f);
                 RTEditor.inst.bpmOffset = bpm;
@@ -445,7 +404,7 @@ namespace BetterLegacy.Patchers
             });
         }
 
-        [HarmonyPatch("Render")]
+        [HarmonyPatch(nameof(SettingEditor.Render))]
         [HarmonyPrefix]
         static bool RenderPrefix()
         {
@@ -465,10 +424,7 @@ namespace BetterLegacy.Patchers
             var toggle = transform.Find("snap/toggle/toggle").GetComponent<Toggle>();
             toggle.onValueChanged.RemoveAllListeners();
             toggle.isOn = SettingEditor.inst.SnapActive;
-            toggle.onValueChanged.AddListener(delegate (bool _val)
-            {
-                SettingEditor.inst.SnapActive = _val;
-            });
+            toggle.onValueChanged.AddListener(_val => { SettingEditor.inst.SnapActive = _val; });
 
             var slider = transform.Find("snap/bpm/slider").GetComponent<Slider>();
             var input = transform.Find("snap/bpm/input").GetComponent<InputField>();
@@ -503,7 +459,7 @@ namespace BetterLegacy.Patchers
             addText.text = "Add Marker Color";
             var addButton = add.GetComponent<Button>();
             addButton.onClick.ClearAll();
-            addButton.onClick.AddListener(delegate ()
+            addButton.onClick.AddListener(() =>
             {
                 MarkerEditor.inst.markerColors.Add(LSColors.pink500);
                 RTEditor.inst.SaveGlobalSettings();
@@ -529,21 +485,18 @@ namespace BetterLegacy.Patchers
                 input.onValueChanged.ClearAll();
                 input.onEndEdit.ClearAll();
                 input.text = LSColors.ColorToHex(markerColor);
-                input.onValueChanged.AddListener(delegate (string _val)
+                input.onValueChanged.AddListener(_val =>
                 {
                     MarkerEditor.inst.markerColors[index] = _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
                     image.color = MarkerEditor.inst.markerColors[index];
                 });
-                input.onEndEdit.AddListener(delegate (string _val)
-                {
-                    RTEditor.inst.SaveGlobalSettings();
-                });
+                input.onEndEdit.AddListener(_val => { RTEditor.inst.SaveGlobalSettings(); });
 
                 EditorThemeManager.ApplyInputField(input);
 
                 var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
                 deleteStorage.button.onClick.ClearAll();
-                deleteStorage.button.onClick.AddListener(delegate ()
+                deleteStorage.button.onClick.AddListener(() =>
                 {
                     MarkerEditor.inst.markerColors.RemoveAt(index);
                     RenderMarkerColors();
@@ -568,7 +521,7 @@ namespace BetterLegacy.Patchers
             addText.text = "Add Layer Color";
             var addButton = add.GetComponent<Button>();
             addButton.onClick.ClearAll();
-            addButton.onClick.AddListener(delegate ()
+            addButton.onClick.AddListener(() =>
             {
                 EditorManager.inst.layerColors.Add(LSColors.pink500);
                 RTEditor.inst.SaveGlobalSettings();
@@ -594,21 +547,18 @@ namespace BetterLegacy.Patchers
                 input.onValueChanged.ClearAll();
                 input.onEndEdit.ClearAll();
                 input.text = LSColors.ColorToHex(layerColor);
-                input.onValueChanged.AddListener(delegate (string _val)
+                input.onValueChanged.AddListener(_val =>
                 {
                     EditorManager.inst.layerColors[index] = _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
                     image.color = EditorManager.inst.layerColors[index];
                 });
-                input.onEndEdit.AddListener(delegate (string _val)
-                {
-                    RTEditor.inst.SaveGlobalSettings();
-                });
+                input.onEndEdit.AddListener(_val => { RTEditor.inst.SaveGlobalSettings(); });
 
                 EditorThemeManager.ApplyInputField(input);
 
                 var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
                 deleteStorage.button.onClick.ClearAll();
-                deleteStorage.button.onClick.AddListener(delegate ()
+                deleteStorage.button.onClick.AddListener(() =>
                 {
                     EditorManager.inst.layerColors.RemoveAt(index);
                     RenderLayerColors();

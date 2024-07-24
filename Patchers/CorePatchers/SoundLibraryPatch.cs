@@ -10,7 +10,7 @@ namespace BetterLegacy.Patchers
     {
         public static SoundLibrary Instance => AudioManager.inst.library;
 
-        [HarmonyPatch("Awake")]
+        [HarmonyPatch(nameof(SoundLibrary.Awake))]
         [HarmonyPostfix]
         static void AwakePostfix(SoundLibrary __instance)
         {

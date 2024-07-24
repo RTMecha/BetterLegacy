@@ -34,7 +34,7 @@ namespace BetterLegacy.Patchers
 
         #endregion
 
-        [HarmonyPatch("Awake")]
+        [HarmonyPatch(nameof(GameManager.Awake))]
         [HarmonyPrefix]
         static void AwakePrefix(GameManager __instance)
         {
@@ -56,7 +56,7 @@ namespace BetterLegacy.Patchers
             ExampleManager.onGameAwake?.Invoke(__instance);
         }
 
-        [HarmonyPatch("Start")]
+        [HarmonyPatch(nameof(GameManager.Start))]
         [HarmonyPostfix]
         static void StartPostfix(GameManager __instance)
         {
@@ -130,7 +130,7 @@ namespace BetterLegacy.Patchers
             LevelManager.finished = false;
         }
 
-        [HarmonyPatch("Update")]
+        [HarmonyPatch(nameof(GameManager.Update))]
         [HarmonyPrefix]
         static bool UpdatePrefix(GameManager __instance)
         {
@@ -260,7 +260,7 @@ namespace BetterLegacy.Patchers
             yield break;
         }
 
-        [HarmonyPatch("FixedUpdate")]
+        [HarmonyPatch(nameof(GameManager.FixedUpdate))]
         [HarmonyPrefix]
         static bool FixedUpdatePrefix()
         {
@@ -288,19 +288,19 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("LoadLevelCurrent")]
+        [HarmonyPatch(nameof(GameManager.LoadLevelCurrent))]
         [HarmonyPrefix]
-        static bool LoadLevelCurrentPrefix(GameManager __instance)
+        static bool LoadLevelCurrentPrefix()
         {
             if (!LevelManager.LoadingFromHere && LevelManager.CurrentLevel)
             {
                 LevelManager.finished = false;
-                __instance.StartCoroutine(LevelManager.Play(LevelManager.CurrentLevel));
+                CoreHelper.StartCoroutine(LevelManager.Play(LevelManager.CurrentLevel));
             }
             return false;
         }
 
-        [HarmonyPatch("getPitch")]
+        [HarmonyPatch(nameof(GameManager.getPitch))]
         [HarmonyPrefix]
         static bool getPitch(ref float __result)
         {
@@ -308,7 +308,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("UpdateTheme")]
+        [HarmonyPatch(nameof(GameManager.UpdateTheme))]
         [HarmonyPrefix]
         static bool UpdateThemePrefix(GameManager __instance)
         {
@@ -352,7 +352,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("GoToNextLevelLoop")]
+        [HarmonyPatch(nameof(GameManager.GoToNextLevelLoop))]
         [HarmonyPrefix]
         static bool GoToNextLevelLoopPrefix(GameManager __instance, ref IEnumerator __result)
         {
@@ -376,8 +376,7 @@ namespace BetterLegacy.Patchers
             yield break;
         }
 
-
-        [HarmonyPatch("SpawnPlayers")]
+        [HarmonyPatch(nameof(GameManager.SpawnPlayers))]
         [HarmonyPrefix]
         static bool SpawnPlayersPrefix(Vector3 __0)
         {
@@ -394,39 +393,40 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("Pause")]
+        [HarmonyPatch(nameof(GameManager.Pause))]
         [HarmonyPrefix]
-        static bool PausePrefix(GameManager __instance)
+        static bool PausePrefix()
         {
-            if (CoreHelper.Playing)
-            {
-                LSHelpers.ShowCursor();
-                MenuManager.inst.ic.SwitchBranch("main");
-                __instance.menuUI.GetComponentInChildren<Image>().enabled = true;
-                AudioManager.inst.CurrentAudioSource.Pause();
-                InputDataManager.inst.SetAllControllerRumble(0f);
-                __instance.gameState = GameManager.State.Paused;
-                ArcadeHelper.endedLevel = false;
-            }
+            if (!CoreHelper.Playing)
+                return false;
+
+            LSHelpers.ShowCursor();
+            MenuManager.inst.ic.SwitchBranch("main");
+            Instance.menuUI.GetComponentInChildren<Image>().enabled = true;
+            AudioManager.inst.CurrentAudioSource.Pause();
+            InputDataManager.inst.SetAllControllerRumble(0f);
+            Instance.gameState = GameManager.State.Paused;
+            ArcadeHelper.endedLevel = false;
+
             return false;
         }
 
-        [HarmonyPatch("UnPause")]
+        [HarmonyPatch(nameof(GameManager.UnPause))]
         [HarmonyPrefix]
-        static bool UnPausePrefix(GameManager __instance)
+        static bool UnPausePrefix()
         {
-            if (CoreHelper.Paused)
-            {
-                LSHelpers.HideCursor();
-                MenuManager.inst.ic.SwitchBranch("empty");
-                __instance.menuUI.GetComponentInChildren<Image>().enabled = false;
-                AudioManager.inst.CurrentAudioSource.UnPause();
-                __instance.gameState = GameManager.State.Playing;
-            }
+            if (!CoreHelper.Paused)
+                return false;
+            LSHelpers.HideCursor();
+            MenuManager.inst.ic.SwitchBranch("empty");
+            Instance.menuUI.GetComponentInChildren<Image>().enabled = false;
+            AudioManager.inst.CurrentAudioSource.UnPause();
+            Instance.gameState = GameManager.State.Playing;
+
             return false;
         }
 
-        [HarmonyPatch("UpdateTimeline")]
+        [HarmonyPatch(nameof(GameManager.UpdateTimeline))]
         [HarmonyPrefix]
         static bool UpdateTimelinePrefix()
         {

@@ -4,109 +4,86 @@ using HarmonyLib;
 namespace BetterLegacy.Patchers
 {
     [HarmonyPatch(typeof(Player))]
+    // Patch used for checking if any of the methods run and preventing them.
     public class PlayerPatch
     {
-        [HarmonyPatch("StopMovement")]
+        [HarmonyPatch(nameof(Player.StopMovement))]
         [HarmonyPrefix]
-        static bool StopMovementPrefix(Player __instance)
+        static bool StopMovementPrefix()
         {
-            CoreHelper.Log("StopMovement() Method invoked");
+            CoreHelper.Log($"{nameof(Player.StopMovement)}() Method invoked");
             return false;
         }
 
-        [HarmonyPatch("Start")]
+        [HarmonyPatch(nameof(Player.Start))]
         [HarmonyPrefix]
         static bool StartPrefix(Player __instance)
         {
-            CoreHelper.Log("Start() Method invoked");
+            CoreHelper.Log($"{nameof(Player.Start)}() Method invoked");
             return false;
         }
 
-        [HarmonyPatch("SetColor")]
+        [HarmonyPatch(nameof(Player.SetColor))]
         [HarmonyPrefix]
-        static bool SetColorPrefix()
-        {
-            return false;
-        }
+        static bool SetColorPrefix() => false;
 
-        [HarmonyPatch("Update")]
+        [HarmonyPatch(nameof(Player.Update))]
         [HarmonyPrefix]
-        static bool UpdatePrefix()
-        {
-            return false;
-        }
+        static bool UpdatePrefix() => false;
 
-        [HarmonyPatch("LateUpdate")]
+        [HarmonyPatch(nameof(Player.LateUpdate))]
         [HarmonyPrefix]
-        static bool LateUpdatePrefix()
-        {
-            return false;
-        }
+        static bool LateUpdatePrefix() => false;
 
-        [HarmonyPatch("FixedUpdate")]
+        [HarmonyPatch(nameof(Player.FixedUpdate))]
         [HarmonyPrefix]
-        static bool FixedUpdatePrefix()
-        {
-            return false;
-        }
+        static bool FixedUpdatePrefix() => false;
 
-        [HarmonyPatch("OnChildTriggerEnter")]
+        [HarmonyPatch(nameof(Player.OnChildTriggerEnter))]
         [HarmonyPrefix]
-        static bool OnChildTriggerEnterPrefix()
-        {
-            return false;
-        }
+        static bool OnChildTriggerEnterPrefix() => false;
 
-        [HarmonyPatch("OnChildTriggerEnterMesh")]
+        [HarmonyPatch(nameof(Player.OnChildTriggerEnterMesh))]
         [HarmonyPrefix]
-        static bool OnChildTriggerEnterMeshPrefix()
-        {
-            return false;
-        }
+        static bool OnChildTriggerEnterMeshPrefix() => false;
 
-        [HarmonyPatch("OnChildTriggerStay")]
+        [HarmonyPatch(nameof(Player.OnChildTriggerStay))]
         [HarmonyPrefix]
-        static bool OnChildTriggerStayPrefix()
-        {
-            return false;
-        }
+        static bool OnChildTriggerStayPrefix() => false;
 
-        [HarmonyPatch("OnChildTriggerStayMesh")]
+        [HarmonyPatch(nameof(Player.OnChildTriggerStayMesh))]
         [HarmonyPrefix]
-        static bool OnChildTriggerStayMeshPrefix()
-        {
-            return false;
-        }
+        static bool OnChildTriggerStayMeshPrefix() => false;
 
-        [HarmonyPatch("BoostCooldownLoop")]
+        [HarmonyPatch(nameof(Player.BoostCooldownLoop))]
         [HarmonyPrefix]
         static bool BoostCooldownLoopPrefix()
         {
-            CoreHelper.Log("BoostCooldownLoop() Method invoked");
+            CoreHelper.Log($"{nameof(Player.BoostCooldownLoop)}() Method invoked");
             return false;
         }
 
-        [HarmonyPatch("PlayerHit")]
+        [HarmonyPatch(nameof(Player.PlayerHit))]
         [HarmonyPrefix]
         static bool PlayerHitPrefix()
         {
-            CoreHelper.Log("PlayerHit() Method invoked");
+            CoreHelper.Log($"{nameof(Player.PlayerHit)}() Method invoked");
             return false;
         }
 
-        [HarmonyPatch("Kill")]
+        [HarmonyPatch(nameof(Player.Kill))]
         [HarmonyPrefix]
         static bool KillPrefix()
         {
-            CoreHelper.Log("Kill() Method invoked");
+            CoreHelper.Log($"{nameof(Player.Kill)}() Method invoked");
             return false;
         }
 
-        [HarmonyPatch("Spawn")]
+        [HarmonyPatch(nameof(Player.Spawn))]
         [HarmonyPrefix]
         static bool SpawnPrefix()
         {
-            CoreHelper.Log("Spawn() Method invoked");
+            CoreHelper.Log($"{nameof(Player.Spawn)}() Method invoked");
             return false;
         }
     }

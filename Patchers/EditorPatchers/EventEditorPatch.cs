@@ -19,7 +19,7 @@ namespace BetterLegacy.Patchers
     {
         static EventEditor Instance { get => EventEditor.inst; set => EventEditor.inst = value; }
 
-        [HarmonyPatch("Awake")]
+        [HarmonyPatch(nameof(EventEditor.Awake))]
         [HarmonyPrefix]
         static bool AwakePrefix(EventEditor __instance)
         {
@@ -78,7 +78,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("Start")]
+        [HarmonyPatch(nameof(EventEditor.Start))]
         [HarmonyPrefix]
         static bool StartPrefix()
         {
@@ -104,7 +104,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("Update")]
+        [HarmonyPatch(nameof(EventEditor.Update))]
         [HarmonyPrefix]
         static bool UpdatePrefix()
         {
@@ -143,7 +143,7 @@ namespace BetterLegacy.Patchers
 
         public static float preNumber = 0f;
 
-        [HarmonyPatch("CopyAllSelectedEvents")]
+        [HarmonyPatch(nameof(EventEditor.CopyAllSelectedEvents))]
         [HarmonyPrefix]
         static bool CopyAllSelectedEventsPrefix()
         {
@@ -151,7 +151,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("AddedSelectedEvent")]
+        [HarmonyPatch(nameof(EventEditor.AddedSelectedEvent))]
         [HarmonyPrefix]
         static bool AddedSelectedEventPrefix(int __0, int __1)
         {
@@ -159,7 +159,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("SetCurrentEvent")]
+        [HarmonyPatch(nameof(EventEditor.SetCurrentEvent))]
         [HarmonyPrefix]
         static bool SetCurrentEventPrefix(int __0, int __1)
         {
@@ -167,7 +167,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("CreateNewEventObject", new Type[] { typeof(int) })]
+        [HarmonyPatch(nameof(EventEditor.CreateNewEventObject), new Type[] { typeof(int) })]
         [HarmonyPrefix]
         static bool CreateNewEventObjectPrefix(int __0)
         {
@@ -175,7 +175,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("CreateNewEventObject", new Type[] { typeof(float), typeof(int) })]
+        [HarmonyPatch(nameof(EventEditor.CreateNewEventObject), new Type[] { typeof(float), typeof(int) })]
         [HarmonyPrefix]
         static bool CreateNewEventObjectPrefix(float __0, int __1)
         {
@@ -183,7 +183,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("NewKeyframeFromTimeline")]
+        [HarmonyPatch(nameof(EventEditor.NewKeyframeFromTimeline))]
         [HarmonyPrefix]
         static bool NewKeyframeFromTimelinePrefix(int __0)
         {
@@ -191,7 +191,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("CreateEventObjects")]
+        [HarmonyPatch(nameof(EventEditor.CreateEventObjects))]
         [HarmonyPrefix]
         static bool CreateEventObjectsPrefix()
         {
@@ -199,7 +199,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("RenderEventObjects")]
+        [HarmonyPatch(nameof(EventEditor.RenderEventObjects))]
         [HarmonyPrefix]
         static bool RenderEventObjectsPatch()
         {
@@ -207,7 +207,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("OpenDialog")]
+        [HarmonyPatch(nameof(EventEditor.OpenDialog))]
         [HarmonyPrefix]
         static bool OpenDialogPrefix()
         {
@@ -215,7 +215,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("RenderThemeContent")]
+        [HarmonyPatch(nameof(EventEditor.RenderThemeContent))]
         [HarmonyPrefix]
         static bool RenderThemeContentPrefix(Transform __0, string __1)
         {
@@ -223,7 +223,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("RenderThemeEditor")]
+        [HarmonyPatch(nameof(EventEditor.RenderThemeEditor))]
         [HarmonyPrefix]
         static bool RenderThemeEditorPrefix(int __0 = -1)
         {
@@ -231,7 +231,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("RenderEventsDialog")]
+        [HarmonyPatch(nameof(EventEditor.RenderEventsDialog))]
         [HarmonyPrefix]
         static bool RenderEventsDialogPrefix()
         {
@@ -239,7 +239,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("UpdateEventOrder")]
+        [HarmonyPatch(nameof(EventEditor.UpdateEventOrder))]
         [HarmonyPrefix]
         static bool UpdateEventOrderPrefix()
         {
@@ -247,7 +247,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("DeleteEvent", new Type[] { typeof(int), typeof(int) })]
+        [HarmonyPatch(nameof(EventEditor.DeleteEvent), new Type[] { typeof(int), typeof(int) })]
         [HarmonyPrefix]
         static bool DeleteEventPrefix(int __0, int __1)
         {
@@ -255,7 +255,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("DeleteEvent", new Type[] { typeof(List<EventKeyframeSelection>) })]
+        [HarmonyPatch(nameof(EventEditor.DeleteEvent), new Type[] { typeof(List<EventKeyframeSelection>) })]
         [HarmonyPrefix]
         static bool DeleteEventPrefix(ref IEnumerator __result)
         {

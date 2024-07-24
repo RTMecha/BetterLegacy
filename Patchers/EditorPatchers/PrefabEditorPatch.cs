@@ -24,7 +24,7 @@ namespace BetterLegacy.Patchers
     {
         static PrefabEditor Instance { get => PrefabEditor.inst; set => PrefabEditor.inst = value; }
 
-        [HarmonyPatch("Awake")]
+        [HarmonyPatch(nameof(PrefabEditor.Awake))]
         [HarmonyPrefix]
         static bool AwakePrefix(PrefabEditor __instance)
         {
@@ -45,24 +45,16 @@ namespace BetterLegacy.Patchers
                 var type = gameObject.transform.Find("category");
                 type.GetComponent<LayoutElement>().minWidth = 32f;
 
-                var b = new GameObject("type");
-                b.transform.SetParent(type);
-                b.transform.localScale = Vector3.one;
-
-                var bRT = b.AddComponent<RectTransform>();
-                bRT.anchoredPosition = Vector2.zero;
-                bRT.sizeDelta = new Vector2(28f, 28f);
+                var b = Creator.NewUIObject("type", type);
+                b.transform.AsRT().anchoredPosition = Vector2.zero;
+                b.transform.AsRT().sizeDelta = new Vector2(28f, 28f);
 
                 var bImage = b.AddComponent<Image>();
                 bImage.color = new Color(0f, 0f, 0f, 0.45f);
 
-                var icon = new GameObject("type");
-                icon.transform.SetParent(bRT);
-                icon.transform.localScale = Vector3.one;
-
-                var iconRT = icon.AddComponent<RectTransform>();
-                iconRT.anchoredPosition = Vector2.zero;
-                iconRT.sizeDelta = new Vector2(28f, 28f);
+                var icon = Creator.NewUIObject("type", b.transform);
+                icon.transform.AsRT().anchoredPosition = Vector2.zero;
+                icon.transform.AsRT().sizeDelta = new Vector2(28f, 28f);
 
                 icon.AddComponent<Image>();
 
@@ -85,7 +77,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("Start")]
+        [HarmonyPatch(nameof(PrefabEditor.Start))]
         [HarmonyPrefix]
         static bool StartPrefix()
         {
@@ -625,7 +617,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("Update")]
+        [HarmonyPatch(nameof(PrefabEditor.Update))]
         [HarmonyPrefix]
         static bool UpdatePrefix()
         {
@@ -651,7 +643,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("CreateNewPrefab")]
+        [HarmonyPatch(nameof(PrefabEditor.CreateNewPrefab))]
         [HarmonyPrefix]
         static bool CreateNewPrefabPrefix()
         {
@@ -659,7 +651,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("SavePrefab")]
+        [HarmonyPatch(nameof(PrefabEditor.SavePrefab))]
         [HarmonyPrefix]
         static bool SavePrefabPrefix(BasePrefab __0)
         {
@@ -667,14 +659,11 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("DeleteExternalPrefab")]
+        [HarmonyPatch(nameof(PrefabEditor.DeleteExternalPrefab))]
         [HarmonyPrefix]
-        static bool DeleteExternalPrefabPrefix(int __0)
-        {
-            return false;
-        }
+        static bool DeleteExternalPrefabPrefix(int __0) => false;
 
-        [HarmonyPatch("DeleteInternalPrefab")]
+        [HarmonyPatch(nameof(PrefabEditor.DeleteInternalPrefab))]
         [HarmonyPrefix]
         static bool DeleteInternalPrefabPrefix(int __0)
         {
@@ -682,7 +671,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("ExpandCurrentPrefab")]
+        [HarmonyPatch(nameof(PrefabEditor.ExpandCurrentPrefab))]
         [HarmonyPrefix]
         static bool ExpandCurrentPrefabPrefix()
         {
@@ -690,7 +679,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("CollapseCurrentPrefab")]
+        [HarmonyPatch(nameof(PrefabEditor.CollapseCurrentPrefab))]
         [HarmonyPrefix]
         static bool CollapseCurrentPrefabPrefix()
         {
@@ -712,10 +701,12 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("ReloadExternalPrefabsInPopup")]
+        [HarmonyPatch(nameof(PrefabEditor.ReloadExternalPrefabsInPopup))]
         [HarmonyPostfix]
-        static void SetPopupSizesPostfix()
+        static void ReloadExternalPrefabsInPopupPostfix()
         {
+            CoreHelper.Log($"Run patch: {nameof(ReloadExternalPrefabsInPopupPostfix)}");
+
             //Internal Config
             {
                 var internalPrefab = PrefabEditor.inst.internalPrefabDialog;
@@ -755,9 +746,9 @@ namespace BetterLegacy.Patchers
             }
         }
 
-        [HarmonyPatch("ReloadExternalPrefabsInPopup")]
+        [HarmonyPatch(nameof(PrefabEditor.ReloadExternalPrefabsInPopup))]
         [HarmonyPrefix]
-        static bool ReloadExternalPrefabsInPopupPatch(bool __0)
+        static bool ReloadExternalPrefabsInPopupPrefix(bool __0)
         {
             if (Instance.externalPrefabDialog == null || Instance.externalSearch == null || Instance.externalContent == null)
             {
@@ -768,9 +759,9 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("ReloadInternalPrefabsInPopup")]
+        [HarmonyPatch(nameof(PrefabEditor.ReloadInternalPrefabsInPopup))]
         [HarmonyPrefix]
-        static bool ReloadInternalPrefabsInPopupPatch(bool __0)
+        static bool ReloadInternalPrefabsInPopupPrefix(bool __0)
         {
             if (Instance.internalPrefabDialog == null || Instance.internalSearch == null || Instance.internalContent == null)
             {
@@ -781,7 +772,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("LoadExternalPrefabs")]
+        [HarmonyPatch(nameof(PrefabEditor.LoadExternalPrefabs))]
         [HarmonyPrefix]
         static bool LoadExternalPrefabsPrefix(PrefabEditor __instance, ref IEnumerator __result)
         {
@@ -789,16 +780,16 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("OpenPrefabDialog")]
+        [HarmonyPatch(nameof(PrefabEditor.OpenPrefabDialog))]
         [HarmonyPrefix]
-        static bool OpenPrefabDialogPrefix(PrefabEditor __instance)
+        static bool OpenPrefabDialogPrefix()
         {
             EditorManager.inst.ClearDialogs();
 
             bool isPrefab = ObjectEditor.inst.CurrentSelection != null && ObjectEditor.inst.CurrentSelection.Data != null && ObjectEditor.inst.CurrentSelection.IsPrefabObject;
             if (!isPrefab)
             {
-                Debug.LogError($"{__instance.className}Cannot select non-Prefab with this editor!");
+                Debug.LogError($"{Instance.className}Cannot select non-Prefab with this editor!");
                 EditorManager.inst.ShowDialog("Object Editor", false);
                 return false;
             }
@@ -809,7 +800,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("OpenDialog")]
+        [HarmonyPatch(nameof(PrefabEditor.OpenDialog))]
         [HarmonyPrefix]
         static bool OpenDialogPrefix()
         {
@@ -818,7 +809,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("OpenPopup")]
+        [HarmonyPatch(nameof(PrefabEditor.OpenPopup))]
         [HarmonyPrefix]
         static bool OpenPopupPrefix()
         {
@@ -827,7 +818,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("ImportPrefabIntoLevel")]
+        [HarmonyPatch(nameof(PrefabEditor.ImportPrefabIntoLevel))]
         [HarmonyPrefix]
         static bool ImportPrefabIntoLevelPrefix(PrefabEditor __instance, BasePrefab __0)
         {
@@ -844,9 +835,9 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("AddPrefabObjectToLevel")]
+        [HarmonyPatch(nameof(PrefabEditor.AddPrefabObjectToLevel))]
         [HarmonyPrefix]
-        static bool AddPrefabObjectToLevel(BasePrefab __0)
+        static bool AddPrefabObjectToLevelPrefix(BasePrefab __0)
         {
             PrefabEditorManager.inst.AddPrefabObjectToLevel(__0);
             return false;

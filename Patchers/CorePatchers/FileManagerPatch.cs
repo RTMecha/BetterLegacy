@@ -6,7 +6,7 @@ namespace BetterLegacy.Patchers
     [HarmonyPatch(typeof(FileManager))]
     public class FileManagerPatch
     {
-        [HarmonyPatch(typeof(FileManager), "LoadImageFileRaw", MethodType.Enumerator)]
+        [HarmonyPatch(nameof(FileManager.LoadImageFileRaw), MethodType.Enumerator)]
         [HarmonyTranspiler]
         static IEnumerable<CodeInstruction> LoadImageFileRawTranspiler(IEnumerable<CodeInstruction> instructions)
         {
@@ -16,6 +16,5 @@ namespace BetterLegacy.Patchers
 
             return match.InstructionEnumeration();
         }
-
     }
 }

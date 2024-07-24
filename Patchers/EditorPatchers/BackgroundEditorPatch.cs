@@ -22,7 +22,7 @@ namespace BetterLegacy.Patchers
         public static BackgroundObject CurrentSelectedBG => BackgroundEditor.inst == null ? null : (BackgroundObject)DataManager.inst.gameData.backgroundObjects[BackgroundEditor.inst.currentObj];
 
         // need to somehow clean up this messy code
-        [HarmonyPatch("Awake")]
+        [HarmonyPatch(nameof(BackgroundEditor.Awake))]
         [HarmonyPrefix]
         static bool AwakePrefix(BackgroundEditor __instance)
         {
@@ -59,22 +59,19 @@ namespace BetterLegacy.Patchers
 
             var destroyAllButtons = destroyAll.GetComponent<Button>();
             destroyAllButtons.onClick.ClearAll();
-            destroyAllButtons.onClick.RemoveAllListeners();
-            destroyAllButtons.onClick.AddListener(delegate ()
+            destroyAllButtons.onClick.AddListener(() =>
             {
-                if (DataManager.inst.gameData.backgroundObjects.Count > 1)
+                if (DataManager.inst.gameData.backgroundObjects.Count <= 1)
                 {
-                    RTEditor.inst.ShowWarningPopup("Are you sure you want to delete all backgrounds?", delegate ()
-                    {
-                        BackgroundEditorManager.inst.DeleteAllBackgrounds();
-                        EditorManager.inst.HideDialog("Warning Popup");
-                    }, delegate ()
-                    {
-                        EditorManager.inst.HideDialog("Warning Popup");
-                    });
-                }
-                else
                     EditorManager.inst.DisplayNotification("Cannot delete only background object.", 2f, EditorManager.NotificationType.Warning);
+                    return;
+                }
+
+                RTEditor.inst.ShowWarningPopup("Are you sure you want to delete all backgrounds?", () =>
+                {
+                    BackgroundEditorManager.inst.DeleteAllBackgrounds();
+                    EditorManager.inst.HideDialog("Warning Popup");
+                }, () => { EditorManager.inst.HideDialog("Warning Popup"); });
             });
 
             var destroyAllTip = destroyAll.GetComponent<HoverTooltip>();
@@ -94,7 +91,6 @@ namespace BetterLegacy.Patchers
             var nameRT = name.GetComponent<RectTransform>();
 
             name.onValueChanged.ClearAll();
-            name.onValueChanged.RemoveAllListeners();
 
             Destroy(createBGs.transform.Find("active").gameObject);
             nameRT.localScale = Vector3.one;
@@ -112,8 +108,7 @@ namespace BetterLegacy.Patchers
 
             var buttonCreate = createAll.GetComponent<Button>();
             buttonCreate.onClick.ClearAll();
-            buttonCreate.onClick.RemoveAllListeners();
-            buttonCreate.onClick.AddListener(delegate ()
+            buttonCreate.onClick.AddListener(() =>
             {
                 if (int.TryParse(name.text, out int result) && result >= 0)
                     BackgroundEditorManager.inst.CreateBackgrounds(result);
@@ -196,13 +191,13 @@ namespace BetterLegacy.Patchers
 
                 position.Find("x").GetComponent<HorizontalLayoutGroup>().spacing = 4f;
                 position.Find("y").GetComponent<HorizontalLayoutGroup>().spacing = 4f;
-                position.Find("x/text-field").GetComponent<RectTransform>().sizeDelta = new Vector2(125f, 32f);
-                position.Find("y/text-field").GetComponent<RectTransform>().sizeDelta = new Vector2(125f, 32f);
+                position.Find("x/text-field").AsRT().sizeDelta = new Vector2(125f, 32f);
+                position.Find("y/text-field").AsRT().sizeDelta = new Vector2(125f, 32f);
 
                 scale.Find("x").GetComponent<HorizontalLayoutGroup>().spacing = 4f;
                 scale.Find("y").GetComponent<HorizontalLayoutGroup>().spacing = 4f;
-                scale.Find("x/text-field").GetComponent<RectTransform>().sizeDelta = new Vector2(125f, 32f);
-                scale.Find("y/text-field").GetComponent<RectTransform>().sizeDelta = new Vector2(125f, 32f);
+                scale.Find("x/text-field").AsRT().sizeDelta = new Vector2(125f, 32f);
+                scale.Find("y/text-field").AsRT().sizeDelta = new Vector2(125f, 32f);
 
                 __instance.left.Find("color").GetComponent<GridLayoutGroup>().spacing = new Vector2(7.7f, 0f);
 
@@ -250,7 +245,7 @@ namespace BetterLegacy.Patchers
                 var xif = iterations.transform.Find("x").GetComponent<InputField>();
 
                 xif.onValueChanged.ClearAll();
-                xif.onValueChanged.AddListener(delegate (string _val)
+                xif.onValueChanged.AddListener(_val =>
                 {
                     if (int.TryParse(_val, out int num))
                     {
@@ -280,29 +275,19 @@ namespace BetterLegacy.Patchers
 
                 var x = iterations.transform.Find("x");
                 var xif = x.GetComponent<InputField>();
-                var left = x.Find("<").GetComponent<Button>();
-                var right = x.Find(">").GetComponent<Button>();
 
                 xif.onValueChanged.ClearAll();
-                xif.onValueChanged.AddListener(delegate (string _val)
+                xif.onValueChanged.AddListener(_val =>
                 {
-                    CurrentSelectedBG.depth = int.Parse(_val);
-                    BackgroundManager.inst.UpdateBackgrounds();
+                    if (int.TryParse(_val, out int num))
+                    {
+                        CurrentSelectedBG.depth = num;
+                        BackgroundManager.inst.UpdateBackgrounds();
+                    }
                 });
 
-                left.onClick.ClearAll();
-                left.onClick.AddListener(delegate ()
-                {
-                    CurrentSelectedBG.depth -= 1;
-                    BackgroundManager.inst.UpdateBackgrounds();
-                });
-
-                right.onClick.ClearAll();
-                right.onClick.AddListener(delegate ()
-                {
-                    CurrentSelectedBG.depth += 1;
-                    BackgroundManager.inst.UpdateBackgrounds();
-                });
+                TriggerHelper.IncreaseDecreaseButtonsInt(xif);
+                TriggerHelper.AddEventTriggerParams(x.gameObject, TriggerHelper.ScrollDeltaInt(xif));
             }
 
             // ZPosition
@@ -327,7 +312,7 @@ namespace BetterLegacy.Patchers
                 var right = x.Find(">").GetComponent<Button>();
 
                 xif.onValueChanged.ClearAll();
-                xif.onValueChanged.AddListener(delegate (string _val)
+                xif.onValueChanged.AddListener(_val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
@@ -336,19 +321,8 @@ namespace BetterLegacy.Patchers
                     }
                 });
 
-                left.onClick.ClearAll();
-                left.onClick.AddListener(delegate ()
-                {
-                    CurrentSelectedBG.zposition -= 0.1f;
-                    BackgroundManager.inst.UpdateBackgrounds();
-                });
-
-                right.onClick.ClearAll();
-                right.onClick.AddListener(delegate ()
-                {
-                    CurrentSelectedBG.zposition += 0.1f;
-                    BackgroundManager.inst.UpdateBackgrounds();
-                });
+                TriggerHelper.IncreaseDecreaseButtons(xif);
+                TriggerHelper.AddEventTriggerParams(x.gameObject, TriggerHelper.ScrollDelta(xif));
             }
             
             // ZScale
@@ -373,25 +347,17 @@ namespace BetterLegacy.Patchers
                 var right = x.Find(">").GetComponent<Button>();
 
                 xif.onValueChanged.ClearAll();
-                xif.onValueChanged.AddListener(delegate (string _val)
+                xif.onValueChanged.AddListener(_val =>
                 {
-                    CurrentSelectedBG.zscale = float.Parse(_val);
-                    BackgroundManager.inst.UpdateBackgrounds();
+                    if (float.TryParse(_val, out float num))
+                    {
+                        CurrentSelectedBG.zscale = float.Parse(_val);
+                        BackgroundManager.inst.UpdateBackgrounds();
+                    }
                 });
 
-                left.onClick.ClearAll();
-                left.onClick.AddListener(delegate ()
-                {
-                    CurrentSelectedBG.zscale -= 0.1f;
-                    BackgroundManager.inst.UpdateBackgrounds();
-                });
-
-                right.onClick.ClearAll();
-                right.onClick.AddListener(delegate ()
-                {
-                    CurrentSelectedBG.zscale += 0.1f;
-                    BackgroundManager.inst.UpdateBackgrounds();
-                });
+                TriggerHelper.IncreaseDecreaseButtons(xif);
+                TriggerHelper.AddEventTriggerParams(x.gameObject, TriggerHelper.ScrollDelta(xif));
             }
 
             // Reactive
@@ -1165,104 +1131,104 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("OpenDialog")]
+        [HarmonyPatch(nameof(BackgroundEditor.OpenDialog))]
         [HarmonyPrefix]
-        static bool OpenDialog(BackgroundEditor __instance, int _bg)
+        static bool OpenDialogPrefix(int __0)
         {
-            BackgroundEditorManager.inst.OpenDialog(_bg);
+            BackgroundEditorManager.inst.OpenDialog(__0);
             return false;
         }
 
-        [HarmonyPatch("CreateNewBackground")]
+        [HarmonyPatch(nameof(BackgroundEditor.CreateNewBackground))]
         [HarmonyPrefix]
-        static bool CreateNewBackground(BackgroundEditor __instance)
+        static bool CreateNewBackgroundPrefix()
         {
-            var backgroundObject = new BackgroundObject();
-            backgroundObject.name = "Background";
-            backgroundObject.scale = new Vector2(2f, 2f);
-            backgroundObject.pos = Vector2.zero;
+            var backgroundObject = new BackgroundObject
+            {
+                name = "Background",
+                pos = Vector2.zero,
+                scale = new Vector2(2f, 2f),
+            };
 
             DataManager.inst.gameData.backgroundObjects.Add(backgroundObject);
 
             BackgroundManager.inst.CreateBackgroundObject(backgroundObject);
-            __instance.SetCurrentBackground(DataManager.inst.gameData.backgroundObjects.Count - 1);
-            __instance.OpenDialog(DataManager.inst.gameData.backgroundObjects.Count - 1);
+            Instance.SetCurrentBackground(DataManager.inst.gameData.backgroundObjects.Count - 1);
+            Instance.OpenDialog(DataManager.inst.gameData.backgroundObjects.Count - 1);
 
             return false;
         }
 
-        [HarmonyPatch("UpdateBackgroundList")]
+        [HarmonyPatch(nameof(BackgroundEditor.UpdateBackgroundList))]
         [HarmonyPrefix]
-        static bool UpdateBackgroundList(BackgroundEditor __instance)
+        static bool UpdateBackgroundListPrefix()
         {
-            var parent = __instance.right.Find("backgrounds/viewport/content");
+            var parent = Instance.right.Find("backgrounds/viewport/content");
             LSHelpers.DeleteChildren(parent);
             int num = 0;
             foreach (var backgroundObject in DataManager.inst.gameData.backgroundObjects)
             {
-                if (backgroundObject.name.ToLower().Contains(__instance.sortedName.ToLower()) || string.IsNullOrEmpty(__instance.sortedName))
+                if (!CoreHelper.SearchString(Instance.sortedName, backgroundObject.name))
                 {
-                    var gameObject = Instantiate(__instance.backgroundButtonPrefab, Vector3.zero, Quaternion.identity);
-                    gameObject.name = backgroundObject.name;
-                    gameObject.transform.SetParent(parent);
-                    gameObject.transform.localScale = Vector3.one;
-
-                    var name = gameObject.transform.Find("name").GetComponent<Text>();
-                    var text = gameObject.transform.Find("pos").GetComponent<Text>();
-                    var image = gameObject.transform.Find("color").GetComponent<Image>();
-
-                    name.text = backgroundObject.name;
-                    text.text = $"({backgroundObject.pos.x}, {backgroundObject.pos.y})";
-
-                    image.color = GameManager.inst.LiveTheme.backgroundColors[backgroundObject.color];
-
-                    int bgIndexTmp = num;
-                    var button = gameObject.GetComponent<Button>();
-                    button.onClick.AddListener(delegate ()
-                    {
-                        __instance.SetCurrentBackground(bgIndexTmp);
-                    });
-
-                    EditorThemeManager.ApplyGraphic(button.image, ThemeGroup.List_Button_2_Normal, true);
-                    EditorThemeManager.ApplyGraphic(image, ThemeGroup.Null, true);
-                    EditorThemeManager.ApplyGraphic(name, ThemeGroup.List_Button_2_Text);
-                    EditorThemeManager.ApplyGraphic(text, ThemeGroup.List_Button_2_Text);
+                    num++;
+                    continue;
                 }
+
+                int index = num;
+                var gameObject = Instance.backgroundButtonPrefab.Duplicate(parent, $"BG {index}");
+                gameObject.transform.localScale = Vector3.one;
+
+                var name = gameObject.transform.Find("name").GetComponent<Text>();
+                var text = gameObject.transform.Find("pos").GetComponent<Text>();
+                var image = gameObject.transform.Find("color").GetComponent<Image>();
+
+                name.text = backgroundObject.name;
+                text.text = $"({backgroundObject.pos.x}, {backgroundObject.pos.y})";
+
+                image.color = GameManager.inst.LiveTheme.GetBGColor(backgroundObject.color);
+
+                var button = gameObject.GetComponent<Button>();
+                button.onClick.AddListener(() => { Instance.SetCurrentBackground(index); });
+
+                EditorThemeManager.ApplyGraphic(button.image, ThemeGroup.List_Button_2_Normal, true);
+                EditorThemeManager.ApplyGraphic(image, ThemeGroup.Null, true);
+                EditorThemeManager.ApplyGraphic(name, ThemeGroup.List_Button_2_Text);
+                EditorThemeManager.ApplyGraphic(text, ThemeGroup.List_Button_2_Text);
+
                 num++;
             }
 
             return false;
         }
 
-        [HarmonyPatch("UpdateBackground")]
+        [HarmonyPatch(nameof(BackgroundEditor.UpdateBackground))]
         [HarmonyPrefix]
-        static bool UpdateBackground(int __0)
+        static bool UpdateBackgroundPrefix(int __0)
         {
             var backgroundObject = (BackgroundObject)DataManager.inst.gameData.backgroundObjects[__0];
 
             if (backgroundObject.BaseObject)
-            {
                 Destroy(backgroundObject.BaseObject);
-            }
+
             Updater.CreateBackgroundObject(backgroundObject);
 
             return false;
         }
 
-        [HarmonyPatch("CopyBackground")]
+        [HarmonyPatch(nameof(BackgroundEditor.CopyBackground))]
         [HarmonyPrefix]
-        static bool CopyBackground(BackgroundEditor __instance)
+        static bool CopyBackgroundPrefix()
         {
             CoreHelper.Log($"Copied Background Object");
-            __instance.backgroundObjCopy = BackgroundObject.DeepCopy((BackgroundObject)DataManager.inst.gameData.backgroundObjects[__instance.currentObj]);
-            __instance.hasCopiedObject = true;
+            Instance.backgroundObjCopy = BackgroundObject.DeepCopy((BackgroundObject)DataManager.inst.gameData.backgroundObjects[Instance.currentObj]);
+            Instance.hasCopiedObject = true;
 
             return false;
         }
 
-        [HarmonyPatch("DeleteBackground")]
+        [HarmonyPatch(nameof(BackgroundEditor.DeleteBackground))]
         [HarmonyPrefix]
-        static bool DeleteBackground(BackgroundEditor __instance, ref string __result, int __0)
+        static bool DeleteBackgroundPrefix(ref string __result, int __0)
         {
             if (DataManager.inst.gameData.backgroundObjects.Count <= 1)
             {
@@ -1275,7 +1241,7 @@ namespace BetterLegacy.Patchers
             DataManager.inst.gameData.backgroundObjects.RemoveAt(__0);
 
             if (DataManager.inst.gameData.backgroundObjects.Count > 0)
-                __instance.SetCurrentBackground(Mathf.Clamp(__instance.currentObj - 1, 0, DataManager.inst.gameData.backgroundObjects.Count - 1));
+                Instance.SetCurrentBackground(Mathf.Clamp(Instance.currentObj - 1, 0, DataManager.inst.gameData.backgroundObjects.Count - 1));
 
             BackgroundManager.inst.UpdateBackgrounds();
 
@@ -1283,36 +1249,37 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("PasteBackground")]
+        [HarmonyPatch(nameof(BackgroundEditor.PasteBackground))]
         [HarmonyPrefix]
-        static bool PasteBackground(BackgroundEditor __instance, ref string __result)
+        static bool PasteBackgroundPrefix(ref string __result)
         {
-            if (!__instance.hasCopiedObject || __instance.backgroundObjCopy == null)
+            if (!Instance.hasCopiedObject || Instance.backgroundObjCopy == null)
             {
                 EditorManager.inst.DisplayNotification("No copied background yet!", 2f, EditorManager.NotificationType.Error);
                 __result = "";
                 return false;
             }
 
-            var backgroundObject = BackgroundObject.DeepCopy((BackgroundObject)__instance.backgroundObjCopy);
+            var backgroundObject = BackgroundObject.DeepCopy((BackgroundObject)Instance.backgroundObjCopy);
+            int currentBackground = DataManager.inst.gameData.backgroundObjects.Count;
             DataManager.inst.gameData.backgroundObjects.Add(backgroundObject);
 
-            int currentBackground = DataManager.inst.gameData.backgroundObjects.IndexOf(backgroundObject);
             BackgroundManager.inst.CreateBackgroundObject(backgroundObject);
-            __instance.SetCurrentBackground(currentBackground);
+            Instance.SetCurrentBackground(currentBackground);
             __result = backgroundObject.name.ToString();
+
             return false;
         }
 
-        [HarmonyPatch("SetRot", new Type[] { typeof(string) })]
+        [HarmonyPatch(nameof(BackgroundEditor.SetRot), new Type[] { typeof(string) })]
         [HarmonyPrefix]
-        static bool SetRot(BackgroundEditor __instance, string __0)
+        static bool SetRotPrefix(string __0)
         {
             if (float.TryParse(__0, out float rot))
             {
-                DataManager.inst.gameData.backgroundObjects[__instance.currentObj].rot = rot;
-                __instance.left.Find("rotation/slider").GetComponent<Slider>().value = rot;
-                __instance.UpdateBackground(__instance.currentObj);
+                DataManager.inst.gameData.backgroundObjects[Instance.currentObj].rot = rot;
+                Instance.left.Find("rotation/slider").GetComponent<Slider>().value = rot;
+                Instance.UpdateBackground(Instance.currentObj);
             }
 
             return false;

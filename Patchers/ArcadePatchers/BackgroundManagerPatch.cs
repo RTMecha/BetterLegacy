@@ -17,9 +17,9 @@ namespace BetterLegacy.Patchers
 
         public static BackgroundManager Instance { get => BackgroundManager.inst; set => BackgroundManager.inst = value; }
 
-        [HarmonyPatch("Update")]
+        [HarmonyPatch(nameof(BackgroundManager.Update))]
         [HarmonyPrefix]
-        static void UpdatePrefix(BackgroundManager __instance)
+        static void UpdatePrefix()
         {
             var list = DataManager.inst.gameData is GameData gameData && gameData.backgroundObjects != null ? gameData.BackgroundObjects.Where(x => x.modifiers.Count > 0).ToList() : null;
 
@@ -90,7 +90,7 @@ namespace BetterLegacy.Patchers
                 }
         }
 
-        [HarmonyPatch("CreateBackgroundObject")]
+        [HarmonyPatch(nameof(BackgroundManager.CreateBackgroundObject))]
         [HarmonyPrefix]
         static bool CreateBackgroundObjectPrefix(ref GameObject __result, DataManager.GameData.BackgroundObject __0)
         {
@@ -100,7 +100,7 @@ namespace BetterLegacy.Patchers
 
         public static Color bgColorToLerp;
 
-        [HarmonyPatch("UpdateBackgroundObjects")]
+        [HarmonyPatch(nameof(BackgroundManager.UpdateBackgroundObjects))]
         [HarmonyPrefix]
         static bool UpdateBackgroundObjectsPrefix(BackgroundManager __instance)
         {

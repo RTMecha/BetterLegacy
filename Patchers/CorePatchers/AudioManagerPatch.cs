@@ -6,7 +6,7 @@ namespace BetterLegacy.Patchers
     [HarmonyPatch(typeof(AudioManager))]
     public class AudioManagerPatch
     {
-        [HarmonyPatch("Update")]
+        [HarmonyPatch(nameof(AudioManager.Update))]
         [HarmonyPrefix]
         static bool UpdatePrefix(AudioManager __instance)
         {
@@ -28,7 +28,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("SetPitch")]
+        [HarmonyPatch(nameof(AudioManager.SetPitch))]
         [HarmonyPrefix]
         static bool SetPitchPrefix(AudioManager __instance, float __0)
         {

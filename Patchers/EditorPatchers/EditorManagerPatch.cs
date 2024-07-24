@@ -33,7 +33,7 @@ namespace BetterLegacy.Patchers
 
         static bool April => CoreHelper.AprilFools;
 
-        [HarmonyPatch("Awake")]
+        [HarmonyPatch(nameof(EditorManager.Awake))]
         [HarmonyPrefix]
         static bool AwakePrefix(EditorManager __instance)
         {
@@ -101,10 +101,7 @@ namespace BetterLegacy.Patchers
 
             var openFilePopupClose = openFilePopupPanel.transform.Find("x").gameObject;
             var openFilePopupCloseButton = openFilePopupClose.GetComponent<Button>();
-            openFilePopupCloseButton.onClick.AddListener(() =>
-            {
-                RTEditor.inst.choosingLevelTemplate = false;
-            });
+            openFilePopupCloseButton.onClick.AddListener(() => { RTEditor.inst.choosingLevelTemplate = false; });
             EditorThemeManager.AddSelectable(openFilePopupCloseButton, ThemeGroup.Close);
 
             EditorThemeManager.AddGraphic(openFilePopupClose.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
@@ -235,7 +232,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("Start")]
+        [HarmonyPatch(nameof(EditorManager.Start))]
         [HarmonyPrefix]
         static bool StartPrefix()
         {
@@ -299,7 +296,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("Update")]
+        [HarmonyPatch(nameof(EditorManager.Update))]
         [HarmonyPrefix]
         static bool UpdatePrefix()
         {
@@ -407,7 +404,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("TogglePlayingSong")]
+        [HarmonyPatch(nameof(EditorManager.TogglePlayingSong))]
         [HarmonyPrefix]
         static bool TogglePlayingSongPrefix()
         {
@@ -427,7 +424,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("OpenGuides")]
+        [HarmonyPatch(nameof(EditorManager.OpenGuides))]
         [HarmonyPrefix]
         static bool OpenGuidesPrefix()
         {
@@ -436,7 +433,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("OpenSteamWorkshop")]
+        [HarmonyPatch(nameof(EditorManager.OpenSteamWorkshop))]
         [HarmonyPrefix]
         static bool OpenSteamWorkshopPrefix()
         {
@@ -445,7 +442,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("OpenDiscord")]
+        [HarmonyPatch(nameof(EditorManager.OpenDiscord))]
         [HarmonyPrefix]
         static bool OpenDiscordPrefix()
         {
@@ -454,7 +451,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("OpenTutorials")]
+        [HarmonyPatch(nameof(EditorManager.OpenTutorials))]
         [HarmonyPrefix]
         static bool OpenTutorialsPrefix()
         {
@@ -463,7 +460,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("OpenVerifiedSongs")]
+        [HarmonyPatch(nameof(EditorManager.OpenVerifiedSongs))]
         [HarmonyPrefix]
         static bool OpenVerifiedSongsPrefix()
         {
@@ -472,7 +469,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("SnapToBPM")]
+        [HarmonyPatch(nameof(EditorManager.SnapToBPM))]
         [HarmonyPrefix]
         static bool SnapToBPMPrefix(ref float __result, float __0)
         {
@@ -480,7 +477,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("SetLayer")]
+        [HarmonyPatch(nameof(EditorManager.SetLayer))]
         [HarmonyPrefix]
         static bool SetLayerPrefix(int __0)
         {
@@ -488,7 +485,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("GetLevelList")]
+        [HarmonyPatch(nameof(EditorManager.GetLevelList))]
         [HarmonyPrefix]
         static bool GetLevelListPrefix()
         {
@@ -496,36 +493,41 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("LoadBaseLevel")]
+        [HarmonyPatch(nameof(EditorManager.LoadBaseLevel))]
         [HarmonyPrefix]
         static bool LoadBaseLevelPrefix()
         {
             GameManager.inst.ResetCheckpoints(true);
-            if (April)
+            if (!April)
             {
-                CoreHelper.StartCoroutine(AlephNetworkManager.DownloadJSONFile("https://drive.google.com/uc?export=download&id=1QJUeviLerCX1tZXW7QxpBC6K1BjtG1KT", delegate (string json)
-                {
-                    DataManager.inst.gameData = GameData.Parse(JSON.Parse(json));
-
-                    CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip("https://drive.google.com/uc?export=download&id=1BDrRqX1IDk7bKo2hhYDqDqWLncMy7FkP", AudioType.OGGVORBIS, delegate (AudioClip audioClip)
-                    {
-                        AudioManager.inst.PlayMusic(null, audioClip, true, 0f);
-                        GameManager.inst.gameState = GameManager.State.Playing;
-
-                        CoreHelper.StartCoroutine(Updater.IUpdateObjects(true));
-                    }));
-                }));
-
+                AssignGameData();
                 return false;
             }
 
-            DataManager.inst.gameData = RTEditor.inst.CreateBaseBeatmap();
-            AudioManager.inst.PlayMusic(null, Instance.baseSong, true, 0f);
-            GameManager.inst.gameState = GameManager.State.Playing;
+            CoreHelper.StartCoroutine(AlephNetworkManager.DownloadJSONFile("https://drive.google.com/uc?export=download&id=1QJUeviLerCX1tZXW7QxpBC6K1BjtG1KT", json =>
+            {
+                DataManager.inst.gameData = GameData.Parse(JSON.Parse(json));
+
+                CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip("https://drive.google.com/uc?export=download&id=1BDrRqX1IDk7bKo2hhYDqDqWLncMy7FkP", AudioType.OGGVORBIS, audioClip =>
+                {
+                    AudioManager.inst.PlayMusic(null, audioClip, true, 0f);
+                    GameManager.inst.gameState = GameManager.State.Playing;
+
+                    CoreHelper.StartCoroutine(Updater.IUpdateObjects(true));
+                }, onError => { AssignGameData(); }));
+            }, onError => { AssignGameData(); }));
+
             return false;
         }
 
-        [HarmonyPatch("SetFileInfoPopupText")]
+        static void AssignGameData()
+        {
+            DataManager.inst.gameData = RTEditor.inst.CreateBaseBeatmap();
+            AudioManager.inst.PlayMusic(null, Instance.baseSong, true, 0f);
+            GameManager.inst.gameState = GameManager.State.Playing;
+        }
+
+        [HarmonyPatch(nameof(EditorManager.SetFileInfoPopupText))]
         [HarmonyPrefix]
         static bool SetFileInfoPopupTextPrefix(string __0)
         {
@@ -533,7 +535,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("LoadLevel")]
+        [HarmonyPatch(nameof(EditorManager.LoadLevel))]
         [HarmonyPrefix]
         static bool LoadLevelPrefix(ref IEnumerator __result, string __0)
         {
@@ -541,7 +543,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("DisplayNotification")]
+        [HarmonyPatch(nameof(EditorManager.DisplayNotification))]
         [HarmonyPrefix]
         static bool DisplayNotificationPrefix(string __0, float __1, EditorManager.NotificationType __2 = EditorManager.NotificationType.Info, bool __3 = false)
         {
@@ -549,7 +551,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("Copy")]
+        [HarmonyPatch(nameof(EditorManager.Copy))]
         [HarmonyPrefix]
         static bool CopyPrefix(bool _cut = false, bool _dup = false)
         {
@@ -558,7 +560,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("Paste")]
+        [HarmonyPatch(nameof(EditorManager.Paste))]
         [HarmonyPrefix]
         static bool PastePrefix(float __0)
         {
@@ -567,7 +569,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("Delete")]
+        [HarmonyPatch(nameof(EditorManager.Delete))]
         [HarmonyPrefix]
         static bool DeletePrefix()
         {
@@ -576,7 +578,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("handleViewShortcuts")]
+        [HarmonyPatch(nameof(EditorManager.handleViewShortcuts))]
         [HarmonyPrefix]
         static bool handleViewShortcutsPrefix()
         {
@@ -606,7 +608,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("updatePointer")]
+        [HarmonyPatch(nameof(EditorManager.updatePointer))]
         [HarmonyPrefix]
         static bool updatePointerPrefix()
         {
@@ -664,7 +666,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("AddToPitch")]
+        [HarmonyPatch(nameof(EditorManager.AddToPitch))]
         [HarmonyPrefix]
         static bool AddToPitchPrefix(float __0)
         {
@@ -673,7 +675,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("ToggleEditor")]
+        [HarmonyPatch(nameof(EditorManager.ToggleEditor))]
         [HarmonyPostfix]
         static void ToggleEditorPostfix()
         {
@@ -684,7 +686,7 @@ namespace BetterLegacy.Patchers
             ExampleManager.onEditorToggle?.Invoke(Instance.isEditing);
         }
 
-        [HarmonyPatch("CloseOpenBeatmapPopup")]
+        [HarmonyPatch(nameof(EditorManager.CloseOpenBeatmapPopup))]
         [HarmonyPrefix]
         static bool CloseOpenBeatmapPopupPrefix()
         {
@@ -692,7 +694,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("SaveBeatmap")]
+        [HarmonyPatch(nameof(EditorManager.SaveBeatmap))]
         [HarmonyPrefix]
         static bool SaveBeatmapPrefix()
         {
@@ -744,7 +746,7 @@ namespace BetterLegacy.Patchers
             yield break;
         }
 
-        [HarmonyPatch("OpenSaveAs")]
+        [HarmonyPatch(nameof(EditorManager.OpenSaveAs))]
         [HarmonyPrefix]
         static bool OpenSaveAsPrefix()
         {
@@ -758,7 +760,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("SaveBeatmapAs", new Type[] { typeof(string) })]
+        [HarmonyPatch(nameof(EditorManager.SaveBeatmapAs), new Type[] { typeof(string) })]
         [HarmonyPrefix]
         static bool SaveBeatmapAsPrefix(string __0)
         {
@@ -789,7 +791,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("OpenBeatmapPopup")]
+        [HarmonyPatch(nameof(EditorManager.OpenBeatmapPopup))]
         [HarmonyPrefix]
         static bool OpenBeatmapPopupPrefix()
         {
@@ -832,11 +834,11 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("AssignWaveformTextures")]
+        [HarmonyPatch(nameof(EditorManager.AssignWaveformTextures))]
         [HarmonyPrefix]
         static bool AssignWaveformTexturesPrefix() => false;
 
-        [HarmonyPatch("RenderOpenBeatmapPopup")]
+        [HarmonyPatch(nameof(EditorManager.RenderOpenBeatmapPopup))]
         [HarmonyPrefix]
         static bool RenderOpenBeatmapPopupPrefix()
         {
@@ -844,7 +846,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("RenderParentSearchList")]
+        [HarmonyPatch(nameof(EditorManager.RenderParentSearchList))]
         [HarmonyPrefix]
         static bool RenderParentSearchListPrefix()
         {
@@ -852,7 +854,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("OpenAlbumArtSelector")]
+        [HarmonyPatch(nameof(EditorManager.OpenAlbumArtSelector))]
         [HarmonyPrefix]
         static bool OpenAlbumArtSelectorPrefix()
         {
@@ -874,7 +876,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("RenderTimeline")]
+        [HarmonyPatch(nameof(EditorManager.RenderTimeline))]
         [HarmonyPrefix]
         static bool RenderTimelinePrefix()
         {
@@ -884,7 +886,7 @@ namespace BetterLegacy.Patchers
                 ObjectEditor.inst.RenderTimelineObjectsPositions();
 
             CheckpointEditor.inst.RenderCheckpoints();
-            MarkerEditor.inst.RenderMarkers();
+            RTMarkerEditor.inst.RenderMarkers();
 
             Instance.UpdateTimelineSizes();
 
@@ -893,7 +895,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("UpdateTimelineSizes")]
+        [HarmonyPatch(nameof(EditorManager.UpdateTimelineSizes))]
         [HarmonyPrefix]
         static bool UpdateTimelineSizesPrefix()
         {
@@ -908,7 +910,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("QuitToMenu")]
+        [HarmonyPatch(nameof(EditorManager.QuitToMenu))]
         [HarmonyPrefix]
         static bool QuitToMenuPrefix()
         {
@@ -944,7 +946,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("QuitGame")]
+        [HarmonyPatch(nameof(EditorManager.QuitGame))]
         [HarmonyPrefix]
         static bool QuitGamePrefix()
         {
@@ -974,7 +976,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("CreateNewLevel")]
+        [HarmonyPatch(nameof(EditorManager.CreateNewLevel))]
         [HarmonyPrefix]
         static bool CreateNewLevelPrefix()
         {
@@ -982,7 +984,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("OpenLevelFolder")]
+        [HarmonyPatch(nameof(EditorManager.OpenLevelFolder))]
         [HarmonyPrefix]
         static bool OpenLevelFolder()
         {
@@ -995,7 +997,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("SetEditRenderArea")]
+        [HarmonyPatch(nameof(EditorManager.SetEditRenderArea))]
         [HarmonyPrefix]
         static bool SetEditRenderAreaPrefix()
         {
@@ -1007,7 +1009,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("SetNormalRenderArea")]
+        [HarmonyPatch(nameof(EditorManager.SetNormalRenderArea))]
         [HarmonyPrefix]
         static bool SetNormalRenderAreaPrefix()
         {
@@ -1016,7 +1018,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("SetDialogStatus")]
+        [HarmonyPatch(nameof(EditorManager.SetDialogStatus))]
         [HarmonyPrefix]
         static bool SetDialogStatusPrefix(string __0, bool __1, bool __2 = true)
         {
@@ -1024,7 +1026,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("ClearDialogs")]
+        [HarmonyPatch(nameof(EditorManager.ClearDialogs))]
         [HarmonyPrefix]
         static bool ClearDialogsPrefix(params EditorManager.EditorDialog.DialogType[] __0)
         {
@@ -1062,7 +1064,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("ToggleDropdown")]
+        [HarmonyPatch(nameof(EditorManager.ToggleDropdown))]
         [HarmonyPrefix]
         static bool ToggleDropdownPrefix(GameObject __0)
         {
@@ -1077,7 +1079,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("HideAllDropdowns")]
+        [HarmonyPatch(nameof(EditorManager.HideAllDropdowns))]
         [HarmonyPrefix]
         static bool HideAllDropdownsPrefix()
         {
@@ -1089,7 +1091,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("GetTimelineTime")]
+        [HarmonyPatch(nameof(EditorManager.GetTimelineTime))]
         [HarmonyPrefix]
         static bool GetTimelineTimePrefix(ref float __result, float __0)
         {
@@ -1097,7 +1099,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("SetTooltip")]
+        [HarmonyPatch(nameof(EditorManager.SetTooltip))]
         [HarmonyPrefix]
         static bool SetTooltipPrefix(List<string> __0, string __1, string __2)
         {
@@ -1108,7 +1110,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("TooltipConverter")]
+        [HarmonyPatch(nameof(EditorManager.TooltipConverter))]
         [HarmonyPrefix]
         static bool TooltipConverterPrefix(ref string __result, List<string> __0, string __1, string __2)
         {
@@ -1125,7 +1127,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("SetShowHelp")]
+        [HarmonyPatch(nameof(EditorManager.SetShowHelp))]
         [HarmonyPrefix]
         static bool SetShowHelpPrefix(bool __0)
         {
@@ -1137,7 +1139,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("UpdateTooltip")]
+        [HarmonyPatch(nameof(EditorManager.UpdateTooltip))]
         [HarmonyPrefix]
         static bool UpdateTooltipPrefix()
         {
@@ -1150,7 +1152,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("OpenMetadata")]
+        [HarmonyPatch(nameof(EditorManager.OpenMetadata))]
         [HarmonyPrefix]
         static bool OpenMetadataPrefix()
         {
@@ -1178,7 +1180,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("GetSprite")]
+        [HarmonyPatch(nameof(EditorManager.GetSprite))]
         [HarmonyPrefix]
         static bool GetSpritePrefix(ref IEnumerator __result, string __0, EditorManager.SpriteLimits __1, Action<Sprite> __2, Action<string> __3)
         {
@@ -1203,7 +1205,7 @@ namespace BetterLegacy.Patchers
             yield break;
         }
 
-        [HarmonyPatch("SetMainTimelineZoom")]
+        [HarmonyPatch(nameof(EditorManager.SetMainTimelineZoom))]
         [HarmonyPrefix]
         static bool SetMainTimelineZoomPrefix(float __0, bool __1 = true)
         {
@@ -1215,7 +1217,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("LoadingIconUpdate")]
+        [HarmonyPatch(nameof(EditorManager.LoadingIconUpdate))]
         [HarmonyPrefix]
         static bool LoadingIconUpdatePrefix()
         {
@@ -1232,7 +1234,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("OpenedLevel", MethodType.Getter)]
+        [HarmonyPatch(nameof(EditorManager.OpenedLevel), MethodType.Getter)]
         [HarmonyPrefix]
         static bool OpenedLevelPrefix(EditorManager __instance, ref bool __result)
         {
@@ -1240,7 +1242,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("Zoom", MethodType.Setter)]
+        [HarmonyPatch(nameof(EditorManager.Zoom), MethodType.Setter)]
         [HarmonyPrefix]
         static bool ZoomSetterPrefix(ref float value)
         {

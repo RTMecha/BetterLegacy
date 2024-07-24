@@ -7,21 +7,15 @@ namespace BetterLegacy.Patchers
     [HarmonyPatch(typeof(DiscordController))]
     public class DiscordControllerPatch : MonoBehaviour
     {
-        [HarmonyPatch("Awake")]
+        [HarmonyPatch(nameof(DiscordController.Awake))]
         [HarmonyPrefix]
-        static void AwakePrefix(DiscordController __instance)
-        {
-            __instance.applicationId = CoreConfig.Instance.DiscordRichPresenceID.Value;
-        }
+        static void AwakePrefix(DiscordController __instance) => __instance.applicationId = CoreConfig.Instance.DiscordRichPresenceID.Value;
 
-        [HarmonyPatch("Awake")]
+        [HarmonyPatch(nameof(DiscordController.Awake))]
         [HarmonyPostfix]
-        static void AwakePostfix(DiscordController __instance)
-        {
-            __instance.OnArtChange("pa_logo_white");
-        }
-
-        [HarmonyPatch("OnArtChange")]
+        static void AwakePostfix(DiscordController __instance) => __instance.OnArtChange("pa_logo_white"); // fixes the logo being incorrect
+    
+        [HarmonyPatch(nameof(DiscordController.OnArtChange))]
         [HarmonyPrefix]
         static bool OnArtChangePrefix(DiscordController __instance, string _art)
         {
@@ -29,7 +23,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("OnIconChange")]
+        [HarmonyPatch(nameof(DiscordController.OnIconChange))]
         [HarmonyPrefix]
         static bool OnIconChangePrefix(DiscordController __instance, string _icon)
         {
@@ -37,7 +31,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("OnStateChange")]
+        [HarmonyPatch(nameof(DiscordController.OnStateChange))]
         [HarmonyPrefix]
         static bool OnStateChangePrefix(DiscordController __instance, string _state)
         {
@@ -46,7 +40,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("OnDetailsChange")]
+        [HarmonyPatch(nameof(DiscordController.OnDetailsChange))]
         [HarmonyPrefix]
         static bool OnDetailsChangePrefix(DiscordController __instance, string _details)
         {

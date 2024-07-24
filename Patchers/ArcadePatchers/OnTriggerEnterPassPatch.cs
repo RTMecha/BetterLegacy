@@ -5,41 +5,26 @@ using UnityEngine;
 namespace BetterLegacy.Patchers
 {
     [HarmonyPatch(typeof(OnTriggerEnterPass))]
-    public class OnTriggerEnterPassPatch : MonoBehaviour
+    public class OnTriggerEnterPassPatch
     {
-        [HarmonyPatch("Start")]
+        [HarmonyPatch(nameof(OnTriggerEnterPass.Start))]
         [HarmonyPrefix]
-        static bool TriggerPassPrefix(OnTriggerEnterPass __instance)
-        {
-            return false;
-        }
+        static bool TriggerPassPrefix() => false;
 
-        [HarmonyPatch("OnTriggerEnter2D")]
+        [HarmonyPatch(nameof(OnTriggerEnterPass.OnTriggerEnter2D))]
         [HarmonyPrefix]
-        static bool OnTriggerEnter2DPrefix(OnTriggerEnterPass __instance, Collider2D __0)
-        {
-            return false;
-        }
+        static bool OnTriggerEnter2DPrefix() => false;
 
-        [HarmonyPatch("OnTriggerEnter")]
+        [HarmonyPatch(nameof(OnTriggerEnterPass.OnTriggerEnter))]
         [HarmonyPrefix]
-        static bool OnTriggerEnterPrefix(OnTriggerEnterPass __instance, Collider __0)
-        {
-            return false;
-        }
+        static bool OnTriggerEnterPrefix() => false;
 
-        [HarmonyPatch("OnTriggerStay2D")]
+        [HarmonyPatch(nameof(OnTriggerEnterPass.OnTriggerStay2D))]
         [HarmonyPrefix]
-        static bool OnTriggerStay2DPrefix(OnTriggerEnterPass __instance, Collider2D __0)
-        {
-            return false;
-        }
+        static bool OnTriggerStay2DPrefix() => false;
 
-        [HarmonyPatch("OnTriggerStay")]
+        [HarmonyPatch(nameof(OnTriggerEnterPass.OnTriggerStay))]
         [HarmonyPrefix]
-        static bool OnTriggerStayPrefix(OnTriggerEnterPass __instance, Collider __0)
-        {
-            return false;
-        }
+        static bool OnTriggerStayPrefix() => false;
     }
 }

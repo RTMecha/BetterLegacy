@@ -9,7 +9,7 @@ namespace BetterLegacy.Patchers
     [HarmonyPatch(typeof(InputSelectManager))]
     public class InputSelectManagerPatch : MonoBehaviour
     {
-        [HarmonyPatch("Start")]
+        [HarmonyPatch(nameof(InputSelectManager.Start))]
         [HarmonyPrefix]
         static void StartPrefix()
         {
@@ -18,7 +18,7 @@ namespace BetterLegacy.Patchers
             RTArcade.fromLevel = false;
         }
 
-        [HarmonyPatch("Update")]
+        [HarmonyPatch(nameof(InputSelectManager.Update))]
         [HarmonyPrefix]
         static bool UpdatePrefix(InputSelectManager __instance)
         {
@@ -83,7 +83,7 @@ namespace BetterLegacy.Patchers
         }
 
 
-        [HarmonyPatch("loadStrings")]
+        [HarmonyPatch(nameof(InputSelectManager.loadStrings))]
         [HarmonyPrefix]
         static bool loadStringsPrefix(InputSelectManager __instance, ref int ___randomLength)
         {
@@ -103,7 +103,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("canChange")]
+        [HarmonyPatch(nameof(InputSelectManager.canChange))]
         [HarmonyPrefix]
         static bool canChangePrefix(InputSelectManager __instance, ref IEnumerator __result, ref int ___randomLength)
         {

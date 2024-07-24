@@ -15,9 +15,9 @@ namespace BetterLegacy.Patchers
     {
         public static bool debugOpacity = false;
 
-        [HarmonyPatch("Awake")]
+        [HarmonyPatch(nameof(ObjectManager.Awake))]
         [HarmonyPostfix]
-        static void AwakePatch(ObjectManager __instance)
+        static void AwakePostfix(ObjectManager __instance)
         {
             ShapeManager.inst.SetupShapes();
 
@@ -40,7 +40,7 @@ namespace BetterLegacy.Patchers
             }
         }
 
-        [HarmonyPatch("AddPrefabToLevel")]
+        [HarmonyPatch(nameof(ObjectManager.AddPrefabToLevel))]
         [HarmonyPrefix]
         static bool AddPrefabToLevelPrefix(DataManager.GameData.PrefabObject __0)
         {
@@ -51,7 +51,7 @@ namespace BetterLegacy.Patchers
 
         public static event LevelTickEventHandler LevelTick;
 
-        [HarmonyPatch("Update")]
+        [HarmonyPatch(nameof(ObjectManager.Update))]
         [HarmonyPrefix]
         static bool UpdatePrefix()
         {
@@ -60,9 +60,9 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("updateObjects", new Type[] { })]
+        [HarmonyPatch(nameof(ObjectManager.updateObjects), new Type[] { })]
         [HarmonyPrefix]
-        static bool updateObjectsPrefix4(ObjectManager __instance)
+        static bool updateObjectsPrefix()
         {
             Updater.UpdateObjects();
             return false;

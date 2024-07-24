@@ -15,14 +15,14 @@ namespace BetterLegacy.Patchers
 
         public static bool loading;
         public static Text loadingText;
-        [HarmonyPatch("Awake")]
+        [HarmonyPatch(nameof(SceneManager.Awake))]
         [HarmonyPrefix]
         static void AwakePrefix(SceneManager __instance)
         {
             loadingText = __instance.icon.GetComponent<Text>();
         }
 
-        [HarmonyPatch("UpdateSpinner")]
+        [HarmonyPatch(nameof(SceneManager.UpdateSpinner))]
         [HarmonyPrefix]
         static bool UpdateSpinnerPrefix(string _value)
         {
@@ -39,21 +39,21 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("DisplayLoadingScreen")]
-        [HarmonyPrefix]
-        static void DisplayLoadingScreenPrefix(string __0)
-        {
-            ExampleManager.onSceneLoad?.Invoke(__0);
-            CoreHelper.CurrentSceneType = __0 == "Editor" ? SceneType.Editor : __0 == "Game" ? SceneType.Game : SceneType.Interface;
-            CoreHelper.Log($"Set Scene\nType: {CoreHelper.CurrentSceneType}\nName: {__0}");
-            loading = true;
-        }
+        //[HarmonyPatch(nameof(SceneManager.DisplayLoadingScreen))]
+        //[HarmonyPrefix]
+        //static void DisplayLoadingScreenPrefix(string __0)
+        //{
+        //    ExampleManager.onSceneLoad?.Invoke(__0);
+        //    CoreHelper.CurrentSceneType = __0 == "Editor" ? SceneType.Editor : __0 == "Game" ? SceneType.Game : SceneType.Interface;
+        //    CoreHelper.Log($"Set Scene\nType: {CoreHelper.CurrentSceneType}\nName: {__0}");
+        //    loading = true;
+        //}
 
-        [HarmonyPatch("DisplayLoadingScreen")]
-        [HarmonyPostfix]
-        static void DisplayLoadingScreenPostfix() => loading = false;
+        //[HarmonyPatch(nameof(SceneManager.DisplayLoadingScreen))]
+        //[HarmonyPostfix]
+        //static void DisplayLoadingScreenPostfix() => loading = false;
 
-        [HarmonyPatch("DisplayLoadingScreen")]
+        [HarmonyPatch(nameof(SceneManager.DisplayLoadingScreen))]
         [HarmonyPrefix]
         static bool DisplayLoadingScreenPrefix(ref IEnumerator __result, string __0, bool __1 = true)
         {

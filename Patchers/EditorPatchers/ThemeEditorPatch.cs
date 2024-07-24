@@ -15,7 +15,7 @@ namespace BetterLegacy.Patchers
 
         public static string className = "[<color=#3E6D73>ThemeEditor</color>] \n";
 
-        [HarmonyPatch("Awake")]
+        [HarmonyPatch(nameof(ThemeEditor.Awake))]
         [HarmonyPrefix]
         static bool AwakePrefix(ThemeEditor __instance)
         {
@@ -34,11 +34,11 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("Start")]
+        [HarmonyPatch(nameof(ThemeEditor.Start))]
         [HarmonyPrefix]
         static bool StartPrefix() => false;
 
-        [HarmonyPatch("DeleteTheme")]
+        [HarmonyPatch(nameof(ThemeEditor.DeleteTheme))]
         [HarmonyPrefix]
         static bool DeleteThemePrefix(DataManager.BeatmapTheme __0)
         {
@@ -46,7 +46,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("SaveTheme")]
+        [HarmonyPatch(nameof(ThemeEditor.SaveTheme))]
         [HarmonyPrefix]
         static bool SaveThemePrefix(DataManager.BeatmapTheme __0)
         {
@@ -54,7 +54,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("LoadThemes")]
+        [HarmonyPatch(nameof(ThemeEditor.LoadThemes))]
         [HarmonyPrefix]
         static bool LoadThemesPrefix(ref IEnumerator __result)
         {

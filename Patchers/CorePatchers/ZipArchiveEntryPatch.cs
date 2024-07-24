@@ -5,10 +5,13 @@ using System.IO.Compression;
 
 namespace BetterLegacy.Patchers
 {
+    /// <summary>
+    /// Fixes an issue with ZipArchives.
+    /// </summary>
     [HarmonyPatch(typeof(ZipArchiveEntry))]
     public class ZipArchiveEntryPatch
     {
-        [HarmonyPatch("OpenInWriteMode")]
+        [HarmonyPatch(nameof(ZipArchiveEntry.OpenInWriteMode))]
         [HarmonyPrefix]
         static bool OpenInWriteModePrefix(ref Stream __result, ZipArchiveEntry __instance)
         {

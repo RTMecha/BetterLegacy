@@ -9,7 +9,7 @@ namespace BetterLegacy.Patchers
     [HarmonyPatch(typeof(ArcadeController))]
     public class ArcadeControllerPatch
     {
-        [HarmonyPatch("Start")]
+        [HarmonyPatch(nameof(ArcadeController.Start))]
         [HarmonyPrefix]
         static bool StartPrefix(ArcadeController __instance)
         {

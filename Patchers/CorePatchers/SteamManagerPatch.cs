@@ -8,11 +8,8 @@ namespace BetterLegacy.Patchers
     [HarmonyPatch(typeof(SteamManager))]
     public class SteamManagerPatch : MonoBehaviour
     {
-        [HarmonyPatch("Awake")]
+        [HarmonyPatch(nameof(SteamManager.Awake))]
         [HarmonyPostfix]
-        static void AwakePostfix(SteamManager __instance)
-        {
-            SteamWorkshopManager.Init(__instance);
-        }
+        static void AwakePostfix(SteamManager __instance) => SteamWorkshopManager.Init(__instance);
     }
 }

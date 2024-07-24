@@ -15,7 +15,7 @@ namespace BetterLegacy.Patchers
     [HarmonyPatch(typeof(Dropdown))]
     public class DropdownPatch
     {
-        [HarmonyPatch("Show")]
+        [HarmonyPatch(nameof(Dropdown.Show))]
         [HarmonyPostfix]
         static void ShowPostfix(Dropdown __instance)
         {
@@ -41,18 +41,15 @@ namespace BetterLegacy.Patchers
     [HarmonyPatch(typeof(HideDropdownOptions))]
     public class HideDropdownOptionsPatch
     {
-        [HarmonyPatch("OnPointerClick")]
+        [HarmonyPatch(nameof(HideDropdownOptions.OnPointerClick))]
         [HarmonyPrefix]
-        static bool OnPointerClickPrefix(HideDropdownOptions __instance, PointerEventData __0)
-        {
-            return false;
-        }
+        static bool OnPointerClickPrefix() => false;
     }
 
     [HarmonyPatch(typeof(DropdownHovered))]
     public class DropdownHoveredPatch
     {
-        [HarmonyPatch("OnPointerEnter")]
+        [HarmonyPatch(nameof(DropdownHovered.OnPointerEnter))]
         [HarmonyPrefix]
         static bool OnPointerEnterPrefix(DropdownHovered __instance, PointerEventData __0)
         {
@@ -68,7 +65,7 @@ namespace BetterLegacy.Patchers
     [HarmonyPatch(typeof(LSFunctions.LSHelpers))]
     public class LSHelpersPatch
     {
-        [HarmonyPatch("IsUsingInputField")]
+        [HarmonyPatch(nameof(LSFunctions.LSHelpers.IsUsingInputField))]
         [HarmonyPrefix]
         static bool IsUsingInputFieldPrefix(ref bool __result)
         {
@@ -81,7 +78,7 @@ namespace BetterLegacy.Patchers
     [HarmonyPatch(typeof(HoverTooltip))]
     public class HoverTooltipPatch
     {
-        [HarmonyPatch("OnPointerEnter")]
+        [HarmonyPatch(nameof(HoverTooltip.OnPointerEnter))]
         [HarmonyPrefix]
         static bool OnPointerEnterPrefix(HoverTooltip __instance)
         {
@@ -94,7 +91,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch("OnPointerExit")]
+        [HarmonyPatch(nameof(HoverTooltip.OnPointerExit))]
         [HarmonyPrefix]
         static bool OnPointerExitPrefix() => false; // Don't want to have the actual mouse tooltip to disappear when I don't want it to.
     }

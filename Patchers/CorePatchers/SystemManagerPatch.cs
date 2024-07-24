@@ -10,7 +10,7 @@ namespace BetterLegacy.Patchers
     [HarmonyPatch(typeof(SystemManager))]
     public class SystemManagerPatch
     {
-        [HarmonyPatch("Awake")]
+        [HarmonyPatch(nameof(SystemManager.Awake))]
         [HarmonyPostfix]
         static void AwakePostfix()
         {
@@ -20,7 +20,7 @@ namespace BetterLegacy.Patchers
                 ExampleManager.Init();
         }
 
-        [HarmonyPatch("Update")]
+        [HarmonyPatch(nameof(SystemManager.Update))]
         [HarmonyPrefix]
         static bool UpdatePrefix()
         {

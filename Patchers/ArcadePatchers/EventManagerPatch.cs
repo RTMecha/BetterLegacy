@@ -5,31 +5,25 @@ using System;
 namespace BetterLegacy.Patchers
 {
     [HarmonyPatch(typeof(EventManager))]
-    class EventManagerPatch
+    public class EventManagerPatch
     {
-        [HarmonyPatch("Update")]
+        [HarmonyPatch(nameof(EventManager.Update))]
         [HarmonyPrefix]
-        static bool EventManagerUpdatePrefix()
-        {
-            return false;
-        }
+        static bool EventManagerUpdatePrefix() => false;
 
-        [HarmonyPatch("LateUpdate")]
+        [HarmonyPatch(nameof(EventManager.LateUpdate))]
         [HarmonyPrefix]
-        static bool EventManagerLateUpdatePrefix()
-        {
-            return false;
-        }
+        static bool EventManagerLateUpdatePrefix() => false;
 
-        [HarmonyPatch(typeof(EventManager), "updateShake")]
+        [HarmonyPatch(nameof(EventManager.updateShake))]
         [HarmonyPrefix]
-        static bool EventManagerShakePrefix()
+        static bool updateShakePrefix()
         {
             RTEventManager.inst.updateShake();
             return false;
         }
 
-        [HarmonyPatch(typeof(EventManager), "updateEvents", new[] { typeof(int) })]
+        [HarmonyPatch(nameof(EventManager.updateEvents), new[] { typeof(int) })]
         [HarmonyPrefix]
         static bool EventManagerUpdateEventsPrefix1(int __0)
         {
@@ -37,7 +31,7 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
-        [HarmonyPatch(typeof(EventManager), "updateEvents", new Type[] { })]
+        [HarmonyPatch(nameof(EventManager.updateEvents), new Type[] { })]
         [HarmonyPrefix]
         static bool EventManagerUpdateEventsPrefix2(EventManager __instance)
         {

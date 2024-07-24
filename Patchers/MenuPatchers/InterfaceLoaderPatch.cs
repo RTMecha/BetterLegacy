@@ -12,7 +12,7 @@ namespace BetterLegacy.Patchers
     [HarmonyPatch(typeof(InterfaceLoader))]
     public class InterfaceLoaderPatch
     {
-        [HarmonyPatch("Start")]
+        [HarmonyPatch(nameof(InterfaceLoader.Start))]
         [HarmonyPrefix]
         static bool InterfaceLoaderPrefix(InterfaceLoader __instance)
         {
