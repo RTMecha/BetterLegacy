@@ -2537,10 +2537,17 @@ namespace BetterLegacy.Editor.Managers
                         SceneManager.inst.LoadScene("Editor");
                     };
                     LevelManager.Load(GameManager.inst.basePath + "level.lsb", false);
-                }, () =>
-                {
-                    EditorManager.inst.HideDialog("Warning Popup");
-                });
+                }, () => { EditorManager.inst.HideDialog("Warning Popup"); });
+            }, 7);
+
+            EditorHelper.AddEditorDropdown("Restart Editor", "", "File", ReloadSprite, () =>
+            {
+                DG.Tweening.DOTween.Clear();
+                Updater.UpdateObjects(false);
+                DataManager.inst.gameData = null;
+                DataManager.inst.gameData = new GameData();
+                TooltipHelper.InitTooltips();
+                SceneManager.inst.LoadScene("Editor");
             }, 7);
 
             EditorHelper.AddEditorDropdown("Open Level Browser", "", "File", titleBar.Find("File/File Dropdown/Open/Image").GetComponent<Image>().sprite, () =>
