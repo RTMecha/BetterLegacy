@@ -38,17 +38,6 @@ namespace BetterLegacy.Editor.Managers
         public string CustomObjectID { get; set; }
 
         GameObject labelPrefab;
-        GameObject visiilityPrefab;
-
-        public static int[] UnmoddedShapeCounts => new int[]
-        {
-            3,
-            9,
-            4,
-            2,
-            1,
-            6
-        };
 
         public static void Init() => Creator.NewGameObject("PlayerEditor", EditorManager.inst.transform.parent).AddComponent<PlayerEditor>();
 
@@ -2254,9 +2243,9 @@ namespace BetterLegacy.Editor.Managers
                 int index = num;
                 toggle.onValueChanged.ClearAll();
                 toggle.isOn = type == index;
-                toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < UnmoddedShapeCounts.Length);
+                toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < ObjectEditor.UnmoddedShapeCounts.Length);
 
-                if (RTEditor.ShowModdedUI || index < UnmoddedShapeCounts.Length)
+                if (RTEditor.ShowModdedUI || index < ObjectEditor.UnmoddedShapeCounts.Length)
                     toggle.onValueChanged.AddListener(delegate (bool _val)
                     {
                         if (_val)
@@ -2285,9 +2274,9 @@ namespace BetterLegacy.Editor.Managers
                     int index = num;
                     toggle.onValueChanged.ClearAll();
                     toggle.isOn = option == index;
-                    toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < UnmoddedShapeCounts[type]);
+                    toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < ObjectEditor.UnmoddedShapeCounts[type]);
 
-                    if (RTEditor.ShowModdedUI || index < UnmoddedShapeCounts[type])
+                    if (RTEditor.ShowModdedUI || index < ObjectEditor.UnmoddedShapeCounts[type])
                         toggle.onValueChanged.AddListener(delegate (bool _val)
                         {
                             if (_val)

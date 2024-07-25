@@ -936,10 +936,26 @@ namespace BetterLegacy.Editor.Managers
         #region Timeline
 
         Image timelineImage;
-        public Image TimelineImage => timelineImage ?? EditorManager.inst.timeline.GetComponent<Image>();
+        public Image TimelineImage
+        {
+            get
+            {
+                if (!timelineImage)
+                    timelineImage = EditorManager.inst.timeline.GetComponent<Image>();
+                return timelineImage;
+            }
+        }
 
         Image timelineOverlayImage;
-        public Image TimelineOverlayImage => timelineOverlayImage ?? EditorManager.inst.timelineWaveformOverlay.GetComponent<Image>();
+        public Image TimelineOverlayImage
+        {
+            get
+            {
+                if (!timelineOverlayImage)
+                    timelineOverlayImage = EditorManager.inst.timelineWaveformOverlay.GetComponent<Image>();
+                return timelineOverlayImage;
+            }
+        }
 
         /// <summary>
         /// Sets the main timeline zoom and position.
