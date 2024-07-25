@@ -1010,7 +1010,7 @@ namespace BetterLegacy.Components.Player
 
             if (PlayerAlive && Actions != null && CustomPlayer.active && CanMove && !CoreHelper.Paused &&
                 (CoreConfig.Instance.AllowControlsInputField.Value || !LSHelpers.IsUsingInputField()) &&
-                movementMode == MovementMode.KeyboardController && !EventsConfig.Instance.EditorCamEnabled.Value)
+                movementMode == MovementMode.KeyboardController && (!CoreHelper.InEditor || !EventsConfig.Instance.EditorCamEnabled.Value))
             {
                 colliding = false;
                 float x = Actions.Move.Vector.x;
