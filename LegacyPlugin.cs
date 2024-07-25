@@ -79,6 +79,7 @@ namespace BetterLegacy
 
             try
             {
+                CoreHelper.Log("Init patches...");
                 harmony.PatchAll();
             }
             catch (Exception ex)
@@ -89,6 +90,8 @@ namespace BetterLegacy
 
             try
             {
+                CoreHelper.Log("Loading configs...");
+
                 if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "profile"))
                     Directory.CreateDirectory(RTFile.ApplicationDirectory + "profile");
 
@@ -109,6 +112,8 @@ namespace BetterLegacy
 
             try
             {
+                CoreHelper.Log("Loading assets...");
+
                 blur = GetBlur();
                 var assetBundle = AssetBundle.LoadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}shadercolored.asset");
                 blurColored = assetBundle.LoadAsset<Shader>("simpleblur.shader");
@@ -125,6 +130,8 @@ namespace BetterLegacy
 
             try
             {
+                CoreHelper.Log("Creating prefabs...");
+
                 editorPrefabHolder = new EditorPrefabHolder();
                 corePrefabHolder = new CorePrefabHolder();
             }
@@ -135,6 +142,8 @@ namespace BetterLegacy
 
             try
             {
+                CoreHelper.Log("Setting up Editor Themes...");
+
                 EditorThemeManager.EditorThemes = new List<EditorThemeManager.EditorTheme>();
 
                 var jn = JSON.Parse(RTFile.ReadFromFile(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_themes.lst"));
@@ -161,6 +170,8 @@ namespace BetterLegacy
 
             try
             {
+                CoreHelper.Log("Init ConfigManager...");
+
                 ConfigManager.Init();
             }
             catch (Exception ex)
@@ -168,8 +179,21 @@ namespace BetterLegacy
                 CoreHelper.LogError($"Config Manager failed to generate.\n{ex}");
             } // Config Manager initialization
 
+            try
+            {
+                CoreHelper.Log("Init Tooltips...");
+
+                TooltipHelper.InitTooltips();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Failed to init tooltips due to an exception: {ex}");
+            } // Init tooltips
+
             // Hooks
             {
+                CoreHelper.Log("Applying hooks...");
+
                 ObjectManagerPatch.LevelTick += RTEventManager.OnLevelTick; // events need to update first
                 ObjectManagerPatch.LevelTick += Updater.OnLevelTick; // objects update second
                 ObjectManagerPatch.LevelTick += ModifiersManager.OnLevelTick; // modifiers update third
