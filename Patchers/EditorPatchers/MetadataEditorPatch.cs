@@ -881,12 +881,12 @@ namespace BetterLegacy.Patchers
                 int index = i;
                 var tag = moddedMetadata.LevelSong.tags[i];
                 var gameObject = RTEditor.inst.tagPrefab.Duplicate(parent, index.ToString());
-                var input = gameObject.transform.Find("input").GetComponent<InputField>();
+                var input = gameObject.transform.Find("Input").GetComponent<InputField>();
                 input.onValueChanged.ClearAll();
                 input.text = tag;
                 input.onValueChanged.AddListener(_val => { moddedMetadata.LevelSong.tags[index] = _val; });
 
-                var deleteStorage = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
+                var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
                 deleteStorage.button.onClick.ClearAll();
                 deleteStorage.button.onClick.AddListener(() =>
                 {
