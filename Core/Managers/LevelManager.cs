@@ -388,7 +388,8 @@ namespace BetterLegacy.Core.Managers
             }
 
             // To fix alpha screwing the font up
-            json = json.Replace("<font=LiberationSans>", "<font=LiberationSans SDF>").Replace("<font=\"LiberationSans\">", "<font=LiberationSans SDF>");
+            json = json.Replace("<font=LiberationSans>", "<font=LiberationSans SDF>").Replace("<font=\"LiberationSans\">", "<font=\"LiberationSans SDF\">")
+                .Replace("<font=Inconsolata>", "<font=Inconsolata Variable>").Replace("<font=\"Inconsolata\">", "<font=\"Inconsolata Variable\">");
 
             return json;
         }
