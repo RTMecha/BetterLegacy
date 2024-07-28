@@ -147,16 +147,10 @@ namespace BetterLegacy.Example
                         new FloatKeyframe(0.7f, 0.3f, Ease.SineOut),
                         new FloatKeyframe(1f, 1f, Ease.SineInOut),
                         new FloatKeyframe(1.1f, 1f, Ease.Linear),
-                    }, delegate (float x)
-                    {
-                        eyes.localScale = new Vector3(1f, x, 1f);
-                    }),
+                    }, x => { eyes.localScale = new Vector3(1f, x, 1f); }),
                 };
 
-            animation.onComplete = delegate ()
-            {
-                allowBlinking = a;
-            };
+            animation.onComplete = () => { allowBlinking = a; };
 
             PlayOnce(animation, false);
         }
@@ -173,6 +167,8 @@ namespace BetterLegacy.Example
                 random = UnityEngine.Random.Range(0, dialogues.Length);
 
             Say(dialogues[random].text);
+
+            talking = false;
         }
 
         void LoadDialogue()
@@ -184,7 +180,7 @@ namespace BetterLegacy.Example
             {
                 var dialogueGroup = jn["dialogue_groups"][i];
 
-                ExampleDialogue[] dialogues = new ExampleDialogue[dialogueGroup["dialogue"].Count];
+                var dialogues = new ExampleDialogue[dialogueGroup["dialogue"].Count];
                 for (int j = 0; j < dialogueGroup["dialogue"].Count; j++)
                 {
                     var dialogue = dialogueGroup["dialogue"][j];
@@ -192,7 +188,22 @@ namespace BetterLegacy.Example
                     if (dialogue["func_index"] != null)
                         dialogueFunction = dialogue["func_index"].AsInt;
 
-                    dialogues[j] = new ExampleDialogue(dialogue["text"], dialogueFunctions[dialogueFunction], delegate ()
+                    DialogueFunction dialogueFunc =
+                        dialogue["func"] != null ?
+                        () =>
+                        {
+                            try
+                            {
+                                var evaluation = RTCode.EvaluateWithReturn(dialogue["func"]);
+                                return evaluation is bool boolean && boolean;
+                            }
+                            catch
+                            {
+                                return false;
+                            }
+                        } : dialogueFunctions[dialogueFunction];
+
+                    dialogues[j] = new ExampleDialogue(dialogue["text"], dialogueFunc, () =>
                     {
                         if (dialogue["action"] != null)
                             RTCode.Evaluate(dialogue["action"]);
@@ -257,6 +268,7 @@ namespace BetterLegacy.Example
                 said = true;
 
                 SayDialogue("OccasionalDialogue");
+                repeat = UnityEngine.Random.Range(55f, 600f);
             }
             else
                 said = false;
@@ -370,8 +382,6 @@ namespace BetterLegacy.Example
         public Vector3 startMousePos;
         public Vector3 dragPos;
 
-        public Vector3 lastPos;
-
         public float dragDelay = 0.3f;
 
         #endregion
@@ -460,7 +470,9 @@ namespace BetterLegacy.Example
 
         float timeOffset;
 
-        public bool talking = false;
+        public bool talking;
+
+        public bool dying;
 
         /// <summary>
         /// Spawns Example.
@@ -485,7 +497,10 @@ namespace BetterLegacy.Example
             if (inst == null)
                 inst = this;
             else if (inst != this)
+            {
                 Kill();
+                return;
+            }
 
             try
             {
@@ -500,12 +515,6 @@ namespace BetterLegacy.Example
             }
 
             StartCoroutine(SpawnExample());
-
-            onSceneLoad = delegate (string x)
-            {
-                if (inst && baseCanvas)
-                    SetParent(baseCanvas.transform);
-            };
         }
 
         void Update()
@@ -529,10 +538,22 @@ namespace BetterLegacy.Example
 
             update?.Invoke();
 
+            if (baseCanvas && canvas)
+            {
+                if (EditorManager.inst && EditorManager.inst.isEditing)
+                    baseCanvas.SetActive(ExampleConfig.Instance.EnabledInEditor.Value);
+                else if (GameManager.inst)
+                    baseCanvas.SetActive(ExampleConfig.Instance.EnabledInGame.Value);
+                else if (ArcadeManager.inst.ic)
+                    baseCanvas.SetActive(ExampleConfig.Instance.EnabledInMenus.Value);
+
+                canvas.scaleFactor = CoreHelper.ScreenScale;
+            }
+
             if (autocomplete && chatter)
                 autocomplete.SetActive(!string.IsNullOrEmpty(chatter.text));
 
-            if (animations == null || !Visible)
+            if (animations == null || !Visible || dying)
                 return;
 
             for (int i = 0; i < animations.Count; i++)
@@ -548,17 +569,9 @@ namespace BetterLegacy.Example
                 if (t > blinkRate - 0.3f && t < blinkRate && blinkCanChange)
                     canBlink = UnityEngine.Random.Range(0, 100) > blinkChance;
 
-
-                if (t > blinkRate - 0.3f && t < blinkRate && canBlink)
-                {
-                    blinkCanChange = false;
-                    blink?.gameObject?.SetActive(true);
-                }
-                else
-                {
-                    blinkCanChange = true;
-                    blink?.gameObject?.SetActive(false);
-                }
+                var active = t > blinkRate - 0.3f && t < blinkRate && canBlink;
+                blinkCanChange = !active;
+                blink?.gameObject.SetActive(active);
             }
             else
             {
@@ -573,44 +586,29 @@ namespace BetterLegacy.Example
                 floatingParent.localPosition = new Vector3(0f, (Ease.SineInOut(floatingLevel) - 0.5f) * 2f, 0f);
         }
 
-        void FixedUpdate()
-        {
-            fixedUpdate?.Invoke();
-
-            if (baseCanvas && canvas)
-            {
-                if (EditorManager.inst && EditorManager.inst.isEditing)
-                    baseCanvas.SetActive(ExampleConfig.Instance.EnabledInEditor.Value);
-                else if (GameManager.inst)
-                    baseCanvas.SetActive(ExampleConfig.Instance.EnabledInGame.Value);
-                else if (ArcadeManager.inst.ic)
-                    baseCanvas.SetActive(ExampleConfig.Instance.EnabledInMenus.Value);
-
-                canvas.scaleFactor = CoreHelper.ScreenScale;
-            }
-        }
+        void FixedUpdate() => fixedUpdate?.Invoke();
 
         void LateUpdate()
         {
             lateUpdate?.Invoke();
 
+            // Example breaks if application isn't focused.
             if (!Application.isFocused || spawning || !Visible)
                 return;
 
-            if (pupils != null && lookAt)
+            if (lookAt)
             {
                 float t = time % pupilsLookRate;
 
+                // Here we add a tiny amount of movement to the pupils to make Example feel a lot more alive.
                 if (t > pupilsLookRate - 0.3f && t < pupilsLookRate && pupilsCanChange)
                     pupilsOffset = new Vector2(UnityEngine.Random.Range(0f, 0.5f), UnityEngine.Random.Range(0f, 0.5f));
 
-                if (t > pupilsLookRate - 0.3f && t < pupilsLookRate)
-                    pupilsCanChange = false;
-                else
-                    pupilsCanChange = true;
+                pupilsCanChange = !(t > pupilsLookRate - 0.3f && t < pupilsLookRate);
 
-                ((RectTransform)pupils).anchoredPosition = RTMath.Lerp(Vector2.zero, MousePosition - new Vector2(pupils.position.x, pupils.position.y), lookMultiplier) + pupilsOffset;
+                pupils.AsRT().anchoredPosition = RTMath.Lerp(Vector2.zero, MousePosition - new Vector2(pupils.position.x, pupils.position.y), lookMultiplier) + pupilsOffset;
 
+                // If face should also track mouse position.
                 if (faceCanLook)
                 {
                     var lerp = RTMath.Lerp(Vector2.zero, MousePosition - new Vector2(faceX.position.x, faceY.position.y), faceLookMultiplier);
@@ -621,27 +619,27 @@ namespace BetterLegacy.Example
                 }
             }
 
+            // Set ear and tail rotation, forcing them to rotate to the other side of the face.
             if (faceX != null && tail != null && ears != null)
             {
-                float x = faceX.localPosition.x * 5f;
+                float faceXPos = faceX.localPosition.x * 5f;
 
-                tail.localRotation = Quaternion.Euler(0f, 0f, -x);
-                tail.GetChild(0).localRotation = Quaternion.Euler(0f, 0f, -x);
+                tail.localRotation = Quaternion.Euler(0f, 0f, -faceXPos);
+                tail.GetChild(0).localRotation = Quaternion.Euler(0f, 0f, -faceXPos);
                 ears.localRotation = Quaternion.Euler(0f, 0f, faceX.localPosition.x * 0.8f);
             }
 
+            var vector = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f) * CoreHelper.ScreenScaleInverse;
+
+            float p = Time.deltaTime * 60f;
+            float po = 1f - Mathf.Pow(1f - Mathf.Clamp(dragDelay, 0.001f, 1f), p);
+
+            float x = startMousePos.x - vector.x;
+            float y = startMousePos.y - vector.y;
+            var target = new Vector3(startDragPos.x + -x, startDragPos.y + -y);
+
             if (dragging)
             {
-                Vector3 vector = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f) * CoreHelper.ScreenScaleInverse;
-
-                float p = Time.deltaTime * 60f;
-                float po = 1f - Mathf.Pow(1f - Mathf.Clamp(dragDelay, 0.001f, 1f), p);
-
-                float x = startMousePos.x - vector.x;
-                float y = startMousePos.y - vector.y;
-
-                var target = new Vector3(startDragPos.x + -x, startDragPos.y + -y);
-
                 parentRotscale.localRotation = Quaternion.Euler(0f, 0f, (target.x - dragPos.x) * po);
 
                 dragPos += (target - dragPos) * po;
@@ -654,39 +652,16 @@ namespace BetterLegacy.Example
             }
 
             if (draggingLeftHand)
-            {
-                Vector3 vector = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f);
-
-                float p = Time.deltaTime * 60f;
-                float po = 1f - Mathf.Pow(1f - Mathf.Clamp(dragDelay, 0.001f, 1f), p);
-
-                float x = startMousePos.x - vector.x;
-                float y = startMousePos.y - vector.y;
-
-                var target = new Vector3(startDragPos.x + -x, startDragPos.y + -y);
-
                 handLeft.localPosition += (target - handLeft.localPosition) * po;
-            }
 
             if (draggingRightHand)
-            {
-                Vector3 vector = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f);
-
-                float p = Time.deltaTime * 60f;
-                float po = 1f - Mathf.Pow(1f - Mathf.Clamp(dragDelay, 0.001f, 1f), p);
-
-                float x = startMousePos.x - vector.x;
-                float y = startMousePos.y - vector.y;
-
-                var target = new Vector3(startDragPos.x + -x, startDragPos.y + -y);
-
                 handRight.localPosition += (target - handRight.localPosition) * po;
-            }
 
             float addToDialogueY = 200f;
             if (TotalPosition.y > 355f)
                 addToDialogueY = -200f;
 
+            // Set dialogue box position instead of parent because only position needs to be tracked instead of scale, rotation, etc.
             if (dialogueBase != null)
                 dialogueBase.localPosition = new Vector3(Mathf.Clamp(TotalPosition.x, -820f, 820f), TotalPosition.y + addToDialogueY, 0f);
 
@@ -694,14 +669,15 @@ namespace BetterLegacy.Example
             if (TotalPosition.x < -640f)
                 addToOptionsX = 222f;
 
+            // Same situation as the dialogue box.
             if (optionsBase != null && optionsActive)
                 optionsBase.localPosition = new Vector3(TotalPosition.x + addToOptionsX, TotalPosition.y);
 
-            if (canvasGroup != null && ExampleConfig.Instance.ExampleVisible.Value) canvasGroup.alpha = ExampleConfig.Instance.ExampleVisibility.Value;
-            else if (canvasGroup != null) canvasGroup.alpha = 1f;
+            if (canvasGroup)
+                canvasGroup.alpha = ExampleConfig.Instance.ExampleVisible.Value ? ExampleConfig.Instance.ExampleVisibility.Value : 1f;
 
             if (dragging || draggingLeftHand || draggingRightHand)
-                timeSinceLastInteractedOffset = Time.time;
+                SetLastInteracted();
 
             if (mouthLower != null)
             {
@@ -709,8 +685,6 @@ namespace BetterLegacy.Example
                 m.y = Mathf.Clamp(m.y, 0f, 1f);
                 mouthLower.localScale = m;
             }
-
-            lastPos = new Vector3(parentX.localPosition.x, parentY.localPosition.y, 0f);
         }
 
         public void SetLastInteracted() => timeSinceLastInteractedOffset = Time.time;
@@ -730,12 +704,10 @@ namespace BetterLegacy.Example
                         new FloatKeyframe(0f, 0f, Ease.Linear),
                         new FloatKeyframe(1f, -15f, Ease.BackIn),
                         new FloatKeyframe(1.7f, -20f, Ease.SineOut),
-                    }, delegate (float x)
+                    }, x =>
                     {
                         if (parentRotscale != null)
-                        {
                             parentRotscale.localRotation = Quaternion.Euler(0f, 0f, x);
-                        }
                     }),
                     new AnimationHandler<float>(new List<IKeyframe<float>>
                     {
@@ -744,7 +716,7 @@ namespace BetterLegacy.Example
                         new FloatKeyframe(1.3f, 80f, Ease.SineOut),
                         new FloatKeyframe(1.5f, 70f, Ease.SineInOut),
                         new FloatKeyframe(1.8f, 80f, Ease.SineInOut),
-                    }, delegate (float x)
+                    }, x =>
                     {
                         if (handLeft != null)
                             handLeft.localRotation = Quaternion.Euler(0f, 0f, x);
@@ -754,7 +726,7 @@ namespace BetterLegacy.Example
                         new Vector2Keyframe(0f, new Vector2(1f, 0.3f), Ease.Linear),
                         new Vector2Keyframe(0.5f, new Vector2(1f, 0.4f), Ease.CircIn),
                         new Vector2Keyframe(1f, new Vector2(1f, 0.6f), Ease.BackOut),
-                    }, delegate (Vector2 x)
+                    }, x =>
                     {
                         if (mouthLower != null)
                             mouthLower.localScale = new Vector3(x.x, x.y, 1f);
@@ -765,7 +737,7 @@ namespace BetterLegacy.Example
                         new Vector2Keyframe(0.5f, new Vector2(0.8f, 1.2f), Ease.SineInOut),
                         new Vector2Keyframe(0.8f, new Vector2(1.05f, 0.95f), Ease.SineInOut),
                         new Vector2Keyframe(1.1f, new Vector2(1f, 1f), Ease.SineInOut),
-                    }, delegate (Vector2 x)
+                    }, x =>
                     {
                         if (parentY != null)
                             parentY.localScale = new Vector3(x.x, x.y, 1f);
@@ -774,7 +746,7 @@ namespace BetterLegacy.Example
                     {
                         new Vector3Keyframe(0f, new Vector3(200f, 0f), Ease.Linear),
                         new Vector3Keyframe(2f, new Vector3(750f, 0f, 0f), Ease.SineOut),
-                    }, delegate (Vector3 x)
+                    }, x =>
                     {
                         if (parentX != null)
                             parentX.localPosition = x;
@@ -784,24 +756,24 @@ namespace BetterLegacy.Example
                         new Vector3Keyframe(0f, new Vector3(0f, -700f, 0f), Ease.Linear),
                         new Vector3Keyframe(1f, new Vector3(0f, -290f, 0f), Ease.SineOut),
                         new Vector3Keyframe(2f, new Vector3(0f, -410f, 0f), Ease.SineInOut),
-                    }, delegate (Vector3 x)
+                    }, x =>
                     {
                         if (parentY != null)
-                        parentY.localPosition = x;
+                            parentY.localPosition = x;
                     }),
                     new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
                     {
                         new Vector3Keyframe(0f, new Vector3(0f, 1, 0f), Ease.Linear),
                         new Vector3Keyframe(0.4f, new Vector3(0f, -1f, 0f), Ease.SineOut),
                         new Vector3Keyframe(0.8f, new Vector3(0f, 0f, 0f), Ease.SineOut),
-                    }, delegate (Vector3 x)
+                    }, x =>
                     {
                         if (pupils != null)
                             pupils.localPosition = x;
                     })
                 };
 
-                waveAnimation.onComplete += delegate ()
+                waveAnimation.onComplete += () =>
                 {
                     lookAt = true;
                 };
@@ -818,18 +790,12 @@ namespace BetterLegacy.Example
                     {
                         new FloatKeyframe(0f, 0f, Ease.Linear),
                         new FloatKeyframe(0.2f, 15f, Ease.SineOut),
-                    }, delegate (float x)
-                    {
-                        browLeft.localRotation = Quaternion.Euler(0f, 0f, x);
-                    }),
+                    }, x => { browLeft.localRotation = Quaternion.Euler(0f, 0f, x); }),
                     new AnimationHandler<float>(new List<IKeyframe<float>>
                     {
                         new FloatKeyframe(0f, 0f, Ease.Linear),
                         new FloatKeyframe(0.2f, -15f, Ease.SineOut),
-                    }, delegate (float x)
-                    {
-                        browRight.localRotation = Quaternion.Euler(0f, 0f, x);
-                    }),
+                    }, x => { browRight.localRotation = Quaternion.Euler(0f, 0f, x); }),
                 };
 
                 animations.Add(animation);
@@ -845,44 +811,29 @@ namespace BetterLegacy.Example
                     {
                         new FloatKeyframe(0f, 0f, Ease.Linear),
                         new FloatKeyframe(0.3f, -3f, Ease.SineOut),
-                    }, delegate (float x)
-                    {
-                        faceX.localPosition = new Vector3(x, 0f, 0f);
-                    }),
+                    }, x => { faceX.localPosition = new Vector3(x, 0f, 0f); }),
                     new AnimationHandler<float>(new List<IKeyframe<float>>
                     {
                         new FloatKeyframe(0f, 0f, Ease.Linear),
                         new FloatKeyframe(1.5f, -3f, Ease.CircIn),
-                    }, delegate (float x)
-                    {
-                        faceY.localPosition = new Vector3(0f, x, 0f);
-                    }),
+                    }, x => { faceY.localPosition = new Vector3(0f, x, 0f); }),
                     new AnimationHandler<float>(new List<IKeyframe<float>>
                     {
                         new FloatKeyframe(0f, 0f, Ease.Linear),
                         new FloatKeyframe(1.5f, 180f, Ease.CircIn),
-                    }, delegate (float x)
-                    {
-                        handLeft.localRotation = Quaternion.Euler(0f, 0f, x);
-                    }),
+                    }, x => { handLeft.localRotation = Quaternion.Euler(0f, 0f, x); }),
                     new AnimationHandler<float>(new List<IKeyframe<float>>
                     {
                         new FloatKeyframe(0f, 0f, Ease.Linear),
                         new FloatKeyframe(1.5f, 30f, Ease.CircIn),
-                    }, delegate (float x)
-                    {
-                        handRight.localRotation = Quaternion.Euler(0f, 0f, x);
-                    }),
+                    }, x => { handRight.localRotation = Quaternion.Euler(0f, 0f, x); }),
                     new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
                     {
                         new Vector2Keyframe(0f, Vector2.one, Ease.Linear),
                         new Vector2Keyframe(0.5f, new Vector2(1.1f, 0.9f), Ease.SineOut),
                         new Vector2Keyframe(1.1f, Vector2.one, Ease.SineInOut),
                         new Vector2Keyframe(4f, new Vector2(0.7f, 1.3f), Ease.SineIn),
-                    }, delegate (Vector2 x)
-                    {
-                        parentY.localScale = new Vector3(x.x, x.y, 1f);
-                    }),
+                    }, x => { parentY.localScale = new Vector3(x.x, x.y, 1f); }),
                 };
 
                 animations.Add(animation);
@@ -898,34 +849,22 @@ namespace BetterLegacy.Example
                     {
                         new FloatKeyframe(0f, 0f, Ease.Linear),
                         new FloatKeyframe(0.6f, 0f, Ease.SineInOut),
-                    }, delegate (float x)
-                    {
-                        parentRotscale.localRotation = Quaternion.Euler(0f, 0f, x);
-                    }),
+                    }, x => { parentRotscale.localRotation = Quaternion.Euler(0f, 0f, x); }),
                     new AnimationHandler<float>(new List<IKeyframe<float>>
                     {
                         new FloatKeyframe(0f, 0f, Ease.Linear),
                         new FloatKeyframe(0.6f, 0f, Ease.SineInOut),
-                    }, delegate (float x)
-                    {
-                        handLeft.localRotation = Quaternion.Euler(0f, 0f, x);
-                    }),
+                    }, x => { handLeft.localRotation = Quaternion.Euler(0f, 0f, x); }),
                     new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
                     {
                         new Vector3Keyframe(0f, Vector3.zero, Ease.Linear),
                         new Vector3Keyframe(0.6f, Vector3.zero, Ease.SineInOut)
-                    }, delegate (Vector3 x)
-                    {
-                        parentX.localPosition = x;
-                    }),
+                    }, x => { parentX.localPosition = x; }),
                     new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
                     {
                         new Vector3Keyframe(0f, Vector3.zero, Ease.Linear),
                         new Vector3Keyframe(0.6f, Vector3.zero, Ease.SineInOut)
-                    }, delegate (Vector3 x)
-                    {
-                        parentY.localPosition = x;
-                    }),
+                    }, x => { parentY.localPosition = x; }),
                 };
 
                 animations.Add(animation);
@@ -1249,7 +1188,7 @@ namespace BetterLegacy.Example
                 clickable.onClick = pointerEventData =>
                 {
                     talking = true;
-                    Say("Please don't touch me there.", new List<IKeyframe<float>> { new FloatKeyframe(0f, parentX.localPosition.x, Ease.Linear) }, new List<IKeyframe<float>> { new FloatKeyframe(0f, parentY.localPosition.y + 200f, Ease.Linear) }, onComplete: delegate () { talking = false; });
+                    Say("Please don't touch me there.", new List<IKeyframe<float>> { new FloatKeyframe(0f, parentX.localPosition.x, Ease.Linear) }, new List<IKeyframe<float>> { new FloatKeyframe(0f, parentY.localPosition.y + 200f, Ease.Linear) }, onComplete: () => { talking = false; });
                     Play("Angry", false);
                 };
             }
@@ -2001,18 +1940,6 @@ namespace BetterLegacy.Example
             yield break;
         }
 
-        public void SetParent(Transform tf)
-        {
-            var x = floatingParent.localPosition;
-            var y = floatingParent.localScale;
-            var z = floatingParent.localRotation;
-            floatingParent.SetParent(tf);
-
-            floatingParent.localPosition = x;
-            floatingParent.localScale = y;
-            floatingParent.localRotation = z;
-        }
-
         #endregion
 
         #region Play Animations
@@ -2026,10 +1953,7 @@ namespace BetterLegacy.Example
                 Debug.LogFormat("{0}Playing Example Animation: {1}", className, anim);
 
             if (stopOthers)
-                animations.FindAll(x => x.playing).ForEach(delegate (RTAnimation anim)
-                {
-                    anim.Stop();
-                });
+                animations.FindAll(x => x.playing).ForEach(anim => { anim.Stop(); });
 
             var animation = animations.Find(x => x.name == anim);
 
@@ -2102,10 +2026,10 @@ namespace BetterLegacy.Example
             var listY = new List<IKeyframe<float>>();
 
             if (xPos != null)
-                xPos.ForEach(delegate (IKeyframe<float> d) { listX.Add(d); });
+                xPos.ForEach(d => { listX.Add(d); });
             else listX.Add(new FloatKeyframe(0f, 0f, Ease.Linear));
             if (yPos != null)
-                yPos.ForEach(delegate (IKeyframe<float> d) { listY.Add(d); });
+                yPos.ForEach(d => { listY.Add(d); });
             else listY.Add(new FloatKeyframe(0f, 0f, Ease.Linear));
 
             int prevLetterNum = 0;
@@ -2400,10 +2324,16 @@ namespace BetterLegacy.Example
 
         public void Kill()
         {
+            dying = true;
+
             StopAnimations();
             animations = null;
-            Destroy(parentX.gameObject);
-            Destroy(dialogueBase.gameObject);
+
+            if (parentX)
+                Destroy(parentX.gameObject);
+            if (dialogueBase)
+                Destroy(dialogueBase.gameObject);
+
             Destroy(baseCanvas);
             Destroy(gameObject);
         }
@@ -2439,18 +2369,12 @@ namespace BetterLegacy.Example
                 {
                     new FloatKeyframe(0f, browLeft.localRotation.eulerAngles.z, Ease.Linear),
                     new FloatKeyframe(0.3f, tbrowLeft, Ease.SineOut),
-                }, delegate (float x)
-                {
-                    browLeft.localRotation = Quaternion.Euler(0f, 0f, x);
-                }),
+                }, x => { browLeft.localRotation = Quaternion.Euler(0f, 0f, x); }),
                 new AnimationHandler<float>(new List<IKeyframe<float>>
                 {
                     new FloatKeyframe(0f, browRight.localRotation.eulerAngles.z, Ease.Linear),
                     new FloatKeyframe(0.3f, tbrowRight, Ease.SineOut),
-                }, delegate (float x)
-                {
-                    browRight.localRotation = Quaternion.Euler(0f, 0f, x);
-                }),
+                }, x => { browRight.localRotation = Quaternion.Euler(0f, 0f, x); }),
             };
 
             PlayOnce(animation, true, x => x.playing && !x.name.Contains("DIALOGUE: ") && !x.name.ToLower().Contains("movement"));
