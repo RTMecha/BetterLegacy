@@ -94,7 +94,7 @@ namespace BetterLegacy.Editor.Managers
 
             searchField.onValueChanged.ClearAll();
             searchField.text = "";
-            searchField.onValueChanged.AddListener(delegate (string _val)
+            searchField.onValueChanged.AddListener(_val =>
             {
                 searchTerm = _val;
                 StartCoroutine(RefreshEditor());
@@ -123,7 +123,7 @@ namespace BetterLegacy.Editor.Managers
                     functionButtonStorage.text.fontSize = 16;
                     functionButtonStorage.text.text = e;
                     functionButtonStorage.button.onClick.ClearAll();
-                    functionButtonStorage.button.onClick.AddListener(delegate ()
+                    functionButtonStorage.button.onClick.AddListener(() =>
                     {
                         CurrentTab = (Tab)tabIndex;
                         StartCoroutine(RefreshEditor());
@@ -142,7 +142,7 @@ namespace BetterLegacy.Editor.Managers
             PlayerSprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_player.png");
 
             EditorHelper.AddEditorDialog("Player Editor", dialog);
-            EditorHelper.AddEditorDropdown("Player Editor", "", "Edit", PlayerSprite, delegate ()
+            EditorHelper.AddEditorDropdown("Player Editor", "", "Edit", PlayerSprite, () =>
             {
                 EditorManager.inst.ShowDialog("Player Editor");
                 StartCoroutine(RefreshEditor());
@@ -1024,7 +1024,7 @@ namespace BetterLegacy.Editor.Managers
                 selectStorage.text.fontSize = 16;
                 selectStorage.text.text = "Select";
                 selectStorage.button.onClick.ClearAll();
-                selectStorage.button.onClick.AddListener(delegate ()
+                selectStorage.button.onClick.AddListener(() =>
                 {
                     EditorManager.inst.ShowDialog("Player Models Popup");
                     StartCoroutine(RefreshModels());
@@ -1041,7 +1041,7 @@ namespace BetterLegacy.Editor.Managers
                 for (int i = 1; i <= 4; i++)
                     playerIndexDropdown.options.Add(new Dropdown.OptionData($"Player {i}"));
                 playerIndexDropdown.value = 0;
-                playerIndexDropdown.onValueChanged.AddListener(delegate (int _val)
+                playerIndexDropdown.onValueChanged.AddListener(_val =>
                 {
                     playerModelIndex = _val;
                     StartCoroutine(RefreshEditor());
@@ -1055,7 +1055,7 @@ namespace BetterLegacy.Editor.Managers
                 createStorage.text.fontSize = 16;
                 createStorage.text.text = "Create";
                 createStorage.button.onClick.ClearAll();
-                createStorage.button.onClick.AddListener(delegate ()
+                createStorage.button.onClick.AddListener(() =>
                 {
                     var num = PlayerManager.PlayerModels.Count;
 
@@ -1075,7 +1075,7 @@ namespace BetterLegacy.Editor.Managers
                 saveStorage.text.fontSize = 16;
                 saveStorage.text.text = "Save";
                 saveStorage.button.onClick.ClearAll();
-                saveStorage.button.onClick.AddListener(delegate ()
+                saveStorage.button.onClick.AddListener(() =>
                 {
                     PlayerManager.SaveGlobalModels();
                     EditorManager.inst.DisplayNotification("Saved player models", 1.5f, EditorManager.NotificationType.Success);
@@ -1090,7 +1090,7 @@ namespace BetterLegacy.Editor.Managers
                 loadStorage.text.fontSize = 16;
                 loadStorage.text.text = "Reload";
                 loadStorage.button.onClick.ClearAll();
-                loadStorage.button.onClick.AddListener(delegate ()
+                loadStorage.button.onClick.AddListener(() =>
                 {
                     PlayerManager.LoadGlobalModels();
                     PlayerManager.RespawnPlayers();
@@ -1104,7 +1104,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddGraphic(loadStorage.text, ThemeGroup.Function_2_Text);
             }
 
-            ModelsPopup = RTEditor.inst.GeneratePopup("Player Models Popup", "Player Models", Vector2.zero, Vector2.zero, delegate (string _val)
+            ModelsPopup = RTEditor.inst.GeneratePopup("Player Models Popup", "Player Models", Vector2.zero, Vector2.zero, _val =>
             {
                 modelSearchTerm = _val;
                 StartCoroutine(RefreshModels());
@@ -1161,7 +1161,7 @@ namespace BetterLegacy.Editor.Managers
                                 var inputFieldStorage = ui.GameObject.transform.Find("input").GetComponent<InputFieldStorage>();
                                 inputFieldStorage.inputField.onValueChanged.ClearAll();
                                 inputFieldStorage.inputField.text = GameData.Current.LevelBeatmapData.ModLevelData.speedMultiplier.ToString();
-                                inputFieldStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+                                inputFieldStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
                                     if (float.TryParse(_val, out float result))
                                     {
@@ -1180,7 +1180,7 @@ namespace BetterLegacy.Editor.Managers
                                 var toggle = ui.GameObject.transform.Find("toggle").GetComponent<Toggle>();
                                 toggle.onValueChanged.ClearAll();
                                 toggle.isOn = GameData.Current.LevelBeatmapData.ModLevelData.lockBoost;
-                                toggle.onValueChanged.AddListener(delegate (bool _val)
+                                toggle.onValueChanged.AddListener(_val =>
                                 {
                                     GameData.Current.LevelBeatmapData.ModLevelData.lockBoost = _val;
                                     RTPlayer.SetGameDataProperties();
@@ -1193,7 +1193,7 @@ namespace BetterLegacy.Editor.Managers
                                 var dropdown = ui.GameObject.transform.Find("dropdown").GetComponent<Dropdown>();
                                 dropdown.onValueChanged.ClearAll();
                                 dropdown.value = GameData.Current.LevelBeatmapData.ModLevelData.gameMode;
-                                dropdown.onValueChanged.AddListener(delegate (int _val)
+                                dropdown.onValueChanged.AddListener(_val =>
                                 {
                                     GameData.Current.LevelBeatmapData.ModLevelData.gameMode = _val;
                                     RTPlayer.SetGameDataProperties();
@@ -1218,7 +1218,7 @@ namespace BetterLegacy.Editor.Managers
                                 var inputFieldStorage = ui.GameObject.transform.Find("input").GetComponent<InputFieldStorage>();
                                 inputFieldStorage.inputField.onValueChanged.ClearAll();
                                 inputFieldStorage.inputField.text = GameData.Current.LevelBeatmapData.ModLevelData.maxJumpCount.ToString();
-                                inputFieldStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+                                inputFieldStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
                                     if (int.TryParse(_val, out int result))
                                     {
@@ -1237,7 +1237,7 @@ namespace BetterLegacy.Editor.Managers
                                 var inputFieldStorage = ui.GameObject.transform.Find("input").GetComponent<InputFieldStorage>();
                                 inputFieldStorage.inputField.onValueChanged.ClearAll();
                                 inputFieldStorage.inputField.text = GameData.Current.LevelBeatmapData.ModLevelData.jumpGravity.ToString();
-                                inputFieldStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+                                inputFieldStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
                                     if (float.TryParse(_val, out float result))
                                     {
@@ -1256,7 +1256,7 @@ namespace BetterLegacy.Editor.Managers
                                 var inputFieldStorage = ui.GameObject.transform.Find("input").GetComponent<InputFieldStorage>();
                                 inputFieldStorage.inputField.onValueChanged.ClearAll();
                                 inputFieldStorage.inputField.text = GameData.Current.LevelBeatmapData.ModLevelData.jumpIntensity.ToString();
-                                inputFieldStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+                                inputFieldStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
                                     if (float.TryParse(_val, out float result))
                                     {
@@ -1275,7 +1275,7 @@ namespace BetterLegacy.Editor.Managers
                                 var inputFieldStorage = ui.GameObject.transform.Find("input").GetComponent<InputFieldStorage>();
                                 inputFieldStorage.inputField.onValueChanged.ClearAll();
                                 inputFieldStorage.inputField.text = GameData.Current.LevelBeatmapData.ModLevelData.maxHealth.ToString();
-                                inputFieldStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+                                inputFieldStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
                                     if (int.TryParse(_val, out int result))
                                     {
@@ -1297,7 +1297,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var button = ui.GameObject.GetComponent<Button>();
                     button.onClick.ClearAll();
-                    button.onClick.AddListener(delegate ()
+                    button.onClick.AddListener(() =>
                     {
                         EditorManager.inst.ShowDialog("Player Models Popup");
                         StartCoroutine(RefreshCustomObjects());
@@ -1326,7 +1326,7 @@ namespace BetterLegacy.Editor.Managers
                                 text.text = customObject.id + " (Click to copy)";
                                 var button = ui.GameObject.GetComponent<Button>();
                                 button.onClick.ClearAll();
-                                button.onClick.AddListener(delegate ()
+                                button.onClick.AddListener(() =>
                                 {
                                     LSText.CopyToClipboard(customObject.id);
                                     EditorManager.inst.DisplayNotification($"Copied ID \"{customObject.id}\" to clipboard!", 2f, EditorManager.NotificationType.Success);
@@ -1340,7 +1340,7 @@ namespace BetterLegacy.Editor.Managers
                                 var inputField = ui.GameObject.transform.Find("input").GetComponent<InputField>();
                                 inputField.onValueChanged.ClearAll();
                                 inputField.text = ui.Name == "Name" ? customObject.name : customObject.customColor;
-                                inputField.onValueChanged.AddListener(delegate (string _val)
+                                inputField.onValueChanged.AddListener(_val =>
                                 {
                                     if (ui.Name == "Name")
                                         customObject.name = _val;
@@ -1364,7 +1364,7 @@ namespace BetterLegacy.Editor.Managers
                                     (ui.Name == "Rotation" ? customObject.rotation : ui.Name == "Depth" ? customObject.depth :
                                     ui.Name == "Opacity" ? customObject.opacity : ui.Name == "Position Offset" ? customObject.positionOffset :
                                     ui.Name == "Scale Offset" ? customObject.scaleOffset : customObject.rotationOffset).ToString();
-                                inputFieldStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+                                inputFieldStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
                                     if (float.TryParse(_val, out float result))
                                     {
@@ -1401,7 +1401,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 inputXStorage.inputField.onValueChanged.ClearAll();
                                 inputXStorage.inputField.text = vector.x.ToString();
-                                inputXStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+                                inputXStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
                                     var vector = ui.Name == "Position" ? customObject.position : customObject.scale;
 
@@ -1418,7 +1418,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 inputYStorage.inputField.onValueChanged.ClearAll();
                                 inputYStorage.inputField.text = vector.y.ToString();
-                                inputYStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+                                inputYStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
                                     var vector = ui.Name == "Position" ? customObject.position : customObject.scale;
 
@@ -1453,7 +1453,7 @@ namespace BetterLegacy.Editor.Managers
 
                                     var button = color.GetComponent<Button>();
                                     button.onClick.ClearAll();
-                                    button.onClick.AddListener(delegate ()
+                                    button.onClick.AddListener(() =>
                                     {
                                         customObject.color = colorIndex;
                                         StartCoroutine(RefreshEditor());
@@ -1467,7 +1467,7 @@ namespace BetterLegacy.Editor.Managers
                                 var dropdown = ui.GameObject.transform.Find("dropdown").GetComponent<Dropdown>();
                                 dropdown.onValueChanged.ClearAll();
                                 dropdown.value = customObject.parent;
-                                dropdown.onValueChanged.AddListener(delegate (int _val)
+                                dropdown.onValueChanged.AddListener(_val =>
                                 {
                                     customObject.parent = _val;
 
@@ -1498,7 +1498,7 @@ namespace BetterLegacy.Editor.Managers
                                 var toggle = ui.GameObject.transform.Find("toggle").GetComponent<Toggle>();
                                 toggle.onValueChanged.ClearAll();
                                 toggle.isOn = isScale ? customObject.scaleParent : isRequireAll ? customObject.requireAll : customObject.rotationParent;
-                                toggle.onValueChanged.AddListener(delegate (bool _val)
+                                toggle.onValueChanged.AddListener(_val =>
                                 {
                                     if (isScale)
                                         customObject.scaleParent = _val;
@@ -1531,7 +1531,7 @@ namespace BetterLegacy.Editor.Managers
                                 ((RectTransform)add.transform).sizeDelta = new Vector2(760f, 32f);
                                 var addButton = add.GetComponent<Button>();
                                 addButton.onClick.ClearAll();
-                                addButton.onClick.AddListener(delegate ()
+                                addButton.onClick.AddListener(() =>
                                 {
                                     var newVisibility = new PlayerModel.CustomObject.Visiblity();
                                     newVisibility.command = IntToVisibility(0);
@@ -1555,7 +1555,7 @@ namespace BetterLegacy.Editor.Managers
 
                                     toggle.button.onClick.ClearAll();
                                     toggle.text.text = $"Not: {(visibility.not ? "Yes" : "No")}";
-                                    toggle.button.onClick.AddListener(delegate ()
+                                    toggle.button.onClick.AddListener(() =>
                                     {
                                         visibility.not = !visibility.not;
                                         toggle.text.text = $"Not: {(visibility.not ? "Yes" : "No")}";
@@ -1572,24 +1572,10 @@ namespace BetterLegacy.Editor.Managers
                                     Destroy(x.GetComponent<HideDropdownOptions>());
 
                                     var dropdown = x.GetComponent<Dropdown>();
-                                    dropdown.onValueChanged.RemoveAllListeners();
-                                    dropdown.options.Clear();
-                                    dropdown.options = new List<Dropdown.OptionData>
-                                    {
-                                        new Dropdown.OptionData("Is Boosting"),
-                                        new Dropdown.OptionData("Is Taking Hit"),
-                                        new Dropdown.OptionData("Is Zen Mode"),
-                                        new Dropdown.OptionData("Is Health Percentage Greater"),
-                                        new Dropdown.OptionData("Is Health Greater Equals"),
-                                        new Dropdown.OptionData("Is Health Equals"),
-                                        new Dropdown.OptionData("Is Health Greater"),
-                                        new Dropdown.OptionData("Is Pressing Key"),
-                                    };
+                                    dropdown.onValueChanged.ClearAll();
+                                    dropdown.options = CoreHelper.StringToOptionData("Is Boosting", "Is Taking Hit", "Is Zen Mode", "Is Health Percentage Greater", "Is Health Greater Equals", "Is Health Equals", "Is Health Greater", "Is Pressing Key");
                                     dropdown.value = VisibilityToInt(visibility.command);
-                                    dropdown.onValueChanged.AddListener(delegate (int _val)
-                                    {
-                                        visibility.command = IntToVisibility(_val);
-                                    });
+                                    dropdown.onValueChanged.AddListener(_val => { visibility.command = IntToVisibility(_val); });
 
                                     // Value
                                     {
@@ -1598,7 +1584,7 @@ namespace BetterLegacy.Editor.Managers
 
                                         valueStorage.inputField.onValueChanged.ClearAll();
                                         valueStorage.inputField.text = visibility.value.ToString();
-                                        valueStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+                                        valueStorage.inputField.onValueChanged.AddListener(_val =>
                                         {
                                             if (float.TryParse(_val, out float result))
                                                 visibility.value = result;
@@ -1620,7 +1606,7 @@ namespace BetterLegacy.Editor.Managers
 
                                     var deleteButton = delete.GetComponent<DeleteButtonStorage>();
                                     deleteButton.button.onClick.ClearAll();
-                                    deleteButton.button.onClick.AddListener(delegate ()
+                                    deleteButton.button.onClick.AddListener(() =>
                                     {
                                         customObject.visibilitySettings.RemoveAt(index);
                                         StartCoroutine(RefreshEditor());
@@ -1695,7 +1681,7 @@ namespace BetterLegacy.Editor.Managers
                         text.text = value.ToString() + " (Click to copy)";
                         var button = ui.GameObject.GetComponent<Button>();
                         button.onClick.ClearAll();
-                        button.onClick.AddListener(delegate ()
+                        button.onClick.AddListener(() =>
                         {
                             LSText.CopyToClipboard(value.ToString());
                             EditorManager.inst.DisplayNotification($"Copied ID \"{value}\" to clipboard!", 2f, EditorManager.NotificationType.Success);
@@ -1718,7 +1704,7 @@ namespace BetterLegacy.Editor.Managers
                                 var toggle = ui.GameObject.transform.Find("toggle").GetComponent<Toggle>();
                                 toggle.onValueChanged.ClearAll();
                                 toggle.isOn = (bool)value;
-                                toggle.onValueChanged.AddListener(delegate (bool _val)
+                                toggle.onValueChanged.AddListener(_val =>
                                 {
                                     currentModel[key] = _val;
                                     PlayerManager.UpdatePlayers();
@@ -1731,7 +1717,7 @@ namespace BetterLegacy.Editor.Managers
                                 var inputField = ui.GameObject.transform.Find("input").GetComponent<InputField>();
                                 inputField.onValueChanged.ClearAll();
                                 inputField.text = value.ToString();
-                                inputField.onValueChanged.AddListener(delegate (string _val)
+                                inputField.onValueChanged.AddListener(_val =>
                                 {
                                     if (!(key.Contains("Color") && key.Contains("Custom")))
                                         currentModel[key] = _val;
@@ -1748,7 +1734,7 @@ namespace BetterLegacy.Editor.Managers
                                 var inputFieldStorage = ui.GameObject.transform.Find("input").GetComponent<InputFieldStorage>();
                                 inputFieldStorage.inputField.onValueChanged.ClearAll();
                                 inputFieldStorage.inputField.text = value.ToString();
-                                inputFieldStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+                                inputFieldStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
                                     if (int.TryParse(_val, out int result))
                                     {
@@ -1767,7 +1753,7 @@ namespace BetterLegacy.Editor.Managers
                                 var inputFieldStorage = ui.GameObject.transform.Find("input").GetComponent<InputFieldStorage>();
                                 inputFieldStorage.inputField.onValueChanged.ClearAll();
                                 inputFieldStorage.inputField.text = value.ToString();
-                                inputFieldStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+                                inputFieldStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
                                     if (float.TryParse(_val, out float result))
                                     {
@@ -1788,7 +1774,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 inputXStorage.inputField.onValueChanged.ClearAll();
                                 inputXStorage.inputField.text = ((Vector2)value).x.ToString();
-                                inputXStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+                                inputXStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
                                     if (float.TryParse(_val, out float result))
                                     {
@@ -1800,7 +1786,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 inputYStorage.inputField.onValueChanged.ClearAll();
                                 inputYStorage.inputField.text = ((Vector2)value).y.ToString();
-                                inputYStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+                                inputYStorage.inputField.onValueChanged.AddListener(_val =>
                                 {
                                     if (float.TryParse(_val, out float result))
                                     {
@@ -1830,7 +1816,7 @@ namespace BetterLegacy.Editor.Managers
 
                                     var button = color.GetComponent<Button>();
                                     button.onClick.ClearAll();
-                                    button.onClick.AddListener(delegate ()
+                                    button.onClick.AddListener(() =>
                                     {
                                         currentModel[key] = colorIndex;
                                         StartCoroutine(RefreshEditor());
@@ -1844,7 +1830,7 @@ namespace BetterLegacy.Editor.Managers
                                 var dropdown = ui.GameObject.transform.Find("dropdown").GetComponent<Dropdown>();
                                 dropdown.onValueChanged.ClearAll();
                                 dropdown.value = (int)value;
-                                dropdown.onValueChanged.AddListener(delegate (int _val)
+                                dropdown.onValueChanged.AddListener(_val =>
                                 {
                                     currentModel[key] = _val;
                                     PlayerManager.UpdatePlayers();
@@ -1919,10 +1905,7 @@ namespace BetterLegacy.Editor.Managers
 
 
                         EditorManager.inst.HideDialog("Warning Popup");
-                    }, () =>
-                    {
-                        EditorManager.inst.HideDialog("Warning Popup");
-                    });
+                    }, () => { EditorManager.inst.HideDialog("Warning Popup"); });
                 });
 
                 EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
@@ -1999,10 +1982,7 @@ namespace BetterLegacy.Editor.Managers
                         StartCoroutine(RefreshEditor());
                         PlayerManager.UpdatePlayers();
                         EditorManager.inst.HideDialog("Warning Popup");
-                    }, () =>
-                    {
-                        EditorManager.inst.HideDialog("Warning Popup");
-                    });
+                    }, () => { EditorManager.inst.HideDialog("Warning Popup"); });
                 });
 
                 EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
@@ -2246,7 +2226,7 @@ namespace BetterLegacy.Editor.Managers
                 toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < ObjectEditor.UnmoddedShapeCounts.Length);
 
                 if (RTEditor.ShowModdedUI || index < ObjectEditor.UnmoddedShapeCounts.Length)
-                    toggle.onValueChanged.AddListener(delegate (bool _val)
+                    toggle.onValueChanged.AddListener(_val =>
                     {
                         if (_val)
                         {
@@ -2277,7 +2257,7 @@ namespace BetterLegacy.Editor.Managers
                     toggle.gameObject.SetActive(RTEditor.ShowModdedUI || index < ObjectEditor.UnmoddedShapeCounts[type]);
 
                     if (RTEditor.ShowModdedUI || index < ObjectEditor.UnmoddedShapeCounts[type])
-                        toggle.onValueChanged.AddListener(delegate (bool _val)
+                        toggle.onValueChanged.AddListener(_val =>
                         {
                             if (_val)
                             {
@@ -2304,7 +2284,7 @@ namespace BetterLegacy.Editor.Managers
                     var textIF = shapeSettings.Find("5").GetComponent<InputField>();
                     textIF.onValueChanged.ClearAll();
                     textIF.text = customObject.text;
-                    textIF.onValueChanged.AddListener(delegate (string _val)
+                    textIF.onValueChanged.AddListener(_val =>
                     {
                         CoreHelper.Log($"Set text to {_val}");
                         customObject.text = _val;
@@ -2316,10 +2296,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var select = shapeSettings.Find("7/select").GetComponent<Button>();
                     select.onClick.ClearAll();
-                    select.onClick.AddListener(delegate ()
-                    {
-                        OpenImageSelector(ui);
-                    });
+                    select.onClick.AddListener(() => { OpenImageSelector(ui); });
                     shapeSettings.Find("7/text").GetComponent<Text>().text = string.IsNullOrEmpty(customObject.text) ? "No image selected" : customObject.text;
 
                     if (shapeSettings.Find("7/set"))
