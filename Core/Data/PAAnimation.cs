@@ -39,6 +39,17 @@ namespace BetterLegacy.Core.Data
         public float StartTime { get => Mathf.Clamp(startTime, 0f, float.MaxValue); set => startTime = Mathf.Clamp(value, 0f, float.MaxValue); }
         public List<BaseMarker> markers;
 
+        public float GetLength(int current)
+        {
+            if (current >= objects.Count || current < 0)
+                return 0f;
+
+            var objectsLength = objects[current].animationBins.Max(x => x.events.Max(x => x.eventTime));
+            var markersLength = markers.Max(x => x.time);
+
+            return objectsLength > markersLength ? objectsLength : markersLength;
+        }
+
         public List<AnimationObject> objects;
 
         public static PAAnimation Parse(JSONNode jn)
@@ -121,5 +132,10 @@ namespace BetterLegacy.Core.Data
             public string name;
             public List<EventKeyframe> events = new List<EventKeyframe>();
         }
+
+        public static Dictionary<string, string[]> DefaultBinNames { get; set; } = new Dictionary<string, string[]>
+        {
+            { "Default", new string[] { "Position", "Scale", "Rotation" } }
+        };
     }
 }
