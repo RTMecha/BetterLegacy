@@ -55,7 +55,7 @@ namespace BetterLegacy.Editor.Managers
 
         void Update()
         {
-            if (!LSHelpers.IsUsingInputField() && !dragging && EditorManager.inst.isEditing && Application.isFocused &&
+            if (!CoreHelper.IsUsingInputField && !dragging && EditorManager.inst.isEditing && Application.isFocused &&
                 (AllowKeys || !EventsConfig.Instance.EditorCamEnabled.Value))
             {
                 foreach (var keybind in keybinds)

@@ -114,7 +114,7 @@ namespace BetterLegacy.Components.Editor
         void OnMouseDown()
         {
             onMouseDown?.Invoke();
-            if (EditorManager.inst && EditorManager.inst.isEditing && !string.IsNullOrEmpty(id) && !LSHelpers.IsUsingInputField() && !EventSystem.current.IsPointerOverGameObject())
+            if (EditorManager.inst && EditorManager.inst.isEditing && !string.IsNullOrEmpty(id) && !CoreHelper.IsUsingInputField && !EventSystem.current.IsPointerOverGameObject())
             {
                 startDragTime = Time.time;
                 {

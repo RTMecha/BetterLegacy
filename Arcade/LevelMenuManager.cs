@@ -52,7 +52,7 @@ namespace BetterLegacy.Arcade
 
             Camera.main.backgroundColor = LSColors.HexToColor(DataManager.inst.interfaceSettings["UITheme"][SaveManager.inst.settings.Video.UITheme]["values"]["bg"]);
 
-            if (InputDataManager.inst.menuActions.Cancel.WasPressed && !LSHelpers.IsUsingInputField())
+            if (InputDataManager.inst.menuActions.Cancel.WasPressed && !CoreHelper.IsUsingInputField)
             {
                 SceneManager.inst.LoadScene("Input Select");
             }

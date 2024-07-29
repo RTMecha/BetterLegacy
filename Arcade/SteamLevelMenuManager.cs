@@ -70,7 +70,7 @@ namespace BetterLegacy.Arcade
 
         void UpdateControls()
         {
-            if (LSHelpers.IsUsingInputField())
+            if (CoreHelper.IsUsingInputField)
                 return;
 
             var actions = InputDataManager.inst.menuActions;

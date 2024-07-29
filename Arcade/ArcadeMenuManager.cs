@@ -276,10 +276,7 @@ namespace BetterLegacy.Arcade
                                             level.RectTransform.localScale = new Vector3(x, x, 1f);
                                     }),
                                 };
-                                level.EnterAnimation.onComplete = delegate ()
-                                {
-                                    AnimationManager.inst.RemoveID(level.EnterAnimation.id);
-                                };
+                                level.EnterAnimation.onComplete = () => { AnimationManager.inst.RemoveID(level.EnterAnimation.id); };
                                 AnimationManager.inst.Play(level.EnterAnimation);
                             }
                             else
@@ -303,15 +300,12 @@ namespace BetterLegacy.Arcade
                                             level.RectTransform.localScale = new Vector3(x, x, 1f);
                                     }),
                                 };
-                                level.ExitAnimation.onComplete = delegate ()
-                                {
-                                    AnimationManager.inst.RemoveID(level.ExitAnimation.id);
-                                };
+                                level.ExitAnimation.onComplete = () => { AnimationManager.inst.RemoveID(level.ExitAnimation.id); };
                                 AnimationManager.inst.Play(level.ExitAnimation);
                             }
                         }
 
-                        if (isSelected && !LSHelpers.IsUsingInputField() && InputDataManager.inst.menuActions.Submit.WasPressed)
+                        if (isSelected && !CoreHelper.IsUsingInputField && InputDataManager.inst.menuActions.Submit.WasPressed)
                         {
                             level.Clickable?.onClick?.Invoke(null);
                         }
@@ -334,7 +328,7 @@ namespace BetterLegacy.Arcade
                         level.TitleText.color = isSelected ? textHighlightColor : textColor;
                         level.BaseImage.color = isSelected ? highlightColor : buttonBGColor;
 
-                        if (isSelected && !LSHelpers.IsUsingInputField() && InputDataManager.inst.menuActions.Submit.WasPressed)
+                        if (isSelected && !CoreHelper.IsUsingInputField && InputDataManager.inst.menuActions.Submit.WasPressed)
                         {
                             level.Clickable?.onClick?.Invoke(null);
                         }
@@ -363,10 +357,7 @@ namespace BetterLegacy.Arcade
                                             level.RectTransform.localScale = new Vector3(x, x, 1f);
                                     }),
                                 };
-                                level.EnterAnimation.onComplete = delegate ()
-                                {
-                                    AnimationManager.inst.RemoveID(level.EnterAnimation.id);
-                                };
+                                level.EnterAnimation.onComplete = () => { AnimationManager.inst.RemoveID(level.EnterAnimation.id); };
                                 AnimationManager.inst.Play(level.EnterAnimation);
                             }
                             else
@@ -390,10 +381,7 @@ namespace BetterLegacy.Arcade
                                             level.RectTransform.localScale = new Vector3(x, x, 1f);
                                     }),
                                 };
-                                level.ExitAnimation.onComplete = delegate ()
-                                {
-                                    AnimationManager.inst.RemoveID(level.ExitAnimation.id);
-                                };
+                                level.ExitAnimation.onComplete = () => { AnimationManager.inst.RemoveID(level.ExitAnimation.id); };
                                 AnimationManager.inst.Play(level.ExitAnimation);
                             }
                         }
@@ -448,10 +436,7 @@ namespace BetterLegacy.Arcade
                                             level.RectTransform.localScale = new Vector3(x, x, 1f);
                                     }),
                                 };
-                                level.EnterAnimation.onComplete = delegate ()
-                                {
-                                    AnimationManager.inst.RemoveID(level.EnterAnimation.id);
-                                };
+                                level.EnterAnimation.onComplete = () => { AnimationManager.inst.RemoveID(level.EnterAnimation.id); };
                                 AnimationManager.inst.Play(level.EnterAnimation);
                             }
                             else
@@ -475,15 +460,12 @@ namespace BetterLegacy.Arcade
                                             level.RectTransform.localScale = new Vector3(x, x, 1f);
                                     }),
                                 };
-                                level.ExitAnimation.onComplete = delegate ()
-                                {
-                                    AnimationManager.inst.RemoveID(level.ExitAnimation.id);
-                                };
+                                level.ExitAnimation.onComplete = () => { AnimationManager.inst.RemoveID(level.ExitAnimation.id); };
                                 AnimationManager.inst.Play(level.ExitAnimation);
                             }
                         }
 
-                        if (isSelected && !LSHelpers.IsUsingInputField() && InputDataManager.inst.menuActions.Submit.WasPressed)
+                        if (isSelected && !CoreHelper.IsUsingInputField && InputDataManager.inst.menuActions.Submit.WasPressed)
                         {
                             level.Clickable?.onClick?.Invoke(null);
                         }
@@ -562,10 +544,7 @@ namespace BetterLegacy.Arcade
                                                 level.RectTransform.localScale = new Vector3(x, x, 1f);
                                         }),
                                     };
-                                    level.EnterAnimation.onComplete = delegate ()
-                                    {
-                                        AnimationManager.inst.RemoveID(level.EnterAnimation.id);
-                                    };
+                                    level.EnterAnimation.onComplete = () => { AnimationManager.inst.RemoveID(level.EnterAnimation.id); };
                                     AnimationManager.inst.Play(level.EnterAnimation);
                                 }
                                 else
@@ -589,15 +568,12 @@ namespace BetterLegacy.Arcade
                                                 level.RectTransform.localScale = new Vector3(x, x, 1f);
                                         }),
                                     };
-                                    level.ExitAnimation.onComplete = delegate ()
-                                    {
-                                        AnimationManager.inst.RemoveID(level.ExitAnimation.id);
-                                    };
+                                    level.ExitAnimation.onComplete = () => { AnimationManager.inst.RemoveID(level.ExitAnimation.id); };
                                     AnimationManager.inst.Play(level.ExitAnimation);
                                 }
                             }
 
-                            if (isSelected && !LSHelpers.IsUsingInputField() && InputDataManager.inst.menuActions.Submit.WasPressed)
+                            if (isSelected && !CoreHelper.IsUsingInputField && InputDataManager.inst.menuActions.Submit.WasPressed)
                             {
                                 level.Clickable?.onClick?.Invoke(null);
                             }
@@ -638,10 +614,7 @@ namespace BetterLegacy.Arcade
                                                 level.RectTransform.localScale = new Vector3(x, x, 1f);
                                         }),
                                     };
-                                    level.EnterAnimation.onComplete = delegate ()
-                                    {
-                                        AnimationManager.inst.RemoveID(level.EnterAnimation.id);
-                                    };
+                                    level.EnterAnimation.onComplete = () => { AnimationManager.inst.RemoveID(level.EnterAnimation.id); };
                                     AnimationManager.inst.Play(level.EnterAnimation);
                                 }
                                 else
@@ -665,15 +638,12 @@ namespace BetterLegacy.Arcade
                                                 level.RectTransform.localScale = new Vector3(x, x, 1f);
                                         }),
                                     };
-                                    level.ExitAnimation.onComplete = delegate ()
-                                    {
-                                        AnimationManager.inst.RemoveID(level.ExitAnimation.id);
-                                    };
+                                    level.ExitAnimation.onComplete = () => { AnimationManager.inst.RemoveID(level.ExitAnimation.id); };
                                     AnimationManager.inst.Play(level.ExitAnimation);
                                 }
                             }
 
-                            if (isSelected && !LSHelpers.IsUsingInputField() && InputDataManager.inst.menuActions.Submit.WasPressed)
+                            if (isSelected && !CoreHelper.IsUsingInputField && InputDataManager.inst.menuActions.Submit.WasPressed)
                             {
                                 level.Clickable?.onClick?.Invoke(null);
                             }
@@ -691,7 +661,7 @@ namespace BetterLegacy.Arcade
         /// </summary>
         void UpdateControls()
         {
-            if (LSHelpers.IsUsingInputField() || loadingOnlineLevels || loadingLocalLevels)
+            if (CoreHelper.IsUsingInputField || loadingOnlineLevels || loadingLocalLevels)
                 return;
 
             var actions = InputDataManager.inst.menuActions;

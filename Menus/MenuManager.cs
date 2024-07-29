@@ -48,7 +48,7 @@ namespace BetterLegacy.Menus
 
         void Update()
         {
-            if (LSHelpers.IsUsingInputField())
+            if (CoreHelper.IsUsingInputField)
                 return;
 
             // For loading the Interface scene when you make a change to the menus.

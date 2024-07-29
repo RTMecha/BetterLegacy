@@ -587,7 +587,7 @@ namespace BetterLegacy.Patchers
 
             if (Instance.IsCurrentDialog(EditorManager.EditorDialog.DialogType.Object)
                 && Instance.IsOverObjTimeline
-                && !LSHelpers.IsUsingInputField()
+                && !CoreHelper.IsUsingInputField
                 && !RTEditor.inst.isOverMainTimeline)
             {
 

@@ -24,7 +24,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdatePrefix()
         {
-            if (LSHelpers.IsUsingInputField())
+            if (CoreHelper.IsUsingInputField)
                 return false;
 
             if (Input.GetKeyDown(CoreConfig.Instance.ScreenshotKey.Value))

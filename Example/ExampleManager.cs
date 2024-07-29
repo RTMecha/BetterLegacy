@@ -522,7 +522,7 @@ namespace BetterLegacy.Example
             time = Time.time - timeOffset;
             timeSinceLastInteracted = Time.time - timeSinceLastInteractedOffset;
 
-            if (Input.GetKeyDown(ExampleConfig.Instance.ExampleVisiblityToggle.Value) && !LSHelpers.IsUsingInputField())
+            if (Input.GetKeyDown(ExampleConfig.Instance.ExampleVisiblityToggle.Value) && !CoreHelper.IsUsingInputField)
                 ExampleConfig.Instance.ExampleVisible.Value = !ExampleConfig.Instance.ExampleVisible.Value;
 
             if (ProjectPlannerManager.inst && animations.Where(x => x.name.Contains("DIALOGUE: ") && x.playing).Count() < 1)

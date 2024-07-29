@@ -247,7 +247,7 @@ namespace BetterLegacy.Components.Player
 
         public bool CanBoost
         {
-            get => (!EditorManager.inst || !EditorManager.inst.isEditing) && canBoost && !isBoosting && (PlayerModel == null || PlayerModel.basePart.canBoost) && !CoreHelper.Paused && !LSHelpers.IsUsingInputField();
+            get => (!EditorManager.inst || !EditorManager.inst.isEditing) && canBoost && !isBoosting && (PlayerModel == null || PlayerModel.basePart.canBoost) && !CoreHelper.Paused && !CoreHelper.IsUsingInputField;
             set => canBoost = value;
         }
 
@@ -1009,7 +1009,7 @@ namespace BetterLegacy.Components.Player
             rb.gravityScale = 0f;
 
             if (PlayerAlive && Actions != null && CustomPlayer.active && CanMove && !CoreHelper.Paused &&
-                (CoreConfig.Instance.AllowControlsInputField.Value || !LSHelpers.IsUsingInputField()) &&
+                (CoreConfig.Instance.AllowControlsInputField.Value || !CoreHelper.IsUsingInputField) &&
                 movementMode == MovementMode.KeyboardController && (!CoreHelper.InEditor || !EventsConfig.Instance.EditorCamEnabled.Value))
             {
                 colliding = false;
@@ -1131,7 +1131,7 @@ namespace BetterLegacy.Components.Player
             }
 
             // Currently unused.
-            if (PlayerAlive && CustomPlayer.active && CanMove && !CoreHelper.Paused && !LSHelpers.IsUsingInputField() && movementMode == MovementMode.Mouse && (EditorManager.inst == null || !EditorManager.inst.isEditing) && Application.isFocused && isKeyboard && !EventsConfig.Instance.EditorCamEnabled.Value)
+            if (PlayerAlive && CustomPlayer.active && CanMove && !CoreHelper.Paused && !CoreHelper.IsUsingInputField && movementMode == MovementMode.Mouse && (EditorManager.inst == null || !EditorManager.inst.isEditing) && Application.isFocused && isKeyboard && !EventsConfig.Instance.EditorCamEnabled.Value)
             {
                 Vector2 screenCenter = new Vector2(1920 / 2 * (int)EditorManager.inst.ScreenScale, 1080 / 2 * (int)EditorManager.inst.ScreenScale);
                 Vector2 mousePos = new Vector2(System.Windows.Forms.Cursor.Position.X - screenCenter.x, -(System.Windows.Forms.Cursor.Position.Y - (screenCenter.y * 2)) - screenCenter.y);

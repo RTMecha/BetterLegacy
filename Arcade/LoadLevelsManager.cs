@@ -67,7 +67,7 @@ namespace BetterLegacy.Arcade
             if (loadText)
                 loadText.color = textColor;
 
-            if (InputDataManager.inst.menuActions.Cancel.WasPressed && !LSHelpers.IsUsingInputField())
+            if (InputDataManager.inst.menuActions.Cancel.WasPressed && !CoreHelper.IsUsingInputField)
             {
                 cancelled = true;
             }

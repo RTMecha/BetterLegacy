@@ -147,6 +147,8 @@ namespace BetterLegacy.Core.Helpers
 
         #region Unity
 
+        public static bool IsUsingInputField { get; set; }
+
         /// <summary>
         /// Loads an AssetBundle from the Assets folder.
         /// </summary>

@@ -42,7 +42,7 @@ namespace BetterLegacy.Editor.Managers
 
             if (dialog.activeInHierarchy
                 && isOverTimeline
-                && !LSHelpers.IsUsingInputField()
+                && !CoreHelper.IsUsingInputField
                 && !RTEditor.inst.isOverMainTimeline)
             {
                 if (InputDataManager.inst.editorActions.ZoomIn.WasPressed)

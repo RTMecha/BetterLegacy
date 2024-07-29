@@ -201,7 +201,7 @@ namespace BetterLegacy
 
             try
             {
-                Application.quitting += delegate ()
+                Application.quitting += () =>
                 {
                     if (EditorManager.inst && EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading && DataManager.inst.gameData is GameData)
                     {
@@ -230,7 +230,16 @@ namespace BetterLegacy
 
             RTDebugger.Update();
 
-            if (LSHelpers.IsUsingInputField())
+            try
+            {
+                CoreHelper.IsUsingInputField = LSHelpers.IsUsingInputField();
+            }
+            catch
+            {
+
+            }
+
+            if (CoreHelper.IsUsingInputField)
                 return;
 
             if (Input.GetKeyDown(EventsConfig.Instance.EditorCamToggle.Value))
@@ -259,9 +268,7 @@ namespace BetterLegacy
             jn["user_data"]["spr-id"] = player.sprID;
 
             for (int i = 0; i < AchievementManager.achievements.Count; i++)
-            {
-                jn["achievements"][i] = AchievementManager.achievements[i].ToJSON();
-            }
+                jn["achievements"][i] = AchievementManager.achievements[i].ToJSON(true);
 
             if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "profile"))
                 Directory.CreateDirectory(RTFile.ApplicationDirectory + "profile");

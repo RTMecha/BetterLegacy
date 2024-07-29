@@ -143,7 +143,7 @@ namespace BetterLegacy.Core.Managers
                     editorPerRotate = Vector2.zero;
                 }
 
-                if (LSHelpers.IsUsingInputField() || !EventsConfig.Instance.EditorCamUseKeys.Value)
+                if (CoreHelper.IsUsingInputField || !EventsConfig.Instance.EditorCamUseKeys.Value)
                     return;
 
                 float multiply = 1f;

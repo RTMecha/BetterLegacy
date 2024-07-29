@@ -10211,7 +10211,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 slider.onValueChanged.AddListener(_val =>
                                 {
-                                    if (LSHelpers.IsUsingInputField())
+                                    if (CoreHelper.IsUsingInputField)
                                         return;
 
                                     prop.configEntry.BoxedValue = _val / 10f;
