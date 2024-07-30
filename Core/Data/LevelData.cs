@@ -17,6 +17,7 @@ namespace BetterLegacy.Core.Data
         public float jumpGravity = 1f;
         public float jumpIntensity = 1f;
         public int maxJumpCount = 10;
+        public int maxJumpBoostCount = 1;
         public int maxHealth = 3;
 
         public static LevelData Parse(JSONNode jn)
@@ -51,6 +52,9 @@ namespace BetterLegacy.Core.Data
             if (!string.IsNullOrEmpty(jn["max_jump"]))
                 levelData.maxJumpCount = jn["max_jump"].AsInt;
 
+            if (!string.IsNullOrEmpty(jn["max_jump_boost"]))
+                levelData.maxJumpBoostCount = jn["max_jump_boost"].AsInt;
+
             if (!string.IsNullOrEmpty(jn["max_health"]))
                 levelData.maxHealth = jn["max_health"].AsInt;
 
@@ -83,6 +87,8 @@ namespace BetterLegacy.Core.Data
 
             if (maxJumpCount != 10)
                 jn["max_jump"] = maxJumpCount.ToString();
+            if (maxJumpBoostCount != 1)
+                jn["max_jump_boost"] = maxJumpBoostCount.ToString();
 
             if (maxHealth != 3)
                 jn["max_health"] = maxHealth.ToString();

@@ -341,6 +341,7 @@ namespace BetterLegacy.Core.Data.Player
                     case "Base Jump Gravity": return basePart.jumpGravity;
                     case "Base Jump Intensity": return basePart.jumpIntensity;
                     case "Base Jump Count": return basePart.jumpCount;
+                    case "Base Jump Boost Count": return basePart.jumpBoostCount;
                     case "Base Bounciness": return basePart.bounciness;
                     case "Base Can Boost": return basePart.canBoost;
 
@@ -740,6 +741,8 @@ namespace BetterLegacy.Core.Data.Player
                     case "Base Jump Intensity": basePart.jumpIntensity = (float)value;
                         break;
                     case "Base Jump Count": basePart.jumpCount = (int)value;
+                        break;
+                    case "Base Jump Boost Count": basePart.jumpBoostCount = (int)value;
                         break;
                     case "Base Bounciness": basePart.bounciness = (float)value;
                         break;
@@ -1372,6 +1375,7 @@ namespace BetterLegacy.Core.Data.Player
             "Base Jump Gravity",
             "Base Jump Intensity",
             "Base Jump Count",
+            "Base Jump Boost Count",
             "Base Bounciness",
             "Base Can Boost",
 
@@ -1786,6 +1790,7 @@ namespace BetterLegacy.Core.Data.Player
                 jumpGravity = orig.jumpGravity,
                 jumpIntensity = orig.jumpIntensity,
                 jumpCount = orig.jumpCount,
+                jumpBoostCount = orig.jumpBoostCount,
                 bounciness = orig.bounciness,
                 canBoost = orig.canBoost,
             };
@@ -1827,6 +1832,8 @@ namespace BetterLegacy.Core.Data.Player
                     b.bounciness = jn["bounciness"].AsFloat;
                 if (!string.IsNullOrEmpty(jn["jump_count"]))
                     b.jumpCount = jn["jump_count"].AsInt;
+                if (!string.IsNullOrEmpty(jn["jump_boost_count"]))
+                    b.jumpBoostCount = jn["jump_boost_count"].AsInt;
                 if (!string.IsNullOrEmpty(jn["can_boost"]))
                     b.canBoost = jn["can_boost"].AsBool;
 
@@ -1868,6 +1875,8 @@ namespace BetterLegacy.Core.Data.Player
                     jn["bounciness"] = bounciness.ToString();
                 if (jumpCount != 1)
                     jn["jump_count"] = jumpCount.ToString();
+                if (jumpBoostCount != 1)
+                    jn["jump_boost_count"] = jumpBoostCount.ToString();
                 if (canBoost)
                     jn["can_boost"] = canBoost.ToString();
 
@@ -1897,6 +1906,7 @@ namespace BetterLegacy.Core.Data.Player
             public float bounciness = 0.1f;
 
             public int jumpCount = 1;
+            public int jumpBoostCount = 1;
 
             public bool canBoost = true;
 
@@ -2997,6 +3007,8 @@ namespace BetterLegacy.Core.Data.Player
 
                 if (!string.IsNullOrEmpty(jn["time"]))
                     tailBase.time = jn["time"].AsFloat;
+                if (tailBase.time == 0f)
+                    tailBase.time = 200f;
 
                 return tailBase;
             }
@@ -3023,7 +3035,7 @@ namespace BetterLegacy.Core.Data.Player
 
             public bool grows;
 
-            public float time;
+            public float time = 200f;
 
             public enum TailMode
             {

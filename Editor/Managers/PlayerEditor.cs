@@ -338,6 +338,41 @@ namespace BetterLegacy.Editor.Managers
                         Index = -1,
                     });
                 }
+                
+                // Max Jump Boost Count
+                {
+                    var name = "Global Max Jump Boost Count";
+
+                    var gameObject = Creator.NewUIObject(name, content);
+                    gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 42f);
+
+                    var label = labelPrefab.Duplicate(gameObject.transform, "label");
+                    var labelText = label.GetComponent<Text>();
+                    labelText.text = name;
+                    EditorThemeManager.AddLightText(labelText);
+                    UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
+
+                    var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
+                    UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+
+                    var inputFieldStorage = input.GetComponent<InputFieldStorage>();
+
+                    Destroy(inputFieldStorage.middleButton.gameObject);
+                    EditorThemeManager.AddInputField(inputFieldStorage.inputField);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.leftGreaterButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.leftButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.rightButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputFieldStorage.rightGreaterButton, ThemeGroup.Function_2, false);
+
+                    editorUIs.Add(new PlayerEditorUI
+                    {
+                        Name = name,
+                        GameObject = gameObject,
+                        Tab = Tab.Global,
+                        ValueType = RTEditor.EditorProperty.ValueType.Int,
+                        Index = -1,
+                    });
+                }
 
                 // Jump Gravity
                 {
@@ -489,9 +524,9 @@ namespace BetterLegacy.Editor.Managers
                     name.Contains("Amount") && !name.Contains("Boost") ||
                     name.Contains("Speed") || name.Contains("Depth") || name == "Pulse Duration" ||
                     name.Contains("Cooldown") || name.Contains("Boost Time") || name == "Bullet Lifetime" || name.Contains("Duration") ||
-                    name == "Tail Base Time" || name == "Base Jump Gravity" || name == "Base Jump Count" || name == "Base Jump Intensity" || name == "Base Bounciness")
+                    name == "Tail Base Time" || name == "Base Jump Gravity" || name == "Base Jump Count" || name == "Base Jump Boost Count" || name == "Base Jump Intensity" || name == "Base Bounciness")
                 {
-                    if (name == "Base Health" || name == "Boost Particles Amount" || name == "Base Jump Count")
+                    if (name == "Base Health" || name == "Boost Particles Amount" || name == "Base Jump Count" || name == "Base Jump Boost Count")
                         valueType = RTEditor.EditorProperty.ValueType.Int;
                     if (name.Contains("Scale") && (name.Contains("Start") || name.Contains("End")) && !name.Contains("Pulse") && !name.Contains("Bullet") ||
                         name.Contains("Rotation") && !name.Contains("Easing") ||
@@ -1201,6 +1236,25 @@ namespace BetterLegacy.Editor.Managers
                                     if (int.TryParse(_val, out int result))
                                     {
                                         GameData.Current.LevelBeatmapData.ModLevelData.maxJumpCount = result;
+                                        RTPlayer.SetGameDataProperties();
+                                    }
+                                });
+
+                                TriggerHelper.IncreaseDecreaseButtonsInt(inputFieldStorage);
+                                TriggerHelper.AddEventTriggerParams(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
+
+                                break;
+                            }
+                        case "Global Max Jump Boost Count":
+                            {
+                                var inputFieldStorage = ui.GameObject.transform.Find("input").GetComponent<InputFieldStorage>();
+                                inputFieldStorage.inputField.onValueChanged.ClearAll();
+                                inputFieldStorage.inputField.text = GameData.Current.LevelBeatmapData.ModLevelData.maxJumpBoostCount.ToString();
+                                inputFieldStorage.inputField.onValueChanged.AddListener(_val =>
+                                {
+                                    if (int.TryParse(_val, out int result))
+                                    {
+                                        GameData.Current.LevelBeatmapData.ModLevelData.maxJumpBoostCount = result;
                                         RTPlayer.SetGameDataProperties();
                                     }
                                 });

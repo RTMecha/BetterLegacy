@@ -76,6 +76,7 @@ namespace BetterLegacy.Components.Player
                 JumpGravity = levelData.jumpGravity;
                 JumpIntensity = levelData.jumpIntensity;
                 MaxJumpCount = levelData.maxJumpCount;
+                MaxJumpBoostCount = levelData.maxJumpBoostCount;
                 CustomPlayer.MaxHealth = levelData.maxHealth;
 
                 if (CoreHelper.InEditor && PlayerManager.Players.Count > 0)
@@ -151,12 +152,15 @@ namespace BetterLegacy.Components.Player
         public static float JumpIntensity { get; set; } = 1f;
         public static bool JumpMode { get; set; }
         public static int MaxJumpCount { get; set; } = 10;
+        public static int MaxJumpBoostCount { get; set; } = 1;
 
         public float jumpGravity = 10f;
         public float jumpIntensity = 40f;
         public float bounciness = 0.1f;
-        public int jumpCount = 2; // -1 should be treated as infinity
+        public int jumpCount = 1; // -1 should be treated as infinity
+        public int jumpBoostCount = 1; // -1 should be treated as infinity
         int currentJumpCount = 0;
+        int currentJumpBoostCount = 0;
         public float jumpBoostMultiplier = 0.5f; // to make sure the jump goes about the same distance as left and right boost
 
         #endregion
@@ -840,7 +844,8 @@ namespace BetterLegacy.Components.Player
             if (tailMode == 1 || CoreHelper.Paused)
                 return;
 
-            float num = Time.deltaTime * 200f;
+            var tailBaseTime = PlayerModel.tailBase.time;
+            float num = Time.deltaTime * (tailBaseTime == 0f ? 200f : tailBaseTime);
             for (int i = 1; i < path.Count; i++)
             {
                 if (path.Count >= i && path[i].transform != null && path[i].transform.gameObject.activeSelf)
@@ -866,24 +871,18 @@ namespace BetterLegacy.Components.Player
 
                 if (i == 1)
                 {
-                    var PlayerDelayTracker = (PlayerDelayTracker)playerObjects["Boost Tail Base"].values["PlayerDelayTracker"];
-                    //if (rotateMode != RotateMode.FlipX || rotateMode == RotateMode.FlipX && lastMovement.x > 0f)
-                    PlayerDelayTracker.offset = -i * tailDistance / 2f;
-                    //else if (rotateMode == RotateMode.FlipX && lastMovement.x < 0)
-                    //    PlayerDelayTracker.offset = -(-i * tailDistance / 2f);
-                    PlayerDelayTracker.positionOffset = 0.1f * (-i + 5);
-                    PlayerDelayTracker.rotationOffset = 0.1f * (-i + 5);
+                    var playerDelayTracker = (PlayerDelayTracker)playerObjects["Boost Tail Base"].values["PlayerDelayTracker"];
+                    playerDelayTracker.offset = -i * tailDistance / 2f;
+                    playerDelayTracker.positionOffset = 0.1f * (-i + 5);
+                    playerDelayTracker.rotationOffset = 0.1f * (-i + 5);
                 }
 
                 if (playerObjects.ContainsKey(string.Format("Tail {0} Base", i)))
                 {
-                    var PlayerDelayTracker = (PlayerDelayTracker)playerObjects[string.Format("Tail {0} Base", i)].values["PlayerDelayTracker"];
-                    //if (rotateMode != RotateMode.FlipX || rotateMode == RotateMode.FlipX && lastMovement.x > 0f)
-                    PlayerDelayTracker.offset = -num * tailDistance / 2f;
-                    //else if (rotateMode == RotateMode.FlipX && lastMovement.x < 0)
-                    //    PlayerDelayTracker.offset = -(-num * tailDistance / 2f);
-                    PlayerDelayTracker.positionOffset = 0.1f * (-num + 5);
-                    PlayerDelayTracker.rotationOffset = 0.1f * (-num + 5);
+                    var playerDelayTracker = (PlayerDelayTracker)playerObjects[string.Format("Tail {0} Base", i)].values["PlayerDelayTracker"];
+                    playerDelayTracker.offset = -num * tailDistance / 2f;
+                    playerDelayTracker.positionOffset = 0.1f * (-num + 5);
+                    playerDelayTracker.rotationOffset = 0.1f * (-num + 5);
                 }
             }
         }
@@ -937,7 +936,7 @@ namespace BetterLegacy.Components.Player
 
             if (CanMove && Actions != null)
             {
-                if (Actions.Boost.WasPressed && (JumpMode || CanBoost) && !LockBoost && (!JumpMode || !colliding && currentJumpCount == Mathf.Clamp(jumpCount, -1, MaxJumpCount)))
+                if (Actions.Boost.WasPressed && (JumpMode || CanBoost) && !LockBoost && (!JumpMode || (jumpCount == 0 || !colliding) && (currentJumpCount == Mathf.Clamp(jumpCount, -1, MaxJumpCount) || jumpBoostCount == -1 || currentJumpBoostCount < Mathf.Clamp(jumpBoostCount, -1, MaxJumpBoostCount))))
                 {
                     if (JumpMode)
                     {
@@ -945,6 +944,7 @@ namespace BetterLegacy.Components.Player
                             AudioManager.inst.PlaySound("boost_recover");
 
                         currentJumpCount++;
+                        currentJumpBoostCount++;
                     }
 
                     StartBoost();
@@ -982,7 +982,7 @@ namespace BetterLegacy.Components.Player
                 }
 
                 var velocity = rb.velocity;
-                if (Actions.Boost.WasPressed && (colliding || jumpCount == -1 || currentJumpCount < Mathf.Clamp(jumpCount, -1, MaxJumpCount)))
+                if (Actions.Boost.WasPressed && (jumpCount != 0 && colliding || jumpCount == -1 || currentJumpCount < Mathf.Clamp(jumpCount, -1, MaxJumpCount)))
                 {
                     velocity.y = jumpIntensity * JumpIntensity;
 
@@ -992,6 +992,7 @@ namespace BetterLegacy.Components.Player
                     if (colliding)
                     {
                         currentJumpCount = 0;
+                        currentJumpBoostCount = 0;
                         colliding = false;
                     }
                     currentJumpCount++;
@@ -1331,12 +1332,19 @@ namespace BetterLegacy.Components.Player
 
             var posCalc = (player.transform.position - lastPos);
 
-            //if (posCalc.x < -0.001f || posCalc.x > 0.001f || posCalc.y < -0.001f || posCalc.y > 0.001f)
-            //    lastMovement = posCalc;
-            if (posCalc.x < -0.01f || posCalc.x > 0.01f)
-                lastMovement.x = posCalc.x;
-            if (posCalc.y < -0.01f || posCalc.y > 0.01f)
-                lastMovement.y = posCalc.y;
+            if (!JumpMode && (rotateMode == RotateMode.RotateToDirection || rotateMode == RotateMode.RotateReset || rotateMode == RotateMode.RotateFlipX || rotateMode == RotateMode.RotateFlipY))
+            {
+                if (posCalc.x < -0.001f || posCalc.x > 0.001f || posCalc.y < -0.001f || posCalc.y > 0.001f)
+                    lastMovement = posCalc;
+            }
+            else // Decreases the range of movement detection for cases where 0.001 range is too sensitive.
+            {
+                if (posCalc.x < -0.01f || posCalc.x > 0.01f)
+                    lastMovement.x = posCalc.x;
+                if (posCalc.y < -0.01f || posCalc.y > 0.01f)
+                    lastMovement.y = posCalc.y;
+            }
+
 
             lastPos = player.transform.position;
 
@@ -1569,10 +1577,7 @@ namespace BetterLegacy.Components.Player
                     {
                         new FloatKeyframe(0f, stretchAmount * 1.5f, Ease.Linear),
                         new FloatKeyframe(1.5f, 0f, Ease.GetEaseFunction(DataManager.inst.AnimationList[stretchEasing].Name)),
-                    }, delegate (float x)
-                    {
-                        stretchVector = new Vector2(x, -x);
-                    }),
+                    }, x => { stretchVector = new Vector2(x, -x); }),
                 },
             });
 
@@ -1585,10 +1590,7 @@ namespace BetterLegacy.Components.Player
             {
                 path[1].active = true;
                 var tweener = playerObjects["Boost Tail Base"].gameObject.transform.DOScale(Vector3.one, 0.1f / CoreHelper.ForwardPitch).SetEase(DataManager.inst.AnimationList[9].Animation);
-                tweener.OnComplete(delegate ()
-                {
-                    animatingBoost = false;
-                });
+                tweener.OnComplete(() => { animatingBoost = false; });
             }
             yield break;
         }
@@ -1774,13 +1776,10 @@ namespace BetterLegacy.Components.Player
             //New NameTag
             {
                 Destroy(canvas);
-                canvas = new GameObject("Name Tag Canvas" + (playerIndex + 1).ToString());
-                canvas.transform.SetParent(transform);
-                canvas.transform.localScale = Vector3.one;
+                canvas = Creator.NewGameObject("Name Tag Canvas" + (playerIndex + 1).ToString(), transform);
                 canvas.transform.localRotation = Quaternion.identity;
 
-                var bae = Instantiate(ObjectManager.inst.objectPrefabs[0].options[0]);
-                bae.transform.SetParent(canvas.transform);
+                var bae = ObjectManager.inst.objectPrefabs[0].options[0].Duplicate(canvas.transform);
                 bae.transform.localScale = Vector3.one;
                 bae.transform.localRotation = Quaternion.identity;
 
@@ -1794,8 +1793,7 @@ namespace BetterLegacy.Components.Player
                 Destroy(bae.GetComponentInChildren<SelectObjectInEditor>());
                 Destroy(bae.GetComponentInChildren<Collider2D>());
 
-                var tae = Instantiate(ObjectManager.inst.objectPrefabs[4].options[0]);
-                tae.transform.SetParent(canvas.transform);
+                var tae = ObjectManager.inst.objectPrefabs[4].options[0].Duplicate(canvas.transform);
                 tae.transform.localScale = Vector3.one;
                 tae.transform.localRotation = Quaternion.identity;
 
@@ -1901,6 +1899,7 @@ namespace BetterLegacy.Components.Player
                 jumpGravity = currentModel.basePart.jumpGravity;
                 jumpIntensity = currentModel.basePart.jumpIntensity;
                 jumpCount = currentModel.basePart.jumpCount;
+                jumpBoostCount = currentModel.basePart.jumpBoostCount;
                 bounciness = currentModel.basePart.bounciness;
 
                 rb.sharedMaterial.bounciness = bounciness;
