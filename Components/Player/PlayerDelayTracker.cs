@@ -13,14 +13,16 @@ namespace BetterLegacy.Components.Player
             {
                 float pitch = CoreHelper.ForwardPitch;
 
-                if (player.rotateMode != RTPlayer.RotateMode.FlipX)
-                    target = leader.position + offset * leader.transform.right;
-                else
+                if (player.rotateMode == RTPlayer.RotateMode.FlipX || player.rotateMode == RTPlayer.RotateMode.RotateFlipX)
                 {
                     if (player.lastMovement.x > 0.1f)
                         target = leader.position + offset * leader.transform.right;
                     if (player.lastMovement.x < 0.1f)
                         target = leader.position + -offset * leader.transform.right;
+                }
+                else
+                {
+                    target = leader.position + offset * leader.transform.right;
                 }
 
                 float p = Time.deltaTime * 60f * pitch;
@@ -33,13 +35,13 @@ namespace BetterLegacy.Components.Player
                     if (rotationParent)
                         transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(0f, 0f, leader.transform.rotation.eulerAngles.z), ro);
 
-                    if (scaleParent)
-                    {
-                        if (gameObject.name.ToLower().Contains("tail") && player.tailMode == 1 && (player.rotateMode == RTPlayer.RotateMode.RotateToDirection || player.rotateMode == RTPlayer.RotateMode.RotateFlipX || player.rotateMode == RTPlayer.RotateMode.RotateFlipY))
-                            transform.localScale = Vector3.Lerp(transform.localScale, leader.parent.localScale, so);
-                        else
-                            transform.localScale = Vector3.Lerp(transform.localScale, leader.localScale, so);
-                    }
+                    if (!scaleParent)
+                        return;
+
+                    if (gameObject.name.ToLower().Contains("tail") && player.tailMode == 1 && (player.rotateMode == RTPlayer.RotateMode.RotateToDirection || player.rotateMode == RTPlayer.RotateMode.RotateFlipX || player.rotateMode == RTPlayer.RotateMode.RotateFlipY))
+                        transform.localScale = Vector3.Lerp(transform.localScale, leader.parent.localScale, so);
+                    else
+                        transform.localScale = Vector3.Lerp(transform.localScale, leader.localScale, so);
                 }
             }
         }
