@@ -49,7 +49,7 @@ namespace BetterLegacy.Patchers
 
                 CoreHelper.LogInit(__instance.className);
 
-                var beginDragTrigger = TriggerHelper.CreateEntry(EventTriggerType.BeginDrag, delegate (BaseEventData eventData)
+                var beginDragTrigger = TriggerHelper.CreateEntry(EventTriggerType.BeginDrag, eventData =>
                 {
                     var pointerEventData = (PointerEventData)eventData;
                     __instance.SelectionBoxImage.gameObject.SetActive(true);
@@ -57,7 +57,7 @@ namespace BetterLegacy.Patchers
                     __instance.SelectionRect = default;
                 });
 
-                var dragTrigger = TriggerHelper.CreateEntry(EventTriggerType.Drag, delegate (BaseEventData eventData)
+                var dragTrigger = TriggerHelper.CreateEntry(EventTriggerType.Drag, eventData =>
                 {
                     var vector = ((PointerEventData)eventData).position * EditorManager.inst.ScreenScaleInverse;
 
@@ -70,7 +70,7 @@ namespace BetterLegacy.Patchers
                     __instance.SelectionBoxImage.rectTransform.offsetMax = __instance.SelectionRect.max;
                 });
 
-                var endDragTrigger = TriggerHelper.CreateEntry(EventTriggerType.EndDrag, delegate (BaseEventData eventData)
+                var endDragTrigger = TriggerHelper.CreateEntry(EventTriggerType.EndDrag, eventData =>
                 {
                     var pointerEventData = (PointerEventData)eventData;
                     __instance.DragEndPos = pointerEventData.position;
@@ -410,7 +410,7 @@ namespace BetterLegacy.Patchers
                 var posZLabel = labels.GetChild(1).gameObject.Duplicate(labels, "text");
                 posZLabel.GetComponent<Text>().text = "Position Z";
 
-                EditorConfig.AdjustPositionInputsChanged = delegate ()
+                EditorConfig.AdjustPositionInputsChanged = () =>
                 {
                     if (!ObjectEditor.inst)
                         return;
@@ -485,33 +485,18 @@ namespace BetterLegacy.Patchers
                 hlg.childControlWidth = false;
                 hlg.spacing = 4f;
 
-                ((RectTransform)parent.transform.Find("text")).sizeDelta = new Vector2(201f, 32f);
+                parent.transform.Find("text").AsRT().sizeDelta = new Vector2(201f, 32f);
 
                 var resetParent = close.Duplicate(parent.transform, "clear parent", 1);
 
                 var resetParentButton = resetParent.GetComponent<Button>();
-
-                resetParentButton.onClick.ClearAll();
-                resetParentButton.onClick.AddListener(delegate ()
-                {
-                    var bm = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
-
-                    bm.parent = "";
-
-                    ObjectEditor.inst.StartCoroutine(ObjectEditor.RefreshObjectGUI(bm));
-
-                    Updater.UpdateProcessor(bm);
-                });
 
                 var parentPicker = close.Duplicate(parent.transform, "parent picker", 2);
 
                 var parentPickerButton = parentPicker.GetComponent<Button>();
 
                 parentPickerButton.onClick.ClearAll();
-                parentPickerButton.onClick.AddListener(delegate ()
-                {
-                    RTEditor.inst.parentPickerEnabled = true;
-                });
+                parentPickerButton.onClick.AddListener(() => { RTEditor.inst.parentPickerEnabled = true; });
 
                 var parentPickerIcon = parentPicker.transform.GetChild(0).GetComponent<Image>();
 
@@ -596,7 +581,7 @@ namespace BetterLegacy.Patchers
                         var flipXButton = flipX.GetComponent<Button>();
 
                         flipXButton.onClick.ClearAll();
-                        flipXButton.onClick.AddListener(delegate ()
+                        flipXButton.onClick.AddListener(() =>
                         {
                             foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.selected))
                             {
@@ -621,7 +606,7 @@ namespace BetterLegacy.Patchers
                             var flipYButton = flipY.GetComponent<Button>();
 
                             flipYButton.onClick.ClearAll();
-                            flipYButton.onClick.AddListener(delegate ()
+                            flipYButton.onClick.AddListener(() =>
                             {
                                 foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.selected))
                                 {
@@ -732,13 +717,7 @@ namespace BetterLegacy.Patchers
                 var rAxis = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View/Viewport/Content/autokill/tod-dropdown")
                     .Duplicate(position, "r_axis", 14);
                 var rAxisDD = rAxis.GetComponent<Dropdown>();
-                rAxisDD.options.Clear();
-                rAxisDD.options = new List<Dropdown.OptionData>
-                {
-                    new Dropdown.OptionData("Both"),
-                    new Dropdown.OptionData("X Only"),
-                    new Dropdown.OptionData("Y Only"),
-                };
+                rAxisDD.options = CoreHelper.StringToOptionData("Both", "X Only", "Y Only");
 
                 EditorThemeManager.AddDropdown(rAxisDD);
             }
@@ -815,12 +794,7 @@ namespace BetterLegacy.Patchers
                 var renderType = objectView.Find("autokill/tod-dropdown").gameObject
                     .Duplicate(objectView, "rendertype", index + 1);
                 var renderTypeDD = renderType.GetComponent<Dropdown>();
-                renderTypeDD.options.Clear();
-                renderTypeDD.options = new List<Dropdown.OptionData>
-                {
-                    new Dropdown.OptionData("Foreground"),
-                    new Dropdown.OptionData("Background"),
-                };
+                renderTypeDD.options = CoreHelper.StringToOptionData("Foreground", "Background");
 
                 EditorThemeManager.AddDropdown(renderTypeDD);
             }
@@ -846,53 +820,43 @@ namespace BetterLegacy.Patchers
                 DestroyImmediate(GameObject.Find("Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/right").GetComponent<VerticalLayoutGroup>());
 
                 var di = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/right/grain").transform;
-                var toggle = di.GetChild(13).gameObject.Duplicate(ObjEditor.inst.KeyframeDialogs[3].transform, "shift", 16);
-                var text = toggle.transform.GetChild(1).GetComponent<Text>();
+                var shift = di.GetChild(13).gameObject.Duplicate(ObjEditor.inst.KeyframeDialogs[3].transform, "shift", 16);
+                var text = shift.transform.GetChild(1).GetComponent<Text>();
                 text.text = "Shift Dialog Down";
-                toggle.GetComponentAndPerformAction(delegate (Toggle shift)
+                var shiftToggle = shift.GetComponent<Toggle>();
+                shiftToggle.onValueChanged.ClearAll();
+                shiftToggle.isOn = false;
+                shiftToggle.onValueChanged.AddListener(_val =>
                 {
-                    shift.onValueChanged.ClearAll();
-                    shift.isOn = false;
-                    shift.onValueChanged.AddListener(delegate (bool _val)
-                    {
-                        ObjectEditor.inst.colorShifted = _val;
-                        text.text = _val ? "Shift Dialog Up" : "Shift Dialog Down";
-                        var animation = new RTAnimation("shift color UI");
-                        animation.animationHandlers = new List<AnimationHandlerBase>
+                    ObjectEditor.inst.colorShifted = _val;
+                    text.text = _val ? "Shift Dialog Up" : "Shift Dialog Down";
+                    var animation = new RTAnimation("shift color UI");
+                    animation.animationHandlers = new List<AnimationHandlerBase>
                         {
                             new AnimationHandler<float>(new List<IKeyframe<float>>
                             {
                                 new FloatKeyframe(0f, _val ? 0f : 185f, Ease.Linear),
                                 new FloatKeyframe(0.3f, _val ? 185f : 0f, Ease.CircOut),
                                 new FloatKeyframe(0.32f, _val ? 185f : 0f, Ease.Linear),
-                            }, delegate (float x)
-                            {
-                                ObjEditor.inst.KeyframeDialogs[3].transform.AsRT().anchoredPosition = new Vector2(0f, x);
-                            }),
+                            }, x => { ObjEditor.inst.KeyframeDialogs[3].transform.AsRT().anchoredPosition = new Vector2(0f, x); }),
                         };
 
-                        animation.onComplete = delegate ()
-                        {
-                            ObjEditor.inst.KeyframeDialogs[3].transform.AsRT().anchoredPosition = new Vector2(0f, _val ? 185f : 0f);
-                            AnimationManager.inst.RemoveID(animation.id);
-                        };
+                    animation.onComplete = () =>
+                    {
+                        ObjEditor.inst.KeyframeDialogs[3].transform.AsRT().anchoredPosition = new Vector2(0f, _val ? 185f : 0f);
+                        AnimationManager.inst.RemoveID(animation.id);
+                    };
 
-                        AnimationManager.inst.Play(animation);
-                    });
-
-                    EditorThemeManager.AddSelectable(shift, ThemeGroup.Function_2);
-                    EditorThemeManager.AddGraphic(text, ThemeGroup.Function_2_Text);
+                    AnimationManager.inst.Play(animation);
                 });
+
+                EditorThemeManager.AddSelectable(shiftToggle, ThemeGroup.Function_2);
+                EditorThemeManager.AddGraphic(text, ThemeGroup.Function_2_Text);
             }
 
             // Parent Settings
             {
-                var array = new string[]
-                {
-                    "pos",
-                    "sca",
-                    "rot",
-                };
+                var array = new string[] { "pos", "sca", "rot" };
                 for (int i = 0; i < 3; i++)
                 {
                     var parent = objectView.Find("parent_more").GetChild(i + 1);
@@ -1083,7 +1047,7 @@ namespace BetterLegacy.Patchers
                 EditorThemeManager.AddGraphic(assignPrefabText, ThemeGroup.Function_2_Text);
 
                 assignPrefabButton.onClick.ClearAll();
-                assignPrefabButton.onClick.AddListener(delegate ()
+                assignPrefabButton.onClick.AddListener(() =>
                 {
                     RTEditor.inst.selectingMultiple = false;
                     RTEditor.inst.prefabPickerEnabled = true;
@@ -1099,7 +1063,7 @@ namespace BetterLegacy.Patchers
                 EditorThemeManager.AddGraphic(removePrefabText, ThemeGroup.Function_2_Text);
 
                 removePrefabButton.onClick.ClearAll();
-                removePrefabButton.onClick.AddListener(delegate ()
+                removePrefabButton.onClick.AddListener(() =>
                 {
                     var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
                     beatmapObject.prefabID = "";
@@ -1435,7 +1399,7 @@ namespace BetterLegacy.Patchers
 
             var snapToBPM = snapToBPMObject.GetComponent<Button>();
             snapToBPM.onClick.ClearAll();
-            snapToBPM.onClick.AddListener(delegate ()
+            snapToBPM.onClick.AddListener(() =>
             {
                 var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
                 foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.selected))
@@ -1481,7 +1445,7 @@ namespace BetterLegacy.Patchers
 
             var pasteAll = pasteAllObject.GetComponent<Button>();
             pasteAll.onClick.ClearAll();
-            pasteAll.onClick.AddListener(delegate ()
+            pasteAll.onClick.AddListener(() =>
             {
                 var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
                 var list = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.selected);
@@ -1578,7 +1542,7 @@ namespace BetterLegacy.Patchers
 
             var pastePos = pastePosObject.GetComponent<Button>();
             pastePos.onClick.ClearAll();
-            pastePos.onClick.AddListener(delegate ()
+            pastePos.onClick.AddListener(() =>
             {
                 var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
                 var list = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.selected);
@@ -1619,7 +1583,7 @@ namespace BetterLegacy.Patchers
 
             var pasteSca = pasteScaObject.GetComponent<Button>();
             pasteSca.onClick.ClearAll();
-            pasteSca.onClick.AddListener(delegate ()
+            pasteSca.onClick.AddListener(() =>
             {
                 var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
                 var list = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.selected);
@@ -1685,7 +1649,7 @@ namespace BetterLegacy.Patchers
 
             var pasteRot = pasteRotObject.GetComponent<Button>();
             pasteRot.onClick.ClearAll();
-            pasteRot.onClick.AddListener(delegate ()
+            pasteRot.onClick.AddListener(() =>
             {
                 var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
                 var list = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.selected);
@@ -1726,7 +1690,7 @@ namespace BetterLegacy.Patchers
 
             var pasteCol = pasteColObject.GetComponent<Button>();
             pasteCol.onClick.ClearAll();
-            pasteCol.onClick.AddListener(delegate ()
+            pasteCol.onClick.AddListener(() =>
             {
                 var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
                 var list = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.selected);
