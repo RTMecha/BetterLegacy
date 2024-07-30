@@ -220,6 +220,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Editor initializations
             RTMarkerEditor.Init();
+            RTMetaDataEditor.Init();
 
             PlayerEditor.Init();
             ObjectModifiersEditor.Init();
