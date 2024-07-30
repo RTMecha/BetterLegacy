@@ -368,6 +368,8 @@ namespace BetterLegacy.Core.Managers
 
         float currentTime;
 
+        public bool windowHasChanged;
+
         public static void OnLevelTick()
         {
             inst.EditorCameraHandler(); inst.FunctionsHandler();
@@ -589,12 +591,14 @@ namespace BetterLegacy.Core.Managers
                     WindowController.SetWindowPos(
                         WindowController.WindowHandle, 0, (int)(inst.windowPosition.x * screenScale) + WindowController.WindowCenter.x, -(int)(inst.windowPosition.y * screenScale) + WindowController.WindowCenter.y,
                         inst.forceWindow ? (int)(inst.windowResolution.x * screenScale) : 0, inst.forceWindow ? (int)(inst.windowResolution.y * screenScale) : 0, inst.forceWindow ? 0 : 1);
+                    inst.windowHasChanged = true;
                 }
 
                 if (inst.forceWindow && !inst.allowWindowPositioning && (!EditorManager.inst || !EditorManager.inst.isEditing))
                 {
                     inst.setWindow = true;
                     WindowController.SetResolution((int)(inst.windowResolution.x * screenScale), (int)(inst.windowResolution.y * screenScale), false);
+                    inst.windowHasChanged = true;
                 }
 
                 if (!inst.forceWindow && inst.setWindow)

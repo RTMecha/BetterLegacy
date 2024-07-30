@@ -1001,8 +1001,11 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SetEditRenderAreaPrefix()
         {
-            if (Instance.hasLoadedLevel)
+            if (Instance.hasLoadedLevel && RTEventManager.inst.windowHasChanged)
+            {
+                RTEventManager.inst.windowHasChanged = false;
                 WindowController.ResetResolution();
+            }
 
             EventManager.inst.cam.rect = new Rect(0f, 0.3708f, 0.601f, 0.601f);
             EventManager.inst.camPer.rect = new Rect(0f, 0.3708f, 0.602f, 0.601f);
