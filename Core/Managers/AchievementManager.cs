@@ -27,12 +27,7 @@ namespace BetterLegacy.Core.Managers
         public Text achievementDescription;
         public Image difficultyImage;
 
-        public static void Init()
-        {
-            var gameObject = new GameObject(nameof(AchievementManager));
-            gameObject.transform.SetParent(SystemManager.inst.transform);
-            gameObject.AddComponent<AchievementManager>();
-        }
+        public static void Init() => Creator.NewGameObject(nameof(AchievementManager), SystemManager.inst.transform).AddComponent<AchievementManager>();
 
         public void Awake()
         {
