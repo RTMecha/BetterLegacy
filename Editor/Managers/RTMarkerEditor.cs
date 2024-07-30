@@ -590,7 +590,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void StopDragging()
         {
-            CoreHelper.Log($"Stopped dragging.");
+            //CoreHelper.Log($"Stopped dragging.");
             for (int i = 0; i < timelineMarkers.Count; i++)
                 timelineMarkers[i].dragging = false;
         }
