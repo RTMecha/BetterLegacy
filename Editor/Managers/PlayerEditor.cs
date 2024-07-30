@@ -560,14 +560,8 @@ namespace BetterLegacy.Editor.Managers
 
                     var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(gameObject.transform, "dropdown").GetComponent<Dropdown>();
                     dropdown.transform.AsRT().anchoredPosition = new Vector2(566f, -16f);
-                    dropdown.options.Clear();
-                    dropdown.onValueChanged.RemoveAllListeners();
-
-                    dropdown.options = new List<Dropdown.OptionData>
-                    {
-                        new Dropdown.OptionData("Legacy"),
-                        new Dropdown.OptionData("Dev+")
-                    };
+                    dropdown.onValueChanged.ClearAll();
+                    dropdown.options = CoreHelper.StringToOptionData("Legacy", "Dev+");
 
                     EditorThemeManager.AddDropdown(dropdown);
                 }
@@ -578,16 +572,8 @@ namespace BetterLegacy.Editor.Managers
 
                     var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(gameObject.transform, "dropdown").GetComponent<Dropdown>();
                     dropdown.transform.AsRT().anchoredPosition = new Vector2(566f, -16f);
-                    dropdown.options.Clear();
-                    dropdown.onValueChanged.RemoveAllListeners();
-
-                    dropdown.options = new List<Dropdown.OptionData>
-                    {
-                        new Dropdown.OptionData("Face Direction"),
-                        new Dropdown.OptionData("None"),
-                        new Dropdown.OptionData("Flip X"),
-                        new Dropdown.OptionData("Flip Y")
-                    };
+                    dropdown.onValueChanged.ClearAll();
+                    dropdown.options = CoreHelper.StringToOptionData("Face Direction", "None", "Flip X", "Flip Y", "Rotate Reset", "Rotate Flip X", "Rotate Flip Y");
 
                     EditorThemeManager.AddDropdown(dropdown);
                 }
@@ -598,16 +584,8 @@ namespace BetterLegacy.Editor.Managers
 
                     var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(gameObject.transform, "dropdown").GetComponent<Dropdown>();
                     dropdown.transform.AsRT().anchoredPosition = new Vector2(566f, -16f);
-                    dropdown.options.Clear();
-                    dropdown.onValueChanged.RemoveAllListeners();
-
-                    dropdown.options = new List<Dropdown.OptionData>
-                    {
-                        new Dropdown.OptionData("Images"),
-                        new Dropdown.OptionData("Text"),
-                        new Dropdown.OptionData("Equals Bar"),
-                        new Dropdown.OptionData("Bar"),
-                    };
+                    dropdown.onValueChanged.ClearAll();
+                    dropdown.options = CoreHelper.StringToOptionData("Images", "Text", "Equals Bar", "Bar");
 
                     EditorThemeManager.AddDropdown(dropdown);
                 }

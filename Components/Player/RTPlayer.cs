@@ -199,7 +199,10 @@ namespace BetterLegacy.Components.Player
             RotateToDirection,
             None,
             FlipX,
-            FlipY
+            FlipY,
+            RotateReset,
+            RotateFlipX,
+            RotateFlipY
         }
 
         public enum MovementMode
@@ -247,7 +250,7 @@ namespace BetterLegacy.Components.Player
 
         public bool CanBoost
         {
-            get => (!EditorManager.inst || !EditorManager.inst.isEditing) && canBoost && !isBoosting && (PlayerModel == null || PlayerModel.basePart.canBoost) && !CoreHelper.Paused && !CoreHelper.IsUsingInputField;
+            get => CoreHelper.InEditorPreview && canBoost && !isBoosting && (PlayerModel == null || PlayerModel.basePart.canBoost) && !CoreHelper.Paused && !CoreHelper.IsUsingInputField;
             set => canBoost = value;
         }
 
@@ -754,9 +757,9 @@ namespace BetterLegacy.Components.Player
             if (vector.magnitude > 1f)
                 vector = vector.normalized;
 
-            if (rotateMode == RotateMode.FlipX && lastMovement.x < 0f)
+            if ((rotateMode == RotateMode.FlipX || rotateMode == RotateMode.RotateFlipX) && lastMovement.x < 0f)
                 vector.x = -vector.x;
-            if (rotateMode == RotateMode.FlipY && lastMovement.y < 0f)
+            if ((rotateMode == RotateMode.FlipY || rotateMode == RotateMode.RotateFlipY) && lastMovement.y < 0f)
                 vector.y = -vector.y;
 
             playerObjects["Face Parent"].gameObject.transform.localPosition = new Vector3(vector.x * 0.3f + fp.x, vector.y * 0.3f + fp.y, 0f);
@@ -1054,7 +1057,7 @@ namespace BetterLegacy.Components.Player
                     rb.velocity = PlayerForce + vector * idleSpeed * pitch * sp * SpeedMultiplier;
                     if (stretch && rb.velocity.magnitude > 0f)
                     {
-                        if (rotateMode != RotateMode.None && rotateMode != RotateMode.FlipX)
+                        if (rotateMode != RotateMode.None && rotateMode != RotateMode.FlipX && rotateMode != RotateMode.RotateFlipX)
                         {
                             float e = 1f + rb.velocity.magnitude * stretchAmount / 20f;
                             player.transform.localScale = new Vector3(1f * e + stretchVector.x, 1f / e + stretchVector.y, 1f);
@@ -1161,88 +1164,179 @@ namespace BetterLegacy.Components.Player
 
             if (CanRotate)
             {
-                if (rotateMode != RotateMode.RotateToDirection)
+                var b = Quaternion.AngleAxis(Mathf.Atan2(lastMovement.y, lastMovement.x) * 57.29578f, player.transform.forward);
+                var c = Quaternion.Slerp(player.transform.rotation, b, 720f * Time.deltaTime);
+                switch (rotateMode)
                 {
-                    var b = Quaternion.AngleAxis(Mathf.Atan2(lastMovement.y, lastMovement.x) * 57.29578f, player.transform.forward);
+                    case RotateMode.RotateToDirection:
+                        {
+                            player.transform.rotation = c;
 
-                    var c = Quaternion.Slerp(player.transform.rotation, b, 720f * Time.deltaTime).eulerAngles;
+                            playerObjects["Face Base"].gameObject.transform.localRotation = Quaternion.identity;
 
-                    if (rotateMode == RotateMode.FlipX && c.z > 90f && c.z < 270f)
-                        c.z = -c.z + 180f;
-                    if (rotateMode == RotateMode.FlipY && c.z > 0f && c.z < 180f)
-                        c.z = -c.z + 90f;
+                            break;
+                        }
+                    case RotateMode.None:
+                        {
+                            player.transform.rotation = Quaternion.identity;
 
-                    playerObjects["Face Base"].gameObject.transform.rotation = Quaternion.Euler(c);
-                }
-                else
-                {
-                    var b = Quaternion.AngleAxis(Mathf.Atan2(lastMovement.y, lastMovement.x) * 57.29578f, player.transform.forward);
-                    player.transform.rotation = Quaternion.Slerp(player.transform.rotation, b, 720f * Time.deltaTime);
+                            playerObjects["Face Base"].gameObject.transform.rotation = c;
 
-                    playerObjects["Face Base"].gameObject.transform.localRotation = Quaternion.identity;
-                }
+                            break;
+                        }
+                    case RotateMode.FlipX:
+                        {
+                            var vectorRotation = c.eulerAngles;
+                            if (vectorRotation.z > 90f && vectorRotation.z < 270f)
+                                vectorRotation.z = -vectorRotation.z + 180f;
 
-                if (rotateMode == RotateMode.FlipX)
-                {
-                    player.transform.rotation = Quaternion.identity;
-                    if (lastMovement.x > 0.001f)
-                    {
-                        if (!stretch)
-                            player.transform.localScale = Vector3.one;
-                        if (!animatingBoost)
-                            playerObjects["Boost Tail Base"].gameObject.transform.localScale = Vector3.one;
-                        playerObjects["Tail 1 Base"].gameObject.transform.localScale = Vector3.one;
-                        playerObjects["Tail 2 Base"].gameObject.transform.localScale = Vector3.one;
-                        playerObjects["Tail 3 Base"].gameObject.transform.localScale = Vector3.one;
-                    }
-                    if (lastMovement.x < -0.001f)
-                    {
-                        var c = new Vector3(-1f, 1f, 1f);
-                        if (!stretch)
-                            player.transform.localScale = c;
-                        if (!animatingBoost)
-                            playerObjects["Boost Tail Base"].gameObject.transform.localScale = c;
-                        playerObjects["Tail 1 Base"].gameObject.transform.localScale = c;
-                        playerObjects["Tail 2 Base"].gameObject.transform.localScale = c;
-                        playerObjects["Tail 3 Base"].gameObject.transform.localScale = c;
-                    }
-                }
-                else if (rotateMode == RotateMode.FlipY)
-                {
-                    player.transform.rotation = Quaternion.identity;
-                    if (lastMovement.y > 0.001f)
-                    {
-                        if (!stretch)
-                            player.transform.localScale = Vector3.one;
-                        if (!animatingBoost)
-                            playerObjects["Boost Tail Base"].gameObject.transform.localScale = Vector3.one;
-                        playerObjects["Tail 1 Base"].gameObject.transform.localScale = Vector3.one;
-                        playerObjects["Tail 2 Base"].gameObject.transform.localScale = Vector3.one;
-                        playerObjects["Tail 3 Base"].gameObject.transform.localScale = Vector3.one;
-                    }
-                    if (lastMovement.y < -0.001f)
-                    {
-                        var c = new Vector3(1f, -1f, 1f);
-                        if (!stretch)
-                            player.transform.localScale = c;
-                        if (!animatingBoost)
-                            playerObjects["Boost Tail Base"].gameObject.transform.localScale = c;
-                        playerObjects["Tail 1 Base"].gameObject.transform.localScale = c;
-                        playerObjects["Tail 2 Base"].gameObject.transform.localScale = c;
-                        playerObjects["Tail 3 Base"].gameObject.transform.localScale = c;
-                    }
-                }
+                            player.transform.rotation = Quaternion.identity;
 
-                if (rotateMode == RotateMode.None)
-                {
-                    player.transform.rotation = Quaternion.identity;
+                            playerObjects["Face Base"].gameObject.transform.rotation = Quaternion.Euler(vectorRotation);
+
+                            if (lastMovement.x > 0.01f)
+                            {
+                                if (!stretch)
+                                    player.transform.localScale = Vector3.one;
+                                if (!animatingBoost)
+                                    playerObjects["Boost Tail Base"].gameObject.transform.localScale = Vector3.one;
+                                playerObjects["Tail 1 Base"].gameObject.transform.localScale = Vector3.one;
+                                playerObjects["Tail 2 Base"].gameObject.transform.localScale = Vector3.one;
+                                playerObjects["Tail 3 Base"].gameObject.transform.localScale = Vector3.one;
+                            }
+                            if (lastMovement.x < -0.01f)
+                            {
+                                var stretchScale = new Vector3(-1f, 1f, 1f);
+                                if (!stretch)
+                                    player.transform.localScale = stretchScale;
+                                if (!animatingBoost)
+                                    playerObjects["Boost Tail Base"].gameObject.transform.localScale = stretchScale;
+                                playerObjects["Tail 1 Base"].gameObject.transform.localScale = stretchScale;
+                                playerObjects["Tail 2 Base"].gameObject.transform.localScale = stretchScale;
+                                playerObjects["Tail 3 Base"].gameObject.transform.localScale = stretchScale;
+                            }
+
+                            break;
+                        }
+                    case RotateMode.FlipY:
+                        {
+                            var vectorRotation = c.eulerAngles;
+                            if (vectorRotation.z > 0f && vectorRotation.z < 180f)
+                                vectorRotation.z = -vectorRotation.z + 90f;
+
+                            player.transform.rotation = Quaternion.identity;
+
+                            playerObjects["Face Base"].gameObject.transform.rotation = Quaternion.Euler(vectorRotation);
+
+                            if (lastMovement.y > 0.01f)
+                            {
+                                if (!stretch)
+                                    player.transform.localScale = Vector3.one;
+                                if (!animatingBoost)
+                                    playerObjects["Boost Tail Base"].gameObject.transform.localScale = Vector3.one;
+                                playerObjects["Tail 1 Base"].gameObject.transform.localScale = Vector3.one;
+                                playerObjects["Tail 2 Base"].gameObject.transform.localScale = Vector3.one;
+                                playerObjects["Tail 3 Base"].gameObject.transform.localScale = Vector3.one;
+                            }
+                            if (lastMovement.y < -0.01f)
+                            {
+                                var stretchScale = new Vector3(1f, -1f, 1f);
+                                if (!stretch)
+                                    player.transform.localScale = stretchScale;
+                                if (!animatingBoost)
+                                    playerObjects["Boost Tail Base"].gameObject.transform.localScale = stretchScale;
+                                playerObjects["Tail 1 Base"].gameObject.transform.localScale = stretchScale;
+                                playerObjects["Tail 2 Base"].gameObject.transform.localScale = stretchScale;
+                                playerObjects["Tail 3 Base"].gameObject.transform.localScale = stretchScale;
+                            }
+
+                            break;
+                        }
+                    case RotateMode.RotateReset:
+                        {
+                            
+
+                            break;
+                        }
+                    case RotateMode.RotateFlipX:
+                        {
+                            var vectorRotation = c.eulerAngles;
+                            if (vectorRotation.z > 90f && vectorRotation.z < 270f)
+                                vectorRotation.z += 180f;
+
+                            player.transform.rotation = Quaternion.Euler(vectorRotation);
+
+                            playerObjects["Face Base"].gameObject.transform.localRotation = Quaternion.Euler(vectorRotation);
+
+                            if (lastMovement.x > 0.01f)
+                            {
+                                if (!stretch)
+                                    player.transform.localScale = Vector3.one;
+                                if (!animatingBoost)
+                                    playerObjects["Boost Tail Base"].gameObject.transform.localScale = Vector3.one;
+                                playerObjects["Tail 1 Base"].gameObject.transform.localScale = Vector3.one;
+                                playerObjects["Tail 2 Base"].gameObject.transform.localScale = Vector3.one;
+                                playerObjects["Tail 3 Base"].gameObject.transform.localScale = Vector3.one;
+                            }
+                            if (lastMovement.x < -0.01f)
+                            {
+                                var stretchScale = new Vector3(-1f, 1f, 1f);
+                                if (!stretch)
+                                    player.transform.localScale = stretchScale;
+                                if (!animatingBoost)
+                                    playerObjects["Boost Tail Base"].gameObject.transform.localScale = stretchScale;
+                                playerObjects["Tail 1 Base"].gameObject.transform.localScale = stretchScale;
+                                playerObjects["Tail 2 Base"].gameObject.transform.localScale = stretchScale;
+                                playerObjects["Tail 3 Base"].gameObject.transform.localScale = stretchScale;
+                            }
+
+                            break;
+                        }
+                    case RotateMode.RotateFlipY:
+                        {
+                            var vectorRotation = c.eulerAngles;
+                            if (vectorRotation.z > 0f && vectorRotation.z < 180f)
+                                vectorRotation.z = -vectorRotation.z + 90f;
+
+                            player.transform.rotation = Quaternion.Euler(vectorRotation);
+
+                            playerObjects["Face Base"].gameObject.transform.rotation = Quaternion.identity;
+
+                            if (lastMovement.y > 0.01f)
+                            {
+                                if (!stretch)
+                                    player.transform.localScale = Vector3.one;
+                                if (!animatingBoost)
+                                    playerObjects["Boost Tail Base"].gameObject.transform.localScale = Vector3.one;
+                                playerObjects["Tail 1 Base"].gameObject.transform.localScale = Vector3.one;
+                                playerObjects["Tail 2 Base"].gameObject.transform.localScale = Vector3.one;
+                                playerObjects["Tail 3 Base"].gameObject.transform.localScale = Vector3.one;
+                            }
+                            if (lastMovement.y < -0.01f)
+                            {
+                                var stretchScale = new Vector3(1f, -1f, 1f);
+                                if (!stretch)
+                                    player.transform.localScale = stretchScale;
+                                if (!animatingBoost)
+                                    playerObjects["Boost Tail Base"].gameObject.transform.localScale = stretchScale;
+                                playerObjects["Tail 1 Base"].gameObject.transform.localScale = stretchScale;
+                                playerObjects["Tail 2 Base"].gameObject.transform.localScale = stretchScale;
+                                playerObjects["Tail 3 Base"].gameObject.transform.localScale = stretchScale;
+                            }
+
+                            break;
+                        }
                 }
             }
 
             var posCalc = (player.transform.position - lastPos);
 
-            if (posCalc.x < -0.001f || posCalc.x > 0.001f || posCalc.y < -0.001f || posCalc.y > 0.001f)
-                lastMovement = posCalc;
+            //if (posCalc.x < -0.001f || posCalc.x > 0.001f || posCalc.y < -0.001f || posCalc.y > 0.001f)
+            //    lastMovement = posCalc;
+            if (posCalc.x < -0.01f || posCalc.x > 0.01f)
+                lastMovement.x = posCalc.x;
+            if (posCalc.y < -0.01f || posCalc.y > 0.01f)
+                lastMovement.y = posCalc.y;
 
             lastPos = player.transform.position;
 

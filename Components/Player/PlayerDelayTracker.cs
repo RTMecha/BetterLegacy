@@ -35,7 +35,7 @@ namespace BetterLegacy.Components.Player
 
                     if (scaleParent)
                     {
-                        if (gameObject.name.ToLower().Contains("tail") && player.tailMode == 1 && player.rotateMode == RTPlayer.RotateMode.RotateToDirection)
+                        if (gameObject.name.ToLower().Contains("tail") && player.tailMode == 1 && (player.rotateMode == RTPlayer.RotateMode.RotateToDirection || player.rotateMode == RTPlayer.RotateMode.RotateFlipX || player.rotateMode == RTPlayer.RotateMode.RotateFlipY))
                             transform.localScale = Vector3.Lerp(transform.localScale, leader.parent.localScale, so);
                         else
                             transform.localScale = Vector3.Lerp(transform.localScale, leader.localScale, so);

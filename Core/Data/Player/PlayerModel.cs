@@ -1913,7 +1913,10 @@ namespace BetterLegacy.Core.Data.Player
                 RotateToDirection,
                 None,
                 FlipX,
-                FlipY
+                FlipY,
+                RotateReset,
+                RotateFlipX,
+                RotateFlipY
             }
 
             public PAAnimation boostAnimation;
