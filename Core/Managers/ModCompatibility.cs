@@ -18,12 +18,7 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// Inits ModCompatibility.
         /// </summary>
-        public static void Init()
-        {
-            var gameObject = new GameObject("ModCompatibility");
-            gameObject.transform.SetParent(SystemManager.inst.transform);
-            gameObject.AddComponent<ModCompatibility>();
-        }
+        public static void Init() => Creator.NewGameObject(nameof(ModCompatibility), SystemManager.inst.transform).AddComponent<ModCompatibility>();
 
         void Awake()
         {

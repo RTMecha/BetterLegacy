@@ -28,6 +28,10 @@ namespace BetterLegacy.Core.Managers
 
         public bool loadedShapes;
         public Transform shapeParent;
+
+        /// <summary>
+        /// Exists due to the regular shape collision being messed up.
+        /// </summary>
         public static Vector2[] thinTrianglePoints = new Vector2[]
         {
             new Vector2(0f, 0.5774f),
@@ -43,12 +47,7 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// Inits ShapeManager.
         /// </summary>
-        public static void Init()
-        {
-            var gameObject = new GameObject("ShapeManager");
-            gameObject.transform.SetParent(SystemManager.inst.transform);
-            gameObject.AddComponent<ShapeManager>();
-        }
+        public static void Init() => Creator.NewGameObject(nameof(ShapeManager), SystemManager.inst.transform).AddComponent<ShapeManager>();
 
         void Awake()
         {

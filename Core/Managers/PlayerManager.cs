@@ -21,12 +21,7 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// Inits PlayerManager.
         /// </summary>
-        public static void Init()
-        {
-            var gameObject = new GameObject("PlayerManager");
-            gameObject.transform.SetParent(SystemManager.inst.transform);
-            gameObject.AddComponent<PlayerManager>();
-        }
+        public static void Init() => Creator.NewGameObject(nameof(PlayerManager), SystemManager.inst.transform).AddComponent<PlayerManager>();
 
         void Awake()
         {

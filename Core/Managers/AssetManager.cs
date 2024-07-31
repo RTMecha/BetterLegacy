@@ -15,17 +15,9 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// Inits AssetManager.
         /// </summary>
-        public static void Init()
-        {
-            var gameObject = new GameObject(nameof(AssetManager));
-            gameObject.transform.SetParent(SystemManager.inst.transform);
-            gameObject.AddComponent<AssetManager>();
-        }
+        public static void Init() => Creator.NewGameObject(nameof(AssetManager), SystemManager.inst.transform).AddComponent<AssetManager>();
 
-        void Awake()
-        {
-            inst = this;
-        }
+        void Awake() => inst = this;
 
         public static Dictionary<string, Sprite> SpriteAssets { get; set; } = new Dictionary<string, Sprite>();
         public static Dictionary<string, AudioClip> AudioAssets { get; set; } = new Dictionary<string, AudioClip>();

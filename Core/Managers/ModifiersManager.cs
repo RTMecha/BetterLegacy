@@ -124,12 +124,7 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// Inits ModifiersManager.
         /// </summary>
-        public static void Init()
-        {
-            var gameObject = new GameObject("ModifiersManager");
-            gameObject.transform.SetParent(SystemManager.inst.transform);
-            gameObject.AddComponent<ModifiersManager>();
-        }
+        public static void Init() => Creator.NewGameObject(nameof(ModifiersManager), SystemManager.inst.transform).AddComponent<ModifiersManager>();
 
         void Awake()
         {

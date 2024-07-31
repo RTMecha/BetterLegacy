@@ -22,12 +22,7 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// Inits SpriteManager.
         /// </summary>
-        public static void Init()
-        {
-            var gameObject = new GameObject("SpriteManager");
-            gameObject.transform.SetParent(SystemManager.inst.transform);
-            gameObject.AddComponent<SpriteManager>();
-        }
+        public static void Init() => Creator.NewGameObject(nameof(SpriteManager), SystemManager.inst.transform).AddComponent<SpriteManager>();
 
         void Awake()
         {

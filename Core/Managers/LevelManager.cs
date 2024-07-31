@@ -35,48 +35,67 @@ namespace BetterLegacy.Core.Managers
         public static float timeInLevel = 0f;
         public static float timeInLevelOffset = 0f;
 
+        /// <summary>
+        /// If the level has ended.
+        /// </summary>
         public static bool LevelEnded { get; set; }
 
+        /// <summary>
+        /// If the game is currently loading a level.
+        /// </summary>
         public static bool LoadingFromHere { get; set; }
 
+        /// <summary>
+        /// Which level mode is going to load.
+        /// </summary>
         public static int CurrentLevelMode { get; set; }
 
-        public static bool InEditor => EditorManager.inst;
-        public static bool InGame => GameManager.inst;
-
+        /// <summary>
+        /// The level that is currently being played if the game is in the arcade.
+        /// </summary>
         public static Level CurrentLevel { get; set; }
 
+        /// <summary>
+        /// Local levels from within the arcade folder.
+        /// </summary>
         public static List<Level> Levels { get; set; }
 
-        public static List<Level> EditorLevels { get; set; }
-
+        /// <summary>
+        /// Levels added to the queue.
+        /// </summary>
         public static List<Level> ArcadeQueue { get; set; }
 
+        /// <summary>
+        /// The current index in <see cref="ArcadeQueue"/>
+        /// </summary>
         public static int current;
 
         public static bool finished = false;
 
+        /// <summary>
+        /// How many times a player has boosted.
+        /// </summary>
         public static int BoostCount { get; set; }
 
+        /// <summary>
+        /// What should happen when an in-game level ends.
+        /// </summary>
         public static Action OnLevelEnd { get; set; }
 
+        /// <summary>
+        /// How many times levels have been played.
+        /// </summary>
         public static int PlayedLevelCount { get; set; }
 
         /// <summary>
         /// Inits LevelManager.
         /// </summary>
-        public static void Init()
-        {
-            var gameObject = new GameObject("LevelManager");
-            gameObject.transform.SetParent(SystemManager.inst.transform);
-            gameObject.AddComponent<LevelManager>();
-        }
+        public static void Init() => Creator.NewGameObject(nameof(LevelManager), SystemManager.inst.transform).AddComponent<LevelManager>();
 
         void Awake()
         {
             inst = this;
             Levels = new List<Level>();
-            EditorLevels = new List<Level>();
             ArcadeQueue = new List<Level>();
 
             if (!RTFile.FileExists(RTFile.ApplicationDirectory + "profile/saves.les") && RTFile.FileExists(RTFile.ApplicationDirectory + "settings/save.lss"))
@@ -87,13 +106,15 @@ namespace BetterLegacy.Core.Managers
 
         void Update()
         {
-            if (!InEditor)
-                EditorLevels.Clear();
-
-            if (InEditor && EditorManager.inst.isEditing)
+            if (CoreHelper.InEditor && EditorManager.inst.isEditing)
                 BoostCount = 0;
         }
 
+        /// <summary>
+        /// Loads the game scene and plays a level.
+        /// </summary>
+        /// <param name="level">The level to play.</param>
+        /// <returns></returns>
         public static IEnumerator Play(Level level)
         {
             LoadingFromHere = true;
@@ -307,10 +328,16 @@ namespace BetterLegacy.Core.Managers
             return levels;
         }
 
+        /// <summary>
+        /// Sorts <see cref="Levels"/> by a specific order and ascending / descending.
+        /// Orderby 0 = Has icon, 1 = Artist name, 2 = Creator name, 3 = Folder name, 4 = Song title, 5 = Difficulty, 6 = Date edited, 7 = Date created
+        /// </summary>
+        /// <param name="orderby">How the Level list should be ordered by.</param>
+        /// <param name="ascend">Whether the list should ascend of descend.</param>
         public static void Sort(int orderby, bool ascend) => Levels = SortLevels(Levels, orderby, ascend);
 
         /// <summary>
-        /// Updates the Beatmap JSON.
+        /// Updates the Beatmap JSON depending on version.
         /// </summary>
         /// <param name="json">The Beatmap JSON to update.</param>
         /// <param name="ver">The PA version the Beatmap was made in.</param>

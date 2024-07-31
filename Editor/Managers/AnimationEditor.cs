@@ -26,7 +26,7 @@ namespace BetterLegacy.Editor.Managers
     {
         public static AnimationEditor inst;
 
-        public static void Init() => Creator.NewGameObject("AnimationEditor", EditorManager.inst.transform.parent).AddComponent<AnimationEditor>();
+        public static void Init() => Creator.NewGameObject(nameof(AnimationEditor), EditorManager.inst.transform.parent).AddComponent<AnimationEditor>();
 
         void Awake()
         {
