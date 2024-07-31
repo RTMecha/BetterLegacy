@@ -1380,12 +1380,8 @@ namespace BetterLegacy.Editor.Managers
             if (bringTo)
             {
                 AudioManager.inst.SetMusicTime(timelineObject.Time);
-                RTEditor.inst.layerType = RTEditor.LayerType.Objects;
-                RTEditor.inst.SetLayer(timelineObject.Layer);
+                RTEditor.inst.SetLayer(timelineObject.Layer, RTEditor.LayerType.Objects);
             }
-
-            if (RTObject.Enabled && timelineObject.IsBeatmapObject && timelineObject.GetData<BeatmapObject>().RTObject)
-                timelineObject.GetData<BeatmapObject>().RTObject?.GenerateDraggers();
         }
 
         public void SetCurrentKeyframe(BeatmapObject beatmapObject, int _keyframe, bool _bringTo = false) => SetCurrentKeyframe(beatmapObject, ObjEditor.inst.currentKeyframeKind, _keyframe, _bringTo, false);
