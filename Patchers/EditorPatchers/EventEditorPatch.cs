@@ -82,11 +82,6 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool StartPrefix()
         {
-            Instance.dialogLeft = EditorManager.inst.GetDialog("Event Editor").Dialog.Find("data/left");
-            Instance.dialogRight = EditorManager.inst.GetDialog("Event Editor").Dialog.Find("data/right");
-            Instance.EventLabels.SetActive(false);
-            Instance.EventHolders.SetActive(false);
-
             if (ObjEditor.inst && ObjEditor.inst.timelineObjectPrefabLock)
             {
                 var gameObject = EventEditor.inst.TimelinePrefab.Duplicate(EventEditor.inst.transform, EventEditor.inst.TimelinePrefab.name);
@@ -97,9 +92,6 @@ namespace BetterLegacy.Patchers
 
                 EventEditor.inst.TimelinePrefab = gameObject;
             }
-
-
-            RTEventEditor.Init(Instance);
 
             return false;
         }

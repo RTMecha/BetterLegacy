@@ -221,6 +221,7 @@ namespace BetterLegacy.Editor.Managers
             // Editor initializations
             RTMarkerEditor.Init();
             RTMetaDataEditor.Init();
+            RTEventEditor.Init();
             RTThemeEditor.Init();
 
             KeybindManager.Init();
@@ -8430,7 +8431,6 @@ namespace BetterLegacy.Editor.Managers
             RTPlayer.JumpMode = false;
 
             PlayerManager.LoadGlobalModels();
-            PlayerManager.LoadIndexes();
             PlayerManager.RespawnPlayers();
 
             RTPlayer.SetGameDataProperties();

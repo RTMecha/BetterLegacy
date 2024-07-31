@@ -119,7 +119,7 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        public static void Init(EventEditor eventEditor) => eventEditor?.gameObject?.AddComponent<RTEventEditor>();
+        public static void Init() => EventEditor.inst?.gameObject?.AddComponent<RTEventEditor>();
 
         void Awake()
         {
@@ -127,6 +127,10 @@ namespace BetterLegacy.Editor.Managers
 
             eventEditorDialog = EditorManager.inst.GetDialog("Event Editor").Dialog;
             EventEditor.inst.EventColors = EventLayerColors;
+
+            EventEditor.inst.dialogLeft = eventEditorDialog.Find("data/left");
+            EventEditor.inst.dialogRight = eventEditorDialog.Find("data/right");
+            SetEventActive(false);
 
             EditorThemeManager.AddGraphic(eventEditorDialog.GetComponent<Image>(), ThemeGroup.Background_3);
             EditorThemeManager.AddGraphic(EventEditor.inst.dialogRight.GetComponent<Image>(), ThemeGroup.Background_1);

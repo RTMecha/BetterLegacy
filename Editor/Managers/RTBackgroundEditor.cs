@@ -14,6 +14,8 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+using BaseBackgroundObject = DataManager.GameData.BackgroundObject;
+
 namespace BetterLegacy.Editor.Managers
 {
     public class RTBackgroundEditor : MonoBehaviour
@@ -22,13 +24,1116 @@ namespace BetterLegacy.Editor.Managers
 
         public static BackgroundObject CurrentSelectedBG => BackgroundEditor.inst == null ? null : (BackgroundObject)DataManager.inst.gameData.backgroundObjects[BackgroundEditor.inst.currentObj];
 
-        public static void Init(BackgroundEditor backgroundEditor) => backgroundEditor.gameObject.AddComponent<RTBackgroundEditor>();
+        public static void Init() => BackgroundEditor.inst.gameObject.AddComponent<RTBackgroundEditor>();
 
         public GameObject shapeButtonCopy;
 
         void Awake()
         {
             inst = this;
+            StartCoroutine(SetupUI());
+        }
+
+        IEnumerator SetupUI()
+        {
+            var dialog = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/BackgroundDialog").transform;
+            var bgRight = dialog.Find("data/right").gameObject;
+            var bgLeft = dialog.Find("data/left").gameObject;
+
+            #region Right
+
+            bgRight.transform.Find("create").GetComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip
+            {
+                desc = "Create New Background Object",
+                hint = "Press this to create a new background object."
+            });
+
+            var destroyAll = bgRight.transform.Find("create").gameObject.Duplicate(bgRight.transform, "destroy", 2);
+            destroyAll.transform.localScale = Vector3.one;
+
+            var destroyAllText = destroyAll.transform.GetChild(0).GetComponent<Text>();
+            destroyAllText.text = "Delete All Backgrounds";
+            destroyAll.transform.GetChild(0).localScale = Vector3.one;
+
+            var destroyAllButtons = destroyAll.GetComponent<Button>();
+            destroyAllButtons.onClick.ClearAll();
+            destroyAllButtons.onClick.AddListener(() =>
+            {
+                if (DataManager.inst.gameData.backgroundObjects.Count <= 1)
+                {
+                    EditorManager.inst.DisplayNotification("Cannot delete only background object.", 2f, EditorManager.NotificationType.Warning);
+                    return;
+                }
+
+                RTEditor.inst.ShowWarningPopup("Are you sure you want to delete all backgrounds?", () =>
+                {
+                    DeleteAllBackgrounds();
+                    EditorManager.inst.HideDialog("Warning Popup");
+                }, () => { EditorManager.inst.HideDialog("Warning Popup"); });
+            });
+
+            var destroyAllTip = destroyAll.GetComponent<HoverTooltip>();
+
+            destroyAllTip.tooltipLangauges.Clear();
+            destroyAllTip.tooltipLangauges.Add(new HoverTooltip.Tooltip
+            {
+                desc = "Destroy All Objects",
+                hint = "Press this to destroy all background objects, EXCEPT the first one."
+            });
+
+            var createBGs = Instantiate(bgLeft.transform.Find("name").gameObject);
+            createBGs.transform.SetParent(bgRight.transform);
+            createBGs.transform.localScale = Vector3.one;
+            createBGs.transform.SetSiblingIndex(2);
+            createBGs.name = "create bgs";
+
+            var name = createBGs.transform.Find("name").GetComponent<InputField>();
+            var nameRT = name.GetComponent<RectTransform>();
+
+            name.onValueChanged.ClearAll();
+
+            Destroy(createBGs.transform.Find("active").gameObject);
+            nameRT.localScale = Vector3.one;
+            name.text = "12";
+            name.characterValidation = InputField.CharacterValidation.Integer;
+            nameRT.sizeDelta = new Vector2(80f, 34f);
+
+            var createAll = bgRight.transform.Find("create").gameObject.Duplicate(createBGs.transform, "create");
+            createAll.transform.localScale = Vector3.one;
+
+            createAll.transform.AsRT().sizeDelta = new Vector2(278f, 34f);
+            var createAllText = createAll.transform.GetChild(0).GetComponent<Text>();
+            createAllText.text = "Create Backgrounds";
+            createAll.transform.GetChild(0).localScale = Vector3.one;
+
+            var buttonCreate = createAll.GetComponent<Button>();
+            buttonCreate.onClick.ClearAll();
+            buttonCreate.onClick.AddListener(() =>
+            {
+                if (int.TryParse(name.text, out int result) && result >= 0)
+                    CreateBackgrounds(result);
+            });
+
+            bgRight.transform.Find("backgrounds").AsRT().sizeDelta = new Vector2(366f, 524f);
+
+            #region Editor Themes
+
+            EditorThemeManager.AddGraphic(dialog.GetComponent<Image>(), ThemeGroup.Background_1);
+            EditorThemeManager.AddGraphic(bgRight.GetComponent<Image>(), ThemeGroup.Background_3);
+            EditorThemeManager.AddInputField(bgRight.transform.Find("search").GetComponent<InputField>(), ThemeGroup.Search_Field_2);
+            EditorThemeManager.AddScrollbar(bgRight.transform.Find("backgrounds/Scrollbar Vertical").GetComponent<Scrollbar>(), scrollbarGroup: ThemeGroup.Scrollbar_2, handleGroup: ThemeGroup.Scrollbar_2_Handle);
+            EditorThemeManager.AddGraphic(bgRight.transform.Find("create").GetComponent<Image>(), ThemeGroup.Add, true);
+            EditorThemeManager.AddGraphic(bgRight.transform.Find("create").GetChild(0).GetComponent<Text>(), ThemeGroup.Add_Text);
+            EditorThemeManager.AddInputField(name);
+            EditorThemeManager.AddGraphic(buttonCreate.image, ThemeGroup.Add, true);
+            EditorThemeManager.AddGraphic(createAllText, ThemeGroup.Add_Text);
+            EditorThemeManager.AddGraphic(destroyAllButtons.image, ThemeGroup.Delete, true);
+            EditorThemeManager.AddGraphic(destroyAllText, ThemeGroup.Delete_Text);
+
+            #endregion
+
+            #endregion
+
+            #region Left
+
+            //Set UI Parents
+            {
+                var listtoadd = new List<Transform>();
+                for (int i = 0; i < bgLeft.transform.childCount; i++)
+                    listtoadd.Add(bgLeft.transform.GetChild(i));
+
+                var bmb = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View");
+
+                var e = Instantiate(bmb);
+
+                var scrollView2 = e.transform;
+
+                scrollView2.SetParent(bgLeft.transform);
+                scrollView2.localScale = Vector3.one;
+                scrollView2.name = "Object Scroll View";
+
+                var content = scrollView2.Find("Viewport/Content");
+                var contentChildren = new List<Transform>();
+                for (int i = 0; i < content.childCount; i++)
+                    contentChildren.Add(content.GetChild(i));
+
+                foreach (var child in contentChildren)
+                {
+                    DestroyImmediate(child.gameObject);
+                }
+
+                int num = 0;
+                while (num < 20)
+                    num++;
+
+                var scrollViewRT = scrollView2.GetComponent<RectTransform>();
+                scrollViewRT.anchoredPosition = new Vector2(188f, -353f);
+                scrollViewRT.sizeDelta = new Vector2(370f, 690f);
+
+                foreach (var l in listtoadd)
+                {
+                    l.SetParent(content);
+                    l.transform.localScale = Vector3.one;
+                }
+
+                BackgroundEditor.inst.left = content;
+            }
+
+            BackgroundEditor.inst.right = BackgroundEditor.inst.dialog.Find("data/right");
+
+            // Adjustments
+            {
+                var position = BackgroundEditor.inst.left.Find("position");
+                var scale = BackgroundEditor.inst.left.Find("scale");
+
+                DestroyImmediate(position.GetComponent<HorizontalLayoutGroup>());
+                DestroyImmediate(scale.GetComponent<HorizontalLayoutGroup>());
+
+                position.Find("x").GetComponent<HorizontalLayoutGroup>().spacing = 4f;
+                position.Find("y").GetComponent<HorizontalLayoutGroup>().spacing = 4f;
+                position.Find("x/text-field").AsRT().sizeDelta = new Vector2(125f, 32f);
+                position.Find("y/text-field").AsRT().sizeDelta = new Vector2(125f, 32f);
+
+                scale.Find("x").GetComponent<HorizontalLayoutGroup>().spacing = 4f;
+                scale.Find("y").GetComponent<HorizontalLayoutGroup>().spacing = 4f;
+                scale.Find("x/text-field").AsRT().sizeDelta = new Vector2(125f, 32f);
+                scale.Find("y/text-field").AsRT().sizeDelta = new Vector2(125f, 32f);
+
+                BackgroundEditor.inst.left.Find("color").GetComponent<GridLayoutGroup>().spacing = new Vector2(7.7f, 0f);
+
+                var rotSlider = BackgroundEditor.inst.left.Find("rotation/slider").GetComponent<Slider>();
+                rotSlider.maxValue = 360f;
+                rotSlider.minValue = -360f;
+            }
+
+            var label = BackgroundEditor.inst.left.GetChild(10).gameObject;
+
+            var shape = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View/Viewport/Content/shape");
+            var shapeOption = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View/Viewport/Content/shapesettings");
+
+            var labelShape = Instantiate(label);
+            labelShape.transform.SetParent(BackgroundEditor.inst.left);
+            labelShape.transform.localScale = Vector3.one;
+            labelShape.transform.SetSiblingIndex(12);
+            labelShape.name = "label";
+            labelShape.transform.GetChild(0).GetComponent<Text>().text = "Shape";
+
+            var shapeBG = Instantiate(shape);
+            shapeBG.transform.SetParent(BackgroundEditor.inst.left);
+            shapeBG.transform.localScale = Vector3.one;
+            shapeBG.transform.SetSiblingIndex(13);
+            shapeBG.name = "shape";
+
+            var shapeOptionBG = Instantiate(shapeOption);
+            shapeOptionBG.transform.SetParent(BackgroundEditor.inst.left);
+            shapeOptionBG.transform.localScale = Vector3.one;
+            shapeOptionBG.transform.SetSiblingIndex(14);
+            shapeOptionBG.name = "shapesettings";
+            var shapeSettings = shapeOptionBG.transform;
+
+            // Depth
+            {
+                DestroyImmediate(BackgroundEditor.inst.left.Find("depth").gameObject);
+
+                var iterations = Instantiate(BackgroundEditor.inst.left.Find("position").gameObject);
+                iterations.transform.SetParent(BackgroundEditor.inst.left);
+                iterations.transform.localScale = Vector3.one;
+                iterations.name = "depth";
+                DestroyImmediate(iterations.transform.GetChild(1).gameObject);
+                iterations.transform.SetSiblingIndex(3);
+
+                var xif = iterations.transform.Find("x").GetComponent<InputField>();
+
+                xif.onValueChanged.ClearAll();
+                xif.onValueChanged.AddListener(_val =>
+                {
+                    if (int.TryParse(_val, out int num))
+                    {
+                        CurrentSelectedBG.layer = num;
+                        BackgroundManager.inst.UpdateBackgrounds();
+                    }
+                });
+
+                TriggerHelper.IncreaseDecreaseButtons(xif);
+            }
+
+            // Iterations
+            {
+                var iLabel = Instantiate(label);
+                iLabel.transform.SetParent(BackgroundEditor.inst.left);
+                iLabel.transform.localScale = Vector3.one;
+                iLabel.name = "label";
+                iLabel.transform.GetChild(0).GetComponent<Text>().text = "Iterations";
+                iLabel.transform.SetSiblingIndex(4);
+
+                var iterations = Instantiate(BackgroundEditor.inst.left.Find("position").gameObject);
+                iterations.transform.SetParent(BackgroundEditor.inst.left);
+                iterations.transform.localScale = Vector3.one;
+                iterations.name = "iterations";
+                DestroyImmediate(iterations.transform.GetChild(1).gameObject);
+                iterations.transform.SetSiblingIndex(5);
+
+                var x = iterations.transform.Find("x");
+                var xif = x.GetComponent<InputField>();
+
+                xif.onValueChanged.ClearAll();
+                xif.onValueChanged.AddListener(_val =>
+                {
+                    if (int.TryParse(_val, out int num))
+                    {
+                        CurrentSelectedBG.depth = num;
+                        BackgroundManager.inst.UpdateBackgrounds();
+                    }
+                });
+
+                TriggerHelper.IncreaseDecreaseButtonsInt(xif);
+                TriggerHelper.AddEventTriggerParams(x.gameObject, TriggerHelper.ScrollDeltaInt(xif));
+            }
+
+            // ZPosition
+            {
+                var iLabel = Instantiate(label);
+                iLabel.transform.SetParent(BackgroundEditor.inst.left);
+                iLabel.transform.localScale = Vector3.one;
+                iLabel.name = "label";
+                iLabel.transform.GetChild(0).GetComponent<Text>().text = "Z Position";
+                iLabel.transform.SetSiblingIndex(6);
+
+                var iterations = Instantiate(BackgroundEditor.inst.left.Find("position").gameObject);
+                iterations.transform.SetParent(BackgroundEditor.inst.left);
+                iterations.transform.localScale = Vector3.one;
+                iterations.name = "zposition";
+                DestroyImmediate(iterations.transform.GetChild(1).gameObject);
+                iterations.transform.SetSiblingIndex(7);
+
+                var x = iterations.transform.Find("x");
+                var xif = x.GetComponent<InputField>();
+                var left = x.Find("<").GetComponent<Button>();
+                var right = x.Find(">").GetComponent<Button>();
+
+                xif.onValueChanged.ClearAll();
+                xif.onValueChanged.AddListener(_val =>
+                {
+                    if (float.TryParse(_val, out float num))
+                    {
+                        CurrentSelectedBG.zposition = num;
+                        BackgroundManager.inst.UpdateBackgrounds();
+                    }
+                });
+
+                TriggerHelper.IncreaseDecreaseButtons(xif);
+                TriggerHelper.AddEventTriggerParams(x.gameObject, TriggerHelper.ScrollDelta(xif));
+            }
+
+            // ZScale
+            {
+                var iLabel = Instantiate(label);
+                iLabel.transform.SetParent(BackgroundEditor.inst.left);
+                iLabel.transform.localScale = Vector3.one;
+                iLabel.name = "label";
+                iLabel.transform.GetChild(0).GetComponent<Text>().text = "Z Scale";
+                iLabel.transform.SetSiblingIndex(8);
+
+                var iterations = Instantiate(BackgroundEditor.inst.left.Find("position").gameObject);
+                iterations.transform.SetParent(BackgroundEditor.inst.left);
+                iterations.transform.localScale = Vector3.one;
+                iterations.name = "zscale";
+                DestroyImmediate(iterations.transform.GetChild(1).gameObject);
+                iterations.transform.SetSiblingIndex(9);
+
+                var x = iterations.transform.Find("x");
+                var xif = x.GetComponent<InputField>();
+                var left = x.Find("<").GetComponent<Button>();
+                var right = x.Find(">").GetComponent<Button>();
+
+                xif.onValueChanged.ClearAll();
+                xif.onValueChanged.AddListener(_val =>
+                {
+                    if (float.TryParse(_val, out float num))
+                    {
+                        CurrentSelectedBG.zscale = float.Parse(_val);
+                        BackgroundManager.inst.UpdateBackgrounds();
+                    }
+                });
+
+                TriggerHelper.IncreaseDecreaseButtons(xif);
+                TriggerHelper.AddEventTriggerParams(x.gameObject, TriggerHelper.ScrollDelta(xif));
+            }
+
+            // Reactive
+            {
+                var reactiveRanges = BackgroundEditor.inst.left.Find("reactive-ranges");
+
+                reactiveRanges.GetComponent<GridLayoutGroup>().cellSize = new Vector2(62f, 32f);
+
+                var custom = Instantiate(reactiveRanges.GetChild(3).gameObject);
+                custom.transform.SetParent(reactiveRanges);
+                custom.transform.localScale = Vector3.one;
+                custom.name = "custom";
+                custom.transform.GetChild(1).GetComponent<Text>().text = "Custom";
+
+                var toggle = custom.GetComponent<Toggle>();
+                toggle.onValueChanged.ClearAll();
+                toggle.onValueChanged.AddListener(_val =>
+                {
+                    if (_val && CurrentSelectedBG != null)
+                    {
+                        CurrentSelectedBG.reactiveType = (BaseBackgroundObject.ReactiveType)3;
+                        CurrentSelectedBG.reactive = true;
+                    }
+                });
+
+                var reactive = BackgroundEditor.inst.left.Find("reactive");
+                var slider = reactive.Find("slider").GetComponent<RectTransform>();
+                slider.sizeDelta = new Vector2(205f, 32f);
+
+                // Reactive Position
+                {
+                    // Samples
+                    {
+                        var iLabel = Instantiate(label);
+                        iLabel.transform.SetParent(BackgroundEditor.inst.left);
+                        iLabel.transform.localScale = Vector3.one;
+                        iLabel.name = "label";
+                        iLabel.transform.GetChild(0).GetComponent<Text>().text = "Reactive Position Samples";
+                        iLabel.transform.SetSiblingIndex(24);
+
+                        var position = Instantiate(BackgroundEditor.inst.left.Find("position").gameObject);
+                        position.transform.SetParent(BackgroundEditor.inst.left);
+                        position.transform.localScale = Vector3.one;
+                        position.name = "reactive-position-samples";
+                        position.transform.SetSiblingIndex(25);
+
+                        var xif = position.transform.Find("x").GetComponent<InputField>();
+                        var yif = position.transform.Find("y").GetComponent<InputField>();
+
+                        xif.onValueChanged.ClearAll();
+                        xif.onValueChanged.AddListener(_val =>
+                        {
+                            if (int.TryParse(_val, out int num))
+                            {
+                                CurrentSelectedBG.reactivePosSamples.x = num;
+                                BackgroundManager.inst.UpdateBackgrounds();
+                            }
+                        });
+
+                        yif.onValueChanged.ClearAll();
+                        yif.onValueChanged.AddListener(_val =>
+                        {
+                            if (int.TryParse(_val, out int num))
+                            {
+                                CurrentSelectedBG.reactivePosSamples.y = num;
+                                BackgroundManager.inst.UpdateBackgrounds();
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtonsInt(xif, max: 255);
+                        TriggerHelper.IncreaseDecreaseButtonsInt(yif, max: 255);
+                    }
+
+                    // Intensity
+                    {
+                        var iLabel = Instantiate(label);
+                        iLabel.transform.SetParent(BackgroundEditor.inst.left);
+                        iLabel.transform.localScale = Vector3.one;
+                        iLabel.name = "label";
+                        iLabel.transform.GetChild(0).GetComponent<Text>().text = "Reactive Position Intensity";
+                        iLabel.transform.SetSiblingIndex(26);
+
+                        var position = Instantiate(BackgroundEditor.inst.left.Find("position").gameObject);
+                        position.transform.SetParent(BackgroundEditor.inst.left);
+                        position.transform.localScale = Vector3.one;
+                        position.name = "reactive-position-intensity";
+                        position.transform.SetSiblingIndex(27);
+
+                        var xif = position.transform.Find("x").GetComponent<InputField>();
+                        var yif = position.transform.Find("y").GetComponent<InputField>();
+
+                        xif.onValueChanged.ClearAll();
+                        xif.onValueChanged.AddListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                CurrentSelectedBG.reactivePosIntensity.x = num;
+                                BackgroundManager.inst.UpdateBackgrounds();
+                            }
+                        });
+
+                        yif.onValueChanged.ClearAll();
+                        yif.onValueChanged.AddListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                CurrentSelectedBG.reactivePosIntensity.y = num;
+                                BackgroundManager.inst.UpdateBackgrounds();
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(xif, max: 255);
+                        TriggerHelper.IncreaseDecreaseButtons(yif, max: 255);
+                    }
+                }
+
+                // Reactive Scale
+                {
+                    // Samples
+                    {
+                        var iLabel = Instantiate(label);
+                        iLabel.transform.SetParent(BackgroundEditor.inst.left);
+                        iLabel.transform.localScale = Vector3.one;
+                        iLabel.name = "label";
+                        iLabel.transform.GetChild(0).GetComponent<Text>().text = "Reactive Scale Samples";
+                        iLabel.transform.SetSiblingIndex(28);
+
+                        var position = Instantiate(BackgroundEditor.inst.left.Find("position").gameObject);
+                        position.transform.SetParent(BackgroundEditor.inst.left);
+                        position.transform.localScale = Vector3.one;
+                        position.name = "reactive-scale-samples";
+                        position.transform.SetSiblingIndex(29);
+
+                        var xif = position.transform.Find("x").GetComponent<InputField>();
+                        var yif = position.transform.Find("y").GetComponent<InputField>();
+
+                        xif.onValueChanged.ClearAll();
+                        xif.onValueChanged.AddListener(_val =>
+                        {
+                            if (int.TryParse(_val, out int num))
+                            {
+                                CurrentSelectedBG.reactiveScaSamples.x = num;
+                                BackgroundManager.inst.UpdateBackgrounds();
+                            }
+                        });
+
+                        yif.onValueChanged.ClearAll();
+                        yif.onValueChanged.AddListener(_val =>
+                        {
+                            if (int.TryParse(_val, out int num))
+                            {
+                                CurrentSelectedBG.reactiveScaSamples.y = num;
+                                BackgroundManager.inst.UpdateBackgrounds();
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtonsInt(xif, max: 255);
+                        TriggerHelper.IncreaseDecreaseButtonsInt(yif, max: 255);
+                    }
+
+                    // Intensity
+                    {
+                        var iLabel = Instantiate(label);
+                        iLabel.transform.SetParent(BackgroundEditor.inst.left);
+                        iLabel.transform.localScale = Vector3.one;
+                        iLabel.name = "label";
+                        iLabel.transform.GetChild(0).GetComponent<Text>().text = "Reactive Scale Intensity";
+                        iLabel.transform.SetSiblingIndex(30);
+
+                        var position = Instantiate(BackgroundEditor.inst.left.Find("position").gameObject);
+                        position.transform.SetParent(BackgroundEditor.inst.left);
+                        position.transform.localScale = Vector3.one;
+                        position.name = "reactive-scale-intensity";
+                        position.transform.SetSiblingIndex(31);
+
+                        var xif = position.transform.Find("x").GetComponent<InputField>();
+                        var yif = position.transform.Find("y").GetComponent<InputField>();
+
+                        xif.onValueChanged.ClearAll();
+                        xif.onValueChanged.AddListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                CurrentSelectedBG.reactiveScaIntensity.x = num;
+                                BackgroundManager.inst.UpdateBackgrounds();
+                            }
+                        });
+
+                        yif.onValueChanged.ClearAll();
+                        yif.onValueChanged.AddListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                CurrentSelectedBG.reactiveScaIntensity.y = num;
+                                BackgroundManager.inst.UpdateBackgrounds();
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(xif, max: 255);
+                        TriggerHelper.IncreaseDecreaseButtons(yif, max: 255);
+                    }
+                }
+
+                // Reactive Rotation
+                {
+                    // Samples
+                    {
+                        var iLabel = Instantiate(label);
+                        iLabel.transform.SetParent(BackgroundEditor.inst.left);
+                        iLabel.transform.localScale = Vector3.one;
+                        iLabel.name = "label";
+                        iLabel.transform.GetChild(0).GetComponent<Text>().text = "Reactive Rotation Sample";
+                        iLabel.transform.SetSiblingIndex(32);
+
+                        var position = Instantiate(BackgroundEditor.inst.left.Find("position").gameObject);
+                        position.transform.SetParent(BackgroundEditor.inst.left);
+                        position.transform.localScale = Vector3.one;
+                        position.name = "reactive-rotation-sample";
+                        position.transform.SetSiblingIndex(33);
+
+                        DestroyImmediate(position.transform.Find("y").gameObject);
+
+                        var xif = position.transform.Find("x").GetComponent<InputField>();
+
+                        xif.onValueChanged.ClearAll();
+                        xif.onValueChanged.AddListener(_val =>
+                        {
+                            if (int.TryParse(_val, out int num))
+                            {
+                                CurrentSelectedBG.reactiveRotSample = num;
+                                BackgroundManager.inst.UpdateBackgrounds();
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtonsInt(xif, max: 255);
+                    }
+
+                    // Intensity
+                    {
+                        var iLabel = Instantiate(label);
+                        iLabel.transform.SetParent(BackgroundEditor.inst.left);
+                        iLabel.transform.localScale = Vector3.one;
+                        iLabel.name = "label";
+                        iLabel.transform.GetChild(0).GetComponent<Text>().text = "Reactive Rotation Intensity";
+                        iLabel.transform.SetSiblingIndex(34);
+
+                        var position = Instantiate(BackgroundEditor.inst.left.Find("position").gameObject);
+                        position.transform.SetParent(BackgroundEditor.inst.left);
+                        position.transform.localScale = Vector3.one;
+                        position.name = "reactive-rotation-intensity";
+                        position.transform.SetSiblingIndex(35);
+
+                        DestroyImmediate(position.transform.Find("y").gameObject);
+
+                        var xif = position.transform.Find("x").GetComponent<InputField>();
+
+                        xif.onValueChanged.ClearAll();
+                        xif.onValueChanged.AddListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                CurrentSelectedBG.reactiveRotIntensity = num;
+                                BackgroundManager.inst.UpdateBackgrounds();
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(xif, max: 255);
+                    }
+                }
+
+                // Reactive Color
+                {
+                    // Samples
+                    {
+                        var iLabel = Instantiate(label);
+                        iLabel.transform.SetParent(BackgroundEditor.inst.left);
+                        iLabel.transform.localScale = Vector3.one;
+                        iLabel.name = "label";
+                        iLabel.transform.GetChild(0).GetComponent<Text>().text = "Reactive Color Sample";
+                        iLabel.transform.SetSiblingIndex(36);
+
+                        var position = Instantiate(BackgroundEditor.inst.left.Find("position").gameObject);
+                        position.transform.SetParent(BackgroundEditor.inst.left);
+                        position.transform.localScale = Vector3.one;
+                        position.name = "reactive-color-sample";
+                        position.transform.SetSiblingIndex(37);
+
+                        DestroyImmediate(position.transform.Find("y").gameObject);
+
+                        var xif = position.transform.Find("x").GetComponent<InputField>();
+
+                        xif.onValueChanged.ClearAll();
+                        xif.onValueChanged.AddListener(_val =>
+                        {
+                            if (int.TryParse(_val, out int num))
+                            {
+                                CurrentSelectedBG.reactiveColSample = num;
+                                BackgroundManager.inst.UpdateBackgrounds();
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtonsInt(xif, max: 255);
+                    }
+
+                    // Intensity
+                    {
+                        var iLabel = Instantiate(label);
+                        iLabel.transform.SetParent(BackgroundEditor.inst.left);
+                        iLabel.transform.localScale = Vector3.one;
+                        iLabel.name = "label";
+                        iLabel.transform.GetChild(0).GetComponent<Text>().text = "Reactive Color Intensity";
+                        iLabel.transform.SetSiblingIndex(38);
+
+                        var position = Instantiate(BackgroundEditor.inst.left.Find("position").gameObject);
+                        position.transform.SetParent(BackgroundEditor.inst.left);
+                        position.transform.localScale = Vector3.one;
+                        position.name = "reactive-color-intensity";
+                        position.transform.SetSiblingIndex(39);
+
+                        DestroyImmediate(position.transform.Find("y").gameObject);
+
+                        var xif = position.transform.Find("x").GetComponent<InputField>();
+
+                        xif.onValueChanged.ClearAll();
+                        xif.onValueChanged.AddListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                CurrentSelectedBG.reactiveColIntensity = num;
+                                BackgroundManager.inst.UpdateBackgrounds();
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(xif, max: 255);
+                    }
+
+                    // Reactive Color
+                    {
+                        var colorLabel = Instantiate(label);
+                        colorLabel.transform.SetParent(BackgroundEditor.inst.left);
+                        colorLabel.transform.localScale = Vector3.one;
+                        colorLabel.name = "label";
+                        colorLabel.transform.SetSiblingIndex(40);
+                        colorLabel.transform.GetChild(0).GetComponent<Text>().text = "Reactive Color";
+
+                        var color = BackgroundEditor.inst.left.Find("color");
+                        var fadeColor = Instantiate(color.gameObject);
+                        fadeColor.transform.SetParent(BackgroundEditor.inst.left);
+                        fadeColor.transform.localScale = Vector3.one;
+                        fadeColor.name = "reactive-color";
+                        fadeColor.transform.SetSiblingIndex(41);
+                    }
+                }
+
+                // Reactive Z
+                {
+                    // Samples
+                    {
+                        var iLabel = Instantiate(label);
+                        iLabel.transform.SetParent(BackgroundEditor.inst.left);
+                        iLabel.transform.localScale = Vector3.one;
+                        iLabel.name = "label";
+                        iLabel.transform.GetChild(0).GetComponent<Text>().text = "Reactive Z Sample";
+                        iLabel.transform.SetSiblingIndex(42);
+
+                        var position = Instantiate(BackgroundEditor.inst.left.Find("position").gameObject);
+                        position.transform.SetParent(BackgroundEditor.inst.left);
+                        position.transform.localScale = Vector3.one;
+                        position.name = "reactive-z-sample";
+                        position.transform.SetSiblingIndex(43);
+
+                        DestroyImmediate(position.transform.Find("y").gameObject);
+
+                        var xif = position.transform.Find("x").GetComponent<InputField>();
+
+                        xif.onValueChanged.ClearAll();
+                        xif.onValueChanged.AddListener(_val =>
+                        {
+                            if (int.TryParse(_val, out int num))
+                            {
+                                CurrentSelectedBG.reactiveColSample = num;
+                                BackgroundManager.inst.UpdateBackgrounds();
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtonsInt(xif, max: 255);
+                    }
+
+                    // Intensity
+                    {
+                        var iLabel = Instantiate(label);
+                        iLabel.transform.SetParent(BackgroundEditor.inst.left);
+                        iLabel.transform.localScale = Vector3.one;
+                        iLabel.name = "label";
+                        iLabel.transform.GetChild(0).GetComponent<Text>().text = "Reactive Z Intensity";
+                        iLabel.transform.SetSiblingIndex(44);
+
+                        var position = Instantiate(BackgroundEditor.inst.left.Find("position").gameObject);
+                        position.transform.SetParent(BackgroundEditor.inst.left);
+                        position.transform.localScale = Vector3.one;
+                        position.name = "reactive-z-intensity";
+                        position.transform.SetSiblingIndex(45);
+
+                        DestroyImmediate(position.transform.Find("y").gameObject);
+
+                        var xif = position.transform.Find("x").GetComponent<InputField>();
+
+                        xif.onValueChanged.ClearAll();
+                        xif.onValueChanged.AddListener(_val =>
+                        {
+                            if (float.TryParse(_val, out float num))
+                            {
+                                CurrentSelectedBG.reactiveZIntensity = num;
+                                BackgroundManager.inst.UpdateBackgrounds();
+                            }
+                        });
+
+                        TriggerHelper.IncreaseDecreaseButtons(xif, max: 255);
+                    }
+                }
+            }
+
+            // Fade Color
+            {
+                var colorLabel = Instantiate(label);
+                colorLabel.transform.SetParent(BackgroundEditor.inst.left);
+                colorLabel.transform.localScale = Vector3.one;
+                colorLabel.name = "label";
+                colorLabel.transform.SetSiblingIndex(16);
+                colorLabel.transform.GetChild(0).GetComponent<Text>().text = "Fade Color";
+
+                var color = BackgroundEditor.inst.left.Find("color");
+                var fadeColor = Instantiate(color.gameObject);
+                fadeColor.transform.SetParent(BackgroundEditor.inst.left);
+                fadeColor.transform.localScale = Vector3.one;
+                fadeColor.name = "fade-color";
+                fadeColor.transform.SetSiblingIndex(17);
+            }
+
+            // Rotation
+            {
+                var index = BackgroundEditor.inst.left.Find("rotation").GetSiblingIndex();
+
+                var iLabel = Instantiate(label);
+                iLabel.transform.SetParent(BackgroundEditor.inst.left);
+                iLabel.transform.localScale = Vector3.one;
+                iLabel.name = "label";
+                iLabel.transform.GetChild(0).GetComponent<Text>().text = "3D Rotation";
+                iLabel.transform.SetSiblingIndex(index - 1);
+
+                var iterations = Instantiate(BackgroundEditor.inst.left.Find("position").gameObject);
+                iterations.transform.SetParent(BackgroundEditor.inst.left);
+                iterations.transform.localScale = Vector3.one;
+                iterations.name = "depth-rotation";
+                iterations.transform.SetSiblingIndex(index);
+
+                var xif = iterations.transform.Find("x").GetComponent<InputField>();
+
+                xif.onValueChanged.ClearAll();
+                xif.onValueChanged.AddListener(_val =>
+                {
+                    if (float.TryParse(_val, out float num))
+                    {
+                        CurrentSelectedBG.rotation.x = num;
+                        BackgroundManager.inst.UpdateBackgrounds();
+                    }
+                });
+
+                TriggerHelper.IncreaseDecreaseButtons(xif, 15f, 3f);
+
+                var yif = iterations.transform.Find("y").GetComponent<InputField>();
+
+                yif.onValueChanged.ClearAll();
+                yif.onValueChanged.AddListener(_val =>
+                {
+                    if (float.TryParse(_val, out float num))
+                    {
+                        CurrentSelectedBG.rotation.y = num;
+                        BackgroundManager.inst.UpdateBackgrounds();
+                    }
+                });
+
+                TriggerHelper.IncreaseDecreaseButtons(yif, 15f, 3f);
+            }
+
+            // Hue / Sat / Val (Fade)
+            {
+                var colorLabel = Instantiate(label);
+                colorLabel.transform.SetParent(BackgroundEditor.inst.left);
+                colorLabel.transform.localScale = Vector3.one;
+                colorLabel.name = "label";
+                colorLabel.transform.SetSiblingIndex(20);
+                colorLabel.AddComponent<HorizontalLayoutGroup>();
+
+                var label1 = colorLabel.transform.GetChild(0);
+                label1.GetComponent<Text>().text = "Hue";
+                var label2 = label1.gameObject.Duplicate(colorLabel.transform, "text");
+                label2.GetComponent<Text>().text = "Saturation";
+                var label3 = label1.gameObject.Duplicate(colorLabel.transform, "text");
+                label3.GetComponent<Text>().text = "Value";
+
+                var iterations = Instantiate(BackgroundEditor.inst.left.Find("position").gameObject);
+                iterations.transform.SetParent(BackgroundEditor.inst.left);
+                iterations.transform.localScale = Vector3.one;
+                iterations.name = "fadehuesatval";
+                iterations.transform.SetSiblingIndex(21);
+
+                // Hue
+                {
+                    var x = iterations.transform.Find("x");
+                    var xif = x.GetComponent<InputField>();
+                    x.transform.GetChild(0).AsRT().sizeDelta = new Vector2(70f, 32f);
+                    xif.image = x.transform.GetChild(0).GetComponent<Image>();
+
+                    xif.onValueChanged.ClearAll();
+                    xif.onValueChanged.AddListener(_val =>
+                    {
+                        if (float.TryParse(_val, out float num))
+                        {
+                            CurrentSelectedBG.fadeHue = num;
+                        }
+                    });
+
+                    TriggerHelper.IncreaseDecreaseButtons(xif);
+                }
+
+                // Saturation
+                {
+                    var x = iterations.transform.Find("y");
+                    var xif = x.GetComponent<InputField>();
+                    x.transform.AsRT().anchoredPosition = new Vector2(120f, 0f);
+                    x.transform.GetChild(0).AsRT().sizeDelta = new Vector2(70f, 32f);
+                    xif.image = x.transform.GetChild(0).GetComponent<Image>();
+
+                    xif.onValueChanged.ClearAll();
+                    xif.onValueChanged.AddListener(_val =>
+                    {
+                        if (float.TryParse(_val, out float num))
+                        {
+                            CurrentSelectedBG.fadeSaturation = num;
+                        }
+                    });
+
+                    TriggerHelper.IncreaseDecreaseButtons(xif);
+                }
+
+                // Value
+                {
+                    var x = iterations.transform.Find("x").gameObject.Duplicate(iterations.transform, "z");
+                    var xif = x.GetComponent<InputField>();
+                    x.transform.AsRT().anchoredPosition = new Vector2(240f, 0f);
+                    x.transform.GetChild(0).AsRT().sizeDelta = new Vector2(70f, 32f);
+                    xif.image = x.transform.GetChild(0).GetComponent<Image>();
+
+                    xif.onValueChanged.ClearAll();
+                    xif.onValueChanged.AddListener(_val =>
+                    {
+                        if (float.TryParse(_val, out float num))
+                        {
+                            CurrentSelectedBG.fadeValue = num;
+                        }
+                    });
+
+                    TriggerHelper.IncreaseDecreaseButtons(xif);
+                }
+            }
+
+            // Hue / Sat / Val (Color)
+            {
+                var colorLabel = Instantiate(label);
+                colorLabel.transform.SetParent(BackgroundEditor.inst.left);
+                colorLabel.transform.localScale = Vector3.one;
+                colorLabel.name = "label";
+                colorLabel.transform.SetSiblingIndex(24);
+                colorLabel.AddComponent<HorizontalLayoutGroup>();
+
+                var label1 = colorLabel.transform.GetChild(0);
+                label1.GetComponent<Text>().text = "Hue";
+                var label2 = label1.gameObject.Duplicate(colorLabel.transform, "text");
+                label2.GetComponent<Text>().text = "Saturation";
+                var label3 = label1.gameObject.Duplicate(colorLabel.transform, "text");
+                label3.GetComponent<Text>().text = "Value";
+
+                var iterations = Instantiate(BackgroundEditor.inst.left.Find("position").gameObject);
+                iterations.transform.SetParent(BackgroundEditor.inst.left);
+                iterations.transform.localScale = Vector3.one;
+                iterations.name = "huesatval";
+                iterations.transform.SetSiblingIndex(25);
+
+                // Hue
+                {
+                    var x = iterations.transform.Find("x");
+                    var xif = x.GetComponent<InputField>();
+                    x.transform.GetChild(0).AsRT().sizeDelta = new Vector2(70f, 32f);
+                    xif.image = x.transform.GetChild(0).GetComponent<Image>();
+
+                    xif.onValueChanged.ClearAll();
+                    xif.onValueChanged.AddListener(_val =>
+                    {
+                        if (float.TryParse(_val, out float num))
+                        {
+                            CurrentSelectedBG.hue = num;
+                        }
+                    });
+
+                    TriggerHelper.IncreaseDecreaseButtons(xif);
+                }
+
+                // Saturation
+                {
+                    var x = iterations.transform.Find("y");
+                    var xif = x.GetComponent<InputField>();
+                    x.transform.AsRT().anchoredPosition = new Vector2(120f, 0f);
+                    x.transform.GetChild(0).AsRT().sizeDelta = new Vector2(70f, 32f);
+                    xif.image = x.transform.GetChild(0).GetComponent<Image>();
+
+                    xif.onValueChanged.ClearAll();
+                    xif.onValueChanged.AddListener(_val =>
+                    {
+                        if (float.TryParse(_val, out float num))
+                        {
+                            CurrentSelectedBG.saturation = num;
+                        }
+                    });
+
+                    TriggerHelper.IncreaseDecreaseButtons(xif);
+                }
+
+                // Value
+                {
+                    var x = iterations.transform.Find("x").gameObject.Duplicate(iterations.transform, "z");
+                    var xif = x.GetComponent<InputField>();
+                    x.transform.AsRT().anchoredPosition = new Vector2(240f, 0f);
+                    x.transform.GetChild(0).AsRT().sizeDelta = new Vector2(70f, 32f);
+                    xif.image = x.transform.GetChild(0).GetComponent<Image>();
+
+                    xif.onValueChanged.ClearAll();
+                    xif.onValueChanged.AddListener(_val =>
+                    {
+                        if (float.TryParse(_val, out float num))
+                        {
+                            CurrentSelectedBG.value = num;
+                        }
+                    });
+
+                    TriggerHelper.IncreaseDecreaseButtons(xif);
+                }
+            }
+
+            // Modifiers
+            {
+                var eventButton = GameObject.Find("Editor Systems/Editor GUI/sizer/main/TimelineBar/GameObject/event");
+
+                var iLabel = Instantiate(label);
+                iLabel.transform.SetParent(BackgroundEditor.inst.left);
+                iLabel.transform.localScale = Vector3.one;
+                iLabel.name = "label";
+                iLabel.transform.GetChild(0).GetComponent<Text>().text = "Modifier Blocks";
+
+                var iterations = Instantiate(BackgroundEditor.inst.left.Find("position").gameObject);
+                iterations.transform.SetParent(BackgroundEditor.inst.left);
+                iterations.transform.localScale = Vector3.one;
+                iterations.name = "block";
+                DestroyImmediate(iterations.transform.GetChild(1).gameObject);
+
+                var addBlock = eventButton.Duplicate(iterations.transform.Find("x"), "add");
+                addBlock.transform.localScale = Vector3.one;
+                addBlock.transform.AsRT().sizeDelta = new Vector2(80f, 32f);
+
+                var addBlockText = addBlock.transform.GetChild(0).GetComponent<Text>();
+                addBlockText.text = "Add";
+
+                var removeBlock = eventButton.Duplicate(iterations.transform.Find("x"), "del");
+                removeBlock.transform.localScale = Vector3.one;
+                removeBlock.transform.AsRT().sizeDelta = new Vector2(80f, 32f);
+
+                var removeBlockText = removeBlock.transform.GetChild(0).GetComponent<Text>();
+                removeBlockText.text = "Del";
+
+                EditorThemeManager.AddGraphic(addBlock.GetComponent<Image>(), ThemeGroup.Add, true);
+                EditorThemeManager.AddGraphic(addBlockText, ThemeGroup.Add_Text);
+                EditorThemeManager.AddGraphic(removeBlock.GetComponent<Image>(), ThemeGroup.Delete, true);
+                EditorThemeManager.AddGraphic(removeBlockText, ThemeGroup.Delete_Text);
+
+                CreateModifiersOnAwake();
+                RTEditor.inst.GeneratePopup("Default Background Modifiers Popup", "Choose a modifer to add", Vector2.zero, new Vector2(600f, 400f), _val =>
+                {
+                    searchTerm = _val;
+                    if (CurrentSelectedBG)
+                        RefreshDefaultModifiersList(RTBackgroundEditor.CurrentSelectedBG);
+                }, placeholderText: "Search for default Modifier...");
+
+                EditorThemeManager.AddInputFields(BackgroundEditor.inst.left.Find("block").gameObject, true, "Background Editor Reactive");
+            }
+
+            var active = BackgroundEditor.inst.left.Find("name/active").GetComponent<Toggle>();
+            Destroy(active.GetComponent<Animator>());
+            active.transition = Selectable.Transition.ColorTint;
+            active.colors = UIManager.SetColorBlock(active.colors, Color.white, new Color(0.7f, 0.7f, 0.7f), new Color(0.7f, 0.7f, 0.7f), new Color(0.7f, 0.7f, 0.7f), new Color(0.7f, 0.7f, 0.7f));
+            EditorThemeManager.AddToggle(active);
+            BackgroundEditor.inst.left.Find("name/name").AsRT().sizeDelta = new Vector2(300f, 32f);
+            EditorThemeManager.AddInputField(BackgroundEditor.inst.left.Find("name/name").GetComponent<InputField>());
+            EditorThemeManager.AddInputFields(BackgroundEditor.inst.left.Find("depth").gameObject, true, "Background Editor Depth");
+            EditorThemeManager.AddInputFields(BackgroundEditor.inst.left.Find("iterations").gameObject, true, "Background Editor Iterations");
+            EditorThemeManager.AddInputFields(BackgroundEditor.inst.left.Find("zposition").gameObject, true, "");
+            EditorThemeManager.AddInputFields(BackgroundEditor.inst.left.Find("zscale").gameObject, true, "Background Editor Z Scale");
+            EditorThemeManager.AddInputFields(BackgroundEditor.inst.left.Find("position").gameObject, true, "Background Editor Position");
+            EditorThemeManager.AddInputFields(BackgroundEditor.inst.left.Find("scale").gameObject, true, "Background Editor Scale");
+            EditorThemeManager.AddInputFields(BackgroundEditor.inst.left.Find("depth-rotation").gameObject, true, "Background Editor 3D Rotation");
+            EditorThemeManager.AddInputField(BackgroundEditor.inst.left.Find("rotation/x").GetComponent<InputField>());
+
+            EditorThemeManager.AddInputFields(BackgroundEditor.inst.left.Find("fadehuesatval").gameObject, true, "");
+            EditorThemeManager.AddInputFields(BackgroundEditor.inst.left.Find("huesatval").gameObject, true, "");
+
+            var rotationSliderImage = BackgroundEditor.inst.left.Find("rotation/slider/Image").GetComponent<Image>();
+            var rotationSlider = BackgroundEditor.inst.left.Find("rotation/slider").GetComponent<Slider>();
+            rotationSlider.colors = UIManager.SetColorBlock(rotationSlider.colors, Color.white, new Color(0.9f, 0.9f, 0.9f), Color.white, Color.white, Color.white);
+            rotationSlider.transform.AsRT().sizeDelta = new Vector2(207f, 32f);
+
+            EditorThemeManager.AddSlider(rotationSlider, rotationSliderImage);
+
+            for (int i = 0; i < BackgroundEditor.inst.left.Find("reactive-ranges").childCount; i++)
+            {
+                var child = BackgroundEditor.inst.left.Find("reactive-ranges").GetChild(i);
+                var toggle = child.GetComponent<Toggle>();
+                var background = toggle.image;
+                var checkmark = toggle.graphic;
+
+                EditorThemeManager.AddGraphic(background, ThemeGroup.Function_2_Normal, true);
+                EditorThemeManager.AddGraphic(checkmark, ThemeGroup.Function_2_Highlighted);
+                EditorThemeManager.AddGraphic(child.Find("Label").GetComponent<Text>(), ThemeGroup.Function_2_Text);
+            }
+
+            EditorThemeManager.AddInputField(BackgroundEditor.inst.left.Find("reactive/x").GetComponent<InputField>());
+
+            var reactiveSliderImage = BackgroundEditor.inst.left.Find("reactive/slider/Image").GetComponent<Image>();
+            var reactiveSlider = BackgroundEditor.inst.left.Find("reactive/slider").GetComponent<Slider>();
+            reactiveSlider.colors = UIManager.SetColorBlock(reactiveSlider.colors, Color.white, new Color(0.9f, 0.9f, 0.9f), Color.white, Color.white, Color.white);
+            reactiveSlider.transform.AsRT().sizeDelta = new Vector2(207f, 32f);
+
+            EditorThemeManager.AddSlider(reactiveSlider, reactiveSliderImage);
+
+            EditorThemeManager.AddInputFields(BackgroundEditor.inst.left.Find("reactive-position-samples").gameObject, true, "Background Editor Reactive");
+            EditorThemeManager.AddInputFields(BackgroundEditor.inst.left.Find("reactive-position-intensity").gameObject, true, "Background Editor Reactive");
+            EditorThemeManager.AddInputFields(BackgroundEditor.inst.left.Find("reactive-scale-samples").gameObject, true, "Background Editor Reactive");
+            EditorThemeManager.AddInputFields(BackgroundEditor.inst.left.Find("reactive-scale-intensity").gameObject, true, "Background Editor Reactive");
+            EditorThemeManager.AddInputFields(BackgroundEditor.inst.left.Find("reactive-rotation-sample").gameObject, true, "Background Editor Reactive");
+            EditorThemeManager.AddInputFields(BackgroundEditor.inst.left.Find("reactive-rotation-intensity").gameObject, true, "Background Editor Reactive");
+            EditorThemeManager.AddInputFields(BackgroundEditor.inst.left.Find("reactive-color-sample").gameObject, true, "Background Editor Reactive");
+            EditorThemeManager.AddInputFields(BackgroundEditor.inst.left.Find("reactive-color-intensity").gameObject, true, "Background Editor Reactive");
+            EditorThemeManager.AddInputFields(BackgroundEditor.inst.left.Find("reactive-z-sample").gameObject, true, "Background Editor Reactive");
+            EditorThemeManager.AddInputFields(BackgroundEditor.inst.left.Find("reactive-z-intensity").gameObject, true, "Background Editor Reactive");
+
+            var fade = BackgroundEditor.inst.left.Find("fade");
+            var fadeToggle = fade.GetComponent<Toggle>();
+            var fadeBackground = fadeToggle.image;
+            var fadeCheckmark = fadeToggle.graphic;
+
+            EditorThemeManager.AddGraphic(fadeBackground, ThemeGroup.Function_2_Normal, true);
+            EditorThemeManager.AddGraphic(fadeCheckmark, ThemeGroup.Function_2_Highlighted, true);
+            EditorThemeManager.AddGraphic(fade.Find("Label").GetComponent<Text>(), ThemeGroup.Function_2_Text, true);
+
+            // Labels
+            for (int i = 0; i < BackgroundEditor.inst.left.childCount; i++)
+            {
+                var child = BackgroundEditor.inst.left.GetChild(i);
+                if (child.name != "label")
+                    continue;
+
+                for (int j = 0; j < child.childCount; j++)
+                    EditorThemeManager.AddLightText(child.GetChild(j).GetComponent<Text>());
+            }
+
+            #endregion
+
+            yield break;
         }
 
         public void OpenDialog(int index)
@@ -153,10 +1258,7 @@ namespace BetterLegacy.Editor.Managers
             button.image.color = LSColors.fadeColor(color, 1f);
             gameObject.transform.Find("Image").gameObject.SetActive(currentColor == colTmp);
 
-            button.onClick.AddListener(delegate ()
-            {
-                onSetColor.Invoke(colTmp);
-            });
+            button.onClick.AddListener(() => { onSetColor.Invoke(colTmp); });
 
             EditorThemeManager.ApplyGraphic(button.image, ThemeGroup.Null, true);
             EditorThemeManager.ApplyGraphic(gameObject.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Background_1);
@@ -187,7 +1289,6 @@ namespace BetterLegacy.Editor.Managers
                     }
             }
 
-            //Debug.Log($"{ObjEditor.inst.className}Removing all...");
             foreach (var obj in toDestroy)
                 DestroyImmediate(obj);
 
@@ -299,14 +1400,14 @@ namespace BetterLegacy.Editor.Managers
                     var shoggle = shape.Find(i.ToString()).GetComponent<Toggle>();
                     shoggle.onValueChanged.ClearAll();
                     shoggle.isOn = backgroundObject.shape.type == buttonTmp;
-                    shoggle.onValueChanged.AddListener(delegate (bool _value)
+                    shoggle.onValueChanged.AddListener(_val =>
                     {
-                        if (_value)
-                        {
-                            backgroundObject.SetShape(buttonTmp, 0);
+                        if (!_val)
+                            return;
 
-                            BackgroundEditor.inst.OpenDialog(index);
-                        }
+                        backgroundObject.SetShape(buttonTmp, 0);
+
+                        BackgroundEditor.inst.OpenDialog(index);
                     });
 
                     if (!shape.Find(i.ToString()).GetComponent<HoverUI>())
@@ -333,9 +1434,9 @@ namespace BetterLegacy.Editor.Managers
 
                 shoggle.onValueChanged.RemoveAllListeners();
                 shoggle.isOn = backgroundObject.shape.option == i;
-                shoggle.onValueChanged.AddListener(delegate (bool _value)
+                shoggle.onValueChanged.AddListener(_val =>
                 {
-                    if (!_value)
+                    if (!_val)
                         return;
 
                     backgroundObject.SetShape(backgroundObject.shape.type, buttonTmp);
@@ -539,11 +1640,8 @@ namespace BetterLegacy.Editor.Managers
 
         #region Modifiers
 
-        public static bool installed = false;
-
         public Transform content;
         public Transform scrollView;
-        public RectTransform scrollViewRT;
 
         public bool showModifiers;
 
@@ -562,9 +1660,9 @@ namespace BetterLegacy.Editor.Managers
             activeText.text = "Show Modifiers";
 
             var toggle = act.GetComponent<Toggle>();
-            toggle.onValueChanged.RemoveAllListeners();
+            toggle.onValueChanged.ClearAll();
             toggle.isOn = showModifiers;
-            toggle.onValueChanged.AddListener(delegate (bool _val)
+            toggle.onValueChanged.AddListener(_val =>
             {
                 showModifiers = _val;
                 scrollView.gameObject.SetActive(showModifiers);
@@ -581,8 +1679,6 @@ namespace BetterLegacy.Editor.Managers
             scrollView.SetParent(BackgroundEditor.inst.left);
             scrollView.localScale = Vector3.one;
             scrollView.name = "Modifiers Scroll View";
-
-            scrollViewRT = scrollView.GetComponent<RectTransform>();
 
             content = scrollView.Find("Viewport/Content");
             LSHelpers.DeleteChildren(content);
@@ -698,7 +1794,7 @@ namespace BetterLegacy.Editor.Managers
 
             xif.onValueChanged.ClearAll();
             xif.text = currentPage.ToString();
-            xif.onValueChanged.AddListener(delegate (string _val)
+            xif.onValueChanged.AddListener(_val =>
             {
                 if (int.TryParse(_val, out int page))
                 {
@@ -708,28 +1804,24 @@ namespace BetterLegacy.Editor.Managers
             });
 
             left.onClick.ClearAll();
-            left.onClick.AddListener(delegate ()
+            left.onClick.AddListener(() =>
             {
                 if (int.TryParse(xif.text, out int page))
-                {
                     xif.text = Mathf.Clamp(page - 1, 0, backgroundObject.modifiers.Count - 1).ToString();
-                }
             });
 
             right.onClick.ClearAll();
-            right.onClick.AddListener(delegate ()
+            right.onClick.AddListener(() =>
             {
                 if (int.TryParse(xif.text, out int page))
-                {
                     xif.text = Mathf.Clamp(page + 1, 0, backgroundObject.modifiers.Count - 1).ToString();
-                }
             });
 
             TriggerHelper.AddEventTriggerParams(xif.gameObject, TriggerHelper.ScrollDeltaInt(xif, max: backgroundObject.modifiers.Count - 1));
 
             var addBlockButton = x.Find("add").GetComponent<Button>();
             addBlockButton.onClick.ClearAll();
-            addBlockButton.onClick.AddListener(delegate ()
+            addBlockButton.onClick.AddListener(() =>
             {
                 if (backgroundObject.modifiers.Count > 0 && backgroundObject.modifiers[backgroundObject.modifiers.Count - 1].Count < 1)
                 {
@@ -742,413 +1834,393 @@ namespace BetterLegacy.Editor.Managers
 
             var removeBlockButton = x.Find("del").GetComponent<Button>();
             removeBlockButton.onClick.ClearAll();
-            removeBlockButton.onClick.AddListener(delegate ()
+            removeBlockButton.onClick.AddListener(() =>
             {
                 if (backgroundObject.modifiers.Count < 1)
                     return;
 
-                RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this modifier block?", delegate ()
+                RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this modifier block?", () =>
                 {
                     DelBlock(backgroundObject);
                     EditorManager.inst.HideDialog("Warning Popup");
-                }, delegate ()
-                {
-                    EditorManager.inst.HideDialog("Warning Popup");
-                });
+                }, () => { EditorManager.inst.HideDialog("Warning Popup"); });
             });
 
-            if (showModifiers && backgroundObject.modifiers.Count > currentPage)
+            if (!showModifiers || backgroundObject.modifiers.Count <= currentPage)
+                yield break;
+
+            content.parent.parent.AsRT().sizeDelta = new Vector2(351f, 300f * Mathf.Clamp(backgroundObject.modifiers[currentPage].Count, 1, 5));
+
+            int num = 0;
+            foreach (var modifier in backgroundObject.modifiers[currentPage])
             {
-                ((RectTransform)content.parent.parent).sizeDelta = new Vector2(351f, 300f * Mathf.Clamp(backgroundObject.modifiers[currentPage].Count, 1, 5));
+                int index = num;
+                var gameObject = modifierCardPrefab.Duplicate(content, modifier.commands[0]);
+                EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.List_Button_1_Normal, true);
+                gameObject.transform.localScale = Vector3.one;
+                var modifierTitle = gameObject.transform.Find("Label/Text").GetComponent<Text>();
+                modifierTitle.text = modifier.commands[0];
+                EditorThemeManager.ApplyLightText(modifierTitle);
 
-                int num = 0;
-                foreach (var modifier in backgroundObject.modifiers[currentPage])
+                var delete = gameObject.transform.Find("Label/Delete").GetComponent<DeleteButtonStorage>();
+                delete.button.onClick.ClearAll();
+                delete.button.onClick.AddListener(() =>
                 {
-                    int index = num;
-                    var gameObject = modifierCardPrefab.Duplicate(content, modifier.commands[0]);
-                    EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.List_Button_1_Normal, gameObject, new List<Component>
+                    backgroundObject.modifiers[currentPage].RemoveAt(index);
+                    backgroundObject.positionOffset = Vector3.zero;
+                    backgroundObject.scaleOffset = Vector3.zero;
+                    backgroundObject.rotationOffset = Vector3.zero;
+
+                    Destroy(backgroundObject.BaseObject);
+                    Updater.CreateBackgroundObject(backgroundObject);
+
+                    StartCoroutine(RenderModifiers(backgroundObject));
+                });
+
+                EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
+                EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
+
+                var layout = gameObject.transform.Find("Layout");
+
+                var constant = booleanBar.Duplicate(layout, "Constant");
+                constant.transform.localScale = Vector3.one;
+
+                var constantText = constant.transform.Find("Text").GetComponent<Text>();
+                constantText.text = "Constant";
+                EditorThemeManager.ApplyLightText(constantText);
+
+                var toggle = constant.transform.Find("Toggle").GetComponent<Toggle>();
+                toggle.onValueChanged.ClearAll();
+                toggle.isOn = modifier.constant;
+                toggle.onValueChanged.AddListener(_val =>
+                {
+                    modifier.constant = _val;
+                    modifier.active = false;
+                });
+                EditorThemeManager.ApplyToggle(toggle);
+
+                if (modifier.type == ModifierBase.Type.Trigger)
+                {
+                    var not = booleanBar.Duplicate(layout, "Not");
+                    not.transform.localScale = Vector3.one;
+                    var notText = not.transform.Find("Text").GetComponent<Text>();
+                    notText.text = "Not";
+
+                    var notToggle = not.transform.Find("Toggle").GetComponent<Toggle>();
+                    notToggle.onValueChanged.ClearAll();
+                    notToggle.isOn = modifier.not;
+                    notToggle.onValueChanged.AddListener(_val =>
                     {
-                        gameObject.GetComponent<Image>(),
-                    }, true, 1, SpriteManager.RoundedSide.W));
-                    gameObject.transform.localScale = Vector3.one;
-                    var modifierTitle = gameObject.transform.Find("Label/Text").GetComponent<Text>();
-                    modifierTitle.text = modifier.commands[0];
-                    EditorThemeManager.ApplyLightText(modifierTitle);
-
-                    var delete = gameObject.transform.Find("Label/Delete").GetComponent<DeleteButtonStorage>();
-                    delete.button.onClick.ClearAll();
-                    delete.button.onClick.AddListener(delegate ()
-                    {
-                        backgroundObject.modifiers[currentPage].RemoveAt(index);
-                        backgroundObject.positionOffset = Vector3.zero;
-                        backgroundObject.scaleOffset = Vector3.zero;
-                        backgroundObject.rotationOffset = Vector3.zero;
-
-                        Destroy(backgroundObject.BaseObject);
-                        Updater.CreateBackgroundObject(backgroundObject);
-
-                        StartCoroutine(RenderModifiers(backgroundObject));
-                    });
-
-                    EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete, delete.gameObject, new List<Component>
-                    {
-                        delete.button.image,
-                    }, true, 1, SpriteManager.RoundedSide.W));
-
-                    EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete_Text, delete.image.gameObject, new List<Component>
-                    {
-                        delete.image,
-                    }));
-
-                    var layout = gameObject.transform.Find("Layout");
-
-                    var constant = booleanBar.Duplicate(layout, "Constant");
-                    constant.transform.localScale = Vector3.one;
-
-                    var constantText = constant.transform.Find("Text").GetComponent<Text>();
-                    constantText.text = "Constant";
-                    EditorThemeManager.ApplyLightText(constantText);
-
-                    var toggle = constant.transform.Find("Toggle").GetComponent<Toggle>();
-                    toggle.onValueChanged.ClearAll();
-                    toggle.isOn = modifier.constant;
-                    toggle.onValueChanged.AddListener(delegate (bool _val)
-                    {
-                        modifier.constant = _val;
+                        modifier.not = _val;
                         modifier.active = false;
                     });
-                    EditorThemeManager.ApplyToggle(toggle);
 
-                    if (modifier.type == ModifierBase.Type.Trigger)
-                    {
-                        var not = booleanBar.Duplicate(layout, "Not");
-                        not.transform.localScale = Vector3.one;
-                        var notText = not.transform.Find("Text").GetComponent<Text>();
-                        notText.text = "Not";
-
-                        var notToggle = not.transform.Find("Toggle").GetComponent<Toggle>();
-                        notToggle.onValueChanged.ClearAll();
-                        notToggle.isOn = modifier.not;
-                        notToggle.onValueChanged.AddListener(delegate (bool _val)
-                        {
-                            modifier.not = _val;
-                            modifier.active = false;
-                        });
-
-                        EditorThemeManager.ApplyLightText(notText);
-                        EditorThemeManager.ApplyToggle(notToggle);
-                    }
-
-                    Action<string, int, float> singleGenerator = delegate (string label, int type, float defaultValue)
-                    {
-                        var single = numberInput.Duplicate(layout, label);
-                        single.transform.localScale = Vector3.one;
-                        var labelText = single.transform.Find("Text").GetComponent<Text>();
-                        labelText.text = label;
-
-                        var inputField = single.transform.Find("Input").GetComponent<InputField>();
-                        inputField.onValueChanged.ClearAll();
-                        inputField.textComponent.alignment = TextAnchor.MiddleCenter;
-                        inputField.text = Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], defaultValue).ToString();
-                        inputField.onValueChanged.AddListener(delegate (string _val)
-                        {
-                            if (float.TryParse(_val, out float num))
-                            {
-                                if (type == 0)
-                                    modifier.value = num.ToString();
-                                else
-                                    modifier.commands[type] = num.ToString();
-                            }
-
-                            modifier.active = false;
-                        });
-
-                        EditorThemeManager.ApplyLightText(labelText);
-                        EditorThemeManager.ApplyInputField(inputField);
-                        var leftButton = single.transform.Find("<").GetComponent<Button>();
-                        var rightButton = single.transform.Find(">").GetComponent<Button>();
-                        leftButton.transition = Selectable.Transition.ColorTint;
-                        rightButton.transition = Selectable.Transition.ColorTint;
-                        EditorThemeManager.ApplySelectable(leftButton, ThemeGroup.Function_2, false);
-                        EditorThemeManager.ApplySelectable(rightButton, ThemeGroup.Function_2, false);
-
-                        TriggerHelper.IncreaseDecreaseButtons(inputField, t: single.transform);
-                        TriggerHelper.AddEventTrigger(inputField.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDelta(inputField) });
-
-                        var inputFieldSwapper = inputField.gameObject.AddComponent<InputFieldSwapper>();
-                        inputFieldSwapper.Init(inputField, InputFieldSwapper.Type.Num);
-                    };
-
-                    Action<string, int, int> integerGenerator = delegate (string label, int type, int defaultValue)
-                    {
-                        var single = numberInput.Duplicate(layout, label);
-                        single.transform.localScale = Vector3.one;
-                        var labelText = single.transform.Find("Text").GetComponent<Text>();
-                        labelText.text = label;
-
-                        var inputField = single.transform.Find("Input").GetComponent<InputField>();
-                        inputField.onValueChanged.ClearAll();
-                        inputField.textComponent.alignment = TextAnchor.MiddleCenter;
-                        inputField.text = Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], defaultValue).ToString();
-                        inputField.onValueChanged.AddListener(delegate (string _val)
-                        {
-                            if (int.TryParse(_val, out int num))
-                            {
-                                if (type == 0)
-                                    modifier.value = num.ToString();
-                                else
-                                    modifier.commands[type] = num.ToString();
-                            }
-
-                            modifier.active = false;
-                        });
-
-                        EditorThemeManager.ApplyLightText(labelText);
-                        EditorThemeManager.ApplyInputField(inputField);
-                        var leftButton = single.transform.Find("<").GetComponent<Button>();
-                        var rightButton = single.transform.Find(">").GetComponent<Button>();
-                        leftButton.transition = Selectable.Transition.ColorTint;
-                        rightButton.transition = Selectable.Transition.ColorTint;
-                        EditorThemeManager.ApplySelectable(leftButton, ThemeGroup.Function_2, false);
-                        EditorThemeManager.ApplySelectable(rightButton, ThemeGroup.Function_2, false);
-
-                        TriggerHelper.IncreaseDecreaseButtonsInt(inputField, t: single.transform);
-                        TriggerHelper.AddEventTrigger(inputField.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDeltaInt(inputField) });
-
-                        var inputFieldSwapper = inputField.gameObject.AddComponent<InputFieldSwapper>();
-                        inputFieldSwapper.Init(inputField, InputFieldSwapper.Type.Num);
-                    };
-
-                    Action<string, int, bool> boolGenerator = delegate (string label, int type, bool defaultValue)
-                    {
-                        var global = booleanBar.Duplicate(layout, label);
-                        global.transform.localScale = Vector3.one;
-                        var labelText = global.transform.Find("Text").GetComponent<Text>();
-                        labelText.text = label;
-
-                        var globalToggle = global.transform.Find("Toggle").GetComponent<Toggle>();
-                        globalToggle.onValueChanged.ClearAll();
-                        globalToggle.isOn = Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], defaultValue);
-                        globalToggle.onValueChanged.AddListener(delegate (bool _val)
-                        {
-                            if (type == 0)
-                                modifier.value = _val.ToString();
-                            else
-                                modifier.commands[type] = _val.ToString();
-                            modifier.active = false;
-                        });
-
-                        EditorThemeManager.ApplyLightText(labelText);
-                        EditorThemeManager.ApplyToggle(globalToggle);
-                    };
-
-                    Action<string, int> stringGenerator = delegate (string label, int type)
-                    {
-                        var path = stringInput.Duplicate(layout, label);
-                        path.transform.localScale = Vector3.one;
-                        var labelText = path.transform.Find("Text").GetComponent<Text>();
-                        labelText.text = label;
-
-                        var pathInputField = path.transform.Find("Input").GetComponent<InputField>();
-                        pathInputField.onValueChanged.ClearAll();
-                        pathInputField.textComponent.alignment = TextAnchor.MiddleLeft;
-                        pathInputField.text = type == 0 ? modifier.value : modifier.commands[type];
-                        pathInputField.onValueChanged.AddListener(delegate (string _val)
-                        {
-                            if (type == 0)
-                                modifier.value = _val;
-                            else
-                                modifier.commands[type] = _val;
-                            modifier.active = false;
-                        });
-
-                        EditorThemeManager.ApplyLightText(labelText);
-                        EditorThemeManager.ApplyInputField(pathInputField);
-                    };
-
-                    Action<string, int> colorGenerator = delegate (string label, int type)
-                    {
-                        var startColorBase = numberInput.Duplicate(layout, label);
-                        startColorBase.transform.localScale = Vector3.one;
-
-                        startColorBase.transform.Find("Text").GetComponent<Text>().text = label;
-
-                        Destroy(startColorBase.transform.Find("Input").gameObject);
-                        Destroy(startColorBase.transform.Find(">").gameObject);
-                        Destroy(startColorBase.transform.Find("<").gameObject);
-
-                        var startColors = Instantiate(GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/right/color/color"));
-                        startColors.transform.SetParent(startColorBase.transform);
-                        startColors.transform.localScale = Vector3.one;
-                        startColors.name = "color";
-
-                        if (startColors.TryGetComponent(out GridLayoutGroup scglg))
-                        {
-                            scglg.cellSize = new Vector2(16f, 16f);
-                            scglg.spacing = new Vector2(4.66f, 2.5f);
-                        }
-
-                        startColors.transform.AsRT().sizeDelta = new Vector2(183f, 32f);
-
-                        var toggles = startColors.GetComponentsInChildren<Toggle>();
-
-                        foreach (var toggle in toggles)
-                        {
-                            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Null, toggle.gameObject, new List<Component>
-                            {
-                                toggle.image,
-                            }, true, 1, SpriteManager.RoundedSide.W));
-
-                            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.List_Button_1_Normal, toggle.graphic.gameObject, new List<Component>
-                            {
-                                toggle.graphic,
-                            }));
-                        }
-
-                        SetObjectColors(startColors.GetComponentsInChildren<Toggle>(), type, Parser.TryParse(modifier.commands[type], 0), modifier);
-                    };
-
-                    Action<string, int, List<string>> dropdownGenerator = delegate (string label, int type, List<string> options)
-                    {
-                        var dd = dropdownBar.Duplicate(layout, label);
-                        dd.transform.localScale = Vector3.one;
-                        var labelText = dd.transform.Find("Text").GetComponent<Text>();
-                        labelText.text = label;
-
-                        Destroy(dd.transform.Find("Dropdown").GetComponent<HoverTooltip>());
-                        Destroy(dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>());
-
-                        var d = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
-                        d.onValueChanged.RemoveAllListeners();
-                        d.options.Clear();
-
-                        d.options = options.Select(x => new Dropdown.OptionData(x)).ToList();
-
-                        d.value = Parser.TryParse(modifier.commands[type], 0);
-
-                        d.onValueChanged.AddListener(delegate (int _val)
-                        {
-                            modifier.commands[type] = _val.ToString();
-                            modifier.active = false;
-                        });
-
-                        EditorThemeManager.ApplyDropdown(d);
-                    };
-
-                    Action<string, int, List<Dropdown.OptionData>> dropdownGenerator2 = delegate (string label, int type, List<Dropdown.OptionData> options)
-                    {
-                        var dd = dropdownBar.Duplicate(layout, label);
-                        dd.transform.localScale = Vector3.one;
-                        var labelText = dd.transform.Find("Text").GetComponent<Text>();
-                        labelText.text = label;
-
-                        Destroy(dd.transform.Find("Dropdown").GetComponent<HoverTooltip>());
-                        Destroy(dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>());
-
-                        var d = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
-                        d.onValueChanged.RemoveAllListeners();
-                        d.options.Clear();
-
-                        d.options = options;
-
-                        d.value = Parser.TryParse(modifier.commands[type], 0);
-
-                        d.onValueChanged.AddListener(delegate (int _val)
-                        {
-                            modifier.commands[type] = _val.ToString();
-                            modifier.active = false;
-                        });
-
-                        EditorThemeManager.ApplyDropdown(d);
-                    };
-
-                    if (!modifier.verified)
-                    {
-                        modifier.verified = true;
-                        modifier.VerifyModifier(ModifiersManager.defaultBackgroundObjectModifiers);
-                    }
-
-                    if (!modifier.IsValid(ModifiersManager.defaultBackgroundObjectModifiers))
-                    {
-                        EditorManager.inst.DisplayNotification("Modifier does not have a command name and is lacking values.", 2f, EditorManager.NotificationType.Error);
-                        continue;
-                    }
-
-                    var cmd = modifier.commands[0];
-                    switch (cmd)
-                    {
-                        case "setActive":
-                            {
-                                boolGenerator("Active", 0, false);
-
-                                break;
-                            }
-                        case "timeLesserEquals":
-                        case "timeGreaterEquals":
-                        case "timeLesser":
-                        case "timeGreater":
-                            {
-                                singleGenerator("Time", 0, 0f);
-
-                                break;
-                            }
-                        case "animateObject":
-                            {
-                                singleGenerator("Time", 0, 1f);
-                                dropdownGenerator("Type", 1, new List<string> { "Position", "Scale", "Rotation" });
-                                singleGenerator("X", 2, 0f);
-                                singleGenerator("Y", 3, 0f);
-                                singleGenerator("Z", 4, 0f);
-                                boolGenerator("Relative", 5, true);
-
-                                dropdownGenerator2("Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
-
-                                break;
-                            }
-                        case "copyAxis":
-                            {
-                                if (cmd == "copyAxis")
-                                    stringGenerator("Object Group", 0);
-
-                                dropdownGenerator("From Type", 1, new List<string> { "Position", "Scale", "Rotation" });
-                                dropdownGenerator("From Axis", 2, new List<string> { "X", "Y", "Z" });
-
-                                dropdownGenerator("To Type", 3, new List<string> { "Position", "Scale", "Rotation" });
-                                dropdownGenerator("To Axis (3D)", 4, new List<string> { "X", "Y", "Z" });
-
-                                if (cmd == "copyAxis")
-                                    singleGenerator("Delay", 5, 0f);
-
-                                singleGenerator("Multiply", 6, 1f);
-                                singleGenerator("Offset", 7, 0f);
-                                singleGenerator("Min", 8, -99999f);
-                                singleGenerator("Max", 9, 99999f);
-
-                                if (cmd == "copyAxis")
-                                    singleGenerator("Loop", 10, 99999f);
-
-                                break;
-                            }
-                    }
-
-                    num++;
+                    EditorThemeManager.ApplyLightText(notText);
+                    EditorThemeManager.ApplyToggle(notToggle);
                 }
 
-                //Add Modifier
+                Action<string, int, float> singleGenerator = (string label, int type, float defaultValue) =>
                 {
-                    var button = modifierAddPrefab.Duplicate(content, "add modifier");
+                    var single = numberInput.Duplicate(layout, label);
+                    single.transform.localScale = Vector3.one;
+                    var labelText = single.transform.Find("Text").GetComponent<Text>();
+                    labelText.text = label;
 
-                    var butt = button.GetComponent<Button>();
-                    butt.onClick.RemoveAllListeners();
-                    butt.onClick.AddListener(delegate ()
+                    var inputField = single.transform.Find("Input").GetComponent<InputField>();
+                    inputField.onValueChanged.ClearAll();
+                    inputField.textComponent.alignment = TextAnchor.MiddleCenter;
+                    inputField.text = Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], defaultValue).ToString();
+                    inputField.onValueChanged.AddListener(_val =>
                     {
-                        EditorManager.inst.ShowDialog("Default Background Modifiers Popup");
-                        RefreshDefaultModifiersList(backgroundObject);
+                        if (float.TryParse(_val, out float num))
+                        {
+                            if (type == 0)
+                                modifier.value = num.ToString();
+                            else
+                                modifier.commands[type] = num.ToString();
+                        }
+
+                        modifier.active = false;
                     });
 
-                    EditorThemeManager.ApplySelectable(butt, ThemeGroup.List_Button_1);
-                    EditorThemeManager.ApplyLightText(button.transform.GetChild(0).GetComponent<Text>());
+                    EditorThemeManager.ApplyLightText(labelText);
+                    EditorThemeManager.ApplyInputField(inputField);
+                    var leftButton = single.transform.Find("<").GetComponent<Button>();
+                    var rightButton = single.transform.Find(">").GetComponent<Button>();
+                    leftButton.transition = Selectable.Transition.ColorTint;
+                    rightButton.transition = Selectable.Transition.ColorTint;
+                    EditorThemeManager.ApplySelectable(leftButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.ApplySelectable(rightButton, ThemeGroup.Function_2, false);
+
+                    TriggerHelper.IncreaseDecreaseButtons(inputField, t: single.transform);
+                    TriggerHelper.AddEventTrigger(inputField.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDelta(inputField) });
+
+                    var inputFieldSwapper = inputField.gameObject.AddComponent<InputFieldSwapper>();
+                    inputFieldSwapper.Init(inputField, InputFieldSwapper.Type.Num);
+                };
+
+                Action<string, int, int> integerGenerator = (string label, int type, int defaultValue) =>
+                {
+                    var single = numberInput.Duplicate(layout, label);
+                    single.transform.localScale = Vector3.one;
+                    var labelText = single.transform.Find("Text").GetComponent<Text>();
+                    labelText.text = label;
+
+                    var inputField = single.transform.Find("Input").GetComponent<InputField>();
+                    inputField.onValueChanged.ClearAll();
+                    inputField.textComponent.alignment = TextAnchor.MiddleCenter;
+                    inputField.text = Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], defaultValue).ToString();
+                    inputField.onValueChanged.AddListener(_val =>
+                    {
+                        if (int.TryParse(_val, out int num))
+                        {
+                            if (type == 0)
+                                modifier.value = num.ToString();
+                            else
+                                modifier.commands[type] = num.ToString();
+                        }
+
+                        modifier.active = false;
+                    });
+
+                    EditorThemeManager.ApplyLightText(labelText);
+                    EditorThemeManager.ApplyInputField(inputField);
+                    var leftButton = single.transform.Find("<").GetComponent<Button>();
+                    var rightButton = single.transform.Find(">").GetComponent<Button>();
+                    leftButton.transition = Selectable.Transition.ColorTint;
+                    rightButton.transition = Selectable.Transition.ColorTint;
+                    EditorThemeManager.ApplySelectable(leftButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.ApplySelectable(rightButton, ThemeGroup.Function_2, false);
+
+                    TriggerHelper.IncreaseDecreaseButtonsInt(inputField, t: single.transform);
+                    TriggerHelper.AddEventTrigger(inputField.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDeltaInt(inputField) });
+
+                    var inputFieldSwapper = inputField.gameObject.AddComponent<InputFieldSwapper>();
+                    inputFieldSwapper.Init(inputField, InputFieldSwapper.Type.Num);
+                };
+
+                Action<string, int, bool> boolGenerator = (string label, int type, bool defaultValue) =>
+                {
+                    var global = booleanBar.Duplicate(layout, label);
+                    global.transform.localScale = Vector3.one;
+                    var labelText = global.transform.Find("Text").GetComponent<Text>();
+                    labelText.text = label;
+
+                    var globalToggle = global.transform.Find("Toggle").GetComponent<Toggle>();
+                    globalToggle.onValueChanged.ClearAll();
+                    globalToggle.isOn = Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], defaultValue);
+                    globalToggle.onValueChanged.AddListener(_val =>
+                    {
+                        if (type == 0)
+                            modifier.value = _val.ToString();
+                        else
+                            modifier.commands[type] = _val.ToString();
+                        modifier.active = false;
+                    });
+
+                    EditorThemeManager.ApplyLightText(labelText);
+                    EditorThemeManager.ApplyToggle(globalToggle);
+                };
+
+                Action<string, int> stringGenerator = (string label, int type) =>
+                {
+                    var path = stringInput.Duplicate(layout, label);
+                    path.transform.localScale = Vector3.one;
+                    var labelText = path.transform.Find("Text").GetComponent<Text>();
+                    labelText.text = label;
+
+                    var pathInputField = path.transform.Find("Input").GetComponent<InputField>();
+                    pathInputField.onValueChanged.ClearAll();
+                    pathInputField.textComponent.alignment = TextAnchor.MiddleLeft;
+                    pathInputField.text = type == 0 ? modifier.value : modifier.commands[type];
+                    pathInputField.onValueChanged.AddListener(_val =>
+                    {
+                        if (type == 0)
+                            modifier.value = _val;
+                        else
+                            modifier.commands[type] = _val;
+                        modifier.active = false;
+                    });
+
+                    EditorThemeManager.ApplyLightText(labelText);
+                    EditorThemeManager.ApplyInputField(pathInputField);
+                };
+
+                Action<string, int> colorGenerator = (string label, int type) =>
+                {
+                    var startColorBase = numberInput.Duplicate(layout, label);
+                    startColorBase.transform.localScale = Vector3.one;
+
+                    startColorBase.transform.Find("Text").GetComponent<Text>().text = label;
+
+                    Destroy(startColorBase.transform.Find("Input").gameObject);
+                    Destroy(startColorBase.transform.Find(">").gameObject);
+                    Destroy(startColorBase.transform.Find("<").gameObject);
+
+                    var startColors = Instantiate(GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/right/color/color"));
+                    startColors.transform.SetParent(startColorBase.transform);
+                    startColors.transform.localScale = Vector3.one;
+                    startColors.name = "color";
+
+                    if (startColors.TryGetComponent(out GridLayoutGroup scglg))
+                    {
+                        scglg.cellSize = new Vector2(16f, 16f);
+                        scglg.spacing = new Vector2(4.66f, 2.5f);
+                    }
+
+                    startColors.transform.AsRT().sizeDelta = new Vector2(183f, 32f);
+
+                    var toggles = startColors.GetComponentsInChildren<Toggle>();
+
+                    foreach (var toggle in toggles)
+                    {
+                        EditorThemeManager.ApplyGraphic(toggle.image, ThemeGroup.Null, true);
+                        EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.List_Button_1_Normal);
+                    }
+
+                    SetObjectColors(startColors.GetComponentsInChildren<Toggle>(), type, Parser.TryParse(modifier.commands[type], 0), modifier);
+                };
+
+                Action<string, int, List<string>> dropdownGenerator = (string label, int type, List<string> options) =>
+                {
+                    var dd = dropdownBar.Duplicate(layout, label);
+                    dd.transform.localScale = Vector3.one;
+                    var labelText = dd.transform.Find("Text").GetComponent<Text>();
+                    labelText.text = label;
+
+                    Destroy(dd.transform.Find("Dropdown").GetComponent<HoverTooltip>());
+                    Destroy(dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>());
+
+                    var d = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
+                    d.onValueChanged.ClearAll();
+                    d.options.Clear();
+
+                    d.options = options.Select(x => new Dropdown.OptionData(x)).ToList();
+
+                    d.value = Parser.TryParse(modifier.commands[type], 0);
+
+                    d.onValueChanged.AddListener(_val =>
+                    {
+                        modifier.commands[type] = _val.ToString();
+                        modifier.active = false;
+                    });
+
+                    EditorThemeManager.ApplyDropdown(d);
+                };
+
+                Action<string, int, List<Dropdown.OptionData>> dropdownGenerator2 = (string label, int type, List<Dropdown.OptionData> options) =>
+                {
+                    var dd = dropdownBar.Duplicate(layout, label);
+                    dd.transform.localScale = Vector3.one;
+                    var labelText = dd.transform.Find("Text").GetComponent<Text>();
+                    labelText.text = label;
+
+                    Destroy(dd.transform.Find("Dropdown").GetComponent<HoverTooltip>());
+                    Destroy(dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>());
+
+                    var d = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
+                    d.onValueChanged.ClearAll();
+                    d.options.Clear();
+
+                    d.options = options;
+
+                    d.value = Parser.TryParse(modifier.commands[type], 0);
+
+                    d.onValueChanged.AddListener(_val =>
+                    {
+                        modifier.commands[type] = _val.ToString();
+                        modifier.active = false;
+                    });
+
+                    EditorThemeManager.ApplyDropdown(d);
+                };
+
+                if (!modifier.verified)
+                {
+                    modifier.verified = true;
+                    modifier.VerifyModifier(ModifiersManager.defaultBackgroundObjectModifiers);
                 }
+
+                if (!modifier.IsValid(ModifiersManager.defaultBackgroundObjectModifiers))
+                {
+                    EditorManager.inst.DisplayNotification("Modifier does not have a command name and is lacking values.", 2f, EditorManager.NotificationType.Error);
+                    continue;
+                }
+
+                var cmd = modifier.commands[0];
+                switch (cmd)
+                {
+                    case "setActive":
+                        {
+                            boolGenerator("Active", 0, false);
+
+                            break;
+                        }
+                    case "timeLesserEquals":
+                    case "timeGreaterEquals":
+                    case "timeLesser":
+                    case "timeGreater":
+                        {
+                            singleGenerator("Time", 0, 0f);
+
+                            break;
+                        }
+                    case "animateObject":
+                        {
+                            singleGenerator("Time", 0, 1f);
+                            dropdownGenerator("Type", 1, new List<string> { "Position", "Scale", "Rotation" });
+                            singleGenerator("X", 2, 0f);
+                            singleGenerator("Y", 3, 0f);
+                            singleGenerator("Z", 4, 0f);
+                            boolGenerator("Relative", 5, true);
+
+                            dropdownGenerator2("Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+
+                            break;
+                        }
+                    case "copyAxis":
+                        {
+                            if (cmd == "copyAxis")
+                                stringGenerator("Object Group", 0);
+
+                            dropdownGenerator("From Type", 1, new List<string> { "Position", "Scale", "Rotation" });
+                            dropdownGenerator("From Axis", 2, new List<string> { "X", "Y", "Z" });
+
+                            dropdownGenerator("To Type", 3, new List<string> { "Position", "Scale", "Rotation" });
+                            dropdownGenerator("To Axis (3D)", 4, new List<string> { "X", "Y", "Z" });
+
+                            if (cmd == "copyAxis")
+                                singleGenerator("Delay", 5, 0f);
+
+                            singleGenerator("Multiply", 6, 1f);
+                            singleGenerator("Offset", 7, 0f);
+                            singleGenerator("Min", 8, -99999f);
+                            singleGenerator("Max", 9, 99999f);
+
+                            if (cmd == "copyAxis")
+                                singleGenerator("Loop", 10, 99999f);
+
+                            break;
+                        }
+                }
+
+                num++;
+            }
+
+            //Add Modifier
+            {
+                var button = modifierAddPrefab.Duplicate(content, "add modifier");
+
+                var butt = button.GetComponent<Button>();
+                butt.onClick.ClearAll();
+                butt.onClick.AddListener(() =>
+                {
+                    EditorManager.inst.ShowDialog("Default Background Modifiers Popup");
+                    RefreshDefaultModifiersList(backgroundObject);
+                });
+
+                EditorThemeManager.ApplySelectable(butt, ThemeGroup.List_Button_1);
+                EditorThemeManager.ApplyLightText(button.transform.GetChild(0).GetComponent<Text>());
             }
 
             yield break;
@@ -1175,17 +2247,12 @@ namespace BetterLegacy.Editor.Managers
             int num = 0;
             foreach (var toggle in toggles)
             {
-                toggle.onValueChanged.RemoveAllListeners();
-                int tmpIndex = num;
-
+                int toggleIndex = num;
+                toggle.onValueChanged.ClearAll();
                 toggle.isOn = num == i;
+                toggle.onValueChanged.AddListener(_val => { SetObjectColors(toggles, index, toggleIndex, modifier); });
 
-                toggle.onValueChanged.AddListener(delegate (bool _value)
-                {
-                    SetObjectColors(toggles, index, tmpIndex, modifier);
-                });
-
-                toggle.GetComponent<Image>().color = GameManager.inst.LiveTheme.GetObjColor(tmpIndex);
+                toggle.GetComponent<Image>().color = GameManager.inst.LiveTheme.GetObjColor(toggleIndex);
 
                 if (!toggle.GetComponent<HoverUI>())
                 {
@@ -1201,16 +2268,6 @@ namespace BetterLegacy.Editor.Managers
         #endregion
 
         #region Default Modifiers
-
-        public void CreateDefaultModifiersList()
-        {
-            var defaultModifiersList = RTEditor.inst.GeneratePopup("Default Background Modifiers Popup", "Choose a modifer to add", Vector2.zero, new Vector2(600f, 400f), delegate (string _val)
-            {
-                searchTerm = _val;
-                if (CurrentSelectedBG)
-                    RefreshDefaultModifiersList(CurrentSelectedBG);
-            }, placeholderText: "Search for default Modifier...");
-        }
 
         public int currentPage;
 
@@ -1238,8 +2295,8 @@ namespace BetterLegacy.Editor.Managers
                     modifierName.text = name;
 
                     var button = gameObject.GetComponent<Button>();
-                    button.onClick.RemoveAllListeners();
-                    button.onClick.AddListener(delegate ()
+                    button.onClick.ClearAll();
+                    button.onClick.AddListener(() =>
                     {
                         var cmd = defaultModifiers[tmpIndex].commands[0];
 
