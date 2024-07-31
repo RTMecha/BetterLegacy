@@ -34,7 +34,7 @@ namespace BetterLegacy.Core.Data
         /// <summary>
         /// The current metadata.
         /// </summary>
-        public static MetaData Current => (MetaData)DataManager.inst.metaData;
+        public static MetaData Current { get => (MetaData)DataManager.inst.metaData; set => DataManager.inst.metaData = value; }
 
         public string collectionID;
         public int index;
