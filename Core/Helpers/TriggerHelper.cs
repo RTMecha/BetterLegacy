@@ -680,7 +680,7 @@ namespace BetterLegacy.Core.Helpers
                                 var prefabObject = otherTimelineObject.GetData<PrefabObject>();
                                 prefabObject.parent = timelineObject.ID;
                                 Updater.UpdatePrefab(prefabObject);
-                                PrefabEditorManager.inst.RenderPrefabObjectDialog(prefabObject);
+                                RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
 
                                 success = true;
                                 continue;
@@ -701,7 +701,7 @@ namespace BetterLegacy.Core.Helpers
                         var prefabObject = ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>();
                         prefabObject.parent = timelineObject.ID;
                         Updater.UpdatePrefab(prefabObject);
-                        PrefabEditorManager.inst.RenderPrefabObjectDialog(prefabObject);
+                        RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
                         RTEditor.inst.parentPickerEnabled = false;
 
                         return;

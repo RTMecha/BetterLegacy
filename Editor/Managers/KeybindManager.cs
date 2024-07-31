@@ -34,12 +34,7 @@ namespace BetterLegacy.Editor.Managers
 
         public static bool AllowKeys { get; set; }
 
-        public static void Init(EditorManager editorManager)
-        {
-            var gameObject = new GameObject("KeybindManager");
-            gameObject.AddComponent<KeybindManager>();
-            gameObject.transform.SetParent(editorManager.transform.parent);
-        }
+        public static void Init() => Creator.NewGameObject(nameof(KeybindManager), EditorManager.inst.transform.parent).AddComponent<KeybindManager>();
 
         void Awake()
         {
@@ -93,7 +88,7 @@ namespace BetterLegacy.Editor.Managers
                 if (selectionType == SelectionType.Prefab)
                 {
                     Updater.UpdatePrefab(prefabObject, "Offset");
-                    PrefabEditorManager.inst.RenderPrefabObjectDialog(prefabObject);
+                    RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
                 }
             }
 
@@ -108,7 +103,7 @@ namespace BetterLegacy.Editor.Managers
             if (selectionType == SelectionType.Object)
                 ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
             if (selectionType == SelectionType.Prefab)
-                PrefabEditorManager.inst.RenderPrefabObjectDialog(prefabObject);
+                RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
         }
 
         public void FirstInit()
@@ -1937,7 +1932,7 @@ namespace BetterLegacy.Editor.Managers
         public static void SpawnPrefab(Keybind keybind)
         {
             bool useExternal = keybind.settings.ContainsKey("External") && bool.TryParse(keybind.settings["External"], out useExternal);
-            var prefabs = (useExternal ? PrefabEditorManager.inst.PrefabPanels.Select(x => x.Prefab) : DataManager.inst.gameData.prefabs.Select(x => x as Prefab)).ToList();
+            var prefabs = (useExternal ? RTPrefabEditor.inst.PrefabPanels.Select(x => x.Prefab) : DataManager.inst.gameData.prefabs.Select(x => x as Prefab)).ToList();
 
             if (keybind.settings.ContainsKey("UseID") && bool.TryParse(keybind.settings["UseID"], out bool boolean) && keybind.settings.ContainsKey("ID") && boolean)
             {
@@ -1948,7 +1943,7 @@ namespace BetterLegacy.Editor.Managers
                 }
 
                 if (prefabs.TryFind(x => x.ID == keybind.settings["ID"], out Prefab prefab))
-                    PrefabEditorManager.inst.AddPrefabObjectToLevel(prefab);
+                    RTPrefabEditor.inst.AddPrefabObjectToLevel(prefab);
 
                 return;
             }
@@ -1962,7 +1957,7 @@ namespace BetterLegacy.Editor.Managers
                 }
 
                 if (prefabs[index] != null)
-                    PrefabEditorManager.inst.AddPrefabObjectToLevel(prefabs[index]);
+                    RTPrefabEditor.inst.AddPrefabObjectToLevel(prefabs[index]);
             }
         }
 

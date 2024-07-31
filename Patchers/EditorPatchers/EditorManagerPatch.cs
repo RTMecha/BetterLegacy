@@ -208,9 +208,6 @@ namespace BetterLegacy.Patchers
             __instance.folderButtonPrefab = levelButtonPrefab;
 
             RTEditor.Init(__instance);
-            KeybindManager.Init(__instance);
-
-            ThemeEditorManager.Init(ThemeEditor.inst);
 
             try
             {

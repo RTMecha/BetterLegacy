@@ -219,7 +219,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool RenderThemeContentPrefix(Transform __0, string __1)
         {
-            ThemeEditorManager.inst.RenderThemeContent(__0, __1);
+            RTThemeEditor.inst.RenderThemeContent(__0, __1);
             return false;
         }
 
@@ -227,7 +227,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool RenderThemeEditorPrefix(int __0 = -1)
         {
-            ThemeEditorManager.inst.RenderThemeEditor(__0);
+            RTThemeEditor.inst.RenderThemeEditor(__0);
             return false;
         }
 

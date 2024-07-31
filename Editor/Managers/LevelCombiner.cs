@@ -44,7 +44,7 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        public static void Init() => Creator.NewGameObject("LevelCombiner", EditorManager.inst.transform.parent).AddComponent<LevelCombiner>();
+        public static void Init() => Creator.NewGameObject(nameof(LevelCombiner), EditorManager.inst.transform.parent).AddComponent<LevelCombiner>();
 
         void Awake()
         {
@@ -96,7 +96,7 @@ namespace BetterLegacy.Editor.Managers
 
             searchField.onValueChanged.ClearAll();
             searchField.text = "";
-            searchField.onValueChanged.AddListener(delegate (string _val)
+            searchField.onValueChanged.AddListener(_val =>
             {
                 searchTerm = _val;
                 StartCoroutine(RenderDialog());
@@ -147,10 +147,7 @@ namespace BetterLegacy.Editor.Managers
                 saveField.characterLimit = 0;
                 saveField.text = RTFile.ApplicationDirectory + RTEditor.editorListSlash + "Combined Level/level.lsb";
                 savePath = RTFile.ApplicationDirectory + RTEditor.editorListSlash + "Combined Level/level.lsb";
-                saveField.onValueChanged.AddListener(delegate (string _val)
-                {
-                    savePath = _val;
-                });
+                saveField.onValueChanged.AddListener(_val => { savePath = _val; });
 
                 EditorThemeManager.AddInputField(saveField);
 
@@ -174,11 +171,8 @@ namespace BetterLegacy.Editor.Managers
                     UIManager.SetRectTransform(button.transform.AsRT(), Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(400f, 50f));
 
                     buttonStorage.text.text = "Combine & Save";
-                    buttonStorage.button.onClick.RemoveAllListeners();
-                    buttonStorage.button.onClick.AddListener(delegate ()
-                    {
-                        Combine();
-                    });
+                    buttonStorage.button.onClick.ClearAll();
+                    buttonStorage.button.onClick.AddListener(Combine);
 
                     EditorThemeManager.AddSelectable(buttonStorage.button, ThemeGroup.Function_2);
                     EditorThemeManager.AddGraphic(buttonStorage.text, ThemeGroup.Function_2_Text);
@@ -186,10 +180,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             // Dropdown
-            EditorHelper.AddEditorDropdown("Level Combiner", "", "File", SpriteManager.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_combine_t.png"), delegate ()
-            {
-                OpenDialog();
-            }, 4);
+            EditorHelper.AddEditorDropdown("Level Combiner", "", "File", SpriteManager.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_combine_t.png"), OpenDialog, 4);
 
             EditorThemeManager.AddGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
             EditorThemeManager.AddLightText(infoText);
@@ -292,28 +283,21 @@ namespace BetterLegacy.Editor.Managers
                 folderButtonStorage.text.verticalOverflow = verticalOverflow;
                 folderButtonStorage.text.fontSize = fontSize;
 
-                var htt = gameObject.AddComponent<HoverTooltip>();
-
-                var levelTip = new HoverTooltip.Tooltip();
-
                 var difficultyColor = metadata.song.difficulty >= 0 && metadata.song.difficulty < DataManager.inst.difficulties.Count ?
                     DataManager.inst.difficulties[metadata.song.difficulty].color : LSColors.themeColors["none"].color;
 
-                levelTip.desc = "<#" + LSColors.ColorToHex(difficultyColor) + ">" + metadata.artist.Name + " - " + metadata.song.title;
-                levelTip.hint = "</color>" + metadata.song.description;
-                htt.tooltipLangauges.Add(levelTip);
-
-                Action action = delegate ()
+                gameObject.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip
                 {
-                    image.enabled = editorWrapper.combinerSelected;
-                };
+                    desc = "<#" + LSColors.ColorToHex(difficultyColor) + ">" + metadata.artist.Name + " - " + metadata.song.title,
+                    hint = "</color>" + metadata.song.description
+                });
 
-                folderButtonStorage.button.onClick.AddListener(delegate ()
+                folderButtonStorage.button.onClick.AddListener(() =>
                 {
                     editorWrapper.combinerSelected = !editorWrapper.combinerSelected;
-                    action.Invoke();
+                    image.enabled = editorWrapper.combinerSelected;
                 });
-                action.Invoke();
+                image.enabled = editorWrapper.combinerSelected;
 
                 var icon = new GameObject("icon");
                 icon.transform.SetParent(gameObject.transform);
@@ -412,9 +396,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     string dir = Path.GetDirectoryName(file2);
                     if (!RTFile.DirectoryExists(dir))
-                    {
                         Directory.CreateDirectory(dir);
-                    }
 
                     if (Path.GetFileName(file2) != "level.lsb" && !RTFile.FileExists(file2.Replace(Path.GetDirectoryName(file), directory)))
                         File.Copy(file2, file2.Replace(Path.GetDirectoryName(file), directory));
@@ -422,12 +404,12 @@ namespace BetterLegacy.Editor.Managers
             }
 
             if (EditorConfig.Instance.CombinerOutputFormat.Value == FileType.LS)
-                StartCoroutine(ProjectData.Writer.SaveData(save, combinedGameData, delegate ()
+                StartCoroutine(ProjectData.Writer.SaveData(save, combinedGameData, () =>
                 {
                     EditorManager.inst.DisplayNotification($"Combined {FontManager.TextTranslater.ArrayToString(list.ToArray())} to {savePath}!", 3f, EditorManager.NotificationType.Success);
                 }, true));
             else
-                StartCoroutine(ProjectData.Writer.SaveDataVG(save.Replace(".lsb", ".vgd"), combinedGameData, delegate ()
+                StartCoroutine(ProjectData.Writer.SaveDataVG(save.Replace(".lsb", ".vgd"), combinedGameData, () =>
                 {
                     EditorManager.inst.DisplayNotification($"Combined {FontManager.TextTranslater.ArrayToString(list.ToArray())} to {savePath}!", 3f, EditorManager.NotificationType.Success);
                 }));

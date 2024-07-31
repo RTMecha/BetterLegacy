@@ -32,7 +32,7 @@ namespace BetterLegacy.Components.Editor
             if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
                 ObjectEditor.inst.RenderObjectKeyframesDialog(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>());
             else if (ObjectEditor.inst.CurrentSelection.IsPrefabObject)
-                PrefabEditorManager.inst.RenderPrefabObjectDialog(ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>());
+                RTPrefabEditor.inst.RenderPrefabObjectDialog(ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>());
         }
 
         void OnMouseUp()

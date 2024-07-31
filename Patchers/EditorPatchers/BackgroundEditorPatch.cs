@@ -36,7 +36,7 @@ namespace BetterLegacy.Patchers
 
             CoreHelper.LogInit(__instance.className);
 
-            BackgroundEditorManager.Init(__instance);
+            RTBackgroundEditor.Init(__instance);
 
             var dialog = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/BackgroundDialog").transform;
             var bgRight = dialog.Find("data/right").gameObject;
@@ -69,7 +69,7 @@ namespace BetterLegacy.Patchers
 
                 RTEditor.inst.ShowWarningPopup("Are you sure you want to delete all backgrounds?", () =>
                 {
-                    BackgroundEditorManager.inst.DeleteAllBackgrounds();
+                    RTBackgroundEditor.inst.DeleteAllBackgrounds();
                     EditorManager.inst.HideDialog("Warning Popup");
                 }, () => { EditorManager.inst.HideDialog("Warning Popup"); });
             });
@@ -111,7 +111,7 @@ namespace BetterLegacy.Patchers
             buttonCreate.onClick.AddListener(() =>
             {
                 if (int.TryParse(name.text, out int result) && result >= 0)
-                    BackgroundEditorManager.inst.CreateBackgrounds(result);
+                    RTBackgroundEditor.inst.CreateBackgrounds(result);
             });
 
             bgRight.transform.Find("backgrounds").AsRT().sizeDelta = new Vector2(366f, 524f);
@@ -1042,8 +1042,8 @@ namespace BetterLegacy.Patchers
                 EditorThemeManager.AddGraphic(removeBlock.GetComponent<Image>(), ThemeGroup.Delete, true);
                 EditorThemeManager.AddGraphic(removeBlockText, ThemeGroup.Delete_Text);
 
-                BackgroundEditorManager.inst.CreateModifiersOnAwake();
-                BackgroundEditorManager.inst.CreateDefaultModifiersList();
+                RTBackgroundEditor.inst.CreateModifiersOnAwake();
+                RTBackgroundEditor.inst.CreateDefaultModifiersList();
 
                 EditorThemeManager.AddInputFields(__instance.left.Find("block").gameObject, true, "Background Editor Reactive");
             }
@@ -1135,7 +1135,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool OpenDialogPrefix(int __0)
         {
-            BackgroundEditorManager.inst.OpenDialog(__0);
+            RTBackgroundEditor.inst.OpenDialog(__0);
             return false;
         }
 

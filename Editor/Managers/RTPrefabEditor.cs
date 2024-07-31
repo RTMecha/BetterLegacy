@@ -22,9 +22,9 @@ using BasePrefab = DataManager.GameData.Prefab;
 
 namespace BetterLegacy.Editor.Managers
 {
-    public class PrefabEditorManager : MonoBehaviour
+    public class RTPrefabEditor : MonoBehaviour
     {
-        public static PrefabEditorManager inst;
+        public static RTPrefabEditor inst;
 
         #region Variables
 
@@ -71,7 +71,7 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        public static void Init(PrefabEditor prefabEditor) => prefabEditor?.gameObject?.AddComponent<PrefabEditorManager>();
+        public static void Init(PrefabEditor prefabEditor) => prefabEditor?.gameObject?.AddComponent<RTPrefabEditor>();
 
         void Awake() => inst = this;
 
@@ -503,7 +503,7 @@ namespace BetterLegacy.Editor.Managers
                 var collapse = parent.Find("collapse").GetComponent<Toggle>();
                 collapse.onValueChanged.ClearAll();
                 collapse.isOn = currentPrefab.editorData.collapse;
-                collapse.onValueChanged.AddListener(delegate (bool _val)
+                collapse.onValueChanged.AddListener(_val =>
                 {
                     currentPrefab.editorData.collapse = _val;
                     ObjectEditor.inst.RenderTimelineObject(GetTimelineObject(currentPrefab));
@@ -1588,9 +1588,9 @@ namespace BetterLegacy.Editor.Managers
 
             externalTypeImage.color = prefab.Type < DataManager.inst.PrefabTypes.Count ? DataManager.inst.PrefabTypes[prefab.Type].Color : PrefabType.InvalidType.Color;
             externalType.onClick.ClearAll();
-            externalType.onClick.AddListener(delegate ()
+            externalType.onClick.AddListener(() =>
             {
-                OpenPrefabTypePopup(prefab.Type, delegate (int index)
+                OpenPrefabTypePopup(prefab.Type, index =>
                 {
                     prefab.Type = index;
                     var prefabType = prefab.Type < DataManager.inst.PrefabTypes.Count ? (PrefabType)DataManager.inst.PrefabTypes[prefab.Type] : PrefabType.InvalidType;
@@ -1607,13 +1607,10 @@ namespace BetterLegacy.Editor.Managers
             });
 
             importPrefab.onClick.ClearAll();
-            importPrefab.onClick.AddListener(delegate ()
-            {
-                ImportPrefabIntoLevel(prefab);
-            });
+            importPrefab.onClick.AddListener(() => { ImportPrefabIntoLevel(prefab); });
 
             exportToVG.onClick.ClearAll();
-            exportToVG.onClick.AddListener(delegate ()
+            exportToVG.onClick.AddListener(() =>
             {
                 var exportPath = EditorConfig.Instance.ConvertPrefabLSToVGExportPath.Value;
 
@@ -1643,11 +1640,8 @@ namespace BetterLegacy.Editor.Managers
             externalDescriptionField.onValueChanged.ClearAll();
             externalDescriptionField.onEndEdit.ClearAll();
             externalDescriptionField.text = prefab.description;
-            externalDescriptionField.onValueChanged.AddListener(delegate (string _val)
-            {
-                prefab.description = _val;
-            });
-            externalDescriptionField.onEndEdit.AddListener(delegate (string _val)
+            externalDescriptionField.onValueChanged.AddListener(_val => { prefab.description = _val; });
+            externalDescriptionField.onEndEdit.AddListener(_val =>
             {
                 if (!string.IsNullOrEmpty(prefab.filePath))
                     RTFile.WriteToFile(prefab.filePath, prefab.ToJSON().ToString());
@@ -1837,23 +1831,23 @@ namespace BetterLegacy.Editor.Managers
             PrefabEditor.inst.externalPrefabDialog.gameObject.SetActive(true);
 
             selectQuickPrefabButton.onClick.ClearAll();
-            selectQuickPrefabButton.onClick.AddListener(delegate ()
+            selectQuickPrefabButton.onClick.AddListener(() =>
             {
                 selectQuickPrefabText.text = "<color=#669e37>Selecting</color>";
                 PrefabEditor.inst.ReloadInternalPrefabsInPopup(true);
             });
 
             PrefabEditor.inst.externalSearch.onValueChanged.ClearAll();
-            PrefabEditor.inst.externalSearch.onValueChanged.AddListener(delegate (string _value)
+            PrefabEditor.inst.externalSearch.onValueChanged.AddListener(_val =>
             {
-                PrefabEditor.inst.externalSearchStr = _value;
+                PrefabEditor.inst.externalSearchStr = _val;
                 PrefabEditor.inst.ReloadExternalPrefabsInPopup();
             });
 
             PrefabEditor.inst.internalSearch.onValueChanged.ClearAll();
-            PrefabEditor.inst.internalSearch.onValueChanged.AddListener(delegate (string _value)
+            PrefabEditor.inst.internalSearch.onValueChanged.AddListener(_val =>
             {
-                PrefabEditor.inst.internalSearchStr = _value;
+                PrefabEditor.inst.internalSearchStr = _val;
                 PrefabEditor.inst.ReloadInternalPrefabsInPopup();
             });
 
@@ -1878,15 +1872,12 @@ namespace BetterLegacy.Editor.Managers
 
                     if (RTEditor.inst.timelineObjects.TryFind(x => x.ID == beatmapObject.id, out TimelineObject timelineObject))
                     {
-                        selection.GetComponentAndPerformAction(delegate (Toggle x)
-                        {
-                            x.NewValueChangedListener(timelineObject.selected, delegate (bool _val)
-                            {
-                                timelineObject.selected = _val;
-                            });
+                        var selectionToggle = selection.GetComponent<Toggle>();
 
-                            EditorThemeManager.ApplyToggle(x, text: text);
-                        });
+                        selectionToggle.onValueChanged.ClearAll();
+                        selectionToggle.isOn = timelineObject.selected;
+                        selectionToggle.onValueChanged.AddListener(_val => { timelineObject.selected = _val; });
+                        EditorThemeManager.ApplyToggle(selectionToggle, text: text);
                     }
                 }
                 num++;
@@ -1899,33 +1890,30 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.ShowDialog("Prefab Editor");
 
             var component = PrefabEditor.inst.dialog.Find("data/name/input").GetComponent<InputField>();
-            component.onValueChanged.RemoveAllListeners();
-            component.onValueChanged.AddListener(delegate (string _value)
-            {
-                PrefabEditor.inst.NewPrefabName = _value;
-            });
+            component.onValueChanged.ClearAll();
+            component.onValueChanged.AddListener(_val => { PrefabEditor.inst.NewPrefabName = _val; });
 
             var offsetSlider = PrefabEditor.inst.dialog.Find("data/offset/slider").GetComponent<Slider>();
             var offsetInput = PrefabEditor.inst.dialog.Find("data/offset/input").GetComponent<InputField>();
 
             bool setting = false;
-            offsetSlider.onValueChanged.RemoveAllListeners();
-            offsetSlider.onValueChanged.AddListener(delegate (float _value)
+            offsetSlider.onValueChanged.ClearAll();
+            offsetSlider.onValueChanged.AddListener(_val =>
             {
                 if (!setting)
                 {
                     setting = true;
-                    PrefabEditor.inst.NewPrefabOffset = Mathf.Round(_value * 100f) / 100f;
+                    PrefabEditor.inst.NewPrefabOffset = Mathf.Round(_val * 100f) / 100f;
                     offsetInput.text = PrefabEditor.inst.NewPrefabOffset.ToString();
                 }
                 setting = false;
             });
 
-            offsetInput.onValueChanged.RemoveAllListeners();
+            offsetInput.onValueChanged.ClearAll();
             offsetInput.characterLimit = 0;
-            offsetInput.onValueChanged.AddListener(delegate (string _value)
+            offsetInput.onValueChanged.AddListener(_val =>
             {
-                if (!setting && float.TryParse(_value, out float num))
+                if (!setting && float.TryParse(_val, out float num))
                 {
                     setting = true;
                     PrefabEditor.inst.NewPrefabOffset = num;
@@ -1948,10 +1936,7 @@ namespace BetterLegacy.Editor.Managers
             description.textComponent.alignment = TextAnchor.UpperLeft;
             NewPrefabDescription = string.IsNullOrEmpty(NewPrefabDescription) ? "What is your prefab like?" : NewPrefabDescription;
             description.text = NewPrefabDescription;
-            description.onValueChanged.AddListener(delegate (string _val)
-            {
-                NewPrefabDescription = _val;
-            });
+            description.onValueChanged.AddListener(_val => { NewPrefabDescription = _val; });
 
             ReloadSelectionContent();
 
@@ -1989,20 +1974,18 @@ namespace BetterLegacy.Editor.Managers
             hover.animatePos = false;
             hover.size = hoverSize;
 
-            gameObject.GetComponentAndPerformAction(delegate (Button x)
+            var createNewButton = gameObject.GetComponent<Button>();
+            createNewButton.NewOnClickListener(() =>
             {
-                x.NewOnClickListener(delegate ()
-                {
-                    if (RTEditor.inst.prefabPickerEnabled)
-                        RTEditor.inst.prefabPickerEnabled = false;
+                if (RTEditor.inst.prefabPickerEnabled)
+                    RTEditor.inst.prefabPickerEnabled = false;
 
-                    PrefabEditor.inst.OpenDialog();
-                    createInternal = true;
-                });
-
-                EditorThemeManager.ApplyGraphic(x.image, ThemeGroup.Add, true);
-                EditorThemeManager.ApplyGraphic(text, ThemeGroup.Add_Text);
+                PrefabEditor.inst.OpenDialog();
+                createInternal = true;
             });
+
+            EditorThemeManager.ApplyGraphic(createNewButton.image, ThemeGroup.Add, true);
+            EditorThemeManager.ApplyGraphic(text, ThemeGroup.Add_Text);
 
             var nameHorizontalOverflow = config.PrefabInternalNameHorizontalWrap.Value;
 
@@ -2031,12 +2014,6 @@ namespace BetterLegacy.Editor.Managers
                         deleteAnchoredPosition, deleteSizeDelta)));
                 num++;
             }
-
-            //yield return StartCoroutine(LSHelpers.WaitForMultipleCoroutines(list, delegate ()
-            //{
-            //    //foreach (object obj in internalContent)
-            //    //    ((Transform)obj).localScale = Vector3.one;
-            //}));
 
             yield break;
         }
@@ -2116,18 +2093,15 @@ namespace BetterLegacy.Editor.Managers
 
             if (!isExternal)
             {
-                delete.onClick.AddListener(delegate ()
+                delete.onClick.AddListener(() =>
                 {
-                    RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", delegate ()
+                    RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
                     {
                         PrefabEditor.inst.DeleteInternalPrefab(index);
                         EditorManager.inst.HideDialog("Warning Popup");
-                    }, delegate ()
-                    {
-                        EditorManager.inst.HideDialog("Warning Popup");
-                    });
+                    }, () => { EditorManager.inst.HideDialog("Warning Popup"); });
                 });
-                addPrefabObject.onClick.AddListener(delegate ()
+                addPrefabObject.onClick.AddListener(() =>
                 {
                     if (RTEditor.inst.prefabPickerEnabled)
                     {
@@ -2186,18 +2160,15 @@ namespace BetterLegacy.Editor.Managers
                 };
                 PrefabPanels.Add(prefabPanel);
 
-                delete.onClick.AddListener(delegate ()
+                delete.onClick.AddListener(() =>
                 {
-                    RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", delegate ()
+                    RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
                     {
                         DeleteExternalPrefab(prefabPanel);
                         EditorManager.inst.HideDialog("Warning Popup");
-                    }, delegate ()
-                    {
-                        EditorManager.inst.HideDialog("Warning Popup");
-                    });
+                    }, () => { EditorManager.inst.HideDialog("Warning Popup"); });
                 });
-                addPrefabObject.onClick.AddListener(delegate ()
+                addPrefabObject.onClick.AddListener(() =>
                 {
                     if (RTEditor.inst.prefabPickerEnabled)
                         RTEditor.inst.prefabPickerEnabled = false;

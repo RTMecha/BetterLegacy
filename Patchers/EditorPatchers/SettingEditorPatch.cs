@@ -253,7 +253,7 @@ namespace BetterLegacy.Patchers
         {
             if (EditorManager.inst && EditorManager.inst.isEditing && EditorManager.inst.hasLoadedLevel &&
                 DataManager.inst.gameData != null && DataManager.inst.gameData.eventObjects != null &&
-                PrefabEditorManager.inst)
+                RTPrefabEditor.inst)
             {
                 var transform = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/SettingsDialog").transform;
 
@@ -279,7 +279,7 @@ namespace BetterLegacy.Patchers
                 }
                 if (info.ContainsKey("Prefab External Count") && info["Prefab External Count"])
                 {
-                    info["Prefab External Count"].text = $"[ {PrefabEditorManager.inst.PrefabPanels.Count} ]  ";
+                    info["Prefab External Count"].text = $"[ {RTPrefabEditor.inst.PrefabPanels.Count} ]  ";
                 }
                 if (info.ContainsKey("Prefab Internal Count") && info["Prefab Internal Count"])
                 {

@@ -20,25 +20,27 @@ namespace BetterLegacy.Editor.Managers
     {
         public static ObjectModifiersEditor inst;
 
-        public static bool installed = false;
-
         public Transform content;
         public Transform scrollView;
-        public RectTransform scrollViewRT;
 
         public bool showModifiers;
 
         public GameObject modifierCardPrefab;
         public GameObject modifierAddPrefab;
 
-        public static void Init() => Creator.NewGameObject("ObjectModifiersEditor", EditorManager.inst.transform.parent).AddComponent<ObjectModifiersEditor>();
+        public static void Init() => Creator.NewGameObject(nameof(ObjectModifiersEditor), EditorManager.inst.transform.parent).AddComponent<ObjectModifiersEditor>();
 
         void Awake()
         {
             inst = this;
 
             CreateModifiersOnAwake();
-            CreateDefaultModifiersList();
+            RTEditor.inst.GeneratePopup("Default Modifiers Popup", "Choose a modifer to add", Vector2.zero, new Vector2(600f, 400f), _val =>
+            {
+                searchTerm = _val;
+                if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+                    RefreshDefaultModifiersList(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>());
+            }, placeholderText: "Search for default Modifier...");
         }
 
         float time;
@@ -110,9 +112,9 @@ namespace BetterLegacy.Editor.Managers
             activeText.text = "Show Modifiers";
 
             var toggle = act.GetComponent<Toggle>();
-            toggle.onValueChanged.RemoveAllListeners();
+            toggle.onValueChanged.ClearAll();
             toggle.isOn = showModifiers;
-            toggle.onValueChanged.AddListener(delegate (bool _val)
+            toggle.onValueChanged.AddListener(_val =>
             {
                 showModifiers = _val;
                 scrollView.gameObject.SetActive(showModifiers);
@@ -129,8 +131,6 @@ namespace BetterLegacy.Editor.Managers
             scrollView.SetParent(bmb.transform.Find("Viewport/Content"));
             scrollView.localScale = Vector3.one;
             scrollView.name = "Modifiers Scroll View";
-
-            scrollViewRT = scrollView.GetComponent<RectTransform>();
 
             content = scrollView.Find("Viewport/Content");
             LSHelpers.DeleteChildren(content);
@@ -243,10 +243,7 @@ namespace BetterLegacy.Editor.Managers
         {
             ignoreToggle.onValueChanged.ClearAll();
             ignoreToggle.isOn = beatmapObject.ignoreLifespan;
-            ignoreToggle.onValueChanged.AddListener(delegate (bool _val)
-            {
-                beatmapObject.ignoreLifespan = _val;
-            });
+            ignoreToggle.onValueChanged.AddListener(_val =>  { beatmapObject.ignoreLifespan = _val; });
 
             if (!showModifiers)
                 yield break;
@@ -255,7 +252,7 @@ namespace BetterLegacy.Editor.Managers
 
             LSHelpers.DeleteChildren(content);
 
-            ((RectTransform)content.parent.parent).sizeDelta = new Vector2(351f, 300f * Mathf.Clamp(beatmapObject.modifiers.Count, 1, 5));
+            content.parent.parent.AsRT().sizeDelta = new Vector2(351f, 300f * Mathf.Clamp(beatmapObject.modifiers.Count, 1, 5));
 
             int num = 0;
             foreach (var modifier in beatmapObject.modifiers)
@@ -263,10 +260,9 @@ namespace BetterLegacy.Editor.Managers
                 int index = num;
                 var name = modifier.commands.Count > 0 ? modifier.commands[0] : "Invalid Modifier";
                 var gameObject = modifierCardPrefab.Duplicate(content, name);
-                EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.List_Button_1_Normal, gameObject, new List<Component>
-                    {
-                        gameObject.GetComponent<Image>(),
-                    }, true, 1, SpriteManager.RoundedSide.W));
+
+                EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.List_Button_1_Normal, true);
+
                 gameObject.transform.localScale = Vector3.one;
                 var modifierTitle = gameObject.transform.Find("Label/Text").GetComponent<Text>();
                 modifierTitle.text = name;
@@ -274,7 +270,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var delete = gameObject.transform.Find("Label/Delete").GetComponent<DeleteButtonStorage>();
                 delete.button.onClick.ClearAll();
-                delete.button.onClick.AddListener(delegate ()
+                delete.button.onClick.AddListener(() =>
                 {
                     beatmapObject.modifiers.RemoveAt(index);
                     beatmapObject.reactivePositionOffset = Vector3.zero;
@@ -289,7 +285,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var copy = gameObject.transform.Find("Label/Copy").GetComponent<DeleteButtonStorage>();
                 copy.button.onClick.ClearAll();
-                copy.button.onClick.AddListener(delegate ()
+                copy.button.onClick.AddListener(() =>
                 {
                     copiedModifier = Modifier<BeatmapObject>.DeepCopy(modifier, beatmapObject);
                     StartCoroutine(RenderModifiers(beatmapObject));
@@ -311,7 +307,7 @@ namespace BetterLegacy.Editor.Managers
                 var toggle = constant.transform.Find("Toggle").GetComponent<Toggle>();
                 toggle.onValueChanged.ClearAll();
                 toggle.isOn = modifier.constant;
-                toggle.onValueChanged.AddListener(delegate (bool _val)
+                toggle.onValueChanged.AddListener(_val =>
                 {
                     modifier.constant = _val;
                     modifier.active = false;
@@ -328,7 +324,7 @@ namespace BetterLegacy.Editor.Managers
                     var notToggle = not.transform.Find("Toggle").GetComponent<Toggle>();
                     notToggle.onValueChanged.ClearAll();
                     notToggle.isOn = modifier.not;
-                    notToggle.onValueChanged.AddListener(delegate (bool _val)
+                    notToggle.onValueChanged.AddListener(_val =>
                     {
                         modifier.not = _val;
                         modifier.active = false;
@@ -338,7 +334,7 @@ namespace BetterLegacy.Editor.Managers
                     EditorThemeManager.ApplyToggle(notToggle);
                 }
 
-                Action<string, int, float> singleGenerator = delegate (string label, int type, float defaultValue)
+                Action<string, int, float> singleGenerator = (string label, int type, float defaultValue) =>
                 {
                     var single = numberInput.Duplicate(layout, label);
                     single.transform.localScale = Vector3.one;
@@ -349,7 +345,7 @@ namespace BetterLegacy.Editor.Managers
                     inputField.onValueChanged.ClearAll();
                     inputField.textComponent.alignment = TextAnchor.MiddleCenter;
                     inputField.text = Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], defaultValue).ToString();
-                    inputField.onValueChanged.AddListener(delegate (string _val)
+                    inputField.onValueChanged.AddListener(_val =>
                     {
                         if (float.TryParse(_val, out float num))
                         {
@@ -378,7 +374,7 @@ namespace BetterLegacy.Editor.Managers
                     inputFieldSwapper.Init(inputField, InputFieldSwapper.Type.Num);
                 };
 
-                Action<string, int, int> integerGenerator = delegate (string label, int type, int defaultValue)
+                Action<string, int, int> integerGenerator = (string label, int type, int defaultValue) =>
                 {
                     var single = numberInput.Duplicate(layout, label);
                     single.transform.localScale = Vector3.one;
@@ -389,7 +385,7 @@ namespace BetterLegacy.Editor.Managers
                     inputField.onValueChanged.ClearAll();
                     inputField.textComponent.alignment = TextAnchor.MiddleCenter;
                     inputField.text = Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], defaultValue).ToString();
-                    inputField.onValueChanged.AddListener(delegate (string _val)
+                    inputField.onValueChanged.AddListener(_val =>
                     {
                         if (int.TryParse(_val, out int num))
                         {
@@ -418,7 +414,7 @@ namespace BetterLegacy.Editor.Managers
                     inputFieldSwapper.Init(inputField, InputFieldSwapper.Type.Num);
                 };
 
-                Action<string, int, bool> boolGenerator = delegate (string label, int type, bool defaultValue)
+                Action<string, int, bool> boolGenerator = (string label, int type, bool defaultValue) =>
                 {
                     var global = booleanBar.Duplicate(layout, label);
                     global.transform.localScale = Vector3.one;
@@ -428,7 +424,7 @@ namespace BetterLegacy.Editor.Managers
                     var globalToggle = global.transform.Find("Toggle").GetComponent<Toggle>();
                     globalToggle.onValueChanged.ClearAll();
                     globalToggle.isOn = Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], defaultValue);
-                    globalToggle.onValueChanged.AddListener(delegate (bool _val)
+                    globalToggle.onValueChanged.AddListener(_val =>
                     {
                         if (type == 0)
                             modifier.value = _val.ToString();
@@ -441,7 +437,7 @@ namespace BetterLegacy.Editor.Managers
                     EditorThemeManager.ApplyToggle(globalToggle);
                 };
 
-                Action<string, int> stringGenerator = delegate (string label, int type)
+                Action<string, int> stringGenerator = (string label, int type) =>
                 {
                     var path = stringInput.Duplicate(layout, label);
                     path.transform.localScale = Vector3.one;
@@ -452,7 +448,7 @@ namespace BetterLegacy.Editor.Managers
                     pathInputField.onValueChanged.ClearAll();
                     pathInputField.textComponent.alignment = TextAnchor.MiddleLeft;
                     pathInputField.text = type == 0 ? modifier.value : modifier.commands[type];
-                    pathInputField.onValueChanged.AddListener(delegate (string _val)
+                    pathInputField.onValueChanged.AddListener(_val =>
                     {
                         if (type == 0)
                             modifier.value = _val;
@@ -465,7 +461,7 @@ namespace BetterLegacy.Editor.Managers
                     EditorThemeManager.ApplyInputField(pathInputField);
                 };
 
-                Action<string, int> colorGenerator = delegate (string label, int type)
+                Action<string, int> colorGenerator = (string label, int type) =>
                 {
                     var startColorBase = numberInput.Duplicate(layout, label);
                     startColorBase.transform.localScale = Vector3.one;
@@ -494,22 +490,15 @@ namespace BetterLegacy.Editor.Managers
 
                     foreach (var toggle in toggles)
                     {
-                        EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Null, toggle.gameObject, new List<Component>
-                        {
-                                toggle.image,
-                        }, true, 1, SpriteManager.RoundedSide.W));
-
-                        EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.List_Button_1_Normal, toggle.graphic.gameObject, new List<Component>
-                        {
-                                toggle.graphic,
-                        }));
+                        EditorThemeManager.ApplyGraphic(toggle.image, ThemeGroup.Null, true);
+                        EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.List_Button_1_Normal);
                     }
 
                     EditorThemeManager.ApplyLightText(labelText);
                     SetObjectColors(startColors.GetComponentsInChildren<Toggle>(), type, Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], 0), modifier);
                 };
 
-                Action<string, int, List<string>> dropdownGenerator = delegate (string label, int type, List<string> options)
+                Action<string, int, List<string>> dropdownGenerator = (string label, int type, List<string> options) =>
                 {
                     var dd = dropdownBar.Duplicate(layout, label);
                     dd.transform.localScale = Vector3.one;
@@ -520,14 +509,14 @@ namespace BetterLegacy.Editor.Managers
                     Destroy(dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>());
 
                     var d = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
-                    d.onValueChanged.RemoveAllListeners();
+                    d.onValueChanged.ClearAll();
                     d.options.Clear();
 
                     d.options = options.Select(x => new Dropdown.OptionData(x)).ToList();
 
                     d.value = Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], 0);
 
-                    d.onValueChanged.AddListener(delegate (int _val)
+                    d.onValueChanged.AddListener(_val =>
                     {
                         if (type == 0)
                             modifier.value = _val.ToString();
@@ -540,7 +529,7 @@ namespace BetterLegacy.Editor.Managers
                     EditorThemeManager.ApplyDropdown(d);
                 };
 
-                Action<string, int, List<Dropdown.OptionData>> dropdownGenerator2 = delegate (string label, int type, List<Dropdown.OptionData> options)
+                Action<string, int, List<Dropdown.OptionData>> dropdownGenerator2 = (string label, int type, List<Dropdown.OptionData> options) =>
                 {
                     var dd = dropdownBar.Duplicate(layout, label);
                     dd.transform.localScale = Vector3.one;
@@ -551,14 +540,14 @@ namespace BetterLegacy.Editor.Managers
                     Destroy(dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>());
 
                     var d = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
-                    d.onValueChanged.RemoveAllListeners();
+                    d.onValueChanged.ClearAll();
                     d.options.Clear();
 
                     d.options = options;
 
                     d.value = Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], 0);
 
-                    d.onValueChanged.AddListener(delegate (int _val)
+                    d.onValueChanged.AddListener(_val =>
                     {
                         if (type == 0)
                             modifier.value = _val.ToString();
@@ -629,36 +618,35 @@ namespace BetterLegacy.Editor.Managers
                             stringGenerator("Path", 0);
                             {
                                 var search = layout.Find("Path/Input").gameObject.AddComponent<Clickable>();
-                                search.onClick = delegate (PointerEventData pointerEventData)
+                                search.onClick = pointerEventData =>
                                 {
-                                    if (pointerEventData.button == PointerEventData.InputButton.Right)
+                                    if (pointerEventData.button != PointerEventData.InputButton.Right)
+                                        return;
+
+                                    EditorManager.inst.ShowDialog("Browser Popup");
+
+                                    var isGlobal = modifier.commands.Count > 1 && Parser.TryParse(modifier.commands[1], false);
+                                    var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/soundlibrary") ?
+                                                    RTFile.ApplicationDirectory + "beatmaps/soundlibrary" : System.IO.Path.GetDirectoryName(RTFile.BasePath);
+
+                                    if (isGlobal && !RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/soundlibrary"))
                                     {
-                                        EditorManager.inst.ShowDialog("Browser Popup");
+                                        EditorManager.inst.DisplayNotification("soundlibrary folder does not exist! If you want to have audio take from a global folder, make sure you create a soundlibrary folder inside your beatmaps folder and put your sounds in there.", 12f, EditorManager.NotificationType.Error);
+                                    }
 
-                                        var isGlobal = modifier.commands.Count > 1 && Parser.TryParse(modifier.commands[1], false);
-                                        var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/soundlibrary") ?
-                                                        RTFile.ApplicationDirectory + "beatmaps/soundlibrary" : System.IO.Path.GetDirectoryName(RTFile.BasePath);
+                                    RTFileBrowser.inst.UpdateBrowser(directory, new string[] { ".wav", ".ogg", ".mp3" }, onSelectFile: _val =>
+                                    {
+                                        var global = Parser.TryParse(modifier.commands[1], false);
 
-                                        if (isGlobal && !RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/soundlibrary"))
+                                        if (_val.Replace("\\", "/").Contains(global ? RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/soundlibrary/" : GameManager.inst.basePath.Replace("\\", "/")))
                                         {
-                                            EditorManager.inst.DisplayNotification("soundlibrary folder does not exist! If you want to have audio take from a global folder, make sure you create a soundlibrary folder inside your beatmaps folder and put your sounds in there.", 12f, EditorManager.NotificationType.Error);
+                                            layout.Find("Path/Input").GetComponent<InputField>().text = _val.Replace("\\", "/").Replace(global ? RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/soundlibrary/" : GameManager.inst.basePath.Replace("\\", "/"), "");
+                                            EditorManager.inst.HideDialog("Browser Popup");
+                                            return;
                                         }
 
-                                        RTFileBrowser.inst.UpdateBrowser(directory, new string[] { ".wav", ".ogg", ".mp3" }, onSelectFile: delegate (string _val)
-                                        {
-                                            var global = Parser.TryParse(modifier.commands[1], false);
-
-                                            if (_val.Replace("\\", "/").Contains(global ? RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/soundlibrary/" : GameManager.inst.basePath.Replace("\\", "/")))
-                                            {
-                                                layout.Find("Path/Input").GetComponent<InputField>().text = _val.Replace("\\", "/").Replace(global ? RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/soundlibrary/" : GameManager.inst.basePath.Replace("\\", "/"), "");
-                                                EditorManager.inst.HideDialog("Browser Popup");
-                                            }
-                                            else
-                                            {
-                                                EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                                            }
-                                        });
-                                    }
+                                        EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                                    });
                                 };
                             }
                             boolGenerator("Global", 1, false);
@@ -673,36 +661,35 @@ namespace BetterLegacy.Editor.Managers
                             stringGenerator("Path", 0);
                             {
                                 var search = layout.Find("Path/Input").gameObject.AddComponent<Clickable>();
-                                search.onClick = delegate (PointerEventData pointerEventData)
+                                search.onClick = pointerEventData =>
                                 {
-                                    if (pointerEventData.button == PointerEventData.InputButton.Right)
+                                    if (pointerEventData.button != PointerEventData.InputButton.Right)
+                                        return;
+
+                                    EditorManager.inst.ShowDialog("Browser Popup");
+
+                                    var isGlobal = modifier.commands.Count > 1 && Parser.TryParse(modifier.commands[1], false);
+                                    var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/soundlibrary") ?
+                                                    RTFile.ApplicationDirectory + "beatmaps/soundlibrary" : System.IO.Path.GetDirectoryName(RTFile.BasePath);
+
+                                    if (isGlobal && !RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/soundlibrary"))
                                     {
-                                        EditorManager.inst.ShowDialog("Browser Popup");
+                                        EditorManager.inst.DisplayNotification("soundlibrary folder does not exist! If you want to have audio take from a global folder, make sure you create a soundlibrary folder inside your beatmaps folder and put your sounds in there.", 12f, EditorManager.NotificationType.Error);
+                                    }
 
-                                        var isGlobal = modifier.commands.Count > 1 && Parser.TryParse(modifier.commands[1], false);
-                                        var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/soundlibrary") ?
-                                                        RTFile.ApplicationDirectory + "beatmaps/soundlibrary" : System.IO.Path.GetDirectoryName(RTFile.BasePath);
+                                    RTFileBrowser.inst.UpdateBrowser(directory, new string[] { ".wav", ".ogg", ".mp3" }, onSelectFile: _val =>
+                                    {
+                                        var global = Parser.TryParse(modifier.commands[1], false);
 
-                                        if (isGlobal && !RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/soundlibrary"))
+                                        if (_val.Replace("\\", "/").Contains(global ? RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/soundlibrary/" : GameManager.inst.basePath.Replace("\\", "/")))
                                         {
-                                            EditorManager.inst.DisplayNotification("soundlibrary folder does not exist! If you want to have audio take from a global folder, make sure you create a soundlibrary folder inside your beatmaps folder and put your sounds in there.", 12f, EditorManager.NotificationType.Error);
+                                            layout.Find("Path/Input").GetComponent<InputField>().text = _val.Replace("\\", "/").Replace(global ? RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/soundlibrary/" : GameManager.inst.basePath.Replace("\\", "/"), "");
+                                            EditorManager.inst.HideDialog("Browser Popup");
+                                            return;
                                         }
 
-                                        RTFileBrowser.inst.UpdateBrowser(directory, new string[] { ".wav", ".ogg", ".mp3" }, onSelectFile: delegate (string _val)
-                                        {
-                                            var global = Parser.TryParse(modifier.commands[1], false);
-
-                                            if (_val.Replace("\\", "/").Contains(global ? RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/soundlibrary/" : GameManager.inst.basePath.Replace("\\", "/")))
-                                            {
-                                                layout.Find("Path/Input").GetComponent<InputField>().text = _val.Replace("\\", "/").Replace(global ? RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/soundlibrary/" : GameManager.inst.basePath.Replace("\\", "/"), "");
-                                                EditorManager.inst.HideDialog("Browser Popup");
-                                            }
-                                            else
-                                            {
-                                                EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                                            }
-                                        });
-                                    }
+                                        EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                                    });
                                 };
                             }
                             boolGenerator("Global", 1, false);
@@ -803,24 +790,12 @@ namespace BetterLegacy.Editor.Managers
                                 Destroy(dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>());
 
                                 var d = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
-                                d.onValueChanged.RemoveAllListeners();
-                                d.options.Clear();
-                                d.options = new List<Dropdown.OptionData>
-                                {
-                                    new Dropdown.OptionData("Square"),
-                                    new Dropdown.OptionData("Circle"),
-                                    new Dropdown.OptionData("Triangle"),
-                                    new Dropdown.OptionData("Arrow"),
-                                    new Dropdown.OptionData("Text"),
-                                    new Dropdown.OptionData("Hexagon"),
-                                    new Dropdown.OptionData("Image"),
-                                    new Dropdown.OptionData("Pentagon"),
-                                    new Dropdown.OptionData("Misc"),
-                                };
+                                d.onValueChanged.ClearAll();
+                                d.options = CoreHelper.StringToOptionData("Square", "Circle", "Triangle", "Arrow", "Text", "Hexagon", "Image", "Pentagon", "Misc");
 
                                 d.value = Parser.TryParse(modifier.commands[1], 0);
 
-                                d.onValueChanged.AddListener(delegate (int _val)
+                                d.onValueChanged.AddListener(_val =>
                                 {
                                     if (_val == 4 || _val == 6)
                                     {
@@ -852,7 +827,7 @@ namespace BetterLegacy.Editor.Managers
                                 Destroy(dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>());
 
                                 var d = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
-                                d.onValueChanged.RemoveAllListeners();
+                                d.onValueChanged.ClearAll();
                                 d.options.Clear();
 
                                 var type = Parser.TryParse(modifier.commands[1], 0);
@@ -864,7 +839,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 d.value = Parser.TryParse(modifier.commands[2], 0);
 
-                                d.onValueChanged.AddListener(delegate (int _val)
+                                d.onValueChanged.AddListener(_val =>
                                 {
                                     modifier.commands[2] = Mathf.Clamp(_val, 0, ShapeManager.inst.Shapes2D[type].Count - 1).ToString();
                                     modifier.active = false;
@@ -1039,10 +1014,7 @@ namespace BetterLegacy.Editor.Managers
 
                             d.value = Parser.TryParse(modifier.value, 0);
 
-                            d.onValueChanged.AddListener(delegate (int _val)
-                            {
-                                modifier.value = _val.ToString();
-                            });
+                            d.onValueChanged.AddListener(_val => { modifier.value = _val.ToString(); });
 
                             EditorThemeManager.ApplyLightText(labelText);
                             EditorThemeManager.ApplyDropdown(d);
@@ -1089,18 +1061,10 @@ namespace BetterLegacy.Editor.Managers
                                 Destroy(dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>());
 
                                 var d = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
-                                d.onValueChanged.RemoveAllListeners();
-                                d.options.Clear();
-
-                                d.options = new List<Dropdown.OptionData>
-                                {
-                                    new Dropdown.OptionData("Number"),
-                                    new Dropdown.OptionData("Text"),
-                                };
-
+                                d.onValueChanged.ClearAll();
+                                d.options = CoreHelper.StringToOptionData("Number", "Text");
                                 d.value = Parser.TryParse(modifier.commands[4], 0);
-
-                                d.onValueChanged.AddListener(delegate (int _val)
+                                d.onValueChanged.AddListener(_val =>
                                 {
                                     modifier.commands[4] = _val.ToString();
                                     modifier.active = false;
@@ -1148,7 +1112,7 @@ namespace BetterLegacy.Editor.Managers
                                 samplesXIF.onValueChanged.ClearAll();
                                 samplesXIF.textComponent.alignment = TextAnchor.MiddleCenter;
                                 samplesXIF.text = Parser.TryParse(modifier.commands[1], 0).ToString();
-                                samplesXIF.onValueChanged.AddListener(delegate (string _val)
+                                samplesXIF.onValueChanged.AddListener(_val =>
                                 {
                                     if (int.TryParse(_val, out int result))
                                     {
@@ -1174,7 +1138,7 @@ namespace BetterLegacy.Editor.Managers
                                 samplesYIF.onValueChanged.ClearAll();
                                 samplesYIF.textComponent.alignment = TextAnchor.MiddleCenter;
                                 samplesYIF.text = Parser.TryParse(modifier.commands[2], 0).ToString();
-                                samplesYIF.onValueChanged.AddListener(delegate (string _val)
+                                samplesYIF.onValueChanged.AddListener(_val =>
                                 {
                                     if (int.TryParse(_val, out int result))
                                     {
@@ -1209,7 +1173,7 @@ namespace BetterLegacy.Editor.Managers
                                 multiplyXIF.onValueChanged.ClearAll();
                                 multiplyXIF.textComponent.alignment = TextAnchor.MiddleCenter;
                                 multiplyXIF.text = Parser.TryParse(modifier.commands[3], 0f).ToString();
-                                multiplyXIF.onValueChanged.AddListener(delegate (string _val)
+                                multiplyXIF.onValueChanged.AddListener(_val =>
                                 {
                                     if (float.TryParse(_val, out float result))
                                     {
@@ -1235,7 +1199,7 @@ namespace BetterLegacy.Editor.Managers
                                 multiplyYIF.onValueChanged.ClearAll();
                                 multiplyYIF.textComponent.alignment = TextAnchor.MiddleCenter;
                                 multiplyYIF.text = Parser.TryParse(modifier.commands[4], 0f).ToString();
-                                multiplyYIF.onValueChanged.AddListener(delegate (string _val)
+                                multiplyYIF.onValueChanged.AddListener(_val =>
                                 {
                                     if (float.TryParse(_val, out float result))
                                     {
@@ -1286,7 +1250,7 @@ namespace BetterLegacy.Editor.Managers
                             inputField.onValueChanged.ClearAll();
                             inputField.textComponent.alignment = TextAnchor.MiddleCenter;
                             inputField.text = Parser.TryParse(modifier.commands[1], 0).ToString();
-                            inputField.onValueChanged.AddListener(delegate (string _val)
+                            inputField.onValueChanged.AddListener(_val =>
                             {
                                 if (int.TryParse(_val, out int result))
                                 {
@@ -1469,7 +1433,7 @@ namespace BetterLegacy.Editor.Managers
                             xPositionIF.onValueChanged.ClearAll();
                             xPositionIF.textComponent.alignment = TextAnchor.MiddleCenter;
                             xPositionIF.text = Parser.TryParse(isBothAxis ? vector[0] : modifier.value, 0.5f).ToString();
-                            xPositionIF.onValueChanged.AddListener(delegate (string _val)
+                            xPositionIF.onValueChanged.AddListener(_val =>
                             {
                                 if (float.TryParse(_val, out float result))
                                 {
@@ -1497,7 +1461,7 @@ namespace BetterLegacy.Editor.Managers
                                 yPositionIF.onValueChanged.ClearAll();
                                 yPositionIF.textComponent.alignment = TextAnchor.MiddleCenter;
                                 yPositionIF.text = Parser.TryParse(isBothAxis ? vector[0] : modifier.value, 0.5f).ToString();
-                                yPositionIF.onValueChanged.AddListener(delegate (string _val)
+                                yPositionIF.onValueChanged.AddListener(_val =>
                                 {
                                     if (float.TryParse(_val, out float result))
                                     {
@@ -1535,7 +1499,7 @@ namespace BetterLegacy.Editor.Managers
                             inputField.onValueChanged.ClearAll();
                             inputField.textComponent.alignment = TextAnchor.MiddleCenter;
                             inputField.text = Parser.TryParse(modifier.commands[1], 1f).ToString();
-                            inputField.onValueChanged.AddListener(delegate (string _val)
+                            inputField.onValueChanged.AddListener(_val =>
                             {
                                 if (float.TryParse(_val, out float result))
                                 {
@@ -1568,7 +1532,7 @@ namespace BetterLegacy.Editor.Managers
                             var globalToggle = global.transform.Find("Toggle").GetComponent<Toggle>();
                             globalToggle.onValueChanged.ClearAll();
                             globalToggle.isOn = Parser.TryParse(modifier.commands[3], false);
-                            globalToggle.onValueChanged.AddListener(delegate (bool _val)
+                            globalToggle.onValueChanged.AddListener(_val =>
                             {
                                 modifier.commands[3] = _val.ToString();
                                 modifier.active = false;
@@ -1591,7 +1555,7 @@ namespace BetterLegacy.Editor.Managers
                             prefabIndexIF.onValueChanged.ClearAll();
                             prefabIndexIF.textComponent.alignment = TextAnchor.MiddleCenter;
                             prefabIndexIF.text = Parser.TryParse(modifier.value, 0).ToString();
-                            prefabIndexIF.onValueChanged.AddListener(delegate (string _val)
+                            prefabIndexIF.onValueChanged.AddListener(_val =>
                             {
                                 if (int.TryParse(_val, out int result))
                                 {
@@ -1787,7 +1751,7 @@ namespace BetterLegacy.Editor.Managers
                                 deleteGroup.GetComponent<LayoutElement>().ignoreLayout = false;
                                 var deleteGroupButton = deleteGroup.GetComponent<DeleteButtonStorage>();
                                 deleteGroupButton.button.onClick.ClearAll();
-                                deleteGroupButton.button.onClick.AddListener(delegate ()
+                                deleteGroupButton.button.onClick.AddListener(() =>
                                 {
                                     for (int j = 0; j < 8; j++)
                                     {
@@ -1798,15 +1762,8 @@ namespace BetterLegacy.Editor.Managers
                                     StartCoroutine(RenderModifiers(beatmapObject));
                                 });
 
-                                EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete, deleteGroup, new List<Component>
-                                {
-                                    deleteGroupButton.button.image,
-                                }, true, 1, SpriteManager.RoundedSide.W));
-
-                                EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete_Text, deleteGroupButton.image.gameObject, new List<Component>
-                                {
-                                    deleteGroupButton.image,
-                                }));
+                                EditorThemeManager.ApplyGraphic(deleteGroupButton.button.image, ThemeGroup.Delete, true);
+                                EditorThemeManager.ApplyGraphic(deleteGroupButton.image, ThemeGroup.Delete_Text);
 
                                 stringGenerator("Name", i);
                                 stringGenerator("Object Group", i + 1);
@@ -1837,7 +1794,7 @@ namespace BetterLegacy.Editor.Managers
 
                             var addButton = add.GetComponent<Button>();
                             addButton.onClick.ClearAll();
-                            addButton.onClick.AddListener(delegate ()
+                            addButton.onClick.AddListener(() =>
                             {
                                 var lastIndex = modifier.commands.Count - 1;
 
@@ -1854,15 +1811,8 @@ namespace BetterLegacy.Editor.Managers
                                 StartCoroutine(RenderModifiers(beatmapObject));
                             });
 
-                            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Add, add, new List<Component>
-                            {
-                                addButton.image,
-                            }, true, 1, SpriteManager.RoundedSide.W));
-
-                            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Add_Text, addText.gameObject, new List<Component>
-                            {
-                                addText,
-                            }));
+                            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
+                            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
 
                             break;
                         }
@@ -2032,26 +1982,17 @@ namespace BetterLegacy.Editor.Managers
                                 var deleteGroupButton = deleteGroup.GetComponent<DeleteButtonStorage>();
                                 deleteGroup.GetComponent<LayoutElement>().ignoreLayout = false;
                                 deleteGroupButton.button.onClick.ClearAll();
-                                deleteGroupButton.button.onClick.AddListener(delegate ()
+                                deleteGroupButton.button.onClick.AddListener(() =>
                                 {
                                     for (int j = 0; j < 3; j++)
-                                    {
                                         modifier.commands.RemoveAt(groupIndex);
-                                    }
 
                                     Updater.UpdateProcessor(beatmapObject);
                                     StartCoroutine(RenderModifiers(beatmapObject));
                                 });
 
-                                EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete, deleteGroup, new List<Component>
-                                    {
-                                        deleteGroupButton.button.image,
-                                    }, true, 1, SpriteManager.RoundedSide.W));
-
-                                EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete_Text, deleteGroupButton.image.gameObject, new List<Component>
-                                    {
-                                        deleteGroupButton.image,
-                                    }));
+                                EditorThemeManager.ApplyGraphic(deleteGroupButton.button.image, ThemeGroup.Delete, true);
+                                EditorThemeManager.ApplyGraphic(deleteGroupButton.image, ThemeGroup.Delete_Text);
 
                                 stringGenerator("Object Group", i);
                                 singleGenerator("Distance", i + 1, 2f);
@@ -2075,7 +2016,7 @@ namespace BetterLegacy.Editor.Managers
 
                             var addButton = add.GetComponent<Button>();
                             addButton.onClick.ClearAll();
-                            addButton.onClick.AddListener(delegate ()
+                            addButton.onClick.AddListener(() =>
                             {
                                 var lastIndex = modifier.commands.Count - 1;
                                 var length = "2";
@@ -2094,15 +2035,8 @@ namespace BetterLegacy.Editor.Managers
                                 StartCoroutine(RenderModifiers(beatmapObject));
                             });
 
-                            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Add, add, new List<Component>
-                                {
-                                    addButton.image,
-                                }, true, 1, SpriteManager.RoundedSide.W));
-
-                            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Add_Text, addText.gameObject, new List<Component>
-                                {
-                                    addText,
-                                }));
+                            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
+                            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
 
                             break;
                         }
@@ -2156,7 +2090,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var button = gameObject.GetComponent<Button>();
                 button.onClick.ClearAll();
-                button.onClick.AddListener(delegate ()
+                button.onClick.AddListener(() =>
                 {
                     EditorManager.inst.ShowDialog("Default Modifiers Popup");
                     RefreshDefaultModifiersList(beatmapObject);
@@ -2174,7 +2108,7 @@ namespace BetterLegacy.Editor.Managers
                 var buttonStorage = gameObject.GetComponent<FunctionButtonStorage>();
                 buttonStorage.text.text = "Paste";
                 buttonStorage.button.onClick.ClearAll();
-                buttonStorage.button.onClick.AddListener(delegate ()
+                buttonStorage.button.onClick.AddListener(() =>
                 {
                     beatmapObject.modifiers.Add(Modifier<BeatmapObject>.DeepCopy(copiedModifier, beatmapObject));
                     StartCoroutine(RenderModifiers(beatmapObject));
@@ -2198,17 +2132,12 @@ namespace BetterLegacy.Editor.Managers
             int num = 0;
             foreach (var toggle in toggles)
             {
-                toggle.onValueChanged.RemoveAllListeners();
-                int tmpIndex = num;
-
+                int toggleIndex = num;
+                toggle.onValueChanged.ClearAll();
                 toggle.isOn = num == i;
+                toggle.onValueChanged.AddListener(_val => { SetObjectColors(toggles, index, toggleIndex, modifier); });
 
-                toggle.onValueChanged.AddListener(delegate (bool _value)
-                {
-                    SetObjectColors(toggles, index, tmpIndex, modifier);
-                });
-
-                toggle.GetComponent<Image>().color = GameManager.inst.LiveTheme.GetObjColor(tmpIndex);
+                toggle.GetComponent<Image>().color = GameManager.inst.LiveTheme.GetObjColor(toggleIndex);
 
                 if (!toggle.GetComponent<HoverUI>())
                 {
@@ -2222,16 +2151,6 @@ namespace BetterLegacy.Editor.Managers
         }
 
         #region Default Modifiers
-
-        public void CreateDefaultModifiersList()
-        {
-            var defaultModifiersList = RTEditor.inst.GeneratePopup("Default Modifiers Popup", "Choose a modifer to add", Vector2.zero, new Vector2(600f, 400f), delegate (string _val)
-            {
-                searchTerm = _val;
-                if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
-                    RefreshDefaultModifiersList(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>());
-            }, placeholderText: "Search for default Modifier...");
-        }
 
         public string searchTerm;
         public void RefreshDefaultModifiersList(BeatmapObject beatmapObject)
@@ -2258,8 +2177,8 @@ namespace BetterLegacy.Editor.Managers
                     modifierName.text = name;
 
                     var button = gameObject.GetComponent<Button>();
-                    button.onClick.RemoveAllListeners();
-                    button.onClick.AddListener(delegate ()
+                    button.onClick.ClearAll();
+                    button.onClick.AddListener(() =>
                     {
                         var cmd = defaultModifiers[tmpIndex].commands[0];
                         if (cmd.Contains("Text") && !cmd.Contains("Other") && beatmapObject.shape != 4)

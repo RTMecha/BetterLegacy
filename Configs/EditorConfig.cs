@@ -32,9 +32,9 @@ namespace BetterLegacy.Configs
             ObjectEditor.TimelineObjectHoverSize = TimelineObjectHoverSize.Value;
             ObjectEditor.HideVisualElementsWhenObjectIsEmpty = HideVisualElementsWhenObjectIsEmpty.Value;
             KeybindManager.AllowKeys = AllowEditorKeybindsWithEditorCam.Value;
-            PrefabEditorManager.ImportPrefabsDirectly = ImportPrefabsDirectly.Value;
-            ThemeEditorManager.themesPerPage = ThemesPerPage.Value;
-            ThemeEditorManager.eventThemesPerPage = ThemesEventKeyframePerPage.Value;
+            RTPrefabEditor.ImportPrefabsDirectly = ImportPrefabsDirectly.Value;
+            RTThemeEditor.themesPerPage = ThemesPerPage.Value;
+            RTThemeEditor.eventThemesPerPage = ThemesEventKeyframePerPage.Value;
             RTEditor.DraggingPlaysSound = DraggingPlaysSound.Value;
             RTEditor.DraggingPlaysSoundBPM = DraggingPlaysSoundOnlyWithBPM.Value;
             RTEditor.ShowModdedUI = ShowModdedFeaturesInEditor.Value;
@@ -2454,23 +2454,23 @@ namespace BetterLegacy.Configs
 
         void ThemeEventKeyframeChanged()
         {
-            ThemeEditorManager.eventThemesPerPage = ThemesEventKeyframePerPage.Value;
+            RTThemeEditor.eventThemesPerPage = ThemesEventKeyframePerPage.Value;
 
             if (!EditorManager.inst)
                 return;
 
-            var p = Mathf.Clamp(ThemeEditorManager.inst.eventThemePage, 0, DataManager.inst.AllThemes.Count / ThemeEditorManager.eventThemesPerPage).ToString();
+            var p = Mathf.Clamp(RTThemeEditor.inst.eventThemePage, 0, DataManager.inst.AllThemes.Count / RTThemeEditor.eventThemesPerPage).ToString();
 
-            if (ThemeEditorManager.eventPageStorage.inputField.text != p)
+            if (RTThemeEditor.eventPageStorage.inputField.text != p)
             {
-                ThemeEditorManager.eventPageStorage.inputField.text = p;
+                RTThemeEditor.eventPageStorage.inputField.text = p;
                 return;
             }
 
 
             var dialogTmp = EventEditor.inst.dialogRight.GetChild(4);
             if (dialogTmp.gameObject.activeInHierarchy)
-                CoreHelper.StartCoroutine(ThemeEditorManager.inst.RenderThemeList(
+                CoreHelper.StartCoroutine(RTThemeEditor.inst.RenderThemeList(
                     dialogTmp.Find("theme-search").GetComponent<InputField>().text));
         }
 
@@ -2504,15 +2504,15 @@ namespace BetterLegacy.Configs
                     RTEventEditor.inst.RenderEventsDialog();
             }
 
-            if (!PrefabEditorManager.inst)
+            if (!RTPrefabEditor.inst)
                 return;
 
             var prefabSelectorLeft = EditorManager.inst.GetDialog("Prefab Selector").Dialog.Find("data/left");
 
             if (!prefabSelectorLeft.gameObject.activeInHierarchy)
-                PrefabEditorManager.inst.UpdateModdedVisbility();
+                RTPrefabEditor.inst.UpdateModdedVisbility();
             else if (ObjectEditor.inst.CurrentSelection.IsPrefabObject)
-                PrefabEditorManager.inst.RenderPrefabObjectDialog(ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>());
+                RTPrefabEditor.inst.RenderPrefabObjectDialog(ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>());
         }
 
         void DraggingChanged()
@@ -2532,7 +2532,7 @@ namespace BetterLegacy.Configs
 
         void ThemePopupChanged()
         {
-            ThemeEditorManager.themesPerPage = ThemesPerPage.Value;
+            RTThemeEditor.themesPerPage = ThemesPerPage.Value;
         }
 
         void ObjectEditorChanged()
@@ -2576,7 +2576,7 @@ namespace BetterLegacy.Configs
             KeybindManager.AllowKeys = AllowEditorKeybindsWithEditorCam.Value;
             ObjectEditor.RenderPrefabTypeIcon = TimelineObjectPrefabTypeIcon.Value;
             ObjectEditor.TimelineObjectHoverSize = TimelineObjectHoverSize.Value;
-            PrefabEditorManager.ImportPrefabsDirectly = ImportPrefabsDirectly.Value;
+            RTPrefabEditor.ImportPrefabsDirectly = ImportPrefabsDirectly.Value;
 
             if (!EditorManager.inst)
                 return;

@@ -326,7 +326,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             var detector = EditorManager.inst.GetDialog("Event Editor").Dialog.gameObject.AddComponent<Clickable>();
-            detector.onEnable = delegate (bool _val)
+            detector.onEnable = _val =>
             {
                 if (!_val)
                     for (int i = 0; i < EventEditor.inst.dialogRight.childCount; i++)
@@ -568,7 +568,7 @@ namespace BetterLegacy.Editor.Managers
 
             list.Where(x => (x.Type / EventLimit) == RTEditor.inst.Layer && RTEditor.inst.layerType == RTEditor.LayerType.Events &&
             RTMath.RectTransformToScreenSpace(EditorManager.inst.SelectionBoxImage.rectTransform).Overlaps(RTMath.RectTransformToScreenSpace(x.Image.rectTransform))).ToList()
-            .ForEach(delegate (TimelineObject x)
+            .ForEach(x =>
             {
                 x.selected = true;
                 x.timeOffset = 0f;
@@ -948,12 +948,12 @@ namespace BetterLegacy.Editor.Managers
 
             var easing = dialog.transform.Find("curves").GetComponent<Dropdown>();
 
-            TriggerHelper.AddEventTriggerParams(easing.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, delegate (BaseEventData baseEventData)
+            TriggerHelper.AddEventTriggerParams(easing.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, eventData =>
             {
                 if (!EditorConfig.Instance.ScrollOnEasing.Value)
                     return;
 
-                var pointerEventData = (PointerEventData)baseEventData;
+                var pointerEventData = (PointerEventData)eventData;
                 if (pointerEventData.scrollDelta.y > 0f)
                     easing.value = easing.value == 0 ? easing.options.Count - 1 : easing.value - 1;
                 if (pointerEventData.scrollDelta.y < 0f)
@@ -1678,7 +1678,7 @@ namespace BetterLegacy.Editor.Managers
 
             var button = snapStorage.button;
             button.onClick.ClearAll();
-            button.onClick.AddListener(delegate ()
+            button.onClick.AddListener(() =>
             {
                 foreach (var timelineObject in SelectedKeyframes)
                 {
@@ -1727,7 +1727,7 @@ namespace BetterLegacy.Editor.Managers
 
             var alignToFirst = alignToFirstStorage.button;
             alignToFirst.onClick.ClearAll();
-            alignToFirst.onClick.AddListener(delegate ()
+            alignToFirst.onClick.AddListener(() =>
             {
                 var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
                 var list = SelectedKeyframes.OrderBy(x => x.Time);
@@ -1780,7 +1780,7 @@ namespace BetterLegacy.Editor.Managers
 
             var pasteAll = pasteAllStorage.button;
             pasteAll.onClick.ClearAll();
-            pasteAll.onClick.AddListener(delegate ()
+            pasteAll.onClick.AddListener(() =>
             {
                 foreach (var keyframe in SelectedKeyframes)
                 {
@@ -1884,7 +1884,7 @@ namespace BetterLegacy.Editor.Managers
                 time.text = "10";
 
             timeStorage.leftGreaterButton.onClick.ClearAll();
-            timeStorage.leftGreaterButton.onClick.AddListener(delegate ()
+            timeStorage.leftGreaterButton.onClick.AddListener(() =>
             {
                 if (float.TryParse(time.text, out float num))
                 {
@@ -1905,7 +1905,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             timeStorage.leftButton.onClick.ClearAll();
-            timeStorage.leftButton.onClick.AddListener(delegate ()
+            timeStorage.leftButton.onClick.AddListener(() =>
             {
                 if (float.TryParse(time.text, out float num))
                 {
@@ -1926,7 +1926,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             timeStorage.middleButton.onClick.ClearAll();
-            timeStorage.middleButton.onClick.AddListener(delegate ()
+            timeStorage.middleButton.onClick.AddListener(() =>
             {
                 if (float.TryParse(time.text, out float num))
                 {
@@ -1946,7 +1946,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             timeStorage.rightButton.onClick.ClearAll();
-            timeStorage.rightButton.onClick.AddListener(delegate ()
+            timeStorage.rightButton.onClick.AddListener(() =>
             {
                 if (float.TryParse(time.text, out float num))
                 {
@@ -1967,7 +1967,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             timeStorage.rightGreaterButton.onClick.ClearAll();
-            timeStorage.rightGreaterButton.onClick.AddListener(delegate ()
+            timeStorage.rightGreaterButton.onClick.AddListener(() =>
             {
                 if (float.TryParse(time.text, out float num))
                 {
@@ -1991,24 +1991,22 @@ namespace BetterLegacy.Editor.Managers
 
             var curves = dialog.Find("curves/curves").GetComponent<Dropdown>();
             curves.onValueChanged.ClearAll();
-            curves.onValueChanged.AddListener(delegate (int _val)
+            curves.onValueChanged.AddListener(_val =>
             {
-                if (DataManager.inst.AnimationListDictionary.ContainsKey(_val))
-                {
-                    foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0))
-                    {
-                        kf.GetData<EventKeyframe>().curveType = DataManager.inst.AnimationListDictionary[_val];
-                    }
+                if (!DataManager.inst.AnimationListDictionary.ContainsKey(_val))
+                    return;
 
-                    EventManager.inst.updateEvents();
-                }
+                foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0))
+                    kf.GetData<EventKeyframe>().curveType = DataManager.inst.AnimationListDictionary[_val];
+
+                EventManager.inst.updateEvents();
             });
 
             var valueIndexStorage = dialog.Find("value index/value index").GetComponent<InputFieldStorage>();
             valueIndexStorage.inputField.onValueChanged.ClearAll();
             if (valueIndexStorage.inputField.text == "100.000")
                 valueIndexStorage.inputField.text = "0";
-            valueIndexStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+            valueIndexStorage.inputField.onValueChanged.AddListener(_val =>
             {
                 if (!int.TryParse(_val, out int n))
                     valueIndexStorage.inputField.text = "0";
@@ -2023,7 +2021,7 @@ namespace BetterLegacy.Editor.Managers
                 valueStorage.inputField.text = "1.0";
 
             valueStorage.leftGreaterButton.onClick.ClearAll();
-            valueStorage.leftGreaterButton.onClick.AddListener(delegate ()
+            valueStorage.leftGreaterButton.onClick.AddListener(() =>
             {
                 if (float.TryParse(valueStorage.inputField.text, out float num))
                 {
@@ -2040,7 +2038,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             valueStorage.leftButton.onClick.ClearAll();
-            valueStorage.leftButton.onClick.AddListener(delegate ()
+            valueStorage.leftButton.onClick.AddListener(() =>
             {
                 if (float.TryParse(valueStorage.inputField.text, out float num))
                 {
@@ -2057,7 +2055,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             valueStorage.middleButton.onClick.ClearAll();
-            valueStorage.middleButton.onClick.AddListener(delegate ()
+            valueStorage.middleButton.onClick.AddListener(() =>
             {
                 if (float.TryParse(valueStorage.inputField.text, out float num))
                 {
@@ -2074,7 +2072,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             valueStorage.rightButton.onClick.ClearAll();
-            valueStorage.rightButton.onClick.AddListener(delegate ()
+            valueStorage.rightButton.onClick.AddListener(() =>
             {
                 if (float.TryParse(valueStorage.inputField.text, out float num))
                 {
@@ -2091,7 +2089,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             valueStorage.rightGreaterButton.onClick.ClearAll();
-            valueStorage.rightGreaterButton.onClick.AddListener(delegate ()
+            valueStorage.rightGreaterButton.onClick.AddListener(() =>
             {
                 if (float.TryParse(valueStorage.inputField.text, out float num))
                 {
@@ -2136,9 +2134,9 @@ namespace BetterLegacy.Editor.Managers
 
             if (isNotFirst)
             {
-                timeTime.onValueChanged.AddListener(delegate (string val)
+                timeTime.onValueChanged.AddListener(_val =>
                 {
-                    if (float.TryParse(val, out float num))
+                    if (float.TryParse(_val, out float num))
                     {
                         num = Mathf.Clamp(num, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
 
@@ -2149,18 +2147,14 @@ namespace BetterLegacy.Editor.Managers
                         }
 
                         UpdateEventOrder();
-                        //RenderEventObjects();
                         EventManager.inst.updateEvents();
                     }
                     else
-                        LogIncorrectFormat(val);
+                        LogIncorrectFormat(_val);
                 });
 
                 TriggerHelper.IncreaseDecreaseButtons(timeTime, 0.1f, 10f, t: time);
-                TriggerHelper.AddEventTrigger(time.gameObject, new List<EventTrigger.Entry>
-                {
-                    TriggerHelper.ScrollDelta(timeTime, min: 0.001f, max: AudioManager.inst.CurrentAudioSource.clip.length)
-                });
+                TriggerHelper.AddEventTriggerParams(time.gameObject, TriggerHelper.ScrollDelta(timeTime, min: 0.001f, max: AudioManager.inst.CurrentAudioSource.clip.length));
             }
 
             switch (__instance.currentEventType)
@@ -2203,12 +2197,9 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var theme = dialogTmp.Find("theme-search").GetComponent<InputField>();
 
-                        theme.onValueChanged.RemoveAllListeners();
-                        theme.onValueChanged.AddListener(delegate (string val)
-                        {
-                            ThemeEditorManager.inst.RenderThemeContent(dialogTmp, val);
-                        });
-                        ThemeEditorManager.inst.RenderThemeContent(dialogTmp, theme.text);
+                        theme.onValueChanged.ClearAll();
+                        theme.onValueChanged.AddListener(_val => { RTThemeEditor.inst.RenderThemeContent(dialogTmp, _val); });
+                        RTThemeEditor.inst.RenderThemeContent(dialogTmp, theme.text);
                         __instance.RenderThemePreview(dialogTmp);
                         break;
                     }
@@ -2395,7 +2386,7 @@ namespace BetterLegacy.Editor.Managers
                             var drp = dialogTmp.Find("mode").GetComponent<Dropdown>();
                             drp.onValueChanged.RemoveAllListeners();
                             drp.value = (int)currentKeyframe.eventValues[4];
-                            drp.onValueChanged.AddListener(delegate (int _val)
+                            drp.onValueChanged.AddListener(_val =>
                             {
                                 currentKeyframe.eventValues[4] = _val;
                                 EventManager.inst.updateEvents();
@@ -2600,7 +2591,7 @@ namespace BetterLegacy.Editor.Managers
                             var drp = dialogTmp.Find("rendertype").GetComponent<Dropdown>();
                             drp.onValueChanged.RemoveAllListeners();
                             drp.value = (int)currentKeyframe.eventValues[9];
-                            drp.onValueChanged.AddListener(delegate (int _val)
+                            drp.onValueChanged.AddListener(_val =>
                             {
                                 currentKeyframe.eventValues[9] = _val;
                                 EventManager.inst.updateEvents();
@@ -2624,7 +2615,7 @@ namespace BetterLegacy.Editor.Managers
                             var drp = dialogTmp.Find("direction").GetComponent<Dropdown>();
                             drp.onValueChanged.RemoveAllListeners();
                             drp.value = (int)currentKeyframe.eventValues[1];
-                            drp.onValueChanged.AddListener(delegate (int _val)
+                            drp.onValueChanged.AddListener(_val =>
                             {
                                 currentKeyframe.eventValues[1] = _val;
                                 EventManager.inst.updateEvents();
@@ -2724,16 +2715,17 @@ namespace BetterLegacy.Editor.Managers
                 curvesDropdown.gameObject.SetActive(isNotFirst);
                 if (isNotFirst)
                 {
-                    curvesDropdown.onValueChanged.RemoveAllListeners();
+                    curvesDropdown.onValueChanged.ClearAll();
                     if (DataManager.inst.AnimationListDictionaryBack.ContainsKey(currentKeyframe.curveType))
                         curvesDropdown.value = DataManager.inst.AnimationListDictionaryBack[currentKeyframe.curveType];
 
-                    curvesDropdown.onValueChanged.AddListener(delegate (int _value)
+                    curvesDropdown.onValueChanged.AddListener(_val =>
                     {
+                        if (!DataManager.inst.AnimationListDictionary.ContainsKey(_val))
+                            return;
+
                         foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0 && x.Type == __instance.currentEventType))
-                        {
-                            kf.GetData<EventKeyframe>().curveType = DataManager.inst.AnimationListDictionary[_value];
-                        }
+                            kf.GetData<EventKeyframe>().curveType = DataManager.inst.AnimationListDictionary[_val];
 
                         RenderEventObjects();
                         eventManager.updateEvents();
@@ -2746,16 +2738,16 @@ namespace BetterLegacy.Editor.Managers
                 var editJumpRightLarge = dialogTmp.Find("edit/>>").GetComponent<Button>();
 
                 editJumpLeftLarge.interactable = isNotFirst;
-                editJumpLeftLarge.onClick.RemoveAllListeners();
-                editJumpLeftLarge.onClick.AddListener(delegate ()
+                editJumpLeftLarge.onClick.ClearAll();
+                editJumpLeftLarge.onClick.AddListener(() =>
                 {
                     __instance.UpdateEventOrder(false);
                     __instance.SetCurrentEvent(__instance.currentEventType, 0);
                 });
 
                 editJumpLeft.interactable = isNotFirst;
-                editJumpLeft.onClick.RemoveAllListeners();
-                editJumpLeft.onClick.AddListener(delegate ()
+                editJumpLeft.onClick.ClearAll();
+                editJumpLeft.onClick.AddListener(() =>
                 {
                     __instance.UpdateEventOrder(false);
                     int num = __instance.currentEvent - 1;
@@ -2771,8 +2763,8 @@ namespace BetterLegacy.Editor.Managers
                 indexText.text = !isNotFirst ? "S" : __instance.currentEvent == allEvents.Count ? "E" : __instance.currentEvent.ToString();
 
                 editJumpRight.interactable = __instance.currentEvent != allEvents.Count - 1;
-                editJumpRight.onClick.RemoveAllListeners();
-                editJumpRight.onClick.AddListener(delegate ()
+                editJumpRight.onClick.ClearAll();
+                editJumpRight.onClick.AddListener(() =>
                 {
                     __instance.UpdateEventOrder(false);
                     int num = __instance.currentEvent + 1;
@@ -2783,8 +2775,8 @@ namespace BetterLegacy.Editor.Managers
                 });
 
                 editJumpRightLarge.interactable = __instance.currentEvent != allEvents.Count() - 1;
-                editJumpRightLarge.onClick.RemoveAllListeners();
-                editJumpRightLarge.onClick.AddListener(delegate ()
+                editJumpRightLarge.onClick.ClearAll();
+                editJumpRightLarge.onClick.AddListener(() =>
                 {
                     __instance.UpdateEventOrder(false);
                     __instance.SetCurrentEvent(__instance.currentEventType, allEvents.IndexOf(allEvents.Last()));
@@ -2794,10 +2786,7 @@ namespace BetterLegacy.Editor.Managers
 
                 editDelete.onClick.RemoveAllListeners();
                 editDelete.interactable = isNotFirst;
-                editDelete.onClick.AddListener(delegate ()
-                {
-                    StartCoroutine(DeleteKeyframes());
-                });
+                editDelete.onClick.AddListener(() => { StartCoroutine(DeleteKeyframes()); });
             }
 
             if (dialogTmp.Find("edit/copy") && dialogTmp.Find("edit/paste"))
@@ -2806,7 +2795,7 @@ namespace BetterLegacy.Editor.Managers
                 var paste = dialogTmp.Find("edit/paste").GetComponent<Button>();
 
                 copy.onClick.ClearAll();
-                copy.onClick.AddListener(delegate ()
+                copy.onClick.AddListener(() =>
                 {
                     if (copiedKeyframeDatas.Count > __instance.currentEventType)
                     {
@@ -2820,7 +2809,7 @@ namespace BetterLegacy.Editor.Managers
                 });
 
                 paste.onClick.ClearAll();
-                paste.onClick.AddListener(delegate ()
+                paste.onClick.AddListener(() =>
                 {
                     if (copiedKeyframeDatas.Count > __instance.currentEventType && copiedKeyframeDatas[__instance.currentEventType] != null)
                     {
@@ -2859,19 +2848,17 @@ namespace BetterLegacy.Editor.Managers
             int num = 0;
             foreach (var toggle in toggles)
             {
-                toggle.onValueChanged.RemoveAllListeners();
+                toggle.onValueChanged.ClearAll();
 
                 toggle.isOn = num == value;
 
                 toggle.image.color = num < 18 ? CoreHelper.CurrentBeatmapTheme.effectColors[num] : num == 19 ? secondaryDefaultColor : defaultColor;
 
                 int tmpIndex = num;
-                toggle.onValueChanged.AddListener(delegate (bool val)
+                toggle.onValueChanged.AddListener(_val =>
                 {
                     foreach (var kf in SelectedKeyframes.Where(x => x.Type == EventEditor.inst.currentEventType))
-                    {
                         kf.GetData<EventKeyframe>().eventValues[index] = tmpIndex;
-                    }
 
                     EventManager.inst.updateEvents();
 
@@ -2889,14 +2876,10 @@ namespace BetterLegacy.Editor.Managers
             var vignetteRounded = dialogTmp.Find(name).GetComponent<Toggle>();
             vignetteRounded.onValueChanged.RemoveAllListeners();
             vignetteRounded.isOn = currentKeyframe.eventValues[index] == onValue;
-            vignetteRounded.onValueChanged.AddListener(delegate (bool val)
+            vignetteRounded.onValueChanged.AddListener(_val =>
             {
-                //currentKeyframe.eventValues[index] = val ? onValue : offValue;
-
                 foreach (var kf in SelectedKeyframes.Where(x => x.Type == __instance.currentEventType))
-                {
-                    kf.GetData<EventKeyframe>().eventValues[index] = val ? onValue : offValue;
-                }
+                    kf.GetData<EventKeyframe>().eventValues[index] = _val ? onValue : offValue;
 
                 EventManager.inst.updateEvents();
             });
@@ -2912,28 +2895,22 @@ namespace BetterLegacy.Editor.Managers
                 return;
 
             var zoom = dialogTmp.Find($"{name}").GetComponent<InputField>();
-            zoom.onValueChanged.RemoveAllListeners();
-
+            zoom.onValueChanged.ClearAll();
             zoom.text = currentKeyframe.eventValues[index].ToString();
-
-            zoom.onValueChanged.AddListener(delegate (string val)
+            zoom.onValueChanged.AddListener(_val =>
             {
-                if (float.TryParse(val, out float num))
+                if (float.TryParse(_val, out float num))
                 {
                     if (min != 0f || max != 0f)
                         num = Mathf.Clamp(num, min, max);
 
-                    //currentKeyframe.eventValues[index] = num;
-
                     foreach (var kf in SelectedKeyframes.Where(x => x.Type == __instance.currentEventType))
-                    {
                         kf.GetData<EventKeyframe>().eventValues[index] = num;
-                    }
 
                     EventManager.inst.updateEvents();
                 }
                 else
-                    LogIncorrectFormat(val);
+                    LogIncorrectFormat(_val);
             });
 
             if (dialogTmp.Find($"{name}/<") && dialogTmp.Find($"{name}/>"))
@@ -2946,7 +2923,7 @@ namespace BetterLegacy.Editor.Managers
                 var btL = tf.Find(">").GetComponent<Button>();
 
                 btR.onClick.ClearAll();
-                btR.onClick.AddListener(delegate ()
+                btR.onClick.AddListener(() =>
                 {
                     if (float.TryParse(zoom.text, out float result))
                     {
@@ -2959,16 +2936,14 @@ namespace BetterLegacy.Editor.Managers
 
                         if (list.Count() > 1)
                             foreach (var kf in list)
-                            {
                                 kf.GetData<EventKeyframe>().eventValues[index] -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
-                            }
                         else
                             zoom.text = result.ToString();
                     }
                 });
 
                 btL.onClick.ClearAll();
-                btL.onClick.AddListener(delegate ()
+                btL.onClick.AddListener(() =>
                 {
                     if (float.TryParse(zoom.text, out float result))
                     {
@@ -2990,8 +2965,7 @@ namespace BetterLegacy.Editor.Managers
                 });
             }
 
-            //TriggerHelper.IncreaseDecreaseButtons(zoom, increase * multiply, multiply, min, max);
-            TriggerHelper.AddEventTrigger(zoom.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDelta(zoom, increase, multiply, min, max) });
+            TriggerHelper.AddEventTriggerParams(zoom.gameObject, TriggerHelper.ScrollDelta(zoom, increase, multiply, min, max));
 
             if (allowNegative && !zoom.gameObject.GetComponent<InputFieldSwapper>())
             {
@@ -3010,28 +2984,22 @@ namespace BetterLegacy.Editor.Managers
                 return;
 
             var zoom = dialogTmp.Find($"{name}").GetComponent<InputField>();
-            zoom.onValueChanged.RemoveAllListeners();
-
+            zoom.onValueChanged.ClearAll();
             zoom.text = currentKeyframe.eventValues[index].ToString();
-
-            zoom.onValueChanged.AddListener(delegate (string val)
+            zoom.onValueChanged.AddListener(_val =>
             {
-                if (int.TryParse(val, out int num))
+                if (int.TryParse(_val, out int num))
                 {
                     if (min != 0 && max != 0)
                         num = Mathf.Clamp(num, min, max);
 
-                    //currentKeyframe.eventValues[index] = num;
-
                     foreach (var kf in SelectedKeyframes.Where(x => x.Type == __instance.currentEventType))
-                    {
                         kf.GetData<EventKeyframe>().eventValues[index] = num;
-                    }
 
                     EventManager.inst.updateEvents();
                 }
                 else
-                    LogIncorrectFormat(val);
+                    LogIncorrectFormat(_val);
             });
 
             if (dialogTmp.Find($"{name}/<") && dialogTmp.Find($"{name}/>"))
@@ -3044,7 +3012,7 @@ namespace BetterLegacy.Editor.Managers
                 var btL = tf.Find(">").GetComponent<Button>();
 
                 btR.onClick.ClearAll();
-                btR.onClick.AddListener(delegate ()
+                btR.onClick.AddListener(() =>
                 {
                     if (float.TryParse(zoom.text, out float result))
                     {
@@ -3057,16 +3025,14 @@ namespace BetterLegacy.Editor.Managers
 
                         if (list.Count() > 1)
                             foreach (var kf in list)
-                            {
                                 kf.GetData<EventKeyframe>().eventValues[index] -= Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
-                            }
                         else
                             zoom.text = result.ToString();
                     }
                 });
 
                 btL.onClick.ClearAll();
-                btL.onClick.AddListener(delegate ()
+                btL.onClick.AddListener(() =>
                 {
                     if (float.TryParse(zoom.text, out float result))
                     {
@@ -3079,17 +3045,14 @@ namespace BetterLegacy.Editor.Managers
 
                         if (list.Count() > 1)
                             foreach (var kf in list)
-                            {
                                 kf.GetData<EventKeyframe>().eventValues[index] += Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
-                            }
                         else
                             zoom.text = result.ToString();
                     }
                 });
             }
 
-            //TriggerHelper.IncreaseDecreaseButtonsInt(zoom, increase * 10, min, max);
-            TriggerHelper.AddEventTrigger(zoom.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDeltaInt(zoom, increase, min, max) });
+            TriggerHelper.AddEventTriggerParams(zoom.gameObject, TriggerHelper.ScrollDeltaInt(zoom, increase, min, max));
 
             if (allowNegative && !zoom.gameObject.GetComponent<InputFieldSwapper>())
             {
@@ -3110,48 +3073,40 @@ namespace BetterLegacy.Editor.Managers
             var posX = dialogTmp.Find($"{name}/x").GetComponent<InputField>();
             var posY = dialogTmp.Find($"{name}/y").GetComponent<InputField>();
 
-            posX.onValueChanged.RemoveAllListeners();
+            posX.onValueChanged.ClearAll();
             posX.text = currentKeyframe.eventValues[xindex].ToString();
-            posX.onValueChanged.AddListener(delegate (string val)
+            posX.onValueChanged.AddListener(_val =>
             {
-                if (float.TryParse(val, out float num))
+                if (float.TryParse(_val, out float num))
                 {
                     if (min != 0f && max != 0f)
                         num = Mathf.Clamp(num, min, max);
 
-                    //currentKeyframe.eventValues[xindex] = num;
-
                     foreach (var kf in SelectedKeyframes.Where(x => x.Type == __instance.currentEventType))
-                    {
                         kf.GetData<EventKeyframe>().eventValues[xindex] = num;
-                    }
 
                     EventManager.inst.updateEvents();
                 }
                 else
-                    LogIncorrectFormat(val);
+                    LogIncorrectFormat(_val);
             });
 
-            posY.onValueChanged.RemoveAllListeners();
+            posY.onValueChanged.ClearAll();
             posY.text = currentKeyframe.eventValues[yindex].ToString();
-            posY.onValueChanged.AddListener(delegate (string val)
+            posY.onValueChanged.AddListener(_val =>
             {
-                if (float.TryParse(val, out float num))
+                if (float.TryParse(_val, out float num))
                 {
                     if (min != 0f && max != 0f)
                         num = Mathf.Clamp(num, min, max);
 
-                    //currentKeyframe.eventValues[yindex] = num;
-
                     foreach (var kf in SelectedKeyframes.Where(x => x.Type == __instance.currentEventType))
-                    {
                         kf.GetData<EventKeyframe>().eventValues[yindex] = num;
-                    }
 
                     EventManager.inst.updateEvents();
                 }
                 else
-                    LogIncorrectFormat(val);
+                    LogIncorrectFormat(_val);
             });
 
             if (dialogTmp.Find($"{name}/x/<") && dialogTmp.Find($"{name}/x/>"))
@@ -3164,7 +3119,7 @@ namespace BetterLegacy.Editor.Managers
                 var btL = tf.Find(">").GetComponent<Button>();
 
                 btR.onClick.ClearAll();
-                btR.onClick.AddListener(delegate ()
+                btR.onClick.AddListener(() =>
                 {
                     if (float.TryParse(posX.text, out float result))
                     {
@@ -3177,16 +3132,14 @@ namespace BetterLegacy.Editor.Managers
 
                         if (list.Count() > 1)
                             foreach (var kf in list)
-                            {
                                 kf.GetData<EventKeyframe>().eventValues[xindex] -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
-                            }
                         else
                             posX.text = result.ToString();
                     }
                 });
 
                 btL.onClick.ClearAll();
-                btL.onClick.AddListener(delegate ()
+                btL.onClick.AddListener(() =>
                 {
                     if (float.TryParse(posX.text, out float result))
                     {
@@ -3218,7 +3171,7 @@ namespace BetterLegacy.Editor.Managers
                 var btL = tf.Find(">").GetComponent<Button>();
 
                 btR.onClick.ClearAll();
-                btR.onClick.AddListener(delegate ()
+                btR.onClick.AddListener(() =>
                 {
                     if (float.TryParse(posY.text, out float result))
                     {
@@ -3231,16 +3184,14 @@ namespace BetterLegacy.Editor.Managers
 
                         if (list.Count() > 1)
                             foreach (var kf in list)
-                            {
                                 kf.GetData<EventKeyframe>().eventValues[yindex] -= Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
-                            }
                         else
                             posY.text = result.ToString();
                     }
                 });
 
                 btL.onClick.ClearAll();
-                btL.onClick.AddListener(delegate ()
+                btL.onClick.AddListener(() =>
                 {
                     if (float.TryParse(posY.text, out float result))
                     {
@@ -3253,29 +3204,16 @@ namespace BetterLegacy.Editor.Managers
 
                         if (list.Count() > 1)
                             foreach (var kf in list)
-                            {
                                 kf.GetData<EventKeyframe>().eventValues[yindex] += Input.GetKey(KeyCode.LeftAlt) ? num / 10f : Input.GetKey(KeyCode.LeftControl) ? num * 10f : num;
-                            }
                         else
                             posY.text = result.ToString();
                     }
                 });
             }
 
-            //TriggerHelper.IncreaseDecreaseButtons(posX, 1f, 10f, min, max);
-            //TriggerHelper.IncreaseDecreaseButtons(posY, 1f, 10f, min, max);
-
             var clampList = new List<float> { min, max };
-            TriggerHelper.AddEventTrigger(posX.gameObject, new List<EventTrigger.Entry>
-            {
-                TriggerHelper.ScrollDelta(posX, 0.1f, 10f, min, max, true),
-                TriggerHelper.ScrollDeltaVector2(posX, posY, 0.1f, 10f, clampList)
-            });
-            TriggerHelper.AddEventTrigger(posY.gameObject, new List<EventTrigger.Entry>
-            {
-                TriggerHelper.ScrollDelta(posY, 0.1f, 10f, min, max, true),
-                TriggerHelper.ScrollDeltaVector2(posX, posY, 0.1f, 10f, clampList)
-            });
+            TriggerHelper.AddEventTriggerParams(posX.gameObject, TriggerHelper.ScrollDelta(posX, 0.1f, 10f, min, max, true), TriggerHelper.ScrollDeltaVector2(posX, posY, 0.1f, 10f, clampList));
+            TriggerHelper.AddEventTriggerParams(posY.gameObject, TriggerHelper.ScrollDelta(posY, 0.1f, 10f, min, max, true), TriggerHelper.ScrollDeltaVector2(posX, posY, 0.1f, 10f, clampList));
 
             if (allowNegative)
             {

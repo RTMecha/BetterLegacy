@@ -221,7 +221,9 @@ namespace BetterLegacy.Editor.Managers
             // Editor initializations
             RTMarkerEditor.Init();
             RTMetaDataEditor.Init();
+            RTThemeEditor.Init();
 
+            KeybindManager.Init();
             PlayerEditor.Init();
             ObjectModifiersEditor.Init();
             LevelCombiner.Init();
@@ -3099,7 +3101,7 @@ namespace BetterLegacy.Editor.Managers
             var themePage = EditorPrefabHolder.Instance.NumberInputField.Duplicate(themePathBase.transform, "page");
             UIManager.SetRectTransform(themePage.transform.AsRT(), new Vector2(205f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
             var themePageStorage = themePage.GetComponent<InputFieldStorage>();
-            ThemeEditorManager.eventPageStorage = themePageStorage;
+            RTThemeEditor.eventPageStorage = themePageStorage;
             themePage.GetComponent<HorizontalLayoutGroup>().spacing = 2f;
             themePageStorage.inputField.image.rectTransform.sizeDelta = new Vector2(60f, 32f);
 
@@ -3109,9 +3111,9 @@ namespace BetterLegacy.Editor.Managers
             {
                 if (int.TryParse(_val, out int p))
                 {
-                    ThemeEditorManager.inst.eventThemePage = Mathf.Clamp(p, 0, ThemeEditorManager.inst.ThemesCount / ThemeEditorManager.eventThemesPerPage);
+                    RTThemeEditor.inst.eventThemePage = Mathf.Clamp(p, 0, RTThemeEditor.inst.ThemesCount / RTThemeEditor.eventThemesPerPage);
 
-                    StartCoroutine(ThemeEditorManager.inst.RenderThemeList(
+                    StartCoroutine(RTThemeEditor.inst.RenderThemeList(
                         EditorManager.inst.GetDialog("Event Editor").Dialog.Find("data/right/theme/theme-search").GetComponent<InputField>().text));
                 }
             });
@@ -3123,20 +3125,20 @@ namespace BetterLegacy.Editor.Managers
             themePageStorage.leftButton.onClick.AddListener(() =>
             {
                 if (int.TryParse(themePageStorage.inputField.text, out int p))
-                    themePageStorage.inputField.text = Mathf.Clamp(p - 1, 0, ThemeEditorManager.inst.ThemesCount / ThemeEditorManager.eventThemesPerPage).ToString();
+                    themePageStorage.inputField.text = Mathf.Clamp(p - 1, 0, RTThemeEditor.inst.ThemesCount / RTThemeEditor.eventThemesPerPage).ToString();
             });
 
             themePageStorage.rightButton.onClick.ClearAll();
             themePageStorage.rightButton.onClick.AddListener(() =>
             {
                 if (int.TryParse(themePageStorage.inputField.text, out int p))
-                    themePageStorage.inputField.text = Mathf.Clamp(p + 1, 0, ThemeEditorManager.inst.ThemesCount / ThemeEditorManager.eventThemesPerPage).ToString();
+                    themePageStorage.inputField.text = Mathf.Clamp(p + 1, 0, RTThemeEditor.inst.ThemesCount / RTThemeEditor.eventThemesPerPage).ToString();
             });
 
             themePageStorage.rightGreaterButton.onClick.ClearAll();
             themePageStorage.rightGreaterButton.onClick.AddListener(() =>
             {
-                themePageStorage.inputField.text = (ThemeEditorManager.inst.ThemesCount / ThemeEditorManager.eventThemesPerPage).ToString();
+                themePageStorage.inputField.text = (RTThemeEditor.inst.ThemesCount / RTThemeEditor.eventThemesPerPage).ToString();
             });
 
             Destroy(themePageStorage.middleButton.gameObject);
@@ -8504,9 +8506,9 @@ namespace BetterLegacy.Editor.Managers
             var dialogTmp = EventEditor.inst.dialogRight.GetChild(4);
             var parent = dialogTmp.Find("themes/viewport/content");
 
-            if (ThemeEditorManager.inst.ThemePanels.Count > 0)
-                ThemeEditorManager.inst.ThemePanels.ForEach(x => Destroy(x.GameObject));
-            ThemeEditorManager.inst.ThemePanels.Clear();
+            if (RTThemeEditor.inst.ThemePanels.Count > 0)
+                RTThemeEditor.inst.ThemePanels.ForEach(x => Destroy(x.GameObject));
+            RTThemeEditor.inst.ThemePanels.Clear();
 
             if (themeAddButton == null)
             {
@@ -8517,7 +8519,7 @@ namespace BetterLegacy.Editor.Managers
                 var button = themeAddButton.GetComponent<Button>();
                 button.onClick.AddListener(() =>
                 {
-                    ThemeEditorManager.inst.RenderThemeEditor();
+                    RTThemeEditor.inst.RenderThemeEditor();
                 });
 
                 EditorThemeManager.AddGraphic(button.image, ThemeGroup.List_Button_2_Normal, true);
@@ -8525,8 +8527,8 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddGraphic(themeAddButton.transform.Find("text").GetComponent<Text>(), ThemeGroup.List_Button_2_Text);
             }
 
-            var layer = ThemeEditorManager.inst.eventThemePage + 1;
-            int max = layer * ThemeEditorManager.eventThemesPerPage;
+            var layer = RTThemeEditor.inst.eventThemePage + 1;
+            int max = layer * RTThemeEditor.eventThemesPerPage;
 
             int num = 0;
             foreach (var beatmapTheme in DataManager.inst.BeatmapThemes.Select(x => x as BeatmapTheme))
@@ -8534,7 +8536,7 @@ namespace BetterLegacy.Editor.Managers
                 DataManager.inst.BeatmapThemeIDToIndex.Add(num, num);
                 DataManager.inst.BeatmapThemeIndexToID.Add(num, num);
 
-                var themePanel = ThemeEditorManager.inst.GenerateThemePanel(parent);
+                var themePanel = RTThemeEditor.inst.GenerateThemePanel(parent);
                 themePanel.Theme = beatmapTheme;
 
                 for (int j = 0; j < themePanel.Colors.Count; j++)
@@ -8562,7 +8564,7 @@ namespace BetterLegacy.Editor.Managers
                 });
 
                 themePanel.EditButton.onClick.ClearAll();
-                themePanel.EditButton.onClick.AddListener(() => { ThemeEditorManager.inst.RenderThemeEditor(Parser.TryParse(beatmapTheme.id, 0)); });
+                themePanel.EditButton.onClick.AddListener(() => { RTThemeEditor.inst.RenderThemeEditor(Parser.TryParse(beatmapTheme.id, 0)); });
 
                 themePanel.DeleteButton.onClick.ClearAll();
                 themePanel.DeleteButton.interactable = false;
@@ -8604,7 +8606,7 @@ namespace BetterLegacy.Editor.Managers
                     DataManager.inst.BeatmapThemeIndexToID.Add(DataManager.inst.AllThemes.Count - 1, int.Parse(orig.id));
                     DataManager.inst.BeatmapThemeIDToIndex.Add(int.Parse(orig.id), DataManager.inst.AllThemes.Count - 1);
 
-                    var themePanel = ThemeEditorManager.inst.GenerateThemePanel(parent);
+                    var themePanel = RTThemeEditor.inst.GenerateThemePanel(parent);
                     themePanel.Theme = orig;
                     themePanel.Path = file.Replace("\\", "/");
                     themePanel.OriginalID = orig.id;
@@ -8629,11 +8631,11 @@ namespace BetterLegacy.Editor.Managers
                     });
 
                     themePanel.EditButton.onClick.ClearAll();
-                    themePanel.EditButton.onClick.AddListener(() => { ThemeEditorManager.inst.RenderThemeEditor(Parser.TryParse(orig.id, 0)); });
+                    themePanel.EditButton.onClick.AddListener(() => { RTThemeEditor.inst.RenderThemeEditor(Parser.TryParse(orig.id, 0)); });
 
                     themePanel.DeleteButton.onClick.ClearAll();
                     themePanel.DeleteButton.interactable = true;
-                    themePanel.DeleteButton.onClick.AddListener(() => { ThemeEditorManager.inst.DeleteThemeDelegate(orig); });
+                    themePanel.DeleteButton.onClick.AddListener(() => { RTThemeEditor.inst.DeleteThemeDelegate(orig); });
                     themePanel.Name.text = orig.name;
 
                     themePanel.SetActive(false);
@@ -8660,7 +8662,7 @@ namespace BetterLegacy.Editor.Managers
             if (refreshGUI)
             {
                 var themeSearch = dialogTmp.Find("theme-search").GetComponent<InputField>();
-                yield return StartCoroutine(ThemeEditorManager.inst.RenderThemeList(themeSearch.text));
+                yield return StartCoroutine(RTThemeEditor.inst.RenderThemeList(themeSearch.text));
             }
 
             canUpdateThemes = true;
@@ -8678,8 +8680,8 @@ namespace BetterLegacy.Editor.Managers
             while (!PrefabEditor.inst || !PrefabEditor.inst.externalContent)
                 yield return null;
 
-            PrefabEditorManager.inst.PrefabPanels.Where(x => x.Dialog == PrefabDialog.External).ToList().ForEach(x => Destroy(x.GameObject));
-            PrefabEditorManager.inst.PrefabPanels.RemoveAll(x => x.Dialog == PrefabDialog.External);
+            RTPrefabEditor.inst.PrefabPanels.Where(x => x.Dialog == PrefabDialog.External).ToList().ForEach(x => Destroy(x.GameObject));
+            RTPrefabEditor.inst.PrefabPanels.RemoveAll(x => x.Dialog == PrefabDialog.External);
 
             var config = EditorConfig.Instance;
 
@@ -8702,14 +8704,14 @@ namespace BetterLegacy.Editor.Managers
                 button.onClick.ClearAll();
                 button.onClick.AddListener(() =>
                 {
-                    if (PrefabEditorManager.inst.savingToPrefab && PrefabEditorManager.inst.prefabToSaveFrom != null)
+                    if (RTPrefabEditor.inst.savingToPrefab && RTPrefabEditor.inst.prefabToSaveFrom != null)
                     {
-                        PrefabEditorManager.inst.savingToPrefab = false;
-                        PrefabEditorManager.inst.SavePrefab(PrefabEditorManager.inst.prefabToSaveFrom);
+                        RTPrefabEditor.inst.savingToPrefab = false;
+                        RTPrefabEditor.inst.SavePrefab(RTPrefabEditor.inst.prefabToSaveFrom);
 
                         EditorManager.inst.HideDialog("Prefab Popup");
 
-                        PrefabEditorManager.inst.prefabToSaveFrom = null;
+                        RTPrefabEditor.inst.prefabToSaveFrom = null;
 
                         EditorManager.inst.DisplayNotification("Applied all changes to new External Prefab.", 2f, EditorManager.NotificationType.Success);
 
@@ -8717,7 +8719,7 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     PrefabEditor.inst.OpenDialog();
-                    PrefabEditorManager.inst.createInternal = false;
+                    RTPrefabEditor.inst.createInternal = false;
                 });
 
                 EditorThemeManager.AddGraphic(button.image, ThemeGroup.Add, true);
@@ -8748,7 +8750,7 @@ namespace BetterLegacy.Editor.Managers
             var deleteAnchoredPosition = isExternal ? config.PrefabExternalDeleteButtonPos.Value : config.PrefabInternalDeleteButtonPos.Value;
             var deleteSizeDelta = isExternal ? config.PrefabExternalDeleteButtonSca.Value : config.PrefabInternalDeleteButtonSca.Value;
 
-            while (PrefabEditorManager.loadingPrefabTypes)
+            while (RTPrefabEditor.loadingPrefabTypes)
                 yield return null;
 
             int num = 0;
@@ -8760,7 +8762,7 @@ namespace BetterLegacy.Editor.Managers
                 prefab.objects.ForEach(x => { x.prefabID = ""; x.prefabInstanceID = ""; });
                 prefab.filePath = file.Replace("\\", "/");
 
-                StartCoroutine(PrefabEditorManager.inst.CreatePrefabButton(prefab, num, PrefabDialog.External, file, false, hoverSize,
+                StartCoroutine(RTPrefabEditor.inst.CreatePrefabButton(prefab, num, PrefabDialog.External, file, false, hoverSize,
                          nameHorizontalOverflow, nameVerticalOverflow, nameFontSize,
                          typeHorizontalOverflow, typeVerticalOverflow, typeFontSize,
                          deleteAnchoredPosition, deleteSizeDelta));
@@ -9286,7 +9288,7 @@ namespace BetterLegacy.Editor.Managers
                         var prefabObject = timelineObject.GetData<PrefabObject>();
                         prefabObject.parent = "";
                         Updater.UpdatePrefab(prefabObject);
-                        PrefabEditorManager.inst.RenderPrefabObjectDialog(prefabObject);
+                        RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
 
                         continue;
                     }
@@ -9300,7 +9302,7 @@ namespace BetterLegacy.Editor.Managers
                 if (list.Count == 1 && timelineObject.IsBeatmapObject)
                     StartCoroutine(ObjectEditor.RefreshObjectGUI(timelineObject.GetData<BeatmapObject>()));
                 if (list.Count == 1 && timelineObject.IsPrefabObject)
-                    PrefabEditorManager.inst.RenderPrefabObjectDialog(timelineObject.GetData<PrefabObject>());
+                    RTPrefabEditor.inst.RenderPrefabObjectDialog(timelineObject.GetData<PrefabObject>());
             });
 
             EditorThemeManager.ApplySelectable(noParentButton, ThemeGroup.List_Button_1);
@@ -9337,7 +9339,7 @@ namespace BetterLegacy.Editor.Managers
                     if (list.Count == 1 && timelineObject.IsBeatmapObject)
                         StartCoroutine(ObjectEditor.RefreshObjectGUI(timelineObject.GetData<BeatmapObject>()));
                     if (list.Count == 1 && timelineObject.IsPrefabObject)
-                        PrefabEditorManager.inst.RenderPrefabObjectDialog(timelineObject.GetData<PrefabObject>());
+                        RTPrefabEditor.inst.RenderPrefabObjectDialog(timelineObject.GetData<PrefabObject>());
                 });
 
                 EditorThemeManager.ApplySelectable(camButton, ThemeGroup.List_Button_1);
@@ -9405,7 +9407,7 @@ namespace BetterLegacy.Editor.Managers
                         if (list.Count == 1 && timelineObject.IsBeatmapObject)
                             StartCoroutine(ObjectEditor.RefreshObjectGUI(timelineObject.GetData<BeatmapObject>()));
                         if (list.Count == 1 && timelineObject.IsPrefabObject)
-                            PrefabEditorManager.inst.RenderPrefabObjectParent(timelineObject.GetData<PrefabObject>());
+                            RTPrefabEditor.inst.RenderPrefabObjectParent(timelineObject.GetData<PrefabObject>());
 
                         Debug.Log($"{__instance.className}Set Parent ID: {id}");
                     });

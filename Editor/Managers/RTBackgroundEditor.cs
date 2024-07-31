@@ -16,13 +16,13 @@ using UnityEngine.UI;
 
 namespace BetterLegacy.Editor.Managers
 {
-    public class BackgroundEditorManager : MonoBehaviour
+    public class RTBackgroundEditor : MonoBehaviour
     {
-        public static BackgroundEditorManager inst;
+        public static RTBackgroundEditor inst;
 
         public static BackgroundObject CurrentSelectedBG => BackgroundEditor.inst == null ? null : (BackgroundObject)DataManager.inst.gameData.backgroundObjects[BackgroundEditor.inst.currentObj];
 
-        public static void Init(BackgroundEditor backgroundEditor) => backgroundEditor.gameObject.AddComponent<BackgroundEditorManager>();
+        public static void Init(BackgroundEditor backgroundEditor) => backgroundEditor.gameObject.AddComponent<RTBackgroundEditor>();
 
         public GameObject shapeButtonCopy;
 

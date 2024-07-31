@@ -39,7 +39,7 @@ namespace BetterLegacy.Editor.Managers
 
         GameObject labelPrefab;
 
-        public static void Init() => Creator.NewGameObject("PlayerEditor", EditorManager.inst.transform.parent).AddComponent<PlayerEditor>();
+        public static void Init() => Creator.NewGameObject(nameof(PlayerEditor), EditorManager.inst.transform.parent).AddComponent<PlayerEditor>();
 
         void Awake()
         {

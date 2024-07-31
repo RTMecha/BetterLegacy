@@ -72,7 +72,7 @@ namespace BetterLegacy.Patchers
                 PrefabEditor.inst.AddPrefab = gameObject;
             }
 
-            PrefabEditorManager.Init(__instance);
+            RTPrefabEditor.Init(__instance);
 
             return false;
         }
@@ -81,7 +81,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool StartPrefix()
         {
-            PrefabEditorManager.loadingPrefabTypes = true;
+            RTPrefabEditor.loadingPrefabTypes = true;
             Instance.StartCoroutine(RTEditor.inst.LoadPrefabs(Instance));
             Instance.OffsetLine = Instance.OffsetLinePrefab.Duplicate(EditorManager.inst.timeline.transform, "offset line");
             Instance.OffsetLine.transform.AsRT().pivot = Vector2.one;
@@ -112,11 +112,11 @@ namespace BetterLegacy.Patchers
             }
 
             var dialog = EditorManager.inst.GetDialog("Prefab Selector").Dialog;
-            PrefabEditorManager.inst.prefabSelectorLeft = dialog.Find("data/left");
-            PrefabEditorManager.inst.prefabSelectorRight = dialog.Find("data/right");
+            RTPrefabEditor.inst.prefabSelectorLeft = dialog.Find("data/left");
+            RTPrefabEditor.inst.prefabSelectorRight = dialog.Find("data/right");
 
             var contentBase = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View/Viewport/Content");
-            var scrollView = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View").Duplicate(PrefabEditorManager.inst.prefabSelectorLeft);
+            var scrollView = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View").Duplicate(RTPrefabEditor.inst.prefabSelectorLeft);
 
             var parent = scrollView.transform.Find("Viewport/Content");
 
@@ -131,12 +131,12 @@ namespace BetterLegacy.Patchers
             scrollView.transform.AsRT().sizeDelta = new Vector2(383f, 690f);
 
             var objectsToParent = new List<Transform>();
-            for (int i = 0; i < PrefabEditorManager.inst.prefabSelectorLeft.childCount; i++)
-                objectsToParent.Add(PrefabEditorManager.inst.prefabSelectorLeft.GetChild(i));
+            for (int i = 0; i < RTPrefabEditor.inst.prefabSelectorLeft.childCount; i++)
+                objectsToParent.Add(RTPrefabEditor.inst.prefabSelectorLeft.GetChild(i));
             foreach (var child in objectsToParent)
                 child.SetParent(parent);
 
-            PrefabEditorManager.inst.prefabSelectorLeft = parent;
+            RTPrefabEditor.inst.prefabSelectorLeft = parent;
 
             EditorHelper.LogAvailableInstances<PrefabEditor>();
 
@@ -163,8 +163,8 @@ namespace BetterLegacy.Patchers
                 buttonRight.transition = Selectable.Transition.ColorTint;
             }
 
-            DestroyImmediate(PrefabEditorManager.inst.prefabSelectorLeft.GetChild(4).gameObject);
-            DestroyImmediate(PrefabEditorManager.inst.prefabSelectorLeft.GetChild(4).gameObject);
+            DestroyImmediate(RTPrefabEditor.inst.prefabSelectorLeft.GetChild(4).gameObject);
+            DestroyImmediate(RTPrefabEditor.inst.prefabSelectorLeft.GetChild(4).gameObject);
 
             Action<Transform, string, string> labelGenerator = delegate (Transform parent, string name, string x)
             {
@@ -189,10 +189,10 @@ namespace BetterLegacy.Patchers
             };
 
             // AutoKill
-            labelGenerator(PrefabEditorManager.inst.prefabSelectorLeft, "tod-dropdown", "Time of Death");
+            labelGenerator(RTPrefabEditor.inst.prefabSelectorLeft, "tod-dropdown", "Time of Death");
 
             var autoKillType = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View/Viewport/Content/autokill/tod-dropdown")
-                .Duplicate(PrefabEditorManager.inst.prefabSelectorLeft, "tod-dropdown", 14);
+                .Duplicate(RTPrefabEditor.inst.prefabSelectorLeft, "tod-dropdown", 14);
             var autoKillTypeDD = autoKillType.GetComponent<Dropdown>();
             autoKillType.GetComponent<Dropdown>().options = new List<Dropdown.OptionData>
             {
@@ -209,12 +209,12 @@ namespace BetterLegacy.Patchers
 
             EditorThemeManager.AddDropdown(autoKillTypeDD);
 
-            var ako = singleInput.Duplicate(PrefabEditorManager.inst.prefabSelectorLeft, "akoffset");
+            var ako = singleInput.Duplicate(RTPrefabEditor.inst.prefabSelectorLeft, "akoffset");
             EditorThemeManager.AddInputField(ako.GetComponent<InputField>());
             EditorThemeManager.AddSelectable(ako.transform.Find("<").GetComponent<Button>(), ThemeGroup.Function_2, false);
             EditorThemeManager.AddSelectable(ako.transform.Find(">").GetComponent<Button>(), ThemeGroup.Function_2, false);
 
-            var setToCurrent = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View/Viewport/Content/autokill/|").Duplicate(PrefabEditorManager.inst.prefabSelectorLeft.Find("akoffset"), "|");
+            var setToCurrent = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View/Viewport/Content/autokill/|").Duplicate(RTPrefabEditor.inst.prefabSelectorLeft.Find("akoffset"), "|");
 
             var setToCurrentButton = setToCurrent.GetComponent<Button>();
             Destroy(setToCurrent.GetComponent<Animator>());
@@ -223,8 +223,8 @@ namespace BetterLegacy.Patchers
             EditorThemeManager.AddSelectable(setToCurrentButton, ThemeGroup.Function_2, false);
 
             // Parent
-            var parentUI = contentBase.transform.Find("parent").gameObject.Duplicate(PrefabEditorManager.inst.prefabSelectorLeft, "parent");
-            var parent_more = contentBase.transform.Find("parent_more").gameObject.Duplicate(PrefabEditorManager.inst.prefabSelectorLeft, "parent_more");
+            var parentUI = contentBase.transform.Find("parent").gameObject.Duplicate(RTPrefabEditor.inst.prefabSelectorLeft, "parent");
+            var parent_more = contentBase.transform.Find("parent_more").gameObject.Duplicate(RTPrefabEditor.inst.prefabSelectorLeft, "parent_more");
 
             var parentTextText = parentUI.transform.Find("text/text").GetComponent<Text>();
             var parentText = parentUI.transform.Find("text").GetComponent<Button>();
@@ -280,9 +280,9 @@ namespace BetterLegacy.Patchers
             }
 
             // Time
-            labelGenerator(PrefabEditorManager.inst.prefabSelectorLeft, "time", "Time");
+            labelGenerator(RTPrefabEditor.inst.prefabSelectorLeft, "time", "Time");
 
-            var time = EditorPrefabHolder.Instance.NumberInputField.Duplicate(PrefabEditorManager.inst.prefabSelectorLeft, "time");
+            var time = EditorPrefabHolder.Instance.NumberInputField.Duplicate(RTPrefabEditor.inst.prefabSelectorLeft, "time");
             var timeStorage = time.GetComponent<InputFieldStorage>();
             EditorThemeManager.AddInputField(timeStorage.inputField);
             timeStorage.inputField.transform.AsRT().sizeDelta = new Vector2(135f, 32f);
@@ -339,9 +339,9 @@ namespace BetterLegacy.Patchers
             }
 
             // Position
-            labelGenerator2(PrefabEditorManager.inst.prefabSelectorLeft, "pos", "Position X Offset", "Position Y Offset");
+            labelGenerator2(RTPrefabEditor.inst.prefabSelectorLeft, "pos", "Position X Offset", "Position Y Offset");
 
-            var position = vector2Input.Duplicate(PrefabEditorManager.inst.prefabSelectorLeft, "position");
+            var position = vector2Input.Duplicate(RTPrefabEditor.inst.prefabSelectorLeft, "position");
             var positionX = position.transform.Find("x").gameObject.AddComponent<InputFieldSwapper>();
             positionX.Init(position.transform.Find("x").GetComponent<InputField>());
             var positionY = position.transform.Find("y").gameObject.AddComponent<InputFieldSwapper>();
@@ -349,9 +349,9 @@ namespace BetterLegacy.Patchers
             EditorThemeManager.AddInputFields(position, true, "");
 
             // Scale
-            labelGenerator2(PrefabEditorManager.inst.prefabSelectorLeft, "sca", "Scale X Offset", "Scale Y Offset");
+            labelGenerator2(RTPrefabEditor.inst.prefabSelectorLeft, "sca", "Scale X Offset", "Scale Y Offset");
 
-            var scale = vector2Input.Duplicate(PrefabEditorManager.inst.prefabSelectorLeft, "scale");
+            var scale = vector2Input.Duplicate(RTPrefabEditor.inst.prefabSelectorLeft, "scale");
             var scaleX = scale.transform.Find("x").gameObject.AddComponent<InputFieldSwapper>();
             scaleX.Init(scale.transform.Find("x").GetComponent<InputField>());
             var scaleY = scale.transform.Find("y").gameObject.AddComponent<InputFieldSwapper>();
@@ -359,39 +359,39 @@ namespace BetterLegacy.Patchers
             EditorThemeManager.AddInputFields(scale, true, "");
 
             // Rotation
-            labelGenerator(PrefabEditorManager.inst.prefabSelectorLeft, "rot", "Rotation Offset");
+            labelGenerator(RTPrefabEditor.inst.prefabSelectorLeft, "rot", "Rotation Offset");
 
-            var rot = vector2Input.Duplicate(PrefabEditorManager.inst.prefabSelectorLeft, "rotation");
+            var rot = vector2Input.Duplicate(RTPrefabEditor.inst.prefabSelectorLeft, "rotation");
             Destroy(rot.transform.GetChild(1).gameObject);
             var rotX = rot.transform.Find("x").gameObject.AddComponent<InputFieldSwapper>();
             rotX.Init(rot.transform.Find("x").GetComponent<InputField>());
             EditorThemeManager.AddInputFields(rot, true, "");
 
             // Repeat
-            labelGenerator2(PrefabEditorManager.inst.prefabSelectorLeft, "repeat", "Repeat Count", "Repeat Offset Time");
+            labelGenerator2(RTPrefabEditor.inst.prefabSelectorLeft, "repeat", "Repeat Count", "Repeat Offset Time");
 
-            var repeat = vector2Input.Duplicate(PrefabEditorManager.inst.prefabSelectorLeft, "repeat");
+            var repeat = vector2Input.Duplicate(RTPrefabEditor.inst.prefabSelectorLeft, "repeat");
             EditorThemeManager.AddInputFields(repeat, true, "");
 
             // Speed
-            labelGenerator(PrefabEditorManager.inst.prefabSelectorLeft, "speed", "Speed");
+            labelGenerator(RTPrefabEditor.inst.prefabSelectorLeft, "speed", "Speed");
 
-            var speed = singleInput.Duplicate(PrefabEditorManager.inst.prefabSelectorLeft, "speed");
+            var speed = singleInput.Duplicate(RTPrefabEditor.inst.prefabSelectorLeft, "speed");
             EditorThemeManager.AddInputField(speed.GetComponent<InputField>());
             EditorThemeManager.AddSelectable(speed.transform.Find("<").GetComponent<Button>(), ThemeGroup.Function_2, false);
             EditorThemeManager.AddSelectable(speed.transform.Find(">").GetComponent<Button>(), ThemeGroup.Function_2, false);
 
             // Layers
-            var layersIF = singleInput.Duplicate(PrefabEditorManager.inst.prefabSelectorLeft.Find("editor"), "layers", 0).GetComponent<InputField>();
+            var layersIF = singleInput.Duplicate(RTPrefabEditor.inst.prefabSelectorLeft.Find("editor"), "layers", 0).GetComponent<InputField>();
             layersIF.gameObject.AddComponent<ContrastColors>().Init(layersIF.textComponent, layersIF.image);
             EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Null, layersIF.gameObject, new List<Component> { layersIF }, true, 1, SpriteManager.RoundedSide.W));
             EditorThemeManager.AddSelectable(layersIF.transform.Find("<").GetComponent<Button>(), ThemeGroup.Function_2, false);
             EditorThemeManager.AddSelectable(layersIF.transform.Find(">").GetComponent<Button>(), ThemeGroup.Function_2, false);
 
             // Name
-            labelGenerator(PrefabEditorManager.inst.prefabSelectorRight, "name", "Name");
+            labelGenerator(RTPrefabEditor.inst.prefabSelectorRight, "name", "Name");
 
-            var prefabName = RTEditor.inst.defaultIF.Duplicate(PrefabEditorManager.inst.prefabSelectorRight, "name");
+            var prefabName = RTEditor.inst.defaultIF.Duplicate(RTPrefabEditor.inst.prefabSelectorRight, "name");
             prefabName.transform.localScale = Vector3.one;
 
             prefabName.GetComponentAndPerformAction(delegate (InputField inputField)
@@ -399,30 +399,30 @@ namespace BetterLegacy.Patchers
                 inputField.characterValidation = InputField.CharacterValidation.None;
                 inputField.contentType = InputField.ContentType.Standard;
                 inputField.characterLimit = 0;
-                PrefabEditorManager.inst.nameIF = inputField;
+                RTPrefabEditor.inst.nameIF = inputField;
                 EditorThemeManager.AddInputField(inputField);
             });
 
             // Type
-            labelGenerator(PrefabEditorManager.inst.prefabSelectorRight, "type", "Type");
+            labelGenerator(RTPrefabEditor.inst.prefabSelectorRight, "type", "Type");
 
-            var type = singleInput.Duplicate(PrefabEditorManager.inst.prefabSelectorRight, "type");
+            var type = singleInput.Duplicate(RTPrefabEditor.inst.prefabSelectorRight, "type");
 
             type.GetComponentAndPerformAction(delegate (InputField inputField)
             {
-                PrefabEditorManager.inst.typeImage = inputField.image;
+                RTPrefabEditor.inst.typeImage = inputField.image;
                 inputField.characterValidation = InputField.CharacterValidation.None;
                 inputField.contentType = InputField.ContentType.Standard;
-                PrefabEditorManager.inst.typeIF = inputField;
+                RTPrefabEditor.inst.typeIF = inputField;
                 inputField.gameObject.AddComponent<ContrastColors>().Init(inputField.textComponent, inputField.image);
 
                 EditorThemeManager.AddSelectable(type.transform.Find("<").GetComponent<Button>(), ThemeGroup.Function_2, false);
                 EditorThemeManager.AddSelectable(type.transform.Find(">").GetComponent<Button>(), ThemeGroup.Function_2, false);
             });
 
-            var expandPrefabLabel = PrefabEditorManager.inst.prefabSelectorLeft.GetChild(0).gameObject;
+            var expandPrefabLabel = RTPrefabEditor.inst.prefabSelectorLeft.GetChild(0).gameObject;
             var expandPrefabLabelText = expandPrefabLabel.transform.GetChild(0).GetComponent<Text>();
-            var expandPrefab = PrefabEditorManager.inst.prefabSelectorLeft.GetChild(1).gameObject;
+            var expandPrefab = RTPrefabEditor.inst.prefabSelectorLeft.GetChild(1).gameObject;
             var expandPrefabButton = expandPrefab.GetComponent<Button>();
             var expandPrefabText = expandPrefab.transform.GetChild(0).GetComponent<Text>();
             EditorThemeManager.AddLightText(expandPrefabLabelText);
@@ -435,13 +435,13 @@ namespace BetterLegacy.Patchers
             }));
 
             // Save Prefab
-            var label = expandPrefabLabel.Duplicate(PrefabEditorManager.inst.prefabSelectorRight, "save prefab label");
+            var label = expandPrefabLabel.Duplicate(RTPrefabEditor.inst.prefabSelectorRight, "save prefab label");
             label.transform.localScale = Vector3.one;
             var applyToAllText = label.transform.GetChild(0).GetComponent<Text>();
             applyToAllText.fontSize = 19;
             applyToAllText.text = "Apply to an External Prefab";
 
-            var savePrefab = expandPrefab.Duplicate(PrefabEditorManager.inst.prefabSelectorRight, "save prefab");
+            var savePrefab = expandPrefab.Duplicate(RTPrefabEditor.inst.prefabSelectorRight, "save prefab");
             savePrefab.transform.localScale = Vector3.one;
             var savePrefabText = savePrefab.transform.GetChild(0).GetComponent<Text>();
             savePrefabText.text = "Select Prefab";
@@ -458,7 +458,7 @@ namespace BetterLegacy.Patchers
 
             Action<string, string, Action<Text, string>> countGenerator = delegate (string name, string count, Action<Text, string> text)
             {
-                var rotLabel = labelTemp.Duplicate(PrefabEditorManager.inst.prefabSelectorRight, name);
+                var rotLabel = labelTemp.Duplicate(RTPrefabEditor.inst.prefabSelectorRight, name);
 
                 Destroy(rotLabel.transform.GetChild(1).gameObject);
 
@@ -468,8 +468,8 @@ namespace BetterLegacy.Patchers
             // Object Count
             countGenerator("count label", "Object Count: 0", delegate (Text text, string count)
             {
-                PrefabEditorManager.inst.objectCount = text;
-                PrefabEditorManager.inst.objectCount.text = count;
+                RTPrefabEditor.inst.objectCount = text;
+                RTPrefabEditor.inst.objectCount.text = count;
 
                 EditorThemeManager.AddLightText(text);
             });
@@ -477,8 +477,8 @@ namespace BetterLegacy.Patchers
             // Prefab Object Count
             countGenerator("count label", "Prefab Object Count: 0", delegate (Text text, string count)
             {
-                PrefabEditorManager.inst.prefabObjectCount = text;
-                PrefabEditorManager.inst.prefabObjectCount.text = count;
+                RTPrefabEditor.inst.prefabObjectCount = text;
+                RTPrefabEditor.inst.prefabObjectCount.text = count;
 
                 EditorThemeManager.AddLightText(text);
             });
@@ -486,14 +486,14 @@ namespace BetterLegacy.Patchers
             // Prefab Object Timeline Count
             countGenerator("count label", "Prefab Object (Timeline) Count: 0", delegate (Text text, string count)
             {
-                PrefabEditorManager.inst.prefabObjectTimelineCount = text;
-                PrefabEditorManager.inst.prefabObjectTimelineCount.text = count;
+                RTPrefabEditor.inst.prefabObjectTimelineCount = text;
+                RTPrefabEditor.inst.prefabObjectTimelineCount.text = count;
 
                 EditorThemeManager.AddLightText(text);
             });
 
-            DestroyImmediate(PrefabEditorManager.inst.prefabSelectorRight.Find("time").gameObject);
-            var offsetTime = EditorPrefabHolder.Instance.NumberInputField.Duplicate(PrefabEditorManager.inst.prefabSelectorRight, "time", 1);
+            DestroyImmediate(RTPrefabEditor.inst.prefabSelectorRight.Find("time").gameObject);
+            var offsetTime = EditorPrefabHolder.Instance.NumberInputField.Duplicate(RTPrefabEditor.inst.prefabSelectorRight, "time", 1);
             offsetTime.transform.GetChild(0).name = "time";
             var offsetTimeStorage = offsetTime.GetComponent<InputFieldStorage>();
             Destroy(offsetTimeStorage.middleButton.gameObject);
@@ -544,7 +544,7 @@ namespace BetterLegacy.Patchers
             prefabTypeButton.onClick.ClearAll();
             prefabTypeButton.onClick.AddListener(delegate ()
             {
-                PrefabEditorManager.inst.OpenPrefabTypePopup(PrefabEditor.inst.NewPrefabType, delegate (int index)
+                RTPrefabEditor.inst.OpenPrefabTypePopup(PrefabEditor.inst.NewPrefabType, delegate (int index)
                 {
                     PrefabEditor.inst.NewPrefabType = index;
                     if (PrefabEditor.inst.dialog)
@@ -578,7 +578,7 @@ namespace BetterLegacy.Patchers
             search.onValueChanged.ClearAll();
             search.onValueChanged.AddListener(delegate (string _val)
             {
-                PrefabEditorManager.inst.ReloadSelectionContent();
+                RTPrefabEditor.inst.ReloadSelectionContent();
             });
 
             EditorThemeManager.AddInputField(search, ThemeGroup.Search_Field_2);
@@ -647,7 +647,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool CreateNewPrefabPrefix()
         {
-            PrefabEditorManager.inst.CreateNewPrefab();
+            RTPrefabEditor.inst.CreateNewPrefab();
             return false;
         }
 
@@ -655,7 +655,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SavePrefabPrefix(BasePrefab __0)
         {
-            PrefabEditorManager.inst.SavePrefab((Prefab)__0);
+            RTPrefabEditor.inst.SavePrefab((Prefab)__0);
             return false;
         }
 
@@ -667,7 +667,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool DeleteInternalPrefabPrefix(int __0)
         {
-            PrefabEditorManager.inst.DeleteInternalPrefab(__0);
+            RTPrefabEditor.inst.DeleteInternalPrefab(__0);
             return false;
         }
 
@@ -675,7 +675,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool ExpandCurrentPrefabPrefix()
         {
-            PrefabEditorManager.inst.ExpandCurrentPrefab();
+            RTPrefabEditor.inst.ExpandCurrentPrefab();
             return false;
         }
 
@@ -687,7 +687,7 @@ namespace BetterLegacy.Patchers
             {
                 RTEditor.inst.ShowWarningPopup("Are you sure you want to collapse this Prefab group and save the changes to the Internal Prefab?", delegate ()
                 {
-                    PrefabEditorManager.inst.CollapseCurrentPrefab();
+                    RTPrefabEditor.inst.CollapseCurrentPrefab();
                     EditorManager.inst.HideDialog("Warning Popup");
                 }, delegate ()
                 {
@@ -697,7 +697,7 @@ namespace BetterLegacy.Patchers
                 return false;
             }
 
-            PrefabEditorManager.inst.CollapseCurrentPrefab();
+            RTPrefabEditor.inst.CollapseCurrentPrefab();
             return false;
         }
 
@@ -755,7 +755,7 @@ namespace BetterLegacy.Patchers
                 Debug.LogErrorFormat("External Prefabs Error: \n{0}\n{1}\n{2}", Instance.externalPrefabDialog, Instance.externalSearch, Instance.externalContent);
             }
             Debug.Log("Loading External Prefabs Popup");
-            RTEditor.inst.StartCoroutine(PrefabEditorManager.inst.ExternalPrefabFiles(__0));
+            RTEditor.inst.StartCoroutine(RTPrefabEditor.inst.ExternalPrefabFiles(__0));
             return false;
         }
 
@@ -768,7 +768,7 @@ namespace BetterLegacy.Patchers
                 Debug.LogErrorFormat("Internal Prefabs Error: \n{0}\n{1}\n{2}", Instance.internalPrefabDialog, Instance.internalSearch, Instance.internalContent);
             }
             Debug.Log("Loading Internal Prefabs Popup");
-            RTEditor.inst.StartCoroutine(PrefabEditorManager.inst.InternalPrefabs(__0));
+            RTEditor.inst.StartCoroutine(RTPrefabEditor.inst.InternalPrefabs(__0));
             return false;
         }
 
@@ -795,7 +795,7 @@ namespace BetterLegacy.Patchers
             }
 
             EditorManager.inst.ShowDialog("Prefab Selector");
-            PrefabEditorManager.inst.RenderPrefabObjectDialog(ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>());
+            RTPrefabEditor.inst.RenderPrefabObjectDialog(ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>());
 
             return false;
         }
@@ -804,7 +804,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool OpenDialogPrefix()
         {
-            PrefabEditorManager.inst.OpenDialog();
+            RTPrefabEditor.inst.OpenDialog();
 
             return false;
         }
@@ -813,7 +813,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool OpenPopupPrefix()
         {
-            PrefabEditorManager.inst.OpenPopup();
+            RTPrefabEditor.inst.OpenPopup();
 
             return false;
         }
@@ -839,7 +839,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool AddPrefabObjectToLevelPrefix(BasePrefab __0)
         {
-            PrefabEditorManager.inst.AddPrefabObjectToLevel(__0);
+            RTPrefabEditor.inst.AddPrefabObjectToLevel(__0);
             return false;
         }
     }

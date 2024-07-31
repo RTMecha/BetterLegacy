@@ -17,13 +17,13 @@ using UnityEngine.UI;
 
 namespace BetterLegacy.Editor.Managers
 {
-    public class ThemeEditorManager : MonoBehaviour
+    public class RTThemeEditor : MonoBehaviour
     {
-        public static ThemeEditorManager inst;
+        public static RTThemeEditor inst;
 
         public bool loadingThemes = false;
 
-        public static void Init(ThemeEditor themeEditor) => themeEditor?.gameObject?.AddComponent<ThemeEditorManager>();
+        public static void Init() => ThemeEditor.inst?.gameObject?.AddComponent<RTThemeEditor>();
 
         public List<BeatmapTheme> AllThemes => DataManager.inst.AllThemes.Select(x => x as BeatmapTheme).ToList();
 

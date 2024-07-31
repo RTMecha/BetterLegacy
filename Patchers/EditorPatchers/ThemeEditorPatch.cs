@@ -42,7 +42,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool DeleteThemePrefix(DataManager.BeatmapTheme __0)
         {
-            ThemeEditorManager.inst.DeleteTheme((BeatmapTheme)__0);
+            RTThemeEditor.inst.DeleteTheme((BeatmapTheme)__0);
             return false;
         }
 
@@ -50,7 +50,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SaveThemePrefix(DataManager.BeatmapTheme __0)
         {
-            ThemeEditorManager.inst.SaveTheme((BeatmapTheme)__0);
+            RTThemeEditor.inst.SaveTheme((BeatmapTheme)__0);
             return false;
         }
 
