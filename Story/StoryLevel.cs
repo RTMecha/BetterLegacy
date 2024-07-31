@@ -10,6 +10,8 @@ namespace BetterLegacy.Story
 {
     public class StoryLevel
     {
+        public string name;
+
         public string json;
 
         public string jsonMetadata;

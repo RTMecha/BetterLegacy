@@ -8,6 +8,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers.Networking;
 using System.IO.Compression;
+using BetterLegacy.Core.Data;
 
 namespace BetterLegacy.Story
 {
@@ -49,6 +50,8 @@ namespace BetterLegacy.Story
 
         public List<StoryLevel> storyLevels = new List<StoryLevel>();
 
+        public static StoryLevel CurrentStoryLevel { get; set; }
+
         public IEnumerator Download(System.Action onComplete = null)
         {
             yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadBytes(StoryAssetsURL, (float percentage) => { }, (byte[] bytes) =>
@@ -71,22 +74,42 @@ namespace BetterLegacy.Story
             yield break;
         }
 
+        public IEnumerator Play(string name)
+        {
+            StoryLevel storyLevel = LoadLevel(name);
+
+            MetaData.Current = MetaData.Parse(storyLevel.jsonMetadata);
+            GameData.Current = GameData.Parse(storyLevel.json);
+
+            AudioManager.inst.PlayMusic(null, storyLevel.song);
+
+            yield break;
+        }
+
         public StoryLevel LoadLevel(string name)
         {
+            if (storyLevels.Has(x => x.name == name))
+                return storyLevels.Find(x => x.name == name);
+
             var icon = covers.LoadAsset<Sprite>($"{name}.jpg");
             var song = songs.LoadAsset<AudioClip>($"{name}.ogg");
             var level = levels.LoadAsset<TextAsset>($"{name}level.json");
             var metadata = levels.LoadAsset<TextAsset>($"{name}metadata.json");
             var players = levels.LoadAsset<TextAsset>($"{name}players.json");
 
-            return new StoryLevel
+            var storyLevel = new StoryLevel
             {
+                name = name,
                 icon = icon,
                 song = song,
                 json = level.text,
                 jsonMetadata = metadata.text,
                 jsonPlayers = players.text,
             };
+
+            storyLevels.Add(storyLevel);
+
+            return storyLevel;
         }
 
         public void Load()
@@ -136,6 +159,7 @@ namespace BetterLegacy.Story
 
             //    var storyLevel = new StoryLevel
             //    {
+            //        name = name,
             //        icon = icon,
             //        song = song,
             //        json = level.text,
