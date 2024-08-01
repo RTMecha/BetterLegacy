@@ -63,6 +63,30 @@ namespace BetterLegacy.Core.Animation
             }
         }
 
+        public void Interpolate(float t, bool runOnComplete = false)
+        {
+            if (animationHandlers == null || animationHandlers.Count < 1)
+                return;
+
+            for (int i = 0; i < animationHandlers.Count; i++)
+            {
+                var anim = animationHandlers[i];
+
+                if (anim.Length >= t)
+                {
+                    if (runOnComplete)
+                        anim.completed = false;
+                    anim.Interpolate(t);
+                }
+                else if (runOnComplete && !anim.completed)
+                {
+                    anim.completed = true;
+                    anim.Completed();
+                }
+            }
+
+        }
+
         public string id;
         public string name;
 
