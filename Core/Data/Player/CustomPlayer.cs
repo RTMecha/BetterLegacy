@@ -85,7 +85,7 @@ namespace BetterLegacy.Core.Data.Player
             set
             {
                 health = Mathf.Clamp(value, 0, MaxHealth);
-                if (Player)
+                if (Player && Player.rb)
                     Player.UpdateTail(health, Player.rb.position);
             }
         }
