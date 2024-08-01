@@ -74,50 +74,6 @@ namespace BetterLegacy.Core
             return copy;
         }
 
-        public static void GetComponentAndPerformAction<T>(this GameObject gameObject, Action<T> action)
-        {
-            if (gameObject.TryGetComponent(out T result))
-                action(result);
-        }
-
-        public static void GetComponentAndPerformAction<T>(this Transform transform, Action<T> action)
-        {
-            if (transform.gameObject.TryGetComponent(out T result))
-                action(result);
-        }
-
-        public static void GetComponentsAndPerformActions<T>(this GameObject gameObject, params ComponentAction[] componentActions)
-        {
-            for (int i = 0; i < componentActions.Length; i++)
-            {
-                var comp = gameObject.GetComponent(componentActions[i].Type);
-                if (comp)
-                    componentActions[i].Action?.Invoke(comp);
-            }
-        }
-
-        public static void GetComponentsAndPerformActions(this GameObject gameObject, Type[] types, Action<Component>[] actions)
-        {
-            for (int i = 0; i < types.Length; i++)
-            {
-                var comp = gameObject.GetComponent(types[i]);
-                if (comp)
-                    actions[i]?.Invoke(comp);
-            }
-        }
-
-        public static RectTransform GetChildRT(this Transform transform, int index)
-        {
-            var child = transform.GetChild(index);
-            return child is RectTransform rectTransform ? rectTransform : null;
-        }
-
-        public static RectTransform FindRT(this Transform transform, string n)
-        {
-            var find = transform.Find(n);
-            return find is RectTransform rectTransform ? rectTransform : null;
-        }
-
         public static RectTransform AsRT(this Transform transform) => (RectTransform)transform;
 
         #endregion
@@ -212,19 +168,6 @@ namespace BetterLegacy.Core
         }
 
         /// <summary>
-        /// Gets every child connected to the beatmap objects' base parent.
-        /// </summary>
-        /// <param name="beatmapObject"></param>
-        /// <returns>A full list tree with every child object rooted from the base parent.</returns>
-        public static List<List<BaseBeatmapObject>> GetStartTree(this BaseBeatmapObject beatmapObject)
-        {
-            var parentChain = beatmapObject.GetParentChain();
-            var parentTop = parentChain[parentChain.Count - 1];
-
-            return parentTop.GetChildChain();
-        }
-
-        /// <summary>
         /// Gets beatmap object by id from any beatmap object list.
         /// </summary>
         /// <param name="beatmapObjects"></param>
@@ -233,91 +176,11 @@ namespace BetterLegacy.Core
         public static BaseBeatmapObject ID(this List<BaseBeatmapObject> beatmapObjects, string _id) => beatmapObjects.Find(x => x.id == _id);
 
         /// <summary>
-        /// Gets all beatmap objects that match the provided name.
-        /// </summary>
-        /// <param name="beatmapObjects"></param>
-        /// <param name="_name"></param>
-        /// <returns>A list of beatmap objects with a specific name.</returns>
-        public static List<BaseBeatmapObject> AllName(this List<BaseBeatmapObject> beatmapObjects, string _name) => beatmapObjects.FindAll(x => x.name == _name);
-
-        /// <summary>
-        /// Gets all beatmap objects that contain the provided name.
-        /// </summary>
-        /// <param name="beatmapObjects"></param>
-        /// <param name="_name"></param>
-        /// <returns>A list of beatmap objects with a specified name contained in its own.</returns>
-        public static List<BaseBeatmapObject> AllNameContains(this List<BaseBeatmapObject> beatmapObjects, string _name) => beatmapObjects.FindAll(x => x.name.Contains(_name));
-
-        /// <summary>
-        /// Tries to get the parent of the beatmap object.
-        /// </summary>
-        /// <param name="beatmapObject"></param>
-        /// <param name="result"></param>
-        /// <returns>True if parent is not null, otherwise false.</returns>
-        public static bool TryGetParent(this BaseBeatmapObject beatmapObject, out BaseBeatmapObject result)
-        {
-            var p = beatmapObject.GetParent();
-            result = p;
-            return p != null;
-        }
-
-        /// <summary>
         /// Gets the parent of the beatmap object.
         /// </summary>
         /// <param name="beatmapObject"></param>
         /// <returns>Parent of the beatmap object.</returns>
         public static BaseBeatmapObject GetParent(this BaseBeatmapObject beatmapObject) => DataManager.inst.gameData.beatmapObjects.Find(x => x.id == beatmapObject.parent);
-
-        public static bool TrySetParent(this BaseBeatmapObject beatmapObject, string id)
-        {
-            if (DataManager.inst.gameData.beatmapObjects.Has(x => x.id == id))
-            {
-                beatmapObject.parent = id;
-                Updater.UpdateProcessor(beatmapObject);
-                return true;
-            }
-            return false;
-        }
-
-        public static DataManager.BeatmapTheme CreateTheme(this DataManager dataManager, string _name, string _id, Color _bg, Color _gui, List<Color> _players, List<Color> _objects, List<Color> _bgs)
-        {
-            var beatmapTheme = new DataManager.BeatmapTheme();
-
-            beatmapTheme.name = _name;
-            beatmapTheme.id = _id;
-            beatmapTheme.backgroundColor = _bg;
-            beatmapTheme.guiColor = _gui;
-            beatmapTheme.playerColors = _players;
-            beatmapTheme.objectColors = _objects;
-            beatmapTheme.backgroundColors = _bgs;
-
-            return beatmapTheme;
-        }
-
-        public static BaseEventKeyframe NextEventKeyframe(this BaseBeatmapObject beatmapObject, int type) => beatmapObject.events[type].Find(x => x.eventTime > AudioManager.inst.CurrentAudioSource.time - beatmapObject.StartTime);
-
-        public static BaseEventKeyframe PrevEventKeyframe(this BaseBeatmapObject beatmapObject, int type)
-        {
-            var index = beatmapObject.events[type].FindIndex(x => x.eventTime > AudioManager.inst.CurrentAudioSource.time - beatmapObject.StartTime) - 1;
-            if (index < 0)
-                index = 0;
-
-            return beatmapObject.events[type][index];
-        }
-
-        public static GameObject GetShape(this List<ObjectManager.ObjectPrefabHolder> prefabs, int s, int so, bool includeShape = true)
-        {
-            int _s = Mathf.Clamp(s, 0, prefabs.Count - 1);
-            int _so = Mathf.Clamp(so, 0, prefabs[_s].options.Count - 1);
-
-            if (!includeShape && (_s == 4 || _s == 6))
-            {
-                _s = 0;
-                _so = 0;
-            }
-
-            return prefabs[_s].options[_so];
-        }
 
         public static BasePrefab GetPrefab(this BasePrefabObject prefabObject) => DataManager.inst.gameData.prefabs.Find(x => x.ID == prefabObject.prefabID);
 
@@ -340,14 +203,6 @@ namespace BetterLegacy.Core
             for (int i = 0; i < ts.Length; i++)
                 array[i] = ts[i];
             return array;
-        }
-
-        public static Dictionary<TKey, TValue> Clone<TKey, TValue>(this Dictionary<TKey, TValue> keyValuePairs)
-        {
-            var dictionary = new Dictionary<TKey, TValue>();
-            foreach (var d in keyValuePairs)
-                dictionary.Add(d.Key, d.Value);
-            return dictionary;
         }
 
         public static float Interpolate(this BaseBeatmapObject beatmapObject, int type, int value)
@@ -511,9 +366,6 @@ namespace BetterLegacy.Core
 
         #region Data Extensions
 
-        public static byte[] ToBytes(this string str) => Encoding.ASCII.GetBytes(str);
-        public static string ToString(this byte[] bytes) => Encoding.ASCII.GetString(bytes);
-
         public static bool Has<T>(this List<T> ts, Predicate<T> predicate) => ts.Find(predicate) != null;
 
         public static void For<T>(this T[] ts, Action<T, int> action)
@@ -536,8 +388,11 @@ namespace BetterLegacy.Core
             var values = ts.Select(value);
 
             for (int i = 0; i < keys.Count(); i++)
-                if (!dictionary.ContainsKey(keys.ElementAt(i)))
-                    dictionary.Add(keys.ElementAt(i), values.ElementAt(i));
+            {
+                var k = keys.ElementAt(i);
+                if (!dictionary.ContainsKey(k))
+                    dictionary.Add(k, values.ElementAt(i));
+            }
 
             return dictionary;
         }
@@ -557,18 +412,9 @@ namespace BetterLegacy.Core
 
         public static List<string> GetLines(this string str) => str.Split(new string[] { "\n", "\n\r", "\r" }, StringSplitOptions.RemoveEmptyEntries).ToList();
 
-        public static T Get<T>(this List<object> list, int index) => (T)list[index];
-
         public static T Get<TKey, T>(this Dictionary<TKey, object> keyValuePairs, TKey key) => (T)keyValuePairs[key];
 
         public static Vector2 ToVector2(this Vector3 _v) => new Vector2(_v.x, _v.y);
-
-        public static List<T> ForEachReturn<T>(this List<T> ts, Action<T> action)
-        {
-            ts.ForEach(action);
-
-            return ts;
-        }
 
         #endregion
 
@@ -938,29 +784,11 @@ namespace BetterLegacy.Core
 
         public static void Save(this Sprite sprite, string path) => SpriteManager.SaveSprite(sprite, path);
 
-        public static string ColorToHex(Color32 color) => color.r.ToString("X2") + color.g.ToString("X2") + color.b.ToString("X2") + color.a.ToString("X2");
-
         public static bool TryGetComponent<T>(this GameObject gameObject, out T result)
         {
             var t = gameObject.GetComponent<T>();
             result = t;
             return t != null;
-        }
-
-        public static Component ReplaceComponent(this Component component, Component newComponent)
-        {
-            var gameObject = component.gameObject;
-
-            Object.DestroyImmediate(component);
-
-            try
-            {
-                return gameObject.AddComponent(newComponent.GetType());
-            }
-            catch
-            {
-                return null;
-            }
         }
 
         public static T GetDefault<T>(this List<T> list, int index, T defaultValue) => index >= 0 && index < list.Count - 1 ? list[index] : defaultValue;
@@ -973,24 +801,11 @@ namespace BetterLegacy.Core
                 keyValuePairs[key] = value;
         }
 
-        public static void Add<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, KeyValuePair<TKey, TValue> keyValuePair)
-        {
-            dictionary.Add(keyValuePair.Key, keyValuePair.Value);
-        }
-
         public static bool TryFind<T>(this List<T> ts, Predicate<T> match, out T item)
         {
             var t = ts.Find(match);
             item = t;
             return t != null;
-        }
-
-        public static Type[] ToTypes<T>(this T[] ts)
-        {
-            var t = new Type[ts.Length];
-            for (int i = 0; i < t.Length; i++)
-                t[i] = ts[i].GetType();
-            return t;
         }
 
         public static Vector3 X(this Vector3 vector3) => new Vector3(vector3.x, 0f, 0f);

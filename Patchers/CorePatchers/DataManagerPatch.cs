@@ -102,16 +102,20 @@ namespace BetterLegacy.Patchers
             __instance.BeatmapThemes[7].name = "PA White On Black";
             __instance.BeatmapThemes[8].name = "PA Black On White";
 
-            __instance.BeatmapThemes.Add(DataManager.inst.CreateTheme("PA Example Theme", "9",
-                LSColors.HexToColor("212121"),
-                LSColors.HexToColorAlpha("504040FF"),
-                new List<Color>
+            __instance.BeatmapThemes.Add(new BaseBeatmapTheme
+            {
+                name = "PA Example Theme",
+                id = "9",
+                backgroundColor = LSColors.HexToColor("212121"),
+                guiColor = LSColors.HexToColorAlpha("504040"),
+                playerColors = new List<Color>
                 {
                     LSColors.HexToColorAlpha("E57373FF"),
                     LSColors.HexToColorAlpha("64B5F6FF"),
                     LSColors.HexToColorAlpha("81C784FF"),
                     LSColors.HexToColorAlpha("FFB74DFF")
-                }, new List<Color>
+                },
+                objectColors = new List<Color>
                 {
                     LSColors.HexToColorAlpha("3F59FCFF"),
                     LSColors.HexToColorAlpha("3AD4F5FF"),
@@ -122,7 +126,8 @@ namespace BetterLegacy.Patchers
                     LSColors.HexToColorAlpha("E91E6345"),
                     LSColors.HexToColorAlpha("FFFFFFFF"),
                     LSColors.HexToColorAlpha("000000FF")
-                }, new List<Color>
+                },
+                backgroundColors = new List<Color>
                 {
                     LSColors.HexToColor("212121"),
                     LSColors.HexToColor("E91E63"),
@@ -133,7 +138,8 @@ namespace BetterLegacy.Patchers
                     LSColors.HexToColor("E91E63"),
                     LSColors.HexToColor("E91E63"),
                     LSColors.HexToColor("E91E63")
-                }));
+                }
+            });
 
             foreach (var beatmapTheme in __instance.BeatmapThemes)
             {
@@ -159,7 +165,7 @@ namespace BetterLegacy.Patchers
             for (int i = 0; i < __instance.BeatmapThemes.Count; i++)
             {
                 var beatmapTheme = __instance.BeatmapThemes[i];
-                __instance.BeatmapThemes[i] = new Core.Data.BeatmapTheme
+                __instance.BeatmapThemes[i] = new BeatmapTheme
                 {
                     id = beatmapTheme.id,
                     name = beatmapTheme.name,
