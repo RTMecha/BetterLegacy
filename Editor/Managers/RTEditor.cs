@@ -8278,20 +8278,19 @@ namespace BetterLegacy.Editor.Managers
             layerType = LayerType.Objects;
             SetLayer(0);
 
-            for (int i = 0; i < ObjEditor.inst.TimelineParents.Count; i++)
-                LSHelpers.DeleteChildren(ObjEditor.inst.TimelineParents[i]);
-
             WindowController.ResetTitle();
 
             for (int i = 0; i < timelineObjects.Count; i++)
             {
                 var timelineObject = timelineObjects[i];
                 Destroy(timelineObject.GameObject);
-                timelineObject.Data = null;
-                timelineObject.Text = null;
-                timelineObject.Hover = null;
-                timelineObject.Image = null;
-                timelineObject.GameObject = null;
+
+                for (int j = 0; j < timelineObject.InternalSelections.Count; j++)
+                {
+                    var kf = timelineObject.InternalSelections[j];
+                    Destroy(kf.GameObject);
+                }
+                timelineObjects[i] = null;
             }
             timelineObjects.Clear();
 
@@ -8299,13 +8298,31 @@ namespace BetterLegacy.Editor.Managers
             {
                 var timelineObject = timelineKeyframes[i];
                 Destroy(timelineObject.GameObject);
-                timelineObject.Data = null;
-                timelineObject.Text = null;
-                timelineObject.Hover = null;
-                timelineObject.Image = null;
-                timelineObject.GameObject = null;
+                timelineKeyframes[i] = null;
             }
             timelineKeyframes.Clear();
+
+            for (int i = 0; i < ObjEditor.inst.TimelineParents.Count; i++)
+                LSHelpers.DeleteChildren(ObjEditor.inst.TimelineParents[i]);
+
+            if (GameData.IsValid)
+            {
+                var bgs = GameData.Current.BackgroundObjects;
+                for (int i = 0; i < bgs.Count; i++)
+                {
+                    var bg = bgs[i];
+                    for (int j = 0; j < bg.gameObjects.Count; j++)
+                    {
+                        Destroy(bg.gameObjects[j]);
+                        bg.gameObjects[j] = null;
+                    }
+                    for (int j = 0; j < bg.renderers.Count; j++)
+                        bg.renderers[j] = null;
+                    for (int j = 0; j < bg.transforms.Count; j++)
+                        bg.transforms[j] = null;
+                    bg.gameObjects.Clear();
+                }
+            }
 
             Updater.UpdateObjects(false);
 
@@ -8356,7 +8373,7 @@ namespace BetterLegacy.Editor.Managers
             if (RTFile.FileExists(fullPath + "/level.ogg"))
                 yield return this.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip($"file://{fullPath}/level.ogg", AudioType.OGGVORBIS, x => song = x, onError => { hadError = true; errorMessage = onError; }));
             else if (RTFile.FileExists(fullPath + "/level.wav"))
-                yield return this.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + fullPath + "/level.wav", AudioType.WAV, x => song = x, onError => { hadError = true; errorMessage = onError; }));
+                yield return this.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip($"file://{fullPath}/level.wav", AudioType.WAV, x => song = x, onError => { hadError = true; errorMessage = onError; }));
             else if (RTFile.FileExists(fullPath + "/level.mp3"))
                 yield return song = LSAudio.CreateAudioClipUsingMP3File(fullPath + "/level.mp3");
 
