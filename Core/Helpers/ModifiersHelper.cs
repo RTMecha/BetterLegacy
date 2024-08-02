@@ -2533,8 +2533,8 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "enableObject":
                         {
-                            if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
-                                levelObject.transformChain[0].gameObject.SetActive(true);
+                            if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.top)
+                                levelObject.top.gameObject.SetActive(true);
 
                             break;
                         }
@@ -2557,10 +2557,8 @@ namespace BetterLegacy.Core.Helpers
                                 var childList = list[i];
                                 for (int j = 0; j < childList.Count; j++)
                                 {
-                                    if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
-                                    {
-                                        levelObject.transformChain[0].gameObject.SetActive(true);
-                                    }
+                                    if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.top)
+                                        levelObject.top.gameObject.SetActive(true);
                                 }
                             }
 
@@ -2574,8 +2572,8 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 foreach (var beatmapObject in list)
                                 {
-                                    if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
-                                        levelObject.transformChain[0].gameObject.SetActive(true);
+                                    if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
+                                        levelObject.top.gameObject.SetActive(true);
                                 }
                             }
 
@@ -2604,8 +2602,8 @@ namespace BetterLegacy.Core.Helpers
                                 var childList = list[i];
                                 for (int j = 0; j < childList.Count; j++)
                                 {
-                                    if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
-                                        levelObject.transformChain[0].gameObject.SetActive(true);
+                                    if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.top)
+                                        levelObject.top.gameObject.SetActive(true);
                                 }
                             }
 
@@ -2613,8 +2611,8 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "disableObject":
                         {
-                            if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
-                                levelObject.transformChain[0].gameObject.SetActive(false);
+                            if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.top)
+                                levelObject.top.gameObject.SetActive(false);
 
                             break;
                         }
@@ -2637,10 +2635,8 @@ namespace BetterLegacy.Core.Helpers
                                 var childList = list[i];
                                 for (int j = 0; j < childList.Count; j++)
                                 {
-                                    if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
-                                    {
-                                        levelObject.transformChain[0].gameObject.SetActive(false);
-                                    }
+                                    if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.top)
+                                        levelObject.top.gameObject.SetActive(false);
                                 }
                             }
 
@@ -2654,10 +2650,8 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 foreach (var beatmapObject in list)
                                 {
-                                    if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
-                                    {
-                                        levelObject.transformChain[0].gameObject.SetActive(false);
-                                    }
+                                    if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
+                                        levelObject.top.gameObject.SetActive(false);
                                 }
                             }
 
@@ -2686,10 +2680,8 @@ namespace BetterLegacy.Core.Helpers
                                 var childList = list[i];
                                 for (int j = 0; j < childList.Count; j++)
                                 {
-                                    if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
-                                    {
-                                        levelObject.transformChain[0].gameObject.SetActive(false);
-                                    }
+                                    if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.top)
+                                        levelObject.top.gameObject.SetActive(false);
                                 }
                             }
 
@@ -4726,10 +4718,9 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "enableObject":
                     {
-                        if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
-                        {
-                            levelObject.transformChain[0].gameObject.SetActive(false);
-                        }
+                        if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.top)
+                            levelObject.top.gameObject.SetActive(false);
+
                         break;
                     }
                 case "enableObjectOther":
@@ -4740,10 +4731,8 @@ namespace BetterLegacy.Core.Helpers
                         {
                             foreach (var beatmapObject in list)
                             {
-                                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
-                                {
-                                    levelObject.transformChain[0].gameObject.SetActive(false);
-                                }
+                                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
+                                    levelObject.top.gameObject.SetActive(false);
                             }
                         }
 
@@ -4768,10 +4757,8 @@ namespace BetterLegacy.Core.Helpers
                             var childList = list[i];
                             for (int j = 0; j < childList.Count; j++)
                             {
-                                if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
-                                {
-                                    levelObject.transformChain[0].gameObject.SetActive(false);
-                                }
+                                if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.top)
+                                    levelObject.top.gameObject.SetActive(false);
                             }
                         }
 
@@ -4800,10 +4787,8 @@ namespace BetterLegacy.Core.Helpers
                             var childList = list[i];
                             for (int j = 0; j < childList.Count; j++)
                             {
-                                if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
-                                {
-                                    levelObject.transformChain[0].gameObject.SetActive(false);
-                                }
+                                if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.top)
+                                    levelObject.top.gameObject.SetActive(false);
                             }
                         }
 
@@ -4813,9 +4798,9 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "disableObject":
                     {
-                        if (!modifier.hasChanged && modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
+                        if (!modifier.hasChanged && modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.top)
                         {
-                            levelObject.transformChain[0].gameObject.SetActive(true);
+                            levelObject.top.gameObject.SetActive(true);
                             modifier.hasChanged = true;
                         }
 
@@ -4829,10 +4814,8 @@ namespace BetterLegacy.Core.Helpers
                         {
                             foreach (var beatmapObject in list)
                             {
-                                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
-                                {
-                                    levelObject.transformChain[0].gameObject.SetActive(true);
-                                }
+                                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
+                                    levelObject.top.gameObject.SetActive(true);
                             }
                         }
 
@@ -4849,10 +4832,8 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 for (int o = 0; o < cc.Count; o++)
                                 {
-                                    if (cc[o] != null && Updater.TryGetObject(cc[o], out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
-                                    {
-                                        levelObject.transformChain[0].gameObject.SetActive(true);
-                                    }
+                                    if (cc[o] != null && Updater.TryGetObject(cc[o], out LevelObject levelObject) && levelObject.top)
+                                        levelObject.top.gameObject.SetActive(true);
                                 }
                             }
 
@@ -4865,8 +4846,8 @@ namespace BetterLegacy.Core.Helpers
                         {
                             for (int o = 0; o < cc.Count; o++)
                             {
-                                if (cc[o] != null && Updater.TryGetObject(cc[o], out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
-                                    levelObject.transformChain[0].gameObject.SetActive(true);
+                                if (cc[o] != null && Updater.TryGetObject(cc[o], out LevelObject levelObject) && levelObject.top)
+                                    levelObject.top.gameObject.SetActive(true);
                             }
                         }
 
@@ -4895,10 +4876,8 @@ namespace BetterLegacy.Core.Helpers
                             var childList = list[i];
                             for (int j = 0; j < childList.Count; j++)
                             {
-                                if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.transformChain != null && levelObject.transformChain.Count > 0 && levelObject.transformChain[0] != null)
-                                {
-                                    levelObject.transformChain[0].gameObject.SetActive(true);
-                                }
+                                if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.top)
+                                    levelObject.top.gameObject.SetActive(true);
                             }
                         }
 

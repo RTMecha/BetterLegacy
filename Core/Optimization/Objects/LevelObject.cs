@@ -20,11 +20,9 @@ namespace BetterLegacy.Core.Optimization.Objects
 
         public float depth;
         public List<LevelParentObject> parentObjects;
-        public readonly VisualObject visualObject;
+        public VisualObject visualObject;
 
-        public readonly List<Transform> transformChain = new List<Transform>();
-
-        Data.BeatmapObject beatmapObject;
+        public Data.BeatmapObject beatmapObject;
 
         public bool cameraParent;
         public bool positionParent;
@@ -42,6 +40,45 @@ namespace BetterLegacy.Core.Optimization.Objects
         public Vector3 prefabOffsetPosition;
         public Vector3 prefabOffsetScale;
         public Vector3 prefabOffsetRotation;
+
+        public Transform top;
+
+        public void Clear()
+        {
+            if (parentObjects != null)
+            {
+                for (int i = 0; i < parentObjects.Count; i++)
+                {
+                    var parentObject = parentObjects[i];
+                    parentObject.BeatmapObject = null;
+                    parentObject.GameObject = null;
+                    parentObject.ID = null;
+                    parentObject.Position3DSequence = null;
+                    parentObject.PositionSequence = null;
+                    parentObject.ScaleSequence = null;
+                    parentObject.RotationSequence = null;
+                }
+                parentObjects.Clear();
+            }
+
+            parentObjects = null;
+            colorSequence = null;
+            opacitySequence = null;
+            hueSequence = null;
+            satSequence = null;
+            valSequence = null;
+            top = null;
+            beatmapObject = null;
+
+            if (visualObject != null)
+            {
+                visualObject.GameObject = null;
+                visualObject.Collider = null;
+                visualObject.Renderer = null;
+                visualObject.Top = null;
+            }
+            visualObject = null;
+        }
 
         public void SetSequences(Sequence<Color> colorSequence, Sequence<float> opacitySequence, Sequence<float> hueSequence, Sequence<float> satSequence, Sequence<float> valSequence)
         {
@@ -78,16 +115,7 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             try
             {
-                this.parentObjects.Reverse();
-
-                transformChain.Add(this.parentObjects[0].Transform.parent);
-
-                transformChain.AddRange(this.parentObjects.Select(x => x.Transform));
-
-                this.parentObjects.Reverse();
-
-                if (this.visualObject != null && this.visualObject.GameObject)
-                    transformChain.Add(this.visualObject.GameObject.transform);
+                top = this.parentObjects[parentObjects.Count - 1].Transform.parent;
 
                 var pc = beatmapObject.GetParentChain();
 
@@ -175,31 +203,31 @@ namespace BetterLegacy.Core.Optimization.Objects
                 var x = EventManager.inst.cam.transform.position.x;
                 var y = EventManager.inst.cam.transform.position.y;
 
-                transformChain[0].localPosition = (new Vector3(x, y, 0f) * positionParentOffset)
+                top.localPosition = (new Vector3(x, y, 0f) * positionParentOffset)
                     + new Vector3(prefabOffsetPosition.x, prefabOffsetPosition.y, beatmapObject.background ? 20f : 0f)
                     + topPositionOffset;
             }
             else
-                transformChain[0].localPosition = new Vector3(prefabOffsetPosition.x, prefabOffsetPosition.y, beatmapObject.background ? 20f : 0f)
+                top.localPosition = new Vector3(prefabOffsetPosition.x, prefabOffsetPosition.y, beatmapObject.background ? 20f : 0f)
                     + topPositionOffset;
 
             if (scaleParent && cameraParent)
             {
                 float camOrthoZoom = EventManager.inst.cam.orthographicSize / 20f - 1f;
 
-                transformChain[0].localScale = (new Vector3(camOrthoZoom, camOrthoZoom, 1f) * scaleParentOffset) + prefabOffsetScale + topScaleOffset;
+                top.localScale = (new Vector3(camOrthoZoom, camOrthoZoom, 1f) * scaleParentOffset) + prefabOffsetScale + topScaleOffset;
             }
             else
-                transformChain[0].localScale = prefabOffsetScale + topScaleOffset;
+                top.localScale = prefabOffsetScale + topScaleOffset;
 
             if (rotationParent && cameraParent)
             {
                 var camRot = EventManager.inst.camParent.transform.rotation.eulerAngles;
 
-                transformChain[0].localRotation = Quaternion.Euler((camRot * rotationParentOffset) + prefabOffsetRotation + topRotationOffset);
+                top.localRotation = Quaternion.Euler((camRot * rotationParentOffset) + prefabOffsetRotation + topRotationOffset);
             }
             else
-                transformChain[0].localRotation = Quaternion.Euler(prefabOffsetRotation + topRotationOffset);
+                top.localRotation = Quaternion.Euler(prefabOffsetRotation + topRotationOffset);
 
             // Update parents
             float positionOffset = 0.0f;

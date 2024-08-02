@@ -8261,7 +8261,11 @@ namespace BetterLegacy.Editor.Managers
         /// <returns></returns>
         public IEnumerator LoadLevel(string fullPath, string autosave = "")
         {
+            // i have no idea what is causing the memory issue here
+
             EditorManager.inst.loading = true;
+
+            RTPlayer.JumpMode = false;
 
             string code = $"{fullPath}/EditorLoad.cs";
             if (RTFile.FileExists(code))
@@ -8278,6 +8282,30 @@ namespace BetterLegacy.Editor.Managers
                 LSHelpers.DeleteChildren(ObjEditor.inst.TimelineParents[i]);
 
             WindowController.ResetTitle();
+
+            for (int i = 0; i < timelineObjects.Count; i++)
+            {
+                var timelineObject = timelineObjects[i];
+                Destroy(timelineObject.GameObject);
+                timelineObject.Data = null;
+                timelineObject.Text = null;
+                timelineObject.Hover = null;
+                timelineObject.Image = null;
+                timelineObject.GameObject = null;
+            }
+            timelineObjects.Clear();
+
+            for (int i = 0; i < timelineKeyframes.Count; i++)
+            {
+                var timelineObject = timelineKeyframes[i];
+                Destroy(timelineObject.GameObject);
+                timelineObject.Data = null;
+                timelineObject.Text = null;
+                timelineObject.Hover = null;
+                timelineObject.Image = null;
+                timelineObject.GameObject = null;
+            }
+            timelineKeyframes.Clear();
 
             Updater.UpdateObjects(false);
 
@@ -8332,13 +8360,6 @@ namespace BetterLegacy.Editor.Managers
             else if (RTFile.FileExists(fullPath + "/level.mp3"))
                 yield return song = LSAudio.CreateAudioClipUsingMP3File(fullPath + "/level.mp3");
 
-            // Wait for the song.
-            while (song == null && !hadError)
-            {
-                CoreHelper.LogError($"bruh");
-                yield return null;
-            }
-
             if (hadError)
             {
                 bool audioExists = RTFile.FileExists(fullPath + "/level.ogg") || RTFile.FileExists(fullPath + "/level.wav") || RTFile.FileExists(fullPath + "/level.mp3");
@@ -8366,15 +8387,17 @@ namespace BetterLegacy.Editor.Managers
             {
                 try
                 {
-                    DataManager.inst.metaData = MetaData.Parse(JSON.Parse(rawMetadataJSON));
+                    MetaData.Current = null;
+                    MetaData.Current = MetaData.Parse(JSON.Parse(rawMetadataJSON));
 
                     if (MetaData.Current.arcadeID == null || MetaData.Current.arcadeID == "0" || MetaData.Current.arcadeID == "-1")
                         MetaData.Current.arcadeID = LSText.randomNumString(16);
 
-                    if (DataManager.inst.metaData.beatmap.game_version != "4.1.16" && DataManager.inst.metaData.beatmap.game_version != "20.4.4")
-                        rawJSON = LevelManager.UpdateBeatmap(rawJSON, DataManager.inst.metaData.beatmap.game_version);
+                    if (MetaData.Current.beatmap.game_version != "4.1.16" && MetaData.Current.beatmap.game_version != "20.4.4")
+                        rawJSON = LevelManager.UpdateBeatmap(rawJSON, MetaData.Current.beatmap.game_version);
 
-                    DataManager.inst.gameData = GameData.Parse(JSON.Parse(rawJSON), false);
+                    GameData.Current = null;
+                    GameData.Current = GameData.Parse(JSON.Parse(rawJSON), false);
                 }
                 catch (Exception ex)
                 {
@@ -8410,6 +8433,7 @@ namespace BetterLegacy.Editor.Managers
             if (EditorConfig.Instance.WaveformGenerate.Value)
             {
                 SetFileInfo($"Assigning Waveform Textures for [ {name} ]");
+                SetTimelineSprite(null);
                 StartCoroutine(AssignTimelineTexture());
             }
             else
@@ -8427,8 +8451,6 @@ namespace BetterLegacy.Editor.Managers
 
             SetFileInfo($"Updating states for [ {name} ]");
             CoreHelper.UpdateDiscordStatus($"Editing: {DataManager.inst.metaData.song.title}", "In Editor", "editor");
-
-            RTPlayer.JumpMode = false;
 
             PlayerManager.LoadGlobalModels();
             PlayerManager.RespawnPlayers();
@@ -8463,7 +8485,7 @@ namespace BetterLegacy.Editor.Managers
 
             SetAutoSave();
 
-            TriggerHelper.AddEventTrigger(timeField.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDelta(timeField, max: AudioManager.inst.CurrentAudioSource.clip.length) });
+            TriggerHelper.AddEventTriggerParams(timeField.gameObject, TriggerHelper.ScrollDelta(timeField, max: AudioManager.inst.CurrentAudioSource.clip.length));
 
             // Load Settings like timeline position, editor layer, bpm active, etc
             LoadSettings();

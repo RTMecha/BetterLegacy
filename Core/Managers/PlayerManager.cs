@@ -212,6 +212,7 @@ namespace BetterLegacy.Core.Managers
 
                 foreach (var str in list)
                 {
+                    PlayerModels[str] = null;
                     PlayerModels.Remove(str);
                 }
 
