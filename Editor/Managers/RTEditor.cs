@@ -10191,13 +10191,7 @@ namespace BetterLegacy.Editor.Managers
                                     TriggerHelper.AddEventTriggerParams(inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputField));
                                 }
 
-                                EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Slider_2, slider.gameObject, new List<Component>
-                                {
-                                    slider.transform.Find("Background").GetComponent<Image>(),
-                                    slider
-                                }, true, 1, SpriteManager.RoundedSide.W, true));
-
-                                EditorThemeManager.ApplyGraphic(slider.image, ThemeGroup.Slider_2_Handle, true);
+                                EditorThemeManager.ApplySlider(slider, slider.transform.Find("Background").GetComponent<Image>());
 
                                 break;
                             }

@@ -2390,7 +2390,7 @@ namespace BetterLegacy.Editor.Managers
                 }
 
                 //EditorManager.inst.ShowDialog("Browser Popup");
-                //RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".png" }, onSelectFile: delegate (string _val)
+                //RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".png" }, onSelectFile: _val =>
                 //{
                 //    character.CharacterSprite = SpriteManager.LoadSprite(_val);
 
@@ -3044,23 +3044,10 @@ namespace BetterLegacy.Editor.Managers
 
             timeline.Content = gameObject.transform.Find("Scroll/Viewport/Content");
 
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.List_Button_1_Normal, gameObject, new List<Component>
-            {
-                gameObject.GetComponent<Image>(),
-            }, true, 1, SpriteManager.RoundedSide.W));
+            EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.List_Button_1, true);
 
             var scrollbar = gameObject.transform.Find("Scrollbar");
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.List_Button_1_Normal, scrollbar.gameObject, new List<Component>
-            {
-                scrollbar.GetComponent<Image>(),
-            }, true, 1, SpriteManager.RoundedSide.Bottom));
-
-            var scrollbarHandle = scrollbar.transform.Find("Sliding Area/Handle").gameObject;
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Scrollbar_1_Handle, scrollbarHandle.gameObject, new List<Component>
-            {
-                scrollbarHandle.GetComponent<Image>(),
-                scrollbar.GetComponent<Scrollbar>()
-            }, true, 1, SpriteManager.RoundedSide.W, true));
+            EditorThemeManager.ApplyScrollbar(scrollbar.GetComponent<Scrollbar>(), scrollbar.GetComponent<Image>(), ThemeGroup.List_Button_1_Normal, ThemeGroup.Scrollbar_1_Handle, scrollbarRoundedSide: SpriteManager.RoundedSide.Bottom);
 
             timeline.NameUI = gameObject.transform.Find("name").GetComponent<TextMeshProUGUI>();
             timeline.NameUI.text = timeline.Name;
@@ -3070,15 +3057,8 @@ namespace BetterLegacy.Editor.Managers
             edit.onClick.ClearAll();
             edit.onClick.AddListener(() => { OpenTimelineEditor(timeline); });
 
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Function_3, edit.gameObject, new List<Component>
-            {
-                edit.image,
-            }, true, 1, SpriteManager.RoundedSide.W));
-
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Function_3_Text, edit.transform.GetChild(0).gameObject, new List<Component>
-            {
-                edit.transform.GetChild(0).GetComponent<Image>(),
-            }));
+            EditorThemeManager.ApplyGraphic(edit.image, ThemeGroup.Function_3, true);
+            EditorThemeManager.ApplyGraphic(edit.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Function_3_Text, true);
 
             var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
             delete.button.onClick.ClearAll();
@@ -3566,7 +3546,7 @@ namespace BetterLegacy.Editor.Managers
 
                         level.Button = gameObject.GetComponent<Button>();
                         level.Button.onClick.ClearAll();
-                        level.Button.onClick.AddListener(delegate ()
+                        level.Button.onClick.AddListener(() =>
                         {
                             string path = $"{RTFile.ApplicationDirectory}beatmaps/{level.Path.Replace("\\", "/").Replace("/level.lsb", "")}";
                             if (!string.IsNullOrEmpty(level.Path) && RTFile.DirectoryExists(path) &&
@@ -3588,40 +3568,26 @@ namespace BetterLegacy.Editor.Managers
 
                         var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
                         delete.button.onClick.ClearAll();
-                        delete.button.onClick.AddListener(delegate ()
+                        delete.button.onClick.AddListener(() =>
                         {
                             Levels.RemoveAt(index);
                             UpdateTimeline();
                             inst.SaveTimelines();
                         });
 
-                        EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete, delete.gameObject, new List<Component>
-                        {
-                            delete.button.image,
-                        }, true, 1, SpriteManager.RoundedSide.W));
-
-                        EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete_Text, delete.image.gameObject, new List<Component>
-                        {
-                            delete.image,
-                        }));
+                        EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
+                        EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
 
                         var edit = gameObject.transform.Find("edit").GetComponent<Button>();
                         edit.onClick.ClearAll();
-                        edit.onClick.AddListener(delegate ()
+                        edit.onClick.AddListener(() =>
                         {
                             CoreHelper.Log($"Editing {Name}");
                             inst.OpenEventEditor(level);
                         });
 
-                        EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Function_3, edit.gameObject, new List<Component>
-                        {
-                            edit.image,
-                        }, true, 1, SpriteManager.RoundedSide.W));
-
-                        EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Function_3_Text, edit.transform.GetChild(0).gameObject, new List<Component>
-                        {
-                            edit.transform.GetChild(0).GetComponent<Image>(),
-                        }));
+                        EditorThemeManager.ApplyGraphic(edit.image, ThemeGroup.Function_3, true);
+                        EditorThemeManager.ApplyGraphic(edit.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Function_3_Text);
 
                         num++;
                     }
@@ -3629,7 +3595,7 @@ namespace BetterLegacy.Editor.Managers
                     Add = inst.timelineAddPrefab.Duplicate(Content, "add");
                     var button = Add.GetComponent<Button>();
                     button.onClick.ClearAll();
-                    button.onClick.AddListener(delegate ()
+                    button.onClick.AddListener(() =>
                     {
                         var level = new Event
                         {
@@ -3798,7 +3764,7 @@ namespace BetterLegacy.Editor.Managers
                     return;
                 }
 
-                inst.StartCoroutine(AlephNetworkManager.DownloadAudioClip(filePath, audioType, delegate (AudioClip audioClip)
+                inst.StartCoroutine(AlephNetworkManager.DownloadAudioClip(filePath, audioType, audioClip =>
                 {
                     inst.StopOST();
 

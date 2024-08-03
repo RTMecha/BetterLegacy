@@ -343,7 +343,7 @@ namespace BetterLegacy.Patchers
             // Layers
             var layersIF = singleInput.Duplicate(RTPrefabEditor.inst.prefabSelectorLeft.Find("editor"), "layers", 0).GetComponent<InputField>();
             layersIF.gameObject.AddComponent<ContrastColors>().Init(layersIF.textComponent, layersIF.image);
-            EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Null, layersIF.gameObject, new List<Component> { layersIF }, true, 1, SpriteManager.RoundedSide.W));
+            EditorThemeManager.AddGraphic(layersIF.image, ThemeGroup.Null, true);
             EditorThemeManager.AddSelectable(layersIF.transform.Find("<").GetComponent<Button>(), ThemeGroup.Function_2, false);
             EditorThemeManager.AddSelectable(layersIF.transform.Find(">").GetComponent<Button>(), ThemeGroup.Function_2, false);
 
@@ -469,15 +469,9 @@ namespace BetterLegacy.Patchers
             Destroy(prefabEditorData.Find("offset/>").gameObject);
 
             var offsetSlider = prefabEditorData.Find("offset/slider").GetComponent<Slider>();
-            EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Slider_2, offsetSlider.transform.Find("Background").gameObject, new List<Component>
-            {
-                offsetSlider.transform.Find("Background").GetComponent<Image>(),
-            }, true, 1, SpriteManager.RoundedSide.W));
+            EditorThemeManager.AddGraphic(offsetSlider.transform.Find("Background").GetComponent<Image>(), ThemeGroup.Slider_2, true);
 
-            EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Slider_2_Handle, offsetSlider.gameObject, new List<Component>
-            {
-                offsetSlider.image,
-            }, true, 1, SpriteManager.RoundedSide.W));
+            EditorThemeManager.AddGraphic(offsetSlider.image, ThemeGroup.Slider_2_Handle, true);
             EditorThemeManager.AddInputField(prefabEditorData.Find("offset/input").GetComponent<InputField>());
 
             var prefabType = GameObject.Find("Editor Systems/Editor GUI/sizer/main/TimelineBar/GameObject/event")
@@ -504,11 +498,11 @@ namespace BetterLegacy.Patchers
             prefabType.AddComponent<ContrastColors>().Init(prefabTypeText, prefabTypeButton.image);
             EditorThemeManager.AddGraphic(prefabTypeButton.image, ThemeGroup.Null, true);
 
-            ((RectTransform)prefabEditorData.Find("spacer")).sizeDelta = new Vector2(749f, 32f);
-            ((RectTransform)prefabEditorData.Find("type")).sizeDelta = new Vector2(749f, 48f);
+            prefabEditorData.Find("spacer").AsRT().sizeDelta = new Vector2(749f, 32f);
+            prefabEditorData.Find("type").AsRT().sizeDelta = new Vector2(749f, 48f);
 
             var descriptionGO = prefabEditorData.Find("name").gameObject.Duplicate(prefabEditorData, "description", 4);
-            ((RectTransform)descriptionGO.transform).sizeDelta = new Vector2(749f, 108f);
+            descriptionGO.transform.AsRT().sizeDelta = new Vector2(749f, 108f);
             var descriptionTitle = descriptionGO.transform.Find("title").GetComponent<Text>();
             descriptionTitle.text = "Desc";
             EditorThemeManager.AddLightText(descriptionTitle);
@@ -535,17 +529,7 @@ namespace BetterLegacy.Patchers
             EditorThemeManager.AddGraphic(Instance.dialog.Find("submit/submit/Text").GetComponent<Text>(), ThemeGroup.Add_Text);
 
             var scrollbar = selection.Find("scrollbar").gameObject;
-            EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Scrollbar_2, scrollbar, new List<Component>
-            {
-                scrollbar.GetComponent<Image>(),
-            }, true, 1, SpriteManager.RoundedSide.W));
-
-            var scrollbarHandle = scrollbar.transform.Find("sliding_area/Handle").gameObject;
-            EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Scrollbar_2_Handle, scrollbarHandle, new List<Component>
-            {
-                scrollbarHandle.GetComponent<Image>(),
-                scrollbar.GetComponent<Scrollbar>()
-            }, true, 1, SpriteManager.RoundedSide.W, true));
+            EditorThemeManager.AddScrollbar(scrollbar.GetComponent<Scrollbar>(), scrollbar.GetComponent<Image>(), ThemeGroup.Scrollbar_2, ThemeGroup.Scrollbar_2_Handle);
 
             return false;
         }

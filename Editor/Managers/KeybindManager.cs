@@ -93,10 +93,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             UpdateValues();
-        }
 
-        void FixedUpdate()
-        {
             if (!dragging)
                 return;
 
@@ -450,14 +447,11 @@ namespace BetterLegacy.Editor.Managers
 
         public void GenerateKeybindEditorPopupDialog()
         {
-            var popup = RTEditor.inst.GeneratePopup("Keybind List Popup", "Edit a Keybind", Vector2.zero, new Vector2(600f, 400f), delegate (string _val)
+            var popup = RTEditor.inst.GeneratePopup("Keybind List Popup", "Edit a Keybind", Vector2.zero, new Vector2(600f, 400f), _val =>
             {
                 searchTerm = _val;
                 RefreshKeybindPopup();
-            }, delegate ()
-            {
-                EditorManager.inst.HideDialog("Keybind List Popup");
-            }, "Search for keybind...");
+            }, placeholderText: "Search for keybind...");
             content = popup.Content;
 
             editSprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_edit.png");
@@ -471,7 +465,7 @@ namespace BetterLegacy.Editor.Managers
             Destroy(editorDialog.Find("Text").gameObject);
 
             var clickable = editorDialog.gameObject.AddComponent<Clickable>();
-            clickable.onEnable = delegate (bool enabled)
+            clickable.onEnable = enabled =>
             {
                 if (enabled)
                     return;
@@ -482,33 +476,27 @@ namespace BetterLegacy.Editor.Managers
                 RTEditor.inst.onKeySet = null;
             };
 
-            var data = new GameObject("data");
-            data.transform.SetParent(editorDialog);
-            data.transform.localScale = Vector3.one;
-            var dataRT = data.AddComponent<RectTransform>();
-            dataRT.sizeDelta = new Vector2(765f, 300f);
+            var data = Creator.NewUIObject("data", editorDialog);
+            data.transform.AsRT().sizeDelta = new Vector2(765f, 300f);
             var dataVLG = data.AddComponent<VerticalLayoutGroup>();
             dataVLG.childControlHeight = false;
             dataVLG.childForceExpandHeight = false;
             dataVLG.spacing = 4f;
 
-            var action = new GameObject("action");
-            action.transform.SetParent(dataRT);
-            action.transform.localScale = Vector3.one;
-            var actionRT = action.AddComponent<RectTransform>();
-            actionRT.sizeDelta = new Vector2(765f, 32f);
+            var action = Creator.NewUIObject("action", data.transform);
+            action.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
             var actionHLG = action.AddComponent<HorizontalLayoutGroup>();
             actionHLG.childControlWidth = false;
             actionHLG.childForceExpandWidth = false;
 
             var title = EditorManager.inst.GetDialog("Prefab Editor").Dialog.Find("data/name/title").gameObject
-                .Duplicate(actionRT, "title");
+                .Duplicate(action.transform, "title");
             title.GetComponent<Text>().text = "Action";
 
             var actionDropdown = EditorManager.inst.GetDialog("Object Editor").Dialog.Find("data/left/Scroll View/Viewport/Content/autokill/tod-dropdown").gameObject
-                .Duplicate(actionRT, "dropdown");
+                .Duplicate(action.transform, "dropdown");
 
-            ((RectTransform)actionDropdown.transform).sizeDelta = new Vector2(632f, 32f);
+            actionDropdown.transform.AsRT().sizeDelta = new Vector2(632f, 32f);
 
             this.actionDropdown = actionDropdown.GetComponent<Dropdown>();
             this.actionDropdown.onValueChanged.ClearAll();
@@ -516,37 +504,21 @@ namespace BetterLegacy.Editor.Managers
             this.actionDropdown.value = 0;
 
             // Keys list
-            var keysScrollRect = new GameObject("ScrollRect");
-            keysScrollRect.transform.SetParent(dataRT);
-            keysScrollRect.transform.localScale = Vector3.one;
-            var keysScrollRectRT = keysScrollRect.AddComponent<RectTransform>();
-            keysScrollRectRT.anchoredPosition = new Vector2(0f, 16f);
-            keysScrollRectRT.sizeDelta = new Vector2(400f, 250f);
+            var keysScrollRect = Creator.NewUIObject("ScrollRect", data.transform);
+            keysScrollRect.transform.AsRT().anchoredPosition = new Vector2(0f, 16f);
+            keysScrollRect.transform.AsRT().sizeDelta = new Vector2(400f, 250f);
             var keysScrollRectSR = keysScrollRect.AddComponent<ScrollRect>();
             keysScrollRectSR.horizontal = false;
 
-            var keysMaskGO = new GameObject("Mask");
-            keysMaskGO.transform.SetParent(keysScrollRectRT);
-            keysMaskGO.transform.localScale = Vector3.one;
-            var keysMaskRT = keysMaskGO.AddComponent<RectTransform>();
-            keysMaskRT.anchoredPosition = new Vector2(0f, 0f);
-            keysMaskRT.anchorMax = new Vector2(1f, 1f);
-            keysMaskRT.anchorMin = new Vector2(0f, 0f);
-            keysMaskRT.sizeDelta = new Vector2(0f, 0f);
+            var keysMaskGO = Creator.NewUIObject("Mask", keysScrollRect.transform);
+            UIManager.SetRectTransform(keysMaskGO.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
             var keysMaskImage = keysMaskGO.AddComponent<Image>();
             keysMaskImage.color = new Color(1f, 1f, 1f, 0.04f);
             keysMaskGO.AddComponent<Mask>();
 
-            var keysContentGO = new GameObject("Content");
-            keysContentGO.transform.SetParent(keysMaskRT);
-            keysContentGO.transform.localScale = Vector3.one;
-            keysContent = keysContentGO.AddComponent<RectTransform>();
-
-            keysContent.anchoredPosition = new Vector2(0f, -16f);
-            keysContent.anchorMax = new Vector2(0f, 1f);
-            keysContent.anchorMin = new Vector2(0f, 1f);
-            keysContent.pivot = new Vector2(0f, 1f);
-            keysContent.sizeDelta = new Vector2(400f, 250f);
+            var keysContentGO = Creator.NewUIObject("Content", keysMaskGO.transform);
+            keysContent = keysContentGO.transform.AsRT();
+            UIManager.SetRectTransform(keysContent, new Vector2(0f, -16f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(400f, 250f));
 
             var keysContentCSF = keysContentGO.AddComponent<ContentSizeFitter>();
             keysContentCSF.horizontalFit = ContentSizeFitter.FitMode.MinSize;
@@ -564,36 +536,20 @@ namespace BetterLegacy.Editor.Managers
             keysScrollRectSR.content = keysContent;
 
             // Settings list
-            var settingsScrollRect = new GameObject("ScrollRect Settings");
-            settingsScrollRect.transform.SetParent(dataRT);
-            settingsScrollRect.transform.localScale = Vector3.one;
-            var settingsScrollRectRT = settingsScrollRect.AddComponent<RectTransform>();
-            settingsScrollRectRT.anchoredPosition = new Vector2(0f, 16f);
-            settingsScrollRectRT.sizeDelta = new Vector2(400f, 250f);
+            var settingsScrollRect = Creator.NewUIObject("ScrollRect Settings", data.transform);
+            settingsScrollRect.transform.AsRT().anchoredPosition = new Vector2(0f, 16f);
+            settingsScrollRect.transform.AsRT().sizeDelta = new Vector2(400f, 250f);
             var settingsScrollRectSR = settingsScrollRect.AddComponent<ScrollRect>();
 
-            var settingsMaskGO = new GameObject("Mask");
-            settingsMaskGO.transform.SetParent(settingsScrollRectRT);
-            settingsMaskGO.transform.localScale = Vector3.one;
-            var settingsMaskRT = settingsMaskGO.AddComponent<RectTransform>();
-            settingsMaskRT.anchoredPosition = new Vector2(0f, 0f);
-            settingsMaskRT.anchorMax = new Vector2(1f, 1f);
-            settingsMaskRT.anchorMin = new Vector2(0f, 0f);
-            settingsMaskRT.sizeDelta = new Vector2(0f, 0f);
+            var settingsMaskGO = Creator.NewUIObject("Mask", settingsScrollRect.transform);
+            UIManager.SetRectTransform(settingsMaskGO.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
             var settingsMaskImage = settingsMaskGO.AddComponent<Image>();
             settingsMaskImage.color = new Color(1f, 1f, 1f, 0.04f);
             settingsMaskGO.AddComponent<Mask>();
 
-            var settingsContentGO = new GameObject("Content");
-            settingsContentGO.transform.SetParent(settingsMaskRT);
-            settingsContentGO.transform.localScale = Vector3.one;
-            settingsContent = settingsContentGO.AddComponent<RectTransform>();
-
-            settingsContent.anchoredPosition = new Vector2(0f, -16f);
-            settingsContent.anchorMax = new Vector2(0f, 1f);
-            settingsContent.anchorMin = new Vector2(0f, 1f);
-            settingsContent.pivot = new Vector2(0f, 1f);
-            settingsContent.sizeDelta = new Vector2(400f, 250f);
+            var settingsContentGO = Creator.NewUIObject("Content", settingsMaskGO.transform);
+            settingsContent = settingsContentGO.transform.AsRT();
+            UIManager.SetRectTransform(settingsContent, new Vector2(0f, -16f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(400f, 250f));
 
             var settingsContentCSF = settingsContentGO.AddComponent<ContentSizeFitter>();
             settingsContentCSF.horizontalFit = ContentSizeFitter.FitMode.MinSize;
@@ -612,9 +568,8 @@ namespace BetterLegacy.Editor.Managers
 
             // Key Prefab
             {
-                keyPrefab = new GameObject("Key");
-                var rectTransform = keyPrefab.AddComponent<RectTransform>();
-                rectTransform.sizeDelta = new Vector2(400f, 32f);
+                keyPrefab = Creator.NewUIObject("Key", transform);
+                keyPrefab.transform.AsRT().sizeDelta = new Vector2(400f, 32f);
                 var image = keyPrefab.AddComponent<Image>();
                 image.color = new Color(0.2f, 0.2f, 0.2f);
 
@@ -624,24 +579,24 @@ namespace BetterLegacy.Editor.Managers
                 horizontalLayoutGroup.spacing = 4;
 
                 var keyTypeDropdown = EditorManager.inst.GetDialog("Object Editor").Dialog.Find("data/left/Scroll View/Viewport/Content/autokill/tod-dropdown").gameObject
-                .Duplicate(rectTransform, "Key Type");
+                .Duplicate(keyPrefab.transform, "Key Type");
 
-                ((RectTransform)keyTypeDropdown.transform).sizeDelta = new Vector2(220f, 32f);
+                keyTypeDropdown.transform.AsRT().sizeDelta = new Vector2(220f, 32f);
 
                 var keyTypeDropdownDD = keyTypeDropdown.GetComponent<Dropdown>();
                 keyTypeDropdownDD.onValueChanged.ClearAll();
                 keyTypeDropdownDD.options = Enum.GetNames(typeof(Keybind.Key.Type)).Select(x => new Dropdown.OptionData(x)).ToList();
                 keyTypeDropdownDD.value = 0;
 
-                var watchKey = EditorPrefabHolder.Instance.Function1Button.Duplicate(rectTransform, "Key Watcher");
+                var watchKey = EditorPrefabHolder.Instance.Function1Button.Duplicate(keyPrefab.transform, "Key Watcher");
                 var text = watchKey.transform.GetChild(0).GetComponent<Text>();
                 text.text = "Set Key";
                 watchKey.transform.AsRT().sizeDelta = new Vector2(140f, 32f);
 
                 var keyCodeDropdown = EditorManager.inst.GetDialog("Object Editor").Dialog.Find("data/left/Scroll View/Viewport/Content/autokill/tod-dropdown").gameObject
-                .Duplicate(rectTransform, "Key Code");
+                .Duplicate(keyPrefab.transform, "Key Code");
 
-                ((RectTransform)keyCodeDropdown.transform).sizeDelta = new Vector2(360f, 32f);
+                keyCodeDropdown.transform.AsRT().sizeDelta = new Vector2(360f, 32f);
 
                 var keyCodeDropdownDD = keyCodeDropdown.GetComponent<Dropdown>();
                 keyCodeDropdownDD.onValueChanged.ClearAll();
@@ -660,23 +615,17 @@ namespace BetterLegacy.Editor.Managers
                     keyCodeDropdownDD.options.Add(new Dropdown.OptionData(str));
                 }
 
-                var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(rectTransform, "Delete");
+                var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(keyPrefab.transform, "Delete");
                 delete.transform.AsRT().anchoredPosition = new Vector2(744f, -16f);
             }
 
             EditorHelper.AddEditorDialog("Keybind Editor", editorDialog.gameObject);
 
-            EditorHelper.AddEditorDropdown("View Keybinds", "", "Edit", SpriteManager.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_keybind.png"), delegate ()
-            {
-                OpenPopup();
-            });
+            EditorHelper.AddEditorDropdown("Edit Keybinds", "", "Edit", SpriteManager.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_keybind.png"), OpenPopup);
 
             // Editor Themes
             {
-                EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Background_1, editorDialog.gameObject, new List<Component>
-                {
-                    editorDialog.GetComponent<Image>(),
-                }));
+                EditorThemeManager.AddGraphic(editorDialog.GetComponent<Image>(), ThemeGroup.Background_1);
 
                 EditorThemeManager.AddLightText(editorDialog.Find("data/action/title").GetComponent<Text>());
 
@@ -699,7 +648,7 @@ namespace BetterLegacy.Editor.Managers
             addText.text = "Add new Keybind";
             var addButton = add.GetComponent<Button>();
             addButton.onClick.ClearAll();
-            addButton.onClick.AddListener(delegate ()
+            addButton.onClick.AddListener(() =>
             {
                 var keybind = new Keybind(LSText.randomNumString(16), new List<Keybind.Key> { new Keybind.Key(Keybind.Key.Type.Down, KeyCode.Alpha0) }, 1, Settings[1]);
                 keybinds.Add(keybind);
@@ -709,15 +658,8 @@ namespace BetterLegacy.Editor.Managers
                 RefreshKeybindEditor(keybind);
             });
 
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Add, add, new List<Component>
-            {
-                addButton.image,
-            }, true, 1, SpriteManager.RoundedSide.W));
-
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Add_Text, addText.gameObject, new List<Component>
-            {
-                addText,
-            }));
+            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
+            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
 
             int num = 0;
             foreach (var keybind in keybinds)
@@ -726,97 +668,87 @@ namespace BetterLegacy.Editor.Managers
 
                 var name = keybind.Name;
 
-                if (string.IsNullOrEmpty(searchTerm) || name.ToLower().Contains(searchTerm.ToLower()))
+                if (!CoreHelper.SearchString(searchTerm, name))
                 {
-                    var gameObject = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(content, name);
-
-                    EditorThemeManager.ApplySelectable(gameObject.GetComponent<Button>(), ThemeGroup.List_Button_1);
-
-                    var button = gameObject.transform.Find("Image").gameObject.AddComponent<Button>();
-                    button.onClick.AddListener(delegate ()
-                    {
-                        EditorManager.inst.ShowDialog("Keybind Editor");
-                        RefreshKeybindEditor(keybind);
-                    });
-
-                    EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Null, button.gameObject, new List<Component>
-                    {
-                        button.image
-                    }, true, 1, SpriteManager.RoundedSide.W));
-
-                    var ed1 = new GameObject("Edit");
-                    ed1.transform.SetParent(gameObject.transform.Find("Image"));
-                    ed1.transform.localScale = Vector3.one;
-
-                    var rt = ed1.AddComponent<RectTransform>();
-                    rt.anchoredPosition = Vector2.zero;
-                    rt.sizeDelta = new Vector2(32f, 32f);
-
-                    var hover = gameObject.transform.Find("Image").gameObject.AddComponent<HoverUI>();
-                    hover.animatePos = false;
-                    hover.animateSca = true;
-                    hover.size = 1.1f;
-
-                    var image = ed1.AddComponent<Image>();
-                    image.sprite = editSprite;
-                    image.color = Color.black;
-
-                    if (keybind.keys != null && keybind.keys.Count > 0)
-                    {
-                        name += " [";
-                        for (int i = 0; i < keybind.keys.Count; i++)
-                        {
-                            name += $"{keybind.keys[i].InteractType}: {keybind.keys[i].KeyCode}";
-                            if (i != keybind.keys.Count - 1)
-                                name += ", ";
-                        }
-                        name += "]";
-                    }
-
-                    if (keybind.settings != null && keybind.settings.Count > 0)
-                    {
-                        name += " (";
-                        for (int i = 0; i < keybind.settings.Count; i++)
-                        {
-                            name += $"{keybind.settings.ElementAt(i).Key}: {keybind.settings.ElementAt(i).Value}";
-                            if (i != keybind.settings.Count - 1)
-                                name += ", ";
-                        }
-                        name += ")";
-                    }
-
-                    var nameText = gameObject.transform.Find("folder-name").GetComponent<Text>();
-                    nameText.text = name;
-
-                    EditorThemeManager.ApplyLightText(nameText);
-
-                    var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(gameObject.transform, "Delete").GetComponent<DeleteButtonStorage>();
-                    UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(580f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.one, new Vector2(32f, 32f));
-                    delete.button.onClick.ClearAll();
-                    delete.button.onClick.AddListener(delegate ()
-                    {
-                        RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this keybind? You cannot undo this.", delegate ()
-                        {
-                            keybinds.RemoveAt(index);
-                            RefreshKeybindPopup();
-                            Save();
-                            EditorManager.inst.HideDialog("Warning Popup");
-                        }, delegate ()
-                        {
-                            EditorManager.inst.HideDialog("Warning Popup");
-                        });
-                    });
-
-                    EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete, delete.gameObject, new List<Component>
-                    {
-                        delete.baseImage,
-                    }, true, 1, SpriteManager.RoundedSide.W));
-
-                    EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete_Text, delete.image.gameObject, new List<Component>
-                    {
-                        delete.image,
-                    }));
+                    num++;
+                    continue;
                 }
+
+                var gameObject = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(content, name);
+
+                EditorThemeManager.ApplySelectable(gameObject.GetComponent<Button>(), ThemeGroup.List_Button_1);
+
+                var button = gameObject.transform.Find("Image").gameObject.AddComponent<Button>();
+                button.onClick.AddListener(() =>
+                {
+                    EditorManager.inst.ShowDialog("Keybind Editor");
+                    RefreshKeybindEditor(keybind);
+                });
+
+                EditorThemeManager.ApplyGraphic(button.image, ThemeGroup.Null, true);
+
+                var ed1 = new GameObject("Edit");
+                ed1.transform.SetParent(gameObject.transform.Find("Image"));
+                ed1.transform.localScale = Vector3.one;
+
+                var rt = ed1.AddComponent<RectTransform>();
+                rt.anchoredPosition = Vector2.zero;
+                rt.sizeDelta = new Vector2(32f, 32f);
+
+                var hover = gameObject.transform.Find("Image").gameObject.AddComponent<HoverUI>();
+                hover.animatePos = false;
+                hover.animateSca = true;
+                hover.size = 1.1f;
+
+                var image = ed1.AddComponent<Image>();
+                image.sprite = editSprite;
+                image.color = Color.black;
+
+                if (keybind.keys != null && keybind.keys.Count > 0)
+                {
+                    name += " [";
+                    for (int i = 0; i < keybind.keys.Count; i++)
+                    {
+                        name += $"{keybind.keys[i].InteractType}: {keybind.keys[i].KeyCode}";
+                        if (i != keybind.keys.Count - 1)
+                            name += ", ";
+                    }
+                    name += "]";
+                }
+
+                if (keybind.settings != null && keybind.settings.Count > 0)
+                {
+                    name += " (";
+                    for (int i = 0; i < keybind.settings.Count; i++)
+                    {
+                        name += $"{keybind.settings.ElementAt(i).Key}: {keybind.settings.ElementAt(i).Value}";
+                        if (i != keybind.settings.Count - 1)
+                            name += ", ";
+                    }
+                    name += ")";
+                }
+
+                var nameText = gameObject.transform.Find("folder-name").GetComponent<Text>();
+                nameText.text = name;
+
+                EditorThemeManager.ApplyLightText(nameText);
+
+                var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(gameObject.transform, "Delete").GetComponent<DeleteButtonStorage>();
+                UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(580f, 0f), new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.one, new Vector2(32f, 32f));
+                delete.button.onClick.ClearAll();
+                delete.button.onClick.AddListener(() =>
+                {
+                    RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this keybind? You cannot undo this.", () =>
+                    {
+                        keybinds.RemoveAt(index);
+                        RefreshKeybindPopup();
+                        Save();
+                        EditorManager.inst.HideDialog("Warning Popup");
+                    }, () => { EditorManager.inst.HideDialog("Warning Popup"); });
+                });
+
+                EditorThemeManager.ApplyGraphic(delete.baseImage, ThemeGroup.Delete, true);
+                EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
 
                 num++;
             }
@@ -826,7 +758,7 @@ namespace BetterLegacy.Editor.Managers
         {
             actionDropdown.onValueChanged.ClearAll();
             actionDropdown.value = keybind.ActionType;
-            actionDropdown.onValueChanged.AddListener(delegate (int _val)
+            actionDropdown.onValueChanged.AddListener(_val =>
             {
                 keybind.ActionType = _val;
                 var settings = Settings;
@@ -844,7 +776,7 @@ namespace BetterLegacy.Editor.Managers
             ((RectTransform)add.transform).sizeDelta = new Vector2(760f, 32f);
             var addButton = add.GetComponent<Button>();
             addButton.onClick.ClearAll();
-            addButton.onClick.AddListener(delegate ()
+            addButton.onClick.AddListener(() =>
             {
                 var key = new Keybind.Key(Keybind.Key.Type.Down, KeyCode.None);
                 keybind.keys.Add(key);
@@ -853,15 +785,8 @@ namespace BetterLegacy.Editor.Managers
                 Save();
             });
 
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Add, add, new List<Component>
-            {
-                addButton.image,
-            }, true, 1, SpriteManager.RoundedSide.W));
-
-            EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Add_Text, addText.gameObject, new List<Component>
-            {
-                addText,
-            }));
+            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
+            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
 
             int num = 0;
             foreach (var key in keybind.keys)
@@ -872,17 +797,14 @@ namespace BetterLegacy.Editor.Managers
                 var watch = gameObject.transform.Find("Key Watcher").GetComponent<FunctionButtonStorage>();
                 var code = gameObject.transform.Find("Key Code").GetComponent<Dropdown>();
 
-                EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.List_Button_1_Normal, gameObject, new List<Component>
-                {
-                    gameObject.GetComponent<Image>(),
-                }, true, 1, SpriteManager.RoundedSide.W));
+                EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.List_Button_1_Normal, true);
 
                 var text = gameObject.transform.Find("Key Watcher").GetChild(0).GetComponent<Text>();
                 text.text = "Set Key";
 
                 type.onValueChanged.ClearAll();
                 type.value = (int)key.InteractType;
-                type.onValueChanged.AddListener(delegate (int _val)
+                type.onValueChanged.AddListener(_val =>
                 {
                     key.InteractType = (Keybind.Key.Type)_val;
                     RefreshKeybindPopup();
@@ -893,10 +815,10 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyDropdown(type);
 
                 watch.button.onClick.ClearAll();
-                watch.button.onClick.AddListener(delegate ()
+                watch.button.onClick.AddListener(() =>
                 {
                     RTEditor.inst.selectingKey = true;
-                    RTEditor.inst.setKey = delegate (KeyCode keyCode)
+                    RTEditor.inst.setKey = keyCode =>
                     {
                         key.KeyCode = keyCode;
                         RefreshKeybindPopup();
@@ -904,11 +826,11 @@ namespace BetterLegacy.Editor.Managers
                         text.text = "Set Key";
                     };
 
-                    RTEditor.inst.onKeySet = delegate ()
+                    RTEditor.inst.onKeySet = () =>
                     {
                         code.onValueChanged.ClearAll();
                         code.value = (int)key.KeyCode;
-                        code.onValueChanged.AddListener(delegate (int _val)
+                        code.onValueChanged.AddListener(_val =>
                         {
                             key.KeyCode = (KeyCode)_val;
                             RefreshKeybindPopup();
@@ -920,19 +842,12 @@ namespace BetterLegacy.Editor.Managers
                     text.text = "Watching Key";
                 });
 
-                EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Function_1, watch.gameObject, new List<Component>
-                {
-                    watch.button.image,
-                }, true, 1, SpriteManager.RoundedSide.W));
-
-                EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Function_1_Text, watch.text.gameObject, new List<Component>
-                {
-                    watch.text,
-                }));
+                EditorThemeManager.ApplyGraphic(watch.button.image, ThemeGroup.Function_1, true);
+                EditorThemeManager.ApplyGraphic(watch.text, ThemeGroup.Function_1_Text);
 
                 code.onValueChanged.ClearAll();
                 code.value = (int)key.KeyCode;
-                code.onValueChanged.AddListener(delegate (int _val)
+                code.onValueChanged.AddListener(_val =>
                 {
                     key.KeyCode = (KeyCode)_val;
                     RefreshKeybindPopup();
@@ -944,7 +859,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var delete = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
                 delete.button.onClick.ClearAll();
-                delete.button.onClick.AddListener(delegate ()
+                delete.button.onClick.AddListener(() =>
                 {
                     keybind.keys.RemoveAt(index);
                     RefreshKeybindPopup();
@@ -952,15 +867,8 @@ namespace BetterLegacy.Editor.Managers
                     Save();
                 });
 
-                EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete, delete.gameObject, new List<Component>
-                {
-                    delete.button.image,
-                }, true, 1, SpriteManager.RoundedSide.W));
-
-                EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Delete_Text, delete.image.gameObject, new List<Component>
-                {
-                    delete.image,
-                }));
+                EditorThemeManager.ApplyGraphic(delete.button.image, ThemeGroup.Delete, true);
+                EditorThemeManager.ApplyGraphic(delete.image, ThemeGroup.Delete_Text);
 
                 num++;
             }
@@ -1020,7 +928,7 @@ namespace BetterLegacy.Editor.Managers
                             var xt = x.GetComponent<Toggle>();
                             xt.onValueChanged.RemoveAllListeners();
                             xt.isOn = Parser.TryParse(setting.Value, false);
-                            xt.onValueChanged.AddListener(delegate (bool _val)
+                            xt.onValueChanged.AddListener(_val =>
                             {
                                 keybind.settings[setting.Key] = _val.ToString();
                                 Save();
@@ -1067,20 +975,14 @@ namespace BetterLegacy.Editor.Managers
                             x.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(366f, 32f);
 
                             var xif = x.GetComponent<InputField>();
-                            xif.onValueChanged.RemoveAllListeners();
+                            xif.onValueChanged.ClearAll();
                             xif.onEndEdit.ClearAll();
                             xif.characterValidation = InputField.CharacterValidation.None;
                             xif.characterLimit = 0;
                             xif.text = setting.Value;
                             xif.textComponent.fontSize = 18;
-                            xif.onValueChanged.AddListener(delegate (string _val)
-                            {
-                                keybind.settings[setting.Key] = _val;
-                            });
-                            xif.onEndEdit.AddListener(delegate (string _val)
-                            {
-                                Save();
-                            });
+                            xif.onValueChanged.AddListener(_val => { keybind.settings[setting.Key] = _val; });
+                            xif.onEndEdit.AddListener(_val => { Save(); });
 
                             EditorThemeManager.ApplyInputField(xif, ThemeGroup.Input_Field);
 
@@ -1117,23 +1019,18 @@ namespace BetterLegacy.Editor.Managers
                             var input = x.transform.Find("input");
 
                             var xif = input.gameObject.AddComponent<InputField>();
-                            xif.onValueChanged.RemoveAllListeners();
+                            xif.onValueChanged.ClearAll();
                             xif.onEndEdit.ClearAll();
                             xif.textComponent = input.Find("Text").GetComponent<Text>();
                             xif.placeholder = input.Find("Placeholder").GetComponent<Text>();
                             xif.characterValidation = InputField.CharacterValidation.None;
                             xif.text = Parser.TryParse(setting.Value, 0).ToString();
-                            xif.onValueChanged.AddListener(delegate (string _val)
+                            xif.onValueChanged.AddListener(_val =>
                             {
                                 if (int.TryParse(_val, out int result) && keybind.settings.ContainsKey(setting.Key))
-                                {
                                     keybind.settings[setting.Key] = result.ToString();
-                                }
                             });
-                            xif.onEndEdit.AddListener(delegate (string _val)
-                            {
-                                Save();
-                            });
+                            xif.onEndEdit.AddListener(_val => { Save(); });
 
                             TriggerHelper.AddEventTrigger(xif.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDeltaInt(xif) });
 
@@ -1181,17 +1078,12 @@ namespace BetterLegacy.Editor.Managers
                             xif.placeholder = input.Find("Placeholder").GetComponent<Text>();
                             xif.characterValidation = InputField.CharacterValidation.None;
                             xif.text = Parser.TryParse(setting.Value, 0f).ToString();
-                            xif.onValueChanged.AddListener(delegate (string _val)
+                            xif.onValueChanged.AddListener(_val =>
                             {
                                 if (float.TryParse(_val, out float result) && keybind.settings.ContainsKey(setting.Key))
-                                {
                                     keybind.settings[setting.Key] = result.ToString();
-                                }
                             });
-                            xif.onEndEdit.AddListener(delegate (string _val)
-                            {
-                                Save();
-                            });
+                            xif.onEndEdit.AddListener(_val => { Save(); });
 
                             TriggerHelper.AddEventTrigger(xif.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDelta(xif) });
 
@@ -1396,29 +1288,10 @@ namespace BetterLegacy.Editor.Managers
 
         public static void IncreaseKeyframeValue(Keybind keybind)
         {
-            var type = 0;
-            if (keybind.settings.ContainsKey("EventType") && int.TryParse(keybind.settings["EventType"], out type))
-            {
-
-            }
-
-            var index = 0;
-            if (keybind.settings.ContainsKey("EventIndex") && int.TryParse(keybind.settings["EventIndex"], out index))
-            {
-
-            }
-
-            var value = 0;
-            if (keybind.settings.ContainsKey("EventValue") && int.TryParse(keybind.settings["EventValue"], out value))
-            {
-
-            }
-
-            var amount = 1f;
-            if (keybind.settings.ContainsKey("EventAmount") && float.TryParse(keybind.settings["EventAmount"], out amount))
-            {
-
-            }
+            var type = keybind.settings.ContainsKey("EventType") ? Parser.TryParse(keybind.settings["EventType"], 0) : 0;
+            var index = keybind.settings.ContainsKey("EventIndex") ? Parser.TryParse(keybind.settings["EventIndex"], 0) : 0;
+            var value = keybind.settings.ContainsKey("EventValue") ? Parser.TryParse(keybind.settings["EventValue"], 0) : 0;
+            var amount = keybind.settings.ContainsKey("EventAmount") ? Parser.TryParse(keybind.settings["EventAmount"], 0f) : 0f;
 
             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
             {
@@ -1457,29 +1330,10 @@ namespace BetterLegacy.Editor.Managers
 
         public static void DecreaseKeyframeValue(Keybind keybind)
         {
-            var type = 0;
-            if (keybind.settings.ContainsKey("EventType") && int.TryParse(keybind.settings["EventType"], out type))
-            {
-
-            }
-
-            var index = 0;
-            if (keybind.settings.ContainsKey("EventIndex") && int.TryParse(keybind.settings["EventIndex"], out index))
-            {
-
-            }
-
-            var value = 0;
-            if (keybind.settings.ContainsKey("EventValue") && int.TryParse(keybind.settings["EventValue"], out value))
-            {
-
-            }
-
-            var amount = 1f;
-            if (keybind.settings.ContainsKey("EventAmount") && float.TryParse(keybind.settings["EventAmount"], out amount))
-            {
-
-            }
+            var type = keybind.settings.ContainsKey("EventType") ? Parser.TryParse(keybind.settings["EventType"], 0) : 0;
+            var index = keybind.settings.ContainsKey("EventIndex") ? Parser.TryParse(keybind.settings["EventIndex"], 0) : 0;
+            var value = keybind.settings.ContainsKey("EventValue") ? Parser.TryParse(keybind.settings["EventValue"], 0) : 0;
+            var amount = keybind.settings.ContainsKey("EventAmount") ? Parser.TryParse(keybind.settings["EventAmount"], 0f) : 0f;
 
             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
             {
@@ -1518,29 +1372,10 @@ namespace BetterLegacy.Editor.Managers
 
         public static void SetKeyframeValue(Keybind keybind)
         {
-            var type = 0;
-            if (keybind.settings.ContainsKey("EventType") && int.TryParse(keybind.settings["EventType"], out type))
-            {
-
-            }
-
-            var index = 0;
-            if (keybind.settings.ContainsKey("EventIndex") && int.TryParse(keybind.settings["EventIndex"], out index))
-            {
-
-            }
-
-            var value = 0;
-            if (keybind.settings.ContainsKey("EventValue") && int.TryParse(keybind.settings["EventValue"], out value))
-            {
-
-            }
-
-            var amount = 1f;
-            if (keybind.settings.ContainsKey("EventAmount") && float.TryParse(keybind.settings["EventAmount"], out amount))
-            {
-
-            }
+            var type = keybind.settings.ContainsKey("EventType") ? Parser.TryParse(keybind.settings["EventType"], 0) : 0;
+            var index = keybind.settings.ContainsKey("EventIndex") ? Parser.TryParse(keybind.settings["EventIndex"], 0) : 0;
+            var value = keybind.settings.ContainsKey("EventValue") ? Parser.TryParse(keybind.settings["EventValue"], 0) : 0;
+            var amount = keybind.settings.ContainsKey("EventAmount") ? Parser.TryParse(keybind.settings["EventAmount"], 0f) : 0f;
 
             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
             {
@@ -1700,18 +1535,18 @@ namespace BetterLegacy.Editor.Managers
         {
             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
             {
-                if (timelineObject.IsBeatmapObject)
-                {
-                    var bm = timelineObject.GetData<BeatmapObject>();
+                if (!timelineObject.IsBeatmapObject)
+                    continue;
 
-                    bm.objectType++;
+                var bm = timelineObject.GetData<BeatmapObject>();
 
-                    if ((int)bm.objectType > Enum.GetNames(typeof(ObjectType)).Length)
-                        bm.objectType = 0;
+                bm.objectType++;
 
-                    Updater.UpdateProcessor(bm);
-                    ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                }
+                if ((int)bm.objectType > Enum.GetNames(typeof(ObjectType)).Length)
+                    bm.objectType = 0;
+
+                Updater.UpdateProcessor(bm);
+                ObjectEditor.inst.RenderTimelineObject(timelineObject);
             }
         }
 
@@ -1719,68 +1554,68 @@ namespace BetterLegacy.Editor.Managers
         {
             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
             {
-                if (timelineObject.IsBeatmapObject)
-                {
-                    var bm = timelineObject.GetData<BeatmapObject>();
+                if (!timelineObject.IsBeatmapObject)
+                    continue;
 
-                    var e = (int)bm.objectType - 1;
+                var bm = timelineObject.GetData<BeatmapObject>();
 
-                    if (e < 0)
-                        e = Enum.GetValues(bm.objectType.GetType()).Length - 1;
+                var e = (int)bm.objectType - 1;
 
-                    bm.objectType = (ObjectType)e;
+                if (e < 0)
+                    e = Enum.GetValues(bm.objectType.GetType()).Length - 1;
 
-                    Updater.UpdateProcessor(bm);
-                    ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                }
+                bm.objectType = (ObjectType)e;
+
+                Updater.UpdateProcessor(bm);
+                ObjectEditor.inst.RenderTimelineObject(timelineObject);
             }
         }
 
         public static void JumpToNextMarker(Keybind keybind)
         {
-            if (DataManager.inst.gameData.beatmapData.markers.Count > 0)
-            {
-                RTMarkerEditor.inst.OrderMarkers();
+            if (!GameData.IsValid || GameData.Current.beatmapData.markers.Count <= 0)
+                return;
 
-                var currentMarker = GameData.Current.beatmapData.markers.FindLastIndex(x => x.time <= AudioManager.inst.CurrentAudioSource.time + 0.005f);
+            RTMarkerEditor.inst.OrderMarkers();
 
-                if (currentMarker + 1 >= 0)
-                {
-                    var marker = (Marker)GameData.Current.beatmapData.markers[Mathf.Clamp(currentMarker + 1, 0, DataManager.inst.gameData.beatmapData.markers.Count - 1)];
+            var currentMarker = GameData.Current.beatmapData.markers.FindLastIndex(x => x.time <= AudioManager.inst.CurrentAudioSource.time + 0.005f);
 
-                    if (RTMarkerEditor.inst.timelineMarkers.TryFind(x => x.Marker.id == marker.id, out TimelineMarker timelineMarker))
-                        RTMarkerEditor.inst.SetCurrentMarker(timelineMarker, true, EditorConfig.Instance.BringToSelection.Value, true);
-                }
-            }
+            if (currentMarker + 1 < 0)
+                return;
+
+            var marker = (Marker)GameData.Current.beatmapData.markers[Mathf.Clamp(currentMarker + 1, 0, GameData.Current.beatmapData.markers.Count - 1)];
+
+            if (RTMarkerEditor.inst.timelineMarkers.TryFind(x => x.Marker.id == marker.id, out TimelineMarker timelineMarker))
+                RTMarkerEditor.inst.SetCurrentMarker(timelineMarker, true, EditorConfig.Instance.BringToSelection.Value, false);
         }
 
         public static void JumpToPreviousMarker(Keybind keybind)
         {
-            if (DataManager.inst.gameData.beatmapData.markers.Count > 0)
-            {
-                RTMarkerEditor.inst.OrderMarkers();
+            if (!GameData.IsValid || GameData.Current.beatmapData.markers.Count <= 0)
+                return;
 
-                var currentMarker = DataManager.inst.gameData.beatmapData.markers.FindLastIndex(x => x.time < AudioManager.inst.CurrentAudioSource.time - 0.005f);
+            RTMarkerEditor.inst.OrderMarkers();
 
-                if (currentMarker >= 0)
-                {
-                    var marker = (Marker)GameData.Current.beatmapData.markers[Mathf.Clamp(currentMarker, 0, DataManager.inst.gameData.beatmapData.markers.Count - 1)];
+            var currentMarker = GameData.Current.beatmapData.markers.FindLastIndex(x => x.time < AudioManager.inst.CurrentAudioSource.time - 0.005f);
 
-                    if (RTMarkerEditor.inst.timelineMarkers.TryFind(x => x.Marker.id == marker.id, out TimelineMarker timelineMarker))
-                        RTMarkerEditor.inst.SetCurrentMarker(timelineMarker, true, EditorConfig.Instance.BringToSelection.Value, true);
-                }
-            }
+            if (currentMarker < 0)
+                return;
+
+            var marker = (Marker)GameData.Current.beatmapData.markers[Mathf.Clamp(currentMarker, 0, GameData.Current.beatmapData.markers.Count - 1)];
+
+            if (RTMarkerEditor.inst.timelineMarkers.TryFind(x => x.Marker.id == marker.id, out TimelineMarker timelineMarker))
+                RTMarkerEditor.inst.SetCurrentMarker(timelineMarker, true, EditorConfig.Instance.BringToSelection.Value, false);
         }
 
         public static void OpenSaveAs(Keybind keybind)
         {
-            EditorManager.inst.ClearDialogs(new EditorManager.EditorDialog.DialogType[1]);
+            EditorManager.inst.ClearPopups();
             EditorManager.inst.ShowDialog("Save As Popup");
         }
 
         public static void OpenNewLevel(Keybind keybind)
         {
-            EditorManager.inst.ClearDialogs(new EditorManager.EditorDialog.DialogType[1]);
+            EditorManager.inst.ClearPopups();
             EditorManager.inst.ShowDialog("New File Popup");
         }
 
@@ -2562,18 +2397,12 @@ namespace BetterLegacy.Editor.Managers
 
         public bool KeyCodeHandler(Keybind keybind)
         {
-            if (keybind.keys.Count > 0 && keybind.keys.All(x => Input.GetKey(x.KeyCode) && x.InteractType == Keybind.Key.Type.Pressed ||
+            var active = keybind.keys.Count > 0 && keybind.keys.All(x => Input.GetKey(x.KeyCode) && x.InteractType == Keybind.Key.Type.Pressed ||
             Input.GetKeyDown(x.KeyCode) && x.InteractType == Keybind.Key.Type.Down ||
-            !Input.GetKey(x.KeyCode) && x.InteractType == Keybind.Key.Type.Up || !Input.GetKey(x.KeyCode) && x.InteractType == Keybind.Key.Type.NotPressed) && !isPressingKey)
-            {
-                isPressingKey = true;
-                return true;
-            }
-            else
-            {
-                isPressingKey = false;
-                return false;
-            }
+            !Input.GetKey(x.KeyCode) && x.InteractType == Keybind.Key.Type.Up || !Input.GetKey(x.KeyCode) && x.InteractType == Keybind.Key.Type.NotPressed) && !isPressingKey;
+
+            isPressingKey = active;
+            return active;
         }
 
         public List<Keybind> keybinds = new List<Keybind>();
@@ -2644,17 +2473,6 @@ namespace BetterLegacy.Editor.Managers
 
             public void Activate()
             {
-                //if (keys.All(x => Input.GetKey(x.KeyCode) && x.InteractType == Key.Type.Pressed ||
-                //Input.GetKeyDown(x.KeyCode) && x.InteractType == Key.Type.Down ||
-                //Input.GetKeyUp(x.KeyCode) && x.InteractType == Key.Type.Up) && !inst.isPressingKey)
-                //{
-                //    Debug.Log($"{EditorPlugin.className}Pressed!");
-                //    inst.isPressingKey = true;
-                //    Action?.Invoke(this);
-                //}
-                //else
-                //    inst.isPressingKey = false;
-
                 if (inst.KeyCodeHandler(this))
                     Action?.Invoke(this);
             }
@@ -2669,10 +2487,7 @@ namespace BetterLegacy.Editor.Managers
                 get
                 {
                     if (ActionType < 0 || ActionType > KeybinderMethods.Count - 1)
-                        return delegate (Keybind keybind)
-                        {
-                            Debug.LogError($"{className}No action assigned to key!");
-                        };
+                        return keybind => { Debug.LogError($"{className}No action assigned to key!"); };
 
                     return KeybinderMethods[ActionType];
                 }

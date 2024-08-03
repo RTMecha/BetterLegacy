@@ -3118,23 +3118,17 @@ namespace BetterLegacy.Editor.Managers
                 Destroy(inspect.GetComponent<Animator>());
                 inspectButton.transition = Selectable.Transition.ColorTint;
                 EditorThemeManager.AddSelectable(inspectButton, ThemeGroup.Function_2);
-                EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Function_2_Text, inspectText.gameObject, new List<Component>
-                    {
-                        inspectText,
-                    }));
+                EditorThemeManager.AddGraphic(inspectText, ThemeGroup.Function_2_Text);
 
                 Destroy(inspectGameObject.GetComponent<Animator>());
                 inspectGameObjectButton.transition = Selectable.Transition.ColorTint;
                 EditorThemeManager.AddSelectable(inspectGameObjectButton, ThemeGroup.Function_2);
-                EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Function_2_Text, inspectGameObjectText.gameObject, new List<Component>
-                    {
-                        inspectGameObjectText,
-                    }));
+                EditorThemeManager.AddGraphic(inspectGameObjectText, ThemeGroup.Function_2_Text);
             }
 
             if (tfv.Find("inspect"))
             {
-                bool active = Updater.TryGetObject(beatmapObject, out Core.Optimization.Objects.LevelObject levelObject);
+                bool active = Updater.TryGetObject(beatmapObject, out LevelObject levelObject);
                 tfv.Find("inspect").gameObject.SetActive(active);
                 var deleteButton = tfv.Find("inspect").GetComponent<Button>();
                 deleteButton.onClick.ClearAll();

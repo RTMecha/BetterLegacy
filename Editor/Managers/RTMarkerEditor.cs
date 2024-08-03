@@ -143,7 +143,7 @@ namespace BetterLegacy.Editor.Managers
             var descriptionLabel = MarkerEditor.inst.left.GetChild(5).GetChild(0).GetComponent<Text>();
             descriptionLabel.text = "Description";
 
-            EditorThemeManager.AddElement(new EditorThemeManager.Element(ThemeGroup.Background_1, dialog.gameObject, new List<Component> { dialog.GetComponent<Image>() }));
+            EditorThemeManager.AddGraphic(dialog.GetComponent<Image>(), ThemeGroup.Background_1);
 
             EditorThemeManager.AddInputField(MarkerEditor.inst.right.Find("InputField").GetComponent<InputField>(), ThemeGroup.Search_Field_2);
 
