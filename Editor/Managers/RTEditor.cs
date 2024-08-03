@@ -8275,8 +8275,7 @@ namespace BetterLegacy.Editor.Managers
                     yield return StartCoroutine(RTCode.IEvaluate(str));
             }
 
-            layerType = LayerType.Objects;
-            SetLayer(0);
+            SetLayer(0, LayerType.Objects);
 
             WindowController.ResetTitle();
 
