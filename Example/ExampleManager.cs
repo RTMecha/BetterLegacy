@@ -167,6 +167,7 @@ namespace BetterLegacy.Example
                 random = UnityEngine.Random.Range(0, dialogues.Length);
 
             Say(dialogues[random].text);
+            dialogues[random].Action();
 
             talking = false;
         }
@@ -203,11 +204,9 @@ namespace BetterLegacy.Example
                             }
                         } : dialogueFunctions[dialogueFunction];
 
-                    dialogues[j] = new ExampleDialogue(dialogue["text"], dialogueFunc, () =>
-                    {
-                        if (dialogue["action"] != null)
-                            RTCode.Evaluate(dialogue["action"]);
-                    });
+                    Action action = dialogue["action"] != null ? RTCode.ConvertToAction(dialogue["action"]) : null;
+
+                    dialogues[j] = new ExampleDialogue(dialogue["text"], dialogueFunc, action);
                 }
 
                 if (!dialogueDictionary.ContainsKey(dialogueGroup["name"]))
@@ -260,18 +259,16 @@ namespace BetterLegacy.Example
                 return;
 
             float t = time % repeat;
-            if (t > repeat - 1f)
+            if (t <= repeat - 0.1f || said)
             {
-                if (said)
-                    return;
-
-                said = true;
-
-                SayDialogue("OccasionalDialogue");
-                repeat = UnityEngine.Random.Range(60f, 6000f);
-            }
-            else
                 said = false;
+                return;
+            }
+
+            said = true;
+
+            SayDialogue("OccasionalDialogue");
+            repeat = UnityEngine.Random.Range(60f, 60000f);
         }
 
         public DialogueFunction[] dialogueFunctions = new DialogueFunction[]
@@ -474,6 +471,8 @@ namespace BetterLegacy.Example
 
         public bool dying;
 
+        public bool pokingEyes;
+
         /// <summary>
         /// Spawns Example.
         /// </summary>
@@ -562,7 +561,7 @@ namespace BetterLegacy.Example
                     animations[i].Update();
             }
 
-            if (!spawning && allowBlinking && !dragging)
+            if (!spawning && allowBlinking && !dragging && !pokingEyes)
             {
                 float t = time % blinkRate;
 
@@ -1273,6 +1272,10 @@ namespace BetterLegacy.Example
                 {
                     image.sprite = SpriteManager.CreateSprite(texture2D);
                 }, onError => { Debug.LogErrorFormat("{0}File does not exist.", className); }));
+
+                var clickable = im.AddComponent<ExampleClickable>();
+                clickable.onDown = pointerEventData => { pokingEyes = true; };
+                clickable.onUp = pointerEventData => { pokingEyes = false; };
             }
 
             var l_pupils = Creator.NewUIObject("Example Pupils", eyes);
@@ -1290,6 +1293,10 @@ namespace BetterLegacy.Example
                 {
                     image.sprite = SpriteManager.CreateSprite(texture2D);
                 }, onError => { Debug.LogErrorFormat("{0}File does not exist.", className); }));
+
+                var clickable = im.AddComponent<ExampleClickable>();
+                clickable.onDown = pointerEventData => { pokingEyes = true; };
+                clickable.onUp = pointerEventData => { pokingEyes = false; };
             }
 
             var l_blink = Creator.NewUIObject("Example Blink", eyes);
@@ -1578,7 +1585,7 @@ namespace BetterLegacy.Example
                 var clickable = im.AddComponent<ExampleClickable>();
                 clickable.onDown = pointerEventData =>
                 {
-                    startMousePos = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f);
+                    startMousePos = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f) * CoreHelper.ScreenScale;
                     startDragPos = new Vector2(handLeft.localPosition.x, handLeft.localPosition.y);
                     draggingLeftHand = true;
 
@@ -1620,7 +1627,7 @@ namespace BetterLegacy.Example
                 var clickable = im.AddComponent<ExampleClickable>();
                 clickable.onDown = pointerEventData =>
                 {
-                    startMousePos = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f);
+                    startMousePos = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f) * CoreHelper.ScreenScale;
                     startDragPos = new Vector2(handRight.localPosition.x, handRight.localPosition.y);
                     draggingRightHand = true;
 
@@ -1968,7 +1975,7 @@ namespace BetterLegacy.Example
         //ExampleManager.inst.Say("Hello, I am Example and this is a test!", new Vector2(0f, 200f))
         public void Say(string dialogue, List<IKeyframe<float>> xPos = null, List<IKeyframe<float>> yPos = null, float textLength = 1.5f, float stayTime = 4f, float time = 0.7f, bool stopOthers = true, Action onComplete = null)
         {
-            dialogue = dialogue.Replace("{{username}}", CoreConfig.Instance.DisplayName.Value);
+            dialogue = dialogue.Replace("{{Username}}", CoreConfig.Instance.DisplayName.Value);
 
             var regex = new Regex(@"{{Config_(.*?)_(.*?)}}");
             var match = regex.Match(dialogue);

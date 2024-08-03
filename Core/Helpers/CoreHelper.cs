@@ -478,6 +478,12 @@ namespace BetterLegacy.Core.Helpers
             yield break;
         }
 
+        public static IEnumerator PerformActionAfterSeconds(float t, Action action)
+        {
+            yield return new WaitForSeconds(t);
+            action?.Invoke();
+        }
+
         public static string currentPopupID;
         public static GameObject currentPopup;
         public static void Popup(string dialogue, Color bar, string title, float time = 2f, bool destroyPrevious = true)
