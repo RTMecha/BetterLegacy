@@ -268,7 +268,7 @@ namespace BetterLegacy.Example
                 said = true;
 
                 SayDialogue("OccasionalDialogue");
-                repeat = UnityEngine.Random.Range(55f, 600f);
+                repeat = UnityEngine.Random.Range(60f, 6000f);
             }
             else
                 said = false;

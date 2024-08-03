@@ -1,3 +1,19 @@
+1.2.0 > [???]
+- Fully implemented the online arcade server, so you can now upload and download modded levels! Requires a Steam account with Project Arrhythmia to upload levels.
+- Started working on a custom story mode.
+- Reworked Example's chat box to be bigger and have an autocomplete.
+- Added data for Background Object tags.
+- Added copyAxisGroup modifier. Allows for multiple object groups and custom expressions.
+- Did a ton of internal code cleanup.
+- Object keyframe timeline zoom and position is now properly remembered for when you reselect the associated object.
+- Markers are now draggable via clicking and holding the scrollwheel over a marker and moving the mouse around.
+- Added preview grid.
+- Markers can now show in the object editor timeline.
+- Added a Restart Editor button to the File dropdown in the editor.
+- Reworked editor tooltips to store them better and have more languages.
+- Added some new Rotate Modes to the Player Editor and fixed rotation being weird with platformer mode.
+- Added jump boost count to Player Editor.
+- Fixed Only Objects on Current Layer Visible setting.
 1.1.6 > [Jul 7, 2024]
 - Added Hide Timeline config in the Events > Game tab.
 - Custom player objects can now be deleted and duplicated via the custom object selector window.
