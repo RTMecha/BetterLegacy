@@ -65,6 +65,11 @@ namespace BetterLegacy.Example
 
         public float floatingLevel;
 
+        public bool MusicPlaying => CoreHelper.InEditor && EditorManager.inst.hasLoadedLevel && AudioManager.inst.CurrentAudioSource.isPlaying;
+        public bool dancing;
+
+        public float handsBaseRotation = 0f;
+
         #endregion
 
         #region Parents
@@ -164,7 +169,14 @@ namespace BetterLegacy.Example
             var random = UnityEngine.Random.Range(0, dialogues.Length);
 
             while (!dialogues[random].CanSay)
+            {
+                if (dancing)
+                    break;
                 random = UnityEngine.Random.Range(0, dialogues.Length);
+            }
+
+            if (dancing)
+                return;
 
             Say(dialogues[random].text);
             dialogues[random].Action();
@@ -561,7 +573,7 @@ namespace BetterLegacy.Example
                     animations[i].Update();
             }
 
-            if (!spawning && allowBlinking && !dragging && !pokingEyes)
+            if (!spawning && allowBlinking && !dragging && !draggingLeftHand && !draggingRightHand && !pokingEyes && !dancing)
             {
                 float t = time % blinkRate;
 
@@ -577,7 +589,8 @@ namespace BetterLegacy.Example
                 blink?.gameObject?.SetActive(true);
             }
 
-            RepeatDialogues();
+            if (!dancing)
+                RepeatDialogues();
 
             floatingLevel = time * 0.5f % 2f;
 
@@ -594,6 +607,11 @@ namespace BetterLegacy.Example
             // Example breaks if application isn't focused.
             if (!Application.isFocused || spawning || !Visible)
                 return;
+
+            if (!dragging && !draggingLeftHand && !draggingRightHand && MusicPlaying && !dancing && UnityEngine.Random.Range(0, 501) > 499)
+                StartDancing();
+            if (!MusicPlaying && dancing)
+                StopDancing();
 
             if (lookAt)
             {
@@ -613,20 +631,24 @@ namespace BetterLegacy.Example
                     var lerp = RTMath.Lerp(Vector2.zero, MousePosition - new Vector2(faceX.position.x, faceY.position.y), faceLookMultiplier);
                     faceX.localPosition = new Vector3(lerp.x, 0f, 0f);
                     faceY.localPosition = new Vector3(0f, lerp.y, 0f);
-                    mouthBase.localPosition = new Vector3(lerp.x, (lerp.y * 0.5f) + -30f, 0f);
-                    nose.localPosition = new Vector3(lerp.x, (lerp.y * 0.5f) + -20f, 0f);
                 }
             }
 
-            // Set ear and tail rotation, forcing them to rotate to the other side of the face.
-            if (faceX != null && tail != null && ears != null)
+            // Set mouth position & ear and tail rotation, forcing them to rotate to the other side of the face.
+            if (faceX && faceY && tail && ears && mouthBase && nose)
             {
                 float faceXPos = faceX.localPosition.x * 5f;
 
                 tail.localRotation = Quaternion.Euler(0f, 0f, -faceXPos);
                 tail.GetChild(0).localRotation = Quaternion.Euler(0f, 0f, -faceXPos);
                 ears.localRotation = Quaternion.Euler(0f, 0f, faceX.localPosition.x * 0.8f);
+
+                mouthBase.localPosition = new Vector3(faceX.localPosition.x, (faceY.localPosition.y * 0.5f) + -30f, 0f);
+                nose.localPosition = new Vector3(faceX.localPosition.x, (faceY.localPosition.y * 0.5f) + -20f, 0f);
             }
+
+            if (handsBase)
+                handsBase.localRotation = Quaternion.Euler(new Vector3(0f, 0f, handsBaseRotation));
 
             var vector = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f) * CoreHelper.ScreenScaleInverse;
 
@@ -675,9 +697,6 @@ namespace BetterLegacy.Example
             if (canvasGroup)
                 canvasGroup.alpha = ExampleConfig.Instance.ExampleVisible.Value ? ExampleConfig.Instance.ExampleVisibility.Value : 1f;
 
-            if (dragging || draggingLeftHand || draggingRightHand)
-                SetLastInteracted();
-
             if (mouthLower != null)
             {
                 var m = mouthLower.localScale;
@@ -686,7 +705,11 @@ namespace BetterLegacy.Example
             }
         }
 
-        public void SetLastInteracted() => timeSinceLastInteractedOffset = Time.time;
+        public void SetLastInteracted()
+        {
+            timeSinceLastInteractedOffset = Time.time;
+            StopDancing();
+        }
 
         #region Spawning
 
@@ -869,6 +892,65 @@ namespace BetterLegacy.Example
                 animations.Add(animation);
             }
 
+            // Dancing
+            {
+                var animation = new RTAnimation("Dance Loop")
+                {
+                    animationHandlers = new List<AnimationHandlerBase>()
+                    {
+                        new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                        {
+                            new Vector3Keyframe(0f,   new Vector3(1.05f, 0.95f, 1f), Ease.Linear),
+                            new Vector3Keyframe(0.4f, new Vector3(0.95f, 1.05f, 1f), Ease.SineOut),
+                            new Vector3Keyframe(0.8f, new Vector3(1.05f, 0.95f, 1f), Ease.SineOut),
+                            new Vector3Keyframe(1.2f, new Vector3(0.95f, 1.05f, 1f), Ease.SineOut),
+                            new Vector3Keyframe(1.6f, new Vector3(1.05f, 0.95f, 1f), Ease.SineOut),
+                        }, x => { parentRotscale.localScale = x; }),
+                        new AnimationHandler<float>(new List<IKeyframe<float>>
+                        {
+                            new FloatKeyframe(0f,   0f, Ease.Linear),
+                            new FloatKeyframe(0.4f, -2f, Ease.SineOut),
+                            new FloatKeyframe(0.8f, 0f, Ease.SineIn),
+                            new FloatKeyframe(1.2f, 2f, Ease.SineOut),
+                            new FloatKeyframe(1.6f, 0f, Ease.SineIn),
+                        }, head.SetLocalPositionX),
+                        new AnimationHandler<float>(new List<IKeyframe<float>>
+                        {
+                            new FloatKeyframe(0f,   0f, Ease.Linear),
+                            new FloatKeyframe(0.4f, 1f, Ease.SineOut),
+                            new FloatKeyframe(0.8f, 0f, Ease.SineIn),
+                            new FloatKeyframe(1.2f, 1f, Ease.SineOut),
+                            new FloatKeyframe(1.6f, 0f, Ease.SineIn),
+                        }, head.SetLocalPositionY),
+                        new AnimationHandler<float>(new List<IKeyframe<float>>
+                        {
+                            new FloatKeyframe(0f, -3f, Ease.Linear),
+                            new FloatKeyframe(0.8f, 3f, Ease.SineOut),
+                            new FloatKeyframe(1.6f, -3f, Ease.SineOut),
+                        }, faceX.SetLocalPositionX),
+                        new AnimationHandler<float>(new List<IKeyframe<float>>
+                        {
+                            new FloatKeyframe(0f, 0f, Ease.Linear),
+                            new FloatKeyframe(0.4f, 6f, Ease.SineOut),
+                            new FloatKeyframe(0.8f, 0f, Ease.SineIn),
+                            new FloatKeyframe(1.2f, 6f, Ease.SineOut),
+                            new FloatKeyframe(1.6f, 0f, Ease.SineIn),
+                        }, faceY.SetLocalPositionY),
+                        new AnimationHandler<float>(new List<IKeyframe<float>>
+                        {
+                            new FloatKeyframe(0f,   0f, Ease.Linear),
+                            new FloatKeyframe(0.4f, 15f, Ease.SineOut),
+                            new FloatKeyframe(0.8f, 0f, Ease.SineIn),
+                            new FloatKeyframe(1.2f, -15f, Ease.SineOut),
+                            new FloatKeyframe(1.6f, 0f, Ease.SineIn),
+                        }, x => { handsBaseRotation = x; }),
+                    },
+                    loop = true,
+                };
+                animations.Add(animation);
+
+            }
+
             yield break;
         }
 
@@ -962,6 +1044,7 @@ namespace BetterLegacy.Example
                         return;
 
                     StopAnimations(x => x.name == "End Drag Example" || x.name == "Drag Example" || x.name.ToLower().Contains("movement"));
+                    SetLastInteracted();
 
                     startMousePos = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f) * CoreHelper.ScreenScaleInverse;
                     startDragPos = new Vector2(TotalPosition.x, TotalPosition.y);
@@ -1034,6 +1117,13 @@ namespace BetterLegacy.Example
                             new Vector2Keyframe(0f, Vector2.one, Ease.Linear),
                             new Vector2Keyframe(0.3f, new Vector2(1.05f, 0.95f), Ease.SineOut),
                         }, x => { parentY.localScale = new Vector3(x.x, x.y, 1f); }),
+
+                        new AnimationHandler<float>(new List<IKeyframe<float>>
+                        {
+                            new FloatKeyframe(0f, handsBaseRotation, Ease.Linear),
+                            new FloatKeyframe(0.3f, 0f, Ease.SineOut),
+                            new FloatKeyframe(0.31f, 0f, Ease.Linear),
+                        }, x => { handsBaseRotation = x; }),
                     };
 
                     PlayOnce(animation, true, x => x.playing && !x.name.Contains("DIALOGUE: "));
@@ -1585,7 +1675,7 @@ namespace BetterLegacy.Example
                 var clickable = im.AddComponent<ExampleClickable>();
                 clickable.onDown = pointerEventData =>
                 {
-                    startMousePos = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f) * CoreHelper.ScreenScale;
+                    startMousePos = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f) * CoreHelper.ScreenScaleInverse;
                     startDragPos = new Vector2(handLeft.localPosition.x, handLeft.localPosition.y);
                     draggingLeftHand = true;
 
@@ -1596,13 +1686,23 @@ namespace BetterLegacy.Example
                 {
                     draggingLeftHand = false;
 
-                    foreach (var levelItem in EditorManager.inst.loadedLevels.Select(x => x as EditorWrapper))
+                    SelectObject(image);
+                    SetLastInteracted();
+
+                    var animation = new RTAnimation("Example Hand Reset")
                     {
-                        if (EditorManager.RectTransformToScreenSpace(image.rectTransform).Overlaps(EditorManager.RectTransformToScreenSpace(levelItem.GameObject.transform.AsRT())))
+                        animationHandlers = new List<AnimationHandlerBase>
                         {
-                            Debug.LogFormat("{0}Picked level: {1}", className, levelItem.folder);
-                        }
-                    }
+                            new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                            {
+                                new Vector2Keyframe(0f, handLeft.AsRT().anchoredPosition, Ease.Linear),
+                                new Vector2Keyframe(0.3f, new Vector2(40f, 0f), Ease.SineOut),
+                                new Vector2Keyframe(0.32f, new Vector2(40f, 0f), Ease.Linear),
+                            }, x => { handLeft.AsRT().anchoredPosition = x; }),
+                        },
+                    };
+
+                    PlayOnce(animation, true, x => x.playing && !x.name.Contains("DIALOGUE: "));
                 };
             }
 
@@ -1627,7 +1727,7 @@ namespace BetterLegacy.Example
                 var clickable = im.AddComponent<ExampleClickable>();
                 clickable.onDown = pointerEventData =>
                 {
-                    startMousePos = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f) * CoreHelper.ScreenScale;
+                    startMousePos = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f) * CoreHelper.ScreenScaleInverse;
                     startDragPos = new Vector2(handRight.localPosition.x, handRight.localPosition.y);
                     draggingRightHand = true;
 
@@ -1638,13 +1738,23 @@ namespace BetterLegacy.Example
                 {
                     draggingRightHand = false;
 
-                    foreach (var levelItem in EditorManager.inst.loadedLevels.Select(x => x as EditorWrapper))
+                    SelectObject(image);
+                    SetLastInteracted();
+
+                    var animation = new RTAnimation("Example Hand Reset")
                     {
-                        if (EditorManager.RectTransformToScreenSpace(image.rectTransform).Overlaps(EditorManager.RectTransformToScreenSpace(levelItem.GameObject.transform.AsRT())))
+                        animationHandlers = new List<AnimationHandlerBase>
                         {
-                            Debug.LogFormat("{0}Picked level: {1}", className, levelItem.folder);
-                        }
-                    }
+                            new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                            {
+                                new Vector2Keyframe(0f, handRight.AsRT().anchoredPosition, Ease.Linear),
+                                new Vector2Keyframe(0.3f, new Vector2(-40f, 0f), Ease.SineOut),
+                                new Vector2Keyframe(0.32f, new Vector2(-40f, 0f), Ease.Linear),
+                            }, x => { handRight.AsRT().anchoredPosition = x; }),
+                        },
+                    };
+
+                    PlayOnce(animation, true, x => x.playing && !x.name.Contains("DIALOGUE: "));
                 };
             }
 
@@ -1937,7 +2047,7 @@ namespace BetterLegacy.Example
             talking = true;
             Play("Wave", onComplete: () =>
             {
-                ResetPositions(1.6f, onComplete: () => { SayDialogue("SpawnText"); });
+                ResetPositions(1.6f, onComplete: () => { SayDialogue("SpawnText"); }, resetPos: true);
             });
 
             Say("Hello, I am Example and this is a test!");
@@ -2241,7 +2351,44 @@ namespace BetterLegacy.Example
             animation.Play();
         }
 
-        public void ResetPositions(float speed, bool stopOthers = true, Action onComplete = null)
+        void SelectObject(Image image)
+        {
+            var rect = EditorManager.RectTransformToScreenSpace(image.rectTransform);
+            if (rect.Overlaps(EditorManager.RectTransformToScreenSpace(EditorManager.inst.GetDialog("Open File Popup").Dialog.Find("mask").AsRT())))
+                foreach (var levelItem in EditorManager.inst.loadedLevels.Select(x => x as EditorWrapper))
+                {
+                    if (levelItem.GameObject.activeInHierarchy && rect.Overlaps(EditorManager.RectTransformToScreenSpace(levelItem.GameObject.transform.AsRT())))
+                    {
+                        Debug.LogFormat("{0}Picked level: {1}", className, levelItem.folder);
+                        Say($"What's \"{System.IO.Path.GetFileName(levelItem.folder)}\"?");
+                        break; // only select one level
+                    }
+                }
+        }
+
+        public void StartDancing()
+        {
+            Debug.Log($"{className}Example has started dancing!");
+            dancing = true;
+
+            browLeft.SetLocalRotationEulerZ(-15f);
+            browRight.SetLocalRotationEulerZ(15f);
+            Play("Dance Loop");
+            faceCanLook = false;
+        }
+
+        public void StopDancing()
+        {
+            if (!dancing)
+                return;
+
+            Debug.Log($"{className}Example has stopped dancing!");
+            dancing = false;
+
+            ResetPositions(0.3f, onComplete: () => { faceCanLook = true; });
+        }
+
+        public void ResetPositions(float speed, bool stopOthers = true, Action onComplete = null, bool resetPos = false)
         {
             if (stopOthers)
                 animations.FindAll(x => x.playing && !x.name.Contains("DIALOGUE: ")).ForEach(anim => { anim.Stop(); });
@@ -2262,24 +2409,43 @@ namespace BetterLegacy.Example
                 {
                     new FloatKeyframe(0f, parentRotscale.localRotation.eulerAngles.z, Ease.Linear),
                     new FloatKeyframe(speed, trs, Ease.SineInOut),
+                    new FloatKeyframe(speed + 0.01f, trs, Ease.Linear),
                 }, x => { parentRotscale.localRotation = Quaternion.Euler(0f, 0f, x); }),
                 new AnimationHandler<float>(new List<IKeyframe<float>>
                 {
                     new FloatKeyframe(0f, handLeft.localRotation.eulerAngles.z, Ease.Linear),
                     new FloatKeyframe(speed, thl, Ease.SineInOut),
+                    new FloatKeyframe(speed + 0.01f, thl, Ease.Linear),
                 }, x => { handLeft.localRotation = Quaternion.Euler(0f, 0f, x); }),
 
                 new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
                 {
+                    new Vector3Keyframe(0f, parentRotscale.localScale, Ease.Linear),
+                    new Vector3Keyframe(speed, Vector3.one, Ease.SineInOut),
+                    new Vector3Keyframe(speed + 0.01f, Vector3.one, Ease.Linear),
+                }, x => { parentRotscale.localScale = x; }),
+                new AnimationHandler<float>(new List<IKeyframe<float>>
+                {
+                    new FloatKeyframe(0f, handsBaseRotation, Ease.Linear),
+                    new FloatKeyframe(speed, 0f, Ease.SineInOut),
+                    new FloatKeyframe(speed + 0.01f, 0f, Ease.Linear),
+                }, x => { handsBaseRotation = x; }),
+            };
+            if (resetPos)
+            {
+                animation.animationHandlers.Add(new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                {
                     new Vector3Keyframe(0f, parentX.localPosition, Ease.Linear),
-                    new Vector3Keyframe(speed, new Vector3(700f, 0f), Ease.SineInOut)
-                }, x => { parentX.localPosition = x; }),
-                new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                    new Vector3Keyframe(speed, new Vector3(700f, 0f), Ease.SineInOut),
+                    new Vector3Keyframe(speed + 0.01f, new Vector3(700f, 0f), Ease.Linear),
+                }, x => { parentX.localPosition = x; }));
+                animation.animationHandlers.Add(new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
                 {
                     new Vector3Keyframe(0f, parentY.localPosition, Ease.Linear),
-                    new Vector3Keyframe(speed, new Vector3(0f, -380f), Ease.SineInOut)
-                }, x => { parentY.localPosition = x; }),
-            };
+                    new Vector3Keyframe(speed, new Vector3(0f, -380f), Ease.SineInOut),
+                    new Vector3Keyframe(speed + 0.01f, new Vector3(0f, -380f), Ease.Linear),
+                }, x => { parentY.localPosition = x; }));
+            }
 
             animation.onComplete = () =>
             {
@@ -2301,7 +2467,7 @@ namespace BetterLegacy.Example
 
             animation.onComplete += () =>
             {
-                animations.Remove(animation);
+                animations.RemoveAll(x => x.id == animation.id);
                 onComplete?.Invoke();
             };
 
