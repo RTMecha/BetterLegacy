@@ -76,6 +76,55 @@ namespace BetterLegacy.Core
 
         public static RectTransform AsRT(this Transform transform) => (RectTransform)transform;
 
+        public static void SetPositionX(this Transform transform, float x)
+        {
+            var pos = transform.position;
+            pos.x = x;
+            transform.position = pos;
+        }
+
+        public static void SetPositionY(this Transform transform, float y)
+        {
+            var pos = transform.position;
+            pos.y = y;
+            transform.position = pos;
+        }
+
+        public static void SetPositionZ(this Transform transform, float z)
+        {
+            var pos = transform.position;
+            pos.z = z;
+            transform.position = pos;
+        }
+
+        public static void SetLocalPositionX(this Transform transform, float x)
+        {
+            var pos = transform.localPosition;
+            pos.x = x;
+            transform.localPosition = pos;
+        }
+
+        public static void SetLocalPositionY(this Transform transform, float y)
+        {
+            var pos = transform.localPosition;
+            pos.y = y;
+            transform.localPosition = pos;
+        }
+
+        public static void SetLocalPositionZ(this Transform transform, float z)
+        {
+            var pos = transform.localPosition;
+            pos.z = z;
+            transform.localPosition = pos;
+        }
+
+        public static void SetLocalRotationEulerZ(this Transform transform, float z)
+        {
+            var rot = transform.localRotation.eulerAngles;
+            rot.z = z;
+            transform.localRotation = Quaternion.Euler(rot);
+        }
+
         #endregion
 
         #region Data
