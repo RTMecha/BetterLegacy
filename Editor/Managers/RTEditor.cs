@@ -7615,6 +7615,11 @@ namespace BetterLegacy.Editor.Managers
                 () => { Inspect(GameManager.inst); });
 
             GenerateDebugButton(
+                "Inspect Example",
+                "ExampleManager handles everything to do with Example, your little companion.",
+                () => { Inspect(ExampleManager.inst); });
+
+            GenerateDebugButton(
                 "Inspect Object Editor UI",
                 "Take a closer look at the Object Editor UI since the parent tree for it is pretty deep.",
                 () => { Inspect(ObjEditor.inst.ObjectView); });
