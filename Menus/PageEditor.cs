@@ -121,6 +121,12 @@ namespace BetterLegacy.Menus
             StartCoroutine(CreateUI());
         }
 
+        void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Escape) && !CoreHelper.IsUsingInputField)
+                Exit();
+        }
+
         IEnumerator CreateUI()
         {
             yield return StartCoroutine(DeleteComponents());
