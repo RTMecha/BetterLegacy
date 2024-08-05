@@ -6,6 +6,8 @@ using InControl;
 using LSFunctions;
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Reflection;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -31,13 +33,56 @@ namespace BetterLegacy.Patchers
 
             try
             {
-                Destroy(GameObject.Find("EventSystem").GetComponent<InControlInputModule>());
-                Destroy(GameObject.Find("EventSystem").GetComponent<BaseInput>());
-                GameObject.Find("EventSystem").AddComponent<StandaloneInputModule>();
+                if (!CoreHelper.InEditor)
+                {
+                    var eventSystem = GameObject.Find("EventSystem").GetComponent<EventSystem>();
+
+                    Destroy(eventSystem.GetComponent<InControlInputModule>());
+                    Destroy(eventSystem.GetComponent<BaseInput>());
+
+                    var standaloneInputModule = eventSystem.GetComponent<StandaloneInputModule>() ?? eventSystem.gameObject.AddComponent<StandaloneInputModule>();
+                    var standaloneInputModuleType = standaloneInputModule.GetType();
+
+                    //var inputPointerEventField = AccessTools.Field(standaloneInputModuleType, "m_InputPointerEvent");
+                    //var inputPointerEvent = inputPointerEventField.GetValue(standaloneInputModule);
+
+                    //if (inputPointerEvent == null)
+                    //    inputPointerEventField.SetValue(standaloneInputModule, new PointerEventData(eventSystem)
+                    //    {
+                    //        button = PointerEventData.InputButton.Left,
+                    //    });
+
+                    //var baseEventDataField = AccessTools.Field(standaloneInputModuleType, "m_BaseEventData");
+                    //var baseEventData = baseEventDataField.GetValue(standaloneInputModule);
+
+                    //if (baseEventData == null)
+                    //    baseEventDataField.SetValue(standaloneInputModule, new BaseEventData(eventSystem));
+
+                    //var pointerEventDataField = AccessTools.Field(standaloneInputModuleType, "m_PointerData");
+                    //var pointerEventData = pointerEventDataField.GetValue(standaloneInputModule);
+
+                    //if (pointerEventData is Dictionary<int, PointerEventData> pointerData)
+                    //{
+                    //    pointerData[-1] = new PointerEventData(eventSystem)
+                    //    {
+                    //        button = PointerEventData.InputButton.Left,
+                    //    };
+                    //    pointerData[-2] = new PointerEventData(eventSystem)
+                    //    {
+                    //        button = PointerEventData.InputButton.Right,
+                    //    };
+                    //    pointerData[-3] = new PointerEventData(eventSystem)
+                    //    {
+                    //        button = PointerEventData.InputButton.Middle,
+                    //    };
+                    //}
+
+                    // TODO: Check if m_MouseState is required as well.
+                }
             }
             catch (Exception ex)
             {
-                Debug.LogException(ex);
+                CoreHelper.LogError($"Error was had with exception: {ex}");
             }
 
             foreach (var quickElement in QuickElementManager.AllQuickElements)
