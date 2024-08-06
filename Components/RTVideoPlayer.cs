@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Configs;
+using BetterLegacy.Core.Helpers;
 using System;
 using System.Collections;
 
@@ -40,7 +41,6 @@ namespace BetterLegacy.Components
             videoPlayer.waitForFirstFrame = false;
 
             UpdatedAudioPos += UpdateTime;
-            videoPlayer.seekCompleted += SeekCompleted;
         }
 
         void Update()
@@ -59,43 +59,37 @@ namespace BetterLegacy.Components
 
         void UpdateTime(bool isPlaying, float time, float pitch)
         {
-            //videoPlayer.playbackSpeed = pitch < 0f ? -pitch : pitch;
             if (isPlaying)
             {
                 if (!videoPlayer.isPlaying)
                     videoPlayer.Play();
-                if (!oldStyle)
-                {
-                    UpdateVideoPlayerToFrame(time);
-                }
-                else
-                {
-                    videoPlayer.Pause();
+                videoPlayer.Pause();
 
-                    videoPlayer.time = time;
-
-                    //videoPlayer.Play();
-                }
+                videoPlayer.time = time;
             }
             else
             {
                 videoPlayer.Pause();
-                //videoPlayer.time = time;
             }
         }
 
         public string currentURL;
-        public float currentAlpha;
         public bool didntPlay = false;
 
-        public void Play(string url, float alpha)
+        public void Play(GameObject gameObject, string url, VideoAudioOutputMode videoAudioOutputMode)
         {
+            if (videoPlayer == null)
+            {
+                CoreHelper.LogError($"VideoPlayer does not exist so the set video cannot play.");
+                return;
+            }
+
             currentURL = url;
-            currentAlpha = alpha;
 
             if (!CoreConfig.Instance.EnableVideoBackground.Value)
             {
                 videoPlayer.enabled = false;
+                videoTexture?.SetActive(false);
                 didntPlay = true;
                 return;
             }
@@ -106,8 +100,10 @@ namespace BetterLegacy.Components
                 videoPlayer.targetMaterialRenderer = videoTexture.GetComponent<MeshRenderer>();
             }
 
+            videoTexture.SetActive(true);
             videoPlayer.enabled = true;
-            videoPlayer.targetCameraAlpha = alpha;
+            videoPlayer.audioOutputMode = videoAudioOutputMode;
+            videoPlayer.targetCameraAlpha = 1f;
             videoPlayer.source = VideoSource.Url;
             videoPlayer.url = url;
             videoPlayer.Prepare();
@@ -116,32 +112,14 @@ namespace BetterLegacy.Components
 
         public void Stop()
         {
-            videoPlayer.enabled = false;
-        }
+            CoreHelper.Log($"Stopping Video.");
+            if (videoPlayer)
+                videoPlayer.enabled = false;
 
-        void SeekCompleted(VideoPlayer par)
-        {
-            if (!oldStyle)
-                StartCoroutine(WaitToUpdateRenderTextureBeforeEndingSeek());
-        }
+            if (videoPlayer == null)
+                CoreHelper.LogError($"VideoPlayer does not exist so it wasn't disabled. Continuing...");
 
-        public void UpdateVideoPlayerToFrame(float time)
-        {
-            //If you are currently seeking there is no point to seek again.
-            if (!seekDone)
-                return;
-
-            // You should pause while you seek for better stability
-            videoPlayer.Pause();
-
-            videoPlayer.time = time;
-            seekDone = false;
-        }
-
-        IEnumerator WaitToUpdateRenderTextureBeforeEndingSeek()
-        {
-            yield return new WaitForEndOfFrame();
-            seekDone = true;
+            videoTexture?.SetActive(false);
         }
     }
 }
