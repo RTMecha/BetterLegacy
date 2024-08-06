@@ -180,8 +180,6 @@ namespace BetterLegacy.Example
 
             Say(dialogues[random].text);
             dialogues[random].Action();
-
-            talking = false;
         }
 
         void LoadDialogue()
@@ -608,7 +606,7 @@ namespace BetterLegacy.Example
             if (!Application.isFocused || spawning || !Visible)
                 return;
 
-            if (!dragging && !draggingLeftHand && !draggingRightHand && MusicPlaying && !dancing && UnityEngine.Random.Range(0, 501) > 499)
+            if (!dragging && !draggingLeftHand && !draggingRightHand && !talking && MusicPlaying && !dancing && UnityEngine.Random.Range(0, 501) > 499)
                 StartDancing();
             if (!MusicPlaying && dancing)
                 StopDancing();
@@ -2085,6 +2083,8 @@ namespace BetterLegacy.Example
         //ExampleManager.inst.Say("Hello, I am Example and this is a test!", new Vector2(0f, 200f))
         public void Say(string dialogue, List<IKeyframe<float>> xPos = null, List<IKeyframe<float>> yPos = null, float textLength = 1.5f, float stayTime = 4f, float time = 0.7f, bool stopOthers = true, Action onComplete = null)
         {
+            talking = true;
+
             dialogue = dialogue.Replace("{{Username}}", CoreConfig.Instance.DisplayName.Value);
 
             var regex = new Regex(@"{{Config_(.*?)_(.*?)}}");
@@ -2213,6 +2213,8 @@ namespace BetterLegacy.Example
                 onComplete?.Invoke();
 
                 animation = null;
+
+                talking = false;
 
                 if (DebugsOn)
                     Debug.Log($"{className}Say onComplete");
