@@ -2723,22 +2723,16 @@ namespace BetterLegacy.Core.Helpers
                                 && int.TryParse(modifier.commands[2], out int sampleY) && float.TryParse(modifier.commands[4], out float intensityY)
                                 && float.TryParse(modifier.value, out float val))
                             {
-                                float[] samples = new float[256];
-
-                                AudioManager.inst.CurrentAudioSource.GetSpectrumData(samples, 0, FFTWindow.Rectangular);
-
                                 sampleX = Mathf.Clamp(sampleX, 0, 255);
                                 sampleY = Mathf.Clamp(sampleY, 0, 255);
 
-                                float reactivePositionX = samples[sampleX] * intensityX * val;
-                                float reactivePositionY = samples[sampleY] * intensityY * val;
+                                float reactivePositionX = Updater.samples[sampleX] * intensityX * val;
+                                float reactivePositionY = Updater.samples[sampleY] * intensityY * val;
 
                                 var x = modifier.reference.origin.x;
                                 var y = modifier.reference.origin.y;
 
                                 levelObject.visualObject.GameObject.transform.localPosition = new Vector3(x + reactivePositionX, y + reactivePositionY, modifier.reference.depth * 0.1f);
-
-                                samples = null;
                             }
                             break;
                         }
@@ -2749,19 +2743,13 @@ namespace BetterLegacy.Core.Helpers
                                 && int.TryParse(modifier.commands[2], out int sampleY) && float.TryParse(modifier.commands[4], out float intensityY)
                                 && float.TryParse(modifier.value, out float val))
                             {
-                                float[] samples = new float[256];
-
-                                AudioManager.inst.CurrentAudioSource.GetSpectrumData(samples, 0, FFTWindow.Rectangular);
-
                                 sampleX = Mathf.Clamp(sampleX, 0, 255);
                                 sampleY = Mathf.Clamp(sampleY, 0, 255);
 
-                                float reactiveScaleX = samples[sampleX] * intensityX * val;
-                                float reactiveScaleY = samples[sampleY] * intensityY * val;
+                                float reactiveScaleX = Updater.samples[sampleX] * intensityX * val;
+                                float reactiveScaleY = Updater.samples[sampleY] * intensityY * val;
 
                                 levelObject.visualObject.GameObject.transform.localScale = new Vector3(1f + reactiveScaleX, 1f + reactiveScaleY, 1f);
-
-                                samples = null;
                             }
                             break;
                         }
@@ -2770,17 +2758,11 @@ namespace BetterLegacy.Core.Helpers
                             if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject
                                 && int.TryParse(modifier.commands[1], out int sample) && float.TryParse(modifier.value, out float val))
                             {
-                                float[] samples = new float[256];
-
-                                AudioManager.inst.CurrentAudioSource.GetSpectrumData(samples, 0, FFTWindow.Rectangular);
-
                                 sample = Mathf.Clamp(sample, 0, 255);
 
-                                float reactiveRotation = samples[sample] * val;
+                                float reactiveRotation = Updater.samples[sample] * val;
 
                                 levelObject.visualObject.GameObject.transform.localRotation = Quaternion.Euler(0f, 0f, reactiveRotation);
-
-                                samples = null;
                             }
                             break;
                         }
@@ -2789,18 +2771,12 @@ namespace BetterLegacy.Core.Helpers
                             if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer
                                 && int.TryParse(modifier.commands[1], out int sample) && float.TryParse(modifier.value, out float val))
                             {
-                                float[] samples = new float[256];
-
-                                AudioManager.inst.CurrentAudioSource.GetSpectrumData(samples, 0, FFTWindow.Rectangular);
-
                                 sample = Mathf.Clamp(sample, 0, 255);
 
-                                float reactiveColor = samples[sample] * val;
+                                float reactiveColor = Updater.samples[sample] * val;
 
                                 if (levelObject.visualObject.Renderer != null && int.TryParse(modifier.commands[2], out int col))
                                     levelObject.visualObject.Renderer.material.color += GameManager.inst.LiveTheme.objectColors[col] * reactiveColor;
-
-                                samples = null;
                             }
                             break;
                         }
@@ -2809,18 +2785,12 @@ namespace BetterLegacy.Core.Helpers
                             if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer
                                 && int.TryParse(modifier.commands[1], out int sample) && float.TryParse(modifier.value, out float val))
                             {
-                                float[] samples = new float[256];
-
-                                AudioManager.inst.CurrentAudioSource.GetSpectrumData(samples, 0, FFTWindow.Rectangular);
-
                                 sample = Mathf.Clamp(sample, 0, 255);
 
-                                float reactiveColor = samples[sample] * val;
+                                float reactiveColor = Updater.samples[sample] * val;
 
                                 if (levelObject.visualObject.Renderer != null && int.TryParse(modifier.commands[2], out int col))
                                     levelObject.visualObject.Renderer.material.color = RTMath.Lerp(levelObject.visualObject.Renderer.material.color, GameManager.inst.LiveTheme.objectColors[col], reactiveColor);
-
-                                samples = null;
                             }
                             break;
                         }
@@ -2831,19 +2801,13 @@ namespace BetterLegacy.Core.Helpers
                                 && int.TryParse(modifier.commands[2], out int sampleY) && float.TryParse(modifier.commands[4], out float intensityY)
                                 && float.TryParse(modifier.value, out float val))
                             {
-                                float[] samples = new float[256];
-
-                                AudioManager.inst.CurrentAudioSource.GetSpectrumData(samples, 0, FFTWindow.Rectangular);
-
                                 sampleX = Mathf.Clamp(sampleX, 0, 255);
                                 sampleY = Mathf.Clamp(sampleY, 0, 255);
 
-                                float reactivePositionX = samples[sampleX] * intensityX * val;
-                                float reactivePositionY = samples[sampleY] * intensityY * val;
+                                float reactivePositionX = Updater.samples[sampleX] * intensityX * val;
+                                float reactivePositionY = Updater.samples[sampleY] * intensityY * val;
 
                                 modifier.reference.reactivePositionOffset = new Vector3(reactivePositionX, reactivePositionY);
-
-                                samples = null;
                             }
 
                             break;
@@ -2855,19 +2819,13 @@ namespace BetterLegacy.Core.Helpers
                                 && int.TryParse(modifier.commands[2], out int sampleY) && float.TryParse(modifier.commands[4], out float intensityY)
                                 && float.TryParse(modifier.value, out float val))
                             {
-                                float[] samples = new float[256];
-
-                                AudioManager.inst.CurrentAudioSource.GetSpectrumData(samples, 0, FFTWindow.Rectangular);
-
                                 sampleX = Mathf.Clamp(sampleX, 0, 255);
                                 sampleY = Mathf.Clamp(sampleY, 0, 255);
 
-                                float reactiveScaleX = samples[sampleX] * intensityX * val;
-                                float reactiveScaleY = samples[sampleY] * intensityY * val;
+                                float reactiveScaleX = Updater.samples[sampleX] * intensityX * val;
+                                float reactiveScaleY = Updater.samples[sampleY] * intensityY * val;
 
                                 modifier.reference.reactiveScaleOffset = new Vector3(reactiveScaleX, reactiveScaleY, 1f);
-
-                                samples = null;
                             }
 
                             break;
@@ -2876,17 +2834,11 @@ namespace BetterLegacy.Core.Helpers
                         {
                             if (modifier.reference && int.TryParse(modifier.commands[1], out int sample) && float.TryParse(modifier.value, out float val))
                             {
-                                float[] samples = new float[256];
-
-                                AudioManager.inst.CurrentAudioSource.GetSpectrumData(samples, 0, FFTWindow.Rectangular);
-
                                 sample = Mathf.Clamp(sample, 0, 255);
 
-                                float reactiveRotation = samples[sample] * val;
+                                float reactiveRotation = Updater.samples[sample] * val;
 
                                 modifier.reference.reactiveRotationOffset = reactiveRotation;
-
-                                samples = null;
                             }
                             break;
                         }

@@ -22,6 +22,8 @@ namespace BetterLegacy.Core.Optimization
         static float previousAudioTime;
         static float audioTimeVelocity;
 
+        public static float[] samples = new float[256];
+
         public static bool Active => levelProcessor && levelProcessor.level;
 
         public static bool HasObject(BaseBeatmapObject beatmapObject) => Active && (LevelObject)levelProcessor.level.objects.Find(x => x.ID == beatmapObject.id);
@@ -82,6 +84,8 @@ namespace BetterLegacy.Core.Optimization
         /// </summary>
         public static void OnLevelTick()
         {
+            AudioManager.inst.CurrentAudioSource.GetSpectrumData(samples, 0, FFTWindow.Rectangular);
+
             if (!UseNewUpdateMethod)
             {
                 var time = AudioManager.inst.CurrentAudioSource.time;
