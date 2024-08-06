@@ -67,8 +67,11 @@ namespace BetterLegacy.Example
 
         public bool MusicPlaying => CoreHelper.InEditor && EditorManager.inst.hasLoadedLevel && AudioManager.inst.CurrentAudioSource.isPlaying;
         public bool dancing;
+        public bool canDance = true;
 
         public float handsBaseRotation = 0f;
+        public float browLeftRotation = 0f;
+        public float browRightRotation = 0f;
 
         #endregion
 
@@ -307,14 +310,14 @@ namespace BetterLegacy.Example
 
         #region Tracking
 
-        bool faceCanLook = true;
-        float faceLookMultiplier = 0.006f;
+        public bool faceCanLook = true;
+        public float faceLookMultiplier = 0.006f;
 
         Vector2 pupilsOffset;
         float pupilsLookRate = 3f;
         bool pupilsCanChange = true;
 
-        bool allowBlinking = true;
+        public bool allowBlinking = true;
 
         float blinkRate = 5f;
 
@@ -342,11 +345,6 @@ namespace BetterLegacy.Example
                 return Input.mousePosition /* * RTHelpers.screenScaleInverse*/;
             }
         }
-
-        public Vector3[] pointsOfInterest = new Vector3[]
-        {
-            new Vector3(0f, 0f)
-        };
 
         #endregion
 
@@ -380,6 +378,10 @@ namespace BetterLegacy.Example
         #endregion
 
         #region Dragging
+
+        public bool canDrag = true;
+        public bool canDragLeftHand = true;
+        public bool canDragRightHand = true;
 
         public bool draggingLeftHand = false;
         public bool draggingRightHand = false;
@@ -473,7 +475,7 @@ namespace BetterLegacy.Example
 
         #endregion
 
-        float time = 0f;
+        public float time = 0f;
 
         float timeOffset;
 
@@ -553,7 +555,7 @@ namespace BetterLegacy.Example
                     baseCanvas.SetActive(ExampleConfig.Instance.EnabledInEditor.Value);
                 else if (GameManager.inst)
                     baseCanvas.SetActive(ExampleConfig.Instance.EnabledInGame.Value);
-                else if (ArcadeManager.inst.ic)
+                else if (Menus.MenuManager.inst && Menus.MenuManager.inst.ic)
                     baseCanvas.SetActive(ExampleConfig.Instance.EnabledInMenus.Value);
 
                 canvas.scaleFactor = CoreHelper.ScreenScale;
@@ -583,9 +585,7 @@ namespace BetterLegacy.Example
                 blink?.gameObject.SetActive(active);
             }
             else
-            {
                 blink?.gameObject?.SetActive(true);
-            }
 
             if (!dancing)
                 RepeatDialogues();
@@ -602,14 +602,17 @@ namespace BetterLegacy.Example
         {
             lateUpdate?.Invoke();
 
-            // Example breaks if application isn't focused.
-            if (!Application.isFocused || spawning || !Visible)
+            if (spawning)
                 return;
 
-            if (!dragging && !draggingLeftHand && !draggingRightHand && !talking && MusicPlaying && !dancing && UnityEngine.Random.Range(0, 501) > 499)
+            if (canDance && !dragging && !draggingLeftHand && !draggingRightHand && !talking && MusicPlaying && !dancing && UnityEngine.Random.Range(0, 501) > 499)
                 StartDancing();
             if (!MusicPlaying && dancing)
                 StopDancing();
+
+            // Example breaks if application isn't focused.
+            if (!Application.isFocused || !Visible)
+                return;
 
             if (lookAt)
             {
@@ -632,21 +635,14 @@ namespace BetterLegacy.Example
                 }
             }
 
-            // Set mouth position & ear and tail rotation, forcing them to rotate to the other side of the face.
-            if (faceX && faceY && tail && ears && mouthBase && nose)
-            {
-                float faceXPos = faceX.localPosition.x * 5f;
-
-                tail.localRotation = Quaternion.Euler(0f, 0f, -faceXPos);
-                tail.GetChild(0).localRotation = Quaternion.Euler(0f, 0f, -faceXPos);
-                ears.localRotation = Quaternion.Euler(0f, 0f, faceX.localPosition.x * 0.8f);
-
-                mouthBase.localPosition = new Vector3(faceX.localPosition.x, (faceY.localPosition.y * 0.5f) + -30f, 0f);
-                nose.localPosition = new Vector3(faceX.localPosition.x, (faceY.localPosition.y * 0.5f) + -20f, 0f);
-            }
-
             if (handsBase)
                 handsBase.localRotation = Quaternion.Euler(new Vector3(0f, 0f, handsBaseRotation));
+
+            if (browLeft)
+                browLeft.localRotation = Quaternion.Euler(new Vector3(0f, 0f, browLeftRotation));
+
+            if (browRight)
+                browRight.localRotation = Quaternion.Euler(new Vector3(0f, 0f, browRightRotation));
 
             var vector = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f) * CoreHelper.ScreenScaleInverse;
 
@@ -666,8 +662,8 @@ namespace BetterLegacy.Example
                 parentX.localPosition = new Vector3(Mathf.Clamp(dragPos.x, -970f, 970f), 0f);
                 parentY.localPosition = new Vector3(0f, Mathf.Clamp(dragPos.y, -560f, 560f));
 
-                faceX.localPosition = new Vector3(-((target.x - dragPos.x) * po), 0f);
-                faceY.localPosition = new Vector3(0f, -((target.y - dragPos.y) * po));
+                faceX.localPosition = new Vector3(Mathf.Clamp(-((target.x - dragPos.x) * po), -14f, 14f), 0f);
+                faceY.localPosition = new Vector3(0f, Mathf.Clamp(-((target.y - dragPos.y) * po), -14f, 14f));
             }
 
             if (draggingLeftHand)
@@ -675,6 +671,19 @@ namespace BetterLegacy.Example
 
             if (draggingRightHand)
                 handRight.localPosition += (target - handRight.localPosition) * po;
+
+            // Set mouth position & ear and tail rotation, forcing them to rotate to the other side of the face.
+            if (faceX && faceY && tail && ears && mouthBase && nose)
+            {
+                float faceXPos = faceX.localPosition.x * 5f;
+
+                tail.localRotation = Quaternion.Euler(0f, 0f, -faceXPos);
+                tail.GetChild(0).localRotation = Quaternion.Euler(0f, 0f, -faceXPos);
+                ears.localRotation = Quaternion.Euler(0f, 0f, faceX.localPosition.x * 0.8f);
+
+                mouthBase.localPosition = new Vector3(faceX.localPosition.x, (faceY.localPosition.y * 0.5f) + -30f, 0f);
+                nose.localPosition = new Vector3(faceX.localPosition.x, (faceY.localPosition.y * 0.5f) + -20f, 0f);
+            }
 
             float addToDialogueY = 200f;
             if (TotalPosition.y > 355f)
@@ -810,12 +819,12 @@ namespace BetterLegacy.Example
                     {
                         new FloatKeyframe(0f, 0f, Ease.Linear),
                         new FloatKeyframe(0.2f, 15f, Ease.SineOut),
-                    }, x => { browLeft.localRotation = Quaternion.Euler(0f, 0f, x); }),
+                    }, x => { browLeftRotation = x; }),
                     new AnimationHandler<float>(new List<IKeyframe<float>>
                     {
                         new FloatKeyframe(0f, 0f, Ease.Linear),
                         new FloatKeyframe(0.2f, -15f, Ease.SineOut),
-                    }, x => { browRight.localRotation = Quaternion.Euler(0f, 0f, x); }),
+                    }, x => { browRightRotation = x; }),
                 };
 
                 animations.Add(animation);
@@ -952,12 +961,14 @@ namespace BetterLegacy.Example
             yield break;
         }
 
+        void LogFileDoesNotExist(string onError) => Debug.LogError($"{className}File does not exist.\nError: {onError}");
+
         IEnumerator SpawnExample()
         {
             spawning = true;
 
             if (RTFile.FileExists(RTFile.ApplicationDirectory + "settings/ExampleHooks.cs"))
-                yield return StartCoroutine(RTCode.IEvaluate(RTFile.ReadFromFile("settings/ExampleHooks.cs")));
+                yield return StartCoroutine(RTCode.IEvaluate(RTFile.ReadFromFile(RTFile.ApplicationDirectory + "settings/ExampleHooks.cs")));
 
             var p = SpeakPath;
             StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{SpeakPath}", RTFile.GetAudioType(SpeakPath), audioClip => { speakSound = audioClip; }));
@@ -974,7 +985,7 @@ namespace BetterLegacy.Example
             blocker.transform.AsRT().anchoredPosition = Vector2.zero;
             blocker.transform.AsRT().sizeDelta = new Vector2(10000f, 10000f);
             var blockerImage = blocker.AddComponent<Image>();
-            blockerImage.color = new Color(1f, 1f, 1f, 0f);
+            blockerImage.color = new Color(0f, 0f, 0f, 0.3f);
             blocker.SetActive(false);
 
             #endregion
@@ -1022,23 +1033,20 @@ namespace BetterLegacy.Example
 
                 im.transform.AsRT().anchoredPosition = Vector2.zero;
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{HeadPath}", texture2D =>
-                {
-                    image.sprite = SpriteManager.CreateSprite(texture2D);
-                }, onError => { Debug.LogErrorFormat("{0}File does not exist.", className); }));
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{HeadPath}", image.AssignTexture, LogFileDoesNotExist));
 
                 var clickable = im.AddComponent<ExampleClickable>();
                 clickable.onClick = pointerEventData =>
                 {
-                    if (pointerEventData.button == PointerEventData.InputButton.Right)
-                    {
-                        optionsActive = !optionsActive;
-                        optionsBase.gameObject.SetActive(optionsActive);
-                    }
+                    if (pointerEventData.button != PointerEventData.InputButton.Right)
+                        return;
+
+                    optionsActive = !optionsActive;
+                    optionsBase.gameObject.SetActive(optionsActive);
                 };
                 clickable.onDown = pointerEventData =>
                 {
-                    if (pointerEventData.button != PointerEventData.InputButton.Left)
+                    if (pointerEventData.button != PointerEventData.InputButton.Left || !canDrag)
                         return;
 
                     StopAnimations(x => x.name == "End Drag Example" || x.name == "Drag Example" || x.name.ToLower().Contains("movement"));
@@ -1054,14 +1062,6 @@ namespace BetterLegacy.Example
                     if (speakSound != null) PlaySound(speakSound, UnityEngine.Random.Range(01.1f, 1.3f), UnityEngine.Random.Range(0.6f, 0.7f));
                     else AudioManager.inst.PlaySound("Click");
 
-                    float tbrowLeft = -15f;
-                    if (browLeft.localRotation.eulerAngles.z > 180f)
-                        tbrowLeft = 345f;
-
-                    float tbrowRight = 15f;
-                    if (browRight.localRotation.eulerAngles.z > 180f)
-                        tbrowRight = 345f;
-
                     var animation = new RTAnimation("Drag Example");
                     animation.animationHandlers = new List<AnimationHandlerBase>
                     {
@@ -1069,46 +1069,46 @@ namespace BetterLegacy.Example
                         {
                             new FloatKeyframe(0f, mouthLower.localScale.y, Ease.Linear),
                             new FloatKeyframe(0.2f, 0.7f, Ease.SineOut),
-                        }, x => { mouthLower.localScale = new Vector3(1f, x, 1f); }),
+                        }, mouthLower.SetLocalScaleY),
                         new AnimationHandler<float>(new List<IKeyframe<float>>
                         {
                             new FloatKeyframe(0f, lips.localScale.y, Ease.Linear),
                             new FloatKeyframe(0.2f, 0.5f, Ease.SineOut),
-                        }, x => { lips.localScale = new Vector3(1f, x, 1f); }),
+                        }, lips.SetLocalScaleY),
                         new AnimationHandler<float>(new List<IKeyframe<float>>
                         {
                             new FloatKeyframe(0f, lips.localPosition.y, Ease.Linear),
                             new FloatKeyframe(0.2f, 2f, Ease.SineOut),
-                        }, x => { lips.localPosition = new Vector3(0f, x, 0f); }),
+                        }, lips.SetLocalPositionY),
                         new AnimationHandler<float>(new List<IKeyframe<float>>
                         {
                             new FloatKeyframe(0f, head.localPosition.y, Ease.Linear),
                             new FloatKeyframe(0.2f, 10f, Ease.SineOut),
-                        }, x => { head.localPosition = new Vector3(head.localPosition.x, x, head.localPosition.z); }),
+                        }, head.SetLocalPositionY),
 						// Hands
 						new AnimationHandler<float>(new List<IKeyframe<float>>
                         {
                             new FloatKeyframe(0f, handLeft.GetChild(0).localPosition.y, Ease.Linear),
                             new FloatKeyframe(0.05f, handLeft.GetChild(0).localPosition.y, Ease.Linear),
                             new FloatKeyframe(0.3f, -30f, Ease.SineOut),
-                        }, x => { handLeft.GetChild(0).localPosition = new Vector3(0f, x, 0f); }),
+                        }, handLeft.GetChild(0).SetLocalPositionY),
                         new AnimationHandler<float>(new List<IKeyframe<float>>
                         {
                             new FloatKeyframe(0f, handRight.GetChild(0).localPosition.y, Ease.Linear),
                             new FloatKeyframe(0.05f, handRight.GetChild(0).localPosition.y, Ease.Linear),
                             new FloatKeyframe(0.3f, -30f, Ease.SineOut),
-                        }, x => { handRight.GetChild(0).localPosition = new Vector3(0f, x, 0f); }),
+                        }, handRight.GetChild(0).SetLocalPositionY),
 						// Brows
 						new AnimationHandler<float>(new List<IKeyframe<float>>
                         {
-                            new FloatKeyframe(0f, browLeft.localRotation.eulerAngles.z, Ease.Linear),
-                            new FloatKeyframe(0.3f, tbrowLeft, Ease.SineOut),
-                        }, x => { browLeft.localRotation = Quaternion.Euler(0f, 0f, x); }),
+                            new FloatKeyframe(0f, browLeftRotation, Ease.Linear),
+                            new FloatKeyframe(0.3f, -15f, Ease.SineOut),
+                        }, x => { browLeftRotation = x; }),
                         new AnimationHandler<float>(new List<IKeyframe<float>>
                         {
-                            new FloatKeyframe(0f, browRight.localRotation.eulerAngles.z, Ease.Linear),
-                            new FloatKeyframe(0.3f, tbrowRight, Ease.SineOut),
-                        }, x => { browRight.localRotation = Quaternion.Euler(0f, 0f, x); }),
+                            new FloatKeyframe(0f, browRightRotation, Ease.Linear),
+                            new FloatKeyframe(0.3f, 15f, Ease.SineOut),
+                        }, x => { browRightRotation = x; }),
 
                         new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
                         {
@@ -1128,19 +1128,14 @@ namespace BetterLegacy.Example
                 };
                 clickable.onUp = pointerEventData =>
                 {
+                    if (!canDrag)
+                        return;
+
                     var animation = new RTAnimation("End Drag Example");
 
                     float t = 0f;
                     if (parentRotscale.localRotation.eulerAngles.z > 180f)
                         t = 360f;
-
-                    float tbrowLeft = 0f;
-                    if (browLeft.localRotation.eulerAngles.z > 180f)
-                        tbrowLeft = 360f;
-
-                    float tbrowRight = 0f;
-                    if (browRight.localRotation.eulerAngles.z > 180f)
-                        tbrowRight = 360f;
 
                     animation.animationHandlers = new List<AnimationHandlerBase>
                     {
@@ -1148,102 +1143,72 @@ namespace BetterLegacy.Example
                         {
                             new Vector2Keyframe(0f, new Vector2(parentY.localScale.x, parentY.localScale.y), Ease.Linear),
                             new Vector2Keyframe(1.5f, new Vector2(1f, 1f), Ease.ElasticOut),
-                        }, x =>
-                        {
-                            parentY.localScale = new Vector3(x.x, x.y, 1f);
-                        }),
+                        }, x => { parentY.localScale = new Vector3(x.x, x.y, 1f); }),
                         new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
                         {
                             new Vector2Keyframe(0f, new Vector2(parentRotscale.localScale.x, parentRotscale.localScale.y), Ease.Linear),
                             new Vector2Keyframe(1.5f, new Vector2(1f, 1f), Ease.ElasticOut),
-                        }, x =>
-                        {
-                            parentRotscale.localScale = new Vector3(x.x, x.y, 1f);
-                        }),
+                        }, x => { parentRotscale.localScale = new Vector3(x.x, x.y, 1f); }),
 
                         new AnimationHandler<float>(new List<IKeyframe<float>>
                         {
                             new FloatKeyframe(0f, parentRotscale.localRotation.eulerAngles.z, Ease.Linear),
                             new FloatKeyframe(1f, t, Ease.BackOut),
-                        }, x =>
-                        {
-                            parentRotscale.localRotation = Quaternion.Euler(0f, 0f, x);
-                        }),
+                        }, x => { parentRotscale.localRotation = Quaternion.Euler(0f, 0f, x); }),
                         new AnimationHandler<float>(new List<IKeyframe<float>>
                         {
                             new FloatKeyframe(0f, mouthLower.localScale.y, Ease.Linear),
                             new FloatKeyframe(0.2f, 0.5f, Ease.SineIn),
-                        }, x =>
-                        {
-                            mouthLower.localScale = new Vector3(1f, x, 1f);
-                        }),
+                        }, mouthLower.SetLocalScaleY),
                         new AnimationHandler<float>(new List<IKeyframe<float>>
                         {
                             new FloatKeyframe(0f, lips.localScale.y, Ease.Linear),
                             new FloatKeyframe(0.2f, 1f, Ease.SineIn),
-                        }, x =>
-                        {
-                            lips.localScale = new Vector3(1f, x, 1f);
-                        }),
+                        }, lips.SetLocalScaleY),
                         new AnimationHandler<float>(new List<IKeyframe<float>>
                         {
                             new FloatKeyframe(0f, lips.localPosition.y, Ease.Linear),
                             new FloatKeyframe(0.2f, 0f, Ease.SineIn),
-                        }, x =>
-                        {
-                            lips.localPosition = new Vector3(0f, x, 0f);
-                        }),
+                        }, lips.SetLocalPositionY),
                         new AnimationHandler<float>(new List<IKeyframe<float>>
                         {
                             new FloatKeyframe(0f, head.localPosition.y, Ease.Linear),
                             new FloatKeyframe(0.5f, 0f, Ease.BounceOut),
-                        }, x =>
-                        {
-                            head.localPosition = new Vector3(head.localPosition.x, x, head.localPosition.z);
-                        }),
+                        }, head.SetLocalPositionY),
                         new AnimationHandler<float>(new List<IKeyframe<float>>
                         {
                             new FloatKeyframe(0f, handLeft.GetChild(0).localPosition.y, Ease.Linear),
                             new FloatKeyframe(0.1f, handLeft.GetChild(0).localPosition.y, Ease.Linear),
                             new FloatKeyframe(0.7f, -80f, Ease.BounceOut),
-                        }, x =>
-                        {
-                            handLeft.GetChild(0).localPosition = new Vector3(0f, x, 0f);
-                        }),
+                        }, handLeft.GetChild(0).SetLocalPositionY),
                         new AnimationHandler<float>(new List<IKeyframe<float>>
                         {
                             new FloatKeyframe(0f, handRight.GetChild(0).localPosition.y, Ease.Linear),
                             new FloatKeyframe(0.1f, handRight.GetChild(0).localPosition.y, Ease.Linear),
                             new FloatKeyframe(0.7f, -80f, Ease.BounceOut),
-                        }, x =>
-                        {
-                            handRight.GetChild(0).localPosition = new Vector3(0f, x, 0f);
-                        }),
+                        }, handRight.GetChild(0).SetLocalPositionY),
 
 						// Brows
 						new AnimationHandler<float>(new List<IKeyframe<float>>
                         {
-                            new FloatKeyframe(0f, browLeft.localRotation.eulerAngles.z, Ease.Linear),
-                            new FloatKeyframe(0.5f, tbrowLeft, Ease.SineOut),
-                        }, x =>
-                        {
-                            browLeft.localRotation = Quaternion.Euler(0f, 0f, x);
-                        }),
+                            new FloatKeyframe(0f, browLeftRotation, Ease.Linear),
+                            new FloatKeyframe(0.5f, 0f, Ease.SineOut),
+                        }, x => { browLeftRotation = x; }),
                         new AnimationHandler<float>(new List<IKeyframe<float>>
                         {
-                            new FloatKeyframe(0f, browRight.localRotation.eulerAngles.z, Ease.Linear),
-                            new FloatKeyframe(0.5f, tbrowRight, Ease.SineOut),
-                        }, x => { browRight.localRotation = Quaternion.Euler(0f, 0f, x); }),
+                            new FloatKeyframe(0f, browRightRotation, Ease.Linear),
+                            new FloatKeyframe(0.5f, 0f, Ease.SineOut),
+                        }, x => { browRightRotation = x; }),
                         new AnimationHandler<float>(new List<IKeyframe<float>>
                         {
                             new FloatKeyframe(0f, faceX.localPosition.x, Ease.Linear),
                             new FloatKeyframe(0.5f, 0f, Ease.SineOut),
-                        }, x => { faceX.localPosition = new Vector3(x, 0f, 0f); }),
+                        }, faceX.SetLocalPositionX),
                         new AnimationHandler<float>(new List<IKeyframe<float>>
                         {
                             new FloatKeyframe(0f, faceY.localPosition.y, Ease.Linear),
                             new FloatKeyframe(0.5f, 0f, Ease.SineOut),
-                        }, x => { faceY.localPosition = new Vector3(0f, x, 0f); }),
+                        }, faceY.SetLocalPositionY),
                     };
 
                     faceX.localPosition = Vector3.zero;
@@ -1266,16 +1231,13 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().anchoredPosition = new Vector2(0f, -58f);
                 im.transform.AsRT().sizeDelta = new Vector2(28f, 42f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{TailPath}", texture2D =>
-                {
-                    image.sprite = SpriteManager.CreateSprite(texture2D);
-                }, onError => { Debug.LogErrorFormat("{0}File does not exist.", className); }));
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{TailPath}", image.AssignTexture, LogFileDoesNotExist));
 
                 var clickable = im.AddComponent<ExampleClickable>();
                 clickable.onClick = pointerEventData =>
                 {
                     talking = true;
-                    Say("Please don't touch me there.", new List<IKeyframe<float>> { new FloatKeyframe(0f, parentX.localPosition.x, Ease.Linear) }, new List<IKeyframe<float>> { new FloatKeyframe(0f, parentY.localPosition.y + 200f, Ease.Linear) }, onComplete: () => { talking = false; });
+                    Say("Please don't touch me there.", new List<IKeyframe<float>> { new FloatKeyframe(0f, parentX.localPosition.x, Ease.Linear) }, new List<IKeyframe<float>> { new FloatKeyframe(0f, parentY.localPosition.y + 200f, Ease.Linear) });
                     Play("Angry", false);
                 };
             }
@@ -1303,10 +1265,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().pivot = new Vector2(0.5f, 0.2f);
                 im.transform.AsRT().sizeDelta = new Vector2(44f, 52f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarBottomPath}", texture2D =>
-                {
-                    image.sprite = SpriteManager.CreateSprite(texture2D);
-                }, onError => { Debug.LogErrorFormat("{0}File does not exist.", className); }));
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarBottomPath}", image.AssignTexture, LogFileDoesNotExist));
             }
 
             var l_earbottomright = Creator.NewUIObject("Example Ear Bottom Right", ears);
@@ -1323,10 +1282,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().pivot = new Vector2(0.5f, 0.2f);
                 im.transform.AsRT().sizeDelta = new Vector2(44f, 52f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarBottomPath}", texture2D =>
-                {
-                    image.sprite = SpriteManager.CreateSprite(texture2D);
-                }, onError => {  Debug.LogErrorFormat("{0}File does not exist.", className); }));
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarBottomPath}", image.AssignTexture, LogFileDoesNotExist));
             }
 
             #endregion
@@ -1356,10 +1312,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().anchoredPosition = Vector2.zero;
                 im.transform.AsRT().sizeDelta = new Vector2(74f, 34f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EyesPath}", texture2D =>
-                {
-                    image.sprite = SpriteManager.CreateSprite(texture2D);
-                }, onError => { Debug.LogErrorFormat("{0}File does not exist.", className); }));
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EyesPath}", image.AssignTexture, LogFileDoesNotExist));
 
                 var clickable = im.AddComponent<ExampleClickable>();
                 clickable.onDown = pointerEventData => { pokingEyes = true; };
@@ -1377,10 +1330,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().anchoredPosition = Vector2.zero;
                 im.transform.AsRT().sizeDelta = new Vector2(47f, 22f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{PupilsPath}", texture2D =>
-                {
-                    image.sprite = SpriteManager.CreateSprite(texture2D);
-                }, onError => { Debug.LogErrorFormat("{0}File does not exist.", className); }));
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{PupilsPath}", image.AssignTexture, LogFileDoesNotExist));
 
                 var clickable = im.AddComponent<ExampleClickable>();
                 clickable.onDown = pointerEventData => { pokingEyes = true; };
@@ -1398,10 +1348,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().anchoredPosition = Vector2.zero;
                 im.transform.AsRT().sizeDelta = new Vector2(74f, 34f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{BlinkPath}", texture2D =>
-                {
-                    image.sprite = SpriteManager.CreateSprite(texture2D);
-                }, onError => { Debug.LogErrorFormat("{0}File does not exist.", className); }));
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{BlinkPath}", image.AssignTexture, LogFileDoesNotExist));
             }
 
             #endregion
@@ -1419,10 +1366,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().anchoredPosition = new Vector2(0f, -31f);
                 im.transform.AsRT().sizeDelta = new Vector2(60f, 31f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{SnoutPath}", texture2D =>
-                {
-                    image.sprite = SpriteManager.CreateSprite(texture2D);
-                }, onError => { Debug.LogErrorFormat("{0}File does not exist.", className); }));
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{SnoutPath}", image.AssignTexture, LogFileDoesNotExist));
             }
 
             var l_mouthBase = Creator.NewUIObject("Example Mouth Base", snout);
@@ -1444,10 +1388,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().pivot = new Vector2(0.5f, 1f);
                 im.transform.AsRT().sizeDelta = new Vector2(32f, 16f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{MouthPath}", texture2D =>
-                {
-                    image.sprite = SpriteManager.CreateSprite(texture2D);
-                }, onError => { Debug.LogErrorFormat("{0}File does not exist.", className); }));
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{MouthPath}", image.AssignTexture, LogFileDoesNotExist));
             }
 
             var l_mouthLower = Creator.NewUIObject("Example Mouth Lower", mouthBase);
@@ -1464,10 +1405,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().pivot = new Vector2(0.5f, 1f);
                 im.transform.AsRT().sizeDelta = new Vector2(32f, 16f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{MouthPath}", texture2D =>
-                {
-                    image.sprite = SpriteManager.CreateSprite(texture2D);
-                }, onError => { Debug.LogErrorFormat("{0}File does not exist.", className); }));
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{MouthPath}", image.AssignTexture, LogFileDoesNotExist));
             }
 
             var l_lips = Creator.NewUIObject("Example Lips", mouthBase);
@@ -1483,10 +1421,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().pivot = new Vector2(0.5f, 1f);
                 im.transform.AsRT().sizeDelta = new Vector2(32f, 8f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{LipsPath}", texture2D =>
-                {
-                    image.sprite = SpriteManager.CreateSprite(texture2D);
-                }, onError => { Debug.LogErrorFormat("{0}File does not exist.", className); }));
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{LipsPath}", image.AssignTexture, LogFileDoesNotExist));
             }
 
             var l_nose = Creator.NewUIObject("Example Nose", snout);
@@ -1500,10 +1435,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().anchoredPosition = new Vector2(0f, 0f);
                 im.transform.AsRT().sizeDelta = new Vector2(22f, 8f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{NosePath}", texture2D =>
-                {
-                    image.sprite = SpriteManager.CreateSprite(texture2D);
-                }, onError => { Debug.LogErrorFormat("{0}File does not exist.", className); }));
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{NosePath}", image.AssignTexture, LogFileDoesNotExist));
             }
 
             #endregion
@@ -1526,10 +1458,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().pivot = new Vector2(1.7f, 0.5f);
                 im.transform.AsRT().sizeDelta = new Vector2(20f, 6f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{BrowsPath}", texture2D =>
-                {
-                    image.sprite = SpriteManager.CreateSprite(texture2D);
-                }, onError => { Debug.LogErrorFormat("{0}File does not exist.", className); }));
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{BrowsPath}", image.AssignTexture, LogFileDoesNotExist));
             }
 
             var l_browRight = Creator.NewUIObject("Example Brow Right", browBase);
@@ -1544,10 +1473,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().pivot = new Vector2(-0.7f, 0.5f);
                 im.transform.AsRT().sizeDelta = new Vector2(20f, 6f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{BrowsPath}", texture2D =>
-                {
-                    image.sprite = SpriteManager.CreateSprite(texture2D);
-                }, onError => { Debug.LogErrorFormat("{0}File does not exist.", className); }));
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{BrowsPath}", image.AssignTexture, LogFileDoesNotExist));
             }
 
             #endregion
@@ -1569,10 +1495,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().pivot = new Vector2(0.5f, 0.275f);
                 im.transform.AsRT().sizeDelta = new Vector2(44f, 80f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarTopPath}", texture2D =>
-                {
-                    image.sprite = SpriteManager.CreateSprite(texture2D);
-                }, onError => { Debug.LogErrorFormat("{0}File does not exist.", className); }));
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarTopPath}", image.AssignTexture, LogFileDoesNotExist));
 
                 var clickable = im.AddComponent<ExampleClickable>();
                 clickable.onClick = pointerEventData =>
@@ -1614,10 +1537,7 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().pivot = new Vector2(0.5f, 0.275f);
                 im.transform.AsRT().sizeDelta = new Vector2(44f, 80f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarTopPath}", texture2D =>
-                {
-                    image.sprite = SpriteManager.CreateSprite(texture2D);
-                }, onError => { Debug.LogErrorFormat("{0}File does not exist.", className); }));
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{EarTopPath}", image.AssignTexture, LogFileDoesNotExist));
 
                 var clickable = im.AddComponent<ExampleClickable>();
                 clickable.onClick = pointerEventData =>
@@ -1665,14 +1585,14 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().pivot = new Vector2(0.5f, 0.5f);
                 im.transform.AsRT().sizeDelta = new Vector2(42f, 42f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{HandsPath}", texture2D =>
-                {
-                    image.sprite = SpriteManager.CreateSprite(texture2D);
-                }, onError => { Debug.LogErrorFormat("{0}File does not exist.", className); }));
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{HandsPath}", image.AssignTexture, LogFileDoesNotExist));
 
                 var clickable = im.AddComponent<ExampleClickable>();
                 clickable.onDown = pointerEventData =>
                 {
+                    if (!canDragLeftHand)
+                        return;
+
                     startMousePos = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f) * CoreHelper.ScreenScaleInverse;
                     startDragPos = new Vector2(handLeft.localPosition.x, handLeft.localPosition.y);
                     draggingLeftHand = true;
@@ -1682,6 +1602,9 @@ namespace BetterLegacy.Example
                 };
                 clickable.onUp = pointerEventData =>
                 {
+                    if (!canDragLeftHand)
+                        return;
+
                     draggingLeftHand = false;
 
                     SelectObject(image);
@@ -1717,14 +1640,14 @@ namespace BetterLegacy.Example
                 im.transform.AsRT().pivot = new Vector2(0.5f, 0.5f);
                 im.transform.AsRT().sizeDelta = new Vector2(42f, 42f);
 
-                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{HandsPath}", texture2D =>
-                {
-                    image.sprite = SpriteManager.CreateSprite(texture2D);
-                }, onError => { Debug.LogErrorFormat("{0}File does not exist.", className); }));
+                StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{HandsPath}", image.AssignTexture, LogFileDoesNotExist));
 
                 var clickable = im.AddComponent<ExampleClickable>();
                 clickable.onDown = pointerEventData =>
                 {
+                    if (!canDragRightHand)
+                        return;
+
                     startMousePos = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f) * CoreHelper.ScreenScaleInverse;
                     startDragPos = new Vector2(handRight.localPosition.x, handRight.localPosition.y);
                     draggingRightHand = true;
@@ -1734,6 +1657,9 @@ namespace BetterLegacy.Example
                 };
                 clickable.onUp = pointerEventData =>
                 {
+                    if (!canDragRightHand)
+                        return;
+
                     draggingRightHand = false;
 
                     SelectObject(image);
@@ -1932,6 +1858,7 @@ namespace BetterLegacy.Example
 
             var chatterField = ((GameObject)uiField["GameObject"]).transform.AsRT();
             chatter = (InputField)uiField["InputField"];
+            chatter.image = chatter.GetComponent<Image>();
 
             chatterField.AsRT().anchoredPosition = new Vector2(0f, -32);
             chatterField.AsRT().sizeDelta = new Vector2(800f, 64f);
@@ -2043,10 +1970,7 @@ namespace BetterLegacy.Example
             this.dialogueText = text;
 
             talking = true;
-            Play("Wave", onComplete: () =>
-            {
-                ResetPositions(1.6f, onComplete: () => { SayDialogue("SpawnText"); }, resetPos: true);
-            });
+            Play("Wave", onComplete: () =>  { ResetPositions(1.6f, onComplete: () => { SayDialogue("SpawnText"); }, resetPos: true); });
 
             Say("Hello, I am Example and this is a test!");
 
@@ -2373,8 +2297,8 @@ namespace BetterLegacy.Example
             Debug.Log($"{className}Example has started dancing!");
             dancing = true;
 
-            browLeft.SetLocalRotationEulerZ(-15f);
-            browRight.SetLocalRotationEulerZ(15f);
+            browLeftRotation = -15f;
+            browRightRotation = 15f;
             Play("Dance Loop");
             faceCanLook = false;
         }
@@ -2528,28 +2452,20 @@ namespace BetterLegacy.Example
 
         public void BrowsRaise()
         {
-            float tbrowLeft = -15f;
-            if (browLeft.localRotation.eulerAngles.z > 180f)
-                tbrowLeft = 345f;
-
-            float tbrowRight = 15f;
-            if (browRight.localRotation.eulerAngles.z > 180f)
-                tbrowRight = 345f;
-
             var animation = new RTAnimation("Brows");
             animation.animationHandlers = new List<AnimationHandlerBase>
             {
 				// Brows
 				new AnimationHandler<float>(new List<IKeyframe<float>>
                 {
-                    new FloatKeyframe(0f, browLeft.localRotation.eulerAngles.z, Ease.Linear),
-                    new FloatKeyframe(0.3f, tbrowLeft, Ease.SineOut),
-                }, x => { browLeft.localRotation = Quaternion.Euler(0f, 0f, x); }),
+                    new FloatKeyframe(0f, browLeftRotation, Ease.Linear),
+                    new FloatKeyframe(0.3f, -15f, Ease.SineOut),
+                }, x => { browLeftRotation = x; }),
                 new AnimationHandler<float>(new List<IKeyframe<float>>
                 {
-                    new FloatKeyframe(0f, browRight.localRotation.eulerAngles.z, Ease.Linear),
-                    new FloatKeyframe(0.3f, tbrowRight, Ease.SineOut),
-                }, x => { browRight.localRotation = Quaternion.Euler(0f, 0f, x); }),
+                    new FloatKeyframe(0f, browRightRotation, Ease.Linear),
+                    new FloatKeyframe(0.3f, 15f, Ease.SineOut),
+                }, x => { browRightRotation = x; }),
             };
 
             PlayOnce(animation, true, x => x.playing && !x.name.Contains("DIALOGUE: ") && !x.name.ToLower().Contains("movement"));
