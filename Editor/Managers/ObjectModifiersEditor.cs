@@ -864,6 +864,7 @@ namespace BetterLegacy.Editor.Managers
                             singleGenerator("Force X", 12, 0f);
                             singleGenerator("Force Y", 13, 0f);
                             boolGenerator("Trail Emit", 14, false);
+                            singleGenerator("Angle", 15, 90f);
 
                             break;
                         }

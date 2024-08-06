@@ -1738,8 +1738,8 @@ namespace BetterLegacy.Core.Helpers
                                     mat.trailMaterial = mat.material;
                                     mat.renderMode = ParticleSystemRenderMode.Mesh;
 
-                                    var s = int.Parse(modifier.commands[1]);
-                                    var so = int.Parse(modifier.commands[2]);
+                                    var s = Parser.TryParse(modifier.commands[1], 0);
+                                    var so = Parser.TryParse(modifier.commands[2], 0);
 
                                     s = Mathf.Clamp(s, 0, ObjectManager.inst.objectPrefabs.Count - 1);
                                     so = Mathf.Clamp(so, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
@@ -1751,16 +1751,16 @@ namespace BetterLegacy.Core.Helpers
 
                                     psMain.simulationSpace = ParticleSystemSimulationSpace.World;
 
-                                    psMain.startSpeed = float.Parse(modifier.commands[9]);
+                                    psMain.startSpeed = Parser.TryParse(modifier.commands[9], 5f);
 
                                     if (modifier.constant)
-                                        ps.emissionRate = float.Parse(modifier.commands[10]);
+                                        ps.emissionRate = Parser.TryParse(modifier.commands[10], 1f);
                                     else
                                     {
                                         ps.emissionRate = 0f;
                                         psMain.loop = false;
-                                        psEmission.burstCount = (int)float.Parse(modifier.commands[10]);
-                                        psMain.duration = float.Parse(modifier.commands[11]);
+                                        psEmission.burstCount = (int)Parser.TryParse(modifier.commands[10], 1);
+                                        psMain.duration = Parser.TryParse(modifier.commands[11], 1f);
                                     }
 
                                     var rotationOverLifetime = ps.rotationOverLifetime;
@@ -1768,35 +1768,27 @@ namespace BetterLegacy.Core.Helpers
                                     rotationOverLifetime.separateAxes = true;
                                     rotationOverLifetime.xMultiplier = 0f;
                                     rotationOverLifetime.yMultiplier = 0f;
-                                    rotationOverLifetime.zMultiplier = float.Parse(modifier.commands[8]);
+                                    rotationOverLifetime.zMultiplier = Parser.TryParse(modifier.commands[8], 0f);
 
                                     var forceOverLifetime = ps.forceOverLifetime;
                                     forceOverLifetime.enabled = true;
                                     forceOverLifetime.space = ParticleSystemSimulationSpace.World;
-                                    forceOverLifetime.xMultiplier = float.Parse(modifier.commands[12]);
-                                    forceOverLifetime.yMultiplier = float.Parse(modifier.commands[13]);
+                                    forceOverLifetime.xMultiplier = Parser.TryParse(modifier.commands[12], 0f);
+                                    forceOverLifetime.yMultiplier = Parser.TryParse(modifier.commands[13], 0f);
 
                                     var particlesTrail = ps.trails;
-                                    particlesTrail.enabled = bool.Parse(modifier.commands[14]);
+                                    particlesTrail.enabled = Parser.TryParse(modifier.commands[14], true);
 
                                     var colorOverLifetime = ps.colorOverLifetime;
                                     colorOverLifetime.enabled = true;
                                     var psCol = colorOverLifetime.color;
 
-                                    float alphaStart = float.Parse(modifier.commands[4]);
-                                    float alphaEnd = float.Parse(modifier.commands[5]);
+                                    float alphaStart = Parser.TryParse(modifier.commands[4], 1f);
+                                    float alphaEnd = Parser.TryParse(modifier.commands[5], 0f);
 
                                     var gradient = new Gradient();
-                                    gradient.alphaKeys = new GradientAlphaKey[2]
-                                    {
-                                            new GradientAlphaKey(alphaStart, 0f),
-                                            new GradientAlphaKey(alphaEnd, 1f)
-                                    };
-                                    gradient.colorKeys = new GradientColorKey[2]
-                                    {
-                                            new GradientColorKey(Color.white, 0f),
-                                            new GradientColorKey(Color.white, 1f)
-                                    };
+                                    gradient.alphaKeys = new GradientAlphaKey[2] { new GradientAlphaKey(alphaStart, 0f), new GradientAlphaKey(alphaEnd, 1f) };
+                                    gradient.colorKeys = new GradientColorKey[2] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) };
 
                                     psCol.gradient = gradient;
 
@@ -1807,14 +1799,10 @@ namespace BetterLegacy.Core.Helpers
 
                                     var ssss = sizeOverLifetime.size;
 
-                                    var sizeStart = float.Parse(modifier.commands[6]);
-                                    var sizeEnd = float.Parse(modifier.commands[7]);
+                                    var sizeStart = Parser.TryParse(modifier.commands[6], 0f);
+                                    var sizeEnd = Parser.TryParse(modifier.commands[7], 0f);
 
-                                    var curve = new AnimationCurve(new Keyframe[2]
-                                    {
-                                                new Keyframe(0f, sizeStart),
-                                                new Keyframe(1f, sizeEnd)
-                                    });
+                                    var curve = new AnimationCurve(new Keyframe[2] { new Keyframe(0f, sizeStart), new Keyframe(1f, sizeEnd) });
 
                                     ssss.curve = curve;
 
@@ -1830,12 +1818,15 @@ namespace BetterLegacy.Core.Helpers
                                     psMain.startLifetime = float.Parse(modifier.value);
                                     psEmission.enabled = !(mod.transform.lossyScale.x < 0.001f && mod.transform.lossyScale.x > -0.001f || mod.transform.lossyScale.y < 0.001f && mod.transform.lossyScale.y > -0.001f) && mod.activeSelf && mod.activeInHierarchy;
 
-                                    psMain.startColor = CoreHelper.CurrentBeatmapTheme.GetObjColor(int.Parse(modifier.commands[3]));
+                                    psMain.startColor = CoreHelper.CurrentBeatmapTheme.GetObjColor(Parser.TryParse(modifier.commands[3], 0));
 
                                     if (!modifier.constant && !psMain.loop)
                                     {
                                         ps.Play();
                                     }
+
+                                    var shape = ps.shape;
+                                    shape.angle = Parser.TryParse(modifier.commands[15], 90f);
                                 }
                             }
 
