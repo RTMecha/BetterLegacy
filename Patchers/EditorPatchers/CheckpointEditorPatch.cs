@@ -167,8 +167,8 @@ namespace BetterLegacy.Patchers
             TriggerHelper.IncreaseDecreaseButtons(positionX, 5f);
             TriggerHelper.IncreaseDecreaseButtons(positionY, 5f);
 
-            TriggerHelper.AddEventTriggerParams(positionX.gameObject, TriggerHelper.ScrollDelta(positionX), TriggerHelper.ScrollDeltaVector2(positionX, positionY, 0.1f, 10f));
-            TriggerHelper.AddEventTriggerParams(positionY.gameObject, TriggerHelper.ScrollDelta(positionY), TriggerHelper.ScrollDeltaVector2(positionX, positionY, 0.1f, 10f));
+            TriggerHelper.AddEventTriggers(positionX.gameObject, TriggerHelper.ScrollDelta(positionX), TriggerHelper.ScrollDeltaVector2(positionX, positionY, 0.1f, 10f));
+            TriggerHelper.AddEventTriggers(positionY.gameObject, TriggerHelper.ScrollDelta(positionY), TriggerHelper.ScrollDeltaVector2(positionX, positionY, 0.1f, 10f));
 
             Instance.RenderCheckpoints();
 

@@ -511,7 +511,7 @@ namespace BetterLegacy.Configs
                         });
 
                         TriggerHelper.IncreaseDecreaseButtonsInt(integerStorage.inputField, min: intSetting.MinValue, max: intSetting.MaxValue, t: integer.transform);
-                        TriggerHelper.AddEventTriggerParams(integer.gameObject, TriggerHelper.ScrollDeltaInt(integerStorage.inputField, min: intSetting.MinValue, max: intSetting.MaxValue));
+                        TriggerHelper.AddEventTriggers(integer.gameObject, TriggerHelper.ScrollDeltaInt(integerStorage.inputField, min: intSetting.MinValue, max: intSetting.MaxValue));
 
                         EditorThemeManager.ApplyInputField(integerStorage.inputField);
                         EditorThemeManager.ApplySelectable(integerStorage.leftGreaterButton, ThemeGroup.Function_2, false);
@@ -542,7 +542,7 @@ namespace BetterLegacy.Configs
                         });
 
                         TriggerHelper.IncreaseDecreaseButtons(floatingPointStorage.inputField, min: floatSetting.MinValue, max: floatSetting.MaxValue, t: floatingPoint.transform);
-                        TriggerHelper.AddEventTriggerParams(floatingPoint.gameObject, TriggerHelper.ScrollDelta(floatingPointStorage.inputField, min: floatSetting.MinValue, max: floatSetting.MaxValue));
+                        TriggerHelper.AddEventTriggers(floatingPoint.gameObject, TriggerHelper.ScrollDelta(floatingPointStorage.inputField, min: floatSetting.MinValue, max: floatSetting.MaxValue));
 
                         EditorThemeManager.ApplyInputField(floatingPointStorage.inputField);
                         EditorThemeManager.ApplySelectable(floatingPointStorage.leftGreaterButton, ThemeGroup.Function_2, false);
@@ -571,7 +571,7 @@ namespace BetterLegacy.Configs
                             });
 
                             TriggerHelper.IncreaseDecreaseButtons(floatingPointStorage.inputField, min: vector2Setting.MinValue.x, max: vector2Setting.MaxValue.x, t: floatingPoint.transform);
-                            TriggerHelper.AddEventTriggerParams(floatingPoint.gameObject, TriggerHelper.ScrollDelta(floatingPointStorage.inputField, min: vector2Setting.MinValue.x, max: vector2Setting.MaxValue.x));
+                            TriggerHelper.AddEventTriggers(floatingPoint.gameObject, TriggerHelper.ScrollDelta(floatingPointStorage.inputField, min: vector2Setting.MinValue.x, max: vector2Setting.MaxValue.x));
 
                             Destroy(floatingPointStorage.leftGreaterButton.gameObject);
                             Destroy(floatingPointStorage.rightGreaterButton.gameObject);
@@ -597,7 +597,7 @@ namespace BetterLegacy.Configs
                             });
 
                             TriggerHelper.IncreaseDecreaseButtons(floatingPointStorage.inputField, min: vector2Setting.MinValue.y, max: vector2Setting.MaxValue.y, t: floatingPoint.transform);
-                            TriggerHelper.AddEventTriggerParams(floatingPoint.gameObject, TriggerHelper.ScrollDelta(floatingPointStorage.inputField, min: vector2Setting.MinValue.y, max: vector2Setting.MaxValue.y));
+                            TriggerHelper.AddEventTriggers(floatingPoint.gameObject, TriggerHelper.ScrollDelta(floatingPointStorage.inputField, min: vector2Setting.MinValue.y, max: vector2Setting.MaxValue.y));
 
                             Destroy(floatingPointStorage.leftGreaterButton.gameObject);
                             Destroy(floatingPointStorage.rightGreaterButton.gameObject);
@@ -703,9 +703,9 @@ namespace BetterLegacy.Configs
             });
 
             if (num / maxSettingsPerPage != 0)
-                TriggerHelper.AddEventTriggerParams(pageFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(pageFieldStorage.inputField, max: num / maxSettingsPerPage));
+                TriggerHelper.AddEventTriggers(pageFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(pageFieldStorage.inputField, max: num / maxSettingsPerPage));
             else
-                TriggerHelper.AddEventTriggerParams(pageFieldStorage.inputField.gameObject);
+                TriggerHelper.AddEventTriggers(pageFieldStorage.inputField.gameObject);
 
             pageFieldStorage.leftGreaterButton.onClick.ClearAll();
             pageFieldStorage.leftGreaterButton.onClick.AddListener(delegate ()

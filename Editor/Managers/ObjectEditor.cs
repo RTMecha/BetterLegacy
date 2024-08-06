@@ -99,7 +99,7 @@ namespace BetterLegacy.Editor.Managers
             ObjEditor.inst.objTimelineContent.GetComponent<EventTrigger>().triggers.AddRange(objectKeyframeTimelineEventTrigger.triggers);
             objectKeyframeTimelineEventTrigger.triggers.Clear();
 
-            TriggerHelper.AddEventTriggerParams(timelinePosScrollbar.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, baseEventData =>
+            TriggerHelper.AddEventTriggers(timelinePosScrollbar.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, baseEventData =>
             {
                 var pointerEventData = (PointerEventData)baseEventData;
 
@@ -2301,7 +2301,7 @@ namespace BetterLegacy.Editor.Managers
                 });
 
                 // Add Scrolling for easy changing of values.
-                TriggerHelper.AddEventTrigger(todValue.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDelta(akOffset, 0.1f, 10f, 0f, float.PositiveInfinity) });
+                TriggerHelper.AddEventTriggers(todValue.gameObject, TriggerHelper.ScrollDelta(akOffset, 0.1f, 10f, 0f, float.PositiveInfinity));
             }
             else
             {
@@ -2488,7 +2488,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-                TriggerHelper.AddEventTrigger(pif.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDelta(pif) });
+                TriggerHelper.AddEventTriggers(pif.gameObject, TriggerHelper.ScrollDelta(pif));
 
                 var additive = _p.GetChild(4).GetComponent<Toggle>();
                 additive.onValueChanged.ClearAll();
@@ -2520,7 +2520,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-                TriggerHelper.AddEventTrigger(parallax.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDelta(parallax) });
+                TriggerHelper.AddEventTriggers(parallax.gameObject, TriggerHelper.ScrollDelta(parallax));
             }
         }
 
@@ -2577,8 +2577,8 @@ namespace BetterLegacy.Editor.Managers
             TriggerHelper.IncreaseDecreaseButtons(oxIF, 0.1f, 10f);
             TriggerHelper.IncreaseDecreaseButtons(oyIF, 0.1f, 10f);
 
-            TriggerHelper.AddEventTriggerParams(oxIF.gameObject, TriggerHelper.ScrollDelta(oxIF, multi: true), TriggerHelper.ScrollDeltaVector2(oxIF, oyIF, 0.1f, 10f));
-            TriggerHelper.AddEventTriggerParams(oyIF.gameObject, TriggerHelper.ScrollDelta(oyIF, multi: true), TriggerHelper.ScrollDeltaVector2(oxIF, oyIF, 0.1f, 10f));
+            TriggerHelper.AddEventTriggers(oxIF.gameObject, TriggerHelper.ScrollDelta(oxIF, multi: true), TriggerHelper.ScrollDeltaVector2(oxIF, oyIF, 0.1f, 10f));
+            TriggerHelper.AddEventTriggers(oyIF.gameObject, TriggerHelper.ScrollDelta(oyIF, multi: true), TriggerHelper.ScrollDeltaVector2(oxIF, oyIF, 0.1f, 10f));
         }
 
         /// <summary>
@@ -3059,7 +3059,7 @@ namespace BetterLegacy.Editor.Managers
             depthSlider.onValueChanged.AddListener(_val => { SetDepthInputField(beatmapObject, _val.ToString(), depthText, depthSlider); });
 
             TriggerHelper.IncreaseDecreaseButtonsInt(depthText, -1);
-            TriggerHelper.AddEventTriggerParams(depthText.gameObject, TriggerHelper.ScrollDeltaInt(depthText, 1));
+            TriggerHelper.AddEventTriggers(depthText.gameObject, TriggerHelper.ScrollDeltaInt(depthText, 1));
 
             var renderType = (Dropdown)ObjectUIElements["Render Type"];
             renderType.onValueChanged.ClearAll();
@@ -3172,7 +3172,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             if (editorLayersIF.gameObject)
-                TriggerHelper.AddEventTriggerParams(editorLayersIF.gameObject, TriggerHelper.ScrollDeltaInt(editorLayersIF, 1, 1, int.MaxValue));
+                TriggerHelper.AddEventTriggers(editorLayersIF.gameObject, TriggerHelper.ScrollDeltaInt(editorLayersIF, 1, 1, int.MaxValue));
         }
 
         /// <summary>
@@ -3414,7 +3414,7 @@ namespace BetterLegacy.Editor.Managers
                 }
             });
 
-            TriggerHelper.AddEventTriggerParams(randomIntervalIF.gameObject,
+            TriggerHelper.AddEventTriggers(randomIntervalIF.gameObject,
                 TriggerHelper.ScrollDelta(randomIntervalIF, 0.01f));
 
             if (!randomInterval.GetComponent<InputFieldSwapper>())
@@ -3423,7 +3423,7 @@ namespace BetterLegacy.Editor.Managers
                 ifh.Init(randomIntervalIF, InputFieldSwapper.Type.Num);
             }
 
-            TriggerHelper.AddEventTrigger(randomInterval.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDelta(randomIntervalIF, max: random == 6 ? 1f : 0f) });
+            TriggerHelper.AddEventTriggers(randomInterval.gameObject, TriggerHelper.ScrollDelta(randomIntervalIF, max: random == 6 ? 1f : 0f));
         }
 
         void KeyframeRandomValueHandler(Transform kfdialog, int type, IEnumerable<TimelineObject> selected, TimelineObject firstKF, BeatmapObject beatmapObject, string typeName, int i, string valueType)
@@ -3509,7 +3509,7 @@ namespace BetterLegacy.Editor.Managers
                 }
             });
 
-            TriggerHelper.AddEventTriggerParams(randomValue.gameObject,
+            TriggerHelper.AddEventTriggers(randomValue.gameObject,
                 TriggerHelper.ScrollDelta(randomValueInputField, type == 2 && random != 6 ? 15f : 0.1f, type == 2 && random != 6 ? 3f : 10f, multi: true),
                 TriggerHelper.ScrollDeltaVector2(randomValueInputField, randomValueBase.GetChild(1).GetComponent<InputField>(), type == 2 && random != 6 ? 15f : 0.1f, type == 2 && random != 6 ? 3f : 10f));
 
@@ -3699,7 +3699,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     });
 
-                    TriggerHelper.AddEventTriggerParams(time.gameObject, TriggerHelper.ScrollDelta(time));
+                    TriggerHelper.AddEventTriggers(time.gameObject, TriggerHelper.ScrollDelta(time));
 
                     var curvesMulti = dialog.Find("curves/curves").GetComponent<Dropdown>();
                     curvesMulti.onValueChanged.ClearAll();
@@ -3732,7 +3732,7 @@ namespace BetterLegacy.Editor.Managers
                     });
 
                     TriggerHelper.IncreaseDecreaseButtonsInt(valueIndex);
-                    TriggerHelper.AddEventTriggerParams(valueIndex.gameObject, TriggerHelper.ScrollDeltaInt(valueIndex));
+                    TriggerHelper.AddEventTriggers(valueIndex.gameObject, TriggerHelper.ScrollDeltaInt(valueIndex));
 
                     var value = dialog.Find("value base/value/input").GetComponent<InputField>();
                     value.onValueChanged.ClearAll();
@@ -3765,7 +3765,7 @@ namespace BetterLegacy.Editor.Managers
                     });
 
                     TriggerHelper.IncreaseDecreaseButtons(value, t: value.transform.parent);
-                    TriggerHelper.AddEventTriggerParams(value.gameObject, TriggerHelper.ScrollDelta(value));
+                    TriggerHelper.AddEventTriggers(value.gameObject, TriggerHelper.ScrollDelta(value));
 
                 }
                 catch (Exception ex)
@@ -4127,7 +4127,7 @@ namespace BetterLegacy.Editor.Managers
                             }
                         });
 
-                        TriggerHelper.AddEventTrigger(kfdialog.Find("opacity").gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDelta(opacity, 0.1f, 10f, 0f, 1f) });
+                        TriggerHelper.AddEventTriggers(kfdialog.Find("opacity").gameObject, TriggerHelper.ScrollDelta(opacity, 0.1f, 10f, 0f, 1f));
 
                         TriggerHelper.IncreaseDecreaseButtons(opacity);
 
@@ -4160,8 +4160,8 @@ namespace BetterLegacy.Editor.Managers
 
                         Destroy(kfdialog.transform.Find("huesatval").GetComponent<EventTrigger>());
 
-                        TriggerHelper.AddEventTrigger(hue.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDelta(hue, 0.1f, 10f) });
-                        TriggerHelper.IncreaseDecreaseButtons(hue, 0.1f, 10f);
+                        TriggerHelper.AddEventTriggers(hue.gameObject, TriggerHelper.ScrollDelta(hue));
+                        TriggerHelper.IncreaseDecreaseButtons(hue);
 
                         var sat = kfdialog.Find("huesatval/y").GetComponent<InputField>();
 
@@ -4179,8 +4179,8 @@ namespace BetterLegacy.Editor.Managers
                             }
                         });
 
-                        TriggerHelper.AddEventTrigger(sat.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDelta(sat, 0.1f, 10f) });
-                        TriggerHelper.IncreaseDecreaseButtons(sat, 0.1f, 10f);
+                        TriggerHelper.AddEventTriggers(sat.gameObject, TriggerHelper.ScrollDelta(sat));
+                        TriggerHelper.IncreaseDecreaseButtons(sat);
 
                         var val = kfdialog.Find("huesatval/z").GetComponent<InputField>();
 
@@ -4198,8 +4198,8 @@ namespace BetterLegacy.Editor.Managers
                             }
                         });
 
-                        TriggerHelper.AddEventTrigger(val.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDelta(val, 0.1f, 10f) });
-                        TriggerHelper.IncreaseDecreaseButtons(val, 0.1f, 10f);
+                        TriggerHelper.AddEventTriggers(val.gameObject, TriggerHelper.ScrollDelta(val));
+                        TriggerHelper.IncreaseDecreaseButtons(val);
 
                         var rColor = kfdialog.Find("r_color");
 
@@ -4276,10 +4276,10 @@ namespace BetterLegacy.Editor.Managers
                                 }
                             });
 
-                            TriggerHelper.AddEventTriggerParams(x.gameObject,
+                            TriggerHelper.AddEventTriggers(x.gameObject,
                                 TriggerHelper.ScrollDelta(x, multi: true),
                                 TriggerHelper.ScrollDeltaVector2(x, y, 0.1f, 10f));
-                            TriggerHelper.AddEventTriggerParams(y.gameObject,
+                            TriggerHelper.AddEventTriggers(y.gameObject,
                                 TriggerHelper.ScrollDelta(y, multi: true),
                                 TriggerHelper.ScrollDeltaVector2(x, y, 0.1f, 10f));
 
@@ -4332,7 +4332,7 @@ namespace BetterLegacy.Editor.Managers
                                 }
                             });
 
-                            TriggerHelper.AddEventTriggerParams(intervalInput.gameObject,
+                            TriggerHelper.AddEventTriggers(intervalInput.gameObject,
                                 TriggerHelper.ScrollDelta(intervalInput, 0.01f, max: random == 6 ? 1f : 0f));
                         }
 
@@ -4389,7 +4389,7 @@ namespace BetterLegacy.Editor.Managers
                 line.sprite = dottedLine;
                 line.type = Image.Type.Tiled;
 
-                TriggerHelper.AddEventTriggerParams(gameObject, TriggerHelper.CreateEntry(EventTriggerType.PointerClick, eventData =>
+                TriggerHelper.AddEventTriggers(gameObject, TriggerHelper.CreateEntry(EventTriggerType.PointerClick, eventData =>
                 {
                     var pointerEventData = (PointerEventData)eventData;
 
@@ -4564,7 +4564,7 @@ namespace BetterLegacy.Editor.Managers
                     SetCurrentKeyframe(beatmapObject, kf.Type, kf.Index, false, InputDataManager.inst.editorActions.MultiSelect.IsPressed);
             });
 
-            TriggerHelper.AddEventTriggerParams(gameObject,
+            TriggerHelper.AddEventTriggers(gameObject,
                 TriggerHelper.CreateKeyframeStartDragTrigger(beatmapObject, kf),
                 TriggerHelper.CreateKeyframeEndDragTrigger(beatmapObject, kf),
                 TriggerHelper.CreateKeyframeSelectTrigger(beatmapObject, kf));

@@ -2675,11 +2675,11 @@ namespace BetterLegacy.Arcade
 
             if (LevelManager.Levels.Count > 0)
             {
-                TriggerHelper.AddEventTriggerParams(localPageField.gameObject, TriggerHelper.ScrollDeltaInt(localPageField, max: LocalPageCount));
+                TriggerHelper.AddEventTriggers(localPageField.gameObject, TriggerHelper.ScrollDeltaInt(localPageField, max: LocalPageCount));
             }
             else
             {
-                TriggerHelper.AddEventTriggerParams(localPageField.gameObject);
+                TriggerHelper.AddEventTriggers(localPageField.gameObject);
             }
 
             int num = 0;
@@ -3080,11 +3080,11 @@ namespace BetterLegacy.Arcade
 
             if (OnlineLevels.Count > 0)
             {
-                TriggerHelper.AddEventTriggerParams(onlinePageField.gameObject, TriggerHelper.ScrollDeltaInt(onlinePageField, max: OnlineLevelCount));
+                TriggerHelper.AddEventTriggers(onlinePageField.gameObject, TriggerHelper.ScrollDeltaInt(onlinePageField, max: OnlineLevelCount));
             }
             else
             {
-                TriggerHelper.AddEventTriggerParams(onlinePageField.gameObject);
+                TriggerHelper.AddEventTriggers(onlinePageField.gameObject);
             }
 
             loadingOnlineLevels = false;
@@ -3395,11 +3395,11 @@ namespace BetterLegacy.Arcade
 
             if (IQueueLevels.Count() > 0)
             {
-                TriggerHelper.AddEventTriggerParams(queuePageField.gameObject, TriggerHelper.ScrollDeltaInt(queuePageField, max: QueuePageCount));
+                TriggerHelper.AddEventTriggers(queuePageField.gameObject, TriggerHelper.ScrollDeltaInt(queuePageField, max: QueuePageCount));
             }
             else
             {
-                TriggerHelper.AddEventTriggerParams(queuePageField.gameObject);
+                TriggerHelper.AddEventTriggers(queuePageField.gameObject);
             }
 
             loadingQueuedLevels = false;
@@ -3589,11 +3589,11 @@ namespace BetterLegacy.Arcade
 
             if (SteamWorkshopManager.inst.Levels.Count > 0)
             {
-                TriggerHelper.AddEventTriggerParams(steamPageField.gameObject, TriggerHelper.ScrollDeltaInt(steamPageField, max: SteamPageCount));
+                TriggerHelper.AddEventTriggers(steamPageField.gameObject, TriggerHelper.ScrollDeltaInt(steamPageField, max: SteamPageCount));
             }
             else
             {
-                TriggerHelper.AddEventTriggerParams(steamPageField.gameObject);
+                TriggerHelper.AddEventTriggers(steamPageField.gameObject);
             }
 
             int num = 0;
@@ -3749,7 +3749,7 @@ namespace BetterLegacy.Arcade
             var count = SelectionLimit.Count;
             SelectionLimit.RemoveRange(2, count - 2);
 
-            TriggerHelper.AddEventTriggerParams(steamPageField.gameObject, TriggerHelper.ScrollDeltaInt(steamPageField, max: int.MaxValue));
+            TriggerHelper.AddEventTriggers(steamPageField.gameObject, TriggerHelper.ScrollDeltaInt(steamPageField, max: int.MaxValue));
 
             var searchTerm = SteamSearchTerm;
 

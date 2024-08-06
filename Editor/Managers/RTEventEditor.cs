@@ -734,7 +734,7 @@ namespace BetterLegacy.Editor.Managers
             kf.GameObject = EventGameObject(kf);
             kf.Image = kf.GameObject.transform.GetChild(0).GetComponent<Image>();
 
-            TriggerHelper.AddEventTriggerParams(kf.GameObject,
+            TriggerHelper.AddEventTriggers(kf.GameObject,
                 TriggerHelper.CreateEventObjectTrigger(kf),
                 TriggerHelper.CreateEventStartDragTrigger(kf),
                 TriggerHelper.CreateEventEndDragTrigger(),
@@ -952,7 +952,7 @@ namespace BetterLegacy.Editor.Managers
 
             var easing = dialog.transform.Find("curves").GetComponent<Dropdown>();
 
-            TriggerHelper.AddEventTriggerParams(easing.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, eventData =>
+            TriggerHelper.AddEventTriggers(easing.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, eventData =>
             {
                 if (!EditorConfig.Instance.ScrollOnEasing.Value)
                     return;
@@ -1991,7 +1991,7 @@ namespace BetterLegacy.Editor.Managers
                     LogIncorrectFormat(time.text);
             });
 
-            TriggerHelper.AddEventTriggerParams(time.gameObject, TriggerHelper.ScrollDelta(time));
+            TriggerHelper.AddEventTriggers(time.gameObject, TriggerHelper.ScrollDelta(time));
 
             var curves = dialog.Find("curves/curves").GetComponent<Dropdown>();
             curves.onValueChanged.ClearAll();
@@ -2017,7 +2017,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             TriggerHelper.IncreaseDecreaseButtonsInt(valueIndexStorage.inputField, t: valueIndexStorage.transform);
-            TriggerHelper.AddEventTriggerParams(valueIndexStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(valueIndexStorage.inputField));
+            TriggerHelper.AddEventTriggers(valueIndexStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(valueIndexStorage.inputField));
 
             var valueStorage = dialog.Find("value/value").GetComponent<InputFieldStorage>();
             valueStorage.inputField.onValueChanged.ClearAll();
@@ -2109,7 +2109,7 @@ namespace BetterLegacy.Editor.Managers
                     LogIncorrectFormat(valueStorage.inputField.text);
             });
 
-            TriggerHelper.AddEventTriggerParams(valueStorage.inputField.gameObject, TriggerHelper.ScrollDelta(valueStorage.inputField));
+            TriggerHelper.AddEventTriggers(valueStorage.inputField.gameObject, TriggerHelper.ScrollDelta(valueStorage.inputField));
         }
 
         public void RenderEventsDialog()
@@ -2158,7 +2158,7 @@ namespace BetterLegacy.Editor.Managers
                 });
 
                 TriggerHelper.IncreaseDecreaseButtons(timeTime, 0.1f, 10f, t: time);
-                TriggerHelper.AddEventTriggerParams(time.gameObject, TriggerHelper.ScrollDelta(timeTime, min: 0.001f, max: AudioManager.inst.CurrentAudioSource.clip.length));
+                TriggerHelper.AddEventTriggers(time.gameObject, TriggerHelper.ScrollDelta(timeTime, min: 0.001f, max: AudioManager.inst.CurrentAudioSource.clip.length));
             }
 
             switch (__instance.currentEventType)
@@ -2969,7 +2969,7 @@ namespace BetterLegacy.Editor.Managers
                 });
             }
 
-            TriggerHelper.AddEventTriggerParams(zoom.gameObject, TriggerHelper.ScrollDelta(zoom, increase, multiply, min, max));
+            TriggerHelper.AddEventTriggers(zoom.gameObject, TriggerHelper.ScrollDelta(zoom, increase, multiply, min, max));
 
             if (allowNegative && !zoom.gameObject.GetComponent<InputFieldSwapper>())
             {
@@ -3056,7 +3056,7 @@ namespace BetterLegacy.Editor.Managers
                 });
             }
 
-            TriggerHelper.AddEventTriggerParams(zoom.gameObject, TriggerHelper.ScrollDeltaInt(zoom, increase, min, max));
+            TriggerHelper.AddEventTriggers(zoom.gameObject, TriggerHelper.ScrollDeltaInt(zoom, increase, min, max));
 
             if (allowNegative && !zoom.gameObject.GetComponent<InputFieldSwapper>())
             {
@@ -3216,8 +3216,8 @@ namespace BetterLegacy.Editor.Managers
             }
 
             var clampList = new List<float> { min, max };
-            TriggerHelper.AddEventTriggerParams(posX.gameObject, TriggerHelper.ScrollDelta(posX, 0.1f, 10f, min, max, true), TriggerHelper.ScrollDeltaVector2(posX, posY, 0.1f, 10f, clampList));
-            TriggerHelper.AddEventTriggerParams(posY.gameObject, TriggerHelper.ScrollDelta(posY, 0.1f, 10f, min, max, true), TriggerHelper.ScrollDeltaVector2(posX, posY, 0.1f, 10f, clampList));
+            TriggerHelper.AddEventTriggers(posX.gameObject, TriggerHelper.ScrollDelta(posX, 0.1f, 10f, min, max, true), TriggerHelper.ScrollDeltaVector2(posX, posY, 0.1f, 10f, clampList));
+            TriggerHelper.AddEventTriggers(posY.gameObject, TriggerHelper.ScrollDelta(posY, 0.1f, 10f, min, max, true), TriggerHelper.ScrollDeltaVector2(posX, posY, 0.1f, 10f, clampList));
 
             if (allowNegative)
             {

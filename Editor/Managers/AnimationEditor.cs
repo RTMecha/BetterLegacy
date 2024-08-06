@@ -165,7 +165,7 @@ namespace BetterLegacy.Editor.Managers
             timelineGrid = timeline.Find("Content/grid").AsRT();
             zoomSlider = timeline.parent.Find("zoom-panel/Slider").GetComponent<Slider>();
 
-            TriggerHelper.AddEventTriggerParams(timeline.Find("Content").gameObject, TriggerHelper.CreateEntry(EventTriggerType.PointerEnter, eventData => { isOverTimeline = true; }), TriggerHelper.CreateEntry(EventTriggerType.PointerExit, eventData => { isOverTimeline = false; }));
+            TriggerHelper.AddEventTriggers(timeline.Find("Content").gameObject, TriggerHelper.CreateEntry(EventTriggerType.PointerEnter, eventData => { isOverTimeline = true; }), TriggerHelper.CreateEntry(EventTriggerType.PointerExit, eventData => { isOverTimeline = false; }));
 
             #region Markers
 
@@ -291,7 +291,7 @@ namespace BetterLegacy.Editor.Managers
             });
 
             TriggerHelper.IncreaseDecreaseButtons(time, max: float.MaxValue, t: content.Find("time"));
-            TriggerHelper.AddEventTriggerParams(content.Find("time").gameObject, TriggerHelper.ScrollDelta(time, max: float.MaxValue));
+            TriggerHelper.AddEventTriggers(content.Find("time").gameObject, TriggerHelper.ScrollDelta(time, max: float.MaxValue));
 
             var layers = content.Find("editor/layers").GetComponent<InputField>();
             var layersImage = content.Find("editor/layers").GetComponent<Image>();
@@ -310,7 +310,7 @@ namespace BetterLegacy.Editor.Managers
                 }
             });
 
-            TriggerHelper.AddEventTriggerParams(layers.gameObject, TriggerHelper.ScrollDeltaInt(layers, max: int.MaxValue));
+            TriggerHelper.AddEventTriggers(layers.gameObject, TriggerHelper.ScrollDeltaInt(layers, max: int.MaxValue));
 
             RenderBins(animation);
             RenderMarkers(animation);
@@ -375,7 +375,7 @@ namespace BetterLegacy.Editor.Managers
                 timelineMarker.Line.sprite = dottedLine;
                 timelineMarker.Line.type = Image.Type.Tiled;
 
-                TriggerHelper.AddEventTriggerParams(gameObject, TriggerHelper.CreateEntry(EventTriggerType.PointerClick, eventData =>
+                TriggerHelper.AddEventTriggers(gameObject, TriggerHelper.CreateEntry(EventTriggerType.PointerClick, eventData =>
                 {
                     var pointerEventData = (PointerEventData)eventData;
 

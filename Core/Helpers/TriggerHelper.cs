@@ -16,22 +16,12 @@ namespace BetterLegacy.Core.Helpers
 {
     public static class TriggerHelper
     {
-        public static void AddEventTriggerParams(GameObject gameObject, params EventTrigger.Entry[] entries) => AddEventTrigger(gameObject, entries.ToList());
-
-        public static void AddEventTrigger(GameObject _if, List<EventTrigger.Entry> entries, bool clear = true)
+        public static void AddEventTriggers(GameObject gameObject, params EventTrigger.Entry[] entries)
         {
-            if (!_if.GetComponent<EventTrigger>())
-            {
-                _if.AddComponent<EventTrigger>();
-            }
-            var et = _if.GetComponent<EventTrigger>();
-            if (clear)
-                et.triggers.Clear();
-            foreach (var entry in entries)
-                et.triggers.Add(entry);
+            var eventTrigger = gameObject.GetComponent<EventTrigger>() ?? gameObject.AddComponent<EventTrigger>();
+            eventTrigger.triggers.Clear();
+            eventTrigger.triggers.AddRange(entries);
         }
-
-        public static bool FloatNearZero(float f, float range = 0.01f) => f < range && f > -range;
 
         public static EventTrigger.Entry CreateEntry(EventTriggerType triggerType, Action<BaseEventData> action)
         {

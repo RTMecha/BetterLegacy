@@ -431,7 +431,7 @@ namespace BetterLegacy.Patchers
             SetBPMSlider(slider, input);
             SetBPMInputField(slider, input);
 
-            TriggerHelper.AddEventTriggerParams(input.gameObject,
+            TriggerHelper.AddEventTriggers(input.gameObject,
                 TriggerHelper.ScrollDelta(input, 1f));
 
             var sliderOffset = transform.Find("snap/bpm offset/slider").GetComponent<Slider>();
@@ -439,7 +439,7 @@ namespace BetterLegacy.Patchers
             SetBPMOffsetSlider(sliderOffset, inputOffset);
             SetBPMOffsetInputField(sliderOffset, inputOffset);
 
-            TriggerHelper.AddEventTriggerParams(inputOffset.gameObject,
+            TriggerHelper.AddEventTriggers(inputOffset.gameObject,
                 TriggerHelper.ScrollDelta(inputOffset));
 
             RenderMarkerColors();

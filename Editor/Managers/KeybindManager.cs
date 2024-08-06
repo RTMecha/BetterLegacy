@@ -1032,7 +1032,7 @@ namespace BetterLegacy.Editor.Managers
                             });
                             xif.onEndEdit.AddListener(_val => { Save(); });
 
-                            TriggerHelper.AddEventTrigger(xif.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDeltaInt(xif) });
+                            TriggerHelper.AddEventTriggers(xif.gameObject, TriggerHelper.ScrollDeltaInt(xif));
 
                             TriggerHelper.IncreaseDecreaseButtonsInt(xif, t: x.transform);
 
@@ -1085,7 +1085,7 @@ namespace BetterLegacy.Editor.Managers
                             });
                             xif.onEndEdit.AddListener(_val => { Save(); });
 
-                            TriggerHelper.AddEventTrigger(xif.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDelta(xif) });
+                            TriggerHelper.AddEventTriggers(xif.gameObject, TriggerHelper.ScrollDelta(xif));
 
                             TriggerHelper.IncreaseDecreaseButtons(xif, t: x.transform);
 

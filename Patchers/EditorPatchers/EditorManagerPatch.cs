@@ -68,7 +68,7 @@ namespace BetterLegacy.Patchers
                 dropdown.ClearOptions();
                 dropdown.AddOptions(easings);
 
-                TriggerHelper.AddEventTriggerParams(dropdown.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, delegate (BaseEventData baseEventData)
+                TriggerHelper.AddEventTriggers(dropdown.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, delegate (BaseEventData baseEventData)
                 {
                     if (!EditorConfig.Instance.ScrollOnEasing.Value)
                         return;

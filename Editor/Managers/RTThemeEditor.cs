@@ -491,7 +491,7 @@ namespace BetterLegacy.Editor.Managers
 
             var layer = themePage + 1;
 
-            TriggerHelper.AddEventTriggerParams(pageStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(pageStorage.inputField, max: AllThemes.Count / themesPerPage));
+            TriggerHelper.AddEventTriggers(pageStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(pageStorage.inputField, max: AllThemes.Count / themesPerPage));
 
             int num = 0;
             foreach (var beatmapTheme in AllThemes)
@@ -708,9 +708,9 @@ namespace BetterLegacy.Editor.Managers
                 }
 
                 if (ThemesCount > eventThemesPerPage)
-                    TriggerHelper.AddEventTriggerParams(eventPageStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(eventPageStorage.inputField, max: ThemesCount / eventThemesPerPage));
+                    TriggerHelper.AddEventTriggers(eventPageStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(eventPageStorage.inputField, max: ThemesCount / eventThemesPerPage));
                 else
-                    TriggerHelper.AddEventTriggerParams(eventPageStorage.inputField.gameObject);
+                    TriggerHelper.AddEventTriggers(eventPageStorage.inputField.gameObject);
 
                 loadingThemes = false;
             }

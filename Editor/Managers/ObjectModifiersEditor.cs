@@ -368,7 +368,7 @@ namespace BetterLegacy.Editor.Managers
                     EditorThemeManager.ApplySelectable(rightButton, ThemeGroup.Function_2, false);
 
                     TriggerHelper.IncreaseDecreaseButtons(inputField, t: single.transform);
-                    TriggerHelper.AddEventTrigger(inputField.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDelta(inputField) });
+                    TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDelta(inputField));
 
                     var inputFieldSwapper = inputField.gameObject.AddComponent<InputFieldSwapper>();
                     inputFieldSwapper.Init(inputField, InputFieldSwapper.Type.Num);
@@ -408,7 +408,7 @@ namespace BetterLegacy.Editor.Managers
                     EditorThemeManager.ApplySelectable(rightButton, ThemeGroup.Function_2, false);
 
                     TriggerHelper.IncreaseDecreaseButtonsInt(inputField, t: single.transform);
-                    TriggerHelper.AddEventTrigger(inputField.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDeltaInt(inputField) });
+                    TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputField));
 
                     var inputFieldSwapper = inputField.gameObject.AddComponent<InputFieldSwapper>();
                     inputFieldSwapper.Init(inputField, InputFieldSwapper.Type.Num);
@@ -813,7 +813,7 @@ namespace BetterLegacy.Editor.Managers
                                 EditorThemeManager.ApplyLightText(labelText);
                                 EditorThemeManager.ApplyDropdown(d);
 
-                                TriggerHelper.AddEventTriggerParams(d.gameObject, TriggerHelper.ScrollDelta(d));
+                                TriggerHelper.AddEventTriggers(d.gameObject, TriggerHelper.ScrollDelta(d));
                             }
 
                             // Shape Option
@@ -849,7 +849,7 @@ namespace BetterLegacy.Editor.Managers
                                 EditorThemeManager.ApplyLightText(labelText);
                                 EditorThemeManager.ApplyDropdown(d);
 
-                                TriggerHelper.AddEventTriggerParams(d.gameObject, TriggerHelper.ScrollDelta(d));
+                                TriggerHelper.AddEventTriggers(d.gameObject, TriggerHelper.ScrollDelta(d));
                             }
 
                             colorGenerator("Color", 3);
@@ -1159,10 +1159,10 @@ namespace BetterLegacy.Editor.Managers
 
                                 TriggerHelper.IncreaseDecreaseButtonsInt(samplesXIF, t: samplesX.transform);
                                 TriggerHelper.IncreaseDecreaseButtonsInt(samplesYIF, t: samplesY.transform);
-                                TriggerHelper.AddEventTriggerParams(samplesXIF.gameObject,
+                                TriggerHelper.AddEventTriggers(samplesXIF.gameObject,
                                     TriggerHelper.ScrollDeltaInt(samplesXIF, multi: true),
                                     TriggerHelper.ScrollDeltaVector2Int(samplesXIF, samplesYIF, 1, new List<int> { 0, 255 }));
-                                TriggerHelper.AddEventTriggerParams(samplesYIF.gameObject,
+                                TriggerHelper.AddEventTriggers(samplesYIF.gameObject,
                                     TriggerHelper.ScrollDeltaInt(samplesYIF, multi: true),
                                     TriggerHelper.ScrollDeltaVector2Int(samplesXIF, samplesYIF, 1, new List<int> { 0, 255 }));
 
@@ -1220,10 +1220,10 @@ namespace BetterLegacy.Editor.Managers
 
                                 TriggerHelper.IncreaseDecreaseButtons(multiplyXIF, t: multiplyX.transform);
                                 TriggerHelper.IncreaseDecreaseButtons(multiplyYIF, t: multiplyY.transform);
-                                TriggerHelper.AddEventTriggerParams(multiplyXIF.gameObject,
+                                TriggerHelper.AddEventTriggers(multiplyXIF.gameObject,
                                     TriggerHelper.ScrollDelta(multiplyXIF, multi: true),
                                     TriggerHelper.ScrollDeltaVector2(multiplyXIF, multiplyYIF, 0.1f, 10f));
-                                TriggerHelper.AddEventTriggerParams(multiplyYIF.gameObject,
+                                TriggerHelper.AddEventTriggers(multiplyYIF.gameObject,
                                     TriggerHelper.ScrollDelta(multiplyYIF, multi: true),
                                     TriggerHelper.ScrollDeltaVector2(multiplyXIF, multiplyYIF, 0.1f, 10f));
                             }
@@ -1270,7 +1270,7 @@ namespace BetterLegacy.Editor.Managers
                             EditorThemeManager.ApplySelectable(rightButton, ThemeGroup.Function_2, false);
 
                             TriggerHelper.IncreaseDecreaseButtonsInt(inputField, 1, 0, 3, single.transform);
-                            TriggerHelper.AddEventTrigger(inputField.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDeltaInt(inputField, 1, 0, 3) });
+                            TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputField, 1, 0, 3));
 
                             stringGenerator("Model ID", 0);
 
@@ -1310,7 +1310,7 @@ namespace BetterLegacy.Editor.Managers
                             EditorThemeManager.ApplySelectable(rightButton, ThemeGroup.Function_2, false);
 
                             TriggerHelper.IncreaseDecreaseButtonsInt(vindexIF, 1, 0, GameData.DefaultKeyframes[Parser.TryParse(modifier.commands[1], 0)].eventValues.Length - 1, vindex.transform);
-                            TriggerHelper.AddEventTriggerParams(vindexIF.gameObject, TriggerHelper.ScrollDeltaInt(vindexIF, 1, 0, GameData.DefaultKeyframes[Parser.TryParse(modifier.commands[1], 0)].eventValues.Length - 1));
+                            TriggerHelper.AddEventTriggers(vindexIF.gameObject, TriggerHelper.ScrollDeltaInt(vindexIF, 1, 0, GameData.DefaultKeyframes[Parser.TryParse(modifier.commands[1], 0)].eventValues.Length - 1));
 
                             singleGenerator(cmd == "eventOffsetVariable" ? "Multiply Var" : "Value", 0, 0f);
 
@@ -1481,7 +1481,7 @@ namespace BetterLegacy.Editor.Managers
                                 EditorThemeManager.ApplySelectable(yPositionRightButton, ThemeGroup.Function_2, false);
 
                                 TriggerHelper.IncreaseDecreaseButtons(yPositionIF, t: yPosition.transform);
-                                TriggerHelper.AddEventTriggerParams(yPositionIF.gameObject,
+                                TriggerHelper.AddEventTriggers(yPositionIF.gameObject,
                                     TriggerHelper.ScrollDelta(yPositionIF),
                                     TriggerHelper.ScrollDeltaVector2(xPositionIF, yPositionIF, 0.1f, 10f));
 
@@ -1489,7 +1489,7 @@ namespace BetterLegacy.Editor.Managers
                             else
                             {
                                 TriggerHelper.IncreaseDecreaseButtons(xPositionIF, t: xPosition.transform);
-                                TriggerHelper.AddEventTrigger(xPositionIF.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDelta(xPositionIF) });
+                                TriggerHelper.AddEventTriggers(xPositionIF.gameObject, TriggerHelper.ScrollDelta(xPositionIF));
                             }
 
                             var single = numberInput.Duplicate(layout, "Duration");
@@ -1519,7 +1519,7 @@ namespace BetterLegacy.Editor.Managers
                             EditorThemeManager.ApplySelectable(inputFieldRightButton, ThemeGroup.Function_2, false);
 
                             TriggerHelper.IncreaseDecreaseButtons(inputField, t: single.transform);
-                            TriggerHelper.AddEventTrigger(inputField.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDelta(inputField) });
+                            TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDelta(inputField));
 
                             dropdownGenerator2("Easing", 2, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
@@ -1575,20 +1575,13 @@ namespace BetterLegacy.Editor.Managers
                             EditorThemeManager.ApplySelectable(prefabIndexRightButton, ThemeGroup.Function_2, false);
 
                             TriggerHelper.IncreaseDecreaseButtonsInt(prefabIndexIF, 1, 0, DataManager.inst.gameData.prefabObjects.Count - 1, prefabIndex.transform);
-                            TriggerHelper.AddEventTrigger(prefabIndexIF.gameObject, new List<EventTrigger.Entry> { TriggerHelper.ScrollDeltaInt(prefabIndexIF, 1, 0, DataManager.inst.gameData.prefabObjects.Count - 1) });
+                            TriggerHelper.AddEventTriggers(prefabIndexIF.gameObject, TriggerHelper.ScrollDeltaInt(prefabIndexIF, 1, 0, DataManager.inst.gameData.prefabObjects.Count - 1));
 
                             singleGenerator("Position X", 1, 0f);
                             singleGenerator("Position Y", 2, 0f);
                             singleGenerator("Scale X", 3, 0f);
                             singleGenerator("Scale Y", 4, 0f);
                             singleGenerator("Rotation", 5, 0f);
-
-                            if (modifier.commands.Count < 8)
-                            {
-                                modifier.commands.Add("0");
-                                modifier.commands.Add("0");
-                                modifier.commands.Add("1");
-                            }
 
                             integerGenerator("Repeat Count", 6, 0);
                             singleGenerator("Repeat Offset Time", 7, 0);

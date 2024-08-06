@@ -80,7 +80,7 @@ namespace BetterLegacy.Patchers
                 });
 
                 foreach (var gameObject in __instance.SelectionArea)
-                    TriggerHelper.AddEventTriggerParams(gameObject, beginDragTrigger, dragTrigger, endDragTrigger);
+                    TriggerHelper.AddEventTriggers(gameObject, beginDragTrigger, dragTrigger, endDragTrigger);
             }
 
             var objectView = ObjEditor.inst.ObjectView.transform;

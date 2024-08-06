@@ -2835,7 +2835,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 }
             });
-            TriggerHelper.AddEventTriggerParams(ostEditorIndex.gameObject, TriggerHelper.ScrollDeltaInt(ostEditorIndex));
+            TriggerHelper.AddEventTriggers(ostEditorIndex.gameObject, TriggerHelper.ScrollDeltaInt(ostEditorIndex));
         }
 
         IEnumerator SetIndex(int i)

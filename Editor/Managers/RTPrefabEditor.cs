@@ -379,7 +379,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-                TriggerHelper.AddEventTriggerParams(pif.gameObject, TriggerHelper.ScrollDelta(pif));
+                TriggerHelper.AddEventTriggers(pif.gameObject, TriggerHelper.ScrollDelta(pif));
 
                 var additive = _p.GetChild(4).GetComponent<Toggle>();
                 additive.onValueChanged.ClearAll();
@@ -406,7 +406,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                 });
 
-                TriggerHelper.AddEventTriggerParams(parallax.gameObject, TriggerHelper.ScrollDelta(parallax));
+                TriggerHelper.AddEventTriggers(parallax.gameObject, TriggerHelper.ScrollDelta(parallax));
             }
         }
 
@@ -433,7 +433,7 @@ namespace BetterLegacy.Editor.Managers
                 }
             });
             TriggerHelper.IncreaseDecreaseButtons(offsetTime, t: right.transform.Find("time"));
-            TriggerHelper.AddEventTriggerParams(offsetTime.gameObject, TriggerHelper.ScrollDelta(offsetTime));
+            TriggerHelper.AddEventTriggers(offsetTime.gameObject, TriggerHelper.ScrollDelta(offsetTime));
 
             prefabSelectorLeft.Find("editor/layer").gameObject.SetActive(false);
             prefabSelectorLeft.Find("editor/bin").gameObject.SetActive(false);
@@ -475,7 +475,7 @@ namespace BetterLegacy.Editor.Managers
                 });
 
                 TriggerHelper.IncreaseDecreaseButtons(akoffset);
-                TriggerHelper.AddEventTriggerParams(akoffset.gameObject, TriggerHelper.ScrollDelta(akoffset));
+                TriggerHelper.AddEventTriggers(akoffset.gameObject, TriggerHelper.ScrollDelta(akoffset));
 
                 var setAutokill = prefabSelectorLeft.Find("akoffset/|").GetComponent<Button>();
                 setAutokill.onClick.ClearAll();
@@ -528,7 +528,7 @@ namespace BetterLegacy.Editor.Managers
                 });
 
                 TriggerHelper.IncreaseDecreaseButtons(startTime, t: parent);
-                TriggerHelper.AddEventTriggerParams(startTime.gameObject, TriggerHelper.ScrollDelta(startTime));
+                TriggerHelper.AddEventTriggers(startTime.gameObject, TriggerHelper.ScrollDelta(startTime));
 
             var startTimeSet = parent.Find("|").GetComponent<Button>();
             startTimeSet.onClick.ClearAll();
@@ -567,7 +567,7 @@ namespace BetterLegacy.Editor.Managers
                     });
 
                     TriggerHelper.IncreaseDecreaseButtons(layers);
-                    TriggerHelper.AddEventTriggerParams(layers.gameObject, TriggerHelper.ScrollDeltaInt(layers, min: 1, max: int.MaxValue));
+                    TriggerHelper.AddEventTriggers(layers.gameObject, TriggerHelper.ScrollDeltaInt(layers, min: 1, max: int.MaxValue));
             }
 
             for (int i = 0; i < 3; i++)
@@ -618,16 +618,16 @@ namespace BetterLegacy.Editor.Managers
                     });
 
                     TriggerHelper.IncreaseDecreaseButtons(inputField2);
-                    TriggerHelper.AddEventTriggerParams(inputField2.gameObject,
+                    TriggerHelper.AddEventTriggers(inputField2.gameObject,
                         TriggerHelper.ScrollDelta(inputField2, multi: true),
                         TriggerHelper.ScrollDeltaVector2(inputField, inputField2, 0.1f, 10f));
 
-                    TriggerHelper.AddEventTriggerParams(inputField.gameObject,
+                    TriggerHelper.AddEventTriggers(inputField.gameObject,
                         TriggerHelper.ScrollDelta(inputField, multi: true),
                         TriggerHelper.ScrollDeltaVector2(inputField, inputField2, 0.1f, 10f));
                 }
                 else
-                    TriggerHelper.AddEventTriggerParams(inputField.gameObject, TriggerHelper.ScrollDelta(inputField, 15f, 3f));
+                    TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDelta(inputField, 15f, 3f));
             }
 
             if (RTEditor.ShowModdedUI)
@@ -649,7 +649,7 @@ namespace BetterLegacy.Editor.Managers
                 });
 
                 TriggerHelper.IncreaseDecreaseButtonsInt(repeatCount, max: 1000);
-                TriggerHelper.AddEventTriggerParams(repeatCount.gameObject, TriggerHelper.ScrollDeltaInt(repeatCount, max: 1000));
+                TriggerHelper.AddEventTriggers(repeatCount.gameObject, TriggerHelper.ScrollDeltaInt(repeatCount, max: 1000));
 
                 var repeatOffsetTime = prefabSelectorLeft.Find("repeat/y").GetComponent<InputField>();
 
@@ -669,7 +669,7 @@ namespace BetterLegacy.Editor.Managers
                 });
 
                 TriggerHelper.IncreaseDecreaseButtons(repeatOffsetTime, max: 60f);
-                TriggerHelper.AddEventTriggerParams(repeatOffsetTime.gameObject, TriggerHelper.ScrollDelta(repeatOffsetTime, max: 60f));
+                TriggerHelper.AddEventTriggers(repeatOffsetTime.gameObject, TriggerHelper.ScrollDelta(repeatOffsetTime, max: 60f));
 
                 var speed = prefabSelectorLeft.Find("speed").GetComponent<InputField>();
 
@@ -689,7 +689,7 @@ namespace BetterLegacy.Editor.Managers
                 });
 
                 TriggerHelper.IncreaseDecreaseButtons(speed, min: 0.1f, max: Updater.MaxFastSpeed);
-                TriggerHelper.AddEventTriggerParams(speed.gameObject, TriggerHelper.ScrollDelta(speed, min: 0.1f, max: Updater.MaxFastSpeed));
+                TriggerHelper.AddEventTriggers(speed.gameObject, TriggerHelper.ScrollDelta(speed, min: 0.1f, max: Updater.MaxFastSpeed));
             }
 
             //Global Settings
@@ -710,7 +710,7 @@ namespace BetterLegacy.Editor.Managers
 
                 currentPrefabType = prefab.Type;
 
-                TriggerHelper.AddEventTriggerParams(typeIF.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, eventData =>
+                TriggerHelper.AddEventTriggers(typeIF.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, eventData =>
                 {
                     var pointerEventData = (PointerEventData)eventData;
 
@@ -1922,7 +1922,7 @@ namespace BetterLegacy.Editor.Managers
                 setting = false;
             });
 
-            TriggerHelper.AddEventTriggerParams(offsetInput.gameObject, TriggerHelper.ScrollDelta(offsetInput));
+            TriggerHelper.AddEventTriggers(offsetInput.gameObject, TriggerHelper.ScrollDelta(offsetInput));
 
             PrefabEditor.inst.dialog.Find("data/type/Show Type Editor").GetComponent<Image>().color =
                 DataManager.inst.PrefabTypes[Mathf.Clamp(PrefabEditor.inst.NewPrefabType, 0, DataManager.inst.PrefabTypes.Count - 1)].Color;

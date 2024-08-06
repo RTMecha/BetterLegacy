@@ -1184,7 +1184,7 @@ namespace BetterLegacy.Editor.Managers
                                 });
 
                                 TriggerHelper.IncreaseDecreaseButtons(inputFieldStorage);
-                                TriggerHelper.AddEventTriggerParams(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField));
+                                TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField));
 
                                 break;
                             }
@@ -1212,7 +1212,7 @@ namespace BetterLegacy.Editor.Managers
                                     RTPlayer.SetGameDataProperties();
                                 });
 
-                                TriggerHelper.AddEventTriggerParams(dropdown.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, delegate (BaseEventData baseEventData)
+                                TriggerHelper.AddEventTriggers(dropdown.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, delegate (BaseEventData baseEventData)
                                 {
                                     if (!EditorConfig.Instance.ScrollOnEasing.Value)
                                         return;
@@ -1241,7 +1241,7 @@ namespace BetterLegacy.Editor.Managers
                                 });
 
                                 TriggerHelper.IncreaseDecreaseButtonsInt(inputFieldStorage);
-                                TriggerHelper.AddEventTriggerParams(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
+                                TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
 
                                 break;
                             }
@@ -1260,7 +1260,7 @@ namespace BetterLegacy.Editor.Managers
                                 });
 
                                 TriggerHelper.IncreaseDecreaseButtonsInt(inputFieldStorage);
-                                TriggerHelper.AddEventTriggerParams(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
+                                TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
 
                                 break;
                             }
@@ -1279,7 +1279,7 @@ namespace BetterLegacy.Editor.Managers
                                 });
 
                                 TriggerHelper.IncreaseDecreaseButtons(inputFieldStorage);
-                                TriggerHelper.AddEventTriggerParams(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField));
+                                TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField));
 
                                 break;
                             }
@@ -1298,7 +1298,7 @@ namespace BetterLegacy.Editor.Managers
                                 });
 
                                 TriggerHelper.IncreaseDecreaseButtons(inputFieldStorage);
-                                TriggerHelper.AddEventTriggerParams(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField));
+                                TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField));
 
                                 break;
                             }
@@ -1317,7 +1317,7 @@ namespace BetterLegacy.Editor.Managers
                                 });
 
                                 TriggerHelper.IncreaseDecreaseButtonsInt(inputFieldStorage, min: 3, max: int.MaxValue);
-                                TriggerHelper.AddEventTriggerParams(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField, min: 3, max: int.MaxValue));
+                                TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField, min: 3, max: int.MaxValue));
 
                                 break;
                             }
@@ -1418,7 +1418,7 @@ namespace BetterLegacy.Editor.Managers
                                 });
 
                                 TriggerHelper.IncreaseDecreaseButtons(inputFieldStorage);
-                                TriggerHelper.AddEventTriggerParams(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField));
+                                TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField));
 
                                 break;
                             }
@@ -1465,8 +1465,8 @@ namespace BetterLegacy.Editor.Managers
                                     }
                                 });
 
-                                TriggerHelper.AddEventTriggerParams(inputXStorage.gameObject, TriggerHelper.ScrollDelta(inputXStorage.inputField));
-                                TriggerHelper.AddEventTriggerParams(inputYStorage.gameObject, TriggerHelper.ScrollDelta(inputYStorage.inputField));
+                                TriggerHelper.AddEventTriggers(inputXStorage.gameObject, TriggerHelper.ScrollDelta(inputXStorage.inputField));
+                                TriggerHelper.AddEventTriggers(inputYStorage.gameObject, TriggerHelper.ScrollDelta(inputYStorage.inputField));
                                 TriggerHelper.IncreaseDecreaseButtons(inputXStorage);
                                 TriggerHelper.IncreaseDecreaseButtons(inputYStorage);
 
@@ -1506,7 +1506,7 @@ namespace BetterLegacy.Editor.Managers
                                     PlayerManager.UpdatePlayers();
                                 });
 
-                                TriggerHelper.AddEventTriggerParams(dropdown.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, delegate (BaseEventData baseEventData)
+                                TriggerHelper.AddEventTriggers(dropdown.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, delegate (BaseEventData baseEventData)
                                 {
                                     if (!EditorConfig.Instance.ScrollOnEasing.Value)
                                         return;
@@ -1626,7 +1626,7 @@ namespace BetterLegacy.Editor.Managers
                                         DestroyImmediate(valueStorage.middleButton.gameObject);
                                         DestroyImmediate(valueStorage.rightGreaterButton.gameObject);
 
-                                        TriggerHelper.AddEventTriggerParams(value, TriggerHelper.ScrollDelta(valueStorage.inputField));
+                                        TriggerHelper.AddEventTriggers(value, TriggerHelper.ScrollDelta(valueStorage.inputField));
                                         TriggerHelper.IncreaseDecreaseButtons(valueStorage);
                                     }
 
@@ -1776,7 +1776,7 @@ namespace BetterLegacy.Editor.Managers
                                 });
 
                                 TriggerHelper.IncreaseDecreaseButtonsInt(inputFieldStorage);
-                                TriggerHelper.AddEventTriggerParams(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
+                                TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
 
                                 break;
                             }
@@ -1795,7 +1795,7 @@ namespace BetterLegacy.Editor.Managers
                                 });
 
                                 TriggerHelper.IncreaseDecreaseButtons(inputFieldStorage);
-                                TriggerHelper.AddEventTriggerParams(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField));
+                                TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField));
 
                                 break;
                             }
@@ -1828,8 +1828,8 @@ namespace BetterLegacy.Editor.Managers
                                     }
                                 });
 
-                                TriggerHelper.AddEventTriggerParams(inputXStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputXStorage.inputField));
-                                TriggerHelper.AddEventTriggerParams(inputYStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputYStorage.inputField));
+                                TriggerHelper.AddEventTriggers(inputXStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputXStorage.inputField));
+                                TriggerHelper.AddEventTriggers(inputYStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputYStorage.inputField));
                                 TriggerHelper.IncreaseDecreaseButtons(inputXStorage);
                                 TriggerHelper.IncreaseDecreaseButtons(inputYStorage);
 
@@ -1868,7 +1868,7 @@ namespace BetterLegacy.Editor.Managers
                                     PlayerManager.UpdatePlayers();
                                 });
 
-                                TriggerHelper.AddEventTriggerParams(dropdown.gameObject, TriggerHelper.ScrollDelta(dropdown));
+                                TriggerHelper.AddEventTriggers(dropdown.gameObject, TriggerHelper.ScrollDelta(dropdown));
 
                                 break;
                             }

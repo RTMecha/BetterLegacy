@@ -276,7 +276,7 @@ namespace BetterLegacy.Editor.Managers
                     SetTime(num);
             });
 
-            TriggerHelper.AddEventTriggerParams(time.gameObject, TriggerHelper.ScrollDelta(time));
+            TriggerHelper.AddEventTriggers(time.gameObject, TriggerHelper.ScrollDelta(time));
             TriggerHelper.IncreaseDecreaseButtons(time, t: MarkerEditor.inst.left.Find("time"));
 
             var set = MarkerEditor.inst.left.Find("time/|").GetComponent<Button>();
@@ -470,7 +470,7 @@ namespace BetterLegacy.Editor.Managers
                 Text = gameObject.GetComponentInChildren<Text>(),
             };
 
-            TriggerHelper.AddEventTriggerParams(gameObject, TriggerHelper.CreateEntry(EventTriggerType.PointerClick, eventData =>
+            TriggerHelper.AddEventTriggers(gameObject, TriggerHelper.CreateEntry(EventTriggerType.PointerClick, eventData =>
             {
                 var pointerEventData = (PointerEventData)eventData;
 
