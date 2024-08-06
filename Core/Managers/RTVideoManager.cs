@@ -32,12 +32,7 @@ namespace BetterLegacy.Core.Managers
 
         bool canUpdate = true;
 
-        public static void Init()
-        {
-            var gameObject = new GameObject("VideoManager");
-            gameObject.transform.SetParent(SystemManager.inst.transform);
-            gameObject.AddComponent<RTVideoManager>();
-        }
+        public static void Init() => Creator.NewGameObject(nameof(VideoManager), SystemManager.inst.transform).AddComponent<RTVideoManager>();
 
         void Awake()
         {
