@@ -118,6 +118,27 @@ namespace BetterLegacy.Core
             transform.localPosition = pos;
         }
 
+        public static void SetLocalScaleX(this Transform transform, float x)
+        {
+            var sca = transform.localScale;
+            sca.x = x;
+            transform.localScale = sca;
+        }
+        
+        public static void SetLocalScaleY(this Transform transform, float y)
+        {
+            var sca = transform.localScale;
+            sca.y = y;
+            transform.localScale = sca;
+        }
+        
+        public static void SetLocalScaleZ(this Transform transform, float z)
+        {
+            var sca = transform.localScale;
+            sca.z = z;
+            transform.localScale = sca;
+        }
+
         public static void SetLocalRotationEulerZ(this Transform transform, float z)
         {
             var rot = transform.localRotation.eulerAngles;
@@ -532,6 +553,8 @@ namespace BetterLegacy.Core
         #endregion
 
         #region UI
+
+        public static void AssignTexture(this Image image, Texture2D texture2D) => image.sprite = SpriteManager.CreateSprite(texture2D);
 
         public static ColorBlock SetColorBlock(this ColorBlock cb, Color normal, Color highlighted, Color pressed, Color selected, Color disabled, float fade = 0.2f)
         {
