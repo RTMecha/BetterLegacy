@@ -4,6 +4,7 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Core.Optimization;
@@ -5367,7 +5368,7 @@ namespace BetterLegacy.Core.Helpers
                 return;
         }
 
-        public static bool PlayerTrigger(Modifier<RTPlayer> modifier)
+        public static bool PlayerTrigger(Modifier<CustomPlayer> modifier)
         {
             if (!modifier.verified)
             {
@@ -5375,7 +5376,7 @@ namespace BetterLegacy.Core.Helpers
                 modifier.VerifyModifier(null);
             }
 
-            if (!modifier.IsValid(ModifiersManager.defaultPlayerModifiers) || modifier.reference == null || modifier.reference.CustomPlayer == null || modifier.reference.PlayerModel == null)
+            if (!modifier.IsValid(ModifiersManager.defaultPlayerModifiers) || modifier.reference == null)
                 return false;
 
             modifier.hasChanged = false;
@@ -5384,76 +5385,76 @@ namespace BetterLegacy.Core.Helpers
             {
                 case "actionPress":
                     {
-                        return modifier.reference.Actions.Boost.IsPressed;
+                        return modifier.reference.Player.Actions.Boost.IsPressed;
                     }
                 case "actionDown":
                     {
-                        return modifier.reference.Actions.Boost.WasPressed;
+                        return modifier.reference.Player.Actions.Boost.WasPressed;
                     }
                 case "healthEquals":
                     {
-                        return modifier.reference.CustomPlayer.Health == Parser.TryParse(modifier.value, 3);
+                        return modifier.reference.Health == Parser.TryParse(modifier.value, 3);
                     }
                 case "healthGreaterEquals":
                     {
-                        return modifier.reference.CustomPlayer.Health >= Parser.TryParse(modifier.value, 3);
+                        return modifier.reference.Health >= Parser.TryParse(modifier.value, 3);
                     }
                 case "healthLesserEquals":
                     {
-                        return modifier.reference.CustomPlayer.Health <= Parser.TryParse(modifier.value, 3);
+                        return modifier.reference.Health <= Parser.TryParse(modifier.value, 3);
                     }
                 case "healthGreater":
                     {
-                        return modifier.reference.CustomPlayer.Health > Parser.TryParse(modifier.value, 3);
+                        return modifier.reference.Health > Parser.TryParse(modifier.value, 3);
                     }
                 case "healthLesser":
                     {
-                        return modifier.reference.CustomPlayer.Health < Parser.TryParse(modifier.value, 3);
+                        return modifier.reference.Health < Parser.TryParse(modifier.value, 3);
                     }
                 case "healthPerEquals":
                     {
-                        var health = ((float)modifier.reference.CustomPlayer.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
+                        var health = ((float)modifier.reference.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
 
                         return health == Parser.TryParse(modifier.value, 50f);
                     }
                 case "healthPerGreaterEquals":
                     {
-                        var health = ((float)modifier.reference.CustomPlayer.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
+                        var health = ((float)modifier.reference.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
 
                         return health >= Parser.TryParse(modifier.value, 50f);
                     }
                 case "healthPerLesserEquals":
                     {
-                        var health = ((float)modifier.reference.CustomPlayer.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
+                        var health = ((float)modifier.reference.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
 
                         return health <= Parser.TryParse(modifier.value, 50f);
                     }
                 case "healthPerGreater":
                     {
-                        var health = ((float)modifier.reference.CustomPlayer.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
+                        var health = ((float)modifier.reference.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
 
                         return health > Parser.TryParse(modifier.value, 50f);
                     }
                 case "healthPerLesser":
                     {
-                        var health = ((float)modifier.reference.CustomPlayer.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
+                        var health = ((float)modifier.reference.Health / modifier.reference.PlayerModel.basePart.health) * 100f;
 
                         return health < Parser.TryParse(modifier.value, 50f);
                     }
                 case "isDead":
                     {
-                        return modifier.reference.isDead;
+                        return modifier.reference.Player.isDead;
                     }
                 case "isBoosting":
                     {
-                        return modifier.reference.isBoosting;
+                        return modifier.reference.Player.isBoosting;
                     }
             }
 
             return false;
         }
 
-        public static void PlayerAction(Modifier<RTPlayer> modifier)
+        public static void PlayerAction(Modifier<CustomPlayer> modifier)
         {
             if (!modifier.verified)
             {
@@ -5461,7 +5462,7 @@ namespace BetterLegacy.Core.Helpers
                 modifier.VerifyModifier(ModifiersManager.defaultPlayerModifiers);
             }
 
-            if (!modifier.IsValid(ModifiersManager.defaultPlayerModifiers) || modifier.reference == null || modifier.reference.CustomPlayer == null || modifier.reference.PlayerModel == null)
+            if (!modifier.IsValid(ModifiersManager.defaultPlayerModifiers) || modifier.reference == null)
                 return;
 
             modifier.hasChanged = false;
@@ -5472,21 +5473,22 @@ namespace BetterLegacy.Core.Helpers
                     {
                         var s = modifier.commands[1];
 
-                        if (modifier.reference.customObjects.ContainsKey(s) &&
-                            modifier.reference.customObjects[s].values.ContainsKey("Renderer") &&
-                            modifier.reference.customObjects[s].values["Renderer"] is Renderer renderer)
+                        if (modifier.reference.Player && modifier.reference.Player.customObjects.ContainsKey(s) &&
+                            modifier.reference.Player.customObjects[s].values.ContainsKey("Renderer") &&
+                            modifier.reference.Player.customObjects[s].values["Renderer"] is Renderer renderer)
                             renderer.enabled = Parser.TryParse(modifier.value, false);
 
                         break;
                     }
                 case "kill":
                     {
-                        modifier.reference.CustomPlayer.Health = 0;
+                        modifier.reference.Health = 0;
                         break;
                     }
                 case "hit":
                     {
-                        modifier.reference.PlayerHit();
+                        if (modifier.reference.Player)
+                            modifier.reference.Player.PlayerHit();
                         break;
                     }
                 case "signalModifier":
@@ -5503,7 +5505,7 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void PlayerInactive(Modifier<RTPlayer> modifier)
+        public static void PlayerInactive(Modifier<CustomPlayer> modifier)
         {
             if (!modifier.verified)
             {
@@ -5511,7 +5513,7 @@ namespace BetterLegacy.Core.Helpers
                 modifier.VerifyModifier(ModifiersManager.defaultPlayerModifiers);
             }
 
-            if (!modifier.IsValid(ModifiersManager.defaultPlayerModifiers) || modifier.reference == null || modifier.reference.CustomPlayer == null || modifier.reference.PlayerModel == null)
+            if (!modifier.IsValid(ModifiersManager.defaultPlayerModifiers) || modifier.reference == null)
                 return;
 
             switch (modifier.commands[0])
@@ -5520,9 +5522,9 @@ namespace BetterLegacy.Core.Helpers
                     {
                         var s = modifier.commands[1];
 
-                        if (Parser.TryParse(modifier.commands[2], true) && modifier.reference.customObjects.ContainsKey(s) &&
-                            modifier.reference.customObjects[s].values.ContainsKey("Renderer") &&
-                            modifier.reference.customObjects[s].values["Renderer"] is Renderer renderer)
+                        if (Parser.TryParse(modifier.commands[2], true) && modifier.reference.Player.customObjects.ContainsKey(s) &&
+                            modifier.reference.Player.customObjects[s].values.ContainsKey("Renderer") &&
+                            modifier.reference.Player.customObjects[s].values["Renderer"] is Renderer renderer)
                             renderer.enabled = !Parser.TryParse(modifier.value, false);
 
                         break;

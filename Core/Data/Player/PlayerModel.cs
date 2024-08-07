@@ -264,7 +264,7 @@ namespace BetterLegacy.Core.Data.Player
 
             if (jn["modifiers"] != null && jn["modifiers"].Count > 0)
                 for (int i = 0; i < jn["modifiers"].Count; i++)
-                    playerModel.modifiers.Add(Modifier<RTPlayer>.Parse(jn["modifiers"][i]));
+                    playerModel.modifiers.Add(Modifier<CustomPlayer>.Parse(jn["modifiers"][i]));
 
             if (jn["custom_objects"] != null && jn["custom_objects"].Count > 0)
                 for (int i = 0; i < jn["custom_objects"].Count; i++)
@@ -1763,7 +1763,7 @@ namespace BetterLegacy.Core.Data.Player
 
         public Dictionary<string, CustomObject> customObjects = new Dictionary<string, CustomObject>();
 
-        public List<Modifier<RTPlayer>> modifiers = new List<Modifier<RTPlayer>>();
+        public List<Modifier<CustomPlayer>> modifiers = new List<Modifier<CustomPlayer>>();
 
         public static implicit operator bool(PlayerModel exists) => exists != null;
 

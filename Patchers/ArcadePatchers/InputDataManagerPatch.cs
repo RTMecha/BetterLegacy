@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Core.Data.Player;
+using BetterLegacy.Core.Helpers;
 using HarmonyLib;
 using InControl;
 using System.Collections.Generic;
@@ -70,6 +71,11 @@ namespace BetterLegacy.Patchers
         static bool UpdatePrefix()
         {
             var inst = Instance;
+
+            if (CoreHelper.InGame && !CoreHelper.Paused)
+                for (int i = 0; i < inst.players.Count; i++)
+                    ((CustomPlayer)inst.players[i]).UpdateModifiers();
+
             if (!inst.playersCanJoin || inst.players.Count >= 8)
                 return false;
 

@@ -1,6 +1,9 @@
 ﻿using BetterLegacy.Components.Player;
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using InControl;
+using System;
+using System.Linq;
 using UnityEngine;
 using XInputDotNetPure;
 using BaseCustomPlayer = InputDataManager.CustomPlayer;
@@ -75,6 +78,67 @@ namespace BetterLegacy.Core.Data.Player
             myGameActions.Device = device;
             if (Player)
                 Player.Actions = myGameActions;
+        }
+
+        public void UpdateModifiers()
+        {
+            if (CoreHelper.Paused)
+                return;
+
+            // Modifiers
+            if (PlayerModel.modifiers.Count > 0)
+            {
+                Func<Modifier<CustomPlayer>, bool> modifierPredicate = x => x.Action == null && x.type == ModifierBase.Type.Action || x.Trigger == null && x.type == ModifierBase.Type.Trigger || x.Inactive == null;
+
+                if (PlayerModel.modifiers.Any(modifierPredicate))
+                    PlayerModel.modifiers.Where(modifierPredicate).ToList().ForEach(modifier =>
+                    {
+                        modifier.Action = ModifiersHelper.PlayerAction;
+                        modifier.Trigger = ModifiersHelper.PlayerTrigger;
+                        modifier.Inactive = ModifiersHelper.PlayerInactive;
+                    });
+
+                var actions = PlayerModel.modifiers.Where(x => x.type == ModifierBase.Type.Action);
+                var triggers = PlayerModel.modifiers.Where(x => x.type == ModifierBase.Type.Trigger);
+
+                if (triggers.Count() > 0)
+                {
+                    if (triggers.All(x => !x.active && (x.Trigger(x) && !x.not || !x.Trigger(x) && x.not)))
+                    {
+                        foreach (var act in actions.Where(x => !x.active))
+                        {
+                            if (!act.constant)
+                                act.active = true;
+
+                            act.running = true;
+                            act.Action?.Invoke(act);
+                        }
+
+                        foreach (var trig in triggers.Where(x => !x.constant))
+                            trig.active = true;
+                    }
+                    else
+                    {
+                        foreach (var act in actions.Where(x => x.active || x.running))
+                        {
+                            act.active = false;
+                            act.running = false;
+                            act.Inactive?.Invoke(act);
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var act in actions.Where(x => !x.active))
+                    {
+                        if (!act.constant)
+                            act.active = true;
+
+                        act.running = true;
+                        act.Action?.Invoke(act);
+                    }
+                }
+            }
         }
 
         public static int MaxHealth { get; set; } = 3;
