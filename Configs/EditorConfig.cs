@@ -2351,6 +2351,7 @@ namespace BetterLegacy.Configs
             HideVisualElementsWhenObjectIsEmpty.SettingChanged += ObjectEditorChanged;
             KeyframeZoomBounds.SettingChanged += ObjectEditorChanged;
             ObjectSelectionColor.SettingChanged += ObjectEditorChanged;
+            KeyframeEndLengthOffset.SettingChanged += ObjectEditorChanged;
 
             ThemeTemplateName.SettingChanged += ThemeTemplateChanged;
             ThemeTemplateGUI.SettingChanged += ThemeTemplateChanged;
