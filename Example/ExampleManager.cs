@@ -1730,6 +1730,7 @@ namespace BetterLegacy.Example
 
                     chatterBase.gameObject.SetActive(!chatterBase.gameObject.activeSelf);
                 });
+                SetupOptionButton("Tutorials", () => { Say("No tutorials yet!"); });
                 SetupOptionButton("Cya later", () =>
                 {
                     faceCanLook = false;
