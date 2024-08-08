@@ -1517,8 +1517,8 @@ namespace BetterLegacy.Editor.Managers
 
                     if (!string.IsNullOrEmpty(beatmapObject.prefabID))
                     {
-                        if (DataManager.inst.gameData.prefabs.FindIndex(x => x.ID == beatmapObject.prefabID) != -1)
-                            color = DataManager.inst.PrefabTypes[DataManager.inst.gameData.prefabs.Find(x => x.ID == beatmapObject.prefabID).Type].Color;
+                        if (DataManager.inst.gameData.prefabs.TryFind(x => x.ID == beatmapObject.prefabID, out DataManager.GameData.Prefab prefab) && prefab is Prefab modPrefab)
+                            color = modPrefab.TypeColor;
                         else
                         {
                             beatmapObject.prefabID = null;
@@ -1549,7 +1549,7 @@ namespace BetterLegacy.Editor.Managers
 
                 if (timelineObject.Text)
                 {
-                    var textMeshNoob = timelineObject.Text;
+                    var textMeshNoob = timelineObject.Text; // ha! take that tmp
                     textMeshNoob.text = (!string.IsNullOrEmpty(name)) ? string.Format("<mark=#000000aa>{0}</mark>", name) : nullName;
                     textMeshNoob.color = LSColors.white;
                 }
