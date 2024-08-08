@@ -1169,7 +1169,7 @@ namespace BetterLegacy.Editor.Managers
                 if (!RTFile.DirectoryExists(directory))
                     Directory.CreateDirectory(directory);
 
-                File.WriteAllBytes(directory + "/icon.png", prefabType.Icon.texture.EncodeToPNG());
+                File.WriteAllBytes(directory + "/icon.png", prefabType.icon.texture.EncodeToPNG());
                 RTFile.WriteToFile(directory + "/data.lsp", jn.ToString(3));
             }
         }
@@ -1189,14 +1189,14 @@ namespace BetterLegacy.Editor.Managers
                 var prefabType = PrefabType.Parse(jn);
 
                 if (RTFile.FileExists(folder + "/icon.png"))
-                    prefabType.Icon = SpriteManager.LoadSprite(folder + "/icon.png");
+                    prefabType.icon = SpriteManager.LoadSprite(folder + "/icon.png");
 
-                prefabType.Index = jn["index"].AsInt;
+                prefabType.index = jn["index"].AsInt;
 
                 list.Add(prefabType);
             }
 
-            list = list.OrderBy(x => (x as PrefabType).Index).ToList();
+            list = list.OrderBy(x => (x as PrefabType).index).ToList();
 
             DataManager.inst.PrefabTypes.AddRange(list);
 
@@ -1216,7 +1216,7 @@ namespace BetterLegacy.Editor.Managers
             int num = 0;
             foreach (var prefabType in DataManager.inst.PrefabTypes.Select(x => x as PrefabType))
             {
-                prefabType.Index = num;
+                prefabType.index = num;
                 num++;
             }
         }
@@ -1242,8 +1242,8 @@ namespace BetterLegacy.Editor.Managers
                 }
 
                 var prefabType = new PrefabType(name, LSColors.pink500);
-                prefabType.Index = DataManager.inst.PrefabTypes.Count;
-                prefabType.Icon = ((PrefabType)DataManager.inst.PrefabTypes[prefabType.Index - 1]).Icon;
+                prefabType.index = DataManager.inst.PrefabTypes.Count;
+                prefabType.icon = ((PrefabType)DataManager.inst.PrefabTypes[prefabType.index - 1]).icon;
 
                 DataManager.inst.PrefabTypes.Add(prefabType);
 
@@ -1278,7 +1278,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.Background_1);
 
                 var icon = gameObject.transform.Find("Toggle/Icon").GetComponent<Image>();
-                icon.sprite = prefabType.Icon;
+                icon.sprite = prefabType.icon;
 
                 var inputField = gameObject.transform.Find("Name").GetComponent<InputField>();
                 inputField.onValueChanged.ClearAll();
@@ -1368,7 +1368,7 @@ namespace BetterLegacy.Editor.Managers
                     int n = 0;
                     foreach (var pt in DataManager.inst.PrefabTypes.Select(x => x as PrefabType))
                     {
-                        pt.Index = n;
+                        pt.index = n;
                         n++;
                     }
 
@@ -1392,8 +1392,8 @@ namespace BetterLegacy.Editor.Managers
 
                         File.Copy(_val, copyTo, RTFile.FileExists(copyTo));
 
-                        prefabType.Icon = SpriteManager.LoadSprite(copyTo);
-                        icon.sprite = prefabType.Icon;
+                        prefabType.icon = SpriteManager.LoadSprite(copyTo);
+                        icon.sprite = prefabType.icon;
 
                         EditorManager.inst.HideDialog("Browser Popup");
                     });
@@ -1598,7 +1598,7 @@ namespace BetterLegacy.Editor.Managers
                     externalTypeImage.color = color;
 
                     prefabPanel.TypeImage.color = color;
-                    prefabPanel.TypeIcon.sprite = prefabType.Icon;
+                    prefabPanel.TypeIcon.sprite = prefabType.icon;
                     prefabPanel.TypeText.text = prefabType.Name;
 
                     if (!string.IsNullOrEmpty(prefab.filePath))
@@ -2067,7 +2067,7 @@ namespace BetterLegacy.Editor.Managers
 
             typeName.text = prefabType.Name;
             typeImage.color = prefabType.Color;
-            typeIconImage.sprite = prefabType.Icon;
+            typeIconImage.sprite = prefabType.icon;
 
             TooltipHelper.AssignTooltip(gameObject, $"{dialog} Prefab List Button", 3.2f);
             TooltipHelper.AddHoverTooltip(gameObject,
@@ -2188,7 +2188,7 @@ namespace BetterLegacy.Editor.Managers
 
                         typeName.text = prefabType.Name;
                         typeImage.color = prefabType.Color;
-                        typeIconImage.sprite = prefabType.Icon;
+                        typeIconImage.sprite = prefabType.icon;
 
                         TooltipHelper.AddHoverTooltip(gameObject,
                             "<#" + LSColors.ColorToHex(typeImage.color) + ">" + prefab.Name + "</color>",

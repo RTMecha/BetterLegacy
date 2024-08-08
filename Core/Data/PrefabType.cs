@@ -7,25 +7,17 @@ namespace BetterLegacy.Core.Data
 {
     public class PrefabType : BasePrefabType
     {
-        PrefabType()
-        {
-
-        }
-
         public PrefabType(string name, Color color)
         {
             Name = name;
             Color = color;
         }
 
-        public int Index { get; set; }
+        public string id;
 
-        Sprite icon;
-        public Sprite Icon
-        {
-            get => icon;
-            set => icon = value;
-        }
+        public int index;
+
+        public Sprite icon;
 
         public static PrefabType Parse(JSONNode jn) => new PrefabType(jn["name"], LSFunctions.LSColors.HexToColorAlpha(jn["color"]));
         public JSONNode ToJSON()
@@ -33,7 +25,7 @@ namespace BetterLegacy.Core.Data
             var jn = JSON.Parse("{}");
             jn["name"] = Name;
             jn["color"] = CoreHelper.ColorToHex(Color);
-            jn["index"] = Index.ToString();
+            jn["index"] = index.ToString();
 
             return jn;
         }
@@ -53,8 +45,6 @@ namespace BetterLegacy.Core.Data
         #region Operators
 
         public static implicit operator bool(PrefabType exists) => exists != null;
-
-        public override bool Equals(object obj) => obj is PrefabType && Name == (obj as PrefabType).Name;
 
         public override string ToString() => Name;
 
