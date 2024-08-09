@@ -820,8 +820,8 @@ namespace BetterLegacy.Editor.Managers
             {
                 Application.OpenURL($"{AlephNetworkManager.ArcadeServerURL}api/auth/login");
                 CreateLoginListener();
-                EditorManager.inst.HideDialog("Warning Popup");
-            }, () => { EditorManager.inst.HideDialog("Warning Popup"); }, "Login", "Cancel");
+                RTEditor.inst.HideWarningPopup();
+            }, RTEditor.inst.HideWarningPopup, "Login", "Cancel");
         }
 
         public IEnumerator RefreshTokens()

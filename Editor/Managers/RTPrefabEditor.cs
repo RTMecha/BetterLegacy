@@ -2098,8 +2098,8 @@ namespace BetterLegacy.Editor.Managers
                     RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
                     {
                         PrefabEditor.inst.DeleteInternalPrefab(index);
-                        EditorManager.inst.HideDialog("Warning Popup");
-                    }, () => { EditorManager.inst.HideDialog("Warning Popup"); });
+                        RTEditor.inst.HideWarningPopup();
+                    }, RTEditor.inst.HideWarningPopup);
                 });
                 addPrefabObject.onClick.AddListener(() =>
                 {
@@ -2165,8 +2165,8 @@ namespace BetterLegacy.Editor.Managers
                     RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
                     {
                         DeleteExternalPrefab(prefabPanel);
-                        EditorManager.inst.HideDialog("Warning Popup");
-                    }, () => { EditorManager.inst.HideDialog("Warning Popup"); });
+                        RTEditor.inst.HideWarningPopup();
+                    }, RTEditor.inst.HideWarningPopup);
                 });
                 addPrefabObject.onClick.AddListener(() =>
                 {

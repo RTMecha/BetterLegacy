@@ -743,8 +743,8 @@ namespace BetterLegacy.Editor.Managers
                         keybinds.RemoveAt(index);
                         RefreshKeybindPopup();
                         Save();
-                        EditorManager.inst.HideDialog("Warning Popup");
-                    }, () => { EditorManager.inst.HideDialog("Warning Popup"); });
+                        RTEditor.inst.HideWarningPopup();
+                    }, RTEditor.inst.HideWarningPopup);
                 });
 
                 EditorThemeManager.ApplyGraphic(delete.baseImage, ThemeGroup.Delete, true);

@@ -1936,8 +1936,8 @@ namespace BetterLegacy.Editor.Managers
                         StartCoroutine(RefreshModels());
 
 
-                        EditorManager.inst.HideDialog("Warning Popup");
-                    }, () => { EditorManager.inst.HideDialog("Warning Popup"); });
+                        RTEditor.inst.HideWarningPopup();
+                    }, RTEditor.inst.HideWarningPopup);
                 });
 
                 EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
@@ -2013,8 +2013,8 @@ namespace BetterLegacy.Editor.Managers
                         StartCoroutine(RefreshCustomObjects());
                         StartCoroutine(RefreshEditor());
                         PlayerManager.UpdatePlayers();
-                        EditorManager.inst.HideDialog("Warning Popup");
-                    }, () => { EditorManager.inst.HideDialog("Warning Popup"); });
+                        RTEditor.inst.HideWarningPopup();
+                    }, RTEditor.inst.HideWarningPopup);
                 });
 
                 EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);

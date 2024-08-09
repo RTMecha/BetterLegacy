@@ -68,7 +68,7 @@ namespace BetterLegacy.Patchers
                 dropdown.ClearOptions();
                 dropdown.AddOptions(easings);
 
-                TriggerHelper.AddEventTriggers(dropdown.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, delegate (BaseEventData baseEventData)
+                TriggerHelper.AddEventTriggers(dropdown.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, baseEventData =>
                 {
                     if (!EditorConfig.Instance.ScrollOnEasing.Value)
                         return;
@@ -778,7 +778,7 @@ namespace BetterLegacy.Patchers
                     File.Copy(file, saveTo, RTFile.FileExists(saveTo));
                 }
 
-                CoreHelper.StartCoroutine(ProjectData.Writer.SaveData(str + "/level.lsb", GameData.Current, delegate ()
+                CoreHelper.StartCoroutine(ProjectData.Writer.SaveData(str + "/level.lsb", GameData.Current, () =>
                 {
                     Instance.DisplayNotification($"Saved beatmap to {__0}", 3f, EditorManager.NotificationType.Success);
                 }));
@@ -860,14 +860,14 @@ namespace BetterLegacy.Patchers
             if (!string.IsNullOrEmpty(jpgFile))
             {
                 string jpgFileLocation = RTFile.ApplicationDirectory + RTEditor.editorListSlash + Instance.currentLoadedLevel + "/level.jpg";
-                CoreHelper.StartCoroutine(Instance.GetSprite(jpgFile, new EditorManager.SpriteLimits(new Vector2(512f, 512f)), delegate (Sprite cover)
+                CoreHelper.StartCoroutine(Instance.GetSprite(jpgFile, new EditorManager.SpriteLimits(new Vector2(512f, 512f)), cover =>
                 {
                     File.Copy(jpgFile, jpgFileLocation, true);
                     Instance.GetDialog("Metadata Editor").Dialog.transform.Find("Scroll View/Viewport/Content/creator/cover_art/image").GetComponent<Image>().sprite = cover;
                     MetadataEditor.inst.currentLevelCover = cover;
-                }, delegate (string errorFile)
+                }, errorFile =>
                 {
-                    Instance.DisplayNotification("Please resize your image to be less then or equal to 512 x 512 pixels. It must also be a jpg.", 2f, EditorManager.NotificationType.Error, false);
+                    Instance.DisplayNotification("Please resize your image to be less then or equal to 512 x 512 pixels. It must also be a jpg.", 2f, EditorManager.NotificationType.Error);
                 }));
             }
             return false;
@@ -917,7 +917,7 @@ namespace BetterLegacy.Patchers
                 return false;
             }
 
-            RTEditor.inst.ShowWarningPopup("Are you sure you want to quit to the main menu? Any unsaved progress will be lost!", delegate ()
+            RTEditor.inst.ShowWarningPopup("Are you sure you want to quit to the main menu? Any unsaved progress will be lost!", () =>
             {
                 if (Instance.savingBeatmap)
                 {
@@ -935,10 +935,7 @@ namespace BetterLegacy.Patchers
                 Debug.Log($"{Instance.className}Quit to Main Menu");
                 InputDataManager.inst.players.Clear();
                 SceneManager.inst.LoadScene("Main Menu");
-            }, delegate ()
-            {
-                EditorManager.inst.HideDialog("Warning Popup");
-            });
+            }, RTEditor.inst.HideWarningPopup);
 
             return false;
         }
@@ -953,7 +950,7 @@ namespace BetterLegacy.Patchers
                 return false;
             }
 
-            RTEditor.inst.ShowWarningPopup("Are you sure you want to quit the game? Any unsaved progress will be lost!", delegate ()
+            RTEditor.inst.ShowWarningPopup("Are you sure you want to quit the game? Any unsaved progress will be lost!", () =>
             {
                 if (Instance.savingBeatmap)
                 {
@@ -965,10 +962,7 @@ namespace BetterLegacy.Patchers
                 DiscordController.inst.OnStateChange("");
                 Debug.Log($"{Instance.className}Quit Game");
                 Application.Quit();
-            }, delegate ()
-            {
-                EditorManager.inst.HideDialog("Warning Popup");
-            });
+            }, RTEditor.inst.HideWarningPopup);
 
             return false;
         }
@@ -1190,7 +1184,7 @@ namespace BetterLegacy.Patchers
 
         public static IEnumerator GetSprite(string _path, EditorManager.SpriteLimits _limits, Action<Sprite> callback, Action<string> onError)
         {
-            yield return CoreHelper.StartCoroutine(FileManager.inst.LoadImageFileRaw(_path, delegate (Sprite _texture)
+            yield return CoreHelper.StartCoroutine(FileManager.inst.LoadImageFileRaw(_path, _texture =>
             {
                 if ((_texture.texture.width > _limits.size.x && _limits.size.x > 0f) || (_texture.texture.height > _limits.size.y && _limits.size.y > 0f))
                 {
@@ -1198,10 +1192,7 @@ namespace BetterLegacy.Patchers
                     return;
                 }
                 callback?.Invoke(_texture);
-            }, delegate (string error)
-            {
-                onError?.Invoke(_path);
-            }));
+            }, error => { onError?.Invoke(_path); }));
             yield break;
         }
 

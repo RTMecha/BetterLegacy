@@ -79,7 +79,7 @@ namespace BetterLegacy.Menus
                 return;
             }
 
-            RTEditor.inst.ShowWarningPopup("Are you sure you want to load the Page Editor? Any unsaved changes will be lost!", delegate ()
+            RTEditor.inst.ShowWarningPopup("Are you sure you want to load the Page Editor? Any unsaved changes will be lost!", () =>
             {
                 if (EditorManager.inst.savingBeatmap)
                 {
@@ -97,10 +97,7 @@ namespace BetterLegacy.Menus
                 CoreHelper.Log($"Quit to Main Menu");
                 InputDataManager.inst.players.Clear();
                 SceneManager.inst.LoadScene("Main Menu");
-            }, delegate ()
-            {
-                EditorManager.inst.HideDialog("Warning Popup");
-            });
+            }, RTEditor.inst.HideWarningPopup);
         }
 
         public static string prevScene = "Main Menu";

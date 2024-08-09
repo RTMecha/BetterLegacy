@@ -68,8 +68,8 @@ namespace BetterLegacy.Editor.Managers
                 RTEditor.inst.ShowWarningPopup("Are you sure you want to delete all backgrounds?", () =>
                 {
                     DeleteAllBackgrounds();
-                    EditorManager.inst.HideDialog("Warning Popup");
-                }, () => { EditorManager.inst.HideDialog("Warning Popup"); });
+                    RTEditor.inst.HideWarningPopup();
+                }, RTEditor.inst.HideWarningPopup);
             });
 
             var destroyAllTip = destroyAll.GetComponent<HoverTooltip>();
@@ -1842,8 +1842,8 @@ namespace BetterLegacy.Editor.Managers
                 RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this modifier block?", () =>
                 {
                     DelBlock(backgroundObject);
-                    EditorManager.inst.HideDialog("Warning Popup");
-                }, () => { EditorManager.inst.HideDialog("Warning Popup"); });
+                    RTEditor.inst.HideWarningPopup();
+                }, RTEditor.inst.HideWarningPopup);
             });
 
             if (!showModifiers || backgroundObject.modifiers.Count <= currentPage)

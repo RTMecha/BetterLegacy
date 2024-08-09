@@ -1450,11 +1450,11 @@ namespace BetterLegacy.Editor.Managers
 
                     EditorManager.inst.GetLevelList();
 
-                    EditorManager.inst.HideDialog("Warning Popup");
+                    HideWarningPopup();
                     editorPathField.interactable = true;
                 }, () =>
                 {
-                    EditorManager.inst.HideDialog("Warning Popup");
+                    RTEditor.inst.HideWarningPopup();
                     editorPathField.interactable = true;
                 });
 
@@ -1498,11 +1498,11 @@ namespace BetterLegacy.Editor.Managers
                     StartCoroutine(LoadThemes(true));
                     EventEditor.inst.RenderEventsDialog();
 
-                    EditorManager.inst.HideDialog("Warning Popup");
+                    RTEditor.inst.HideWarningPopup();
                     themePathField.interactable = true;
                 }, () =>
                 {
-                    EditorManager.inst.HideDialog("Warning Popup");
+                    RTEditor.inst.HideWarningPopup();
                     themePathField.interactable = true;
                 });
 
@@ -1546,11 +1546,11 @@ namespace BetterLegacy.Editor.Managers
 
                     StartCoroutine(UpdatePrefabs());
 
-                    EditorManager.inst.HideDialog("Warning Popup");
+                    RTEditor.inst.HideWarningPopup();
                     prefabPathField.interactable = true;
                 }, () =>
                 {
-                    EditorManager.inst.HideDialog("Warning Popup");
+                    RTEditor.inst.HideWarningPopup();
                     prefabPathField.interactable = true;
                 });
 
@@ -2516,10 +2516,7 @@ namespace BetterLegacy.Editor.Managers
                     DataManager.inst.UpdateSettingBool("IsArcade", true);
 
                     SceneManager.inst.LoadScene("Input Select");
-                }, () =>
-                {
-                    EditorManager.inst.HideDialog("Warning Popup");
-                });
+                }, HideWarningPopup);
             }, 7);
 
             EditorHelper.AddEditorDropdown("Switch to Arcade Mode", "", "File", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_right_small.png"), () =>
@@ -2541,7 +2538,7 @@ namespace BetterLegacy.Editor.Managers
                         SceneManager.inst.LoadScene("Editor");
                     };
                     LevelManager.Load(GameManager.inst.basePath + "level.lsb", false);
-                }, () => { EditorManager.inst.HideDialog("Warning Popup"); });
+                }, HideWarningPopup);
             }, 7);
 
             EditorHelper.AddEditorDropdown("Restart Editor", "", "File", ReloadSprite, () =>
@@ -2644,7 +2641,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                     else if (_val.Replace("\\", "/").Contains("/level.lsb"))
                     {
-                        ShowWarningPopup("Warning! Selecting a level will copy all of its contents to your editor, are you sure you want to do this?", delegate ()
+                        ShowWarningPopup("Warning! Selecting a level will copy all of its contents to your editor, are you sure you want to do this?", () =>
                         {
                             var path = _val.Replace("\\", "/").Replace("/level.lsb", "");
 
@@ -2658,10 +2655,10 @@ namespace BetterLegacy.Editor.Managers
 
                             EditorManager.inst.DisplayNotification($"Copied {Path.GetFileName(path)} to level ({editorListPath}) folder.", 2f, EditorManager.NotificationType.Success);
 
-                            EditorManager.inst.HideDialog("Warning Popup");
-                        }, delegate ()
+                            HideWarningPopup();
+                        }, () =>
                         {
-                            EditorManager.inst.HideDialog("Warning Popup");
+                            HideWarningPopup();
                             EditorManager.inst.ShowDialog("Browser Popup");
                         });
                     }
@@ -2779,11 +2776,8 @@ namespace BetterLegacy.Editor.Managers
                 ShowWarningPopup("Are you sure you want to clear sprite data? Any Image Shapes that use a stored image will have their images cleared and you will need to set them again.", () =>
                 {
                     AssetManager.SpriteAssets.Clear();
-                    EditorManager.inst.HideDialog("Warning Popup");
-                }, () =>
-                {
-                    EditorManager.inst.HideDialog("Warning Popup");
-                });
+                    HideWarningPopup();
+                }, HideWarningPopup);
             });
 
             EditorHelper.AddEditorDropdown("Reset Event Offsets", "", "Edit", saveAs.Find("Panel/x/Image").GetComponent<Image>().sprite, () =>
@@ -2849,15 +2843,9 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.DisplayNotification("Reset all integer variables to 0.", 1.4f, EditorManager.NotificationType.Success);
             });
 
-            EditorHelper.AddEditorDropdown("Get Example", "", "View", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_example-white.png"), () =>
-            {
-                ExampleManager.Init();
-            });
+            EditorHelper.AddEditorDropdown("Get Example", "", "View", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_example-white.png"), ExampleManager.Init);
             
-            EditorHelper.AddEditorDropdown("Show Config Manager", "", "View", null, () =>
-            {
-                ConfigManager.inst.Show();
-            });
+            EditorHelper.AddEditorDropdown("Show Config Manager", "", "View", null, ConfigManager.inst.Show);
 
             titleBar.Find("Steam/Text").GetComponent<Text>().text = "Upload";
             var steamLayoutElement = titleBar.Find("Steam").GetComponent<LayoutElement>();
@@ -3689,7 +3677,7 @@ namespace BetterLegacy.Editor.Managers
                         currentTemplateSprite = sprite;
                         previewImage.sprite = currentTemplateSprite;
                     }
-                    EditorManager.inst.HideDialog("Warning Popup");
+                    HideWarningPopup();
                 }, () =>
                 {
                     EditorManager.inst.ShowDialog("Browser Popup");
@@ -3710,7 +3698,7 @@ namespace BetterLegacy.Editor.Managers
                         currentTemplateSprite = sprite;
                         previewImage.sprite = currentTemplateSprite;
                     });
-                    EditorManager.inst.HideDialog("Warning Popup");
+                    HideWarningPopup();
                 }, "System Browser", "Editor Browser");
             });
         }
@@ -4347,25 +4335,22 @@ namespace BetterLegacy.Editor.Managers
             {
                 labelGenerator("Clear data from objects");
 
-                buttonGenerator("clear tags", "Clear Tags", parent, delegate ()
+                buttonGenerator("clear tags", "Clear Tags", parent, () =>
                 {
-                    ShowWarningPopup("You are about to clear tags from all selected objects, this <b>CANNOT</b> be undone!", delegate ()
+                    ShowWarningPopup("You are about to clear tags from all selected objects, this <b>CANNOT</b> be undone!", () =>
                     {
                         foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
                             beatmapObject.tags.Clear();
                         }
 
-                        EditorManager.inst.HideDialog("Warning Popup");
-                    }, delegate ()
-                    {
-                        EditorManager.inst.HideDialog("Warning Popup");
-                    });
+                        HideWarningPopup();
+                    }, HideWarningPopup);
                 });
 
-                buttonGenerator("clear animations", "Clear Animations", parent, delegate ()
+                buttonGenerator("clear animations", "Clear Animations", parent, () =>
                 {
-                    ShowWarningPopup("You are about to clear animations from all selected objects, this <b>CANNOT</b> be undone!", delegate ()
+                    ShowWarningPopup("You are about to clear animations from all selected objects, this <b>CANNOT</b> be undone!", () =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
@@ -4392,16 +4377,13 @@ namespace BetterLegacy.Editor.Managers
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
                         }
 
-                        EditorManager.inst.HideDialog("Warning Popup");
-                    }, delegate ()
-                    {
-                        EditorManager.inst.HideDialog("Warning Popup");
-                    });
+                        HideWarningPopup();
+                    }, HideWarningPopup);
                 });
 
-                buttonGenerator("clear modifiers", "Clear Modifiers", parent, delegate ()
+                buttonGenerator("clear modifiers", "Clear Modifiers", parent, () =>
                 {
-                    ShowWarningPopup("You are about to clear modifiers from all selected objects, this <b>CANNOT</b> be undone!", delegate ()
+                    ShowWarningPopup("You are about to clear modifiers from all selected objects, this <b>CANNOT</b> be undone!", () =>
                     {
                         foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
@@ -4409,11 +4391,8 @@ namespace BetterLegacy.Editor.Managers
                             Updater.UpdateProcessor(beatmapObject);
                         }
 
-                        EditorManager.inst.HideDialog("Warning Popup");
-                    }, delegate ()
-                    {
-                        EditorManager.inst.HideDialog("Warning Popup");
-                    });
+                        HideWarningPopup();
+                    }, HideWarningPopup);
                 });
             }
 
@@ -4465,7 +4444,7 @@ namespace BetterLegacy.Editor.Managers
                 labelGenerator("Set Autokill Type");
 
                 GenerateButtons(parent, 48f, 8f,
-                    new ButtonFunction("No Autokill", delegate ()
+                    new ButtonFunction("No Autokill", () =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
@@ -4476,7 +4455,7 @@ namespace BetterLegacy.Editor.Managers
                             Updater.UpdateProcessor(bm, "Autokill");
                         }
                     }),
-                    new ButtonFunction("Last KF", delegate ()
+                    new ButtonFunction("Last KF", () =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
@@ -4487,7 +4466,7 @@ namespace BetterLegacy.Editor.Managers
                             Updater.UpdateProcessor(bm, "Autokill");
                         }
                     }),
-                    new ButtonFunction("Last KF Offset", delegate ()
+                    new ButtonFunction("Last KF Offset", () =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
@@ -4498,7 +4477,7 @@ namespace BetterLegacy.Editor.Managers
                             Updater.UpdateProcessor(bm, "Autokill");
                         }
                     }),
-                    new ButtonFunction("Fixed Time", delegate ()
+                    new ButtonFunction("Fixed Time", () =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
@@ -4509,7 +4488,7 @@ namespace BetterLegacy.Editor.Managers
                             Updater.UpdateProcessor(bm, "Autokill");
                         }
                     }),
-                    new ButtonFunction("Song Time", delegate ()
+                    new ButtonFunction("Song Time", () =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
@@ -4526,20 +4505,20 @@ namespace BetterLegacy.Editor.Managers
             {
                 labelGenerator("Set Parent");
 
-                buttonGenerator("set parent (search)", "Search List", parent, delegate ()
+                buttonGenerator("set parent (search)", "Search List", parent, () =>
                 {
                     EditorManager.inst.OpenParentPopup();
                 });
 
-                buttonGenerator("set parent (dropper)", "Picker", parent, delegate ()
+                buttonGenerator("set parent (dropper)", "Picker", parent, () =>
                 {
                     parentPickerEnabled = true;
                     selectingMultiple = true;
                 });
 
-                buttonGenerator("set parent (remove)", "Remove", parent, delegate ()
+                buttonGenerator("set parent (remove)", "Remove", parent, () =>
                 {
-                    ShowWarningPopup("You are about to remove parents from all selected objects, this <b>CANNOT</b> be undone!", delegate ()
+                    ShowWarningPopup("You are about to remove parents from all selected objects, this <b>CANNOT</b> be undone!", () =>
                     {
                         foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
@@ -4547,11 +4526,8 @@ namespace BetterLegacy.Editor.Managers
                             Updater.UpdateProcessor(beatmapObject);
                         }
 
-                        EditorManager.inst.HideDialog("Warning Popup");
-                    }, delegate ()
-                    {
-                        EditorManager.inst.HideDialog("Warning Popup");
-                    });
+                        HideWarningPopup();
+                    }, HideWarningPopup);
                 });
             }
 
@@ -4559,7 +4535,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 labelGenerator("Force Snap Start Time to BPM");
 
-                buttonGenerator("snap", "Snap", parent, delegate ()
+                buttonGenerator("snap", "Snap", parent, () =>
                 {
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                     {
@@ -4579,7 +4555,7 @@ namespace BetterLegacy.Editor.Managers
                 labelGenerator("Set Object Type");
 
                 GenerateButtons(parent, 32f, 8f,
-                    new ButtonFunction("Sub", delegate ()
+                    new ButtonFunction("Sub", () =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
@@ -4597,7 +4573,7 @@ namespace BetterLegacy.Editor.Managers
                             Updater.UpdateProcessor(bm, "ObjectType");
                         }
                     }),
-                    new ButtonFunction("Add", delegate ()
+                    new ButtonFunction("Add", () =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
@@ -4618,7 +4594,7 @@ namespace BetterLegacy.Editor.Managers
                     }));
 
                 GenerateButtons(parent, 48f, 8f,
-                    new ButtonFunction(nameof(BeatmapObject.ObjectType.Normal), delegate ()
+                    new ButtonFunction(nameof(BeatmapObject.ObjectType.Normal), () =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
@@ -4629,7 +4605,7 @@ namespace BetterLegacy.Editor.Managers
                             Updater.UpdateProcessor(bm, "ObjectType");
                         }
                     }),
-                    new ButtonFunction(nameof(BeatmapObject.ObjectType.Helper), delegate ()
+                    new ButtonFunction(nameof(BeatmapObject.ObjectType.Helper), () =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
@@ -4640,7 +4616,7 @@ namespace BetterLegacy.Editor.Managers
                             Updater.UpdateProcessor(bm, "ObjectType");
                         }
                     }),
-                    new ButtonFunction("Deco", delegate ()
+                    new ButtonFunction("Deco", () =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
@@ -4651,7 +4627,7 @@ namespace BetterLegacy.Editor.Managers
                             Updater.UpdateProcessor(bm, "ObjectType");
                         }
                     }),
-                    new ButtonFunction(nameof(BeatmapObject.ObjectType.Empty), delegate ()
+                    new ButtonFunction(nameof(BeatmapObject.ObjectType.Empty), () =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
@@ -4662,7 +4638,7 @@ namespace BetterLegacy.Editor.Managers
                             Updater.UpdateProcessor(bm, "ObjectType");
                         }
                     }),
-                    new ButtonFunction(nameof(BeatmapObject.ObjectType.Solid), delegate ()
+                    new ButtonFunction(nameof(BeatmapObject.ObjectType.Solid), () =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
@@ -4679,7 +4655,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 labelGenerator("Assign Objects to Prefab");
 
-                buttonGenerator("assign prefab", "Assign", parent, delegate ()
+                buttonGenerator("assign prefab", "Assign", parent, () =>
                 {
                     selectingMultiple = true;
                     prefabPickerEnabled = true;
@@ -4690,7 +4666,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 labelGenerator("Remove Prefab Reference");
 
-                buttonGenerator("remove prefab", "Remove", parent, delegate ()
+                buttonGenerator("remove prefab", "Remove", parent, () =>
                 {
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                     {
@@ -4707,7 +4683,7 @@ namespace BetterLegacy.Editor.Managers
                 labelGenerator("Modify time lock state");
 
                 GenerateButtons(parent, 32f, 8f,
-                    new ButtonFunction("On", delegate()
+                    new ButtonFunction("On", () =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                         {
@@ -4716,7 +4692,7 @@ namespace BetterLegacy.Editor.Managers
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
                         }
                     }),
-                    new ButtonFunction("Off", delegate()
+                    new ButtonFunction("Off", () =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                         {
@@ -4726,7 +4702,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     }));
 
-                buttonGenerator("lock swap", "Swap Lock", parent, delegate ()
+                buttonGenerator("lock swap", "Swap Lock", parent, () =>
                 {
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                     {
@@ -4742,7 +4718,7 @@ namespace BetterLegacy.Editor.Managers
                 labelGenerator("Modify timeline collapse state");
 
                 GenerateButtons(parent, 32f, 8f,
-                    new ButtonFunction("On", delegate ()
+                    new ButtonFunction("On", () =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                         {
@@ -4751,7 +4727,7 @@ namespace BetterLegacy.Editor.Managers
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
                         }
                     }),
-                    new ButtonFunction("Off", delegate ()
+                    new ButtonFunction("Off", () =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                         {
@@ -4761,7 +4737,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     }));
 
-                buttonGenerator("collapse swap", "Swap Collapse", parent, delegate ()
+                buttonGenerator("collapse swap", "Swap Collapse", parent, () =>
                 {
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                     {
@@ -4777,7 +4753,7 @@ namespace BetterLegacy.Editor.Managers
                 labelGenerator("Modify Object Render Type");
 
                 GenerateButtons(parent, 32f, 8f,
-                    new ButtonFunction("On", delegate ()
+                    new ButtonFunction("On", () =>
                     {
                         foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
@@ -4785,7 +4761,7 @@ namespace BetterLegacy.Editor.Managers
                             Updater.UpdateProcessor(beatmapObject);
                         }
                     }),
-                    new ButtonFunction("Off", delegate ()
+                    new ButtonFunction("Off", () =>
                     {
                         foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
@@ -4794,7 +4770,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     }));
 
-                buttonGenerator("render type swap", "Swap Render Type", parent, delegate ()
+                buttonGenerator("render type swap", "Swap Render Type", parent, () =>
                 {
                     foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                     {
@@ -4809,7 +4785,7 @@ namespace BetterLegacy.Editor.Managers
                 labelGenerator("Modify Low Detail Mode");
 
                 GenerateButtons(parent, 32f, 8f,
-                    new ButtonFunction("On", delegate ()
+                    new ButtonFunction("On", () =>
                     {
                         foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
@@ -4817,7 +4793,7 @@ namespace BetterLegacy.Editor.Managers
                             Updater.UpdateProcessor(beatmapObject);
                         }
                     }),
-                    new ButtonFunction("Off", delegate ()
+                    new ButtonFunction("Off", () =>
                     {
                         foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
@@ -4826,7 +4802,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     }));
 
-                buttonGenerator("ldm swap", "Swap LDM", parent, delegate ()
+                buttonGenerator("ldm swap", "Swap LDM", parent, () =>
                 {
                     foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                     {
@@ -4852,10 +4828,10 @@ namespace BetterLegacy.Editor.Managers
 
                 // Start Time
                 {
-                    buttonGenerator("start time", "ST", syncLayout.transform, delegate ()
+                    buttonGenerator("start time", "ST", syncLayout.transform, () =>
                     {
                         EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(delegate (BeatmapObject beatmapObject)
+                        RefreshObjectSearch(beatmapObject =>
                         {
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
@@ -4870,7 +4846,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // Name
                 {
-                    buttonGenerator("name", "N", syncLayout.transform, delegate ()
+                    buttonGenerator("name", "N", syncLayout.transform, () =>
                     {
                         EditorManager.inst.ShowDialog("Object Search Popup");
                         RefreshObjectSearch(delegate (BeatmapObject beatmapObject)
@@ -8126,11 +8102,11 @@ namespace BetterLegacy.Editor.Managers
                                 currentTemplateSprite.Save(copyTo + "/preview.png");
 
                             RefreshNewLevelTemplates();
-                            EditorManager.inst.HideDialog("Warning Popup");
+                            HideWarningPopup();
                         }, () =>
                         {
                             EditorManager.inst.ShowDialog("Open File Popup");
-                            EditorManager.inst.HideDialog("Warning Popup");
+                            HideWarningPopup();
                         });
 
                         return;
@@ -8187,30 +8163,29 @@ namespace BetterLegacy.Editor.Managers
                             DeleteLevelFunction(levelName);
                             EditorManager.inst.DisplayNotification("Deleted level!", 2f, EditorManager.NotificationType.Success);
                             EditorManager.inst.GetLevelList();
-                            EditorManager.inst.HideDialog("Warning Popup");
-                        }, () =>
-                        {
-                            EditorManager.inst.HideDialog("Warning Popup");
-                        });
+                            HideWarningPopup();
+                        }, HideWarningPopup);
                     });
                 }
                 
-                if (!RTFile.FileExists($"{file}/level.jpg"))
-                {
-                    anyFailed = true;
-                    failedLevels.Add(Path.GetFileName(path));
+                //if (!RTFile.FileExists($"{file}/level.jpg"))
+                //{
+                //    anyFailed = true;
+                //    failedLevels.Add(Path.GetFileName(path));
 
-                    iconImage.sprite = SteamWorkshop.inst.defaultSteamImageSprite;
-                    editorWrapper.albumArt = SteamWorkshop.inst.defaultSteamImageSprite;
+                //    iconImage.sprite = SteamWorkshop.inst.defaultSteamImageSprite;
+                //    editorWrapper.albumArt = SteamWorkshop.inst.defaultSteamImageSprite;
 
-                    EditorManager.inst.loadedLevels.Add(editorWrapper);
-                    continue;
-                }
+                //    EditorManager.inst.loadedLevels.Add(editorWrapper);
+                //    continue;
+                //}
 
                 list.Add(StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{file}/level.jpg", cover =>
                 {
                     if (!cover)
                     {
+                        anyFailed = true;
+                        failedLevels.Add(Path.GetFileName(path));
                         iconImage.sprite = SteamWorkshop.inst.defaultSteamImageSprite;
                         editorWrapper.albumArt = SteamWorkshop.inst.defaultSteamImageSprite;
                         EditorManager.inst.loadedLevels.Add(editorWrapper);
@@ -8221,6 +8196,13 @@ namespace BetterLegacy.Editor.Managers
                     iconImage.sprite = sprite;
                     editorWrapper.albumArt = sprite;
 
+                    EditorManager.inst.loadedLevels.Add(editorWrapper);
+                }, (errorMsg, handlerText) =>
+                {
+                    anyFailed = true;
+                    failedLevels.Add(Path.GetFileName(path));
+                    iconImage.sprite = SteamWorkshop.inst.defaultSteamImageSprite;
+                    editorWrapper.albumArt = SteamWorkshop.inst.defaultSteamImageSprite;
                     EditorManager.inst.loadedLevels.Add(editorWrapper);
                 })));
             }
@@ -9161,6 +9143,8 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
         }
+
+        public void HideWarningPopup() => EditorManager.inst.HideDialog("Warning Popup");
 
         public void ShowWarningPopup(string warning, UnityAction confirmDelegate, UnityAction cancelDelegate, string confirm = "Yes", string cancel = "No")
         {
@@ -11085,11 +11069,9 @@ namespace BetterLegacy.Editor.Managers
         {
             #region General
             
-            new EditorProperty("Reset to Defaults", EditorProperty.ValueType.Function, EditorProperty.EditorPropCategory.General,
-                delegate ()
+            new EditorProperty("Reset to Defaults", EditorProperty.ValueType.Function, EditorProperty.EditorPropCategory.General, () =>
                 {
-                    inst.ShowWarningPopup("Are you sure you want to revert every config? THIS CANNOT BE UNDONE!",
-                        delegate ()
+                    inst.ShowWarningPopup("Are you sure you want to revert every config? THIS CANNOT BE UNDONE!", () =>
                         {
                             var list = EditorProperties.Where(x => x.configEntry != null).ToList();
 
@@ -11098,10 +11080,8 @@ namespace BetterLegacy.Editor.Managers
                                 list[i].configEntry.BoxedValue = list[i].configEntry.DefaultValue;
                             }
 
-                        }, delegate ()
-                        {
-
-                        });
+                            inst.HideWarningPopup();
+                        }, inst.HideWarningPopup);
 
                 }, "Reverts every config to their default value."),
             new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.Debug),

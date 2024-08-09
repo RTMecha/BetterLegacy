@@ -730,8 +730,8 @@ namespace BetterLegacy.Editor.Managers
                 EventEditor.inst.RenderThemePreview(child);
                 EventEditor.inst.showTheme = false;
                 EventEditor.inst.dialogLeft.Find("theme").gameObject.SetActive(false);
-                EditorManager.inst.HideDialog("Warning Popup");
-            }, () => { EditorManager.inst.HideDialog("Warning Popup"); });
+                RTEditor.inst.HideWarningPopup();
+            }, RTEditor.inst.HideWarningPopup);
         }
 
         public BeatmapTheme PreviewTheme { get => (BeatmapTheme)EventEditor.inst.previewTheme; set => EventEditor.inst.previewTheme = value; }
@@ -773,11 +773,11 @@ namespace BetterLegacy.Editor.Managers
             {
                 shuffle.onClick.AddListener(() =>
                 {
-                    RTEditor.inst.ShowWarningPopup("Are you sure you want to shuffle the theme ID? Any levels that use this theme will need to have their theme keyframes reassigned.", delegate ()
+                    RTEditor.inst.ShowWarningPopup("Are you sure you want to shuffle the theme ID? Any levels that use this theme will need to have their theme keyframes reassigned.", () =>
                     {
                         PreviewTheme.id = LSText.randomNumString(BeatmapTheme.IDLength);
-                        EditorManager.inst.HideDialog("Warning Popup");
-                    }, () => { EditorManager.inst.HideDialog("Warning Popup"); });
+                        RTEditor.inst.HideWarningPopup();
+                    }, RTEditor.inst.HideWarningPopup);
                 });
             }
 

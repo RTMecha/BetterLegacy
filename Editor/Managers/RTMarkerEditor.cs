@@ -396,10 +396,10 @@ namespace BetterLegacy.Editor.Managers
                         GameData.Current.beatmapData.markers.Clear();
                         UpdateMarkerList();
                         CreateMarkers();
-                        EditorManager.inst.HideDialog("Warning Popup");
+                        RTEditor.inst.HideWarningPopup();
                         EditorManager.inst.HideDialog("Marker Editor");
                         CheckpointEditor.inst.SetCurrentCheckpoint(0);
-                    }, () => { EditorManager.inst.HideDialog("Warning Popup"); });
+                    }, RTEditor.inst.HideWarningPopup);
                 });
 
                 var hover = delete.GetComponent<HoverUI>();
