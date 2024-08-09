@@ -41,6 +41,8 @@ namespace BetterLegacy.Core.Data
         public PrefabType PrefabType => Type >= 0 && Type < DataManager.inst.PrefabTypes.Count ? (PrefabType)DataManager.inst.PrefabTypes[Type] : PrefabType.InvalidType;
         public Color TypeColor => PrefabType.Color;
         public string TypeName => PrefabType.Name;
+        public string typeID;
+
 
         #region Methods
 
@@ -54,7 +56,8 @@ namespace BetterLegacy.Core.Data
                 Name = og.Name,
                 Offset = og.Offset,
                 prefabObjects = og.prefabObjects.Clone(),
-                Type = og.Type
+                Type = og.Type,
+                typeID = og.typeID,
             };
 
             prefab.objects = new List<BaseBeatmapObject>();
@@ -109,7 +112,8 @@ namespace BetterLegacy.Core.Data
                 Offset = jn["offset"].AsFloat,
                 objects = beatmapObjects,
                 prefabObjects = prefabObjects,
-                description = jn["desc"] == null ? "" : jn["desc"]
+                description = jn["desc"] == null ? "" : jn["desc"],
+                typeID = jn["type_id"],
             };
 
             if (jn["assets"] != null && jn["assets"]["spr"] != null)
@@ -176,6 +180,9 @@ namespace BetterLegacy.Core.Data
 
             if (ID != null)
                 jn["id"] = ID.ToString();
+
+            if (typeID != null)
+                jn["type_id"] = typeID;
 
             if (MainObjectID != null)
                 jn["main_obj_id"] = MainObjectID.ToString();

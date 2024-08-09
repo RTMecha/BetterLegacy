@@ -1,4 +1,6 @@
 ﻿using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
+using LSFunctions;
 using SimpleJSON;
 using UnityEngine;
 using BasePrefabType = DataManager.PrefabType;
@@ -19,13 +21,43 @@ namespace BetterLegacy.Core.Data
 
         public Sprite icon;
 
-        public static PrefabType Parse(JSONNode jn) => new PrefabType(jn["name"], LSFunctions.LSColors.HexToColorAlpha(jn["color"]));
+        public static PrefabType DeepCopy(PrefabType og, bool newID = true) => new PrefabType(og.Name, og.Color)
+        {
+            id = newID ? LSText.randomNumString(16) : og.id,
+            icon = og.icon,
+        };
+
+        public static PrefabType Parse(JSONNode jn)
+        {
+            var prefabType = new PrefabType(jn["name"], LSColors.HexToColorAlpha(jn["color"]));
+
+            try
+            {
+                prefabType.icon = jn["icon"] == null ? null : SpriteManager.StringToSprite(jn["icon"]);
+            }
+            catch
+            {
+
+            }
+
+            return prefabType;
+        }
         public JSONNode ToJSON()
         {
             var jn = JSON.Parse("{}");
             jn["name"] = Name;
             jn["color"] = CoreHelper.ColorToHex(Color);
             jn["index"] = index.ToString();
+
+            try
+            {
+                if (icon && icon.texture)
+                    jn["icon"] = SpriteManager.SpriteToString(icon);
+            }
+            catch
+            {
+
+            }
 
             return jn;
         }
@@ -36,7 +68,7 @@ namespace BetterLegacy.Core.Data
             get
             {
                 if (!invalidType)
-                    invalidType = new PrefabType("invalid", Color.red);
+                    invalidType = new PrefabType("invalid", Color.red) { icon = LegacyPlugin.AtanPlaceholder };
                 return invalidType;
             }
         }
