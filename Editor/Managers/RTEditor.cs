@@ -9286,13 +9286,13 @@ namespace BetterLegacy.Editor.Managers
                 };
 
                 editorWrapper.SetActive(editorWrapper.isFolder && CoreHelper.SearchString(EditorManager.inst.openFileSearch, Path.GetFileName(folder)) ||
-                    CoreHelper.SearchString(EditorManager.inst.openFileSearch, Path.GetFileName(folder)) ||
+                    !editorWrapper.isFolder && (CoreHelper.SearchString(EditorManager.inst.openFileSearch, Path.GetFileName(folder)) ||
                         metadata == null || metadata != null &&
                         (CoreHelper.SearchString(EditorManager.inst.openFileSearch, metadata.song.title) ||
                         CoreHelper.SearchString(EditorManager.inst.openFileSearch, metadata.artist.Name) ||
                         CoreHelper.SearchString(EditorManager.inst.openFileSearch, metadata.creator.steam_name) ||
                         CoreHelper.SearchString(EditorManager.inst.openFileSearch, metadata.song.description) ||
-                        CoreHelper.SearchString(EditorManager.inst.openFileSearch, difficultyNames[Mathf.Clamp(metadata.song.difficulty, 0, difficultyNames.Length - 1)])));
+                        CoreHelper.SearchString(EditorManager.inst.openFileSearch, difficultyNames[Mathf.Clamp(metadata.song.difficulty, 0, difficultyNames.Length - 1)]))));
 
                 editorWrapper.GameObject.transform.SetSiblingIndex(num);
                 num++;
