@@ -349,6 +349,12 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
 
+        public static void RegexMatch(string str, Regex regex, Action<Match> matchAction)
+        {
+            if (RegexMatch(str, regex, out Match match))
+                matchAction?.Invoke(match);
+        }
+
         public static string Flip(string str)
         {
             string s;

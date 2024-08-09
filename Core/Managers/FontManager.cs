@@ -67,15 +67,14 @@ namespace BetterLegacy.Core.Managers
             foreach (var beatmapObject in GameData.Current.BeatmapObjects.Where(x =>
                             x.shape == 4 && x.Alive && x.objectType != BeatmapObject.ObjectType.Empty))
             {
-                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && ((TextObject)levelObject.visualObject).TextMeshPro)
+                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject is TextObject textObject && textObject.TextMeshPro)
                 {
-                    var visualObject = (TextObject)levelObject.visualObject;
-                    var tmp = visualObject.TextMeshPro;
+                    var tmp = textObject.TextMeshPro;
 
                     var currentAudioTime = AudioManager.inst.CurrentAudioSource.time;
                     var currentAudioLength = AudioManager.inst.CurrentAudioSource.clip.length;
 
-                    var str = visualObject.Text;
+                    var str = textObject.Text;
 
                     #region Audio
 
@@ -128,51 +127,26 @@ namespace BetterLegacy.Core.Managers
 
                     #region Audio Left
 
-                    if (beatmapObject.text.Contains("<msAudioLeft000>"))
+                    CoreHelper.RegexMatch(beatmapObject.text, new Regex(@"<msAudioLeft=([0-9.]+)>"), match =>
                     {
-                        str = str.Replace("<msAudioLeft000>", TextTranslater.PreciseToMilliSeconds(currentAudioLength - currentAudioTime));
-                    }
-
-                    if (beatmapObject.text.Contains("<msAudioLeft00>"))
+                        str = str.Replace(match.Groups[0].ToString(), TextTranslater.PreciseToMilliSeconds(currentAudioLength - currentAudioTime, $"{{{match.Groups[1]}}}"));
+                    });
+                    
+                    CoreHelper.RegexMatch(beatmapObject.text, new Regex(@"<sAudioLeft=([0-9.]+)>"), match =>
                     {
-                        str = str.Replace("<msAudioLeft00>", TextTranslater.PreciseToMilliSeconds(currentAudioLength - currentAudioTime, "{0:00}"));
-                    }
-
-                    if (beatmapObject.text.Contains("<msAudioLeft0>"))
+                        str = str.Replace(match.Groups[0].ToString(), TextTranslater.PreciseToSeconds(currentAudioLength - currentAudioTime, $"{{{match.Groups[1]}}}"));
+                    });
+                    
+                    CoreHelper.RegexMatch(beatmapObject.text, new Regex(@"<mAudioLeft=([0-9.]+)>"), match =>
                     {
-                        str = str.Replace("<msAudioLeft0>", TextTranslater.PreciseToMilliSeconds(currentAudioLength - currentAudioTime, "{0:0}"));
-                    }
-
-                    if (beatmapObject.text.Contains("<sAudioLeft00>"))
+                        str = str.Replace(match.Groups[0].ToString(), TextTranslater.PreciseToMinutes(currentAudioLength - currentAudioTime, $"{{{match.Groups[1]}}}"));
+                    });
+                    
+                    CoreHelper.RegexMatch(beatmapObject.text, new Regex(@"<hAudioLeft=([0-9.]+)>"), match =>
                     {
-                        str = str.Replace("<sAudioLeft00>", TextTranslater.PreciseToSeconds(currentAudioLength - currentAudioTime));
-                    }
-
-                    if (beatmapObject.text.Contains("<sAudioLeft0>"))
-                    {
-                        str = str.Replace("<sAudioLeft0>", TextTranslater.PreciseToSeconds(currentAudioLength - currentAudioTime, "{0:0}"));
-                    }
-
-                    if (beatmapObject.text.Contains("<mAudioLeft00>"))
-                    {
-                        str = str.Replace("<mAudioLeft00>", TextTranslater.PreciseToMinutes(currentAudioLength - currentAudioTime));
-                    }
-
-                    if (beatmapObject.text.Contains("<mAudioLeft0>"))
-                    {
-                        str = str.Replace("<mAudioLeft0>", TextTranslater.PreciseToMinutes(currentAudioLength - currentAudioTime, "{0:0}"));
-                    }
-
-                    if (beatmapObject.text.Contains("<hAudioLeft00>"))
-                    {
-                        str = str.Replace("<hAudioLeft00>", TextTranslater.PreciseToHours(currentAudioLength - currentAudioTime));
-                    }
-
-                    if (beatmapObject.text.Contains("<hAudioLeft0>"))
-                    {
-                        str = str.Replace("<hAudioLeft0>", TextTranslater.PreciseToHours(currentAudioLength - currentAudioTime, "{0:0}"));
-                    }
-
+                        str = str.Replace(match.Groups[0].ToString(), TextTranslater.PreciseToHours(currentAudioLength - currentAudioTime, $"{{{match.Groups[1]}}}"));
+                    });
+                    
                     #endregion
 
                     #region Real Time
@@ -539,7 +513,7 @@ namespace BetterLegacy.Core.Managers
 
                     #endregion
 
-                    visualObject.SetText(str);
+                    textObject.SetText(str);
                 }
             }
         }
