@@ -4539,7 +4539,7 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     levelObject.visualObject.GameObject.GetComponent<MeshFilter>().mesh = ShapeManager.inst.StoredShapes3D[shape].mesh;
                                     modifier.Result = "frick";
-                                    levelObject.visualObject.GameObject.AddComponent<DestroyModifierResult>();
+                                    levelObject.visualObject.GameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
                                 }
                             }
 
@@ -4554,7 +4554,7 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 levelObject.visualObject.GameObject.GetComponent<MeshFilter>().mesh = GameManager.inst.PlayerPrefabs[1].GetComponentInChildren<MeshFilter>().mesh;
                                 modifier.Result = "frick";
-                                levelObject.visualObject.GameObject.AddComponent<DestroyModifierResult>();
+                                levelObject.visualObject.GameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
                             }
 
                             break;
