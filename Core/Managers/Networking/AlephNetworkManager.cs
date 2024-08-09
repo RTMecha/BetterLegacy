@@ -249,6 +249,17 @@ namespace BetterLegacy.Core.Managers.Networking
 
         #region Image
 
+        public static IEnumerator DownloadImageTexture(string path, Action<Texture2D> callback, Action<string, string> onError)
+        {
+            using var www = UnityWebRequestTexture.GetTexture(path);
+            yield return www.SendWebRequest();
+
+            if (www.isNetworkError || www.isHttpError)
+                onError?.Invoke(www.error, www.downloadHandler?.text);
+            else
+                callback?.Invoke(((DownloadHandlerTexture)www.downloadHandler).texture);
+        }
+        
         public static IEnumerator DownloadImageTexture(string path, Action<Texture2D> callback, Action<string> onError)
         {
             using var www = UnityWebRequestTexture.GetTexture(path);
