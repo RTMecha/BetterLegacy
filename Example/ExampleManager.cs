@@ -610,6 +610,15 @@ namespace BetterLegacy.Example
             if (!MusicPlaying && dancing)
                 StopDancing();
 
+            if (handsBase)
+                handsBase.localRotation = Quaternion.Euler(new Vector3(0f, 0f, handsBaseRotation));
+
+            if (browLeft)
+                browLeft.localRotation = Quaternion.Euler(new Vector3(0f, 0f, browLeftRotation));
+
+            if (browRight)
+                browRight.localRotation = Quaternion.Euler(new Vector3(0f, 0f, browRightRotation));
+
             // Example breaks if application isn't focused.
             if (!Application.isFocused || !Visible)
                 return;
@@ -634,15 +643,6 @@ namespace BetterLegacy.Example
                     faceY.localPosition = new Vector3(0f, lerp.y, 0f);
                 }
             }
-
-            if (handsBase)
-                handsBase.localRotation = Quaternion.Euler(new Vector3(0f, 0f, handsBaseRotation));
-
-            if (browLeft)
-                browLeft.localRotation = Quaternion.Euler(new Vector3(0f, 0f, browLeftRotation));
-
-            if (browRight)
-                browRight.localRotation = Quaternion.Euler(new Vector3(0f, 0f, browRightRotation));
 
             var vector = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f) * CoreHelper.ScreenScaleInverse;
 
