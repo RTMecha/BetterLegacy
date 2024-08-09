@@ -34,26 +34,27 @@ namespace BetterLegacy.Core.Data.Player
 
         public new void ControllerDisconnected(InputDevice device)
         {
-            if (device.SortOrder == SortOrder && GetDeviceModel(device.Name) == deviceModel)
+            if (device.SortOrder != SortOrder || GetDeviceModel(device.Name) != deviceModel)
+                return;
+
+            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Input Select")
             {
-                if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Input Select")
+                InputManager.OnDeviceAttached -= ControllerConnected;
+                InputManager.OnDeviceDetached -= ControllerDisconnected;
+                InputDataManager.inst.players.RemoveAt(index);
+                for (int i = 0; i < InputDataManager.inst.players.Count; i++)
                 {
-                    InputManager.OnDeviceAttached -= ControllerConnected;
-                    InputManager.OnDeviceDetached -= ControllerDisconnected;
-                    InputDataManager.inst.players.RemoveAt(index);
-                    for (int i = 0; i < InputDataManager.inst.players.Count; i++)
-                    {
-                        InputDataManager.inst.players[i].index = i;
-                        InputDataManager.inst.players[i].playerIndex = GetPlayerIndex(InputDataManager.inst.players[i].index);
-                    }
+                    InputDataManager.inst.players[i].index = i;
+                    InputDataManager.inst.players[i].playerIndex = GetPlayerIndex(InputDataManager.inst.players[i].index);
                 }
-                controllerConnected = false;
-                base.device = null;
-                if (Player)
-                    Player.Actions = null;
-                HarmonyLib.AccessTools.Field(typeof(InputDataManager), "playerDisconnectedEvent").SetValue(InputDataManager.inst, this);
-                Debug.LogFormat("{0}Disconnected Controler was attached to player. Controller [{1}] [{2}] -/- Player [{3}]", InputDataManager.className, device.Name, device.SortOrder, index);
             }
+
+            controllerConnected = false;
+            base.device = null;
+            if (Player)
+                Player.Actions = null;
+            HarmonyLib.AccessTools.Field(typeof(InputDataManager), "playerDisconnectedEvent").SetValue(InputDataManager.inst, this);
+            Debug.LogFormat("{0}Disconnected Controler was attached to player. Controller [{1}] [{2}] -/- Player [{3}]", InputDataManager.className, device.Name, device.SortOrder, index);
         }
 
         public new void ControllerConnected(InputDevice device)
@@ -82,52 +83,25 @@ namespace BetterLegacy.Core.Data.Player
 
         public void UpdateModifiers()
         {
-            if (CoreHelper.Paused)
+            if (CoreHelper.Paused || PlayerModel == null || PlayerModel.modifiers == null || PlayerModel.modifiers.Count <= 0)
                 return;
 
-            // Modifiers
-            if (PlayerModel.modifiers.Count > 0)
-            {
-                Func<Modifier<CustomPlayer>, bool> modifierPredicate = x => x.Action == null && x.type == ModifierBase.Type.Action || x.Trigger == null && x.type == ModifierBase.Type.Trigger || x.Inactive == null;
+            Func<Modifier<CustomPlayer>, bool> modifierPredicate = x => x.Action == null && x.type == ModifierBase.Type.Action || x.Trigger == null && x.type == ModifierBase.Type.Trigger || x.Inactive == null;
 
-                if (PlayerModel.modifiers.Any(modifierPredicate))
-                    PlayerModel.modifiers.Where(modifierPredicate).ToList().ForEach(modifier =>
-                    {
-                        modifier.Action = ModifiersHelper.PlayerAction;
-                        modifier.Trigger = ModifiersHelper.PlayerTrigger;
-                        modifier.Inactive = ModifiersHelper.PlayerInactive;
-                    });
-
-                var actions = PlayerModel.modifiers.Where(x => x.type == ModifierBase.Type.Action);
-                var triggers = PlayerModel.modifiers.Where(x => x.type == ModifierBase.Type.Trigger);
-
-                if (triggers.Count() > 0)
+            if (PlayerModel.modifiers.Any(modifierPredicate))
+                PlayerModel.modifiers.Where(modifierPredicate).ToList().ForEach(modifier =>
                 {
-                    if (triggers.All(x => !x.active && (x.Trigger(x) && !x.not || !x.Trigger(x) && x.not)))
-                    {
-                        foreach (var act in actions.Where(x => !x.active))
-                        {
-                            if (!act.constant)
-                                act.active = true;
+                    modifier.Action = ModifiersHelper.PlayerAction;
+                    modifier.Trigger = ModifiersHelper.PlayerTrigger;
+                    modifier.Inactive = ModifiersHelper.PlayerInactive;
+                });
 
-                            act.running = true;
-                            act.Action?.Invoke(act);
-                        }
+            var actions = PlayerModel.modifiers.Where(x => x.type == ModifierBase.Type.Action);
+            var triggers = PlayerModel.modifiers.Where(x => x.type == ModifierBase.Type.Trigger);
 
-                        foreach (var trig in triggers.Where(x => !x.constant))
-                            trig.active = true;
-                    }
-                    else
-                    {
-                        foreach (var act in actions.Where(x => x.active || x.running))
-                        {
-                            act.active = false;
-                            act.running = false;
-                            act.Inactive?.Invoke(act);
-                        }
-                    }
-                }
-                else
+            if (triggers.Count() > 0)
+            {
+                if (triggers.All(x => !x.active && (x.Trigger(x) && !x.not || !x.Trigger(x) && x.not)))
                 {
                     foreach (var act in actions.Where(x => !x.active))
                     {
@@ -137,6 +111,29 @@ namespace BetterLegacy.Core.Data.Player
                         act.running = true;
                         act.Action?.Invoke(act);
                     }
+
+                    foreach (var trig in triggers.Where(x => !x.constant))
+                        trig.active = true;
+                }
+                else
+                {
+                    foreach (var act in actions.Where(x => x.active || x.running))
+                    {
+                        act.active = false;
+                        act.running = false;
+                        act.Inactive?.Invoke(act);
+                    }
+                }
+            }
+            else
+            {
+                foreach (var act in actions.Where(x => !x.active))
+                {
+                    if (!act.constant)
+                        act.active = true;
+
+                    act.running = true;
+                    act.Action?.Invoke(act);
                 }
             }
         }
