@@ -85,10 +85,7 @@ namespace BetterLegacy.Core.Managers
 
             InfoSelection = info.AddComponent<SelectGUI>();
             InfoSelection.OverrideDrag = true;
-            InfoSelection.draggingAction = delegate (Vector2 vector2)
-            {
-                CoreConfig.Instance.DebugPosition.Value = vector2;
-            };
+            InfoSelection.draggingAction = vector2 => { CoreConfig.Instance.DebugPosition.Value = vector2; };
             InfoSelection.target = Info.rectTransform;
 
             init = true;
@@ -101,22 +98,22 @@ namespace BetterLegacy.Core.Managers
 
             Info.gameObject.SetActive(CoreConfig.Instance.DebugInfo.Value && GameManager.inst);
 
-            if (CoreConfig.Instance.DebugInfo.Value && GameManager.inst && GameManager.inst.gameState == GameManager.State.Playing)
-            {
-                if (!InfoSelection.dragging)
-                    Info.transform.position = CoreConfig.Instance.DebugPosition.Value;
+            if (!CoreConfig.Instance.DebugInfo.Value || !CoreHelper.Playing || !CoreHelper.Reversing)
+                return;
 
-                Info.text = $"<b>FPS:</b> {FPS.Text}<br>" +
-                            $"<b>Beatmap Objects Alive:</b> {BeatmapObjectAliveCount()} / {GameData.Current.beatmapObjects.Count}<br>" +
-                            $"<b>Main Camera Position: {Camera.main.transform.position}<br>" +
-                            $"<b>Main Camera Zoom: {Camera.main.orthographicSize}<br>" +
-                            $"<b>Main Camera Rotation: {Camera.main.transform.rotation.eulerAngles}<br>" +
-                            $"<b>BG Camera Position: {EventManager.inst.camPer.transform.position}<br>" +
-                            $"<b>BG Camera Rotation: {EventManager.inst.camPer.transform.rotation.eulerAngles}<br>";
+            if (!InfoSelection.dragging)
+                Info.transform.position = CoreConfig.Instance.DebugPosition.Value;
 
-                if (canvas != null)
-                    canvas.Canvas.scaleFactor = CoreHelper.ScreenScale;
-            }
+            Info.text = $"<b>FPS:</b> {FPS.Text}<br>" +
+                        $"<b>Beatmap Objects Alive:</b> {BeatmapObjectAliveCount()} / {GameData.Current.beatmapObjects.Count}<br>" +
+                        $"<b>Main Camera Position: {Camera.main.transform.position}<br>" +
+                        $"<b>Main Camera Zoom: {Camera.main.orthographicSize}<br>" +
+                        $"<b>Main Camera Rotation: {Camera.main.transform.rotation.eulerAngles}<br>" +
+                        $"<b>BG Camera Position: {EventManager.inst.camPer.transform.position}<br>" +
+                        $"<b>BG Camera Rotation: {EventManager.inst.camPer.transform.rotation.eulerAngles}<br>";
+
+            if (canvas != null)
+                canvas.Canvas.scaleFactor = CoreHelper.ScreenScale;
         }
     }
 }

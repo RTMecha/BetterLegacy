@@ -3117,7 +3117,6 @@ namespace BetterLegacy.Editor.Managers
 
             var noteDraggable = gameObject.AddComponent<NoteDraggable>();
             noteDraggable.note = note;
-            noteDraggable.onClick = () => { OpenNoteEditor(note); };
 
             EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Background_3, true, roundedSide: SpriteManager.RoundedSide.Bottom);
 
