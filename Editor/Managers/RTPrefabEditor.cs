@@ -69,6 +69,36 @@ namespace BetterLegacy.Editor.Managers
 
         public static bool ImportPrefabsDirectly { get; set; }
 
+        public static Dictionary<int, string> prefabTypeConverterLS = new Dictionary<int, string>()
+        {
+            { 0, "7171177971767435" }, // Bombs
+            { 1, "7177271762800247" }, // Bullets
+            { 2, "9453916730542677" }, // Beams
+            { 3, "1644373336900132" }, // Spinners
+            { 4, "4045878933744147" }, // Pulses
+            { 5, "4965490066612888" }, // Characters
+            { 6, "0236192376944164" }, // Misc 1
+            { 7, "8073495542187348" }, // Misc 2
+            { 8, "5347376169954072" }, // Misc 3
+            { 9, "4727401743041957" }, // Misc 4
+        };
+        
+        public static Dictionary<int, string> prefabTypeConverterVG = new Dictionary<int, string>()
+        {
+            { 0, "4965490066612888" }, // Characters
+            { 1, "9570474999546241" }, // Character Parts
+            { 2, "5992953518858497" }, // Props
+            { 3, "7177271762800247" }, // Bullets
+            { 4, "4045878933744147" }, // Pulses
+            { 5, "7171177971767435" }, // Bombs
+            { 6, "1644373336900132" }, // Spinners
+            { 7, "9453916730542677" }, // Beams
+            { 8, "0689518742909570" }, // Static
+            { 9, "0236192376944164" }, // Misc 1
+            { 10, "8073495542187348" }, // Misc 2
+            { 11, "5347376169954072" }, // Misc 3
+        };
+
         #endregion
 
         public static void Init(PrefabEditor prefabEditor) => prefabEditor?.gameObject?.AddComponent<RTPrefabEditor>();
@@ -1506,14 +1536,38 @@ namespace BetterLegacy.Editor.Managers
 
             RTEditor.GenerateSpacer("spacer2", editorDialogTransform, new Vector2(765f, 24f));
 
-            var labelDescriptionBase = new GameObject("Description Label");
-            labelDescriptionBase.transform.SetParent(editorDialogTransform);
-            labelDescriptionBase.transform.localScale = Vector3.one;
+            var labelNameBase = Creator.NewUIObject("Name Label", editorDialogTransform);
+            labelNameBase.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
 
-            var labelDescriptionBaseRT = labelDescriptionBase.AddComponent<RectTransform>();
-            labelDescriptionBaseRT.sizeDelta = new Vector2(765f, 32f);
+            var labelName = labelType.gameObject.Duplicate(labelNameBase.transform);
+            labelName.transform.localPosition = Vector3.zero;
+            labelName.transform.localScale = Vector3.one;
+            labelName.transform.AsRT().sizeDelta = new Vector2(725f, 32f);
+            var labelNameText = labelName.GetComponent<Text>();
+            labelNameText.text = "Name";
+            labelNameText.alignment = TextAnchor.UpperLeft;
+            EditorThemeManager.AddLightText(labelNameText);
 
-            var labelDescription = labelType.gameObject.Duplicate(labelDescriptionBaseRT);
+            var nameTextBase1 = Creator.NewUIObject("Text Base 1", editorDialogTransform);
+            nameTextBase1.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
+
+            var name = RTEditor.inst.defaultIF.Duplicate(nameTextBase1.transform);
+            name.transform.localScale = Vector3.one;
+            UIManager.SetRectTransform(name.transform.AsRT(), Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(740f, 32f));
+
+            externalNameField = name.GetComponent<InputField>();
+            externalNameField.lineType = InputField.LineType.MultiLineNewline;
+            externalNameField.PlaceholderText().text = "Set name...";
+            externalNameField.PlaceholderText().color = new Color(0.1961f, 0.1961f, 0.1961f, 0.5f);
+
+            EditorThemeManager.AddInputField(externalNameField);
+
+            RTEditor.GenerateSpacer("spacer3", editorDialogTransform, new Vector2(765f, 4f));
+
+            var labelDescriptionBase = Creator.NewUIObject("Description Label", editorDialogTransform);
+            labelDescriptionBase.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
+
+            var labelDescription = labelType.gameObject.Duplicate(labelDescriptionBase.transform);
             labelDescription.transform.localPosition = Vector3.zero;
             labelDescription.transform.localScale = Vector3.one;
             labelDescription.transform.AsRT().sizeDelta = new Vector2(725f, 32f);
@@ -1522,28 +1576,21 @@ namespace BetterLegacy.Editor.Managers
             labelDescriptionText.alignment = TextAnchor.UpperLeft;
             EditorThemeManager.AddLightText(labelDescriptionText);
 
-            var textBase1 = new GameObject("Text Base 1");
-            textBase1.transform.SetParent(editorDialogTransform);
-            textBase1.transform.localScale = Vector3.one;
+            var descriptionTextBase1 = Creator.NewUIObject("Text Base 1", editorDialogTransform);
+            descriptionTextBase1.transform.AsRT().sizeDelta = new Vector2(765f, 300f);
 
-            var textBase1RT = textBase1.AddComponent<RectTransform>();
-            textBase1RT.sizeDelta = new Vector2(765f, 300f);
-
-            var description = RTEditor.inst.defaultIF.Duplicate(textBase1RT);
+            var description = RTEditor.inst.defaultIF.Duplicate(descriptionTextBase1.transform);
             description.transform.localScale = Vector3.one;
-            description.transform.AsRT().anchoredPosition = Vector2.zero;
-            description.transform.AsRT().anchorMax = new Vector2(0.5f, 0.5f);
-            description.transform.AsRT().anchorMin = new Vector2(0.5f, 0.5f);
-            description.transform.AsRT().sizeDelta = new Vector2(740f, 300f);
+            UIManager.SetRectTransform(description.transform.AsRT(), Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(740f, 300f));
 
             externalDescriptionField = description.GetComponent<InputField>();
             externalDescriptionField.lineType = InputField.LineType.MultiLineNewline;
-            ((Text)externalDescriptionField.placeholder).text = "Set description...";
-            ((Text)externalDescriptionField.placeholder).color = new Color(0.1961f, 0.1961f, 0.1961f, 0.5f);
+            externalDescriptionField.PlaceholderText().text = "Set description...";
+            externalDescriptionField.PlaceholderText().color = new Color(0.1961f, 0.1961f, 0.1961f, 0.5f);
 
             EditorThemeManager.AddInputField(externalDescriptionField);
 
-            RTEditor.GenerateSpacer("spacer3", editorDialogTransform, new Vector2(765f, 160f));
+            RTEditor.GenerateSpacer("spacer4", editorDialogTransform, new Vector2(765f, 80f));
 
             var buttonsBase = new GameObject("buttons base");
             buttonsBase.transform.SetParent(editorDialogTransform);
@@ -1643,39 +1690,34 @@ namespace BetterLegacy.Editor.Managers
             externalDescriptionField.onValueChanged.AddListener(_val => { prefab.description = _val; });
             externalDescriptionField.onEndEdit.AddListener(_val =>
             {
+                RTEditor.inst.DisablePrefabWatcher();
+
                 if (!string.IsNullOrEmpty(prefab.filePath))
                     RTFile.WriteToFile(prefab.filePath, prefab.ToJSON().ToString());
+
+                RTEditor.inst.EnablePrefabWatcher();
             });
 
-            //externalNameField.onValueChanged.ClearAll();
-            //externalNameField.onEndEdit.ClearAll();
-            //externalNameField.text = prefab.Name;
-            //externalNameField.onValueChanged.AddListener(delegate (string _val)
-            //{
-            //    prefab.Name = _val;
-            //});
-            //externalNameField.onEndEdit.AddListener(delegate (string _val)
-            //{
-            //    RTEditor.inst.canUpdatePrefabs = false;
-            //    RTEditor.inst.PrefabWatcher.EnableRaisingEvents = false;
+            //externalNameField.interactable = false;
+            externalNameField.onValueChanged.ClearAll();
+            externalNameField.onEndEdit.ClearAll();
+            externalNameField.text = prefab.Name;
+            externalNameField.onValueChanged.AddListener(_val => { prefab.Name = _val; });
+            externalNameField.onEndEdit.AddListener(_val =>
+            {
+                RTEditor.inst.DisablePrefabWatcher();
 
-            //    if (RTFile.FileExists(prefab.filePath))
-            //        File.Delete(prefab.filePath);
+                if (RTFile.FileExists(prefab.filePath))
+                    File.Delete(prefab.filePath);
 
-            //    var file = $"{RTFile.ApplicationDirectory}{RTEditor.prefabListSlash}{prefab.Name.ToLower().Replace(" ", "_")}.lsp";
-            //    prefab.filePath = file;
-            //    RTFile.WriteToFile(file, prefab.ToJSON().ToString());
+                var file = $"{RTFile.ApplicationDirectory}{RTEditor.prefabListSlash}{prefab.Name.ToLower().Replace(" ", "_")}.lsp";
+                prefab.filePath = file;
+                RTFile.WriteToFile(file, prefab.ToJSON().ToString());
 
-            //    prefabPanel.Name.text = prefab.Name;
+                prefabPanel.Name.text = prefab.Name;
 
-            //    if (RTFile.DirectoryExists(RTFile.ApplicationDirectory + RTEditor.prefabListPath))
-            //    {
-            //        RTEditor.inst.PrefabWatcher.Path = RTFile.ApplicationDirectory + RTEditor.prefabListPath;
-            //        RTEditor.inst.PrefabWatcher.EnableRaisingEvents = true;
-            //    }
-
-            //    RTEditor.inst.canUpdatePrefabs = true;
-            //});
+                RTEditor.inst.EnablePrefabWatcher();
+            });
         }
 
         public void CreateNewPrefab()
@@ -1723,11 +1765,9 @@ namespace BetterLegacy.Editor.Managers
 
         public void SavePrefab(Prefab prefab)
         {
-            RTEditor.inst.canUpdatePrefabs = false;
-            RTEditor.inst.PrefabWatcher.EnableRaisingEvents = false;
+            RTEditor.inst.DisablePrefabWatcher();
 
             EditorManager.inst.DisplayNotification($"Saving Prefab to System [{prefab.Name}]!", 2f, EditorManager.NotificationType.Warning);
-            Debug.Log($"{PrefabEditor.inst.className}Saving Prefab to File System!");
 
             prefab.objects.ForEach(x => { x.prefabID = ""; x.prefabInstanceID = ""; });
             int count = PrefabPanels.Count;
@@ -1735,9 +1775,6 @@ namespace BetterLegacy.Editor.Managers
             prefab.filePath = file;
 
             var config = EditorConfig.Instance;
-
-            if (config.UpdatePrefabListOnFilesChanged.Value)
-                return;
 
             var hoverSize = config.PrefabButtonHoverSize.Value;
 
@@ -1763,19 +1800,12 @@ namespace BetterLegacy.Editor.Managers
             RTFile.WriteToFile(file, prefab.ToJSON().ToString());
             EditorManager.inst.DisplayNotification($"Saved prefab [{prefab.Name}]!", 2f, EditorManager.NotificationType.Success);
 
-            if (RTFile.DirectoryExists(RTFile.ApplicationDirectory + RTEditor.prefabListPath))
-            {
-                RTEditor.inst.PrefabWatcher.Path = RTFile.ApplicationDirectory + RTEditor.prefabListPath;
-                RTEditor.inst.PrefabWatcher.EnableRaisingEvents = true;
-            }
-
-            RTEditor.inst.canUpdatePrefabs = true;
+            RTEditor.inst.EnablePrefabWatcher();
         }
 
         public void DeleteExternalPrefab(PrefabPanel prefabPanel)
         {
-            RTEditor.inst.canUpdatePrefabs = false;
-            RTEditor.inst.PrefabWatcher.EnableRaisingEvents = false;
+            RTEditor.inst.DisablePrefabWatcher();
 
             if (RTFile.FileExists(prefabPanel.FilePath))
                 FileManager.inst.DeleteFileRaw(prefabPanel.FilePath);
@@ -1790,13 +1820,7 @@ namespace BetterLegacy.Editor.Managers
                 num++;
             }
 
-            if (RTFile.DirectoryExists(RTFile.ApplicationDirectory + RTEditor.prefabListPath))
-            {
-                RTEditor.inst.PrefabWatcher.Path = RTFile.ApplicationDirectory + RTEditor.prefabListPath;
-                RTEditor.inst.PrefabWatcher.EnableRaisingEvents = true;
-            }
-
-            RTEditor.inst.canUpdatePrefabs = true;
+            RTEditor.inst.EnablePrefabWatcher();
         }
 
         public void DeleteInternalPrefab(int __0)
