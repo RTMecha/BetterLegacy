@@ -30,9 +30,12 @@ namespace BetterLegacy.Configs
 
         public List<BaseConfig> configs = new List<BaseConfig>();
 
+        public bool watchingKeybind;
+        public Action<KeyCode> onSelectKey;
+
         public static void Init()
         {
-            var gameObject = new GameObject("ConfigManager");
+            var gameObject = new GameObject(nameof(ConfigManager));
             DontDestroyOnLoad(gameObject);
             gameObject.AddComponent<ConfigManager>();
         }
@@ -41,6 +44,8 @@ namespace BetterLegacy.Configs
         {
             inst = this;
             canvas = UIManager.GenerateUICanvas("Config Canvas", null, true);
+            canvas.Canvas.scaleFactor = 1f;
+            canvas.CanvasScaler.referenceResolution = new Vector2(1920f, 1080f);
 
             configBase = Creator.NewUIObject("Base", canvas.GameObject.transform);
             configBase.transform.AsRT().anchoredPosition = Vector2.zero;
@@ -77,10 +82,7 @@ namespace BetterLegacy.Configs
 
             EditorThemeManager.ApplySelectable(closeButton, ThemeGroup.Close);
 
-            closeButton.onClick.AddListener(delegate ()
-            {
-                Hide();
-            });
+            closeButton.onClick.AddListener(Hide);
 
             var closeX = Creator.NewUIObject("Image", close.transform);
             UIManager.SetRectTransform(closeX.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-8f, -8f));
@@ -98,7 +100,7 @@ namespace BetterLegacy.Configs
 
             var tabsHorizontalLayout = tabs.AddComponent<HorizontalLayoutGroup>();
 
-            string[] tabTitles = new string[]
+            var tabTitles = new string[]
             {
                 "Core", // 1
                 "Arcade", // 2
@@ -110,7 +112,7 @@ namespace BetterLegacy.Configs
                 "Example", // 8
             };
 
-            Color[] tabColors = new Color[]
+            var tabColors = new Color[]
             {
                 new Color(0.18f, 0.4151f, 1f, 1f), // 1
                 new Color(1f, 0.143f, 0.22f, 1f), // 2
@@ -146,10 +148,7 @@ namespace BetterLegacy.Configs
 
                 var tabButton = tabBase.AddComponent<Button>();
                 tabButton.image = tabBaseImage;
-                tabButton.onClick.AddListener(delegate ()
-                {
-                    SetTab(index);
-                });
+                tabButton.onClick.AddListener(() => { SetTab(index); });
 
                 EditorThemeManager.ApplyGraphic(tabBaseImage, ThemeGroup.Null, true);
             }
@@ -289,7 +288,7 @@ namespace BetterLegacy.Configs
             searchFieldInput.textComponent.alignment = TextAnchor.MiddleLeft;
             searchFieldInput.onValueChanged.ClearAll();
             searchFieldInput.text = "";
-            searchFieldInput.onValueChanged.AddListener(delegate (string _val)
+            searchFieldInput.onValueChanged.AddListener(_val =>
             {
                 searchTerm = _val;
                 currentSubTabPage = 0;
@@ -337,14 +336,30 @@ namespace BetterLegacy.Configs
 
         void Update()
         {
-            if (Input.GetKeyDown(CoreConfig.Instance.OpenConfigKey.Value))
+            if (!watchingKeybind && Input.GetKeyDown(CoreConfig.Instance.OpenConfigKey.Value))
                 (Active ? (Action)Hide : Show).Invoke();
-        }
 
-        void FixedUpdate()
-        {
             if (canvas != null)
                 canvas.Canvas.scaleFactor = CoreHelper.ScreenScale;
+
+            if (watchingKeybind)
+            {
+                var key = KeybindManager.WatchKeyCode();
+
+                if (key != KeyCode.None)
+                {
+                    watchingKeybind = false;
+
+                    try
+                    {
+                        onSelectKey?.Invoke(key);
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreHelper.LogError($"Error with keybind action: {ex}");
+                    }
+                }
+            }
         }
 
         public bool Active => configBase && configBase.activeSelf;
@@ -392,8 +407,6 @@ namespace BetterLegacy.Configs
                 UIManager.SetRectTransform(tabBase.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-8f, -8f));
                 var tabBaseImage = tabBase.AddComponent<Image>();
 
-                //tabBaseImage.color = tabColors[i];
-
                 var tabTitle = Creator.NewUIObject("Title", tabBase.transform);
                 UIManager.SetRectTransform(tabTitle.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
                 var tabTitleText = tabTitle.AddComponent<Text>();
@@ -404,7 +417,7 @@ namespace BetterLegacy.Configs
 
                 var tabButton = tabBase.AddComponent<Button>();
                 tabButton.image = tabBaseImage;
-                tabButton.onClick.AddListener(delegate ()
+                tabButton.onClick.AddListener(() =>
                 {
                     currentSubTab = currentIndex;
                     currentSubTabPage = 0;
@@ -468,7 +481,7 @@ namespace BetterLegacy.Configs
                     {
                         var boolSetting = (Setting<bool>)setting;
                         var boolean = Creator.NewUIObject("Toggle", gameObject.transform);
-                        UIManager.SetRectTransform(boolean.transform.AsRT(), Vector2.zero, new Vector2(0.975f, 0.5f), new Vector2(0.975f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
+                        UIManager.SetRectTransform(boolean.transform.AsRT(), new Vector2(330f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
                         var booleanImage = boolean.AddComponent<Image>();
 
                         var checkmark = Creator.NewUIObject("Checkmark", boolean.transform);
@@ -481,10 +494,7 @@ namespace BetterLegacy.Configs
                         booleanToggle.graphic = checkmarkImage;
                         booleanToggle.onValueChanged.ClearAll();
                         booleanToggle.isOn = boolSetting.Value;
-                        booleanToggle.onValueChanged.AddListener(delegate (bool _val)
-                        {
-                            setting.BoxedValue = _val;
-                        });
+                        booleanToggle.onValueChanged.AddListener(_val => { setting.BoxedValue = _val; });
 
                         EditorThemeManager.ApplyToggle(booleanToggle);
                     }
@@ -493,13 +503,13 @@ namespace BetterLegacy.Configs
                     {
                         var intSetting = (Setting<int>)setting;
                         var integer = numberFieldStorage.Duplicate(gameObject.transform, "Input");
-                        UIManager.SetRectTransform(integer.transform.AsRT(), new Vector2(560f, 18f), Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                        UIManager.SetRectTransform(integer.transform.AsRT(), new Vector2(480f, 18f), Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
 
                         var integerStorage = integer.GetComponent<InputFieldStorage>();
 
                         integerStorage.inputField.onValueChanged.ClearAll();
                         integerStorage.inputField.text = intSetting.Value.ToString();
-                        integerStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+                        integerStorage.inputField.onValueChanged.AddListener(_val =>
                         {
                             if (int.TryParse(_val, out int value))
                             {
@@ -524,13 +534,13 @@ namespace BetterLegacy.Configs
                     {
                         var floatSetting = (Setting<float>)setting;
                         var floatingPoint = numberFieldStorage.Duplicate(gameObject.transform, "Input");
-                        UIManager.SetRectTransform(floatingPoint.transform.AsRT(), new Vector2(560f, 18f), Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                        UIManager.SetRectTransform(floatingPoint.transform.AsRT(), new Vector2(480f, 18f), Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
 
                         var floatingPointStorage = floatingPoint.GetComponent<InputFieldStorage>();
 
                         floatingPointStorage.inputField.onValueChanged.ClearAll();
                         floatingPointStorage.inputField.text = floatSetting.Value.ToString();
-                        floatingPointStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+                        floatingPointStorage.inputField.onValueChanged.AddListener(_val =>
                         {
                             if (float.TryParse(_val, out float value))
                             {
@@ -558,13 +568,13 @@ namespace BetterLegacy.Configs
                         // X
                         {
                             var floatingPoint = numberFieldStorage.Duplicate(gameObject.transform, "Input");
-                            UIManager.SetRectTransform(floatingPoint.transform.AsRT(), new Vector2(420f, 18f), Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                            UIManager.SetRectTransform(floatingPoint.transform.AsRT(), new Vector2(340f, 18f), Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
 
                             var floatingPointStorage = floatingPoint.GetComponent<InputFieldStorage>();
 
                             floatingPointStorage.inputField.onValueChanged.ClearAll();
                             floatingPointStorage.inputField.text = vector2Setting.Value.x.ToString();
-                            floatingPointStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+                            floatingPointStorage.inputField.onValueChanged.AddListener(_val =>
                             {
                                 if (float.TryParse(_val, out float value))
                                     setting.BoxedValue = new Vector2(value, vector2Setting.Value.y);
@@ -584,16 +594,73 @@ namespace BetterLegacy.Configs
                         // Y
                         {
                             var floatingPoint = numberFieldStorage.Duplicate(gameObject.transform, "Input");
-                            UIManager.SetRectTransform(floatingPoint.transform.AsRT(), new Vector2(640f, 18f), Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+                            UIManager.SetRectTransform(floatingPoint.transform.AsRT(), new Vector2(560f, 18f), Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
 
                             var floatingPointStorage = floatingPoint.GetComponent<InputFieldStorage>();
 
                             floatingPointStorage.inputField.onValueChanged.ClearAll();
                             floatingPointStorage.inputField.text = vector2Setting.Value.y.ToString();
-                            floatingPointStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+                            floatingPointStorage.inputField.onValueChanged.AddListener(_val =>
                             {
                                 if (float.TryParse(_val, out float value))
                                     setting.BoxedValue = new Vector2(vector2Setting.Value.x, value);
+                            });
+
+                            TriggerHelper.IncreaseDecreaseButtons(floatingPointStorage.inputField, min: vector2Setting.MinValue.y, max: vector2Setting.MaxValue.y, t: floatingPoint.transform);
+                            TriggerHelper.AddEventTriggers(floatingPoint.gameObject, TriggerHelper.ScrollDelta(floatingPointStorage.inputField, min: vector2Setting.MinValue.y, max: vector2Setting.MaxValue.y));
+
+                            Destroy(floatingPointStorage.leftGreaterButton.gameObject);
+                            Destroy(floatingPointStorage.rightGreaterButton.gameObject);
+
+                            EditorThemeManager.ApplyInputField(floatingPointStorage.inputField);
+                            EditorThemeManager.ApplySelectable(floatingPointStorage.leftButton, ThemeGroup.Function_2, false);
+                            EditorThemeManager.ApplySelectable(floatingPointStorage.rightButton, ThemeGroup.Function_2, false);
+                        }
+                    }
+                    
+                    if (type == typeof(Vector2Int))
+                    {
+                        var vector2Setting = (Setting<Vector2Int>)setting;
+
+                        // X
+                        {
+                            var floatingPoint = numberFieldStorage.Duplicate(gameObject.transform, "Input");
+                            UIManager.SetRectTransform(floatingPoint.transform.AsRT(), new Vector2(340f, 18f), Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+
+                            var floatingPointStorage = floatingPoint.GetComponent<InputFieldStorage>();
+
+                            floatingPointStorage.inputField.onValueChanged.ClearAll();
+                            floatingPointStorage.inputField.text = vector2Setting.Value.x.ToString();
+                            floatingPointStorage.inputField.onValueChanged.AddListener(_val =>
+                            {
+                                if (int.TryParse(_val, out int value))
+                                    setting.BoxedValue = new Vector2Int(value, vector2Setting.Value.y);
+                            });
+
+                            TriggerHelper.IncreaseDecreaseButtons(floatingPointStorage.inputField, min: vector2Setting.MinValue.x, max: vector2Setting.MaxValue.x, t: floatingPoint.transform);
+                            TriggerHelper.AddEventTriggers(floatingPoint.gameObject, TriggerHelper.ScrollDelta(floatingPointStorage.inputField, min: vector2Setting.MinValue.x, max: vector2Setting.MaxValue.x));
+
+                            Destroy(floatingPointStorage.leftGreaterButton.gameObject);
+                            Destroy(floatingPointStorage.rightGreaterButton.gameObject);
+
+                            EditorThemeManager.ApplyInputField(floatingPointStorage.inputField);
+                            EditorThemeManager.ApplySelectable(floatingPointStorage.leftButton, ThemeGroup.Function_2, false);
+                            EditorThemeManager.ApplySelectable(floatingPointStorage.rightButton, ThemeGroup.Function_2, false);
+                        }
+
+                        // Y
+                        {
+                            var floatingPoint = numberFieldStorage.Duplicate(gameObject.transform, "Input");
+                            UIManager.SetRectTransform(floatingPoint.transform.AsRT(), new Vector2(560f, 18f), Vector2.zero, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+
+                            var floatingPointStorage = floatingPoint.GetComponent<InputFieldStorage>();
+
+                            floatingPointStorage.inputField.onValueChanged.ClearAll();
+                            floatingPointStorage.inputField.text = vector2Setting.Value.y.ToString();
+                            floatingPointStorage.inputField.onValueChanged.AddListener(_val =>
+                            {
+                                if (int.TryParse(_val, out int value))
+                                    setting.BoxedValue = new Vector2Int(vector2Setting.Value.x, value);
                             });
 
                             TriggerHelper.IncreaseDecreaseButtons(floatingPointStorage.inputField, min: vector2Setting.MinValue.y, max: vector2Setting.MaxValue.y, t: floatingPoint.transform);
@@ -613,16 +680,13 @@ namespace BetterLegacy.Configs
                         var stringSetting = (Setting<string>)setting;
 
                         var stringObject = numberFieldStorage.transform.Find("input").gameObject.Duplicate(gameObject.transform, "Input");
-                        stringObject.transform.AsRT().sizeDelta = new Vector2(438f, 32f);
+                        stringObject.transform.AsRT().sizeDelta = new Vector2(358f, 32f);
                         var stringInputField = stringObject.GetComponent<InputField>();
                         stringInputField.onValueChanged.ClearAll();
                         stringInputField.textComponent.alignment = TextAnchor.MiddleLeft;
                         ((Text)stringInputField.placeholder).alignment = TextAnchor.MiddleLeft;
                         stringInputField.text = stringSetting.Value;
-                        stringInputField.onValueChanged.AddListener(delegate (string _val)
-                        {
-                            stringSetting.Value = _val;
-                        });
+                        stringInputField.onValueChanged.AddListener(_val => { stringSetting.Value = _val; });
 
                         EditorThemeManager.ApplyInputField(stringInputField);
                     }
@@ -632,21 +696,21 @@ namespace BetterLegacy.Configs
                         var colorSetting = (Setting<Color>)setting;
 
                         var colorObject = Creator.NewUIObject("Color", gameObject.transform);
-                        UIManager.SetRectTransform(colorObject.transform.AsRT(), new Vector2(160f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
+                        UIManager.SetRectTransform(colorObject.transform.AsRT(), new Vector2(80f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
                         var colorImage = colorObject.AddComponent<Image>();
                         colorImage.color = colorSetting.Value;
 
                         EditorThemeManager.ApplyGraphic(colorImage, ThemeGroup.Null, true);
 
                         var stringObject = numberFieldStorage.transform.Find("input").gameObject.Duplicate(gameObject.transform, "Input");
-                        stringObject.transform.AsRT().anchoredPosition = new Vector2(615f, -3f);
+                        stringObject.transform.AsRT().anchoredPosition = new Vector2(535f, 0f);
                         stringObject.transform.AsRT().sizeDelta = new Vector2(238f, 32f);
                         var stringInputField = stringObject.GetComponent<InputField>();
                         stringInputField.onValueChanged.ClearAll();
                         stringInputField.textComponent.alignment = TextAnchor.MiddleLeft;
                         ((Text)stringInputField.placeholder).alignment = TextAnchor.MiddleLeft;
                         stringInputField.text = LSColors.ColorToHex(colorSetting.Value);
-                        stringInputField.onValueChanged.AddListener(delegate (string _val)
+                        stringInputField.onValueChanged.AddListener(_val =>
                         {
                             colorSetting.Value = _val.Length == 8 ? LSColors.HexToColorAlpha(_val) : LSColors.HexToColor(_val);
                             colorImage.color = colorSetting.Value;
@@ -657,11 +721,46 @@ namespace BetterLegacy.Configs
 
                     if (type.IsEnum)
                     {
+                        if (type == typeof(KeyCode))
+                        {
+                            var watchKeyCodeBase = Creator.NewUIObject("Image", gameObject.transform);
+                            UIManager.SetRectTransform(watchKeyCodeBase.transform.AsRT(), new Vector2(-32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(136f, 32f));
+                            var watchKeyCodeBaseImage = watchKeyCodeBase.AddComponent<Image>();
+
+                            var watchKeyCodeTitle = Creator.NewUIObject("Title", watchKeyCodeBase.transform);
+                            UIManager.SetRectTransform(watchKeyCodeTitle.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
+                            var watchKeyCodeTitleText = watchKeyCodeTitle.AddComponent<Text>();
+                            watchKeyCodeTitleText.alignment = TextAnchor.MiddleCenter;
+                            watchKeyCodeTitleText.font = Font.GetDefault();
+                            watchKeyCodeTitleText.fontSize = 15;
+                            watchKeyCodeTitleText.text = "Set key";
+
+                            var watchKeyCodeButton = watchKeyCodeBase.AddComponent<Button>();
+                            watchKeyCodeButton.image = watchKeyCodeBaseImage;
+                            watchKeyCodeButton.onClick.AddListener(() =>
+                            {
+                                if (watchingKeybind)
+                                    return;
+
+                                watchingKeybind = true;
+                                watchKeyCodeTitleText.text = "Press a key...";
+
+                                onSelectKey = keyCode =>
+                                {
+                                    setting.BoxedValue = keyCode;
+                                    RefreshSettings();
+                                };
+                            });
+
+                            EditorThemeManager.ApplyGraphic(watchKeyCodeButton.image, ThemeGroup.Function_1, true);
+                            EditorThemeManager.ApplyGraphic(watchKeyCodeTitleText, ThemeGroup.Function_1_Text);
+                        }
+
                         var enumObject = UIManager.GenerateUIDropdown("Dropdown", gameObject.transform);
                         var dropdown = (Dropdown)enumObject["Dropdown"];
                         var hide = ((GameObject)enumObject["GameObject"]).AddComponent<HideDropdownOptions>();
 
-                        UIManager.SetRectTransform(dropdown.transform.AsRT(), new Vector2(276f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 32f));
+                        UIManager.SetRectTransform(dropdown.transform.AsRT(), new Vector2(196f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 32f));
 
                         dropdown.onValueChanged.ClearAll();
                         dropdown.options.Clear();
@@ -679,12 +778,35 @@ namespace BetterLegacy.Configs
                         }
 
                         dropdown.value = (int)setting.BoxedValue;
-                        dropdown.onValueChanged.AddListener(delegate (int _val)
-                        {
-                            setting.BoxedValue = _val;
-                        });
+                        dropdown.onValueChanged.AddListener(_val => { setting.BoxedValue = _val; });
 
                         EditorThemeManager.ApplyDropdown(dropdown);
+                    }
+
+                    // Reset
+                    {
+                        var resetBase = Creator.NewUIObject("Reset", gameObject.transform);
+                        UIManager.SetRectTransform(resetBase.transform.AsRT(), new Vector2(395f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(64f, 32f));
+                        var resetBaseImage = resetBase.AddComponent<Image>();
+
+                        var resetTitle = Creator.NewUIObject("Title", resetBase.transform);
+                        UIManager.SetRectTransform(resetTitle.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
+                        var resetTitleText = resetTitle.AddComponent<Text>();
+                        resetTitleText.alignment = TextAnchor.MiddleCenter;
+                        resetTitleText.font = Font.GetDefault();
+                        resetTitleText.fontSize = 15;
+                        resetTitleText.text = "Reset";
+
+                        var resetButton = resetBase.AddComponent<Button>();
+                        resetButton.image = resetBaseImage;
+                        resetButton.onClick.AddListener(() =>
+                        {
+                            setting.BoxedValue = setting.DefaultValue;
+                            RefreshSettings();
+                        });
+
+                        EditorThemeManager.ApplyGraphic(resetButton.image, ThemeGroup.Function_1, true);
+                        EditorThemeManager.ApplyGraphic(resetTitleText, ThemeGroup.Function_1_Text);
                     }
                 }
 
@@ -693,7 +815,7 @@ namespace BetterLegacy.Configs
 
             pageFieldStorage.inputField.onValueChanged.ClearAll();
             pageFieldStorage.inputField.text = currentSubTabPage.ToString();
-            pageFieldStorage.inputField.onValueChanged.AddListener(delegate (string _val)
+            pageFieldStorage.inputField.onValueChanged.AddListener(_val =>
             {
                 if (int.TryParse(_val, out int p))
                 {
@@ -708,13 +830,13 @@ namespace BetterLegacy.Configs
                 TriggerHelper.AddEventTriggers(pageFieldStorage.inputField.gameObject);
 
             pageFieldStorage.leftGreaterButton.onClick.ClearAll();
-            pageFieldStorage.leftGreaterButton.onClick.AddListener(delegate ()
+            pageFieldStorage.leftGreaterButton.onClick.AddListener(() =>
             {
                 currentSubTabPage = 0;
                 RefreshSettings();
             });
             pageFieldStorage.leftButton.onClick.ClearAll();
-            pageFieldStorage.leftButton.onClick.AddListener(delegate ()
+            pageFieldStorage.leftButton.onClick.AddListener(() =>
             {
                 if (int.TryParse(pageFieldStorage.inputField.text, out int p))
                 {
@@ -723,7 +845,7 @@ namespace BetterLegacy.Configs
                 }
             });
             pageFieldStorage.rightButton.onClick.ClearAll();
-            pageFieldStorage.rightButton.onClick.AddListener(delegate ()
+            pageFieldStorage.rightButton.onClick.AddListener(() =>
             {
                 if (int.TryParse(pageFieldStorage.inputField.text, out int p))
                 {
@@ -732,12 +854,11 @@ namespace BetterLegacy.Configs
                 }
             });
             pageFieldStorage.rightGreaterButton.onClick.ClearAll();
-            pageFieldStorage.rightGreaterButton.onClick.AddListener(delegate ()
+            pageFieldStorage.rightGreaterButton.onClick.AddListener(() =>
             {
                 currentSubTabPage = num / maxSettingsPerPage;
                 RefreshSettings();
             });
-
         }
     }
 
@@ -752,9 +873,6 @@ namespace BetterLegacy.Configs
 
         public void Init(BaseSetting baseSetting) => Setting = baseSetting;
 
-        public void OnPointerEnter(PointerEventData pointerEventData)
-        {
-            ConfigManager.inst.descriptionText.text = Setting.Description;
-        }
+        public void OnPointerEnter(PointerEventData pointerEventData) => ConfigManager.inst.descriptionText.text = Setting.Description;
     }
 }
