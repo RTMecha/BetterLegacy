@@ -45,13 +45,11 @@ namespace BetterLegacy.Components
 
         void Update()
         {
-            if (canUpdate && (prevTime != AudioManager.inst.CurrentAudioSource.time - timeOffset || prevPlaying != AudioManager.inst.CurrentAudioSource.isPlaying))
-            {
-                if (videoPlayer != null && videoPlayer.enabled && videoPlayer.isPrepared)
-                {
-                    UpdatedAudioPos?.Invoke(AudioManager.inst.CurrentAudioSource.isPlaying, AudioManager.inst.CurrentAudioSource.time - timeOffset, AudioManager.inst.CurrentAudioSource.pitch);
-                }
-            }
+            if (canUpdate &&
+                (prevTime != AudioManager.inst.CurrentAudioSource.time - timeOffset || prevPlaying != AudioManager.inst.CurrentAudioSource.isPlaying) &&
+                videoPlayer != null && videoPlayer.enabled && videoPlayer.isPrepared)
+                UpdatedAudioPos?.Invoke(AudioManager.inst.CurrentAudioSource.isPlaying, AudioManager.inst.CurrentAudioSource.time - timeOffset, AudioManager.inst.CurrentAudioSource.pitch);
+
             prevPlaying = AudioManager.inst.CurrentAudioSource.isPlaying;
             prevTime = AudioManager.inst.CurrentAudioSource.time - timeOffset;
             prevPitch = AudioManager.inst.CurrentAudioSource.pitch;
@@ -59,22 +57,21 @@ namespace BetterLegacy.Components
 
         void UpdateTime(bool isPlaying, float time, float pitch)
         {
-            if (isPlaying)
+            if (!isPlaying)
             {
-                if (!videoPlayer.isPlaying)
-                    videoPlayer.Play();
                 videoPlayer.Pause();
+                return;
+            }
 
-                videoPlayer.time = time;
-            }
-            else
-            {
-                videoPlayer.Pause();
-            }
+            if (!videoPlayer.isPlaying)
+                videoPlayer.Play();
+            videoPlayer.Pause();
+
+            videoPlayer.time = time;
         }
 
         public string currentURL;
-        public bool didntPlay = false;
+        public bool didntPlay = true;
 
         public void Play(GameObject gameObject, string url, VideoAudioOutputMode videoAudioOutputMode)
         {

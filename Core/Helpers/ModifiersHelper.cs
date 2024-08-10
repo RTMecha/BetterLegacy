@@ -4550,6 +4550,40 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+                    case "videoPlayer":
+                        {
+                            if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
+                            {
+                                //if (!RTFile.FileExists(RTFile.BasePath + modifier.value))
+                                //{
+                                //    break;
+                                //}
+
+                                if (modifier.Result == null || modifier.Result is RTVideoPlayer nullVideo && !nullVideo)
+                                {
+                                    var gameObject = levelObject.visualObject.GameObject;
+                                    //var videoPlayer = gameObject.GetComponent<RTVideoPlayer>() ?? gameObject.AddComponent<RTVideoPlayer>();
+
+                                    var videoPlayer = gameObject.GetComponent<RTVideoPlayer>();
+                                    if (!videoPlayer)
+                                        videoPlayer = gameObject.AddComponent<RTVideoPlayer>();
+
+                                    modifier.Result = videoPlayer;
+                                }
+
+                                if (modifier.Result is RTVideoPlayer videeoPlayer &&
+                                    float.TryParse(modifier.commands[1], out float timeOffset) &&
+                                    int.TryParse(modifier.commands[2], out int audioOutputType))
+                                {
+                                    videeoPlayer.timeOffset = modifier.reference.StartTime + timeOffset;
+
+                                    if (videeoPlayer.didntPlay)
+                                        videeoPlayer.Play(videeoPlayer.gameObject, /*RTFile.BasePath +*/ modifier.value, (UnityEngine.Video.VideoAudioOutputMode)audioOutputType);
+                                }
+                            }
+
+                            break;
+                        }
                     case "customCode":
                         {
                             //string code = "void Action() { Log(0f); Pause(); }";
