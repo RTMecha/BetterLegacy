@@ -70,22 +70,16 @@ namespace BetterLegacy.Editor.Managers
                 PrefabWatcher = new FileSystemWatcher
                 {
                     Path = RTFile.ApplicationDirectory + prefabListPath,
-                    Filter = "*.lsp"
+                    Filter = "*.lsp",
                 };
-                PrefabWatcher.Changed += OnPrefabPathChanged;
-                PrefabWatcher.Created += OnPrefabPathChanged;
-                PrefabWatcher.Deleted += OnPrefabPathChanged;
-                PrefabWatcher.EnableRaisingEvents = true;
+                EnablePrefabWatcher();
 
                 ThemeWatcher = new FileSystemWatcher
                 {
                     Path = RTFile.ApplicationDirectory + themeListPath,
                     Filter = "*.lst"
                 };
-                ThemeWatcher.Changed += OnThemePathChanged;
-                ThemeWatcher.Created += OnThemePathChanged;
-                ThemeWatcher.Deleted += OnThemePathChanged;
-                ThemeWatcher.EnableRaisingEvents = true;
+                EnableThemeWatcher();
             }
             catch (Exception ex)
             {
@@ -95,8 +89,7 @@ namespace BetterLegacy.Editor.Managers
             popups = GameObject.Find("Editor Systems/Editor GUI/sizer/main/Popups").transform;
             wholeTimeline = EditorManager.inst.timelineSlider.transform.parent.parent;
 
-            var prefabParent = new GameObject("prefabs");
-            prefabParent.transform.SetParent(transform);
+            var prefabParent = Creator.NewGameObject("prefabs", transform);
             var prefabHolder = EditorPrefabHolder.Instance;
             prefabHolder.PrefabParent = prefabParent.transform;
 
@@ -371,33 +364,34 @@ namespace BetterLegacy.Editor.Managers
                 timelinePreviewLine.color = GameStorageManager.inst.timelineLine.color;
             }
 
-            if (CoreHelper.AprilFools && UnityEngine.Random.Range(0, 10000) > 9996)
-            {
-                var array = new string[]
-                {
-                    "BRO",
-                    "Go touch some grass.",
-                    "Hello, hello? I wanted to record this message for you to get you settled in your first night. The animatronic characters DO get a bit quirky at night",
-                    "",
-                    "L + Ratio",
-                    "Hi Diggy",
-                    "Hi KarasuTori",
-                    "Hi MoNsTeR",
-                    "Hi RTMecha",
-                    "Hi Example",
-                    $"Hi {CoreConfig.Instance.DisplayName.Value}!",
-                    "Kweeble kweeble kweeble",
-                    "Testing... is this thing on?",
-                    "When life gives you lemons, don't make lemonade.",
-                    "AMONGUS",
-                    "I fear no man, but THAT thing, it scares me.",
-                    "/summon minecraft:wither",
-                    "Autobots, transform and roll out.",
-                    "sands undertraveler",
-                };
+            // Only want this during April Fools.
+            //if (CoreHelper.AprilFools && RandomHelper.PercentChanceSingle(0.001f))
+            //{
+            //    var array = new string[]
+            //    {
+            //        "BRO",
+            //        "Go touch some grass.",
+            //        "Hello, hello? I wanted to record this message for you to get you settled in your first night. The animatronic characters DO get a bit quirky at night",
+            //        "",
+            //        "L + Ratio",
+            //        "Hi Diggy",
+            //        "Hi KarasuTori",
+            //        "Hi MoNsTeR",
+            //        "Hi RTMecha",
+            //        "Hi Example",
+            //        $"Hi {CoreConfig.Instance.DisplayName.Value}!",
+            //        "Kweeble kweeble kweeble",
+            //        "Testing... is this thing on?",
+            //        "When life gives you lemons, don't make lemonade.",
+            //        "AMONGUS",
+            //        "I fear no man, but THAT thing, it scares me.",
+            //        "/summon minecraft:wither",
+            //        "Autobots, transform and roll out.",
+            //        "sands undertraveler",
+            //    };
 
-                EditorManager.inst.DisplayNotification(array[UnityEngine.Random.Range(0, array.Length)], 4f, EditorManager.NotificationType.Info);
-            }
+            //    EditorManager.inst.DisplayNotification(array[UnityEngine.Random.Range(0, array.Length)], 4f, EditorManager.NotificationType.Info);
+            //}
         }
 
         void UpdateTooltip()
@@ -1139,10 +1133,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadImageTexture("file://" + (!EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading ?
                 settingsPath :
-                path), (Texture2D texture2D) =>
-                {
-                    SetTimelineSprite(SpriteManager.CreateSprite(texture2D));
-                }));
+                path), texture2D => { SetTimelineSprite(SpriteManager.CreateSprite(texture2D)); }));
             }
 
             SetTimelineGridSize();
@@ -1454,7 +1445,7 @@ namespace BetterLegacy.Editor.Managers
                     editorPathField.interactable = true;
                 }, () =>
                 {
-                    RTEditor.inst.HideWarningPopup();
+                    HideWarningPopup();
                     editorPathField.interactable = true;
                 });
 
@@ -1498,11 +1489,11 @@ namespace BetterLegacy.Editor.Managers
                     StartCoroutine(LoadThemes(true));
                     EventEditor.inst.RenderEventsDialog();
 
-                    RTEditor.inst.HideWarningPopup();
+                    HideWarningPopup();
                     themePathField.interactable = true;
                 }, () =>
                 {
-                    RTEditor.inst.HideWarningPopup();
+                    HideWarningPopup();
                     themePathField.interactable = true;
                 });
 
@@ -1546,11 +1537,11 @@ namespace BetterLegacy.Editor.Managers
 
                     StartCoroutine(UpdatePrefabs());
 
-                    RTEditor.inst.HideWarningPopup();
+                    HideWarningPopup();
                     prefabPathField.interactable = true;
                 }, () =>
                 {
-                    RTEditor.inst.HideWarningPopup();
+                    HideWarningPopup();
                     prefabPathField.interactable = true;
                 });
 
@@ -1707,32 +1698,112 @@ namespace BetterLegacy.Editor.Managers
             RTFile.WriteToFile(EditorSettingsPath, jn.ToString(3));
         }
 
+        public void DisablePrefabWatcher()
+        {
+            canUpdatePrefabs = false;
+            PrefabWatcher.EnableRaisingEvents = false;
+            try
+            {
+                PrefabWatcher.Changed -= OnPrefabPathChanged;
+                PrefabWatcher.Created -= OnPrefabPathChanged;
+                PrefabWatcher.Deleted -= OnPrefabPathChanged;
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Couldn't remove OnPrefabPathChanged method.\nException: {ex}");
+            }
+        }
+
+        public void EnablePrefabWatcher()
+        {
+            try
+            {
+                PrefabWatcher.Changed += OnPrefabPathChanged;
+                PrefabWatcher.Created += OnPrefabPathChanged;
+                PrefabWatcher.Deleted += OnPrefabPathChanged;
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Couldn't add OnPrefabPathChanged method.\nException: {ex}");
+            }
+            PrefabWatcher.EnableRaisingEvents = true;
+        }
+        
+        public void DisableThemeWatcher()
+        {
+            canUpdateThemes = false;
+            ThemeWatcher.EnableRaisingEvents = false;
+            try
+            {
+                ThemeWatcher.Changed -= OnThemePathChanged;
+                ThemeWatcher.Created -= OnThemePathChanged;
+                ThemeWatcher.Deleted -= OnThemePathChanged;
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Couldn't remove OnThemePathChanged method.\nException: {ex}");
+            }
+        }
+
+        public void EnableThemeWatcher()
+        {
+            try
+            {
+                ThemeWatcher.Changed += OnThemePathChanged;
+                ThemeWatcher.Created += OnThemePathChanged;
+                ThemeWatcher.Deleted += OnThemePathChanged;
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Couldn't add OnThemePathChanged method.\nException: {ex}");
+            }
+            ThemeWatcher.EnableRaisingEvents = true;
+        }
+
         public void SetWatcherPaths()
         {
-            PrefabWatcher.EnableRaisingEvents = false;
+            DisablePrefabWatcher();
             if (RTFile.DirectoryExists(RTFile.ApplicationDirectory + prefabListPath))
             {
                 PrefabWatcher.Path = RTFile.ApplicationDirectory + prefabListPath;
-                PrefabWatcher.EnableRaisingEvents = true;
+                EnablePrefabWatcher();
             }
-            ThemeWatcher.EnableRaisingEvents = false;
+            DisableThemeWatcher();
             if (RTFile.DirectoryExists(RTFile.ApplicationDirectory + themeListPath))
             {
                 ThemeWatcher.Path = RTFile.ApplicationDirectory + themeListPath;
-                ThemeWatcher.EnableRaisingEvents = true;
+                EnableThemeWatcher();
             }
         }
 
         void OnPrefabPathChanged(object sender, FileSystemEventArgs e)
         {
             if (canUpdatePrefabs && EditorConfig.Instance.UpdatePrefabListOnFilesChanged.Value)
-                StartCoroutine(UpdatePrefabs());
+                CoreHelper.StartCoroutineAsync(UpdatePrefabPath());
+            canUpdatePrefabs = true;
         }
 
         void OnThemePathChanged(object sender, FileSystemEventArgs e)
         {
             if (canUpdateThemes && EditorConfig.Instance.UpdateThemeListOnFilesChanged.Value)
-                StartCoroutine(LoadThemes(EventEditor.inst.dialogRight.GetChild(4).gameObject.activeInHierarchy));
+                StartCoroutine(UpdateThemePath());
+            canUpdateThemes = true;
+        }
+
+        IEnumerator UpdateThemePath()
+        {
+            yield return Ninja.JumpToUnity;
+            CoreHelper.Log($"------- [UPDATING THEME FILEWATCHER] -------");
+            StartCoroutine(LoadThemes(EventEditor.inst.dialogRight.GetChild(4).gameObject.activeInHierarchy));
+            yield break;
+        }
+
+        IEnumerator UpdatePrefabPath()
+        {
+            yield return Ninja.JumpToUnity;
+            CoreHelper.Log($"------- [UPDATING PREFAB FILEWATCHER] -------");
+            StartCoroutine(UpdatePrefabs());
+            yield break;
         }
 
         public FileSystemWatcher PrefabWatcher { get; set; }
@@ -2211,7 +2282,6 @@ namespace BetterLegacy.Editor.Managers
 
             timeField = timeObj.GetComponent<InputField>();
 
-            //Triggers.AddTooltip(timeObj, "Shows the exact current time of song.", "Type in the input field to go to a precise time in the level.");
             TooltipHelper.AssignTooltip(timeObj, "Time Input", 3f);
 
             timeObj.SetActive(true);
@@ -2282,8 +2352,6 @@ namespace BetterLegacy.Editor.Managers
             });
 
             TriggerHelper.AddEventTriggers(pitchObj, TriggerHelper.ScrollDelta(pitchField, 0.1f, 10f));
-
-            //Triggers.AddTooltip(pitchObj, "Change the pitch of the song", "", new List<string> { "Up / Down Arrow" }, clear: true);
 
             pitchObj.GetComponent<LayoutElement>().minWidth = 64f;
             pitchField.textComponent.alignment = TextAnchor.MiddleCenter;
@@ -2709,7 +2777,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 var level = GameData.ParseVG(levelVGJN, false);
 
-                                StartCoroutine(ProjectData.Writer.SaveData(copyTo + "/level.lsb", level, delegate ()
+                                StartCoroutine(ProjectData.Writer.SaveData(copyTo + "/level.lsb", level, () =>
                                 {
                                     EditorManager.inst.DisplayNotification($"Successfully converted {Path.GetFileName(path)} to {Path.GetFileName(copyTo)} and added it to your level ({editorListPath}) folder.", 2f,
                                         EditorManager.NotificationType.Success);
@@ -3866,7 +3934,7 @@ namespace BetterLegacy.Editor.Managers
             Destroy(parent.Find("label depth").gameObject);
 
             Action<string, string, bool, UnityAction, UnityAction, UnityAction, Action<InputField>> inputFieldGenerator
-                = delegate (string name, string placeHolder, bool doMiddle, UnityAction leftButton, UnityAction middleButton, UnityAction rightButton, Action<InputField> action)
+                = (string name, string placeHolder, bool doMiddle, UnityAction leftButton, UnityAction middleButton, UnityAction rightButton, Action<InputField> action) =>
             {
                 var gameObject = EditorPrefabHolder.Instance.NumberInputField.Duplicate(parent, name);
                 gameObject.transform.localScale = Vector3.one;
@@ -3907,7 +3975,7 @@ namespace BetterLegacy.Editor.Managers
                 action(inputFieldStorage.inputField);
             };
 
-            Action<string> labelGenerator = delegate (string name)
+            Action<string> labelGenerator = (string name) =>
             {
                 var label = labelL.gameObject.Duplicate(parent, "label");
                 label.transform.localScale = Vector3.one;
@@ -3917,7 +3985,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddLightText(text);
             };
 
-            Action<string, string, Transform, UnityAction> buttonGenerator = delegate (string name, string text, Transform parent, UnityAction unityAction)
+            Action<string, string, Transform, UnityAction> buttonGenerator = (string name, string text, Transform parent, UnityAction unityAction) =>
             {
                 var gameObject = eventButton.Duplicate(parent, name);
                 gameObject.transform.localScale = Vector3.one;
@@ -3934,7 +4002,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddGraphic(buttonStorage.text, ThemeGroup.Function_1_Text);
             };
 
-            Action<string, string, string, UnityAction, UnityAction> multiButtonGenerator = delegate (string name, string function1Text, string function2Text, UnityAction function1, UnityAction function2)
+            Action<string, string, string, UnityAction, UnityAction> multiButtonGenerator = (string name, string function1Text, string function2Text, UnityAction function1, UnityAction function2) =>
             {
                 var functionsBase = new GameObject(name);
                 functionsBase.transform.SetParent(parent);
@@ -3985,7 +4053,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 labelGenerator("Set Group Layer");
 
-                inputFieldGenerator("layer", "Enter layer...", true, delegate ()
+                inputFieldGenerator("layer", "Enter layer...", true, () =>
                 {
                     if (parent.Find("layer") && parent.Find("layer").GetChild(0).gameObject.TryGetComponent(out InputField inputField))
                     {
@@ -4001,7 +4069,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     }
 
-                }, delegate ()
+                }, () =>
                 {
                     if (parent.Find("layer") && parent.Find("layer").GetChild(0).gameObject.TryGetComponent(out InputField inputField))
                     {
@@ -4018,7 +4086,7 @@ namespace BetterLegacy.Editor.Managers
                             }
                         }
                     }
-                }, delegate ()
+                }, () =>
                 {
                     if (parent.Find("layer") && parent.Find("layer").GetChild(0).gameObject.TryGetComponent(out InputField inputField))
                     {
@@ -4033,7 +4101,7 @@ namespace BetterLegacy.Editor.Managers
                             }
                         }
                     }
-                }, delegate (InputField inputField)
+                }, inputField =>
                 {
                     TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputField));
                 });
@@ -4043,7 +4111,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 labelGenerator("Set Group Depth");
 
-                inputFieldGenerator("depth", "Enter depth...", true, delegate ()
+                inputFieldGenerator("depth", "Enter depth...", true, () =>
                 {
                     if (parent.Find("depth") && parent.Find("depth").GetChild(0).gameObject.TryGetComponent(out InputField inputField))
                     {
@@ -4057,7 +4125,7 @@ namespace BetterLegacy.Editor.Managers
                             }
                         }
                     }
-                }, delegate ()
+                }, () =>
                 {
                     if (parent.Find("depth") && parent.Find("depth").GetChild(0).gameObject.TryGetComponent(out InputField inputField))
                     {
@@ -4073,7 +4141,7 @@ namespace BetterLegacy.Editor.Managers
                             }
                         }
                     }
-                }, delegate ()
+                }, () =>
                 {
                     if (parent.Find("depth") && parent.Find("depth").GetChild(0).gameObject.TryGetComponent(out InputField inputField))
                     {
@@ -4087,7 +4155,7 @@ namespace BetterLegacy.Editor.Managers
                             }
                         }
                     }
-                }, delegate (InputField inputField)
+                }, inputField =>
                 {
                     TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputField));
                 });
@@ -4097,7 +4165,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 labelGenerator("Set Song Time");
 
-                inputFieldGenerator("time", "Enter time...", true, delegate ()
+                inputFieldGenerator("time", "Enter time...", true, () =>
                 {
                     if (parent.Find("time") && parent.Find("time").GetChild(0).gameObject.TryGetComponent(out InputField inputField)
                         && float.TryParse(inputField.text, out float num))
@@ -4115,7 +4183,7 @@ namespace BetterLegacy.Editor.Managers
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
                         }
                     }
-                }, delegate ()
+                }, () =>
                 {
                     if (parent.Find("time") && parent.Find("time").GetChild(0).gameObject.TryGetComponent(out InputField inputField))
                     {
@@ -4132,7 +4200,7 @@ namespace BetterLegacy.Editor.Managers
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
                         }
                     }
-                }, delegate ()
+                }, () =>
                 {
                     if (parent.Find("time") && parent.Find("time").GetChild(0).gameObject.TryGetComponent(out InputField inputField)
                         && float.TryParse(inputField.text, out float num))
@@ -4150,7 +4218,7 @@ namespace BetterLegacy.Editor.Managers
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
                         }
                     }
-                }, delegate (InputField inputField)
+                }, inputField =>
                 {
                     TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDelta(inputField));
                 });
@@ -4160,7 +4228,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 labelGenerator("Set Autokill Offset");
 
-                inputFieldGenerator("autokill offset", "Enter autokill...", true, delegate ()
+                inputFieldGenerator("autokill offset", "Enter autokill...", true, () =>
                 {
                     if (parent.Find("autokill offset") && parent.Find("autokill offset").GetChild(0).gameObject.TryGetComponent(out InputField inputField)
                     && float.TryParse(inputField.text, out float num))
@@ -4177,7 +4245,7 @@ namespace BetterLegacy.Editor.Managers
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
                         }
                     }
-                }, delegate ()
+                }, () =>
                 {
                     if (parent.Find("autokill offset") && parent.Find("autokill offset").GetChild(0).gameObject.TryGetComponent(out InputField inputField)
                         && float.TryParse(inputField.text, out float num))
@@ -4196,7 +4264,7 @@ namespace BetterLegacy.Editor.Managers
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
                         }
                     }
-                }, delegate ()
+                }, () =>
                 {
                     if (parent.Find("autokill offset") && parent.Find("autokill offset").GetChild(0).gameObject.TryGetComponent(out InputField inputField)
                         && float.TryParse(inputField.text, out float num))
@@ -4215,7 +4283,7 @@ namespace BetterLegacy.Editor.Managers
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
                         }
                     }
-                }, delegate (InputField inputField)
+                }, inputField =>
                 {
                     TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDelta(inputField));
                 });
@@ -4244,8 +4312,8 @@ namespace BetterLegacy.Editor.Managers
                 Destroy(inputFieldStorage.leftButton.gameObject);
                 Destroy(inputFieldStorage.rightGreaterButton.gameObject);
 
-                inputFieldStorage.middleButton.onClick.RemoveAllListeners();
-                inputFieldStorage.middleButton.onClick.AddListener(delegate ()
+                inputFieldStorage.middleButton.onClick.ClearAll();
+                inputFieldStorage.middleButton.onClick.AddListener(() =>
                 {
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                     {
@@ -4269,8 +4337,8 @@ namespace BetterLegacy.Editor.Managers
                 inputFieldStorage.rightButton.transform.AsRT().anchoredPosition = new Vector2(339f, 0f);
                 inputFieldStorage.rightButton.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
 
-                inputFieldStorage.rightButton.onClick.RemoveAllListeners();
-                inputFieldStorage.rightButton.onClick.AddListener(delegate ()
+                inputFieldStorage.rightButton.onClick.ClearAll();
+                inputFieldStorage.rightButton.onClick.AddListener(() =>
                 {
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                     {
@@ -4319,8 +4387,8 @@ namespace BetterLegacy.Editor.Managers
                 inputFieldStorage.rightButton.transform.AsRT().anchoredPosition = new Vector2(339f, 0f);
                 inputFieldStorage.rightButton.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
 
-                inputFieldStorage.rightButton.onClick.RemoveAllListeners();
-                inputFieldStorage.rightButton.onClick.AddListener(delegate ()
+                inputFieldStorage.rightButton.onClick.ClearAll();
+                inputFieldStorage.rightButton.onClick.AddListener(() =>
                 {
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                     {
@@ -4400,7 +4468,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 labelGenerator("Auto optimize objects");
 
-                buttonGenerator("optimize", "Optimize", parent, delegate ()
+                buttonGenerator("optimize", "Optimize", parent, () =>
                 {
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                     {
@@ -4416,7 +4484,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 labelGenerator("Set Autokill offset to current time");
 
-                buttonGenerator("set autokill", "Set", parent, delegate ()
+                buttonGenerator("set autokill", "Set", parent, () =>
                 {
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                     {
@@ -4849,7 +4917,7 @@ namespace BetterLegacy.Editor.Managers
                     buttonGenerator("name", "N", syncLayout.transform, () =>
                     {
                         EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(delegate (BeatmapObject beatmapObject)
+                        RefreshObjectSearch(beatmapObject =>
                         {
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
@@ -4863,10 +4931,10 @@ namespace BetterLegacy.Editor.Managers
 
                 // Object Type
                 {
-                    buttonGenerator("object type", "OT", syncLayout.transform, delegate ()
+                    buttonGenerator("object type", "OT", syncLayout.transform, () =>
                     {
                         EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(delegate (BeatmapObject beatmapObject)
+                        RefreshObjectSearch(beatmapObject =>
                         {
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
@@ -4881,10 +4949,10 @@ namespace BetterLegacy.Editor.Managers
 
                 // Autokill Type
                 {
-                    buttonGenerator("autokill type", "AKT", syncLayout.transform, delegate ()
+                    buttonGenerator("autokill type", "AKT", syncLayout.transform, () =>
                     {
                         EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(delegate (BeatmapObject beatmapObject)
+                        RefreshObjectSearch(beatmapObject =>
                         {
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
@@ -4899,10 +4967,10 @@ namespace BetterLegacy.Editor.Managers
 
                 // Autokill Offset
                 {
-                    buttonGenerator("autokill offset", "AKO", syncLayout.transform, delegate ()
+                    buttonGenerator("autokill offset", "AKO", syncLayout.transform, () =>
                     {
                         EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(delegate (BeatmapObject beatmapObject)
+                        RefreshObjectSearch(beatmapObject =>
                         {
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
@@ -4917,10 +4985,10 @@ namespace BetterLegacy.Editor.Managers
 
                 // Parent
                 {
-                    buttonGenerator("parent", "P", syncLayout.transform, delegate ()
+                    buttonGenerator("parent", "P", syncLayout.transform, () =>
                     {
                         EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(delegate (BeatmapObject beatmapObject)
+                        RefreshObjectSearch(beatmapObject =>
                         {
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
@@ -4934,10 +5002,10 @@ namespace BetterLegacy.Editor.Managers
 
                 // Parent Desync
                 {
-                    buttonGenerator("parent desync", "PD", syncLayout.transform, delegate ()
+                    buttonGenerator("parent desync", "PD", syncLayout.transform, () =>
                     {
                         EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(delegate (BeatmapObject beatmapObject)
+                        RefreshObjectSearch(beatmapObject =>
                         {
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
@@ -4951,10 +5019,10 @@ namespace BetterLegacy.Editor.Managers
 
                 // Parent Type
                 {
-                    buttonGenerator("parent type", "PT", syncLayout.transform, delegate ()
+                    buttonGenerator("parent type", "PT", syncLayout.transform, () =>
                     {
                         EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(delegate (BeatmapObject beatmapObject)
+                        RefreshObjectSearch(beatmapObject =>
                         {
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
@@ -4968,10 +5036,10 @@ namespace BetterLegacy.Editor.Managers
 
                 // Parent Offset
                 {
-                    buttonGenerator("parent offset", "PO", syncLayout.transform, delegate ()
+                    buttonGenerator("parent offset", "PO", syncLayout.transform, () =>
                     {
                         EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(delegate (BeatmapObject beatmapObject)
+                        RefreshObjectSearch(beatmapObject =>
                         {
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
@@ -4985,10 +5053,10 @@ namespace BetterLegacy.Editor.Managers
 
                 // Parent Additive
                 {
-                    buttonGenerator("parent additive", "PA", syncLayout.transform, delegate ()
+                    buttonGenerator("parent additive", "PA", syncLayout.transform, () =>
                     {
                         EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(delegate (BeatmapObject beatmapObject)
+                        RefreshObjectSearch(beatmapObject =>
                         {
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
@@ -5002,10 +5070,10 @@ namespace BetterLegacy.Editor.Managers
 
                 // Parent Parallax
                 {
-                    buttonGenerator("parent parallax", "PP", syncLayout.transform, delegate ()
+                    buttonGenerator("parent parallax", "PP", syncLayout.transform, () =>
                     {
                         EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(delegate (BeatmapObject beatmapObject)
+                        RefreshObjectSearch(beatmapObject =>
                         {
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
@@ -5019,10 +5087,10 @@ namespace BetterLegacy.Editor.Managers
 
                 // Origin
                 {
-                    buttonGenerator("origin", "O", syncLayout.transform, delegate ()
+                    buttonGenerator("origin", "O", syncLayout.transform, () =>
                     {
                         EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(delegate (BeatmapObject beatmapObject)
+                        RefreshObjectSearch(beatmapObject =>
                         {
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
@@ -5036,10 +5104,10 @@ namespace BetterLegacy.Editor.Managers
 
                 // Shape
                 {
-                    buttonGenerator("shape", "S", syncLayout.transform, delegate ()
+                    buttonGenerator("shape", "S", syncLayout.transform, () =>
                     {
                         EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(delegate (BeatmapObject beatmapObject)
+                        RefreshObjectSearch(beatmapObject =>
                         {
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
@@ -5054,10 +5122,10 @@ namespace BetterLegacy.Editor.Managers
 
                 // Text
                 {
-                    buttonGenerator("text", "T", syncLayout.transform, delegate ()
+                    buttonGenerator("text", "T", syncLayout.transform, () =>
                     {
                         EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(delegate (BeatmapObject beatmapObject)
+                        RefreshObjectSearch(beatmapObject =>
                         {
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
@@ -5071,10 +5139,10 @@ namespace BetterLegacy.Editor.Managers
 
                 // Depth
                 {
-                    buttonGenerator("depth", "D", syncLayout.transform, delegate ()
+                    buttonGenerator("depth", "D", syncLayout.transform, () =>
                     {
                         EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(delegate (BeatmapObject beatmapObject)
+                        RefreshObjectSearch(beatmapObject =>
                         {
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
@@ -5088,10 +5156,10 @@ namespace BetterLegacy.Editor.Managers
 
                 // Keyframes
                 {
-                    buttonGenerator("keyframes", "KF", syncLayout.transform, delegate ()
+                    buttonGenerator("keyframes", "KF", syncLayout.transform, () =>
                     {
                         EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(delegate (BeatmapObject beatmapObject)
+                        RefreshObjectSearch(beatmapObject =>
                         {
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
@@ -5109,10 +5177,10 @@ namespace BetterLegacy.Editor.Managers
 
                 // Modifiers
                 {
-                    buttonGenerator("modifiers", "MOD", syncLayout.transform, delegate ()
+                    buttonGenerator("modifiers", "MOD", syncLayout.transform, () =>
                     {
                         EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(delegate (BeatmapObject beatmapObject)
+                        RefreshObjectSearch(beatmapObject =>
                         {
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
@@ -5126,10 +5194,10 @@ namespace BetterLegacy.Editor.Managers
                         });
                     });
 
-                    buttonGenerator("ignore", "IGN", syncLayout.transform, delegate ()
+                    buttonGenerator("ignore", "IGN", syncLayout.transform, () =>
                     {
                         EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(delegate (BeatmapObject beatmapObject)
+                        RefreshObjectSearch(beatmapObject =>
                         {
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
@@ -5142,10 +5210,10 @@ namespace BetterLegacy.Editor.Managers
 
                 // Tags
                 {
-                    buttonGenerator("tag", "TAG", syncLayout.transform, delegate ()
+                    buttonGenerator("tag", "TAG", syncLayout.transform, () =>
                     {
                         EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(delegate (BeatmapObject beatmapObject)
+                        RefreshObjectSearch(beatmapObject =>
                         {
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
@@ -5158,10 +5226,10 @@ namespace BetterLegacy.Editor.Managers
 
                 // Render Type
                 {
-                    buttonGenerator("rendertype", "RT", syncLayout.transform, delegate ()
+                    buttonGenerator("rendertype", "RT", syncLayout.transform, () =>
                     {
                         EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(delegate (BeatmapObject beatmapObject)
+                        RefreshObjectSearch(beatmapObject =>
                         {
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
@@ -5174,10 +5242,10 @@ namespace BetterLegacy.Editor.Managers
 
                 // Prefab
                 {
-                    buttonGenerator("prefab", "PR", syncLayout.transform, delegate ()
+                    buttonGenerator("prefab", "PR", syncLayout.transform, () =>
                     {
                         EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(delegate (BeatmapObject beatmapObject)
+                        RefreshObjectSearch(beatmapObject =>
                         {
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
@@ -5217,7 +5285,7 @@ namespace BetterLegacy.Editor.Managers
                 ((Text)oldNameIF.placeholder).fontSize = 16;
                 ((Text)oldNameIF.placeholder).color = new Color(0f, 0f, 0f, 0.3f);
 
-                oldNameIF.onValueChanged.RemoveAllListeners();
+                oldNameIF.onValueChanged.ClearAll();
 
                 var oldNameSwapper = oldName.AddComponent<InputFieldSwapper>();
                 oldNameSwapper.Init(oldNameIF, InputFieldSwapper.Type.String);
@@ -5237,7 +5305,7 @@ namespace BetterLegacy.Editor.Managers
                 ((Text)newNameIF.placeholder).fontSize = 16;
                 ((Text)newNameIF.placeholder).color = new Color(0f, 0f, 0f, 0.3f);
 
-                newNameIF.onValueChanged.RemoveAllListeners();
+                newNameIF.onValueChanged.ClearAll();
 
                 var newNameSwapper = newName.AddComponent<InputFieldSwapper>();
                 newNameSwapper.Init(newNameIF, InputFieldSwapper.Type.String);
@@ -5258,7 +5326,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var button = replace.GetComponent<Button>();
                 button.onClick.ClearAll();
-                button.onClick.AddListener(delegate ()
+                button.onClick.AddListener(() =>
                 {
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                     {
@@ -5296,7 +5364,7 @@ namespace BetterLegacy.Editor.Managers
                 ((Text)oldNameIF.placeholder).fontSize = 16;
                 ((Text)oldNameIF.placeholder).color = new Color(0f, 0f, 0f, 0.3f);
 
-                oldNameIF.onValueChanged.RemoveAllListeners();
+                oldNameIF.onValueChanged.ClearAll();
 
                 var oldNameSwapper = oldName.AddComponent<InputFieldSwapper>();
                 oldNameSwapper.Init(oldNameIF, InputFieldSwapper.Type.String);
@@ -5316,7 +5384,7 @@ namespace BetterLegacy.Editor.Managers
                 ((Text)newNameIF.placeholder).fontSize = 16;
                 ((Text)newNameIF.placeholder).color = new Color(0f, 0f, 0f, 0.3f);
 
-                newNameIF.onValueChanged.RemoveAllListeners();
+                newNameIF.onValueChanged.ClearAll();
 
                 var newNameSwapper = newName.AddComponent<InputFieldSwapper>();
                 newNameSwapper.Init(newNameIF, InputFieldSwapper.Type.String);
@@ -5337,7 +5405,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var button = replace.GetComponent<Button>();
                 button.onClick.ClearAll();
-                button.onClick.AddListener(delegate ()
+                button.onClick.AddListener(() =>
                 {
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                     {
@@ -5377,7 +5445,7 @@ namespace BetterLegacy.Editor.Managers
                 ((Text)oldNameIF.placeholder).fontSize = 16;
                 ((Text)oldNameIF.placeholder).color = new Color(0f, 0f, 0f, 0.3f);
 
-                oldNameIF.onValueChanged.RemoveAllListeners();
+                oldNameIF.onValueChanged.ClearAll();
 
                 var oldNameSwapper = oldName.AddComponent<InputFieldSwapper>();
                 oldNameSwapper.Init(oldNameIF, InputFieldSwapper.Type.String);
@@ -5397,7 +5465,7 @@ namespace BetterLegacy.Editor.Managers
                 ((Text)newNameIF.placeholder).fontSize = 16;
                 ((Text)newNameIF.placeholder).color = new Color(0f, 0f, 0f, 0.3f);
 
-                newNameIF.onValueChanged.RemoveAllListeners();
+                newNameIF.onValueChanged.ClearAll();
 
                 var newNameSwapper = newName.AddComponent<InputFieldSwapper>();
                 newNameSwapper.Init(newNameIF, InputFieldSwapper.Type.String);
@@ -5418,7 +5486,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var button = replace.GetComponent<Button>();
                 button.onClick.ClearAll();
-                button.onClick.AddListener(delegate ()
+                button.onClick.AddListener(() =>
                 {
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                     {
@@ -5456,7 +5524,7 @@ namespace BetterLegacy.Editor.Managers
                 ((Text)oldNameIF.placeholder).fontSize = 16;
                 ((Text)oldNameIF.placeholder).color = new Color(0f, 0f, 0f, 0.3f);
 
-                oldNameIF.onValueChanged.RemoveAllListeners();
+                oldNameIF.onValueChanged.ClearAll();
 
                 var oldNameSwapper = oldName.AddComponent<InputFieldSwapper>();
                 oldNameSwapper.Init(oldNameIF, InputFieldSwapper.Type.String);
@@ -5476,7 +5544,7 @@ namespace BetterLegacy.Editor.Managers
                 ((Text)newNameIF.placeholder).fontSize = 16;
                 ((Text)newNameIF.placeholder).color = new Color(0f, 0f, 0f, 0.3f);
 
-                newNameIF.onValueChanged.RemoveAllListeners();
+                newNameIF.onValueChanged.ClearAll();
 
                 var newNameSwapper = newName.AddComponent<InputFieldSwapper>();
                 newNameSwapper.Init(newNameIF, InputFieldSwapper.Type.String);
@@ -5497,7 +5565,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var button = replace.GetComponent<Button>();
                 button.onClick.ClearAll();
-                button.onClick.AddListener(delegate ()
+                button.onClick.AddListener(() =>
                 {
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                     {
@@ -5544,7 +5612,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var button = colorGUI.GetComponent<Button>();
                     button.onClick.ClearAll();
-                    button.onClick.AddListener(delegate ()
+                    button.onClick.AddListener(() =>
                     {
                         currentMultiColorSelection = index;
                         UpdateMultiColorButtons();
@@ -5585,7 +5653,7 @@ namespace BetterLegacy.Editor.Managers
                 curves.onValueChanged.ClearAll();
                 curves.options.Insert(0, new Dropdown.OptionData("None (Doesn't Set Easing)"));
 
-                TriggerHelper.AddEventTriggers(curves.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, delegate (BaseEventData baseEventData)
+                TriggerHelper.AddEventTriggers(curves.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, baseEventData =>
                 {
                     if (!EditorConfig.Instance.ScrollOnEasing.Value)
                         return;
@@ -5603,7 +5671,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     labelGenerator("Assign to All Color Keyframes");
 
-                    buttonGenerator("assign to all", "Assign", parent, delegate ()
+                    buttonGenerator("assign to all", "Assign", parent, () =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                         {
@@ -5639,7 +5707,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var assignIndex = CreateInputField("index", "0", "Enter index...", parent, maxValue: int.MaxValue);
 
-                    buttonGenerator("assign to index", "Assign", parent, delegate ()
+                    buttonGenerator("assign to index", "Assign", parent, () =>
                     {
                         if (int.TryParse(assignIndex.text, out int num))
                         {
@@ -5673,7 +5741,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     labelGenerator("Create Color Keyframe");
 
-                    buttonGenerator("create", "Create", parent, delegate ()
+                    buttonGenerator("create", "Create", parent, () =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                         {
@@ -5747,7 +5815,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var pasteAllTypesToAll = pasteAllTypesToAllObject.GetComponent<Button>();
                     pasteAllTypesToAll.onClick.ClearAll();
-                    pasteAllTypesToAll.onClick.AddListener(delegate ()
+                    pasteAllTypesToAll.onClick.AddListener(() =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                         {
@@ -5839,7 +5907,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var pasteAllTypesToIndex = pasteAllTypesToIndexObject.GetComponent<Button>();
                     pasteAllTypesToIndex.onClick.ClearAll();
-                    pasteAllTypesToIndex.onClick.AddListener(delegate ()
+                    pasteAllTypesToIndex.onClick.AddListener(() =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                         {
@@ -5948,7 +6016,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var pasteAllTypesToAll = pasteAllTypesToAllObject.GetComponent<Button>();
                     pasteAllTypesToAll.onClick.ClearAll();
-                    pasteAllTypesToAll.onClick.AddListener(delegate ()
+                    pasteAllTypesToAll.onClick.AddListener(() =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                         {
@@ -5989,7 +6057,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var pasteAllTypesToIndex = pasteAllTypesToIndexObject.GetComponent<Button>();
                     pasteAllTypesToIndex.onClick.ClearAll();
-                    pasteAllTypesToIndex.onClick.AddListener(delegate ()
+                    pasteAllTypesToIndex.onClick.AddListener(() =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                         {
@@ -6050,7 +6118,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var pasteAllTypesToAll = pasteAllTypesToAllObject.GetComponent<Button>();
                     pasteAllTypesToAll.onClick.ClearAll();
-                    pasteAllTypesToAll.onClick.AddListener(delegate ()
+                    pasteAllTypesToAll.onClick.AddListener(() =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                         {
@@ -6091,7 +6159,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var pasteAllTypesToIndex = pasteAllTypesToIndexObject.GetComponent<Button>();
                     pasteAllTypesToIndex.onClick.ClearAll();
-                    pasteAllTypesToIndex.onClick.AddListener(delegate ()
+                    pasteAllTypesToIndex.onClick.AddListener(() =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                         {
@@ -6152,7 +6220,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var pasteAllTypesToAll = pasteAllTypesToAllObject.GetComponent<Button>();
                     pasteAllTypesToAll.onClick.ClearAll();
-                    pasteAllTypesToAll.onClick.AddListener(delegate ()
+                    pasteAllTypesToAll.onClick.AddListener(() =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                         {
@@ -6193,7 +6261,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var pasteAllTypesToIndex = pasteAllTypesToIndexObject.GetComponent<Button>();
                     pasteAllTypesToIndex.onClick.ClearAll();
-                    pasteAllTypesToIndex.onClick.AddListener(delegate ()
+                    pasteAllTypesToIndex.onClick.AddListener(() =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                         {
@@ -6254,7 +6322,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var pasteAllTypesToAll = pasteAllTypesToAllObject.GetComponent<Button>();
                     pasteAllTypesToAll.onClick.ClearAll();
-                    pasteAllTypesToAll.onClick.AddListener(delegate ()
+                    pasteAllTypesToAll.onClick.AddListener(() =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                         {
@@ -6295,7 +6363,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var pasteAllTypesToIndex = pasteAllTypesToIndexObject.GetComponent<Button>();
                     pasteAllTypesToIndex.onClick.ClearAll();
-                    pasteAllTypesToIndex.onClick.AddListener(delegate ()
+                    pasteAllTypesToIndex.onClick.AddListener(() =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                         {
@@ -6628,7 +6696,7 @@ namespace BetterLegacy.Editor.Managers
                 new Document.Element("Reimnop's Catalyst (PA object and animation optimization)", Document.Element.Type.Text),
                 new Document.Element("<b>Source code</b>:\nhttps://github.com/Reimnop/Catalyst", Document.Element.Type.Text)
                 {
-                    Function = delegate ()
+                    Function = () =>
                     {
                         Application.OpenURL("https://github.com/Reimnop/Catalyst");
                     }
@@ -7954,7 +8022,7 @@ namespace BetterLegacy.Editor.Managers
                 folderButtonStorageFolder.text.fontSize = fontSize;
 
                 folderButtonStorageFolder.button.onClick.ClearAll();
-                folderButtonFunctionFolder.onClick = (PointerEventData eventData) =>
+                folderButtonFunctionFolder.onClick = eventData =>
                 {
                     if (editorPathField.text == currentPath)
                     {
@@ -8037,7 +8105,7 @@ namespace BetterLegacy.Editor.Managers
                 hoverUI.animateSca = true;
 
                 folderButtonStorage.text.text = string.Format(format,
-                    LSText.ClampString(Path.GetFileName(path), foldClamp),
+                    LSText.ClampString(name, foldClamp),
                     LSText.ClampString(metadata.song.title, songClamp),
                     LSText.ClampString(metadata.artist.Name, artiClamp),
                     LSText.ClampString(metadata.creator.steam_name, creaClamp),
@@ -8056,7 +8124,7 @@ namespace BetterLegacy.Editor.Managers
                 gameObject.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip
                 {
                     desc = "<#" + LSColors.ColorToHex(difficultyColor) + ">" + metadata.artist.Name + " - " + metadata.song.title,
-                    hint = $"</color>Date Edited: {metadata.beatmap.date_edited}<br>Date Created: {metadata.LevelBeatmap.date_created}<br>Description: {metadata.song.description}",
+                    hint = $"</color><br>Folder: {name}<br>Date Edited: {metadata.beatmap.date_edited}<br>Date Created: {metadata.LevelBeatmap.date_created}<br>Description: {metadata.song.description}",
                 });
 
                 folderButtonStorage.button.onClick.ClearAll();
@@ -8168,18 +8236,6 @@ namespace BetterLegacy.Editor.Managers
                     });
                 }
                 
-                //if (!RTFile.FileExists($"{file}/level.jpg"))
-                //{
-                //    anyFailed = true;
-                //    failedLevels.Add(Path.GetFileName(path));
-
-                //    iconImage.sprite = SteamWorkshop.inst.defaultSteamImageSprite;
-                //    editorWrapper.albumArt = SteamWorkshop.inst.defaultSteamImageSprite;
-
-                //    EditorManager.inst.loadedLevels.Add(editorWrapper);
-                //    continue;
-                //}
-
                 list.Add(StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{file}/level.jpg", cover =>
                 {
                     if (!cover)
@@ -8428,7 +8484,7 @@ namespace BetterLegacy.Editor.Managers
                 yield break;
             }
 
-            PreviewCover?.GameObject?.SetActive(false);
+            PreviewCover?.gameObject?.SetActive(false);
 
             SetFileInfo($"Playing Music for [ {name} ]\n\nIf it doesn't, then something went wrong!");
             AudioManager.inst.PlayMusic(null, song, true, 0f, true);
@@ -8541,10 +8597,7 @@ namespace BetterLegacy.Editor.Managers
                 themeAddButton.SetActive(true);
                 tf.localScale = Vector2.one;
                 var button = themeAddButton.GetComponent<Button>();
-                button.onClick.AddListener(() =>
-                {
-                    RTThemeEditor.inst.RenderThemeEditor();
-                });
+                button.onClick.AddListener(() => { RTThemeEditor.inst.RenderThemeEditor(); });
 
                 EditorThemeManager.AddGraphic(button.image, ThemeGroup.List_Button_2_Normal, true);
                 EditorThemeManager.AddGraphic(themeAddButton.transform.Find("edit").GetComponent<Image>(), ThemeGroup.List_Button_2_Text);
@@ -8560,47 +8613,7 @@ namespace BetterLegacy.Editor.Managers
                 DataManager.inst.BeatmapThemeIDToIndex.Add(num, num);
                 DataManager.inst.BeatmapThemeIndexToID.Add(num, num);
 
-                var themePanel = RTThemeEditor.inst.GenerateThemePanel(parent);
-                themePanel.Theme = beatmapTheme;
-
-                for (int j = 0; j < themePanel.Colors.Count; j++)
-                {
-                    themePanel.Colors[j].color = beatmapTheme.GetObjColor(j);
-                }
-
-                themePanel.UseButton.onClick.ClearAll();
-                themePanel.UseButton.onClick.AddListener(() =>
-                {
-                    if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => RTEventEditor.inst.SelectedKeyframes.Min(y => y.Type) == x.Type))
-                    {
-                        foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
-                        {
-                            timelineObject.GetData<EventKeyframe>().eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
-                        }
-                    }
-                    else
-                    {
-                        DataManager.inst.gameData.eventObjects.allEvents[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
-                    }
-                    EventManager.inst.updateEvents();
-                    EventEditor.inst.RenderThemePreview(dialogTmp);
-
-                });
-
-                themePanel.EditButton.onClick.ClearAll();
-                themePanel.EditButton.onClick.AddListener(() => { RTThemeEditor.inst.RenderThemeEditor(Parser.TryParse(beatmapTheme.id, 0)); });
-
-                themePanel.DeleteButton.onClick.ClearAll();
-                themePanel.DeleteButton.interactable = false;
-                themePanel.Name.text = beatmapTheme.name;
-
-                themePanel.SetActive(false);
-
-                EditorThemeManager.ApplyGraphic(themePanel.BaseImage, ThemeGroup.List_Button_2_Normal, true);
-                EditorThemeManager.ApplyGraphic(themePanel.UseButton.image, ThemeGroup.Null, true);
-                EditorThemeManager.ApplyGraphic(themePanel.EditButton.image, ThemeGroup.List_Button_2_Text);
-                EditorThemeManager.ApplyGraphic(themePanel.Name, ThemeGroup.List_Button_2_Text);
-                EditorThemeManager.ApplySelectable(themePanel.DeleteButton, ThemeGroup.Delete_Keyframe_Button, false);
+                RTThemeEditor.inst.SetupThemePanel(beatmapTheme, true);
 
                 num++;
             }
@@ -8630,45 +8643,7 @@ namespace BetterLegacy.Editor.Managers
                     DataManager.inst.BeatmapThemeIndexToID.Add(DataManager.inst.AllThemes.Count - 1, int.Parse(orig.id));
                     DataManager.inst.BeatmapThemeIDToIndex.Add(int.Parse(orig.id), DataManager.inst.AllThemes.Count - 1);
 
-                    var themePanel = RTThemeEditor.inst.GenerateThemePanel(parent);
-                    themePanel.Theme = orig;
-                    themePanel.Path = file.Replace("\\", "/");
-                    themePanel.OriginalID = orig.id;
-
-                    for (int j = 0; j < themePanel.Colors.Count; j++)
-                    {
-                        themePanel.Colors[j].color = orig.GetObjColor(j);
-                    }
-
-                    themePanel.UseButton.onClick.ClearAll();
-                    themePanel.UseButton.onClick.AddListener(() =>
-                    {
-                        if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => RTEventEditor.inst.SelectedKeyframes.Min(y => y.Type) == x.Type))
-                        {
-                            foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
-                                timelineObject.GetData<EventKeyframe>().eventValues[0] = Parser.TryParse(orig.id, 0);
-                        }
-                        else
-                            DataManager.inst.gameData.eventObjects.allEvents[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].eventValues[0] = Parser.TryParse(orig.id, 0);
-                        EventManager.inst.updateEvents();
-                        EventEditor.inst.RenderThemePreview(dialogTmp);
-                    });
-
-                    themePanel.EditButton.onClick.ClearAll();
-                    themePanel.EditButton.onClick.AddListener(() => { RTThemeEditor.inst.RenderThemeEditor(Parser.TryParse(orig.id, 0)); });
-
-                    themePanel.DeleteButton.onClick.ClearAll();
-                    themePanel.DeleteButton.interactable = true;
-                    themePanel.DeleteButton.onClick.AddListener(() => { RTThemeEditor.inst.DeleteThemeDelegate(orig); });
-                    themePanel.Name.text = orig.name;
-
-                    themePanel.SetActive(false);
-
-                    EditorThemeManager.ApplyGraphic(themePanel.BaseImage, ThemeGroup.List_Button_2_Normal, true);
-                    EditorThemeManager.ApplyGraphic(themePanel.UseButton.image, ThemeGroup.Null, true);
-                    EditorThemeManager.ApplyGraphic(themePanel.EditButton.image, ThemeGroup.List_Button_2_Text);
-                    EditorThemeManager.ApplyGraphic(themePanel.Name, ThemeGroup.List_Button_2_Text);
-                    EditorThemeManager.ApplySelectable(themePanel.DeleteButton, ThemeGroup.Delete_Keyframe_Button, false);
+                    RTThemeEditor.inst.SetupThemePanel(orig, false);
                 }
 
                 if (jn["id"] == null)
@@ -8677,7 +8652,7 @@ namespace BetterLegacy.Editor.Managers
                     beatmapTheme.id = LSText.randomNumString(BeatmapTheme.IDLength);
                     DataManager.inst.CustomBeatmapThemes.Remove(orig);
                     FileManager.inst.DeleteFileRaw(file);
-                    ThemeEditor.inst.SaveTheme(beatmapTheme);
+                    RTThemeEditor.inst.SaveTheme(beatmapTheme);
                     DataManager.inst.CustomBeatmapThemes.Add(beatmapTheme);
                 }
             }
@@ -8688,8 +8663,6 @@ namespace BetterLegacy.Editor.Managers
                 var themeSearch = dialogTmp.Find("theme-search").GetComponent<InputField>();
                 yield return StartCoroutine(RTThemeEditor.inst.RenderThemeList(themeSearch.text));
             }
-
-            canUpdateThemes = true;
 
             yield break;
         }
