@@ -1291,7 +1291,7 @@ namespace BetterLegacy.Editor.Managers
                             vindexIF.onValueChanged.ClearAll();
                             vindexIF.textComponent.alignment = TextAnchor.MiddleCenter;
                             vindexIF.text = Parser.TryParse(modifier.commands[2], 0).ToString();
-                            vindexIF.onValueChanged.AddListener(delegate (string _val)
+                            vindexIF.onValueChanged.AddListener(_val =>
                             {
                                 if (int.TryParse(_val, out int result))
                                 {

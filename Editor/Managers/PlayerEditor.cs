@@ -461,10 +461,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var button = gameObject.AddComponent<Button>();
                     button.image = image;
-                    button.onClick.AddListener(delegate ()
-                    {
-                        RTPlayer.SetGameDataProperties();
-                    });
+                    button.onClick.AddListener(RTPlayer.SetGameDataProperties);
 
                     EditorThemeManager.AddSelectable(button, ThemeGroup.List_Button_1);
 
@@ -1212,7 +1209,7 @@ namespace BetterLegacy.Editor.Managers
                                     RTPlayer.SetGameDataProperties();
                                 });
 
-                                TriggerHelper.AddEventTriggers(dropdown.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, delegate (BaseEventData baseEventData)
+                                TriggerHelper.AddEventTriggers(dropdown.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, baseEventData =>
                                 {
                                     if (!EditorConfig.Instance.ScrollOnEasing.Value)
                                         return;
@@ -1506,7 +1503,7 @@ namespace BetterLegacy.Editor.Managers
                                     PlayerManager.UpdatePlayers();
                                 });
 
-                                TriggerHelper.AddEventTriggers(dropdown.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, delegate (BaseEventData baseEventData)
+                                TriggerHelper.AddEventTriggers(dropdown.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, baseEventData =>
                                 {
                                     if (!EditorConfig.Instance.ScrollOnEasing.Value)
                                         return;
