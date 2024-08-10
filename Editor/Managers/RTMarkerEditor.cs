@@ -75,31 +75,6 @@ namespace BetterLegacy.Editor.Managers
                 AudioManager.inst.CurrentAudioSource.time = DataManager.inst.gameData.beatmapData.markers[markerStart].time;
         }
 
-        public void OriginalMethods()
-        {
-            MarkerEditor.inst.Awake();
-            MarkerEditor.inst.Update();
-            MarkerEditor.inst.UpdateMarkerList();
-            MarkerEditor.inst.SortMarkerObjects("");
-            MarkerEditor.inst.SetCurrentMarker(0);
-            MarkerEditor.inst.OpenDialog(0);
-            MarkerEditor.inst.UpdateColorSelection();
-            MarkerEditor.inst.SetName("");
-            MarkerEditor.inst.SetDescription("");
-            MarkerEditor.inst.SetTime("");
-            MarkerEditor.inst.SetColor(0);
-            MarkerEditor.inst.DeleteMarker(0);
-            MarkerEditor.inst.CreateNewMarker();
-            MarkerEditor.inst.CreateNewMarker(0f);
-            MarkerEditor.inst.CreateMarkers();
-            MarkerEditor.inst.CreateClickTrigger(EventTriggerType.PointerClick, 0);
-            MarkerEditor.inst.RenderMarker(0);
-            MarkerEditor.inst.RenderMarkers();
-
-            new BaseMarker();
-            new BaseMarker(true, "", "", 0, 0f);
-        }
-
         public IEnumerator SetupUI()
         {
             var dialog = EditorManager.inst.GetDialog("Marker Editor").Dialog;
