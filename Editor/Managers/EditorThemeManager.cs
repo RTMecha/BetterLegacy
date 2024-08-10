@@ -70,11 +70,11 @@ namespace BetterLegacy.Editor.Managers
         {
             element.ApplyTheme(CurrentTheme);
 
-            if (element.GameObject == null)
+            if (element.gameObject == null)
                 return;
 
             var id = LSText.randomNumString(16);
-            element.GameObject.AddComponent<EditorThemeElement>().Init(element, id);
+            element.gameObject.AddComponent<EditorThemeElement>().Init(element, id);
 
             if (!TemporaryEditorGUIElements.ContainsKey(id))
                 TemporaryEditorGUIElements.Add(id, element);
@@ -776,33 +776,27 @@ namespace BetterLegacy.Editor.Managers
             public Element(ThemeGroup group, GameObject gameObject, List<Component> components, bool canSetRounded = false, int rounded = 0, SpriteManager.RoundedSide roundedSide = SpriteManager.RoundedSide.W, bool isSelectable = false)
             {
                 themeGroup = group;
-                GameObject = gameObject;
-                Components = components;
+                this.gameObject = gameObject;
+                this.components = components.ToArray(); // replaced List with Array
                 this.canSetRounded = canSetRounded;
-                Rounded = rounded;
-                RoundedSide = roundedSide;
+                this.rounded = rounded;
+                this.roundedSide = roundedSide;
                 this.isSelectable = isSelectable;
             }
 
-            public string group;
-            public ThemeGroup themeGroup = ThemeGroup.Null;
+            ThemeGroup themeGroup = ThemeGroup.Null;
 
-            public GameObject GameObject { get; set; }
+            public GameObject gameObject;
 
-            public List<Component> Components { get; set; }
+            Component[] components;
 
-            public bool isSelectable = false;
+            bool isSelectable = false;
 
-            public bool canSetRounded = false;
+            bool canSetRounded = false;
 
-            int rounded = 0;
-            public int Rounded
-            {
-                get => rounded;
-                set => rounded = value;
-            }
+            int rounded;
 
-            public SpriteManager.RoundedSide RoundedSide { get; set; } = SpriteManager.RoundedSide.W;
+            SpriteManager.RoundedSide roundedSide = SpriteManager.RoundedSide.W;
 
             public void ApplyTheme(EditorTheme theme)
             {
@@ -810,89 +804,45 @@ namespace BetterLegacy.Editor.Managers
                 {
                     SetRounded();
 
-                    if (themeGroup != ThemeGroup.Null)
-                    {
-                        if (theme.ColorGroups.ContainsKey(themeGroup))
-                        {
-                            if (!isSelectable)
-                                SetColor(theme.ColorGroups[themeGroup]);
-                            else
-                            {
-                                var colorBlock = new ColorBlock();
-
-                                colorBlock.colorMultiplier = 1f;
-                                colorBlock.fadeDuration = 0.1f;
-
-                                var space = EditorTheme.GetString(themeGroup);
-                                var normalGroup = EditorTheme.GetGroup(space + " Normal");
-                                var highlightGroup = EditorTheme.GetGroup(space + " Highlight");
-                                var selectedGroup = EditorTheme.GetGroup(space + " Selected");
-                                var pressedGroup = EditorTheme.GetGroup(space + " Pressed");
-                                var disabledGroup = EditorTheme.GetGroup(space + " Disabled");
-
-                                if (theme.ColorGroups.ContainsKey(normalGroup))
-                                    colorBlock.normalColor = theme.ColorGroups[normalGroup];
-
-                                if (theme.ColorGroups.ContainsKey(highlightGroup))
-                                    colorBlock.highlightedColor = theme.ColorGroups[highlightGroup];
-
-                                if (theme.ColorGroups.ContainsKey(selectedGroup))
-                                    colorBlock.selectedColor = theme.ColorGroups[selectedGroup];
-
-                                if (theme.ColorGroups.ContainsKey(pressedGroup))
-                                    colorBlock.pressedColor = theme.ColorGroups[pressedGroup];
-
-                                if (theme.ColorGroups.ContainsKey(disabledGroup))
-                                    colorBlock.disabledColor = theme.ColorGroups[disabledGroup];
-
-                                SetColor(theme.ColorGroups[themeGroup], colorBlock);
-                            }
-                        }
-
-                        return;
-                    }
-
-                    if (string.IsNullOrEmpty(group))
+                    if (themeGroup == ThemeGroup.Null)
                         return;
 
-                    var mainGroup = EditorTheme.GetGroup(group);
-
-                    if (!theme.ColorGroups.ContainsKey(mainGroup))
-                    {
-                        CoreHelper.Log($"Failed to assign theme color ({group} / {themeGroup}) to {GameObject.name}.");
+                    if (!theme.ColorGroups.ContainsKey(themeGroup))
                         return;
-                    }
 
                     if (!isSelectable)
-                        SetColor(theme.ColorGroups[mainGroup]);
+                        SetColor(theme.ColorGroups[themeGroup]);
                     else
                     {
-                        var colorBlock = new ColorBlock();
+                        var colorBlock = new ColorBlock
+                        {
+                            colorMultiplier = 1f,
+                            fadeDuration = 0.1f
+                        };
 
-                        colorBlock.colorMultiplier = 1f;
-                        colorBlock.fadeDuration = 0.1f;
+                        var space = EditorTheme.GetString(themeGroup);
+                        var normalGroup = EditorTheme.GetGroup(space + " Normal");
+                        var highlightGroup = EditorTheme.GetGroup(space + " Highlight");
+                        var selectedGroup = EditorTheme.GetGroup(space + " Selected");
+                        var pressedGroup = EditorTheme.GetGroup(space + " Pressed");
+                        var disabledGroup = EditorTheme.GetGroup(space + " Disabled");
 
-                        var normalGroup = EditorTheme.GetGroup(group + " Normal");
                         if (theme.ColorGroups.ContainsKey(normalGroup))
                             colorBlock.normalColor = theme.ColorGroups[normalGroup];
 
-                        var highlightGroup = EditorTheme.GetGroup(group + " Highlight");
                         if (theme.ColorGroups.ContainsKey(highlightGroup))
                             colorBlock.highlightedColor = theme.ColorGroups[highlightGroup];
 
-                        var selectedGroup = EditorTheme.GetGroup(group + " Highlight");
                         if (theme.ColorGroups.ContainsKey(selectedGroup))
                             colorBlock.selectedColor = theme.ColorGroups[selectedGroup];
 
-                        var pressedGroup = EditorTheme.GetGroup(group + " Pressed");
                         if (theme.ColorGroups.ContainsKey(pressedGroup))
                             colorBlock.pressedColor = theme.ColorGroups[pressedGroup];
 
-                        var disabledGroup = EditorTheme.GetGroup(group + " Disabled");
                         if (theme.ColorGroups.ContainsKey(disabledGroup))
                             colorBlock.disabledColor = theme.ColorGroups[disabledGroup];
 
-                        SetColor(theme.ColorGroups[mainGroup], colorBlock);
+                        SetColor(theme.ColorGroups[themeGroup], colorBlock);
                     }
                 }
                 catch
@@ -905,7 +855,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 try
                 {
-                    foreach (var component in Components)
+                    foreach (var component in components)
                     {
                         if (component is Image image)
                             image.color = color;
@@ -917,7 +867,7 @@ namespace BetterLegacy.Editor.Managers
                 }
                 catch
                 {
-                    foreach (var component in Components)
+                    foreach (var component in components)
                     {
                         if (component is Text text)
                         {
@@ -931,7 +881,7 @@ namespace BetterLegacy.Editor.Managers
 
             public void SetColor(Color color, ColorBlock colorBlock)
             {
-                foreach (var component in Components)
+                foreach (var component in components)
                 {
                     if (component is Image image)
                         image.color = color;
@@ -947,19 +897,19 @@ namespace BetterLegacy.Editor.Managers
 
                 var canSet = EditorConfig.Instance.RoundedUI.Value;
 
-                foreach (var component in Components)
+                foreach (var component in components)
                 {
                     if (component is Image image)
                     {
-                        if (Rounded != 0 && canSet)
-                            SpriteManager.SetRoundedSprite(image, Rounded, RoundedSide);
+                        if (rounded != 0 && canSet)
+                            SpriteManager.SetRoundedSprite(image, rounded, roundedSide);
                         else
                             image.sprite = null;
                     }
                 }
             }
 
-            public override string ToString() => GameObject.name;
+            public override string ToString() => gameObject.name;
         }
     }
 }
