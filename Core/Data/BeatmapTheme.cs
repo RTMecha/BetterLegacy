@@ -24,6 +24,7 @@ namespace BetterLegacy.Core.Data
         {
             var beatmapTheme = new BeatmapTheme();
             beatmapTheme.name = orig.name;
+            beatmapTheme.filePath = orig.filePath;
 
             beatmapTheme.playerColors = orig.playerColors.Clone();
             beatmapTheme.objectColors = orig.objectColors.Clone();
