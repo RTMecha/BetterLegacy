@@ -35,25 +35,25 @@ namespace BetterLegacy.Components
 
         void Update()
         {
-            if (hovered && inputField)
+            if (!hovered || !inputField)
+                return;
+
+            if (!Input.GetMouseButtonDown(2))
+                return;
+
+            if (type == Type.Num)
             {
-                if (Input.GetMouseButtonDown(2))
+                if (float.TryParse(inputField.text, out float num))
                 {
-                    if (type == Type.Num)
-                    {
-                        if (float.TryParse(inputField.text, out float num))
-                        {
-                            num = -num;
-                            inputField.text = num.ToString();
-                        }
-                        else
-                            if (EditorManager.inst)
-                            EditorManager.inst.DisplayNotification("Could not invert number!", 1f, EditorManager.NotificationType.Error);
-                    }
-                    if (type == Type.String)
-                        inputField.text = Flip(inputField.text);
+                    num = -num;
+                    inputField.text = num.ToString();
                 }
+                else if (EditorManager.inst)
+                    EditorManager.inst.DisplayNotification("Could not invert number!", 1f, EditorManager.NotificationType.Error);
             }
+
+            if (type == Type.String)
+                inputField.text = Flip(inputField.text);
         }
 
         string Flip(string str)
