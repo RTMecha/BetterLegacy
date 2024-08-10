@@ -257,6 +257,7 @@ namespace BetterLegacy.Core.Managers
 
             var slidingArea = new GameObject("Sliding Area");
             slidingArea.transform.SetParent(((GameObject)scrollbar["GameObject"]).transform);
+            slidingArea.transform.localScale = Vector3.one;
             slidingArea.layer = 5;
             var slidingAreaRT = slidingArea.AddComponent<RectTransform>();
             SetRectTransform(slidingAreaRT, Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-20f, -20f));
@@ -267,6 +268,7 @@ namespace BetterLegacy.Core.Managers
 
             var content = new GameObject("Content");
             content.transform.SetParent(((GameObject)viewport["GameObject"]).transform);
+            content.transform.localScale = Vector3.one;
             content.layer = 5;
             var contentRT = content.AddComponent<RectTransform>();
             SetRectTransform(contentRT, Vector2.zero, Vector2.one, Vector2.up, new Vector2(0.5f, 1f), new Vector2(0f, 32f));
@@ -293,6 +295,7 @@ namespace BetterLegacy.Core.Managers
 
             var item = new GameObject("Item");
             item.transform.SetParent(content.transform);
+            item.transform.localScale = Vector3.one;
             item.layer = 5;
             var itemRT = item.AddComponent<RectTransform>();
             SetRectTransform(itemRT, Vector2.zero, new Vector2(1f, 0.5f), new Vector2(0f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
@@ -301,15 +304,18 @@ namespace BetterLegacy.Core.Managers
             var itemBackground = GenerateUIImage("Item Background", item.transform);
             SetRectTransform((RectTransform)itemBackground["RectTransform"], Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
             ((Image)itemBackground["Image"]).color = new Color(0.9608f, 0.9608f, 0.9608f, 1f);
+            ((RectTransform)itemBackground["RectTransform"]).localScale = Vector3.one;
 
             var itemCheckmark = GenerateUIImage("Item Checkmark", item.transform);
             SetRectTransform((RectTransform)itemCheckmark["RectTransform"], new Vector2(8f, 0f), new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(32f, 32f));
             var itemCheckImage = (Image)itemCheckmark["Image"];
             itemCheckImage.color = new Color(0.1216f, 0.1216f, 0.1216f, 1f);
-            GetImage(itemCheckImage, RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_diamond.png");
+            GetImage(itemCheckImage, $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_diamond.png");
+            ((RectTransform)itemCheckmark["RectTransform"]).localScale = Vector3.one;
 
             var itemLabel = GenerateUIText("Item Label", item.transform);
             SetRectTransform((RectTransform)itemLabel["RectTransform"], new Vector2(15f, 0.5f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-50f, -3f));
+            ((RectTransform)itemLabel["RectTransform"]).localScale = Vector3.one;
             var itemLabelText = (Text)itemLabel["Text"];
             itemLabelText.alignment = TextAnchor.MiddleLeft;
             itemLabelText.font = inconsolataFont;
