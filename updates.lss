@@ -1,7 +1,6 @@
 1.2.0 > [Aug 11, 2024]
 - Continued work on the arcade server. It's not quite ready for release but hopefully it'll be in the next few updates, so stay tuned!
 - Started working on a custom story mode.
-- Started working on a custom story mode.
 - Reworked Example's chat box to be bigger and have an autocomplete.
 - Added data for Background Object tags.
 - Added copyAxisGroup modifier. Allows for multiple object groups and custom expressions.
