@@ -357,19 +357,6 @@ namespace BetterLegacy.Patchers
 
             try
             {
-                int num = 0;
-                while (Instance.PrefabTypes.Count < 20)
-                {
-                    var prefabType = new DataManager.PrefabType
-                    {
-                        Color = Color.white,
-                        Name = "NewType " + num.ToString()
-                    };
-
-                    Instance.PrefabTypes.Add(prefabType);
-                    num++;
-                }
-
                 for (int i = 0; i < Instance.PrefabTypes.Count; i++)
                 {
                     var p = Instance.PrefabTypes[i];
