@@ -98,7 +98,7 @@ namespace BetterLegacy.Core.Managers
 
             Info.gameObject.SetActive(CoreConfig.Instance.DebugInfo.Value && GameManager.inst);
 
-            if (!CoreConfig.Instance.DebugInfo.Value || !CoreHelper.Playing || !CoreHelper.Reversing)
+            if (!CoreConfig.Instance.DebugInfo.Value && !CoreHelper.Playing && !CoreHelper.Reversing)
                 return;
 
             if (!InfoSelection.dragging)
