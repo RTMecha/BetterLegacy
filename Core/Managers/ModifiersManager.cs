@@ -46,24 +46,21 @@ namespace BetterLegacy.Core.Managers
                 {
                     var beatmapObject = order[i];
 
-                    Func<Modifier<BeatmapObject>, bool> modifierPredicate = x => x.Action == null && x.type == ModifierBase.Type.Action || x.Trigger == null && x.type == ModifierBase.Type.Trigger || x.Inactive == null;
+                    Predicate<Modifier<BeatmapObject>> modifierPredicate = x => x.Action == null && x.type == ModifierBase.Type.Action || x.Trigger == null && x.type == ModifierBase.Type.Trigger || x.Inactive == null;
 
-                    if (beatmapObject.modifiers.Any(modifierPredicate))
-                        beatmapObject.modifiers.Where(modifierPredicate).ToList().ForEach(delegate (Modifier<BeatmapObject> modifier)
-                        {
-                            AssignModifierActions(modifier);
-                        });
+                    if (beatmapObject.modifiers.Exists(modifierPredicate))
+                        beatmapObject.modifiers.FindAll(modifierPredicate).ForEach(AssignModifierActions);
 
-                    var actions = beatmapObject.modifiers.Where(x => x.type == ModifierBase.Type.Action);
-                    var triggers = beatmapObject.modifiers.Where(x => x.type == ModifierBase.Type.Trigger);
+                    var actions = beatmapObject.modifiers.FindAll(x => x.type == ModifierBase.Type.Action);
+                    var triggers = beatmapObject.modifiers.FindAll(x => x.type == ModifierBase.Type.Trigger);
 
-                    if (beatmapObject.ignoreLifespan || beatmapObject.TimeWithinLifespan())
+                    if (beatmapObject.ignoreLifespan || beatmapObject.Alive)
                     {
-                        if (triggers.Count() > 0)
+                        if (triggers.Count > 0)
                         {
-                            if (triggers.All(x => !x.active && (x.Trigger(x) && !x.not || !x.Trigger(x) && x.not)))
+                            if (triggers.TrueForAll(x => !x.active && (x.Trigger(x) && !x.not || !x.Trigger(x) && x.not)))
                             {
-                                foreach (var act in actions.Where(x => !x.active))
+                                foreach (var act in actions.FindAll(x => !x.active))
                                 {
                                     if (!act.constant)
                                         act.active = true;
@@ -72,12 +69,12 @@ namespace BetterLegacy.Core.Managers
                                     act.Action?.Invoke(act);
                                 }
 
-                                foreach (var trig in triggers.Where(x => !x.constant))
+                                foreach (var trig in triggers.FindAll(x => !x.constant))
                                     trig.active = true;
                             }
                             else
                             {
-                                foreach (var act in actions.Where(x => x.active || x.running))
+                                foreach (var act in actions.FindAll(x => x.active || x.running))
                                 {
                                     act.active = false;
                                     act.running = false;
@@ -87,7 +84,7 @@ namespace BetterLegacy.Core.Managers
                         }
                         else
                         {
-                            foreach (var act in actions.Where(x => !x.active))
+                            foreach (var act in actions.FindAll(x => !x.active))
                             {
                                 if (!act.constant)
                                     act.active = true;
@@ -99,7 +96,7 @@ namespace BetterLegacy.Core.Managers
                     }
                     else if (beatmapObject.modifiers.Any(x => x.active || x.running))
                     {
-                        foreach (var act in beatmapObject.modifiers.Where(x => x.active || x.running))
+                        foreach (var act in beatmapObject.modifiers.FindAll(x => x.active || x.running))
                         {
                             act.active = false;
                             act.running = false;
