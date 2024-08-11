@@ -62,7 +62,7 @@ namespace BetterLegacy.Core.Data
 
             modifier.commands.Clear();
             for (int i = 0; i < jn["commands"].Count; i++)
-                modifier.commands.Add(jn["commands"][i]);
+                modifier.commands.Add(((string)jn["commands"][i]).Replace("{{colon}}", ":"));
 
             modifier.constant = jn["const"].AsBool;
             if (!string.IsNullOrEmpty(jn["value"]))
@@ -85,7 +85,7 @@ namespace BetterLegacy.Core.Data
                 jn["not"] = not.ToString();
 
             for (int j = 0; j < commands.Count; j++)
-                jn["commands"][j] = commands[j];
+                jn["commands"][j] = ((string)commands[j]).Replace(":", "{{colon}}");
 
             jn["value"] = value;
 

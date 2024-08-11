@@ -689,11 +689,11 @@ namespace BetterLegacy.Core.Data
                 beatmapObject.startTime = jn["st"].AsFloat;
 
             if (jn["name"] != null)
-                beatmapObject.name = jn["name"];
+                beatmapObject.name = ((string)jn["name"]).Replace("{{colon}}", ":");
 
             if (jn["tags"] != null)
                 for (int i = 0; i < jn["tags"].Count; i++)
-                    beatmapObject.tags.Add(jn["tags"][i]);
+                    beatmapObject.tags.Add(((string)jn["tags"][i]).Replace("{{colon}}", ":"));
 
             if (jn["s"] != null)
                 beatmapObject.shape = jn["s"].AsInt;
@@ -705,7 +705,7 @@ namespace BetterLegacy.Core.Data
                 beatmapObject.shapeOption = jn["so"].AsInt;
 
             if (jn["text"] != null)
-                beatmapObject.text = jn["text"];
+                beatmapObject.text = ((string)jn["text"]).Replace("{{colon}}", ":");
 
             if (jn["ak"] != null)
                 beatmapObject.autoKillType = jn["ak"].AsBool ? AutoKillType.LastKeyframe : AutoKillType.OldStyleNoAutokill;
@@ -922,7 +922,7 @@ namespace BetterLegacy.Core.Data
             jn["st"] = StartTime.ToString();
 
             if (!string.IsNullOrEmpty(name))
-                jn["name"] = name;
+                jn["name"] = name.Replace(":", "{{colon}}");
 
             jn["ot"] = (int)objectType;
             jn["akt"] = (int)autoKillType;
@@ -935,11 +935,11 @@ namespace BetterLegacy.Core.Data
                 jn["so"] = shapeOption.ToString();
 
             if (!string.IsNullOrEmpty(text))
-                jn["text"] = text;
+                jn["text"] = text.Replace(":", "{{colon}}");
 
             if (tags != null && tags.Count > 0)
                 for (int i = 0; i < tags.Count; i++)
-                    jn["tags"][i] = tags[i];
+                    jn["tags"][i] = tags[i].Replace(":", "{{colon}}");
 
             if (origin.x != 0f || origin.y != 0f)
             {
