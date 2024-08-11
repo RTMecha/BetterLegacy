@@ -411,16 +411,29 @@ namespace BetterLegacy.Components.Editor
 
                 var prefabObject = DataManager.inst.gameData.prefabObjects.Find(x => x.ID == beatmapObject.prefabInstanceID);
 
-                if (prefabObject == null)
+                if (prefabObject == null || !(HighlightObjects && hovered || ShowObjectsOnlyOnLayer && prefabObject.editorData.layer != RTEditor.inst.Layer))
                     return;
 
-                foreach (var bm in DataManager.inst.gameData.beatmapObjects.Where(x => x.fromPrefab && x.prefabInstanceID == beatmapObject.prefabInstanceID && x.objectType != DataManager.GameData.BeatmapObject.ObjectType.Empty))
+                var beatmapObjects = DataManager.inst.gameData.beatmapObjects
+                    .FindAll(x =>
+                                x.fromPrefab &&
+                                x.prefabInstanceID == beatmapObject.prefabInstanceID &&
+                                x.objectType != DataManager.GameData.BeatmapObject.ObjectType.Empty);
+
+                for (int i = 0; i < beatmapObjects.Count; i++)
                 {
+                    var bm = beatmapObjects[i];
                     if (Updater.TryGetObject(bm, out Core.Optimization.Objects.LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.Renderer)
                     {
-                        SetColor(levelObject.visualObject.Renderer, prefabObject.editorData.layer);
+                        var renderer = levelObject.visualObject.Renderer;
+                        if (!renderer || !renderer.material || !renderer.material.HasProperty("_Color"))
+                            continue;
+
+                        SetHoverColor(renderer);
+                        SetLayerColor(renderer, prefabObject.editorData.Layer);
                     }
                 }
+
                 return;
             }
 
@@ -446,21 +459,30 @@ namespace BetterLegacy.Components.Editor
             if (!renderer || !renderer.material || !renderer.material.HasProperty("_Color"))
                 return;
 
-            if (HighlightObjects && hovered)
-            {
-                var color = Input.GetKey(KeyCode.LeftShift) ? new Color(
-                    renderer.material.color.r > 0.9f ? -HighlightDoubleColor.r : HighlightDoubleColor.r,
-                    renderer.material.color.g > 0.9f ? -HighlightDoubleColor.g : HighlightDoubleColor.g,
-                    renderer.material.color.b > 0.9f ? -HighlightDoubleColor.b : HighlightDoubleColor.b,
-                    0f) : new Color(
-                    renderer.material.color.r > 0.9f ? -HighlightColor.r : HighlightColor.r,
-                    renderer.material.color.g > 0.9f ? -HighlightColor.g : HighlightColor.g,
-                    renderer.material.color.b > 0.9f ? -HighlightColor.b : HighlightColor.b,
-                    0f);
+            SetHoverColor(renderer);
+            SetLayerColor(renderer, layer);
+        }
 
-                renderer.material.color += color;
-            }
+        void SetHoverColor(Renderer renderer)
+        {
+            if (!HighlightObjects || !hovered)
+                return;
 
+            var color = Input.GetKey(KeyCode.LeftShift) ? new Color(
+                renderer.material.color.r > 0.9f ? -HighlightDoubleColor.r : HighlightDoubleColor.r,
+                renderer.material.color.g > 0.9f ? -HighlightDoubleColor.g : HighlightDoubleColor.g,
+                renderer.material.color.b > 0.9f ? -HighlightDoubleColor.b : HighlightDoubleColor.b,
+                0f) : new Color(
+                renderer.material.color.r > 0.9f ? -HighlightColor.r : HighlightColor.r,
+                renderer.material.color.g > 0.9f ? -HighlightColor.g : HighlightColor.g,
+                renderer.material.color.b > 0.9f ? -HighlightColor.b : HighlightColor.b,
+                0f);
+
+            renderer.material.color += color;
+        }
+
+        void SetLayerColor(Renderer renderer, int layer)
+        {
             if (ShowObjectsOnlyOnLayer && layer != EditorManager.inst.layer)
                 renderer.material.color = LSColors.fadeColor(renderer.material.color, renderer.material.color.a * LayerOpacity);
         }
