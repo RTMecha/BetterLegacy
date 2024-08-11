@@ -155,11 +155,7 @@ namespace BetterLegacy.Core.Data
                 {
                     prefabObject.events.Add(new EventKeyframe
                     {
-                        eventValues = new float[2]
-                        {
-                            0f,
-                            0f,
-                        }
+                        eventValues = new float[2],
                     });
                 }
 
@@ -178,11 +174,7 @@ namespace BetterLegacy.Core.Data
                 {
                     prefabObject.events.Add(new EventKeyframe
                     {
-                        eventValues = new float[2]
-                        {
-                            0f,
-                            0f,
-                        }
+                        eventValues = new float[2],
                     });
                 }
 
@@ -190,10 +182,7 @@ namespace BetterLegacy.Core.Data
                 {
                     prefabObject.events.Add(new EventKeyframe
                     {
-                        eventValues = new float[1]
-                        {
-                            jn["e"][1]["ev"][0].AsFloat,
-                        }
+                        eventValues = new float[1] { jn["e"][2]["ev"][0].AsFloat }
                     });
                 }
                 catch (System.Exception)
@@ -201,9 +190,6 @@ namespace BetterLegacy.Core.Data
                     prefabObject.events.Add(new EventKeyframe
                     {
                         eventValues = new float[1]
-                        {
-                            0f,
-                        }
                     });
                 }
             }
