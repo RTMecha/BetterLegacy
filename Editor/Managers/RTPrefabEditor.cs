@@ -126,7 +126,7 @@ namespace BetterLegacy.Editor.Managers
             CreatePrefabTypesPopup();
             CreatePrefabExternalDialog();
 
-            if (RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/prefabtypes/"))
+            if (RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/prefabtypes"))
                 StartCoroutine(LoadPrefabTypes());
 
             StartCoroutine(Wait());
