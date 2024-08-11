@@ -31,14 +31,14 @@ namespace BetterLegacy.Core.Data
         {
             var prefabType = new PrefabType(jn["name"], LSColors.HexToColorAlpha(jn["color"]));
 
-            try
-            {
-                prefabType.icon = jn["icon"] == null ? null : SpriteManager.StringToSprite(jn["icon"]);
-            }
-            catch
-            {
+            //try
+            //{
+            //    prefabType.icon = jn["icon"] == null ? null : SpriteManager.StringToSprite(jn["icon"]);
+            //}
+            //catch
+            //{
 
-            }
+            //}
 
             return prefabType;
         }
@@ -49,15 +49,15 @@ namespace BetterLegacy.Core.Data
             jn["color"] = CoreHelper.ColorToHex(Color);
             jn["index"] = index.ToString();
 
-            try
-            {
-                if (icon && icon.texture)
-                    jn["icon"] = SpriteManager.SpriteToString(icon);
-            }
-            catch
-            {
+            //try
+            //{
+            //    if (icon && icon.texture)
+            //        jn["icon"] = SpriteManager.SpriteToString(icon);
+            //}
+            //catch
+            //{
 
-            }
+            //}
 
             return jn;
         }
