@@ -26,7 +26,9 @@ namespace BetterLegacy.Core
                 .Replace("player4PosY", PlayerManager.Players.Count <= 3 || PlayerManager.Players[3].Player == null ? "0" : PlayerManager.Players[3].Player.rb.position.y.ToString())
                 .Replace("actionMoveX", InputDataManager.inst.menuActions.Move.X.ToString())
                 .Replace("actionMoveY", InputDataManager.inst.menuActions.Move.Y.ToString())
-                .Replace("deltaTime", Time.deltaTime.ToString());
+                .Replace("time", Time.time.ToString())
+                .Replace("deltaTime", Time.deltaTime.ToString())
+                .Replace("audioTime", AudioManager.inst.CurrentAudioSource.time.ToString());
         }
 
         public static float Lerp(float x, float y, float t) => x + (y - x) * t;
