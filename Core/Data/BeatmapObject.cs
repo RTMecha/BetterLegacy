@@ -30,8 +30,14 @@ namespace BetterLegacy.Core.Data
             editorData = new ObjectEditorData();
         }
 
+        /// <summary>
+        /// If true, object does not render when the user has the <see cref="Configs.CoreConfig.LDM"/> setting on.
+        /// </summary>
         public bool LDM { get; set; }
 
+        /// <summary>
+        /// Multiplies from the parents' position, allowing for parallaxing.
+        /// </summary>
         public float[] parallaxSettings = new float[3]
         {
             1f, // Pos
@@ -39,24 +45,48 @@ namespace BetterLegacy.Core.Data
             1f, // Rot
         };
 
+        /// <summary>
+        /// If parent chains should be accounted for when parent offset / delay is used.
+        /// </summary>
         public string parentAdditive = "000";
 
+        /// <summary>
+        /// The tags used to identify a group of objects or object properties.
+        /// </summary>
         public List<string> tags = new List<string>();
 
+        /// <summary>
+        /// The depth the visual object is rendered on.
+        /// </summary>
         public new int Depth
         {
             get => depth;
             set => depth = value;
         }
 
+        /// <summary>
+        /// If true and objects' opacity is less than 100%, disables collision. Acts the same as modern Project Arrhythmia.
+        /// </summary>
         public bool opacityCollision = false;
 
+        /// <summary>
+        /// If true the object should render on the background layer (perspective), otherwise render on the foreground layer (orthographic)
+        /// </summary>
         public bool background;
 
+        /// <summary>
+        /// If modifiers ignore the lifespan restriction.
+        /// </summary>
         public bool ignoreLifespan = false;
 
+        /// <summary>
+        /// If the object should stop following the parent chain after spawn.
+        /// </summary>
         public bool desync = false;
 
+        /// <summary>
+        /// Modifiers the object contains.
+        /// </summary>
         public List<Modifier<BeatmapObject>> modifiers = new List<Modifier<BeatmapObject>>();
 
         /// <summary>
@@ -138,6 +168,9 @@ namespace BetterLegacy.Core.Data
             }
         }
 
+        /// <summary>
+        /// Gets the total amount of keyframes the object has.
+        /// </summary>
         public int KeyframeCount
         {
             get
@@ -156,15 +189,33 @@ namespace BetterLegacy.Core.Data
             }
         }
 
+        /// <summary>
+        /// Object spawn conditions.
+        /// </summary>
         public new ObjectType objectType;
 
         public new enum ObjectType
         {
-            Normal, // If the object can hit the player.
-            Helper, // If the object should be utilized as a warning.
-            Decoration, // If the object should be used in decorating.
-            Empty, // If a level object isn't generated for the object.
-            Solid // If players can't pass through the object.
+            /// <summary>
+            /// Is opaque and can hit the player.
+            /// </summary>
+            Normal,
+            /// <summary>
+            /// Is forced to be transparent with no collision.
+            /// </summary>
+            Helper,
+            /// <summary>
+            /// Has no collision but is opaque like <see cref="ObjectType.Normal"/>.
+            /// </summary>
+            Decoration,
+            /// <summary>
+            /// Doesn't spawn a physical level object to be seen in-game.
+            /// </summary>
+            Empty,
+            /// <summary>
+            /// Like <see cref="ObjectType.Normal"/> except instead of getting hit the player cannot pass through the object.
+            /// </summary>
+            Solid
         }
 
         /// <summary>
@@ -970,6 +1021,11 @@ namespace BetterLegacy.Core.Data
             return jn;
         }
 
+        /// <summary>
+        /// Sets the parent additive value depending on the index.
+        /// </summary>
+        /// <param name="_index">The index to assign to.</param>
+        /// <param name="_new">The new value to set.</param>
         public void SetParentAdditive(int _index, bool _new)
         {
             var stringBuilder = new StringBuilder(parentAdditive);
@@ -987,7 +1043,8 @@ namespace BetterLegacy.Core.Data
 
                 if (beatmapObject.events != null && beatmapObject.events.Count > 1 && beatmapObject.events[1].Last().eventTime < GetObjectLifeLength(_oldStyle: true) &&
                     (beatmapObject.events[1].Last().eventValues[0] == 0f || beatmapObject.events[1].Last().eventValues[1] == 0f ||
-                    beatmapObject.events[1].Last().eventValues[0] == 0.001f || beatmapObject.events[1].Last().eventValues[1] == 0.001f))
+                    beatmapObject.events[1].Last().eventValues[0] == 0.001f || beatmapObject.events[1].Last().eventValues[1] == 0.001f) &&
+                    beatmapObject.parentType[1] == '1')
                 {
                     autoKillType = AutoKillType.SongTime;
                     autoKillOffset = beatmapObject.StartTime + beatmapObject.events[1].Last().eventTime;
@@ -1001,7 +1058,8 @@ namespace BetterLegacy.Core.Data
 
                     if (beatmapObject.events != null && beatmapObject.events.Count > 1 && beatmapObject.events[1].Last().eventTime < GetObjectLifeLength(_oldStyle: true) &&
                         (beatmapObject.events[1].Last().eventValues[0] == 0f || beatmapObject.events[1].Last().eventValues[1] == 0f ||
-                        beatmapObject.events[1].Last().eventValues[0] == 0.001f || beatmapObject.events[1].Last().eventValues[1] == 0.001f))
+                        beatmapObject.events[1].Last().eventValues[0] == 0.001f || beatmapObject.events[1].Last().eventValues[1] == 0.001f) &&
+                        beatmapObject.parentType[1] == '1')
                     {
                         autoKillType = AutoKillType.SongTime;
                         autoKillOffset = beatmapObject.StartTime + beatmapObject.events[1].Last().eventTime;
