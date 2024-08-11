@@ -6,9 +6,7 @@ namespace BetterLegacy.Core.Data
 {
     public class Modifier<T> : ModifierBase
     {
-        public Modifier()
-        {
-        }
+        public Modifier() { }
 
         public T reference;
 
@@ -41,11 +39,8 @@ namespace BetterLegacy.Core.Data
         {
             var modifier = new Modifier<T>();
             modifier.type = orig.type;
-            modifier.commands = new List<string>();
-            foreach (var l in orig.commands)
-            {
-                modifier.commands.Add(l);
-            }
+            modifier.commands.Clear();
+            modifier.commands.AddRange(orig.commands);
             modifier.value = orig.value;
             modifier.reference = reference ?? orig.reference;
             modifier.not = orig.not;
@@ -65,10 +60,7 @@ namespace BetterLegacy.Core.Data
                 modifier.commands.Add(((string)jn["commands"][i]).Replace("{{colon}}", ":"));
 
             modifier.constant = jn["const"].AsBool;
-            if (!string.IsNullOrEmpty(jn["value"]))
-                modifier.value = jn["value"];
-            else
-                modifier.value = "";
+            modifier.value = string.IsNullOrEmpty(jn["value"]) ? "" : jn["value"];
 
             modifier.reference = reference;
 
@@ -84,8 +76,8 @@ namespace BetterLegacy.Core.Data
             if (not)
                 jn["not"] = not.ToString();
 
-            for (int j = 0; j < commands.Count; j++)
-                jn["commands"][j] = ((string)commands[j]).Replace(":", "{{colon}}");
+            for (int i = 0; i < commands.Count; i++)
+                jn["commands"][i] = commands[i].Replace(":", "{{colon}}");
 
             jn["value"] = value;
 
