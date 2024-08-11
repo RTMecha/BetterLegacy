@@ -1,3 +1,26 @@
+1.2.0 > [Aug 11, 2024]
+- Continued work on the arcade server. It's not quite ready for release but hopefully it'll be in the next few updates, so stay tuned!
+- Started working on a custom story mode.
+- Started working on a custom story mode.
+- Reworked Example's chat box to be bigger and have an autocomplete.
+- Added data for Background Object tags.
+- Added copyAxisGroup modifier. Allows for multiple object groups and custom expressions.
+- Did a ton of internal code cleanup.
+- Object keyframe timeline zoom and position is now properly remembered for when you reselect the associated object.
+- Markers are now draggable via clicking and holding the scrollwheel over a marker and moving the mouse around.
+- Added preview grid.
+- Markers can now show in the object editor timeline.
+- Added a Restart Editor button to the File dropdown in the editor.
+- Reworked editor tooltips to store them better and have more languages.
+- Added some new Rotate Modes to the Player Editor and fixed rotation being weird with platformer mode.
+- Added jump boost count to Player Editor.
+- Fixed Only Objects on Current Layer Visible setting.
+- Added Angle value to particleSystem modifier.
+- Example now dances occasionally if the music is playing.
+- Finally fixed dropdown values in the Config Manager UI.
+- Added Reset buttons to each config setting.
+- Added a way to edit a prefabs' name in the External Prefab Editor.
+- Fixed Prefab & Theme File Watchers being broken.
 1.1.6 > [Jul 7, 2024]
 - Added Hide Timeline config in the Events > Game tab.
 - Custom player objects can now be deleted and duplicated via the custom object selector window.
