@@ -1,6 +1,8 @@
-﻿using BetterLegacy.Core.Managers;
+﻿using BetterLegacy.Core;
+using BetterLegacy.Core.Managers;
 using LSFunctions;
 using SimpleJSON;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -21,6 +23,7 @@ namespace BetterLegacy.Core.Data
         {
             Name = name;
             Type = type;
+            typeID = PrefabType.prefabTypeLSIndexToID.ContainsKey(type) ? PrefabType.prefabTypeLSIndexToID[type] : null;
             Offset = offset;
 
             objects.AddRange(beatmapObjects.Select(x => BeatmapObject.DeepCopy(x, false)));
@@ -37,12 +40,14 @@ namespace BetterLegacy.Core.Data
 
         public string description;
 
-        public Dictionary<string, Sprite> SpriteAssets { get; set; } = new Dictionary<string, Sprite>();
-        public PrefabType PrefabType => Type >= 0 && Type < DataManager.inst.PrefabTypes.Count ? (PrefabType)DataManager.inst.PrefabTypes[Type] : PrefabType.InvalidType;
-        public Color TypeColor => PrefabType.Color;
-        public string TypeName => PrefabType.Name;
-        public string typeID;
+        /// <summary>
+        /// Only used for vanilla compatibility.
+        /// </summary>
+        public new int Type;
 
+        public Dictionary<string, Sprite> SpriteAssets { get; set; } = new Dictionary<string, Sprite>();
+        public PrefabType PrefabType => DataManager.inst.PrefabTypes.TryFind(x => x is PrefabType prefabType && prefabType.id == typeID, out DataManager.PrefabType prefabType) ? (PrefabType)prefabType : PrefabType.InvalidType;
+        public string typeID;
 
         #region Methods
 
@@ -80,7 +85,7 @@ namespace BetterLegacy.Core.Data
             for (int i = 0; i < jn["objs"].Count; i++)
                 beatmapObjects.Add(BeatmapObject.ParseVG(jn["objs"][i]));
 
-            return new Prefab
+            var prefab = new Prefab
             {
                 ID = jn["id"] == null ? LSText.randomString(16) : jn["id"],
                 MainObjectID = LSText.randomString(16),
@@ -91,6 +96,9 @@ namespace BetterLegacy.Core.Data
                 prefabObjects = new List<BasePrefabObject>(),
                 description = jn["description"],
             };
+            prefab.typeID = PrefabType.prefabTypeVGIndexToID.ContainsKey(prefab.Type) ? PrefabType.prefabTypeVGIndexToID[prefab.Type] : "";
+
+            return prefab;
         }
 
         public static Prefab Parse(JSONNode jn)
@@ -115,6 +123,9 @@ namespace BetterLegacy.Core.Data
                 description = jn["desc"] == null ? "" : jn["desc"],
                 typeID = jn["type_id"],
             };
+
+            if (string.IsNullOrEmpty(prefab.typeID))
+                prefab.typeID = PrefabType.prefabTypeLSIndexToID.ContainsKey(prefab.Type) ? PrefabType.prefabTypeLSIndexToID[prefab.Type] : "";
 
             if (jn["assets"] != null && jn["assets"]["spr"] != null)
             {
@@ -158,7 +169,7 @@ namespace BetterLegacy.Core.Data
             jn["n"] = Name;
             if (ID != null)
                 jn["id"] = ID;
-            jn["type"] = Type;
+            jn["type"] = PrefabType.prefabTypeVGIDToIndex.ContainsKey(typeID) ? PrefabType.prefabTypeVGIDToIndex[typeID] : 0;
 
             jn["o"] = -Offset;
 
@@ -175,7 +186,7 @@ namespace BetterLegacy.Core.Data
         {
             var jn = JSON.Parse("{}");
             jn["name"] = Name;
-            jn["type"] = Type.ToString();
+            jn["type"] = (PrefabType.prefabTypeLSIDToIndex.ContainsKey(typeID) ? PrefabType.prefabTypeLSIDToIndex[typeID] : 0).ToString();
             jn["offset"] = Offset.ToString();
 
             if (ID != null)
