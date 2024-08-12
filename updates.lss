@@ -1,3 +1,7 @@
+1.2.2 > [Aug 12, 2024]
+- Fixed timelines in the Project Planner looking off.
+- Finally removed all indirectly reference objects since the mods are now one.
+- Fixed some fonts present in the customfonts.asset file not appearing in the docs nor having their names converted.
 1.2.1 > [Aug 12, 2024]
 - Added a reload button to the Prefab Type editor.
 - Reworked Prefab Types to be ID (string) based instead of index (ordered number) based.
