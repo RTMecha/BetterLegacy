@@ -216,6 +216,7 @@ namespace BetterLegacy.Editor.Managers
             RTMetaDataEditor.Init();
             RTEventEditor.Init();
             RTThemeEditor.Init();
+            RTPrefabEditor.Init();
 
             KeybindManager.Init();
             PlayerEditor.Init();
@@ -1048,8 +1049,8 @@ namespace BetterLegacy.Editor.Managers
                     continue;
 
                 timelineObject.Image.color = timelineObject.selected ? ObjEditor.inst.SelectedColor :
-                    timelineObject.IsBeatmapObject && !string.IsNullOrEmpty(timelineObject.GetData<BeatmapObject>().prefabID) ? timelineObject.GetData<BeatmapObject>().Prefab.TypeColor :
-                    timelineObject.IsPrefabObject ? timelineObject.GetData<PrefabObject>().Prefab.TypeColor : ObjEditor.inst.NormalColor;
+                    timelineObject.IsBeatmapObject && !string.IsNullOrEmpty(timelineObject.GetData<BeatmapObject>().prefabID) ? timelineObject.GetData<BeatmapObject>().Prefab.PrefabType.Color :
+                    timelineObject.IsPrefabObject ? timelineObject.GetData<PrefabObject>().Prefab.PrefabType.Color : ObjEditor.inst.NormalColor;
             }
 
             var theme = EditorThemeManager.CurrentTheme;
@@ -9093,7 +9094,7 @@ namespace BetterLegacy.Editor.Managers
 
                         string ptr = "";
                         if (!string.IsNullOrEmpty(beatmapObject.prefabID) && !string.IsNullOrEmpty(beatmapObject.prefabInstanceID))
-                            ptr = "<br><#" + CoreHelper.ColorToHex(((BeatmapObject)beatmapObject).Prefab.TypeColor) + ">PID: " + beatmapObject.prefabID + " | PIID: " + beatmapObject.prefabInstanceID + "</color>";
+                            ptr = "<br><#" + CoreHelper.ColorToHex(((BeatmapObject)beatmapObject).Prefab.PrefabType.Color) + ">PID: " + beatmapObject.prefabID + " | PIID: " + beatmapObject.prefabInstanceID + "</color>";
                         else
                             ptr = "<br>Not from prefab";
 

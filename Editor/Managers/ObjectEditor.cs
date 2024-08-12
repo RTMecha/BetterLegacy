@@ -1518,7 +1518,7 @@ namespace BetterLegacy.Editor.Managers
                     if (!string.IsNullOrEmpty(beatmapObject.prefabID))
                     {
                         if (DataManager.inst.gameData.prefabs.TryFind(x => x.ID == beatmapObject.prefabID, out DataManager.GameData.Prefab prefab) && prefab is Prefab modPrefab)
-                            color = modPrefab.TypeColor;
+                            color = modPrefab.PrefabType.Color;
                         else
                         {
                             beatmapObject.prefabID = null;
@@ -1530,7 +1530,7 @@ namespace BetterLegacy.Editor.Managers
                 if (timelineObject.IsPrefabObject)
                 {
                     var prefabObject = timelineObject.GetData<PrefabObject>();
-                    var prefab = DataManager.inst.gameData.prefabs.Find(x => x.ID == prefabObject.prefabID);
+                    var prefab = (Prefab)DataManager.inst.gameData.prefabs.Find(x => x.ID == prefabObject.prefabID);
 
                     locked = prefabObject.editorData.locked;
                     collapsed = prefabObject.editorData.collapse;
@@ -1541,7 +1541,7 @@ namespace BetterLegacy.Editor.Managers
                     image.type = Image.Type.Simple;
                     image.sprite = null;
 
-                    var prefabType = prefab.Type >= 0 && prefab.Type < DataManager.inst.PrefabTypes.Count ? (PrefabType)DataManager.inst.PrefabTypes[prefab.Type] : PrefabType.InvalidType;
+                    var prefabType = prefab.PrefabType;
 
                     color = prefabType.Color;
                     nullName = prefabType.Name;
@@ -1564,11 +1564,11 @@ namespace BetterLegacy.Editor.Managers
                 if (RenderPrefabTypeIcon && (isBeatmapObject || isPrefab))
                 {
                     var iconImage = gameObject.transform.Find("icons/type/type").GetComponent<Image>();
-                    int i =
-                        isBeatmapObject ? DataManager.inst.gameData.prefabs.Find(x => x.ID == timelineObject.GetData<BeatmapObject>().prefabID).Type :
-                        isPrefab ? timelineObject.GetData<PrefabObject>().GetPrefab().Type : 0;
+                    var prefab =
+                        isBeatmapObject ? (Prefab)DataManager.inst.gameData.prefabs.Find(x => x.ID == timelineObject.GetData<BeatmapObject>().prefabID) :
+                        (Prefab)timelineObject.GetData<PrefabObject>().GetPrefab();
 
-                    iconImage.sprite = (i < DataManager.inst.PrefabTypes.Count ? (PrefabType)DataManager.inst.PrefabTypes[i] : PrefabType.InvalidType).icon;
+                    iconImage.sprite = prefab.PrefabType.icon;
                 }
 
                 float zoom = EditorManager.inst.Zoom;

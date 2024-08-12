@@ -45,9 +45,7 @@ namespace BetterLegacy.Editor.Managers
         public Transform prefabSelectorRight;
         public Transform prefabSelectorLeft;
 
-        public int currentPrefabType = 0;
-        public InputField typeIF;
-        public Image typeImage;
+        public FunctionButtonStorage typeSelector;
         public InputField nameIF;
         public Text objectCount;
         public Text prefabObjectCount;
@@ -57,90 +55,505 @@ namespace BetterLegacy.Editor.Managers
 
         public bool selectingPrefab;
 
-        public int currentTypeSelection;
-
         public GameObject prefabTypePrefab;
         public GameObject prefabTypeTogglePrefab;
         public Transform prefabTypeContent;
 
+        public string NewPrefabTypeID { get; set; }
         public string NewPrefabDescription { get; set; }
 
         public List<PrefabPanel> PrefabPanels { get; set; } = new List<PrefabPanel>();
 
         public static bool ImportPrefabsDirectly { get; set; }
 
-        public static Dictionary<int, string> prefabTypeConverterLS = new Dictionary<int, string>()
-        {
-            { 0, "7171177971767435" }, // Bombs
-            { 1, "7177271762800247" }, // Bullets
-            { 2, "9453916730542677" }, // Beams
-            { 3, "1644373336900132" }, // Spinners
-            { 4, "4045878933744147" }, // Pulses
-            { 5, "4965490066612888" }, // Characters
-            { 6, "0236192376944164" }, // Misc 1
-            { 7, "8073495542187348" }, // Misc 2
-            { 8, "5347376169954072" }, // Misc 3
-            { 9, "4727401743041957" }, // Misc 4
-        };
-        
-        public static Dictionary<int, string> prefabTypeConverterVG = new Dictionary<int, string>()
-        {
-            { 0, "4965490066612888" }, // Characters
-            { 1, "9570474999546241" }, // Character Parts
-            { 2, "5992953518858497" }, // Props
-            { 3, "7177271762800247" }, // Bullets
-            { 4, "4045878933744147" }, // Pulses
-            { 5, "7171177971767435" }, // Bombs
-            { 6, "1644373336900132" }, // Spinners
-            { 7, "9453916730542677" }, // Beams
-            { 8, "0689518742909570" }, // Static
-            { 9, "0236192376944164" }, // Misc 1
-            { 10, "8073495542187348" }, // Misc 2
-            { 11, "5347376169954072" }, // Misc 3
-        };
-
         #endregion
 
-        public static void Init(PrefabEditor prefabEditor) => prefabEditor?.gameObject?.AddComponent<RTPrefabEditor>();
+        public static void Init() => PrefabEditor.inst?.gameObject?.AddComponent<RTPrefabEditor>();
 
         void Awake() => inst = this;
 
         void Start()
         {
-            var transform = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/PrefabDialog/data/type/types").transform;
+            StartCoroutine(SetupUI());
+        }
 
-            var list = new List<GameObject>();
-            for (int i = 1; i < transform.childCount; i++)
+        IEnumerator SetupUI()
+        {
+            while (!PrefabEditor.inst || !EditorManager.inst || !EditorManager.inst.EditorDialogsDictionary.ContainsKey("Prefab Popup") || EditorPrefabHolder.Instance == null || !EditorPrefabHolder.Instance.Function1Button)
+                yield return null;
+
+            // A
             {
-                var tf = transform.Find($"col_{i}");
-                if (tf)
-                    list.Add(tf.gameObject);
+                loadingPrefabTypes = true;
+                PrefabEditor.inst.StartCoroutine(RTEditor.inst.LoadPrefabs(PrefabEditor.inst));
+                PrefabEditor.inst.OffsetLine = PrefabEditor.inst.OffsetLinePrefab.Duplicate(EditorManager.inst.timeline.transform, "offset line");
+                PrefabEditor.inst.OffsetLine.transform.AsRT().pivot = Vector2.one;
+
+                PrefabEditor.inst.dialog = EditorManager.inst.GetDialog("Prefab Editor").Dialog;
+                PrefabEditor.inst.externalPrefabDialog = EditorManager.inst.GetDialog("Prefab Popup").Dialog.Find("external prefabs");
+                PrefabEditor.inst.internalPrefabDialog = EditorManager.inst.GetDialog("Prefab Popup").Dialog.Find("internal prefabs");
+                PrefabEditor.inst.externalSearch = PrefabEditor.inst.externalPrefabDialog.Find("search-box/search").GetComponent<InputField>();
+                PrefabEditor.inst.internalSearch = PrefabEditor.inst.internalPrefabDialog.Find("search-box/search").GetComponent<InputField>();
+                PrefabEditor.inst.externalContent = PrefabEditor.inst.externalPrefabDialog.Find("mask/content");
+                PrefabEditor.inst.internalContent = PrefabEditor.inst.internalPrefabDialog.Find("mask/content");
+
+                var externalSelectGUI = PrefabEditor.inst.externalPrefabDialog.gameObject.AddComponent<SelectGUI>();
+                var internalSelectGUI = PrefabEditor.inst.internalPrefabDialog.gameObject.AddComponent<SelectGUI>();
+                externalSelectGUI.ogPos = PrefabEditor.inst.externalPrefabDialog.position;
+                internalSelectGUI.ogPos = PrefabEditor.inst.internalPrefabDialog.position;
+                externalSelectGUI.target = PrefabEditor.inst.externalPrefabDialog;
+                internalSelectGUI.target = PrefabEditor.inst.internalPrefabDialog;
+
+                PrefabEditor.inst.internalPrefabDialog.Find("Panel/Text").GetComponent<Text>().text = "Internal Prefabs";
+
+                PrefabEditor.inst.gridSearch = PrefabEditor.inst.dialog.Find("data/selection/search-box/search").GetComponent<InputField>();
+                PrefabEditor.inst.gridContent = PrefabEditor.inst.dialog.Find("data/selection/mask/content");
+
+                Destroy(PrefabEditor.inst.dialog.Find("data/type/types").GetComponent<VerticalLayoutGroup>());
             }
 
-            foreach (var go in list)
-                Destroy(go);
+            // B
+            {
+                var dialog = EditorManager.inst.GetDialog("Prefab Selector").Dialog;
+                prefabSelectorLeft = dialog.Find("data/left");
+                prefabSelectorRight = dialog.Find("data/right");
 
-            prefabTypeTogglePrefab = transform.GetChild(0).gameObject;
-            prefabTypeTogglePrefab.transform.SetParent(transform);
+                var objectEditorDialog = EditorManager.inst.GetDialog("Object Editor").Dialog;
+                var contentBase = objectEditorDialog.Find("data/left/Scroll View/Viewport/Content");
+                var scrollView = objectEditorDialog.Find("data/left/Scroll View").gameObject.Duplicate(prefabSelectorLeft);
+
+                var parent = scrollView.transform.Find("Viewport/Content");
+
+                LSHelpers.DeleteChildren(parent, true);
+
+                var objectsToDelete = new List<GameObject>();
+                for (int i = 0; i < parent.childCount; i++)
+                    objectsToDelete.Add(parent.GetChild(i).gameObject);
+                foreach (var child in objectsToDelete)
+                    DestroyImmediate(child);
+
+                scrollView.transform.AsRT().sizeDelta = new Vector2(383f, 690f);
+
+                var objectsToParent = new List<Transform>();
+                for (int i = 0; i < prefabSelectorLeft.childCount; i++)
+                    objectsToParent.Add(prefabSelectorLeft.GetChild(i));
+                foreach (var child in objectsToParent)
+                    child.SetParent(parent);
+
+                prefabSelectorLeft = parent;
+
+                EditorHelper.LogAvailableInstances<PrefabEditor>();
+
+                EditorThemeManager.AddGraphic(dialog.GetComponent<Image>(), ThemeGroup.Background_1);
+
+                var eventDialogTMP = EditorManager.inst.GetDialog("Event Editor").Dialog.Find("data/right");
+
+                var singleInput = eventDialogTMP.Find("move/position/x").gameObject.Duplicate(PrefabEditor.inst.transform);
+                var vector2Input = eventDialogTMP.Find("move/position").gameObject.Duplicate(PrefabEditor.inst.transform);
+                var labelTemp = eventDialogTMP.Find("move").transform.GetChild(8).gameObject.Duplicate(PrefabEditor.inst.transform);
+
+                // Single
+                {
+                    var buttonLeft = singleInput.transform.Find("<").GetComponent<Button>();
+                    var buttonRight = singleInput.transform.Find(">").GetComponent<Button>();
+
+                    Destroy(buttonLeft.GetComponent<Animator>());
+                    buttonLeft.transition = Selectable.Transition.ColorTint;
+
+                    Destroy(buttonRight.GetComponent<Animator>());
+                    buttonRight.transition = Selectable.Transition.ColorTint;
+                }
+
+                DestroyImmediate(prefabSelectorLeft.GetChild(4).gameObject);
+                DestroyImmediate(prefabSelectorLeft.GetChild(4).gameObject);
+
+                Action<Transform, string, string> labelGenerator = (Transform parent, string name, string x) =>
+                {
+                    var label = labelTemp.Duplicate(parent, $"{name.ToLower()} label");
+                    var labelText = label.transform.GetChild(0).GetComponent<Text>();
+                    labelText.text = x;
+                    Destroy(label.transform.GetChild(1).gameObject);
+
+                    EditorThemeManager.AddLightText(labelText);
+                };
+
+                Action<Transform, string, string, string> labelGenerator2 = (Transform parent, string name, string x, string y) =>
+                {
+                    var label = labelTemp.Duplicate(parent, $"{name.ToLower()} label");
+                    var xLabel = label.transform.GetChild(0).GetComponent<Text>();
+                    var yLabel = label.transform.GetChild(1).GetComponent<Text>();
+                    xLabel.text = x;
+                    yLabel.text = y;
+
+                    EditorThemeManager.AddLightText(xLabel);
+                    EditorThemeManager.AddLightText(yLabel);
+                };
+
+                // AutoKill
+                labelGenerator(prefabSelectorLeft, "tod-dropdown", "Time of Death");
+
+                var autoKillType = objectEditorDialog.Find("data/left/Scroll View/Viewport/Content/autokill/tod-dropdown").gameObject
+                    .Duplicate(prefabSelectorLeft, "tod-dropdown", 14);
+                var autoKillTypeDD = autoKillType.GetComponent<Dropdown>();
+                autoKillTypeDD.options = CoreHelper.StringToOptionData("Regular", "Start Offset", "Song Time");
+
+                EditorThemeManager.AddDropdown(autoKillTypeDD);
+
+                var ako = singleInput.Duplicate(prefabSelectorLeft, "akoffset");
+                EditorThemeManager.AddInputField(ako.GetComponent<InputField>());
+                EditorThemeManager.AddSelectable(ako.transform.Find("<").GetComponent<Button>(), ThemeGroup.Function_2, false);
+                EditorThemeManager.AddSelectable(ako.transform.Find(">").GetComponent<Button>(), ThemeGroup.Function_2, false);
+
+                var setToCurrent = objectEditorDialog.Find("data/left/Scroll View/Viewport/Content/autokill/|").gameObject.Duplicate(prefabSelectorLeft.Find("akoffset"), "|");
+
+                var setToCurrentButton = setToCurrent.GetComponent<Button>();
+                Destroy(setToCurrent.GetComponent<Animator>());
+                setToCurrentButton.transition = Selectable.Transition.ColorTint;
+
+                EditorThemeManager.AddSelectable(setToCurrentButton, ThemeGroup.Function_2, false);
+
+                // Parent
+                var parentUI = contentBase.transform.Find("parent").gameObject.Duplicate(prefabSelectorLeft, "parent");
+                var parent_more = contentBase.transform.Find("parent_more").gameObject.Duplicate(prefabSelectorLeft, "parent_more");
+
+                var parentTextText = parentUI.transform.Find("text/text").GetComponent<Text>();
+                var parentText = parentUI.transform.Find("text").GetComponent<Button>();
+                var parentMore = parentUI.transform.Find("more").GetComponent<Button>();
+                var parentParent = parentUI.transform.Find("parent").GetComponent<Button>();
+                var parentClear = parentUI.transform.Find("clear parent").GetComponent<Button>();
+                var parentPicker = parentUI.transform.Find("parent picker").GetComponent<Button>();
+                var spawnOnce = parent_more.transform.Find("spawn_once").GetComponent<Toggle>();
+
+                EditorThemeManager.AddGraphic(parentParent.image, ThemeGroup.Function_3, true);
+                EditorThemeManager.AddGraphic(parentParent.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Function_3_Text);
+                EditorThemeManager.AddSelectable(parentClear, ThemeGroup.Close);
+                EditorThemeManager.AddGraphic(parentClear.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
+                EditorThemeManager.AddSelectable(parentPicker, ThemeGroup.Picker);
+                EditorThemeManager.AddGraphic(parentPicker.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Picker_Icon);
+
+                EditorThemeManager.AddSelectable(parentText, ThemeGroup.Function_2);
+                EditorThemeManager.AddGraphic(parentTextText, ThemeGroup.Function_2_Text);
+                EditorThemeManager.AddSelectable(parentMore, ThemeGroup.Function_2, false);
+
+                EditorThemeManager.AddToggle(spawnOnce, graphic: spawnOnce.transform.Find("Text").GetComponent<Text>());
+
+                var array = new string[] { "pos", "sca", "rot", };
+                for (int i = 0; i < 3; i++)
+                {
+                    var parentSetting = parent_more.transform.GetChild(i + 2);
+
+                    var additive = parentSetting.Find($"{array[i]}_add");
+                    var parallax = parentSetting.Find($"{array[i]}_parallax");
+
+                    if (parentSetting.Find("text"))
+                    {
+                        var text = parentSetting.Find("text").GetComponent<Text>();
+                        text.fontSize = 19;
+                        EditorThemeManager.AddLightText(text);
+                    }
+
+                    var parentSettingType = parentSetting.Find(array[i]);
+                    var parentSettingOffset = parentSetting.Find($"{array[i]}_offset");
+
+                    EditorThemeManager.AddToggle(parentSettingType.GetComponent<Toggle>(), ThemeGroup.Background_1);
+                    EditorThemeManager.AddGraphic(parentSettingType.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
+                    EditorThemeManager.AddInputField(parentSettingOffset.GetComponent<InputField>());
+                    EditorThemeManager.AddToggle(additive.GetComponent<Toggle>(), ThemeGroup.Background_1);
+                    var additiveImage = additive.transform.Find("Image").GetComponent<Image>();
+                    EditorThemeManager.AddGraphic(additiveImage, ThemeGroup.Toggle_1_Check);
+                    EditorThemeManager.AddInputField(parallax.GetComponent<InputField>());
+                }
+
+                // Time
+                labelGenerator(prefabSelectorLeft, "time", "Time");
+
+                var time = EditorPrefabHolder.Instance.NumberInputField.Duplicate(prefabSelectorLeft, "time");
+                var timeStorage = time.GetComponent<InputFieldStorage>();
+                EditorThemeManager.AddInputField(timeStorage.inputField);
+                timeStorage.inputField.transform.AsRT().sizeDelta = new Vector2(135f, 32f);
+
+                EditorThemeManager.AddSelectable(timeStorage.leftGreaterButton, ThemeGroup.Function_2, false);
+                EditorThemeManager.AddSelectable(timeStorage.leftButton, ThemeGroup.Function_2, false);
+                EditorThemeManager.AddSelectable(timeStorage.middleButton, ThemeGroup.Function_2, false);
+                EditorThemeManager.AddSelectable(timeStorage.rightButton, ThemeGroup.Function_2, false);
+                EditorThemeManager.AddSelectable(timeStorage.rightGreaterButton, ThemeGroup.Function_2, false);
+
+                var timeParent = time.transform;
+
+                var settingEditorDialog = EditorManager.inst.GetDialog("Settings Editor").Dialog;
+                var locker = settingEditorDialog.Find("snap/toggle/toggle").gameObject.Duplicate(timeParent, "lock", 0);
+
+                locker.transform.Find("Background/Checkmark").GetComponent<Image>().sprite = ObjEditor.inst.timelineObjectPrefabLock.transform.Find("lock (1)").GetComponent<Image>().sprite;
+
+                EditorThemeManager.AddToggle(locker.GetComponent<Toggle>());
+
+                var collapser = objectEditorDialog.Find("data/left/Scroll View/Viewport/Content/autokill/collapse").gameObject.Duplicate(timeParent, "collapse", 1);
+
+                EditorThemeManager.AddToggle(collapser.GetComponent<Toggle>(), ThemeGroup.Background_1);
+
+                for (int i = 0; i < collapser.transform.Find("dots").childCount; i++)
+                    EditorThemeManager.AddGraphic(collapser.transform.Find("dots").GetChild(i).GetComponent<Image>(), ThemeGroup.Dark_Text);
+
+                // Position
+                labelGenerator2(prefabSelectorLeft, "pos", "Position X Offset", "Position Y Offset");
+
+                var position = vector2Input.Duplicate(prefabSelectorLeft, "position");
+                var positionX = position.transform.Find("x").gameObject.AddComponent<InputFieldSwapper>();
+                positionX.Init(position.transform.Find("x").GetComponent<InputField>());
+                var positionY = position.transform.Find("y").gameObject.AddComponent<InputFieldSwapper>();
+                positionY.Init(position.transform.Find("y").GetComponent<InputField>());
+                EditorThemeManager.AddInputFields(position, true, "");
+
+                // Scale
+                labelGenerator2(prefabSelectorLeft, "sca", "Scale X Offset", "Scale Y Offset");
+
+                var scale = vector2Input.Duplicate(prefabSelectorLeft, "scale");
+                var scaleX = scale.transform.Find("x").gameObject.AddComponent<InputFieldSwapper>();
+                scaleX.Init(scale.transform.Find("x").GetComponent<InputField>());
+                var scaleY = scale.transform.Find("y").gameObject.AddComponent<InputFieldSwapper>();
+                scaleY.Init(scale.transform.Find("y").GetComponent<InputField>());
+                EditorThemeManager.AddInputFields(scale, true, "");
+
+                // Rotation
+                labelGenerator(prefabSelectorLeft, "rot", "Rotation Offset");
+
+                var rot = vector2Input.Duplicate(prefabSelectorLeft, "rotation");
+                Destroy(rot.transform.GetChild(1).gameObject);
+                var rotX = rot.transform.Find("x").gameObject.AddComponent<InputFieldSwapper>();
+                rotX.Init(rot.transform.Find("x").GetComponent<InputField>());
+                EditorThemeManager.AddInputFields(rot, true, "");
+
+                // Repeat
+                labelGenerator2(prefabSelectorLeft, "repeat", "Repeat Count", "Repeat Offset Time");
+
+                var repeat = vector2Input.Duplicate(prefabSelectorLeft, "repeat");
+                EditorThemeManager.AddInputFields(repeat, true, "");
+
+                // Speed
+                labelGenerator(prefabSelectorLeft, "speed", "Speed");
+
+                var speed = singleInput.Duplicate(prefabSelectorLeft, "speed");
+                EditorThemeManager.AddInputField(speed.GetComponent<InputField>());
+                EditorThemeManager.AddSelectable(speed.transform.Find("<").GetComponent<Button>(), ThemeGroup.Function_2, false);
+                EditorThemeManager.AddSelectable(speed.transform.Find(">").GetComponent<Button>(), ThemeGroup.Function_2, false);
+
+                // Layers
+                var layersIF = singleInput.Duplicate(prefabSelectorLeft.Find("editor"), "layers", 0).GetComponent<InputField>();
+                layersIF.gameObject.AddComponent<ContrastColors>().Init(layersIF.textComponent, layersIF.image);
+                EditorThemeManager.AddGraphic(layersIF.image, ThemeGroup.Null, true);
+                EditorThemeManager.AddSelectable(layersIF.transform.Find("<").GetComponent<Button>(), ThemeGroup.Function_2, false);
+                EditorThemeManager.AddSelectable(layersIF.transform.Find(">").GetComponent<Button>(), ThemeGroup.Function_2, false);
+
+                // Name
+                labelGenerator(prefabSelectorRight, "name", "Name");
+
+                var prefabName = RTEditor.inst.defaultIF.Duplicate(prefabSelectorRight, "name");
+                prefabName.transform.localScale = Vector3.one;
+
+                var prefabNameInputField = prefabName.GetComponent<InputField>();
+
+                prefabNameInputField.characterValidation = InputField.CharacterValidation.None;
+                prefabNameInputField.contentType = InputField.ContentType.Standard;
+                prefabNameInputField.characterLimit = 0;
+                nameIF = prefabNameInputField;
+                EditorThemeManager.AddInputField(prefabNameInputField);
+
+                // Type
+                labelGenerator(prefabSelectorRight, "type", "Type");
+
+                var type = EditorPrefabHolder.Instance.Function1Button.Duplicate(prefabSelectorRight, "type");
+
+                var typeButton = type.GetComponent<FunctionButtonStorage>();
+
+                type.transform.AsRT().sizeDelta = new Vector2(371f, 32f);
+
+                typeSelector = typeButton;
+                type.gameObject.AddComponent<ContrastColors>().Init(typeButton.text, typeButton.button.image);
+
+                var expandPrefabLabel = prefabSelectorLeft.GetChild(0).gameObject;
+                var expandPrefabLabelText = expandPrefabLabel.transform.GetChild(0).GetComponent<Text>();
+                var expandPrefab = prefabSelectorLeft.GetChild(1).gameObject;
+                var expandPrefabButton = expandPrefab.GetComponent<Button>();
+                var expandPrefabText = expandPrefab.transform.GetChild(0).GetComponent<Text>();
+                EditorThemeManager.AddLightText(expandPrefabLabelText);
+                Destroy(expandPrefab.GetComponent<Animator>());
+                expandPrefabButton.transition = Selectable.Transition.ColorTint;
+                EditorThemeManager.AddSelectable(expandPrefabButton, ThemeGroup.Function_2);
+                EditorThemeManager.AddGraphic(expandPrefabText, ThemeGroup.Function_2_Text);
+
+                // Save Prefab
+                var label = expandPrefabLabel.Duplicate(prefabSelectorRight, "save prefab label");
+                label.transform.localScale = Vector3.one;
+                var applyToAllText = label.transform.GetChild(0).GetComponent<Text>();
+                applyToAllText.fontSize = 19;
+                applyToAllText.text = "Apply to an External Prefab";
+
+                var savePrefab = expandPrefab.Duplicate(prefabSelectorRight, "save prefab");
+                savePrefab.transform.localScale = Vector3.one;
+                var savePrefabText = savePrefab.transform.GetChild(0).GetComponent<Text>();
+                savePrefabText.text = "Select Prefab";
+
+                EditorThemeManager.AddLightText(applyToAllText);
+                var savePrefabButton = savePrefab.GetComponent<Button>();
+                Destroy(savePrefab.GetComponent<Animator>());
+                savePrefabButton.transition = Selectable.Transition.ColorTint;
+                EditorThemeManager.AddSelectable(savePrefabButton, ThemeGroup.Function_2);
+                EditorThemeManager.AddGraphic(savePrefabText, ThemeGroup.Function_2_Text);
+
+                Action<string, string, Action<Text, string>> countGenerator = (string name, string count, Action<Text, string> text) =>
+                {
+                    var rotLabel = labelTemp.Duplicate(prefabSelectorRight, name);
+
+                    Destroy(rotLabel.transform.GetChild(1).gameObject);
+
+                    text(rotLabel.transform.GetChild(0).GetComponent<Text>(), count);
+                };
+
+                // Object Count
+                countGenerator("count label", "Object Count: 0", (Text text, string count) =>
+                {
+                    objectCount = text;
+                    objectCount.text = count;
+
+                    EditorThemeManager.AddLightText(text);
+                });
+
+                // Prefab Object Count
+                countGenerator("count label", "Prefab Object Count: 0", (Text text, string count) =>
+                {
+                    prefabObjectCount = text;
+                    prefabObjectCount.text = count;
+
+                    EditorThemeManager.AddLightText(text);
+                });
+
+                // Prefab Object Timeline Count
+                countGenerator("count label", "Prefab Object (Timeline) Count: 0", (Text text, string count) =>
+                {
+                    prefabObjectTimelineCount = text;
+                    prefabObjectTimelineCount.text = count;
+
+                    EditorThemeManager.AddLightText(text);
+                });
+
+                DestroyImmediate(prefabSelectorRight.Find("time").gameObject);
+                var offsetTime = EditorPrefabHolder.Instance.NumberInputField.Duplicate(prefabSelectorRight, "time", 1);
+                offsetTime.transform.GetChild(0).name = "time";
+                var offsetTimeStorage = offsetTime.GetComponent<InputFieldStorage>();
+                Destroy(offsetTimeStorage.middleButton.gameObject);
+                EditorThemeManager.AddInputField(offsetTimeStorage.inputField);
+                EditorThemeManager.AddSelectable(offsetTimeStorage.leftGreaterButton, ThemeGroup.Function_2, false);
+                EditorThemeManager.AddSelectable(offsetTimeStorage.leftButton, ThemeGroup.Function_2, false);
+                EditorThemeManager.AddSelectable(offsetTimeStorage.rightButton, ThemeGroup.Function_2, false);
+                EditorThemeManager.AddSelectable(offsetTimeStorage.rightGreaterButton, ThemeGroup.Function_2, false);
+
+                // Object Editor list
+
+                var prefabEditorData = PrefabEditor.inst.dialog.Find("data");
+
+                EditorThemeManager.AddGraphic(prefabEditorData.Find("title/Panel/icon").GetComponent<Image>(), ThemeGroup.Light_Text);
+                EditorThemeManager.AddLightText(prefabEditorData.Find("title/title").GetComponent<Text>());
+                EditorThemeManager.AddLightText(prefabEditorData.Find("name/title").GetComponent<Text>());
+                EditorThemeManager.AddLightText(prefabEditorData.Find("offset/title").GetComponent<Text>());
+                EditorThemeManager.AddLightText(prefabEditorData.Find("type/title").GetComponent<Text>());
+                EditorThemeManager.AddInputField(prefabEditorData.Find("name/input").GetComponent<InputField>());
+
+                Destroy(prefabEditorData.Find("offset/<").gameObject);
+                Destroy(prefabEditorData.Find("offset/>").gameObject);
+
+                var offsetSlider = prefabEditorData.Find("offset/slider").GetComponent<Slider>();
+                EditorThemeManager.AddGraphic(offsetSlider.transform.Find("Background").GetComponent<Image>(), ThemeGroup.Slider_2, true);
+
+                EditorThemeManager.AddGraphic(offsetSlider.image, ThemeGroup.Slider_2_Handle, true);
+                EditorThemeManager.AddInputField(prefabEditorData.Find("offset/input").GetComponent<InputField>());
+
+                var prefabType = RTEditor.inst.timelineBar.transform.Find("event").gameObject
+                    .Duplicate(prefabEditorData.Find("type"), "Show Type Editor");
+
+                Destroy(prefabEditorData.Find("type/types").gameObject);
+
+                UIManager.SetRectTransform(prefabType.transform.AsRT(), new Vector2(-370f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 0.5f), new Vector2(742f, 34f));
+                var prefabTypeButton = prefabType.GetComponent<Button>();
+                prefabTypeButton.onClick.ClearAll();
+                prefabTypeButton.onClick.AddListener(() =>
+                {
+                    OpenPrefabTypePopup(NewPrefabTypeID, id =>
+                    {
+                        PrefabEditor.inst.NewPrefabType = PrefabType.prefabTypeLSIDToIndex.ContainsKey(id) ? PrefabType.prefabTypeLSIDToIndex[id] : PrefabType.prefabTypeVGIDToIndex.ContainsKey(id) ? PrefabType.prefabTypeVGIDToIndex[id] : 0;
+                        NewPrefabTypeID = id;
+                        if (DataManager.inst.PrefabTypes.Select(x => x as PrefabType).ToList().TryFind(x => x.id == id, out PrefabType prefabType))
+                        {
+                            externalCreatorText.name = prefabType.Name;
+                            externalCreatorImage.color = prefabType.Color;
+                        }
+                    });
+                });
+                externalCreatorText = prefabType.transform.Find("Text").GetComponent<Text>();
+                externalCreatorImage = prefabTypeButton.image;
+
+                prefabType.AddComponent<ContrastColors>().Init(externalCreatorText, externalCreatorImage);
+                EditorThemeManager.AddGraphic(prefabTypeButton.image, ThemeGroup.Null, true);
+
+                prefabEditorData.Find("spacer").AsRT().sizeDelta = new Vector2(749f, 32f);
+                prefabEditorData.Find("type").AsRT().sizeDelta = new Vector2(749f, 48f);
+
+                var descriptionGO = prefabEditorData.Find("name").gameObject.Duplicate(prefabEditorData, "description", 4);
+                descriptionGO.transform.AsRT().sizeDelta = new Vector2(749f, 108f);
+                var descriptionTitle = descriptionGO.transform.Find("title").GetComponent<Text>();
+                descriptionTitle.text = "Desc";
+                EditorThemeManager.AddLightText(descriptionTitle);
+                var descriptionInputField = descriptionGO.transform.Find("input").GetComponent<InputField>();
+                ((Text)descriptionInputField.placeholder).alignment = TextAnchor.UpperLeft;
+                ((Text)descriptionInputField.placeholder).text = "Enter description...";
+                EditorThemeManager.AddInputField(descriptionInputField);
+
+                var selection = prefabEditorData.Find("selection");
+                selection.gameObject.SetActive(true);
+                selection.AsRT().sizeDelta = new Vector2(749f, 300f);
+                var search = selection.Find("search-box/search").GetComponent<InputField>();
+                search.onValueChanged.ClearAll();
+                search.onValueChanged.AddListener(_val => { ReloadSelectionContent(); });
+
+                EditorThemeManager.AddInputField(search, ThemeGroup.Search_Field_2);
+                var selectionGroup = selection.Find("mask/content").GetComponent<GridLayoutGroup>();
+                selectionGroup.cellSize = new Vector2(172.5f, 32f);
+                selectionGroup.constraintCount = 4;
+
+                EditorThemeManager.AddGraphic(selection.GetComponent<Image>(), ThemeGroup.Background_3, true);
+
+                EditorThemeManager.AddGraphic(PrefabEditor.inst.dialog.Find("submit/submit").GetComponent<Image>(), ThemeGroup.Add, true);
+                EditorThemeManager.AddGraphic(PrefabEditor.inst.dialog.Find("submit/submit/Text").GetComponent<Text>(), ThemeGroup.Add_Text);
+
+                var scrollbar = selection.Find("scrollbar").gameObject;
+                EditorThemeManager.AddScrollbar(scrollbar.GetComponent<Scrollbar>(), scrollbar.GetComponent<Image>(), ThemeGroup.Scrollbar_2, ThemeGroup.Scrollbar_2_Handle);
+            }
+
+            // C
+            {
+                var transform = PrefabEditor.inst.dialog.Find("data/type/types");
+
+                var list = new List<GameObject>();
+                for (int i = 1; i < transform.childCount; i++)
+                {
+                    var tf = transform.Find($"col_{i}");
+                    if (tf)
+                        list.Add(tf.gameObject);
+                }
+
+                foreach (var go in list)
+                    Destroy(go);
+
+                prefabTypeTogglePrefab = transform.GetChild(0).gameObject;
+                prefabTypeTogglePrefab.transform.SetParent(transform);
+            }
 
             CreatePrefabTypesPopup();
             CreatePrefabExternalDialog();
-
-            if (RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/prefabtypes"))
-                StartCoroutine(LoadPrefabTypes());
-
-            StartCoroutine(Wait());
-        }
-
-        IEnumerator Wait()
-        {
-            while (!EditorManager.inst || !EditorManager.inst.EditorDialogsDictionary.ContainsKey("Prefab Popup"))
-                yield return null;
+            StartCoroutine(LoadPrefabTypes());
 
             prefabPopups = EditorManager.inst.GetDialog("Prefab Popup").Dialog.AsRT();
             selectQuickPrefabButton = PrefabEditor.inst.internalPrefabDialog.Find("select_prefab/select_toggle").GetComponent<Button>();
             selectQuickPrefabText = PrefabEditor.inst.internalPrefabDialog.Find("select_prefab/selected_prefab").GetComponent<Text>();
-            PrefabEditor.inst.dialog = EditorManager.inst.GetDialog("Prefab Editor").Dialog;
 
             try
             {
@@ -447,7 +860,7 @@ namespace BetterLegacy.Editor.Managers
             #region Original Code
 
             var currentPrefab = prefabObject;
-            var prefab = currentPrefab.GetPrefab();
+            var prefab = (Prefab)currentPrefab.GetPrefab();
 
             var right = EditorManager.inst.GetDialog("Prefab Selector").Dialog.Find("data/right");
 
@@ -734,70 +1147,25 @@ namespace BetterLegacy.Editor.Managers
                             ObjectEditor.inst.RenderTimelineObject(GetTimelineObject((PrefabObject)prefabObject));
                 });
 
-                SearchPrefabType(DataManager.inst.PrefabTypes[prefab.Type].Name, prefab);
-                typeImage.color = DataManager.inst.PrefabTypes[prefab.Type].Color;
-                typeImage.transform.Find("Text").GetComponent<Text>().color = CoreHelper.InvertColorHue(CoreHelper.InvertColorValue(((Prefab)prefab).TypeColor));
-
-                currentPrefabType = prefab.Type;
-
-                TriggerHelper.AddEventTriggers(typeIF.gameObject, TriggerHelper.CreateEntry(EventTriggerType.Scroll, eventData =>
+                typeSelector.button.image.color = prefab.PrefabType.Color;
+                typeSelector.text.text = prefab.PrefabType.Name;
+                typeSelector.button.onClick.ClearAll();
+                typeSelector.button.onClick.AddListener(() =>
                 {
-                    var pointerEventData = (PointerEventData)eventData;
-
-                    int add = pointerEventData.scrollDelta.y < 0f ? prefab.Type - 1 : pointerEventData.scrollDelta.y > 0f ? prefab.Type + 1 : 0;
-
-                    int num = Mathf.Clamp(add, 0, DataManager.inst.PrefabTypes.Count - 1);
-
-                    prefab.Type = num;
-                    SearchPrefabType(((Prefab)prefab).TypeName, prefab);
-                    typeImage.color = ((Prefab)prefab).TypeColor;
-                    currentPrefabType = num;
-
-                    foreach (var prefabObject in DataManager.inst.gameData.prefabObjects)
-                        if (prefabObject.prefabID == prefab.ID)
-                            ObjectEditor.inst.RenderTimelineObject(GetTimelineObject((PrefabObject)prefabObject));
-                }));
-
-                var leftButton = typeIF.transform.Find("<").GetComponent<Button>();
-                var rightButton = typeIF.transform.Find(">").GetComponent<Button>();
-
-                leftButton.onClick.ClearAll();
-                leftButton.onClick.AddListener(() =>
-                {
-                    int num = Mathf.Clamp(prefab.Type - 1, 0, DataManager.inst.PrefabTypes.Count - 1);
-
-                    prefab.Type = num;
-                    SearchPrefabType(((Prefab)prefab).TypeName, prefab);
-                    typeImage.color = ((Prefab)prefab).TypeColor;
-                    typeImage.transform.Find("Text").GetComponent<Text>().color = CoreHelper.InvertColorHue(CoreHelper.InvertColorValue(((Prefab)prefab).TypeColor));
-                    currentPrefabType = num;
-
-                    foreach (var prefabObject in DataManager.inst.gameData.prefabObjects)
-                        if (prefabObject.prefabID == prefab.ID)
-                            ObjectEditor.inst.RenderTimelineObject(GetTimelineObject((PrefabObject)prefabObject));
+                    OpenPrefabTypePopup(prefab.typeID, id =>
+                    {
+                        prefab.Type = PrefabType.prefabTypeLSIDToIndex.ContainsKey(id) ? PrefabType.prefabTypeLSIDToIndex[id] : PrefabType.prefabTypeVGIDToIndex.ContainsKey(id) ? PrefabType.prefabTypeVGIDToIndex[id] : 0;
+                        prefab.typeID = id;
+                    });
                 });
-
-                rightButton.onClick.ClearAll();
-                rightButton.onClick.AddListener(() =>
-                {
-                    int num = Mathf.Clamp(prefab.Type + 1, 0, DataManager.inst.PrefabTypes.Count - 1);
-
-                    prefab.Type = num;
-                    SearchPrefabType(DataManager.inst.PrefabTypes[prefab.Type].Name, prefab);
-                    typeImage.color = DataManager.inst.PrefabTypes[prefab.Type].Color;
-                    typeImage.transform.Find("Text").GetComponent<Text>().color = CoreHelper.InvertColorHue(CoreHelper.InvertColorValue(((Prefab)prefab).TypeColor));
-                    currentPrefabType = num;
-                    foreach (var prefabObject in DataManager.inst.gameData.prefabObjects)
-                        if (prefabObject.prefabID == prefab.ID)
-                            ObjectEditor.inst.RenderTimelineObject(GetTimelineObject((PrefabObject)prefabObject));
-                });
+                typeSelector.button.image.color = prefab.PrefabType.Color;
 
                 var savePrefab = prefabSelectorRight.Find("save prefab").GetComponent<Button>();
                 savePrefab.onClick.ClearAll();
                 savePrefab.onClick.AddListener(() =>
                 {
                     savingToPrefab = true;
-                    prefabToSaveFrom = (Prefab)prefab;
+                    prefabToSaveFrom = prefab;
 
                     EditorManager.inst.ShowDialog("Prefab Popup");
                     var dialog = EditorManager.inst.GetDialog("Prefab Popup").Dialog;
@@ -837,7 +1205,7 @@ namespace BetterLegacy.Editor.Managers
             string prefabInstanceID = bm.prefabInstanceID;
             float startTime = DataManager.inst.gameData.beatmapObjects.Where(x => x.prefabInstanceID == prefabInstanceID).Min(x => x.StartTime);
 
-            var prefab = DataManager.inst.gameData.prefabs.Find(x => x.ID == bm.prefabID);
+            var prefab = (Prefab)DataManager.inst.gameData.prefabs.Find(x => x.ID == bm.prefabID);
 
             var prefabObject = new PrefabObject(prefab.ID, startTime - prefab.Offset);
             prefabObject.editorData.Bin = editorData.Bin;
@@ -845,6 +1213,8 @@ namespace BetterLegacy.Editor.Managers
             var prefab2 = new Prefab(prefab.Name, prefab.Type, prefab.Offset, DataManager.inst.gameData.beatmapObjects.FindAll(x => x.prefabInstanceID == prefabInstanceID).Select(x => (BeatmapObject)x).ToList(), new List<PrefabObject>());
 
             prefab2.ID = prefab.ID;
+            prefab2.typeID = prefab.typeID;
+
             int index = DataManager.inst.gameData.prefabs.FindIndex(x => x.ID == bm.prefabID);
             DataManager.inst.gameData.prefabs[index] = prefab2;
             var list = RTEditor.inst.TimelineBeatmapObjects.FindAll(x => x.GetData<BeatmapObject>().prefabInstanceID == prefabInstanceID);
@@ -1023,22 +1393,19 @@ namespace BetterLegacy.Editor.Managers
         public void CreatePrefabTypesPopup()
         {
             var parent = EditorManager.inst.GetDialog("Quick Actions Popup").Dialog.parent;
-            var gameObject = new GameObject("Prefab Types Popup");
-            gameObject.transform.SetParent(parent);
-            gameObject.transform.localScale = Vector3.one;
+            var gameObject = Creator.NewUIObject("Prefab Types Popup", parent, 9);
 
-            var baseRT = gameObject.AddComponent<RectTransform>();
             var baseImage = gameObject.AddComponent<Image>();
-            baseImage.color = new Color(0.12f, 0.12f, 0.12f);
+            EditorThemeManager.AddGraphic(baseImage, ThemeGroup.Background_1);
             var baseSelectGUI = gameObject.AddComponent<SelectGUI>();
 
-            baseRT.anchoredPosition = new Vector2(340f, 0f);
-            baseRT.sizeDelta = new Vector2(400f, 600f);
+            gameObject.transform.AsRT().anchoredPosition = new Vector2(340f, 0f);
+            gameObject.transform.AsRT().sizeDelta = new Vector2(400f, 600f);
 
-            baseSelectGUI.target = baseRT;
+            baseSelectGUI.target = gameObject.transform;
             baseSelectGUI.OverrideDrag = true;
 
-            var panel = EditorManager.inst.GetDialog("Save As Popup").Dialog.Find("New File Popup/Panel").gameObject.Duplicate(baseRT, "Panel");
+            var panel = EditorManager.inst.GetDialog("Save As Popup").Dialog.Find("New File Popup/Panel").gameObject.Duplicate(gameObject.transform, "Panel");
             var panelRT = (RectTransform)panel.transform;
             panelRT.anchoredPosition = Vector2.zero;
             panelRT.sizeDelta = new Vector2(32f, 32f);
@@ -1049,8 +1416,20 @@ namespace BetterLegacy.Editor.Managers
             closeButton.onClick.ClearAll();
             closeButton.onClick.AddListener(() => { EditorManager.inst.HideDialog("Prefab Types Popup"); });
 
+            var refresh = Creator.NewUIObject("Refresh", panel.transform);
+            UIManager.SetRectTransform(refresh.transform.AsRT(), new Vector2(-52f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(32f, 32f));
+
+            var refreshImage = refresh.AddComponent<Image>();
+            refreshImage.sprite = RTEditor.ReloadSprite;
+
+            var refreshButton = refresh.AddComponent<Button>();
+            refreshButton.image = refreshImage;
+            refreshButton.onClick.ClearAll();
+            refreshButton.onClick.AddListener(() => { StartCoroutine(LoadPrefabTypes()); });
+            EditorThemeManager.AddSelectable(refreshButton, ThemeGroup.Function_2, false);
+
             var scrollRect = new GameObject("ScrollRect");
-            scrollRect.transform.SetParent(baseRT);
+            scrollRect.transform.SetParent(gameObject.transform);
             scrollRect.transform.localScale = Vector3.one;
             var scrollRectRT = scrollRect.AddComponent<RectTransform>();
             scrollRectRT.anchoredPosition = new Vector2(0f, 0f);
@@ -1177,30 +1556,30 @@ namespace BetterLegacy.Editor.Managers
             Destroy(delete.GetComponent<LayoutElement>());
 
             EditorHelper.AddEditorPopup("Prefab Types Popup", gameObject);
+            gameObject.SetActive(false);
 
             EditorHelper.AddEditorDropdown("View Prefab Types", "", "View", RTEditor.inst.SearchSprite, () =>
             {
-                OpenPrefabTypePopup(PrefabEditor.inst.NewPrefabType, index =>
+                OpenPrefabTypePopup(NewPrefabTypeID, id =>
                 {
-                    PrefabEditor.inst.NewPrefabType = index;
-                    if (PrefabEditor.inst.dialog)
-                        PrefabEditor.inst.dialog.Find("data/type/Show Type Editor").GetComponent<Image>().color =
-                            DataManager.inst.PrefabTypes[Mathf.Clamp(PrefabEditor.inst.NewPrefabType, 0, DataManager.inst.PrefabTypes.Count - 1)].Color;
+                    PrefabEditor.inst.NewPrefabType = PrefabType.prefabTypeLSIDToIndex.ContainsKey(id) ? PrefabType.prefabTypeLSIDToIndex[id] : PrefabType.prefabTypeVGIDToIndex.ContainsKey(id) ? PrefabType.prefabTypeVGIDToIndex[id] : 0;
+                    NewPrefabTypeID = id;
+                    if (DataManager.inst.PrefabTypes.Select(x => x as PrefabType).ToList().TryFind(x => x.id == id, out PrefabType prefabType))
+                    {
+                        externalCreatorText.name = prefabType.Name + " [ Click to Open Prefab Type Editor ]";
+                        externalCreatorImage.color = prefabType.Color;
+                    }
                 });
             });
         }
 
         public void SavePrefabTypes()
         {
-            foreach (var prefabType in DataManager.inst.PrefabTypes.Select(x => x as PrefabType))
+            foreach (var prefabType in DataManager.inst.PrefabTypes.Select(x => x as PrefabType).Where(x => !x.isDefault))
             {
                 var jn = prefabType.ToJSON();
-                var directory = RTFile.ApplicationDirectory + "beatmaps/prefabtypes/" + prefabType.Name;
-                if (!RTFile.DirectoryExists(directory))
-                    Directory.CreateDirectory(directory);
-
-                File.WriteAllBytes(directory + "/icon.png", prefabType.icon.texture.EncodeToPNG());
-                RTFile.WriteToFile(directory + "/data.lsp", jn.ToString(3));
+                prefabType.filePath = RTFile.ApplicationDirectory + "beatmaps/prefabtypes/" + prefabType.Name.ToLower().Replace(" ", "_") + ".lspt";
+                RTFile.WriteToFile(prefabType.filePath, jn.ToString(3));
             }
         }
 
@@ -1210,53 +1589,41 @@ namespace BetterLegacy.Editor.Managers
             loadingPrefabTypes = true;
             DataManager.inst.PrefabTypes.Clear();
 
-            var directories = Directory.GetDirectories(RTFile.ApplicationDirectory + "beatmaps/prefabtypes");
-            var list = new List<DataManager.PrefabType>();
-            foreach (var folder in directories)
+            var defaultPrefabTypesJN = JSON.Parse(RTFile.ReadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}default_prefabtypes.lspt"));
+            for (int i = 0; i < defaultPrefabTypesJN["prefab_types"].Count; i++)
+                DataManager.inst.PrefabTypes.Add(PrefabType.Parse(defaultPrefabTypesJN["prefab_types"][i], true));
+
+            if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/prefabtypes"))
+                Directory.CreateDirectory(RTFile.ApplicationDirectory + "beatmaps/prefabtypes");
+
+            var files = Directory.GetFiles(RTFile.ApplicationDirectory + "beatmaps/prefabtypes", "*.lspt", SearchOption.TopDirectoryOnly);
+            for (int i = 0; i < files.Length; i++)
             {
-                var fileName = Path.GetFileName(folder);
-                var jn = JSON.Parse(RTFile.ReadFromFile(folder + "/data.lsp"));
+                var jn = JSON.Parse(RTFile.ReadFromFile(files[i]));
                 var prefabType = PrefabType.Parse(jn);
-
-                if (RTFile.FileExists(folder + "/icon.png"))
-                    prefabType.icon = SpriteManager.LoadSprite(folder + "/icon.png");
-
-                prefabType.index = jn["index"].AsInt;
-
-                list.Add(prefabType);
+                prefabType.filePath = files[i].Replace("\\", "/");
+                DataManager.inst.PrefabTypes.Add(prefabType);
             }
 
-            list = list.OrderBy(x => (x as PrefabType).index).ToList();
-
-            DataManager.inst.PrefabTypes.AddRange(list);
+            NewPrefabTypeID = ((PrefabType)DataManager.inst.PrefabTypes[0]).id;
 
             loadingPrefabTypes = false;
 
             yield break;
         }
 
-        public void OpenPrefabTypePopup(int current, Action<int> onSelect)
+        public void OpenPrefabTypePopup(string current, Action<string> onSelect)
         {
             EditorManager.inst.ShowDialog("Prefab Types Popup");
             RenderPrefabTypesPopup(current, onSelect);
         }
 
-        public void ReorderPrefabTypes()
-        {
-            int num = 0;
-            foreach (var prefabType in DataManager.inst.PrefabTypes.Select(x => x as PrefabType))
-            {
-                prefabType.index = num;
-                num++;
-            }
-        }
-
-        public void RenderPrefabTypesPopup(int current, Action<int> onSelect)
+        public void RenderPrefabTypesPopup(string current, Action<string> onSelect)
         {
             LSHelpers.DeleteChildren(prefabTypeContent);
 
             var createPrefabType = PrefabEditor.inst.CreatePrefab.Duplicate(prefabTypeContent, "Create Prefab Type");
-            ((RectTransform)createPrefabType.transform).sizeDelta = new Vector2(402f, 32f);
+            createPrefabType.transform.AsRT().sizeDelta = new Vector2(402f, 32f);
             var createPrefabTypeText = createPrefabType.transform.Find("Text").GetComponent<Text>();
             createPrefabTypeText.text = "Create New Prefab Type";
             var createPrefabTypeButton = createPrefabType.GetComponent<Button>();
@@ -1272,12 +1639,9 @@ namespace BetterLegacy.Editor.Managers
                 }
 
                 var prefabType = new PrefabType(name, LSColors.pink500);
-                prefabType.index = DataManager.inst.PrefabTypes.Count;
-                prefabType.icon = ((PrefabType)DataManager.inst.PrefabTypes[prefabType.index - 1]).icon;
+                prefabType.icon = LegacyPlugin.AtanPlaceholder;
 
                 DataManager.inst.PrefabTypes.Add(prefabType);
-
-                ReorderPrefabTypes();
 
                 SavePrefabTypes();
 
@@ -1295,11 +1659,11 @@ namespace BetterLegacy.Editor.Managers
 
                 var toggle = gameObject.transform.Find("Toggle").GetComponent<Toggle>();
                 toggle.onValueChanged.ClearAll();
-                toggle.isOn = current == index;
+                toggle.isOn = current == prefabType.id;
                 toggle.onValueChanged.AddListener(_val =>
                 {
-                    onSelect?.Invoke(index);
-                    RenderPrefabTypesPopup(index, onSelect);
+                    onSelect?.Invoke(prefabType.id);
+                    RenderPrefabTypesPopup(prefabType.id, onSelect);
                 });
 
                 toggle.image.color = prefabType.Color;
@@ -1312,150 +1676,124 @@ namespace BetterLegacy.Editor.Managers
 
                 var inputField = gameObject.transform.Find("Name").GetComponent<InputField>();
                 inputField.onValueChanged.ClearAll();
+                inputField.onEndEdit.ClearAll();
                 inputField.characterValidation = InputField.CharacterValidation.None;
                 inputField.characterLimit = 0;
                 inputField.text = prefabType.Name;
-                inputField.onValueChanged.AddListener(_val =>
+                inputField.interactable = !prefabType.isDefault;
+                if (!prefabType.isDefault)
                 {
-                    string oldName = DataManager.inst.PrefabTypes[index].Name;
-
-                    string name = _val;
-                    int n = 0;
-                    while (DataManager.inst.PrefabTypes.Has(x => x.Name == name))
+                    inputField.onValueChanged.AddListener(_val =>
                     {
-                        name = $"{_val}[{n}]";
-                        n++;
-                    }
+                        string oldName = DataManager.inst.PrefabTypes[index].Name;
 
-                    DataManager.inst.PrefabTypes[index].Name = name;
-
-                    if (RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/prefabtypes/" + oldName))
-                    {
-                        foreach (var file in Directory.GetFiles(RTFile.ApplicationDirectory + "beatmaps/prefabtypes/" + oldName, "*", SearchOption.AllDirectories))
+                        string name = _val;
+                        int n = 0;
+                        while (DataManager.inst.PrefabTypes.Has(x => x.Name == name))
                         {
-                            File.Delete(file);
+                            name = $"{_val}[{n}]";
+                            n++;
                         }
 
-                        foreach (var directory in Directory.GetDirectories(RTFile.ApplicationDirectory + "beatmaps/prefabtypes/" + oldName, "*", SearchOption.AllDirectories))
-                        {
-                            Directory.Delete(directory);
-                        }
+                        DataManager.inst.PrefabTypes[index].Name = name;
 
-                        if (RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/prefabtypes/" + oldName))
-                            Directory.Delete(RTFile.ApplicationDirectory + "beatmaps/prefabtypes/" + oldName);
-                    }
-                });
-                inputField.onEndEdit.ClearAll();
-                inputField.onEndEdit.AddListener(_val =>
-                {
-                    SavePrefabTypes();
-                    RenderPrefabTypesPopup(index, onSelect);
-                });
+                        if (!RTFile.FileExists(prefabType.filePath))
+                            return;
+
+                        File.Delete(prefabType.filePath);
+                    });
+                    inputField.onEndEdit.AddListener(_val =>
+                    {
+                        SavePrefabTypes();
+                        RenderPrefabTypesPopup(current, onSelect);
+                    });
+                }
 
                 EditorThemeManager.AddInputField(inputField);
 
                 var color = gameObject.transform.Find("Color").GetComponent<InputField>();
                 color.onValueChanged.ClearAll();
+                color.onEndEdit.ClearAll();
                 color.characterValidation = InputField.CharacterValidation.None;
                 color.characterLimit = 0;
                 color.text = CoreHelper.ColorToHex(prefabType.Color);
-                color.onValueChanged.AddListener(_val =>
+                color.interactable = !prefabType.isDefault;
+                if (!prefabType.isDefault)
                 {
-                    prefabType.Color = _val.Length == 8 ? LSColors.HexToColorAlpha(_val) : _val.Length == 6 ? LSColors.HexToColor(_val) : LSColors.pink500;
-                });
-                color.onEndEdit.ClearAll();
-                color.onEndEdit.AddListener(_val =>
-                {
-                    RenderPrefabTypesPopup(index, onSelect);
-                    SavePrefabTypes();
-                });
+                    color.onValueChanged.AddListener(prefabType.AssignColor);
+                    color.onEndEdit.AddListener(_val =>
+                    {
+                        RenderPrefabTypesPopup(current, onSelect);
+                        SavePrefabTypes();
+                    });
+                }
 
                 EditorThemeManager.AddInputField(color);
 
                 var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
                 deleteStorage.button.onClick.ClearAll();
-                deleteStorage.button.onClick.AddListener(() =>
-                {
-                    var path = RTFile.ApplicationDirectory + "beatmaps/prefabtypes/" + prefabType.Name;
-
-                    if (RTFile.DirectoryExists(path))
+                deleteStorage.button.interactable = !prefabType.isDefault;
+                if (!prefabType.isDefault)
+                    deleteStorage.button.onClick.AddListener(() =>
                     {
-                        foreach (var file in Directory.GetFiles(path, "*", SearchOption.AllDirectories))
-                        {
-                            File.Delete(file);
-                        }
+                        if (RTFile.FileExists(prefabType.filePath))
+                            File.Delete(prefabType.filePath);
 
-                        foreach (var directory in Directory.GetDirectories(path, "*", SearchOption.AllDirectories))
-                        {
-                            Directory.Delete(directory);
-                        }
+                        DataManager.inst.PrefabTypes.RemoveAt(index);
 
-                        Directory.Delete(path);
-                    }
-
-                    DataManager.inst.PrefabTypes.RemoveAt(index);
-
-                    int n = 0;
-                    foreach (var pt in DataManager.inst.PrefabTypes.Select(x => x as PrefabType))
-                    {
-                        pt.index = n;
-                        n++;
-                    }
-
-                    ReorderPrefabTypes();
-
-                    RenderPrefabTypesPopup(index, onSelect);
-                    SavePrefabTypes();
-                });
+                        RenderPrefabTypesPopup(current, onSelect);
+                        SavePrefabTypes();
+                    });
 
                 EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
-                EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text, true);
+                EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
 
                 var setImageStorage = gameObject.transform.Find("Set Icon").GetComponent<FunctionButtonStorage>();
                 setImageStorage.button.onClick.ClearAll();
-                setImageStorage.button.onClick.AddListener(() =>
-                {
-                    EditorManager.inst.ShowDialog("Browser Popup");
-                    RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".png" }, onSelectFile: _val =>
+                setImageStorage.button.interactable = !prefabType.isDefault;
+
+                if (!prefabType.isDefault)
+                    setImageStorage.button.onClick.AddListener(() =>
                     {
-                        var copyTo = _val.Replace("\\", "/").Replace(Path.GetDirectoryName(_val).Replace("\\", "/"), RTFile.ApplicationDirectory + "beatmaps/prefabtypes/" + prefabType.Name).Replace(Path.GetFileName(_val), "icon.png");
+                        EditorManager.inst.ShowDialog("Browser Popup");
+                        RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".png" }, onSelectFile: _val =>
+                        {
+                            prefabType.icon = SpriteManager.LoadSprite(_val);
+                            icon.sprite = prefabType.icon;
 
-                        File.Copy(_val, copyTo, RTFile.FileExists(copyTo));
-
-                        prefabType.icon = SpriteManager.LoadSprite(copyTo);
-                        icon.sprite = prefabType.icon;
-
-                        EditorManager.inst.HideDialog("Browser Popup");
+                            SavePrefabTypes();
+                            EditorManager.inst.HideDialog("Browser Popup");
+                        });
                     });
-                });
 
                 setImageStorage.text.text = "Set Icon";
 
                 EditorThemeManager.ApplyGraphic(setImageStorage.button.image, ThemeGroup.Function_1, true);
-                EditorThemeManager.ApplyGraphic(setImageStorage.text, ThemeGroup.Function_1_Text, true);
+                EditorThemeManager.ApplyGraphic(setImageStorage.text, ThemeGroup.Function_1_Text);
 
                 num++;
             }
         }
 
-        public void SearchPrefabType(string t, BasePrefab prefab)
-        {
-            typeIF.onValueChanged.ClearAll();
-            typeIF.text = t;
-            typeIF.onValueChanged.AddListener(_val =>
-            {
-                if (DataManager.inst.PrefabTypes.Find(x => x.Name.ToLower() == _val.ToLower()) == null)
-                    return;
+        //public void SetPrefabTypeIcon(Image icon, PrefabType prefabType)
+        //{
+        //    RTEditor.inst.ShowWarningPopup("Which file browser do you want to use?", () =>
+        //    {
+        //        var _val = Crosstales.FB.FileBrowser.OpenSingleFile("Select an icon!", RTFile.ApplicationDirectory, "png", "jpg");
+        //        prefabType.icon = SpriteManager.LoadSprite(_val);
+        //        icon.sprite = prefabType.icon;
+        //    }, () =>
+        //    {
+        //        EditorManager.inst.ShowDialog("Browser Popup");
+        //        RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".png" }, onSelectFile: _val =>
+        //        {
+        //            prefabType.icon = SpriteManager.LoadSprite(_val);
+        //            icon.sprite = prefabType.icon;
 
-                prefab.Type = DataManager.inst.PrefabTypes.FindIndex(x => x.Name.ToLower() == _val.ToLower());
-                typeImage.color = DataManager.inst.PrefabTypes[prefab.Type].Color;
-                typeImage.transform.Find("Text").GetComponent<Text>().color = CoreHelper.InvertColorHue(CoreHelper.InvertColorValue(((Prefab)prefab).TypeColor));
-                currentPrefabType = prefab.Type;
-                foreach (var prefabObject in DataManager.inst.gameData.prefabObjects)
-                    if (prefabObject.prefabID == prefab.ID)
-                        ObjectEditor.inst.RenderTimelineObject(GetTimelineObject((PrefabObject)prefabObject));
-            });
-        }
+        //            EditorManager.inst.HideDialog("Browser Popup");
+        //        });
+        //    }, "Local Browser", "In-game Browser");
+        //}
 
         #endregion
 
@@ -1463,6 +1801,10 @@ namespace BetterLegacy.Editor.Managers
 
         public Button externalType;
         public Image externalTypeImage;
+        public Text externalTypeText;
+
+        public Image externalCreatorImage;
+        public Text externalCreatorText;
 
         public Button importPrefab;
         public Button exportToVG;
@@ -1472,34 +1814,30 @@ namespace BetterLegacy.Editor.Managers
 
         public void CreatePrefabExternalDialog()
         {
-            var editorDialogObject = Instantiate(EditorManager.inst.GetDialog("Multi Keyframe Editor (Object)").Dialog.gameObject);
-            var editorDialogTransform = editorDialogObject.transform;
-            editorDialogObject.name = "PrefabExternalDialog";
-            editorDialogObject.layer = 5;
-            editorDialogTransform.SetParent(GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs").transform);
-            editorDialogTransform.localScale = Vector3.one;
-            editorDialogTransform.position = new Vector3(1537.5f, 714.945f, 0f) * EditorManager.inst.ScreenScale;
-            editorDialogTransform.AsRT().sizeDelta = new Vector2(0f, 32f);
+            var editorDialog = EditorManager.inst.GetDialog("Multi Keyframe Editor (Object)").Dialog.gameObject.Duplicate(EditorManager.inst.dialogs, "PrefabExternalDialog");
+            //editorDialog.transform.localScale = Vector3.one;
+            //editorDialog.transform.position = new Vector3(1537.5f, 714.945f, 0f) * EditorManager.inst.ScreenScale;
+            editorDialog.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
 
-            var editorDialogTitle = editorDialogTransform.GetChild(0);
+            var editorDialogTitle = editorDialog.transform.GetChild(0);
             editorDialogTitle.GetComponent<Image>().color = LSColors.HexToColor("4C4C4C");
             var documentationTitle = editorDialogTitle.GetChild(0).GetComponent<Text>();
             documentationTitle.text = "- External Prefab View -";
             documentationTitle.color = new Color(0.9f, 0.9f, 0.9f, 1f);
 
-            var editorDialogSpacer = editorDialogTransform.GetChild(1);
+            var editorDialogSpacer = editorDialog.transform.GetChild(1);
             editorDialogSpacer.AsRT().sizeDelta = new Vector2(765f, 54f);
 
-            editorDialogTransform.GetChild(1).AsRT().sizeDelta = new Vector2(765f, 24f);
+            editorDialog.transform.GetChild(1).AsRT().sizeDelta = new Vector2(765f, 24f);
 
             var labelTypeBase = new GameObject("Type Label");
-            labelTypeBase.transform.SetParent(editorDialogTransform);
+            labelTypeBase.transform.SetParent(editorDialog.transform);
             labelTypeBase.transform.localScale = Vector3.one;
 
             var labelTypeBaseRT = labelTypeBase.AddComponent<RectTransform>();
             labelTypeBaseRT.sizeDelta = new Vector2(765f, 32f);
 
-            var labelType = editorDialogTransform.GetChild(2);
+            var labelType = editorDialog.transform.GetChild(2);
             labelType.SetParent(labelTypeBaseRT);
             labelType.localPosition = Vector3.zero;
             labelType.localScale = Vector3.one;
@@ -1510,7 +1848,7 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddLightText(labelTypeText);
 
             var prefabTypeBase = new GameObject("Prefab Type Base");
-            prefabTypeBase.transform.SetParent(editorDialogTransform);
+            prefabTypeBase.transform.SetParent(editorDialog.transform);
             prefabTypeBase.transform.localScale = Vector3.one;
 
             var prefabTypeBaseRT = prefabTypeBase.AddComponent<RectTransform>();
@@ -1520,23 +1858,18 @@ namespace BetterLegacy.Editor.Managers
 
             var prefabType = prefabEditorData.gameObject.Duplicate(prefabTypeBaseRT, "Show Type Editor");
 
-            prefabType.transform.AsRT().anchoredPosition = new Vector2(-250f, 0f);
-            prefabType.transform.AsRT().anchorMax = new Vector2(0.5f, 0.5f);
-            prefabType.transform.AsRT().anchorMin = new Vector2(0.5f, 0.5f);
-            prefabType.transform.AsRT().pivot = new Vector2(0.5f, 0.5f);
-            prefabType.transform.AsRT().sizeDelta = new Vector2(232f, 34f);
-            var prefabTypeText = prefabType.transform.Find("Text").GetComponent<Text>();
-            prefabTypeText.text = "Open Prefab Type Editor";
+            UIManager.SetRectTransform(prefabType.transform.AsRT(), new Vector2(-370f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 0.5f), new Vector2(742f, 34f));
             externalType = prefabType.GetComponent<Button>();
+            externalTypeText = prefabType.transform.Find("Text").GetComponent<Text>();
             externalTypeImage = prefabType.GetComponent<Image>();
 
             EditorThemeManager.AddGraphic(externalTypeImage, ThemeGroup.Null, true);
 
-            prefabTypeText.gameObject.AddComponent<ContrastColors>().Init(prefabTypeText, externalTypeImage);
+            prefabType.gameObject.AddComponent<ContrastColors>().Init(externalTypeText, externalTypeImage);
 
-            RTEditor.GenerateSpacer("spacer2", editorDialogTransform, new Vector2(765f, 24f));
+            RTEditor.GenerateSpacer("spacer2", editorDialog.transform, new Vector2(765f, 24f));
 
-            var labelNameBase = Creator.NewUIObject("Name Label", editorDialogTransform);
+            var labelNameBase = Creator.NewUIObject("Name Label", editorDialog.transform);
             labelNameBase.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
 
             var labelName = labelType.gameObject.Duplicate(labelNameBase.transform);
@@ -1548,7 +1881,7 @@ namespace BetterLegacy.Editor.Managers
             labelNameText.alignment = TextAnchor.UpperLeft;
             EditorThemeManager.AddLightText(labelNameText);
 
-            var nameTextBase1 = Creator.NewUIObject("Text Base 1", editorDialogTransform);
+            var nameTextBase1 = Creator.NewUIObject("Text Base 1", editorDialog.transform);
             nameTextBase1.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
 
             var name = RTEditor.inst.defaultIF.Duplicate(nameTextBase1.transform);
@@ -1562,9 +1895,9 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.AddInputField(externalNameField);
 
-            RTEditor.GenerateSpacer("spacer3", editorDialogTransform, new Vector2(765f, 4f));
+            RTEditor.GenerateSpacer("spacer3", editorDialog.transform, new Vector2(765f, 4f));
 
-            var labelDescriptionBase = Creator.NewUIObject("Description Label", editorDialogTransform);
+            var labelDescriptionBase = Creator.NewUIObject("Description Label", editorDialog.transform);
             labelDescriptionBase.transform.AsRT().sizeDelta = new Vector2(765f, 32f);
 
             var labelDescription = labelType.gameObject.Duplicate(labelDescriptionBase.transform);
@@ -1576,7 +1909,7 @@ namespace BetterLegacy.Editor.Managers
             labelDescriptionText.alignment = TextAnchor.UpperLeft;
             EditorThemeManager.AddLightText(labelDescriptionText);
 
-            var descriptionTextBase1 = Creator.NewUIObject("Text Base 1", editorDialogTransform);
+            var descriptionTextBase1 = Creator.NewUIObject("Text Base 1", editorDialog.transform);
             descriptionTextBase1.transform.AsRT().sizeDelta = new Vector2(765f, 300f);
 
             var description = RTEditor.inst.defaultIF.Duplicate(descriptionTextBase1.transform);
@@ -1590,10 +1923,10 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.AddInputField(externalDescriptionField);
 
-            RTEditor.GenerateSpacer("spacer4", editorDialogTransform, new Vector2(765f, 80f));
+            RTEditor.GenerateSpacer("spacer4", editorDialog.transform, new Vector2(765f, 80f));
 
             var buttonsBase = new GameObject("buttons base");
-            buttonsBase.transform.SetParent(editorDialogTransform);
+            buttonsBase.transform.SetParent(editorDialog.transform);
             buttonsBase.transform.localScale = Vector3.one;
 
             var buttonsBaseRT = buttonsBase.AddComponent<RectTransform>();
@@ -1620,9 +1953,9 @@ namespace BetterLegacy.Editor.Managers
             this.exportToVG = exportToVGStorage.button;
             exportToVGStorage.text.text = "Convert to VG Format";
 
-            EditorHelper.AddEditorDialog("Prefab External Dialog", editorDialogObject);
+            EditorHelper.AddEditorDialog("Prefab External Dialog", editorDialog);
 
-            EditorThemeManager.AddGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
+            EditorThemeManager.AddGraphic(editorDialog.GetComponent<Image>(), ThemeGroup.Background_1);
             EditorThemeManager.AddSelectable(importPrefabStorage.button, ThemeGroup.Function_2);
             EditorThemeManager.AddSelectable(exportToVGStorage.button, ThemeGroup.Function_2);
             EditorThemeManager.AddGraphic(importPrefabStorage.text, ThemeGroup.Function_2_Text);
@@ -1633,16 +1966,19 @@ namespace BetterLegacy.Editor.Managers
         {
             var prefab = prefabPanel.Prefab;
 
-            externalTypeImage.color = prefab.Type < DataManager.inst.PrefabTypes.Count ? DataManager.inst.PrefabTypes[prefab.Type].Color : PrefabType.InvalidType.Color;
+            externalTypeText.text = prefab.PrefabType.Name + " [ Click to Open Prefab Type Editor ]";
+            externalTypeImage.color = prefab.PrefabType.Color;
             externalType.onClick.ClearAll();
             externalType.onClick.AddListener(() =>
             {
-                OpenPrefabTypePopup(prefab.Type, index =>
+                OpenPrefabTypePopup(prefab.typeID, id =>
                 {
-                    prefab.Type = index;
-                    var prefabType = prefab.Type < DataManager.inst.PrefabTypes.Count ? (PrefabType)DataManager.inst.PrefabTypes[prefab.Type] : PrefabType.InvalidType;
+                    prefab.Type = PrefabType.prefabTypeLSIDToIndex.ContainsKey(id) ? PrefabType.prefabTypeLSIDToIndex[id] : PrefabType.prefabTypeVGIDToIndex.ContainsKey(id) ? PrefabType.prefabTypeVGIDToIndex[id] : 0;
+                    prefab.typeID = id;
+                    var prefabType = prefab.PrefabType;
                     var color = prefabType.Color;
                     externalTypeImage.color = color;
+                    externalTypeText.text = prefabType.Name + " [ Click to Open Prefab Type Editor ]";
 
                     prefabPanel.TypeImage.color = color;
                     prefabPanel.TypeIcon.sprite = prefabType.icon;
@@ -1698,7 +2034,6 @@ namespace BetterLegacy.Editor.Managers
                 RTEditor.inst.EnablePrefabWatcher();
             });
 
-            //externalNameField.interactable = false;
             externalNameField.onValueChanged.ClearAll();
             externalNameField.onEndEdit.ClearAll();
             externalNameField.text = prefab.Name;
@@ -1742,6 +2077,7 @@ namespace BetterLegacy.Editor.Managers
                 ObjectEditor.inst.SelectedPrefabObjects.Select(x => x.GetData<PrefabObject>()).ToList());
 
             prefab.description = NewPrefabDescription;
+            prefab.typeID = NewPrefabTypeID;
 
             foreach (var beatmapObject in prefab.objects)
             {
@@ -1948,8 +2284,11 @@ namespace BetterLegacy.Editor.Managers
 
             TriggerHelper.AddEventTriggers(offsetInput.gameObject, TriggerHelper.ScrollDelta(offsetInput));
 
-            PrefabEditor.inst.dialog.Find("data/type/Show Type Editor").GetComponent<Image>().color =
-                DataManager.inst.PrefabTypes[Mathf.Clamp(PrefabEditor.inst.NewPrefabType, 0, DataManager.inst.PrefabTypes.Count - 1)].Color;
+            if (DataManager.inst.PrefabTypes.TryFind(x => x is PrefabType prefabType && prefabType.id == NewPrefabTypeID, out DataManager.PrefabType vanillaPrefabType) && vanillaPrefabType is PrefabType prefabType)
+            {
+                externalCreatorText.text = prefabType.Name + " [ Click to Open Prefab Type Editor ]";
+                externalCreatorImage.color = prefabType.Color;
+            }
 
             var description = PrefabEditor.inst.dialog.Find("data/description/input").GetComponent<InputField>();
             description.onValueChanged.ClearAll();
@@ -1963,8 +2302,6 @@ namespace BetterLegacy.Editor.Managers
             description.onValueChanged.AddListener(_val => { NewPrefabDescription = _val; });
 
             ReloadSelectionContent();
-
-            ((RectTransform)PrefabEditor.inst.dialog.Find("data/type/Show Type Editor")).sizeDelta = new Vector2(260f, 34f);
         }
 
         public void UpdateCurrentPrefab(BasePrefab __0)
@@ -2028,15 +2365,15 @@ namespace BetterLegacy.Editor.Managers
 
             var list = new List<Coroutine>();
 
-            int num = 0;
-            foreach (var prefab in DataManager.inst.gameData.prefabs)
+            var prefabs = GameData.Current.prefabs;
+            for (int i = 0; i < prefabs.Count; i++)
             {
+                var prefab = (Prefab)prefabs[i];
                 if (ContainsName(prefab, PrefabDialog.Internal))
-                    list.Add(StartCoroutine(CreatePrefabButton((Prefab)prefab, num, PrefabDialog.Internal, null, _toggle, hoverSize,
+                    list.Add(StartCoroutine(CreatePrefabButton(prefab, i, PrefabDialog.Internal, null, _toggle, hoverSize,
                         nameHorizontalOverflow, nameVerticalOverflow, nameFontSize,
                         typeHorizontalOverflow, typeVerticalOverflow, typeFontSize,
                         deleteAnchoredPosition, deleteSizeDelta)));
-                num++;
             }
 
             yield break;
@@ -2087,7 +2424,7 @@ namespace BetterLegacy.Editor.Managers
 
             name.text = prefab.Name;
 
-            var prefabType = prefab.Type >= 0 && prefab.Type < DataManager.inst.PrefabTypes.Count ? (PrefabType)DataManager.inst.PrefabTypes[prefab.Type] : PrefabType.InvalidType;
+            var prefabType = prefab.PrefabType;
 
             typeName.text = prefabType.Name;
             typeImage.color = prefabType.Color;
@@ -2207,8 +2544,9 @@ namespace BetterLegacy.Editor.Managers
                         prefabToSaveTo.prefabObjects = prefabToSaveFrom.prefabObjects.Clone();
                         prefabToSaveTo.Offset = prefabToSaveFrom.Offset;
                         prefabToSaveTo.Type = prefabToSaveFrom.Type;
+                        prefabToSaveTo.typeID = prefabToSaveFrom.typeID;
 
-                        var prefabType = prefabToSaveTo.Type >= 0 && prefabToSaveTo.Type < DataManager.inst.PrefabTypes.Count ? (PrefabType)DataManager.inst.PrefabTypes[prefabToSaveTo.Type] : PrefabType.InvalidType;
+                        var prefabType = prefab.PrefabType;
 
                         typeName.text = prefabType.Name;
                         typeImage.color = prefabType.Color;
@@ -2247,12 +2585,12 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
-        public bool ContainsName(BasePrefab _p, PrefabDialog _d)
+        public bool ContainsName(Prefab _p, PrefabDialog _d)
         {
             string str = _d == PrefabDialog.External ?
                 string.IsNullOrEmpty(PrefabEditor.inst.externalSearchStr) ? "" : PrefabEditor.inst.externalSearchStr.ToLower() :
                 string.IsNullOrEmpty(PrefabEditor.inst.internalSearchStr) ? "" : PrefabEditor.inst.internalSearchStr.ToLower();
-            return string.IsNullOrEmpty(str) || _p.Name.ToLower().Contains(str) || (_p.Type < DataManager.inst.PrefabTypes.Count ? DataManager.inst.PrefabTypes[_p.Type] : PrefabType.InvalidType).Name.ToLower().Contains(str);
+            return string.IsNullOrEmpty(str) || _p.Name.ToLower().Contains(str) || _p.PrefabType.Name.ToLower().Contains(str);
         }
 
         public void ImportPrefabIntoLevel(BasePrefab _prefab)
