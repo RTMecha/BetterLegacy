@@ -590,7 +590,7 @@ namespace BetterLegacy.Patchers
                             }
 
                             var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
-                            Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                            Updater.UpdateObject(beatmapObject, "Keyframes");
                             ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
                         });
 
@@ -615,7 +615,7 @@ namespace BetterLegacy.Patchers
                                 }
 
                                 var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
-                                Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                                Updater.UpdateObject(beatmapObject, "Keyframes");
                                 ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
                             });
 
@@ -1415,7 +1415,7 @@ namespace BetterLegacy.Patchers
 
                     ((RectTransform)timelineObject.GameObject.transform).anchoredPosition = new Vector2(timePosition, 0f);
 
-                    Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                    Updater.UpdateObject(beatmapObject, "Keyframes");
 
                     ObjectEditor.inst.RenderKeyframe(beatmapObject, timelineObject);
                 }
@@ -1500,7 +1500,7 @@ namespace BetterLegacy.Patchers
 
                 ObjectEditor.inst.RenderKeyframes(beatmapObject);
                 ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
-                Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                Updater.UpdateObject(beatmapObject, "Keyframes");
                 EditorManager.inst.DisplayNotification("Pasted keyframe data to selected keyframes!", 2f, EditorManager.NotificationType.Success);
             });
 
@@ -1566,7 +1566,7 @@ namespace BetterLegacy.Patchers
 
                 ObjectEditor.inst.RenderKeyframes(beatmapObject);
                 ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
-                Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                Updater.UpdateObject(beatmapObject, "Keyframes");
                 EditorManager.inst.DisplayNotification("Pasted position keyframe data to selected position keyframes!", 3f, EditorManager.NotificationType.Success);
             });
 
@@ -1607,7 +1607,7 @@ namespace BetterLegacy.Patchers
 
                 ObjectEditor.inst.RenderKeyframes(beatmapObject);
                 ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
-                Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                Updater.UpdateObject(beatmapObject, "Keyframes");
                 EditorManager.inst.DisplayNotification("Pasted scale keyframe data to selected scale keyframes!", 3f, EditorManager.NotificationType.Success);
             });
 
@@ -1673,7 +1673,7 @@ namespace BetterLegacy.Patchers
 
                 ObjectEditor.inst.RenderKeyframes(beatmapObject);
                 ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
-                Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                Updater.UpdateObject(beatmapObject, "Keyframes");
                 EditorManager.inst.DisplayNotification("Pasted rotation keyframe data to selected rotation keyframes!", 3f, EditorManager.NotificationType.Success);
             });
 
@@ -1714,7 +1714,7 @@ namespace BetterLegacy.Patchers
 
                 ObjectEditor.inst.RenderKeyframes(beatmapObject);
                 ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
-                Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                Updater.UpdateObject(beatmapObject, "Keyframes");
                 EditorManager.inst.DisplayNotification("Pasted color keyframe data to selected color keyframes!", 3f, EditorManager.NotificationType.Success);
             });
 

@@ -76,7 +76,7 @@ namespace BetterLegacy.Editor.Managers
                     // Keyframes affect both physical object and timeline object.
                     RenderTimelineObject(GetTimelineObject(beatmapObject));
                     if (UpdateObjects)
-                        Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                        Updater.UpdateObject(beatmapObject, "Keyframes");
                 });
 
                 var comp = ObjEditor.inst.TimelineParents[tmpIndex].GetComponent<EventTrigger>();
@@ -373,8 +373,8 @@ namespace BetterLegacy.Editor.Managers
                 RenderKeyframe(beatmapObject, timelineObject);
             }
 
-            Updater.UpdateProcessor(beatmapObject, "Keyframes");
-            Updater.UpdateProcessor(beatmapObject, "Autokill");
+            Updater.UpdateObject(beatmapObject, "Keyframes");
+            Updater.UpdateObject(beatmapObject, "Autokill");
             RenderObjectKeyframesDialog(beatmapObject);
             ResizeKeyframeTimeline(beatmapObject);
 
@@ -426,8 +426,8 @@ namespace BetterLegacy.Editor.Managers
                             .Where(c => c.prefabInstanceID == x.ID)
                         .Select(c => c.id)));
 
-            DataManager.inst.gameData.beatmapObjects.Where(x => beatmapObjectIDs.Contains(x.id)).ToList().ForEach(x => Updater.UpdateProcessor(x, reinsert: false));
-            DataManager.inst.gameData.beatmapObjects.Where(x => prefabObjectIDs.Contains(x.prefabInstanceID)).ToList().ForEach(x => Updater.UpdateProcessor(x, reinsert: false));
+            DataManager.inst.gameData.beatmapObjects.Where(x => beatmapObjectIDs.Contains(x.id)).ToList().ForEach(x => Updater.UpdateObject(x, reinsert: false));
+            DataManager.inst.gameData.beatmapObjects.Where(x => prefabObjectIDs.Contains(x.prefabInstanceID)).ToList().ForEach(x => Updater.UpdateObject(x, reinsert: false));
 
             DataManager.inst.gameData.beatmapObjects.RemoveAll(x => beatmapObjectIDs.Contains(x.id));
             DataManager.inst.gameData.beatmapObjects.RemoveAll(x => prefabObjectIDs.Contains(x.prefabInstanceID));
@@ -451,7 +451,7 @@ namespace BetterLegacy.Editor.Managers
             if (timelineObject.IsBeatmapObject)
             {
                 var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                Updater.UpdateProcessor(beatmapObject, reinsert: false);
+                Updater.UpdateObject(beatmapObject, reinsert: false);
 
                 if (DataManager.inst.gameData.beatmapObjects.Count > 1)
                 {
@@ -467,7 +467,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             bm.parent = "";
 
-                            Updater.UpdateProcessor(bm);
+                            Updater.UpdateObject(bm);
                         }
                     }
                 }
@@ -536,10 +536,10 @@ namespace BetterLegacy.Editor.Managers
             bmTimelineObject.InternalSelections.RemoveAll(x => x.selected);
 
             RenderTimelineObject(bmTimelineObject);
-            Updater.UpdateProcessor(beatmapObject, "Keyframes");
+            Updater.UpdateObject(beatmapObject, "Keyframes");
 
             if (beatmapObject.autoKillType == AutoKillType.LastKeyframe || beatmapObject.autoKillType == AutoKillType.LastKeyframeOffset)
-                Updater.UpdateProcessor(beatmapObject, "Autokill");
+                Updater.UpdateObject(beatmapObject, "Autokill");
 
             RenderKeyframes(beatmapObject);
 
@@ -566,7 +566,7 @@ namespace BetterLegacy.Editor.Managers
 
                 RenderTimelineObject(GetTimelineObject(beatmapObject));
                 if (UpdateObjects)
-                    Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                    Updater.UpdateObject(beatmapObject, "Keyframes");
                 return;
             }
             EditorManager.inst.DisplayNotification("Can't delete first Keyframe", 2f, EditorManager.NotificationType.Error, false);
@@ -631,8 +631,8 @@ namespace BetterLegacy.Editor.Managers
 
             if (UpdateObjects)
             {
-                Updater.UpdateProcessor(beatmapObject, "Keyframes");
-                Updater.UpdateProcessor(beatmapObject, "Autokill");
+                Updater.UpdateObject(beatmapObject, "Keyframes");
+                Updater.UpdateObject(beatmapObject, "Autokill");
             }
         }
 
@@ -762,7 +762,7 @@ namespace BetterLegacy.Editor.Managers
 
                 foreach (var beatmapObject in pastedObjects)
                 {
-                    Updater.UpdateProcessor(beatmapObject);
+                    Updater.UpdateObject(beatmapObject);
                 }
 
                 pastedObjects.Clear();
@@ -850,7 +850,7 @@ namespace BetterLegacy.Editor.Managers
                 bm.events[0][0].eventValues[1] = pos.y;
             }
 
-            Updater.UpdateProcessor(bm);
+            Updater.UpdateObject(bm);
             RenderTimelineObject(timelineObject);
             OpenDialog(bm);
 
@@ -883,7 +883,7 @@ namespace BetterLegacy.Editor.Managers
                 bm.events[0][0].eventValues[1] = pos.y;
             }
 
-            Updater.UpdateProcessor(bm);
+            Updater.UpdateObject(bm);
             RenderTimelineObject(timelineObject);
             OpenDialog(bm);
 
@@ -916,7 +916,7 @@ namespace BetterLegacy.Editor.Managers
                 bm.events[0][0].eventValues[1] = pos.y;
             }
 
-            Updater.UpdateProcessor(bm);
+            Updater.UpdateObject(bm);
             RenderTimelineObject(timelineObject);
             OpenDialog(bm);
 
@@ -958,7 +958,7 @@ namespace BetterLegacy.Editor.Managers
                 bm.events[0][0].eventValues[1] = pos.y;
             }
 
-            Updater.UpdateProcessor(bm);
+            Updater.UpdateObject(bm);
             RenderTimelineObject(timelineObject);
 
             if (!CoreHelper.AprilFools)
@@ -993,7 +993,7 @@ namespace BetterLegacy.Editor.Managers
                 bm.events[0][0].eventValues[1] = pos.y;
             }
 
-            Updater.UpdateProcessor(bm);
+            Updater.UpdateObject(bm);
             RenderTimelineObject(timelineObject);
             OpenDialog(bm);
 
@@ -1027,7 +1027,7 @@ namespace BetterLegacy.Editor.Managers
                 bm.events[0][0].eventValues[1] = pos.y;
             }
 
-            Updater.UpdateProcessor(bm);
+            Updater.UpdateObject(bm);
             RenderTimelineObject(timelineObject);
             OpenDialog(bm);
 
@@ -1060,7 +1060,7 @@ namespace BetterLegacy.Editor.Managers
                 bm.events[0][0].eventValues[1] = pos.y;
             }
 
-            Updater.UpdateProcessor(bm);
+            Updater.UpdateObject(bm);
             RenderTimelineObject(timelineObject);
             OpenDialog(bm);
 
@@ -1093,7 +1093,7 @@ namespace BetterLegacy.Editor.Managers
                 bm.events[0][0].eventValues[1] = pos.y + (CoreHelper.AprilFools ? 999f : 0f);
             }
 
-            Updater.UpdateProcessor(bm);
+            Updater.UpdateObject(bm);
             RenderTimelineObject(timelineObject);
             OpenDialog(bm);
 
@@ -1125,7 +1125,7 @@ namespace BetterLegacy.Editor.Managers
                 bm.events[0][0].eventValues[1] = pos.y;
             }
 
-            Updater.UpdateProcessor(bm);
+            Updater.UpdateObject(bm);
             RenderTimelineObject(timelineObject);
             OpenDialog(bm);
 
@@ -1259,7 +1259,7 @@ namespace BetterLegacy.Editor.Managers
                     var timelineObject = new TimelineObject(beatmapObject);
 
                     inst.RenderTimelineObject(timelineObject);
-                    Updater.UpdateProcessor(beatmapObject);
+                    Updater.UpdateObject(beatmapObject);
                     inst.SetCurrentObject(timelineObject);
                 }
             }
@@ -1443,7 +1443,7 @@ namespace BetterLegacy.Editor.Managers
             beatmapObject.events[type].Add(eventKeyframe);
 
             RenderTimelineObject(GetTimelineObject(beatmapObject));
-            Updater.UpdateProcessor(beatmapObject, "Autokill");
+            Updater.UpdateObject(beatmapObject, "Autokill");
             if (openDialog)
             {
                 ResizeKeyframeTimeline(beatmapObject);
@@ -1980,7 +1980,7 @@ namespace BetterLegacy.Editor.Managers
             ldmToggle.onValueChanged.AddListener(_val =>
             {
                 beatmapObject.LDM = _val;
-                Updater.UpdateProcessor(beatmapObject);
+                Updater.UpdateObject(beatmapObject);
             });
         }
 
@@ -2089,7 +2089,7 @@ namespace BetterLegacy.Editor.Managers
                 // ObjectType affects both physical object and timeline object.
                 RenderTimelineObject(GetTimelineObject(beatmapObject));
                 if (UpdateObjects)
-                    Updater.UpdateProcessor(beatmapObject);
+                    Updater.UpdateObject(beatmapObject);
 
                 RenderEmpty(beatmapObject);
             });
@@ -2133,7 +2133,7 @@ namespace BetterLegacy.Editor.Managers
                     // StartTime affects both physical object and timeline object.
                     RenderTimelineObject(GetTimelineObject(beatmapObject));
                     if (UpdateObjects)
-                        Updater.UpdateProcessor(beatmapObject, "StartTime");
+                        Updater.UpdateObject(beatmapObject, "StartTime");
                 }
             });
 
@@ -2153,7 +2153,7 @@ namespace BetterLegacy.Editor.Managers
                 // StartTime affects both physical object and timeline object.
                 RenderTimelineObject(GetTimelineObject(beatmapObject));
                 if (UpdateObjects)
-                    Updater.UpdateProcessor(beatmapObject, "StartTime");
+                    Updater.UpdateObject(beatmapObject, "StartTime");
 
                 ResizeKeyframeTimeline(beatmapObject);
             });
@@ -2171,7 +2171,7 @@ namespace BetterLegacy.Editor.Managers
                 // StartTime affects both physical object and timeline object.
                 RenderTimelineObject(GetTimelineObject(beatmapObject));
                 if (UpdateObjects)
-                    Updater.UpdateProcessor(beatmapObject, "StartTime");
+                    Updater.UpdateObject(beatmapObject, "StartTime");
 
                 ResizeKeyframeTimeline(beatmapObject);
             });
@@ -2186,7 +2186,7 @@ namespace BetterLegacy.Editor.Managers
                 // StartTime affects both physical object and timeline object.
                 RenderTimelineObject(GetTimelineObject(beatmapObject));
                 if (UpdateObjects)
-                    Updater.UpdateProcessor(beatmapObject, "StartTime");
+                    Updater.UpdateObject(beatmapObject, "StartTime");
 
                 ResizeKeyframeTimeline(beatmapObject);
             });
@@ -2203,7 +2203,7 @@ namespace BetterLegacy.Editor.Managers
                 // StartTime affects both physical object and timeline object.
                 RenderTimelineObject(GetTimelineObject(beatmapObject));
                 if (UpdateObjects)
-                    Updater.UpdateProcessor(beatmapObject, "StartTime");
+                    Updater.UpdateObject(beatmapObject, "StartTime");
 
                 ResizeKeyframeTimeline(beatmapObject);
             });
@@ -2220,7 +2220,7 @@ namespace BetterLegacy.Editor.Managers
                 // StartTime affects both physical object and timeline object.
                 RenderTimelineObject(GetTimelineObject(beatmapObject));
                 if (UpdateObjects)
-                    Updater.UpdateProcessor(beatmapObject, "StartTime");
+                    Updater.UpdateObject(beatmapObject, "StartTime");
 
                 ResizeKeyframeTimeline(beatmapObject);
             });
@@ -2241,7 +2241,7 @@ namespace BetterLegacy.Editor.Managers
                 // AutoKillType affects both physical object and timeline object.
                 RenderTimelineObject(GetTimelineObject(beatmapObject));
                 if (UpdateObjects)
-                    Updater.UpdateProcessor(beatmapObject, "Autokill");
+                    Updater.UpdateObject(beatmapObject, "Autokill");
                 ResizeKeyframeTimeline(beatmapObject);
                 RenderAutokill(beatmapObject);
 
@@ -2279,7 +2279,7 @@ namespace BetterLegacy.Editor.Managers
                         // AutoKillType affects both physical object and timeline object.
                         RenderTimelineObject(GetTimelineObject(beatmapObject));
                         if (UpdateObjects)
-                            Updater.UpdateProcessor(beatmapObject, "Autokill");
+                            Updater.UpdateObject(beatmapObject, "Autokill");
                         ResizeKeyframeTimeline(beatmapObject);
                     }
                 });
@@ -2392,7 +2392,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // Since parent has no affect on the timeline object, we will only need to update the physical object.
                 if (UpdateObjects)
-                    Updater.UpdateProcessor(beatmapObject, "Parent");
+                    Updater.UpdateObject(beatmapObject, "Parent");
 
                 RenderParent(beatmapObject);
             });
@@ -2440,7 +2440,7 @@ namespace BetterLegacy.Editor.Managers
                 spawnOnce.onValueChanged.AddListener(_val =>
                 {
                     beatmapObject.desync = _val;
-                    Updater.UpdateProcessor(beatmapObject);
+                    Updater.UpdateObject(beatmapObject);
                 });
             }
 
@@ -2462,9 +2462,9 @@ namespace BetterLegacy.Editor.Managers
 
                     // Since updating parent type has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects && !string.IsNullOrEmpty(beatmapObject.parent) && beatmapObject.parent != "CAMERA_PARENT")
-                        Updater.UpdateProcessor(beatmapObject.GetParent());
+                        Updater.UpdateObject(beatmapObject.GetParent());
                     else if (UpdateObjects && beatmapObject.parent == "CAMERA_PARENT")
-                        Updater.UpdateProcessor(beatmapObject);
+                        Updater.UpdateObject(beatmapObject);
                 });
 
                 // Parent Offset
@@ -2482,9 +2482,9 @@ namespace BetterLegacy.Editor.Managers
 
                         // Since updating parent type has no affect on the timeline object, we will only need to update the physical object.
                         if (UpdateObjects && !string.IsNullOrEmpty(beatmapObject.parent) && beatmapObject.parent != "CAMERA_PARENT")
-                            Updater.UpdateProcessor(beatmapObject.GetParent());
+                            Updater.UpdateObject(beatmapObject.GetParent());
                         else if (UpdateObjects && beatmapObject.parent == "CAMERA_PARENT")
-                            Updater.UpdateProcessor(beatmapObject);
+                            Updater.UpdateObject(beatmapObject);
                     }
                 });
 
@@ -2505,7 +2505,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     beatmapObject.SetParentAdditive(index, _val);
                     if (UpdateObjects)
-                        Updater.UpdateProcessor(beatmapObject);
+                        Updater.UpdateObject(beatmapObject);
                 });
                 parallax.text = beatmapObject.parallaxSettings[index].ToString();
                 parallax.onValueChanged.AddListener(_val =>
@@ -2516,7 +2516,7 @@ namespace BetterLegacy.Editor.Managers
 
                             // Since updating parent type has no affect on the timeline object, we will only need to update the physical object.
                             if (UpdateObjects)
-                            Updater.UpdateProcessor(beatmapObject);
+                            Updater.UpdateObject(beatmapObject);
                     }
                 });
 
@@ -2548,7 +2548,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Since origin has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
-                        Updater.UpdateProcessor(beatmapObject, "Origin");
+                        Updater.UpdateObject(beatmapObject, "Origin");
                 }
             });
 
@@ -2570,7 +2570,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Since origin has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
-                        Updater.UpdateProcessor(beatmapObject, "Origin");
+                        Updater.UpdateObject(beatmapObject, "Origin");
                 }
             });
 
@@ -2844,7 +2844,7 @@ namespace BetterLegacy.Editor.Managers
                 beatmapObject.shape = shapeSettings.childCount - 1;
                 // Since shape has no affect on the timeline object, we will only need to update the physical object.
                 if (UpdateObjects)
-                    Updater.UpdateProcessor(beatmapObject, "Shape");
+                    Updater.UpdateObject(beatmapObject, "Shape");
 
                 RenderShape(beatmapObject);
             }
@@ -2883,7 +2883,7 @@ namespace BetterLegacy.Editor.Managers
 
                         // Since shape has no affect on the timeline object, we will only need to update the physical object.
                         if (UpdateObjects)
-                            Updater.UpdateProcessor(beatmapObject, "Shape");
+                            Updater.UpdateObject(beatmapObject, "Shape");
 
                         RenderShape(beatmapObject);
                     });
@@ -2909,7 +2909,7 @@ namespace BetterLegacy.Editor.Managers
 
                             // Since shape has no affect on the timeline object, we will only need to update the physical object.
                             if (UpdateObjects)
-                                Updater.UpdateProcessor(beatmapObject, "Shape");
+                                Updater.UpdateObject(beatmapObject, "Shape");
 
                             RenderShape(beatmapObject);
                         });
@@ -2928,7 +2928,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Since text has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
-                        Updater.UpdateProcessor(beatmapObject, "Shape");
+                        Updater.UpdateObject(beatmapObject, "Shape");
                 });
             }
             else if (beatmapObject.shape == 6)
@@ -2979,13 +2979,13 @@ namespace BetterLegacy.Editor.Managers
                             AssetManager.SpriteAssets.Add(beatmapObject.text, SpriteManager.CreateSprite(texture2d));
                         }
 
-                        Updater.UpdateProcessor(beatmapObject);
+                        Updater.UpdateObject(beatmapObject);
                     }
                     else
                     {
                         AssetManager.SpriteAssets.Remove(beatmapObject.text);
 
-                        Updater.UpdateProcessor(beatmapObject);
+                        Updater.UpdateObject(beatmapObject);
                     }
 
                     dataText.text = !AssetManager.SpriteAssets.ContainsKey(beatmapObject.text) ? "Set Data" : "Clear Data";
@@ -3005,7 +3005,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Since depth has no affect on the timeline object, we will only need to update the physical object.
             if (UpdateObjects)
-                Updater.UpdateProcessor(beatmapObject, "Depth");
+                Updater.UpdateObject(beatmapObject, "Depth");
         }
 
         public void SetDepthInputField(BeatmapObject beatmapObject, string _value, InputField inputField, Slider slider)
@@ -3024,7 +3024,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Since depth has no affect on the timeline object, we will only need to update the physical object.
             if (UpdateObjects)
-                Updater.UpdateProcessor(beatmapObject, "Depth");
+                Updater.UpdateObject(beatmapObject, "Depth");
         }
 
         /// <summary>
@@ -3067,7 +3067,7 @@ namespace BetterLegacy.Editor.Managers
             renderType.onValueChanged.AddListener(_val =>
             {
                 beatmapObject.background = _val == 1;
-                Updater.UpdateProcessor(beatmapObject);
+                Updater.UpdateObject(beatmapObject);
             });
         }
 
@@ -3255,7 +3255,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
-                        Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                        Updater.UpdateObject(beatmapObject, "Keyframes");
                 }
             });
 
@@ -3275,7 +3275,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
-                        Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                        Updater.UpdateObject(beatmapObject, "Keyframes");
                 }
             });
 
@@ -3295,7 +3295,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
-                        Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                        Updater.UpdateObject(beatmapObject, "Keyframes");
                 }
             });
         }
@@ -3351,7 +3351,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     foreach (var keyframe in selected.Select(x => x.GetData<EventKeyframe>()))
                         keyframe.eventRandomValues[3] = _val;
-                    Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                    Updater.UpdateObject(beatmapObject, "Keyframes");
                 });
             }
 
@@ -3378,7 +3378,7 @@ namespace BetterLegacy.Editor.Managers
 
                             // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                             if (UpdateObjects)
-                                Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                                Updater.UpdateObject(beatmapObject, "Keyframes");
                         }
 
                         UpdateKeyframeRandomDialog(kfdialog, randomValueLabel, randomValue, type, selected, firstKF, beatmapObject, typeName, buttonTmp);
@@ -3410,7 +3410,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
-                        Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                        Updater.UpdateObject(beatmapObject, "Keyframes");
                 }
             });
 
@@ -3465,7 +3465,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
-                        Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                        Updater.UpdateObject(beatmapObject, "Keyframes");
                 }
             });
 
@@ -3485,7 +3485,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
-                        Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                        Updater.UpdateObject(beatmapObject, "Keyframes");
                 }
             });
 
@@ -3505,7 +3505,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
-                        Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                        Updater.UpdateObject(beatmapObject, "Keyframes");
                 }
             });
 
@@ -3540,7 +3540,7 @@ namespace BetterLegacy.Editor.Managers
 
             RenderKeyframes(beatmapObject);
             RenderObjectKeyframesDialog(beatmapObject);
-            Updater.UpdateProcessor(beatmapObject, "Keyframes");
+            Updater.UpdateObject(beatmapObject, "Keyframes");
             EditorManager.inst.DisplayNotification($"Pasted {name.ToLower()} keyframe data to current selected keyframe.", 2f, EditorManager.NotificationType.Success);
         }
 
@@ -3590,7 +3590,7 @@ namespace BetterLegacy.Editor.Managers
                             // Keyframe Time affects both physical object and timeline object.
                             RenderTimelineObject(GetTimelineObject(beatmapObject));
                             if (UpdateObjects)
-                                Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                                Updater.UpdateObject(beatmapObject, "Keyframes");
                         }
                     });
 
@@ -3620,7 +3620,7 @@ namespace BetterLegacy.Editor.Managers
                             // Keyframe Time affects both physical object and timeline object.
                             RenderTimelineObject(GetTimelineObject(beatmapObject));
                             if (UpdateObjects)
-                                Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                                Updater.UpdateObject(beatmapObject, "Keyframes");
                         }
                     });
 
@@ -3645,7 +3645,7 @@ namespace BetterLegacy.Editor.Managers
                             // Keyframe Time affects both physical object and timeline object.
                             RenderTimelineObject(GetTimelineObject(beatmapObject));
                             if (UpdateObjects)
-                                Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                                Updater.UpdateObject(beatmapObject, "Keyframes");
                         }
                     });
 
@@ -3670,7 +3670,7 @@ namespace BetterLegacy.Editor.Managers
                             // Keyframe Time affects both physical object and timeline object.
                             RenderTimelineObject(GetTimelineObject(beatmapObject));
                             if (UpdateObjects)
-                                Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                                Updater.UpdateObject(beatmapObject, "Keyframes");
                         }
                     });
 
@@ -3695,7 +3695,7 @@ namespace BetterLegacy.Editor.Managers
                             // Keyframe Time affects both physical object and timeline object.
                             RenderTimelineObject(GetTimelineObject(beatmapObject));
                             if (UpdateObjects)
-                                Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                                Updater.UpdateObject(beatmapObject, "Keyframes");
                         }
                     });
 
@@ -3718,7 +3718,7 @@ namespace BetterLegacy.Editor.Managers
                         // Keyframe Time affects both physical object and timeline object.
                         RenderTimelineObject(GetTimelineObject(beatmapObject));
                         if (UpdateObjects)
-                            Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                            Updater.UpdateObject(beatmapObject, "Keyframes");
                     });
 
                     var valueIndex = dialog.Find("value base/value index").GetComponent<InputField>();
@@ -3760,7 +3760,7 @@ namespace BetterLegacy.Editor.Managers
                             }
 
                             if (UpdateObjects)
-                                Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                                Updater.UpdateObject(beatmapObject, "Keyframes");
                         }
                     });
 
@@ -3902,7 +3902,7 @@ namespace BetterLegacy.Editor.Managers
                     // Keyframe Time affects both physical object and timeline object.
                     RenderTimelineObject(GetTimelineObject(beatmapObject));
                     if (UpdateObjects)
-                        Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                        Updater.UpdateObject(beatmapObject, "Keyframes");
                 }
             });
 
@@ -4007,7 +4007,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // Since keyframe curve has no affect on the timeline object, we will only need to update the physical object.
                 if (UpdateObjects)
-                    Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                    Updater.UpdateObject(beatmapObject, "Keyframes");
                 RenderKeyframes(beatmapObject);
             });
 
@@ -4123,7 +4123,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                                 if (UpdateObjects)
-                                    Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                                    Updater.UpdateObject(beatmapObject, "Keyframes");
                             }
                         });
 
@@ -4139,7 +4139,7 @@ namespace BetterLegacy.Editor.Managers
                             beatmapObject.opacityCollision = _val;
                             // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                             if (UpdateObjects)
-                                Updater.UpdateProcessor(beatmapObject);
+                                Updater.UpdateObject(beatmapObject);
                         });
 
                         var hue = kfdialog.Find("huesatval/x").GetComponent<InputField>();
@@ -4154,7 +4154,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                                 if (UpdateObjects)
-                                    Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                                    Updater.UpdateObject(beatmapObject, "Keyframes");
                             }
                         });
 
@@ -4175,7 +4175,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                                 if (UpdateObjects)
-                                    Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                                    Updater.UpdateObject(beatmapObject, "Keyframes");
                             }
                         });
 
@@ -4194,7 +4194,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                                 if (UpdateObjects)
-                                    Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                                    Updater.UpdateObject(beatmapObject, "Keyframes");
                             }
                         });
 
@@ -4226,7 +4226,7 @@ namespace BetterLegacy.Editor.Managers
                                 foreach (var keyframe in selected.Select(x => x.GetData<EventKeyframe>()))
                                     keyframe.random = 0;
                                 if (UpdateObjects)
-                                    Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                                    Updater.UpdateObject(beatmapObject, "Keyframes");
                                 RenderObjectKeyframesDialog(beatmapObject);
                             }
                         });
@@ -4240,7 +4240,7 @@ namespace BetterLegacy.Editor.Managers
                                 foreach (var keyframe in selected.Select(x => x.GetData<EventKeyframe>()))
                                     keyframe.random = 5;
                                 if (UpdateObjects)
-                                    Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                                    Updater.UpdateObject(beatmapObject, "Keyframes");
                                 RenderObjectKeyframesDialog(beatmapObject);
                             }
                         });
@@ -4260,7 +4260,7 @@ namespace BetterLegacy.Editor.Managers
                                 {
                                     firstKF.GetData<EventKeyframe>().eventRandomValues[0] = n;
                                     if (UpdateObjects)
-                                        Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                                        Updater.UpdateObject(beatmapObject, "Keyframes");
                                 }
                             });
 
@@ -4272,7 +4272,7 @@ namespace BetterLegacy.Editor.Managers
                                 {
                                     firstKF.GetData<EventKeyframe>().eventRandomValues[1] = n;
                                     if (UpdateObjects)
-                                        Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                                        Updater.UpdateObject(beatmapObject, "Keyframes");
                                 }
                             });
 
@@ -4328,7 +4328,7 @@ namespace BetterLegacy.Editor.Managers
                                     foreach (var keyframe in selected.Select(x => x.GetData<EventKeyframe>()))
                                         keyframe.eventRandomValues[2] = n;
                                     if (UpdateObjects)
-                                        Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                                        Updater.UpdateObject(beatmapObject, "Keyframes");
                                 }
                             });
 
@@ -4358,7 +4358,7 @@ namespace BetterLegacy.Editor.Managers
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
-                        Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                        Updater.UpdateObject(beatmapObject, "Keyframes");
                 });
             }
         }
@@ -4434,7 +4434,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // Since setting image has no affect on the timeline object, we will only need to update the physical object.
                 if (UpdateObjects)
-                    Updater.UpdateProcessor(beatmapObject, "Shape");
+                    Updater.UpdateObject(beatmapObject, "Shape");
 
                 RenderShape(beatmapObject);
             }
@@ -4662,7 +4662,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Since keyframe color has no affect on the timeline object, we will only need to update the physical object.
             if (UpdateObjects)
-                Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                Updater.UpdateObject(beatmapObject, "Keyframes");
 
             int num = 0;
             foreach (var toggle in ObjEditor.inst.colorButtons)
@@ -4682,7 +4682,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Since keyframe color has no affect on the timeline object, we will only need to update the physical object.
             if (UpdateObjects)
-                Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                Updater.UpdateObject(beatmapObject, "Keyframes");
 
             int num = 0;
             foreach (var toggle in ObjEditor.inst.colorButtons)
@@ -4700,7 +4700,7 @@ namespace BetterLegacy.Editor.Managers
             beatmapObject.events[3][ObjEditor.inst.currentKeyframe].eventRandomValues[index] = (float)value;
 
             // Since keyframe color has no affect on the timeline object, we will only need to update the physical object.
-            Updater.UpdateProcessor(beatmapObject, "Keyframes");
+            Updater.UpdateObject(beatmapObject, "Keyframes");
 
             int num = 0;
             foreach (var toggle in toggles)

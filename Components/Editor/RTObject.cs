@@ -225,7 +225,7 @@ namespace BetterLegacy.Components.Editor
             {
                 currentSelection.GetData<BeatmapObject>().parent = beatmapObjectToParentTo.id;
                 var bm = currentSelection.GetData<BeatmapObject>();
-                Updater.UpdateProcessor(bm);
+                Updater.UpdateObject(bm);
                 ObjectEditor.inst.RenderParent(bm);
             }
 
@@ -333,7 +333,7 @@ namespace BetterLegacy.Components.Editor
             if (prefabObjectToDrag != null)
                 Updater.UpdatePrefab(prefabObjectToDrag, "Offset");
             else
-                Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                Updater.UpdateObject(beatmapObject, "Keyframes");
         }
 
         float startDragTime;

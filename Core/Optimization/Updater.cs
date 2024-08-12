@@ -108,32 +108,31 @@ namespace BetterLegacy.Core.Optimization
         /// <param name="recache"></param>
         /// <param name="update"></param>
         /// <param name="reinsert"></param>
-        public static void UpdateProcessor(BaseBeatmapObject beatmapObject, bool recache = true, bool update = true, bool reinsert = true)
+        public static void UpdateObject(BaseBeatmapObject beatmapObject, bool recache = true, bool update = true, bool reinsert = true)
         {
-            var lp = levelProcessor;
-            if (lp != null)
+            if (!levelProcessor)
+                return;
+
+            var level = levelProcessor.level;
+            var converter = levelProcessor.converter;
+            var engine = levelProcessor.engine;
+            var objectSpawner = engine.objectSpawner;
+
+            if (level == null || converter == null)
+                return;
+
+            var objects = level.objects;
+
+            if (!reinsert)
             {
-                var level = levelProcessor.level;
-                var converter = levelProcessor.converter;
-                var engine = levelProcessor.engine;
-                var objectSpawner = engine.objectSpawner;
-
-                if (level != null && converter != null)
-                {
-                    var objects = level.objects;
-
-                    if (!reinsert)
-                    {
-                        recache = true;
-                        update = true;
-                    }
-
-                    if (recache)
-                        CoreHelper.StartCoroutine(RecacheSequences(beatmapObject, converter, reinsert));
-                    if (update)
-                        CoreHelper.StartCoroutine(UpdateObjects(beatmapObject, level, objects, converter, objectSpawner, reinsert));
-                }
+                recache = true;
+                update = true;
             }
+
+            if (recache)
+                CoreHelper.StartCoroutine(RecacheSequences(beatmapObject, converter, reinsert));
+            if (update)
+                CoreHelper.StartCoroutine(UpdateObjects(beatmapObject, level, objects, converter, objectSpawner, reinsert));
         }
 
         public static void Sort()
@@ -153,7 +152,7 @@ namespace BetterLegacy.Core.Optimization
         /// </summary>
         /// <param name="beatmapObject">The BeatmapObject to update.</param>
         /// <param name="context">The specific context to update under.</param>
-        public static void UpdateProcessor(BaseBeatmapObject beatmapObject, string context)
+        public static void UpdateObject(BaseBeatmapObject beatmapObject, string context)
         {
             if (TryGetObject(beatmapObject, out LevelObject levelObject))
             {
@@ -161,7 +160,7 @@ namespace BetterLegacy.Core.Optimization
                 {
                     case "objecttype":
                         {
-                            UpdateProcessor(beatmapObject);
+                            UpdateObject(beatmapObject);
                             break;
                         } // ObjectType
                     case "time":
@@ -234,7 +233,7 @@ namespace BetterLegacy.Core.Optimization
                             }
                             else
                             {
-                                UpdateProcessor(beatmapObject);
+                                UpdateObject(beatmapObject);
                             }
 
                             break;
@@ -300,7 +299,7 @@ namespace BetterLegacy.Core.Optimization
                     case "shape":
                         {
                             //if (beatmapObject.shape == 4 || beatmapObject.shape == 6 || beatmapObject.shape == 9)
-                                UpdateProcessor(beatmapObject);
+                                UpdateObject(beatmapObject);
 
                             //else if (ShapeManager.GetShape(beatmapObject.shape, beatmapObject.shapeOption).mesh != null)
                             //    levelObject.visualObject.GameObject.GetComponent<MeshFilter>().mesh = ShapeManager.GetShape(beatmapObject.shape, beatmapObject.shapeOption).mesh;
@@ -329,14 +328,7 @@ namespace BetterLegacy.Core.Optimization
             }
             else if (context.ToLower() == "starttime" || context.ToLower() == "time")
             {
-                if (levelProcessor && levelProcessor.engine && levelProcessor.engine.objectSpawner != null)
-                {
-                    var spawner = levelProcessor.engine.objectSpawner;
-
-                    spawner.activateList.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
-                    spawner.deactivateList.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
-                    spawner.RecalculateObjectStates();
-                }
+                Sort();
             }
         }
 
@@ -347,7 +339,7 @@ namespace BetterLegacy.Core.Optimization
         /// <param name="reinsert">If the object should be updated or removed.</param>
         public static void UpdatePrefab(BasePrefabObject prefabObject, bool reinsert = true)
         {
-            DataManager.inst.gameData.beatmapObjects.Where(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID).ToList().ForEach(x => UpdateProcessor(x, reinsert: false));
+            DataManager.inst.gameData.beatmapObjects.Where(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID).ToList().ForEach(x => UpdateObject(x, reinsert: false));
 
             DataManager.inst.gameData.beatmapObjects.RemoveAll(x => x.prefabInstanceID == prefabObject.ID);
 
@@ -451,10 +443,10 @@ namespace BetterLegacy.Core.Optimization
                                             }
                                         }
 
-                                        UpdateProcessor(beatmapObject, "Keyframes");
+                                        UpdateObject(beatmapObject, "Keyframes");
                                     }
 
-                                    UpdateProcessor(beatmapObject, "Start Time");
+                                    UpdateObject(beatmapObject, "Start Time");
                                 }
                             }
 
@@ -480,7 +472,7 @@ namespace BetterLegacy.Core.Optimization
                                 UpdatePrefab(prefabObject);
                             }
 
-                            UpdateProcessor(beatmapObject, "Start Time");
+                            UpdateObject(beatmapObject, "Start Time");
                         }
 
                         break;
@@ -579,10 +571,10 @@ namespace BetterLegacy.Core.Optimization
                                             }
                                         }
 
-                                        UpdateProcessor(beatmapObject, "Keyframes");
+                                        UpdateObject(beatmapObject, "Keyframes");
                                     }
 
-                                    UpdateProcessor(beatmapObject, "Start Time");
+                                    UpdateObject(beatmapObject, "Start Time");
                                 }
                             }
 
@@ -608,7 +600,7 @@ namespace BetterLegacy.Core.Optimization
                                 UpdatePrefab(prefabObject);
                             }
 
-                            UpdateProcessor(beatmapObject, "Start Time");
+                            UpdateObject(beatmapObject, "Start Time");
                         }
 
                         break;
@@ -726,7 +718,7 @@ namespace BetterLegacy.Core.Optimization
             if (update)
                 foreach (var bm in list)
                 {
-                    UpdateProcessor(bm);
+                    UpdateObject(bm);
                 }
             list.Clear();
             list = null;
@@ -838,7 +830,7 @@ namespace BetterLegacy.Core.Optimization
             if (update)
                 foreach (var bm in list)
                 {
-                    UpdateProcessor(bm);
+                    UpdateObject(bm);
                 }
 
             list.Clear();

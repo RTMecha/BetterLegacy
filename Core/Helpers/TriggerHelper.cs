@@ -556,7 +556,7 @@ namespace BetterLegacy.Core.Helpers
                     if (ObjectEditor.UpdateObjects)
                     {
                         if (timelineObject.IsBeatmapObject)
-                            Updater.UpdateProcessor(timelineObject.GetData<BeatmapObject>(), "Start Time");
+                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Start Time");
                         if (timelineObject.IsPrefabObject)
                             Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), "Start Time");
                     }
@@ -746,7 +746,7 @@ namespace BetterLegacy.Core.Helpers
             if (dictionary.ContainsKey(timelineObjectToParentTo.ID) && dictionary[timelineObjectToParentTo.ID])
             {
                 currentSelection.GetData<BeatmapObject>().parent = timelineObjectToParentTo.ID;
-                Updater.UpdateProcessor(currentSelection.GetData<BeatmapObject>());
+                Updater.UpdateObject(currentSelection.GetData<BeatmapObject>());
 
                 RTEditor.inst.StartCoroutine(ObjectEditor.RefreshObjectGUI(currentSelection.GetData<BeatmapObject>()));
             }

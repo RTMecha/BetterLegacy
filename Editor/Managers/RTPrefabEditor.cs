@@ -1226,7 +1226,7 @@ namespace BetterLegacy.Editor.Managers
                     RTEditor.inst.timelineObjects.RemoveAt(a);
             }
 
-            DataManager.inst.gameData.beatmapObjects.Where(x => x.prefabInstanceID == prefabInstanceID && !x.fromPrefab).ToList().ForEach(x => Updater.UpdateProcessor(x, reinsert: false));
+            DataManager.inst.gameData.beatmapObjects.Where(x => x.prefabInstanceID == prefabInstanceID && !x.fromPrefab).ToList().ForEach(x => Updater.UpdateObject(x, reinsert: false));
             DataManager.inst.gameData.beatmapObjects.RemoveAll(x => x.prefabInstanceID == prefabInstanceID && !x.fromPrefab);
             DataManager.inst.gameData.prefabObjects.Add(prefabObject);
 
@@ -1368,7 +1368,7 @@ namespace BetterLegacy.Editor.Managers
 
             foreach (var beatmapObject in expandedObjects)
             {
-                Updater.UpdateProcessor(beatmapObject);
+                Updater.UpdateObject(beatmapObject);
             }
 
             expandedObjects.Clear();

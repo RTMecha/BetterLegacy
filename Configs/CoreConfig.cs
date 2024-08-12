@@ -503,7 +503,7 @@ namespace BetterLegacy.Configs
             var list = GameData.Current.BeatmapObjects.Where(x => x.LDM).ToList();
             for (int i = 0; i < list.Count; i++)
             {
-                Updater.UpdateProcessor(list[i]);
+                Updater.UpdateObject(list[i]);
             }
         }
 

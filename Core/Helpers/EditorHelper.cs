@@ -158,7 +158,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 }
 
-                Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                Updater.UpdateObject(beatmapObject, "Keyframes");
             }
 
             return true;
@@ -180,7 +180,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 }
 
-                Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                Updater.UpdateObject(beatmapObject, "Keyframes");
             }
 
             return true;
@@ -192,7 +192,7 @@ namespace BetterLegacy.Core.Helpers
                 return false;
 
             foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
-                Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                Updater.UpdateObject(beatmapObject, "Keyframes");
 
             return true;
         }

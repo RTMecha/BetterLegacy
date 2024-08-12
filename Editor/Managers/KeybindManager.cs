@@ -82,7 +82,7 @@ namespace BetterLegacy.Editor.Managers
                 selectedKeyframe.eventValues = originalValues.Copy();
                 if (selectionType == SelectionType.Object)
                 {
-                    Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                    Updater.UpdateObject(beatmapObject, "Keyframes");
                     ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
                 }
                 if (selectionType == SelectionType.Prefab)
@@ -1195,7 +1195,7 @@ namespace BetterLegacy.Editor.Managers
             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
             {
                 if (timelineObject.IsBeatmapObject)
-                    Updater.UpdateProcessor(timelineObject.GetData<BeatmapObject>());
+                    Updater.UpdateObject(timelineObject.GetData<BeatmapObject>());
                 if (timelineObject.IsPrefabObject)
                     Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
             }
@@ -1230,7 +1230,7 @@ namespace BetterLegacy.Editor.Managers
                 bm.autoKillOffset = AudioManager.inst.CurrentAudioSource.time;
                 bm.editorData.collapse = true;
 
-                Updater.UpdateProcessor(bm);
+                Updater.UpdateObject(bm);
                 ObjectEditor.inst.RenderTimelineObject(timelineObject);
             }
         }
@@ -1312,7 +1312,7 @@ namespace BetterLegacy.Editor.Managers
 
                     bm.events[type][index].eventValues[value] = val;
 
-                    Updater.UpdateProcessor(bm, "Keyframes");
+                    Updater.UpdateObject(bm, "Keyframes");
                 }
                 if (timelineObject.IsPrefabObject)
                 {
@@ -1354,7 +1354,7 @@ namespace BetterLegacy.Editor.Managers
 
                     bm.events[type][index].eventValues[value] = val;
 
-                    Updater.UpdateProcessor(bm, "Keyframes");
+                    Updater.UpdateObject(bm, "Keyframes");
                 }
                 if (timelineObject.IsPrefabObject)
                 {
@@ -1396,7 +1396,7 @@ namespace BetterLegacy.Editor.Managers
 
                     bm.events[type][index].eventValues[value] = val;
 
-                    Updater.UpdateProcessor(bm, "Keyframes");
+                    Updater.UpdateObject(bm, "Keyframes");
                 }
                 if (timelineObject.IsPrefabObject)
                 {
@@ -1545,7 +1545,7 @@ namespace BetterLegacy.Editor.Managers
                 if ((int)bm.objectType > Enum.GetNames(typeof(ObjectType)).Length)
                     bm.objectType = 0;
 
-                Updater.UpdateProcessor(bm);
+                Updater.UpdateObject(bm);
                 ObjectEditor.inst.RenderTimelineObject(timelineObject);
             }
         }
@@ -1566,7 +1566,7 @@ namespace BetterLegacy.Editor.Managers
 
                 bm.objectType = (ObjectType)e;
 
-                Updater.UpdateProcessor(bm);
+                Updater.UpdateObject(bm);
                 ObjectEditor.inst.RenderTimelineObject(timelineObject);
             }
         }
@@ -1973,7 +1973,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     timelineObject.Time = RTEditor.SnapToBPM(timelineObject.Time);
                     if (timelineObject.IsBeatmapObject)
-                        Updater.UpdateProcessor(timelineObject.GetData<BeatmapObject>(), "Start Time");
+                        Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Start Time");
                     if (timelineObject.IsPrefabObject)
                         Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), "Start Time");
 
@@ -1992,7 +1992,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var bm = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
                 ObjectEditor.inst.RenderTimelineObject(ObjectEditor.inst.CurrentSelection);
-                Updater.UpdateProcessor(bm, "Keyframes");
+                Updater.UpdateObject(bm, "Keyframes");
                 ObjectEditor.inst.RenderKeyframes(bm);
             }
 
@@ -2328,7 +2328,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             if (selectionType == SelectionType.Object)
-                Updater.UpdateProcessor(beatmapObject, "Keyframes");
+                Updater.UpdateObject(beatmapObject, "Keyframes");
             if (selectionType == SelectionType.Prefab)
                 Updater.UpdatePrefab(prefabObject, "Offset");
         }

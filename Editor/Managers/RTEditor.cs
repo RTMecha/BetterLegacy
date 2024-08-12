@@ -4122,7 +4122,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 var bm = timelineObject.GetData<BeatmapObject>();
                                 bm.Depth -= num;
-                                Updater.UpdateProcessor(bm, "Depth");
+                                Updater.UpdateObject(bm, "Depth");
                             }
                         }
                     }
@@ -4138,7 +4138,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 var bm = timelineObject.GetData<BeatmapObject>();
                                 bm.Depth = num;
-                                Updater.UpdateProcessor(bm, "Depth");
+                                Updater.UpdateObject(bm, "Depth");
                             }
                         }
                     }
@@ -4152,7 +4152,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 var bm = timelineObject.GetData<BeatmapObject>();
                                 bm.Depth += num;
-                                Updater.UpdateProcessor(bm, "Depth");
+                                Updater.UpdateObject(bm, "Depth");
                             }
                         }
                     }
@@ -4177,7 +4177,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             timelineObject.Time = AudioManager.inst.CurrentAudioSource.time - first + timelineObject.Time + num;
                             if (timelineObject.IsBeatmapObject)
-                                Updater.UpdateProcessor(timelineObject.GetData<BeatmapObject>(), "StartTime");
+                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "StartTime");
                             if (timelineObject.IsPrefabObject)
                                 Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
 
@@ -4194,7 +4194,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             timelineObject.Time = AudioManager.inst.CurrentAudioSource.time;
                             if (timelineObject.IsBeatmapObject)
-                                Updater.UpdateProcessor(timelineObject.GetData<BeatmapObject>(), "StartTime");
+                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "StartTime");
                             if (timelineObject.IsPrefabObject)
                                 Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
 
@@ -4212,7 +4212,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             timelineObject.Time = AudioManager.inst.CurrentAudioSource.time - first + timelineObject.Time - num;
                             if (timelineObject.IsBeatmapObject)
-                                Updater.UpdateProcessor(timelineObject.GetData<BeatmapObject>(), "StartTime");
+                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "StartTime");
                             if (timelineObject.IsPrefabObject)
                                 Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
 
@@ -4240,7 +4240,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 var bm = timelineObject.GetData<BeatmapObject>();
                                 bm.autoKillOffset -= num;
-                                Updater.UpdateProcessor(bm, "Autokill");
+                                Updater.UpdateObject(bm, "Autokill");
                             }
 
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
@@ -4259,7 +4259,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 var bm = timelineObject.GetData<BeatmapObject>();
                                 bm.autoKillOffset = num;
-                                Updater.UpdateProcessor(bm, "Autokill");
+                                Updater.UpdateObject(bm, "Autokill");
                             }
 
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
@@ -4278,7 +4278,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 var bm = timelineObject.GetData<BeatmapObject>();
                                 bm.autoKillOffset += num;
-                                Updater.UpdateProcessor(bm, "Autokill");
+                                Updater.UpdateObject(bm, "Autokill");
                             }
 
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
@@ -4442,7 +4442,7 @@ namespace BetterLegacy.Editor.Managers
                                 ObjectEditor.inst.RenderKeyframes(bm);
                             }
 
-                            Updater.UpdateProcessor(bm, "Keyframes");
+                            Updater.UpdateObject(bm, "Keyframes");
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
                         }
 
@@ -4457,7 +4457,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
                             beatmapObject.modifiers.Clear();
-                            Updater.UpdateProcessor(beatmapObject);
+                            Updater.UpdateObject(beatmapObject);
                         }
 
                         HideWarningPopup();
@@ -4475,7 +4475,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var beatmapObject = timelineObject.GetData<BeatmapObject>();
                         beatmapObject.SetAutokillToScale(DataManager.inst.gameData.beatmapObjects);
-                        Updater.UpdateProcessor(beatmapObject, "Autokill");
+                        Updater.UpdateObject(beatmapObject, "Autokill");
                         ObjectEditor.inst.RenderTimelineObjectPosition(timelineObject);
                     }
                 });
@@ -4503,7 +4503,7 @@ namespace BetterLegacy.Editor.Managers
                         beatmapObject.autoKillOffset = num;
 
                         ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                        Updater.UpdateProcessor(beatmapObject, "Autokill");
+                        Updater.UpdateObject(beatmapObject, "Autokill");
                     }
                 });
             }
@@ -4521,7 +4521,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.autoKillType = AutoKillType.OldStyleNoAutokill;
 
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateProcessor(bm, "Autokill");
+                            Updater.UpdateObject(bm, "Autokill");
                         }
                     }),
                     new ButtonFunction("Last KF", () =>
@@ -4532,7 +4532,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.autoKillType = AutoKillType.LastKeyframe;
 
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateProcessor(bm, "Autokill");
+                            Updater.UpdateObject(bm, "Autokill");
                         }
                     }),
                     new ButtonFunction("Last KF Offset", () =>
@@ -4543,7 +4543,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.autoKillType = AutoKillType.LastKeyframeOffset;
 
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateProcessor(bm, "Autokill");
+                            Updater.UpdateObject(bm, "Autokill");
                         }
                     }),
                     new ButtonFunction("Fixed Time", () =>
@@ -4554,7 +4554,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.autoKillType = AutoKillType.FixedTime;
 
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateProcessor(bm, "Autokill");
+                            Updater.UpdateObject(bm, "Autokill");
                         }
                     }),
                     new ButtonFunction("Song Time", () =>
@@ -4565,7 +4565,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.autoKillType = AutoKillType.SongTime;
 
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateProcessor(bm, "Autokill");
+                            Updater.UpdateObject(bm, "Autokill");
                         }
                     }));
             }
@@ -4592,7 +4592,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
                             beatmapObject.parent = "";
-                            Updater.UpdateProcessor(beatmapObject);
+                            Updater.UpdateObject(beatmapObject);
                         }
 
                         HideWarningPopup();
@@ -4610,7 +4610,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         timelineObject.Time = SnapToBPM(timelineObject.Time);
                         if (timelineObject.IsBeatmapObject)
-                            Updater.UpdateProcessor(timelineObject.GetData<BeatmapObject>(), "Start Time");
+                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Start Time");
                         if (timelineObject.IsPrefabObject)
                             Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), "Start Time");
 
@@ -4639,7 +4639,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.objectType = (BeatmapObject.ObjectType)objectType;
 
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateProcessor(bm, "ObjectType");
+                            Updater.UpdateObject(bm, "ObjectType");
                         }
                     }),
                     new ButtonFunction("Add", () =>
@@ -4658,7 +4658,7 @@ namespace BetterLegacy.Editor.Managers
 
 
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateProcessor(bm, "ObjectType");
+                            Updater.UpdateObject(bm, "ObjectType");
                         }
                     }));
 
@@ -4671,7 +4671,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.objectType = BeatmapObject.ObjectType.Normal;
 
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateProcessor(bm, "ObjectType");
+                            Updater.UpdateObject(bm, "ObjectType");
                         }
                     }),
                     new ButtonFunction(nameof(BeatmapObject.ObjectType.Helper), () =>
@@ -4682,7 +4682,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.objectType = BeatmapObject.ObjectType.Helper;
 
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateProcessor(bm, "ObjectType");
+                            Updater.UpdateObject(bm, "ObjectType");
                         }
                     }),
                     new ButtonFunction("Deco", () =>
@@ -4693,7 +4693,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.objectType = BeatmapObject.ObjectType.Decoration;
 
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateProcessor(bm, "ObjectType");
+                            Updater.UpdateObject(bm, "ObjectType");
                         }
                     }),
                     new ButtonFunction(nameof(BeatmapObject.ObjectType.Empty), () =>
@@ -4704,7 +4704,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.objectType = BeatmapObject.ObjectType.Empty;
 
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateProcessor(bm, "ObjectType");
+                            Updater.UpdateObject(bm, "ObjectType");
                         }
                     }),
                     new ButtonFunction(nameof(BeatmapObject.ObjectType.Solid), () =>
@@ -4715,7 +4715,7 @@ namespace BetterLegacy.Editor.Managers
                             bm.objectType = BeatmapObject.ObjectType.Solid;
 
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateProcessor(bm, "ObjectType");
+                            Updater.UpdateObject(bm, "ObjectType");
                         }
                     }));
             }
@@ -4827,7 +4827,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
                             beatmapObject.background = true;
-                            Updater.UpdateProcessor(beatmapObject);
+                            Updater.UpdateObject(beatmapObject);
                         }
                     }),
                     new ButtonFunction("Off", () =>
@@ -4835,7 +4835,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
                             beatmapObject.background = false;
-                            Updater.UpdateProcessor(beatmapObject);
+                            Updater.UpdateObject(beatmapObject);
                         }
                     }));
 
@@ -4844,7 +4844,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                     {
                         beatmapObject.background = !beatmapObject.background;
-                        Updater.UpdateProcessor(beatmapObject);
+                        Updater.UpdateObject(beatmapObject);
                     }
                 });
             }
@@ -4859,7 +4859,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
                             beatmapObject.LDM = true;
-                            Updater.UpdateProcessor(beatmapObject);
+                            Updater.UpdateObject(beatmapObject);
                         }
                     }),
                     new ButtonFunction("Off", () =>
@@ -4867,7 +4867,7 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
                             beatmapObject.LDM = false;
-                            Updater.UpdateProcessor(beatmapObject);
+                            Updater.UpdateObject(beatmapObject);
                         }
                     }));
 
@@ -4876,7 +4876,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                     {
                         beatmapObject.LDM = !beatmapObject.LDM;
-                        Updater.UpdateProcessor(beatmapObject);
+                        Updater.UpdateObject(beatmapObject);
                     }
                 });
             }
@@ -4906,7 +4906,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 timelineObject.Time = beatmapObject.StartTime;
                                 ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                                Updater.UpdateProcessor(timelineObject.GetData<BeatmapObject>(), "StartTime");
+                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "StartTime");
                             }
                             EditorManager.inst.HideDialog("Object Search Popup");
                         });
@@ -4941,7 +4941,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 timelineObject.GetData<BeatmapObject>().objectType = beatmapObject.objectType;
                                 ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                                Updater.UpdateProcessor(timelineObject.GetData<BeatmapObject>(), "ObjectType");
+                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "ObjectType");
                             }
                             EditorManager.inst.HideDialog("Object Search Popup");
                         });
@@ -4959,7 +4959,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 timelineObject.GetData<BeatmapObject>().autoKillType = beatmapObject.autoKillType;
                                 ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                                Updater.UpdateProcessor(timelineObject.GetData<BeatmapObject>(), "AutoKill");
+                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "AutoKill");
                             }
                             EditorManager.inst.HideDialog("Object Search Popup");
                         });
@@ -4977,7 +4977,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 timelineObject.GetData<BeatmapObject>().autoKillOffset = beatmapObject.autoKillOffset;
                                 ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                                Updater.UpdateProcessor(timelineObject.GetData<BeatmapObject>(), "AutoKill");
+                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "AutoKill");
                             }
                             EditorManager.inst.HideDialog("Object Search Popup");
                         });
@@ -4994,7 +4994,7 @@ namespace BetterLegacy.Editor.Managers
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
                                 timelineObject.GetData<BeatmapObject>().parent = beatmapObject.parent;
-                                Updater.UpdateProcessor(timelineObject.GetData<BeatmapObject>(), "Parent");
+                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Parent");
                             }
                             EditorManager.inst.HideDialog("Object Search Popup");
                         });
@@ -5011,7 +5011,7 @@ namespace BetterLegacy.Editor.Managers
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
                                 timelineObject.GetData<BeatmapObject>().desync = beatmapObject.desync;
-                                Updater.UpdateProcessor(timelineObject.GetData<BeatmapObject>(), "Parent");
+                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Parent");
                             }
                             EditorManager.inst.HideDialog("Object Search Popup");
                         });
@@ -5028,7 +5028,7 @@ namespace BetterLegacy.Editor.Managers
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
                                 timelineObject.GetData<BeatmapObject>().parentType = beatmapObject.parentType;
-                                Updater.UpdateProcessor(timelineObject.GetData<BeatmapObject>(), "ParentType");
+                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "ParentType");
                             }
                             EditorManager.inst.HideDialog("Object Search Popup");
                         });
@@ -5045,7 +5045,7 @@ namespace BetterLegacy.Editor.Managers
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
                                 timelineObject.GetData<BeatmapObject>().parentOffsets = beatmapObject.parentOffsets.Clone();
-                                Updater.UpdateProcessor(timelineObject.GetData<BeatmapObject>(), "ParentOffset");
+                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "ParentOffset");
                             }
                             EditorManager.inst.HideDialog("Object Search Popup");
                         });
@@ -5062,7 +5062,7 @@ namespace BetterLegacy.Editor.Managers
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
                                 timelineObject.GetData<BeatmapObject>().parentAdditive = beatmapObject.parentAdditive;
-                                Updater.UpdateProcessor(timelineObject.GetData<BeatmapObject>(), "ParentOffset");
+                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "ParentOffset");
                             }
                             EditorManager.inst.HideDialog("Object Search Popup");
                         });
@@ -5079,7 +5079,7 @@ namespace BetterLegacy.Editor.Managers
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
                                 timelineObject.GetData<BeatmapObject>().parallaxSettings = beatmapObject.parallaxSettings.Copy();
-                                Updater.UpdateProcessor(timelineObject.GetData<BeatmapObject>(), "ParentOffset");
+                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "ParentOffset");
                             }
                             EditorManager.inst.HideDialog("Object Search Popup");
                         });
@@ -5096,7 +5096,7 @@ namespace BetterLegacy.Editor.Managers
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
                                 timelineObject.GetData<BeatmapObject>().origin = beatmapObject.origin;
-                                Updater.UpdateProcessor(timelineObject.GetData<BeatmapObject>(), "Origin");
+                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Origin");
                             }
                             EditorManager.inst.HideDialog("Object Search Popup");
                         });
@@ -5114,7 +5114,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 timelineObject.GetData<BeatmapObject>().shape = beatmapObject.shape;
                                 timelineObject.GetData<BeatmapObject>().shapeOption = beatmapObject.shapeOption;
-                                Updater.UpdateProcessor(timelineObject.GetData<BeatmapObject>(), "Shape");
+                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Shape");
                             }
                             EditorManager.inst.HideDialog("Object Search Popup");
                         });
@@ -5131,7 +5131,7 @@ namespace BetterLegacy.Editor.Managers
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
                                 timelineObject.GetData<BeatmapObject>().text = beatmapObject.text;
-                                Updater.UpdateProcessor(timelineObject.GetData<BeatmapObject>(), "Text");
+                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Text");
                             }
                             EditorManager.inst.HideDialog("Object Search Popup");
                         });
@@ -5148,7 +5148,7 @@ namespace BetterLegacy.Editor.Managers
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
                                 timelineObject.GetData<BeatmapObject>().Depth = beatmapObject.Depth;
-                                Updater.UpdateProcessor(timelineObject.GetData<BeatmapObject>(), "Depth");
+                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Depth");
                             }
                             EditorManager.inst.HideDialog("Object Search Popup");
                         });
@@ -5169,7 +5169,7 @@ namespace BetterLegacy.Editor.Managers
                                 for (int i = 0; i < bm.events.Count; i++)
                                     bm.events[i] = beatmapObject.events[i].Clone();
 
-                                Updater.UpdateProcessor(bm, "Keyframes");
+                                Updater.UpdateObject(bm, "Keyframes");
                             }
                             EditorManager.inst.HideDialog("Object Search Popup");
                         });
@@ -5189,7 +5189,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 bm.modifiers.AddRange(beatmapObject.modifiers.Select(x => Modifier<BeatmapObject>.DeepCopy(x, bm)));
 
-                                Updater.UpdateProcessor(bm);
+                                Updater.UpdateObject(bm);
                             }
                             EditorManager.inst.HideDialog("Object Search Popup");
                         });
@@ -5493,7 +5493,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var bm = timelineObject.GetData<BeatmapObject>();
                         bm.text = bm.text.Replace(oldNameIF.text, newNameIF.text);
-                        Updater.UpdateProcessor(bm, "Shape");
+                        Updater.UpdateObject(bm, "Shape");
                     }
                 });
             }
@@ -5696,7 +5696,7 @@ namespace BetterLegacy.Editor.Managers
                                         kf.eventValues[4] = Parser.TryParse(valIF.text, 0f);
                                 }
 
-                                Updater.UpdateProcessor(bm, "Keyframes");
+                                Updater.UpdateObject(bm, "Keyframes");
                             }
                         }
                     });
@@ -5731,7 +5731,7 @@ namespace BetterLegacy.Editor.Managers
                                     if (!string.IsNullOrEmpty(valIF.text))
                                         kf.eventValues[4] = Parser.TryParse(valIF.text, 0f);
 
-                                    Updater.UpdateProcessor(bm, "Keyframes");
+                                    Updater.UpdateObject(bm, "Keyframes");
                                 }
                             }
                         }
@@ -5773,7 +5773,7 @@ namespace BetterLegacy.Editor.Managers
                                     bm.events[3].Add(kf);
                                 }
 
-                                Updater.UpdateProcessor(bm, "Keyframes");
+                                Updater.UpdateObject(bm, "Keyframes");
                                 ObjectEditor.inst.RenderTimelineObject(ObjectEditor.inst.GetTimelineObject(bm));
                             }
                         }
@@ -5835,7 +5835,7 @@ namespace BetterLegacy.Editor.Managers
 
                                         ObjectEditor.inst.RenderKeyframes(bm);
                                         ObjectEditor.inst.RenderObjectKeyframesDialog(bm);
-                                        Updater.UpdateProcessor(bm, "Keyframes");
+                                        Updater.UpdateObject(bm, "Keyframes");
                                         EditorManager.inst.DisplayNotification("Pasted position keyframe data to all keyframes.", 2f, EditorManager.NotificationType.Success);
                                     }
                                 else
@@ -5852,7 +5852,7 @@ namespace BetterLegacy.Editor.Managers
 
                                         ObjectEditor.inst.RenderKeyframes(bm);
                                         ObjectEditor.inst.RenderObjectKeyframesDialog(bm);
-                                        Updater.UpdateProcessor(bm, "Keyframes");
+                                        Updater.UpdateObject(bm, "Keyframes");
                                         EditorManager.inst.DisplayNotification("Pasted scale keyframe data to all keyframes.", 2f, EditorManager.NotificationType.Success);
                                     }
                                 else
@@ -5869,7 +5869,7 @@ namespace BetterLegacy.Editor.Managers
 
                                         ObjectEditor.inst.RenderKeyframes(bm);
                                         ObjectEditor.inst.RenderObjectKeyframesDialog(bm);
-                                        Updater.UpdateProcessor(bm, "Keyframes");
+                                        Updater.UpdateObject(bm, "Keyframes");
                                         EditorManager.inst.DisplayNotification("Pasted rotation keyframe data to all keyframes.", 2f, EditorManager.NotificationType.Success);
                                     }
                                 else
@@ -5886,7 +5886,7 @@ namespace BetterLegacy.Editor.Managers
 
                                         ObjectEditor.inst.RenderKeyframes(bm);
                                         ObjectEditor.inst.RenderObjectKeyframesDialog(bm);
-                                        Updater.UpdateProcessor(bm, "Keyframes");
+                                        Updater.UpdateObject(bm, "Keyframes");
                                         EditorManager.inst.DisplayNotification("Pasted color keyframe data to all keyframes.", 2f, EditorManager.NotificationType.Success);
                                     }
                                 else
@@ -5926,7 +5926,7 @@ namespace BetterLegacy.Editor.Managers
 
                                     ObjectEditor.inst.RenderKeyframes(bm);
                                     ObjectEditor.inst.RenderObjectKeyframesDialog(bm);
-                                    Updater.UpdateProcessor(bm, "Keyframes");
+                                    Updater.UpdateObject(bm, "Keyframes");
                                     EditorManager.inst.DisplayNotification("Pasted position keyframe data to current selected keyframe.", 2f, EditorManager.NotificationType.Success);
                                 }
                                 else
@@ -5942,7 +5942,7 @@ namespace BetterLegacy.Editor.Managers
 
                                     ObjectEditor.inst.RenderKeyframes(bm);
                                     ObjectEditor.inst.RenderObjectKeyframesDialog(bm);
-                                    Updater.UpdateProcessor(bm, "Keyframes");
+                                    Updater.UpdateObject(bm, "Keyframes");
                                     EditorManager.inst.DisplayNotification("Pasted scale keyframe data to all keyframes.", 2f, EditorManager.NotificationType.Success);
                                 }
                                 else
@@ -5958,7 +5958,7 @@ namespace BetterLegacy.Editor.Managers
 
                                     ObjectEditor.inst.RenderKeyframes(bm);
                                     ObjectEditor.inst.RenderObjectKeyframesDialog(bm);
-                                    Updater.UpdateProcessor(bm, "Keyframes");
+                                    Updater.UpdateObject(bm, "Keyframes");
                                     EditorManager.inst.DisplayNotification("Pasted rotation keyframe data to all keyframes.", 2f, EditorManager.NotificationType.Success);
                                 }
                                 else
@@ -5974,7 +5974,7 @@ namespace BetterLegacy.Editor.Managers
 
                                     ObjectEditor.inst.RenderKeyframes(bm);
                                     ObjectEditor.inst.RenderObjectKeyframesDialog(bm);
-                                    Updater.UpdateProcessor(bm, "Keyframes");
+                                    Updater.UpdateObject(bm, "Keyframes");
                                     EditorManager.inst.DisplayNotification("Pasted color keyframe data to all keyframes.", 2f, EditorManager.NotificationType.Success);
                                 }
                                 else
@@ -6036,7 +6036,7 @@ namespace BetterLegacy.Editor.Managers
 
                                         ObjectEditor.inst.RenderKeyframes(bm);
                                         ObjectEditor.inst.RenderObjectKeyframesDialog(bm);
-                                        Updater.UpdateProcessor(bm, "Keyframes");
+                                        Updater.UpdateObject(bm, "Keyframes");
                                         EditorManager.inst.DisplayNotification("Pasted position keyframe data to current selected keyframe.", 2f, EditorManager.NotificationType.Success);
                                     }
                                 else
@@ -6076,7 +6076,7 @@ namespace BetterLegacy.Editor.Managers
 
                                     ObjectEditor.inst.RenderKeyframes(bm);
                                     ObjectEditor.inst.RenderObjectKeyframesDialog(bm);
-                                    Updater.UpdateProcessor(bm, "Keyframes");
+                                    Updater.UpdateObject(bm, "Keyframes");
                                     EditorManager.inst.DisplayNotification("Pasted position keyframe data to current selected keyframe.", 2f, EditorManager.NotificationType.Success);
                                 }
                                 else
@@ -6138,7 +6138,7 @@ namespace BetterLegacy.Editor.Managers
 
                                         ObjectEditor.inst.RenderKeyframes(bm);
                                         ObjectEditor.inst.RenderObjectKeyframesDialog(bm);
-                                        Updater.UpdateProcessor(bm, "Keyframes");
+                                        Updater.UpdateObject(bm, "Keyframes");
                                         EditorManager.inst.DisplayNotification("Pasted scale keyframe data to all keyframes.", 2f, EditorManager.NotificationType.Success);
                                     }
                                 else
@@ -6178,7 +6178,7 @@ namespace BetterLegacy.Editor.Managers
 
                                     ObjectEditor.inst.RenderKeyframes(bm);
                                     ObjectEditor.inst.RenderObjectKeyframesDialog(bm);
-                                    Updater.UpdateProcessor(bm, "Keyframes");
+                                    Updater.UpdateObject(bm, "Keyframes");
                                     EditorManager.inst.DisplayNotification("Pasted scale keyframe data to all keyframes.", 2f, EditorManager.NotificationType.Success);
                                 }
                                 else
@@ -6240,7 +6240,7 @@ namespace BetterLegacy.Editor.Managers
 
                                         ObjectEditor.inst.RenderKeyframes(bm);
                                         ObjectEditor.inst.RenderObjectKeyframesDialog(bm);
-                                        Updater.UpdateProcessor(bm, "Keyframes");
+                                        Updater.UpdateObject(bm, "Keyframes");
                                         EditorManager.inst.DisplayNotification("Pasted rotation keyframe data to all keyframes.", 2f, EditorManager.NotificationType.Success);
                                     }
                                 else
@@ -6280,7 +6280,7 @@ namespace BetterLegacy.Editor.Managers
 
                                     ObjectEditor.inst.RenderKeyframes(bm);
                                     ObjectEditor.inst.RenderObjectKeyframesDialog(bm);
-                                    Updater.UpdateProcessor(bm, "Keyframes");
+                                    Updater.UpdateObject(bm, "Keyframes");
                                     EditorManager.inst.DisplayNotification("Pasted rotation keyframe data to all keyframes.", 2f, EditorManager.NotificationType.Success);
                                 }
                                 else
@@ -6342,7 +6342,7 @@ namespace BetterLegacy.Editor.Managers
 
                                         ObjectEditor.inst.RenderKeyframes(bm);
                                         ObjectEditor.inst.RenderObjectKeyframesDialog(bm);
-                                        Updater.UpdateProcessor(bm, "Keyframes");
+                                        Updater.UpdateObject(bm, "Keyframes");
                                         EditorManager.inst.DisplayNotification("Pasted color keyframe data to all keyframes.", 2f, EditorManager.NotificationType.Success);
                                     }
                                 else
@@ -6382,7 +6382,7 @@ namespace BetterLegacy.Editor.Managers
 
                                     ObjectEditor.inst.RenderKeyframes(bm);
                                     ObjectEditor.inst.RenderObjectKeyframesDialog(bm);
-                                    Updater.UpdateProcessor(bm, "Keyframes");
+                                    Updater.UpdateObject(bm, "Keyframes");
                                     EditorManager.inst.DisplayNotification("Pasted color keyframe data to all keyframes.", 2f, EditorManager.NotificationType.Success);
                                 }
                                 else
@@ -9017,7 +9017,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var bm in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                     {
                         bm.parent = "";
-                        Updater.UpdateProcessor(bm);
+                        Updater.UpdateObject(bm);
                     }
                 });
 
@@ -9295,7 +9295,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var bm = timelineObject.GetData<BeatmapObject>();
                     bm.parent = "";
-                    Updater.UpdateProcessor(bm);
+                    Updater.UpdateObject(bm);
                 }
 
                 EditorManager.inst.HideDialog("Parent Selector");
@@ -9332,7 +9332,7 @@ namespace BetterLegacy.Editor.Managers
 
                         var bm = timelineObject.GetData<BeatmapObject>();
                         bm.parent = "CAMERA_PARENT";
-                        Updater.UpdateProcessor(bm);
+                        Updater.UpdateObject(bm);
                     }
 
                     EditorManager.inst.HideDialog("Parent Selector");
@@ -9400,7 +9400,7 @@ namespace BetterLegacy.Editor.Managers
 
                             var bm = timelineObject.GetData<BeatmapObject>();
                             TriggerHelper.SetParent(timelineObject, ObjectEditor.inst.GetTimelineObject((BeatmapObject)obj));
-                            Updater.UpdateProcessor(bm);
+                            Updater.UpdateObject(bm);
                         }
 
                         EditorManager.inst.HideDialog("Parent Selector");

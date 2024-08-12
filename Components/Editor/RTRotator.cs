@@ -93,7 +93,7 @@ namespace BetterLegacy.Components.Editor
             if (ObjectEditor.inst.CurrentSelection.IsPrefabObject)
                 Updater.UpdatePrefab(ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>(), "Offset");
             else
-                Updater.UpdateProcessor(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>(), "Keyframes");
+                Updater.UpdateObject(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>(), "Keyframes");
         }
     }
 }

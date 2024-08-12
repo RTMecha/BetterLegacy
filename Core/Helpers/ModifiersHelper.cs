@@ -3353,7 +3353,7 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 foreach (var bm in list)
                                 {
-                                    Updater.UpdateProcessor(bm);
+                                    Updater.UpdateObject(bm);
                                 }
                             }
                             break;
