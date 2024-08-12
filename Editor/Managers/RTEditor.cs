@@ -2851,14 +2851,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorHelper.AddEditorDropdown("Reset Event Offsets", "", "Edit", saveAs.Find("Panel/x/Image").GetComponent<Image>().sprite, () =>
             {
-                if (!ModCompatibility.sharedFunctions.ContainsKey("EventsCoreEventOffsets"))
-                    return;
-
-                var list = (List<List<float>>)ModCompatibility.sharedFunctions["EventsCoreEventOffsets"];
-
-                for (int i = 0; i < list.Count; i++)
-                    for (int j = 0; j < list[i].Count; j++)
-                        list[i][j] = 0f;
+                RTEventManager.inst?.SetResetOffsets();
 
                 EditorManager.inst.DisplayNotification("Event Offsets have been reset.", 1.4f, EditorManager.NotificationType.Success);
             });

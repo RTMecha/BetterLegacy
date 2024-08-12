@@ -226,8 +226,7 @@ namespace BetterLegacy.Core.Managers
             RTPlayer.SetGameDataProperties();
 
             EventManager.inst?.updateEvents();
-            if (ModCompatibility.sharedFunctions.ContainsKey("EventsCoreResetOffsets"))
-                ((Action)ModCompatibility.sharedFunctions["EventsCoreResetOffsets"])?.Invoke();
+            RTEventManager.inst?.SetResetOffsets();
 
             BackgroundManager.inst.UpdateBackgrounds();
             yield return inst.StartCoroutine(Updater.IUpdateObjects(true));

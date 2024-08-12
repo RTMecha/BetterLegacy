@@ -382,8 +382,8 @@ namespace BetterLegacy.Patchers
                     RTEditor.inst.timeField.text = AudioManager.inst.CurrentAudioSource.time.ToString();
 
                 if (RTEditor.inst.pitchField && !RTEditor.inst.pitchField.isFocused)
-                    RTEditor.inst.pitchField.text = ModCompatibility.sharedFunctions.ContainsKey("EventsCorePitchOffset") ?
-                        ((float)ModCompatibility.sharedFunctions["EventsCorePitchOffset"]).ToString() : AudioManager.inst.pitch.ToString();
+                    RTEditor.inst.pitchField.text = RTEventManager.inst ?
+                        RTEventManager.inst.pitchOffset.ToString() : AudioManager.inst.pitch.ToString();
 
             }
 

@@ -38,13 +38,7 @@ namespace BetterLegacy.Core.Managers
             else if (inst != this)
                 Destroy(gameObject);
 
-            SetResetOffsets();
             offsets = ResetOffsets();
-
-            if (!ModCompatibility.sharedFunctions.ContainsKey("EventsCoreResetOffsets"))
-                ModCompatibility.sharedFunctions.Add("EventsCoreResetOffsets", (Action)SetResetOffsets);
-            else
-                ModCompatibility.sharedFunctions["EventsCoreResetOffsets"] = (Action)SetResetOffsets;
 
             editorCamera = EditorCameraController.Bind();
 
@@ -72,10 +66,7 @@ namespace BetterLegacy.Core.Managers
             analogGlitch._shader = LegacyPlugin.analogGlitchShader;
         }
 
-        public void SetResetOffsets()
-        {
-            ModCompatibility.sharedFunctions["EventsCoreEventOffsets"] = ResetOffsets();
-        }
+        public void SetResetOffsets() => offsets = ResetOffsets();
 
         public static bool Playable =>
             RTEffectsManager.inst &&
@@ -200,34 +191,6 @@ namespace BetterLegacy.Core.Managers
                 if (!float.IsNaN(EventManager.inst.camRot))
                     editorRotate = EventManager.inst.camRot;
                 editorPerRotate = Vector2.zero;
-            }
-        }
-
-        void FunctionsHandler()
-        {
-            if (!ModCompatibility.sharedFunctions.ContainsKey("EventsCorePitchOffset"))
-            {
-                ModCompatibility.sharedFunctions.Add("EventsCorePitchOffset", pitchOffset);
-            }
-            if (ModCompatibility.sharedFunctions.ContainsKey("EventsCorePitchOffset"))
-            {
-                ModCompatibility.sharedFunctions["EventsCorePitchOffset"] = pitchOffset;
-            }
-
-            if (!ModCompatibility.sharedFunctions.ContainsKey("EventsCoreFollowCamera"))
-                ModCompatibility.sharedFunctions.Add("EventsCoreFollowCamera", delayTracker.move && delayTracker.active);
-
-            if (ModCompatibility.sharedFunctions.ContainsKey("EventsCoreFollowCamera"))
-                ModCompatibility.sharedFunctions["EventsCoreFollowCamera"] = delayTracker.move && delayTracker.active;
-
-            if (!ModCompatibility.sharedFunctions.ContainsKey("EventsCoreEventOffsets"))
-            {
-                ModCompatibility.sharedFunctions.Add("EventsCoreEventOffsets", offsets);
-            }
-
-            if (ModCompatibility.sharedFunctions.ContainsKey("EventsCoreEventOffsets"))
-            {
-                offsets = (List<List<float>>)ModCompatibility.sharedFunctions["EventsCoreEventOffsets"];
             }
         }
 
@@ -372,7 +335,7 @@ namespace BetterLegacy.Core.Managers
 
         public static void OnLevelTick()
         {
-            inst.EditorCameraHandler(); inst.FunctionsHandler();
+            inst.EditorCameraHandler();
             GameManager.inst.timeline.SetActive(inst.timelineActive);
 
             if (GameManager.inst.introMain != null && AudioManager.inst.CurrentAudioSource.time < 15f)
@@ -1983,7 +1946,7 @@ namespace BetterLegacy.Core.Managers
             };
         }
 
-        List<List<float>> offsets;
+        public List<List<float>> offsets;
 
         #endregion
 

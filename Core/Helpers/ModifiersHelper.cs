@@ -2842,45 +2842,37 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "eventOffset":
                         {
-                            if (ModCompatibility.sharedFunctions.ContainsKey("EventsCoreEventOffsets"))
+                            if (RTEventManager.inst && RTEventManager.inst.offsets != null)
                             {
-                                var list = (List<List<float>>)ModCompatibility.sharedFunctions["EventsCoreEventOffsets"];
-
                                 var indexArray = Parser.TryParse(modifier.commands[1], 0);
                                 var indexValue = Parser.TryParse(modifier.commands[2], 0);
 
-                                if (indexArray < list.Count && indexValue < list[indexArray].Count)
-                                    list[indexArray][indexValue] = Parser.TryParse(modifier.value, 0f);
-
-                                ModCompatibility.sharedFunctions["EventsCoreEventOffsets"] = list;
+                                if (indexArray < RTEventManager.inst.offsets.Count && indexValue < RTEventManager.inst.offsets[indexArray].Count)
+                                    RTEventManager.inst.offsets[indexArray][indexValue] = Parser.TryParse(modifier.value, 0f);
                             }
                             break;
                         }
                     case "eventOffsetVariable":
                         {
-                            if (ModCompatibility.sharedFunctions.ContainsKey("EventsCoreEventOffsets"))
+                            if (RTEventManager.inst && RTEventManager.inst.offsets != null)
                             {
-                                var list = (List<List<float>>)ModCompatibility.sharedFunctions["EventsCoreEventOffsets"];
-
                                 var indexArray = Parser.TryParse(modifier.commands[1], 0);
                                 var indexValue = Parser.TryParse(modifier.commands[2], 0);
 
-                                if (indexArray < list.Count && indexValue < list[indexArray].Count)
-                                    list[indexArray][indexValue] = modifier.reference.integerVariable * Parser.TryParse(modifier.value, 1f);
-
-                                ModCompatibility.sharedFunctions["EventsCoreEventOffsets"] = list;
+                                if (indexArray < RTEventManager.inst.offsets.Count && indexValue < RTEventManager.inst.offsets[indexArray].Count)
+                                    RTEventManager.inst.offsets[indexArray][indexValue] = modifier.reference.integerVariable * Parser.TryParse(modifier.value, 1f);
                             }
                             break;
                         }
                     case "eventOffsetAnimate":
                         {
-                            if (!modifier.constant && ModCompatibility.sharedFunctions.ContainsKey("EventsCoreEventOffsets"))
+                            if (!modifier.constant && RTEventManager.inst && RTEventManager.inst.offsets != null)
                             {
                                 string easing = modifier.commands[4];
                                 if (int.TryParse(modifier.commands[4], out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
                                     easing = DataManager.inst.AnimationList[e].Name;
 
-                                var list = (List<List<float>>)ModCompatibility.sharedFunctions["EventsCoreEventOffsets"];
+                                var list = RTEventManager.inst.offsets;
 
                                 var indexArray = Parser.TryParse(modifier.commands[1], 0);
                                 var indexValue = Parser.TryParse(modifier.commands[2], 0);
@@ -2900,28 +2892,17 @@ namespace BetterLegacy.Core.Helpers
                                             new FloatKeyframe(0f, list[indexArray][indexValue], Ease.Linear),
                                             new FloatKeyframe(Parser.TryParse(modifier.commands[3], 1f), value, Ease.HasEaseFunction(easing) ? Ease.GetEaseFunction(easing) : Ease.Linear),
                                             new FloatKeyframe(Parser.TryParse(modifier.commands[3], 1f) + 0.1f, value, Ease.Linear),
-                                        }, delegate (float x)
-                                        {
-                                            list[indexArray][indexValue] = x;
-                                            ModCompatibility.sharedFunctions["EventsCoreEventOffsets"] = list;
-                                        })
+                                        }, x => { RTEventManager.inst.offsets[indexArray][indexValue] = x; })
                                     };
-                                    animation.onComplete = delegate ()
-                                    {
-                                        AnimationManager.inst.RemoveID(animation.id);
-                                    };
-
-                                    AnimationManager.inst.Play(animation);
+                                    animation.onComplete = () => { AnimationManager.inst.RemoveID(animation.id); };
                                 }
                             }
                             break;
                         }
                     case "eventOffsetCopyAxis":
                         {
-                            if (!ModCompatibility.sharedFunctions.ContainsKey("EventsCoreEventOffsets"))
+                            if (!RTEventManager.inst || RTEventManager.inst.offsets == null)
                                 break;
-
-                            var list = (List<List<float>>)ModCompatibility.sharedFunctions["EventsCoreEventOffsets"];
 
                             if (int.TryParse(modifier.commands[1], out int fromType) && int.TryParse(modifier.commands[2], out int fromAxis)
                                 && int.TryParse(modifier.commands[3], out int toType) && int.TryParse(modifier.commands[4], out int toAxis)
@@ -2933,8 +2914,8 @@ namespace BetterLegacy.Core.Helpers
 
                                 fromType = Mathf.Clamp(fromType, 0, modifier.reference.events.Count - 1);
                                 fromAxis = Mathf.Clamp(fromAxis, 0, modifier.reference.events[fromType][0].eventValues.Length - 1);
-                                toType = Mathf.Clamp(toType, 0, list.Count - 1);
-                                toAxis = Mathf.Clamp(toAxis, 0, list[toType].Count - 1);
+                                toType = Mathf.Clamp(toType, 0, RTEventManager.inst.offsets.Count - 1);
+                                toAxis = Mathf.Clamp(toAxis, 0, RTEventManager.inst.offsets[toType].Count - 1);
 
                                 if (!useVisual)
                                 {
@@ -2943,8 +2924,7 @@ namespace BetterLegacy.Core.Helpers
                                         var sequence = Updater.levelProcessor.converter.cachedSequences[modifier.reference.id].Position3DSequence.Interpolate(time - modifier.reference.StartTime - delay);
                                         float value = ((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) - offset) * multiply % loop;
 
-                                        list[toType][toAxis] = Mathf.Clamp(value, min, max);
-                                        ModCompatibility.sharedFunctions["EventsCoreEventOffsets"] = list;
+                                        RTEventManager.inst.offsets[toType][toAxis] = Mathf.Clamp(value, min, max);
                                     }
 
                                     if (fromType == 1)
@@ -2952,16 +2932,14 @@ namespace BetterLegacy.Core.Helpers
                                         var sequence = Updater.levelProcessor.converter.cachedSequences[modifier.reference.id].ScaleSequence.Interpolate(time - modifier.reference.StartTime - delay);
                                         float value = ((fromAxis == 0 ? sequence.x : sequence.y) - offset) * multiply % loop;
 
-                                        list[toType][toAxis] = Mathf.Clamp(value, min, max);
-                                        ModCompatibility.sharedFunctions["EventsCoreEventOffsets"] = list;
+                                        RTEventManager.inst.offsets[toType][toAxis] = Mathf.Clamp(value, min, max);
                                     }
 
                                     if (fromType == 2)
                                     {
                                         var sequence = (Updater.levelProcessor.converter.cachedSequences[modifier.reference.id].RotationSequence.Interpolate(time - modifier.reference.StartTime - delay) - offset) * multiply % loop;
 
-                                        list[toType][toAxis] = Mathf.Clamp(sequence, min, max);
-                                        ModCompatibility.sharedFunctions["EventsCoreEventOffsets"] = list;
+                                        RTEventManager.inst.offsets[toType][toAxis] = Mathf.Clamp(sequence, min, max);
                                     }
                                 }
                                 else if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
@@ -2973,8 +2951,7 @@ namespace BetterLegacy.Core.Helpers
                                         var sequence = transform.position;
                                         float value = ((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) - offset) * multiply % loop;
 
-                                        list[toType][toAxis] = Mathf.Clamp(value, min, max);
-                                        ModCompatibility.sharedFunctions["EventsCoreEventOffsets"] = list;
+                                        RTEventManager.inst.offsets[toType][toAxis] = Mathf.Clamp(value, min, max);
                                     }
 
                                     if (toType >= 0 && toType < 3 && fromType == 1)
@@ -2982,8 +2959,7 @@ namespace BetterLegacy.Core.Helpers
                                         var sequence = transform.lossyScale;
                                         float value = ((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) - offset) * multiply % loop;
 
-                                        list[toType][toAxis] = Mathf.Clamp(value, min, max);
-                                        ModCompatibility.sharedFunctions["EventsCoreEventOffsets"] = list;
+                                        RTEventManager.inst.offsets[toType][toAxis] = Mathf.Clamp(value, min, max);
                                     }
 
                                     if (toType >= 0 && toType < 3 && fromType == 2)
@@ -2991,8 +2967,7 @@ namespace BetterLegacy.Core.Helpers
                                         var sequence = transform.rotation.eulerAngles;
                                         float value = ((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) - offset) * multiply % loop;
 
-                                        list[toType][toAxis] = Mathf.Clamp(value, min, max);
-                                        ModCompatibility.sharedFunctions["EventsCoreEventOffsets"] = list;
+                                        RTEventManager.inst.offsets[toType][toAxis] = Mathf.Clamp(value, min, max);
                                     }
                                 }
                             }
@@ -3012,18 +2987,14 @@ namespace BetterLegacy.Core.Helpers
 
                             var cameraToViewportPoint = Camera.main.WorldToViewportPoint(rb.transform.position);
 
-                            var list = (List<List<float>>)ModCompatibility.sharedFunctions["EventsCoreEventOffsets"];
-
                             var indexArray = 7;
                             var indexXValue = 4;
                             var indexYValue = 5;
 
-                            if (indexArray < list.Count && indexXValue < list[indexArray].Count)
-                                list[indexArray][indexXValue] = cameraToViewportPoint.x;
-                            if (indexArray < list.Count && indexYValue < list[indexArray].Count)
-                                list[indexArray][indexYValue] = cameraToViewportPoint.y;
-
-                            ModCompatibility.sharedFunctions["EventsCoreEventOffsets"] = list;
+                            if (indexArray < RTEventManager.inst.offsets.Count && indexXValue < RTEventManager.inst.offsets[indexArray].Count)
+                                RTEventManager.inst.offsets[indexArray][indexXValue] = cameraToViewportPoint.x;
+                            if (indexArray < RTEventManager.inst.offsets.Count && indexYValue < RTEventManager.inst.offsets[indexArray].Count)
+                                RTEventManager.inst.offsets[indexArray][indexYValue] = cameraToViewportPoint.y;
 
                             break;
                         }
@@ -3041,18 +3012,14 @@ namespace BetterLegacy.Core.Helpers
 
                             var cameraToViewportPoint = Camera.main.WorldToViewportPoint(rb.transform.position);
 
-                            var list = (List<List<float>>)ModCompatibility.sharedFunctions["EventsCoreEventOffsets"];
-
                             var indexArray = 8;
                             var indexXValue = 1;
                             var indexYValue = 2;
 
-                            if (indexArray < list.Count && indexXValue < list[indexArray].Count)
-                                list[indexArray][indexXValue] = cameraToViewportPoint.x - 0.5f;
-                            if (indexArray < list.Count && indexYValue < list[indexArray].Count)
-                                list[indexArray][indexYValue] = cameraToViewportPoint.y - 0.5f;
-
-                            ModCompatibility.sharedFunctions["EventsCoreEventOffsets"] = list;
+                            if (indexArray < RTEventManager.inst.offsets.Count && indexXValue < RTEventManager.inst.offsets[indexArray].Count)
+                                RTEventManager.inst.offsets[indexArray][indexXValue] = cameraToViewportPoint.x - 0.5f;
+                            if (indexArray < RTEventManager.inst.offsets.Count && indexYValue < RTEventManager.inst.offsets[indexArray].Count)
+                                RTEventManager.inst.offsets[indexArray][indexYValue] = cameraToViewportPoint.y - 0.5f;
 
                             break;
                         }
