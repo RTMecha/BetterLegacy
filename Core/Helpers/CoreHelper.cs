@@ -125,7 +125,12 @@ namespace BetterLegacy.Core.Helpers
         /// <summary>
         /// jokes on you, I FIXED THE BUG
         /// </summary>
-        public static bool AprilFools => DateTime.Now.ToString("M") == "1 April" || System.DateTime.Now.ToString("M") == "April 1";
+        public static bool AprilFools => DateTime.Now.ToString("M") == "1 April" || DateTime.Now.ToString("M") == "April 1";
+        
+        /// <summary>
+        /// For the Project Arrhythmia (release) Anniversary.
+        /// </summary>
+        public static bool PAAnniversary => DateTime.Now.ToString("M") == "15 June" || DateTime.Now.ToString("M") == "June 15";
 
         /// <summary>
         /// Gets the current resolution as a Vector2Int based on Core Config's resolution value.
