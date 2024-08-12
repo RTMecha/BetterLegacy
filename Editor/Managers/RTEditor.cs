@@ -6989,9 +6989,7 @@ namespace BetterLegacy.Editor.Managers
                 new Document.Element("<b>[VANILLA]</b> < i> - For making text <i>italic</i>. Use </ i> to clear.", Document.Element.Type.Text),
                 new Document.Element("<b>- FONTS -</b>", Document.Element.Type.Text),
                 new Document.Element(RTFile.BepInExAssetsPath + "Documentation/doc_fonts.png", Document.Element.Type.Image)
-                { Function = () => {
-                    RTFile.OpenInFileBrowser.OpenFile(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "Documentation/doc_fonts.png");
-                }},
+                { Function = () => { RTFile.OpenInFileBrowser.OpenFile(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "Documentation/doc_fonts.png"); }},
                 new Document.Element("To use a font, do <font=Font Name>. To clear, do </font>. Click on one of the fonts below to copy the <font=Font Name> to your clipboard. " +
                     "Click on the image above to open the folder to the documentation assets folder where a higher resolution screenshot is located.", Document.Element.Type.Text),
                 new Document.Element("<b>[MODDED]</b> Adam Warren Pro Bold - A comic style font.", Document.Element.Type.Text)
@@ -7378,6 +7376,86 @@ namespace BetterLegacy.Editor.Managers
                     {
                         EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
                         LSText.CopyToClipboard($"<font=RocknRoll One>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> Roboto Mono Bold - Russian support font.", Document.Element.Type.Text)
+                {
+                    Function = () =>
+                    {
+                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                        LSText.CopyToClipboard($"<font=Roboto Mono Bold>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> Roboto Mono Italic - Russian support font.", Document.Element.Type.Text)
+                {
+                    Function = () =>
+                    {
+                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                        LSText.CopyToClipboard($"<font=Roboto Mono Italic>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> Roboto Mono Light - Russian support font.", Document.Element.Type.Text)
+                {
+                    Function = () =>
+                    {
+                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                        LSText.CopyToClipboard($"<font=Roboto Mono Light>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> Roboto Mono Light 1 - Russian support font.", Document.Element.Type.Text)
+                {
+                    Function = () =>
+                    {
+                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                        LSText.CopyToClipboard($"<font=Roboto Mono Light 1>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> Roboto Mono Light Italic - Russian support font.", Document.Element.Type.Text)
+                {
+                    Function = () =>
+                    {
+                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                        LSText.CopyToClipboard($"<font=Roboto Mono Light Italic>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> Roboto Mono Light Italic 1 - Russian support font.", Document.Element.Type.Text)
+                {
+                    Function = () =>
+                    {
+                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                        LSText.CopyToClipboard($"<font=Roboto Mono Light Italic 1>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> Roboto Mono Thin - Russian support font.", Document.Element.Type.Text)
+                {
+                    Function = () =>
+                    {
+                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                        LSText.CopyToClipboard($"<font=Roboto Mono Thin>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> Roboto Mono Thin 1 - Russian support font.", Document.Element.Type.Text)
+                {
+                    Function = () =>
+                    {
+                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                        LSText.CopyToClipboard($"<font=Roboto Mono Thin 1>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> Roboto Mono Thin Italic - Russian support font.", Document.Element.Type.Text)
+                {
+                    Function = () =>
+                    {
+                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                        LSText.CopyToClipboard($"<font=Roboto Mono Thin Italic>");
+                    }
+                },
+                new Document.Element($"<b>[MODDED]</b> Roboto Mono Thin Italic 1 - Russian support font.", Document.Element.Type.Text)
+                {
+                    Function = () =>
+                    {
+                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+                        LSText.CopyToClipboard($"<font=Roboto Mono Thin Italic 1>");
                     }
                 },
             });
