@@ -113,6 +113,8 @@ namespace BetterLegacy.Core.Optimization.Objects
             this.prefabOffsetScale = prefabOffsetScale;
             this.prefabOffsetRotation = prefabOffsetRotation;
 
+            desyncParentIndex = this.parentObjects.Count;
+
             try
             {
                 top = this.parentObjects[parentObjects.Count - 1].Transform.parent;
@@ -144,6 +146,12 @@ namespace BetterLegacy.Core.Optimization.Objects
         {
             if (parentObjects.Count > 0)
                 parentObjects[parentObjects.Count - 1].GameObject?.SetActive(active);
+
+            if (!active)
+            {
+                desyncParentIndex = parentObjects.Count;
+                spawned = false;
+            }
         }
 
         public static Color ChangeColorHSV(Color color, float hue, float sat, float val)
@@ -157,6 +165,8 @@ namespace BetterLegacy.Core.Optimization.Objects
 
         float prevStartTime = 0f;
         bool spawned = false;
+        int desyncParentIndex;
+        int syncParentIndex;
 
         public void Interpolate(float time)
         {
@@ -248,20 +258,17 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             if (prevStartTime != beatmapObject.startTime)
             {
-                parentObjects.ForEach(x => x.Active = false);
                 prevStartTime = beatmapObject.startTime;
+                spawned = false;
             }
 
-            LevelParentObject currentParent = null;
-
+            int desyncParentIndex = 0;
+            bool hasSpawned = false;
             for (int i = 0; i < parentObjects.Count; i++)
             {
                 var parentObject = parentObjects[i];
 
-                if (currentParent == null)
-                    currentParent = parentObject;
-
-                if ((!currentParent.BeatmapObject.desync || i == 0 || !parentObject.Active || !spawned))
+                if (!spawned || i >= syncParentIndex && i < this.desyncParentIndex)
                 {
                     if (parentObject.ParentAdditivePosition)
                         positionAddedOffset += parentObject.ParentOffsetPosition;
@@ -318,15 +325,20 @@ namespace BetterLegacy.Core.Optimization.Objects
                     scaleParallax = parentObject.ParentParallaxScale;
                     rotationParallax = parentObject.ParentParallaxRotation;
 
-                    if (currentParent.BeatmapObject.desync && !parentObject.Active)
+                    if (!spawned)
+                        syncParentIndex = i;
+
+                    if (parentObject.BeatmapObject.desync && !spawned)
                     {
-                        parentObject.Active = true;
+                        hasSpawned = true;
                         spawned = true;
+                        desyncParentIndex = i + 1;
                     }
                 }
-
-                currentParent = parentObject;
             }
+
+            if (hasSpawned)
+                this.desyncParentIndex = desyncParentIndex;
         }
     }
 }
