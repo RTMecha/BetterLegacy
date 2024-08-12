@@ -620,7 +620,14 @@ namespace BetterLegacy.Core.Managers
 
         public AssetBundle GetAssetBundle(string _filepath, string _bundle) => AssetBundle.LoadFromFile(Path.Combine(_filepath, _bundle));
 
-        public string ChangeName(string _name1)
+        // UNUSED DUE TO FILESIZE
+        // - NotoSansSC-VariableFont.ttf
+        // - HiMelody-Regular.ttf
+        // - NotoSansTC-VariableFont.ttf
+        // - NotoSansHK-VariableFont.ttf
+        // - NotoSansKR-VariableFont_wght.ttf
+        // - HanyiSentyPagoda Regular.ttf
+        string ChangeName(string _name1)
         {
             switch (_name1)
             {
@@ -728,6 +735,16 @@ namespace BetterLegacy.Core.Managers
                 case "18vag rounded m bold.ttf": return "VAG Rounded";
                 case "milk(rus by lyajka) regular.ttf": return "LemonMilkRus";
                 case "1 nevrouz m regular.ttf": return "Nevrouz";
+                case "robotomono-bold.ttf": return "Roboto Mono Bold";
+                case "robotomono-italic.ttf": return "Roboto Mono Italic";
+                case "robotomono-light.ttf": return "Roboto Mono Light";
+                case "robotomono-light_0.ttf": return "Roboto Mono Light 1";
+                case "robotomono-lightitalic.ttf": return "Roboto Mono Light Italic";
+                case "robotomono-lightitalic_0.ttf": return "Roboto Mono Light Italic 1";
+                case "robotomono-thin.ttf": return "Roboto Mono Thin";
+                case "robotomono-thin_0.ttf": return "Roboto Mono Thin 1";
+                case "robotomono-thinitalic.ttf": return "Roboto Mono Thin Italic";
+                case "robotomono-thinitalic_0.ttf": return "Roboto Mono Thin Italic 1";
                 #endregion
                 #region Japanese Fonts
                 case "dotgothic16-regular.ttf": return "DotGothic16";
