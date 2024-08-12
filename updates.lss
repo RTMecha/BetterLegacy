@@ -1,4 +1,4 @@
-1.2.1 > [???]
+1.2.1 > [Aug 12, 2024]
 - Added a reload button to the Prefab Type editor.
 - Reworked Prefab Types to be ID (string) based instead of index (ordered number) based.
 - Show Prefab Type editor buttons now have text to make it more clear what to do and what Prefab Type it has selected.
