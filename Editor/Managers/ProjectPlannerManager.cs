@@ -592,7 +592,7 @@ namespace BetterLegacy.Editor.Managers
                     UIManager.SetRectTransform(deletePrefab.transform.AsRT(), new Vector2(-12f, -12f), Vector2.one, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(20f, 20f));
 
                     var prefabScroll = Creator.NewUIObject("Scroll", prefab.transform);
-                    UIManager.SetRectTransform(prefabScroll.transform.AsRT(), new Vector2(590f, -125f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), new Vector2(1180f, 200f));
+                    UIManager.SetRectTransform(prefabScroll.transform.AsRT(), new Vector2(640f, -125f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), new Vector2(1260f, 200f));
                     var prefabScrollRect = prefabScroll.AddComponent<ScrollRect>();
 
                     var prefabViewport = Creator.NewUIObject("Viewport", prefabScroll.transform);
@@ -671,7 +671,7 @@ namespace BetterLegacy.Editor.Managers
 
                     DestroyImmediate(albumArtAdd.gameObject);
                     artistAdd.SetParent(prefab.transform);
-                    artistAdd.AsRT().anchoredPosition = new Vector2(-240f, 95f);
+                    artistAdd.AsRT().anchoredPosition = new Vector2(-240f, 110f);
                     artistAdd.AsRT().sizeDelta = new Vector2(-128f, 40f);
                     artistAdd.name = "name";
 
@@ -3044,7 +3044,7 @@ namespace BetterLegacy.Editor.Managers
 
             timeline.Content = gameObject.transform.Find("Scroll/Viewport/Content");
 
-            EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.List_Button_1, true);
+            EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.List_Button_1_Normal, true);
 
             var scrollbar = gameObject.transform.Find("Scrollbar");
             EditorThemeManager.ApplyScrollbar(scrollbar.GetComponent<Scrollbar>(), scrollbar.GetComponent<Image>(), ThemeGroup.List_Button_1_Normal, ThemeGroup.Scrollbar_1_Handle, scrollbarRoundedSide: SpriteManager.RoundedSide.Bottom);
@@ -3057,8 +3057,8 @@ namespace BetterLegacy.Editor.Managers
             edit.onClick.ClearAll();
             edit.onClick.AddListener(() => { OpenTimelineEditor(timeline); });
 
-            EditorThemeManager.ApplyGraphic(edit.image, ThemeGroup.Function_3, true);
-            EditorThemeManager.ApplyGraphic(edit.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Function_3_Text, true);
+            EditorThemeManager.ApplyGraphic(edit.image, ThemeGroup.Function_2_Normal, true);
+            EditorThemeManager.ApplyGraphic(edit.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Function_2_Text);
 
             var delete = gameObject.transform.Find("delete").GetComponent<DeleteButtonStorage>();
             delete.button.onClick.ClearAll();
@@ -3592,6 +3592,7 @@ namespace BetterLegacy.Editor.Managers
                     }
 
                     Add = inst.timelineAddPrefab.Duplicate(Content, "add");
+                    Add.transform.localScale = Vector3.one;
                     var button = Add.GetComponent<Button>();
                     button.onClick.ClearAll();
                     button.onClick.AddListener(() =>
