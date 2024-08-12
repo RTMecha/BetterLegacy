@@ -1618,7 +1618,9 @@ namespace BetterLegacy.Editor.Managers
             RenderPrefabTypesPopup(current, onSelect);
         }
 
-        public void RenderPrefabTypesPopup(string current, Action<string> onSelect)
+        public void RenderPrefabTypesPopup(string current, Action<string> onSelect) => StartCoroutine(IRenderPrefabTypesPopup(current, onSelect));
+
+        IEnumerator IRenderPrefabTypesPopup(string current, Action<string> onSelect)
         {
             LSHelpers.DeleteChildren(prefabTypeContent);
 
@@ -1773,6 +1775,7 @@ namespace BetterLegacy.Editor.Managers
 
                 num++;
             }
+            yield break;
         }
 
         //public void SetPrefabTypeIcon(Image icon, PrefabType prefabType)
