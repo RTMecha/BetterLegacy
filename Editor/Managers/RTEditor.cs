@@ -179,6 +179,7 @@ namespace BetterLegacy.Editor.Managers
             functionButton1Storage.button.onClick.ClearAll();
             functionButton1Storage.text = prefabHolder.Function1Button.transform.GetChild(0).GetComponent<Text>();
 
+            CloseSprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_close.png");
             ReloadSprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_refresh-white.png");
 
             if (!RTFile.FileExists(EditorSettingsPath))
@@ -571,6 +572,7 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        public static Sprite CloseSprite { get; set; }
         public static Sprite ReloadSprite { get; set; }
 
         #endregion
@@ -2849,14 +2851,14 @@ namespace BetterLegacy.Editor.Managers
                 }, HideWarningPopup);
             });
 
-            EditorHelper.AddEditorDropdown("Reset Event Offsets", "", "Edit", saveAs.Find("Panel/x/Image").GetComponent<Image>().sprite, () =>
+            EditorHelper.AddEditorDropdown("Reset Event Offsets", "", "Edit", CloseSprite, () =>
             {
                 RTEventManager.inst?.SetResetOffsets();
 
                 EditorManager.inst.DisplayNotification("Event Offsets have been reset.", 1.4f, EditorManager.NotificationType.Success);
             });
             
-            EditorHelper.AddEditorDropdown("Deactivate Modifiers", "", "Edit", saveAs.Find("Panel/x/Image").GetComponent<Image>().sprite, () =>
+            EditorHelper.AddEditorDropdown("Deactivate Modifiers", "", "Edit", CloseSprite, () =>
             {
                 if (!GameData.IsValid)
                     return;
@@ -2883,7 +2885,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.DisplayNotification("Modifiers have been deactivated.", 1.4f, EditorManager.NotificationType.Success);
             });
             
-            EditorHelper.AddEditorDropdown("Reset object variables", "", "Edit", saveAs.Find("Panel/x/Image").GetComponent<Image>().sprite, () =>
+            EditorHelper.AddEditorDropdown("Reset object variables", "", "Edit", CloseSprite, () =>
             {
                 if (!GameData.IsValid)
                     return;
