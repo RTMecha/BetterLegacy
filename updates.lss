@@ -1,3 +1,7 @@
+1.2.1 > [???]
+- Added a reload button to the Prefab Type editor.
+- Reworked Prefab Types to be ID (string) based instead of index (ordered number) based.
+- Show Prefab Type editor buttons now have text to make it more clear what to do and what Prefab Type it has selected.
 1.2.0 > [Aug 11, 2024]
 - Continued work on the arcade server. It's not quite ready for release but hopefully it'll be in the next few updates, so stay tuned!
 - Started working on a custom story mode.
