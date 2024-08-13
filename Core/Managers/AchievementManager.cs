@@ -44,7 +44,7 @@ namespace BetterLegacy.Core.Managers
 
             var popup = Creator.NewUIObject("Popup", canvas.GameObject.transform);
             this.popup = popup.transform.AsRT();
-            UIManager.SetRectTransform(this.popup, new Vector2(760f, -590f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(400f, 100f));
+            UIManager.SetRectTransform(this.popup, new Vector2(0f, -100f), Vector2.right, Vector2.right, Vector2.right, new Vector2(400f, 100f));
 
             var popupImage = popup.AddComponent<Image>();
             EditorThemeManager.ApplyGraphic(popupImage, ThemeGroup.Background_1, true);
@@ -76,6 +76,8 @@ namespace BetterLegacy.Core.Managers
             UIManager.SetRectTransform(bar.transform.AsRT(), new Vector2(-8f, 0f), new Vector2(0f, 1f), Vector2.zero, new Vector2(0f, 0.5f), new Vector2(8f, 0f));
             difficultyImage = bar.AddComponent<Image>();
             EditorThemeManager.ApplyGraphic(difficultyImage, ThemeGroup.Null, true, roundedSide: SpriteManager.RoundedSide.Left);
+
+            popup.gameObject.SetActive(false);
 
             yield break;
         }
@@ -144,19 +146,17 @@ namespace BetterLegacy.Core.Managers
             {
                 new AnimationHandler<float>(new List<IKeyframe<float>>
                 {
-                    new FloatKeyframe(0f, -590f, Ease.Linear),
-                    new FloatKeyframe(0.4f, -490f, Ease.BackOut),
-                    new FloatKeyframe(3f, -490f, Ease.Linear),
-                    new FloatKeyframe(3.4f, -590f, Ease.BackIn),
-                    new FloatKeyframe(3.5f, -590f, Ease.Linear),
-                }, delegate (float x)
-                {
-                    popup.anchoredPosition = new Vector2(760f, x);
-                }),
+                    new FloatKeyframe(0f, -100f, Ease.Linear),
+                    new FloatKeyframe(0.4f, 0f, Ease.BackOut),
+                    new FloatKeyframe(3f, 0f, Ease.Linear),
+                    new FloatKeyframe(3.4f, -100f, Ease.BackIn),
+                    new FloatKeyframe(3.5f, -100f, Ease.Linear),
+                }, x => { popup.anchoredPosition = new Vector2(0f, x); }),
             };
-            animation.onComplete = delegate ()
+            animation.onComplete = () =>
             {
                 popup.gameObject.SetActive(false);
+                popup.anchoredPosition = new Vector2(0f, -100f);
                 AnimationManager.inst.RemoveID(animation.id);
             };
             AnimationManager.inst.Play(animation);
