@@ -1,3 +1,8 @@
+1.2.3 > [Aug 13, 2024]
+- Fixed Prefab Popup settings not updating when the values are changed.
+- Reloading Prefab types should now refresh the UI.
+- Changing the Prefab Type in the Prefab Object Editor now update the timeline objects associated with the Prefab.
+- Made default Prefab Popup sizes larger.
 1.2.2 > [Aug 12, 2024]
 - Fixed timelines in the Project Planner looking off.
 - Finally removed all indirectly reference objects since the mods are now one.
