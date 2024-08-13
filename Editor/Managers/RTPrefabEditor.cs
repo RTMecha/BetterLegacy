@@ -59,6 +59,8 @@ namespace BetterLegacy.Editor.Managers
         public GameObject prefabTypeTogglePrefab;
         public Transform prefabTypeContent;
 
+        public Button prefabTypeReloadButton;
+
         public string NewPrefabTypeID { get; set; }
         public string NewPrefabDescription { get; set; }
 
@@ -627,7 +629,7 @@ namespace BetterLegacy.Editor.Managers
         #region Prefab Objects
 
         /// <summary>
-        /// Finds the timeline object with the associated BeatmapObject ID.
+        /// Finds the timeline object with the associated PrefabObject ID.
         /// </summary>
         /// <param name="beatmapObject"></param>
         /// <returns>Returns either the related TimelineObject or a new TimelineObject if one doesn't exist for whatever reason.</returns>
@@ -933,45 +935,45 @@ namespace BetterLegacy.Editor.Managers
 
             var startTime = prefabSelectorLeft.Find("time/input").GetComponent<InputField>();
 
-                var parent = startTime.transform.parent;
-                var locked = parent.Find("lock").GetComponent<Toggle>();
-                locked.onValueChanged.ClearAll();
-                locked.isOn = currentPrefab.editorData.locked;
-                locked.onValueChanged.AddListener(_val =>
-                {
-                    currentPrefab.editorData.locked = _val;
-                    ObjectEditor.inst.RenderTimelineObject(GetTimelineObject(currentPrefab));
-                });
+            var parent = startTime.transform.parent;
+            var locked = parent.Find("lock").GetComponent<Toggle>();
+            locked.onValueChanged.ClearAll();
+            locked.isOn = currentPrefab.editorData.locked;
+            locked.onValueChanged.AddListener(_val =>
+            {
+                currentPrefab.editorData.locked = _val;
+                ObjectEditor.inst.RenderTimelineObject(GetTimelineObject(currentPrefab));
+            });
 
-                var collapse = parent.Find("collapse").GetComponent<Toggle>();
-                collapse.onValueChanged.ClearAll();
-                collapse.isOn = currentPrefab.editorData.collapse;
-                collapse.onValueChanged.AddListener(_val =>
-                {
-                    currentPrefab.editorData.collapse = _val;
-                    ObjectEditor.inst.RenderTimelineObject(GetTimelineObject(currentPrefab));
-                });
+            var collapse = parent.Find("collapse").GetComponent<Toggle>();
+            collapse.onValueChanged.ClearAll();
+            collapse.isOn = currentPrefab.editorData.collapse;
+            collapse.onValueChanged.AddListener(_val =>
+            {
+                currentPrefab.editorData.collapse = _val;
+                ObjectEditor.inst.RenderTimelineObject(GetTimelineObject(currentPrefab));
+            });
 
             startTime.onValueChanged.ClearAll();
             startTime.text = currentPrefab.StartTime.ToString();
             startTime.onValueChanged.AddListener(_val =>
+            {
+                if (currentPrefab.editorData.locked)
+                    return;
+
+                if (float.TryParse(_val, out float n))
                 {
-                    if (currentPrefab.editorData.locked)
-                        return;
+                    n = Mathf.Clamp(n, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                    currentPrefab.StartTime = n;
+                    Updater.UpdatePrefab(currentPrefab, "starttime");
+                    ObjectEditor.inst.RenderTimelineObject(GetTimelineObject(currentPrefab));
+                }
+                else
+                    EditorManager.inst.DisplayNotification("Text is not correct format!", 1f, EditorManager.NotificationType.Error);
+            });
 
-                    if (float.TryParse(_val, out float n))
-                    {
-                        n = Mathf.Clamp(n, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
-                        currentPrefab.StartTime = n;
-                        Updater.UpdatePrefab(currentPrefab, "starttime");
-                        ObjectEditor.inst.RenderTimelineObject(GetTimelineObject(currentPrefab));
-                    }
-                    else
-                        EditorManager.inst.DisplayNotification("Text is not correct format!", 1f, EditorManager.NotificationType.Error);
-                });
-
-                TriggerHelper.IncreaseDecreaseButtons(startTime, t: parent);
-                TriggerHelper.AddEventTriggers(startTime.gameObject, TriggerHelper.ScrollDelta(startTime));
+            TriggerHelper.IncreaseDecreaseButtons(startTime, t: parent);
+            TriggerHelper.AddEventTriggers(startTime.gameObject, TriggerHelper.ScrollDelta(startTime));
 
             var startTimeSet = parent.Find("|").GetComponent<Button>();
             startTimeSet.onClick.ClearAll();
@@ -989,28 +991,28 @@ namespace BetterLegacy.Editor.Managers
 
                 var layers = prefabSelectorLeft.Find("editor/layers").GetComponent<InputField>();
 
-                    layers.image.color = RTEditor.GetLayerColor(currentPrefab.editorData.layer);
+                layers.image.color = RTEditor.GetLayerColor(currentPrefab.editorData.layer);
                 layers.onValueChanged.ClearAll();
                 layers.text = (currentPrefab.editorData.layer + 1).ToString();
-                    layers.onValueChanged.AddListener(_val =>
+                layers.onValueChanged.AddListener(_val =>
+                {
+                    if (int.TryParse(_val, out int n))
                     {
-                        if (int.TryParse(_val, out int n))
-                        {
-                            currentLayer = currentPrefab.editorData.layer;
-                            int a = n - 1;
-                            if (a < 0)
-                                layers.text = "1";
+                        currentLayer = currentPrefab.editorData.layer;
+                        int a = n - 1;
+                        if (a < 0)
+                            layers.text = "1";
 
-                            currentPrefab.editorData.layer = RTEditor.GetLayer(a);
-                            layers.image.color = RTEditor.GetLayerColor(RTEditor.GetLayer(a));
-                            ObjectEditor.inst.RenderTimelineObject(GetTimelineObject(currentPrefab));
-                        }
-                        else
-                            EditorManager.inst.DisplayNotification("Text is not correct format!", 1f, EditorManager.NotificationType.Error);
-                    });
+                        currentPrefab.editorData.layer = RTEditor.GetLayer(a);
+                        layers.image.color = RTEditor.GetLayerColor(RTEditor.GetLayer(a));
+                        ObjectEditor.inst.RenderTimelineObject(GetTimelineObject(currentPrefab));
+                    }
+                    else
+                        EditorManager.inst.DisplayNotification("Text is not correct format!", 1f, EditorManager.NotificationType.Error);
+                });
 
-                    TriggerHelper.IncreaseDecreaseButtons(layers);
-                    TriggerHelper.AddEventTriggers(layers.gameObject, TriggerHelper.ScrollDeltaInt(layers, min: 1, max: int.MaxValue));
+                TriggerHelper.IncreaseDecreaseButtons(layers);
+                TriggerHelper.AddEventTriggers(layers.gameObject, TriggerHelper.ScrollDeltaInt(layers, min: 1, max: int.MaxValue));
             }
 
             for (int i = 0; i < 3; i++)
@@ -1156,9 +1158,11 @@ namespace BetterLegacy.Editor.Managers
                     {
                         prefab.Type = PrefabType.prefabTypeLSIDToIndex.ContainsKey(id) ? PrefabType.prefabTypeLSIDToIndex[id] : PrefabType.prefabTypeVGIDToIndex.ContainsKey(id) ? PrefabType.prefabTypeVGIDToIndex[id] : 0;
                         prefab.typeID = id;
+                        typeSelector.button.image.color = prefab.PrefabType.Color;
+                        typeSelector.text.text = prefab.PrefabType.Name;
+                        ObjectEditor.inst.RenderTimelineObjects();
                     });
                 });
-                typeSelector.button.image.color = prefab.PrefabType.Color;
 
                 var savePrefab = prefabSelectorRight.Find("save prefab").GetComponent<Button>();
                 savePrefab.onClick.ClearAll();
@@ -1422,11 +1426,9 @@ namespace BetterLegacy.Editor.Managers
             var refreshImage = refresh.AddComponent<Image>();
             refreshImage.sprite = RTEditor.ReloadSprite;
 
-            var refreshButton = refresh.AddComponent<Button>();
-            refreshButton.image = refreshImage;
-            refreshButton.onClick.ClearAll();
-            refreshButton.onClick.AddListener(() => { StartCoroutine(LoadPrefabTypes()); });
-            EditorThemeManager.AddSelectable(refreshButton, ThemeGroup.Function_2, false);
+            prefabTypeReloadButton = refresh.AddComponent<Button>();
+            prefabTypeReloadButton.image = refreshImage;
+            EditorThemeManager.AddSelectable(prefabTypeReloadButton, ThemeGroup.Function_2, false);
 
             var scrollRect = new GameObject("ScrollRect");
             scrollRect.transform.SetParent(gameObject.transform);
@@ -1622,6 +1624,13 @@ namespace BetterLegacy.Editor.Managers
 
         IEnumerator IRenderPrefabTypesPopup(string current, Action<string> onSelect)
         {
+            prefabTypeReloadButton.onClick.ClearAll();
+            prefabTypeReloadButton.onClick.AddListener(() =>
+            {
+                StartCoroutine(LoadPrefabTypes());
+                RenderPrefabTypesPopup(NewPrefabTypeID, onSelect);
+            });
+
             LSHelpers.DeleteChildren(prefabTypeContent);
 
             var createPrefabType = PrefabEditor.inst.CreatePrefab.Duplicate(prefabTypeContent, "Create Prefab Type");
@@ -1775,6 +1784,7 @@ namespace BetterLegacy.Editor.Managers
 
                 num++;
             }
+
             yield break;
         }
 
@@ -2186,7 +2196,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void OpenPopup()
         {
-            EditorManager.inst.ClearDialogs(EditorManager.EditorDialog.DialogType.Popup);
+            EditorManager.inst.ClearPopups();
             EditorManager.inst.ShowDialog("Prefab Popup");
             PrefabEditor.inst.UpdateCurrentPrefab(PrefabEditor.inst.currentPrefab);
 
