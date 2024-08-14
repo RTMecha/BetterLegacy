@@ -156,5 +156,14 @@ namespace BetterLegacy.Core
                 jn["x"] == null ? defaultValue.x : jn["x"].AsInt,
                 jn["y"] == null ? defaultValue.y : jn["y"].AsInt,
                 jn["z"] == null ? defaultValue.z : jn["z"].AsInt);
+
+        public static void ParseRectTransform(RectTransform rectTransform, JSONNode jn)
+        {
+            rectTransform.anchoredPosition = jn["anc_pos"] != null && jn["anc_pos"]["x"] != null && jn["anc_pos"]["y"] != null ? jn["anc_pos"].AsVector2() : Vector2.zero;
+            rectTransform.anchorMax = jn["anc_max"] != null && jn["anc_max"]["x"] != null && jn["anc_max"]["y"] != null ? jn["anc_max"].AsVector2() : new Vector2(0.5f, 0.5f);
+            rectTransform.anchorMin = jn["anc_min"] != null && jn["anc_min"]["x"] != null && jn["anc_min"]["y"] != null ? jn["anc_min"].AsVector2() : new Vector2(0.5f, 0.5f);
+            rectTransform.pivot = jn["pivot"] != null && jn["pivot"]["x"] != null && jn["pivot"]["y"] != null ? jn["pivot"].AsVector2() : new Vector2(0.5f, 0.5f);
+            rectTransform.sizeDelta = jn["size"] != null && jn["size"]["x"] != null && jn["size"]["y"] != null ? jn["size"].AsVector2() : new Vector2(100f, 100f);
+        }
     }
 }
