@@ -85,6 +85,29 @@ namespace BetterLegacy.Core
             collection.Save();
         }
 
+        public Level EntryLevel
+        {
+            get
+            {
+                if (levels.TryFind(x => x.metadata.isHubLevel && (!x.metadata.requireUnlock || x.playerData != null && x.playerData.Unlocked), out Level level))
+                    return level;
+
+                return levels[0];
+            }
+        }
+
+        public void Move(string id, int moveTo)
+        {
+            var levelIndex = levels.FindIndex(x => x.id == id);
+
+            if (levelIndex < 0)
+                return;
+
+            var level = levels[levelIndex];
+            levels.RemoveAt(levelIndex);
+            levels.Insert(Mathf.Clamp(moveTo, 0, levels.Count), level);
+        }
+
         public void Save()
         {
             var jn = JSON.Parse("{}");
