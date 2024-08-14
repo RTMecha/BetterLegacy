@@ -270,7 +270,7 @@ namespace BetterLegacy.Arcade
                                         new FloatKeyframe(0f, 1f, Ease.Linear),
                                         new FloatKeyframe(0.3f, 1.1f, Ease.CircOut),
                                         new FloatKeyframe(0.31f, 1.1f, Ease.Linear),
-                                    }, delegate (float x)
+                                    }, x =>
                                     {
                                         if (level.RectTransform != null)
                                             level.RectTransform.localScale = new Vector3(x, x, 1f);
@@ -294,7 +294,7 @@ namespace BetterLegacy.Arcade
                                         new FloatKeyframe(0f, 1.1f, Ease.Linear),
                                         new FloatKeyframe(0.3f, 1f, Ease.BounceOut),
                                         new FloatKeyframe(0.31f, 1f, Ease.Linear),
-                                    }, delegate (float x)
+                                    }, x =>
                                     {
                                         if (level.RectTransform != null)
                                             level.RectTransform.localScale = new Vector3(x, x, 1f);
@@ -351,7 +351,7 @@ namespace BetterLegacy.Arcade
                                         new FloatKeyframe(0f, 1f, Ease.Linear),
                                         new FloatKeyframe(0.3f, 1.1f, Ease.CircOut),
                                         new FloatKeyframe(0.31f, 1.1f, Ease.Linear),
-                                    }, delegate (float x)
+                                    }, x =>
                                     {
                                         if (level.RectTransform != null)
                                             level.RectTransform.localScale = new Vector3(x, x, 1f);
@@ -375,7 +375,7 @@ namespace BetterLegacy.Arcade
                                         new FloatKeyframe(0f, 1.1f, Ease.Linear),
                                         new FloatKeyframe(0.3f, 1f, Ease.BounceOut),
                                         new FloatKeyframe(0.31f, 1f, Ease.Linear),
-                                    }, delegate (float x)
+                                    }, x =>
                                     {
                                         if (level.RectTransform != null)
                                             level.RectTransform.localScale = new Vector3(x, x, 1f);
@@ -430,7 +430,7 @@ namespace BetterLegacy.Arcade
                                         new FloatKeyframe(0f, 1f, Ease.Linear),
                                         new FloatKeyframe(0.3f, 1.04f, Ease.CircOut),
                                         new FloatKeyframe(0.31f, 1.04f, Ease.Linear),
-                                    }, delegate (float x)
+                                    }, x =>
                                     {
                                         if (level.RectTransform != null)
                                             level.RectTransform.localScale = new Vector3(x, x, 1f);
@@ -454,7 +454,7 @@ namespace BetterLegacy.Arcade
                                         new FloatKeyframe(0f, 1.04f, Ease.Linear),
                                         new FloatKeyframe(0.3f, 1f, Ease.BounceOut),
                                         new FloatKeyframe(0.31f, 1f, Ease.Linear),
-                                    }, delegate (float x)
+                                    }, x =>
                                     {
                                         if (level.RectTransform != null)
                                             level.RectTransform.localScale = new Vector3(x, x, 1f);
@@ -538,7 +538,7 @@ namespace BetterLegacy.Arcade
                                             new FloatKeyframe(0f, 1f, Ease.Linear),
                                             new FloatKeyframe(0.3f, 1.1f, Ease.CircOut),
                                             new FloatKeyframe(0.31f, 1.1f, Ease.Linear),
-                                        }, delegate (float x)
+                                        }, x =>
                                         {
                                             if (level.RectTransform != null)
                                                 level.RectTransform.localScale = new Vector3(x, x, 1f);
@@ -562,7 +562,7 @@ namespace BetterLegacy.Arcade
                                             new FloatKeyframe(0f, 1.1f, Ease.Linear),
                                             new FloatKeyframe(0.3f, 1f, Ease.BounceOut),
                                             new FloatKeyframe(0.31f, 1f, Ease.Linear),
-                                        }, delegate (float x)
+                                        }, x =>
                                         {
                                             if (level.RectTransform != null)
                                                 level.RectTransform.localScale = new Vector3(x, x, 1f);
@@ -608,7 +608,7 @@ namespace BetterLegacy.Arcade
                                             new FloatKeyframe(0f, 1f, Ease.Linear),
                                             new FloatKeyframe(0.3f, 1.1f, Ease.CircOut),
                                             new FloatKeyframe(0.31f, 1.1f, Ease.Linear),
-                                        }, delegate (float x)
+                                        }, x =>
                                         {
                                             if (level.RectTransform != null)
                                                 level.RectTransform.localScale = new Vector3(x, x, 1f);
@@ -632,7 +632,7 @@ namespace BetterLegacy.Arcade
                                             new FloatKeyframe(0f, 1.1f, Ease.Linear),
                                             new FloatKeyframe(0.3f, 1f, Ease.BounceOut),
                                             new FloatKeyframe(0.31f, 1f, Ease.Linear),
-                                        }, delegate (float x)
+                                        }, x =>
                                         {
                                             if (level.RectTransform != null)
                                                 level.RectTransform.localScale = new Vector3(x, x, 1f);
@@ -937,12 +937,12 @@ namespace BetterLegacy.Arcade
             close.Text.text = "<scale=1.3><pos=6>X";
             close.Text.color = textColor;
             close.Image.color = Color.Lerp(buttonBGColor, Color.white, 0.01f);
-            close.Clickable.onClick = delegate (PointerEventData pointerEventData)
+            close.Clickable.onClick = pointerEventData =>
             {
                 AudioManager.inst.PlaySound("blip");
                 SelectTab();
             };
-            close.Clickable.onEnter = delegate (PointerEventData pointerEventData)
+            close.Clickable.onEnter = pointerEventData =>
             {
                 if (!CanSelect)
                     return;
@@ -975,12 +975,12 @@ namespace BetterLegacy.Arcade
                 else
                     tab.Image.sprite = null;
 
-                tab.Clickable.onClick = delegate (PointerEventData pointerEventData)
+                tab.Clickable.onClick = pointerEventData =>
                 {
                     AudioManager.inst.PlaySound("blip");
                     SelectTab();
                 };
-                tab.Clickable.onEnter = delegate (PointerEventData pointerEventData)
+                tab.Clickable.onEnter = pointerEventData =>
                 {
                     if (!CanSelect)
                         return;
@@ -1123,7 +1123,7 @@ namespace BetterLegacy.Arcade
                         Position = new Vector2Int(2, 1),
                     });
 
-                    localPageField.onValueChanged.AddListener(delegate (string _val)
+                    localPageField.onValueChanged.AddListener(_val =>
                     {
                         if (int.TryParse(_val, out int p))
                         {
@@ -1134,7 +1134,7 @@ namespace BetterLegacy.Arcade
                         }
                     });
 
-                    reloadClickable.onEnter = delegate (PointerEventData pointerEventData)
+                    reloadClickable.onEnter = pointerEventData =>
                     {
                         if (!CanSelect)
                             return;
@@ -1142,14 +1142,14 @@ namespace BetterLegacy.Arcade
                         AudioManager.inst.PlaySound("LeftRight");
                         selected = new Vector2Int(0, 1);
                     };
-                    reloadClickable.onClick = delegate (PointerEventData pointerEventData)
+                    reloadClickable.onClick = pointerEventData =>
                     {
                         AudioManager.inst.PlaySound("blip");
                         var menu = new GameObject("Load Level System");
                         menu.AddComponent<LoadLevelsManager>();
                     };
 
-                    prevPageClickable.onEnter = delegate (PointerEventData pointerEventData)
+                    prevPageClickable.onEnter = pointerEventData =>
                     {
                         if (!CanSelect)
                             return;
@@ -1157,7 +1157,7 @@ namespace BetterLegacy.Arcade
                         AudioManager.inst.PlaySound("LeftRight");
                         selected = new Vector2Int(1, 1);
                     };
-                    prevPageClickable.onClick = delegate (PointerEventData pointerEventData)
+                    prevPageClickable.onClick = pointerEventData =>
                     {
                         if (int.TryParse(localPageField.text, out int p))
                         {
@@ -1173,7 +1173,7 @@ namespace BetterLegacy.Arcade
                         }
                     };
 
-                    nextPageClickable.onEnter = delegate (PointerEventData pointerEventData)
+                    nextPageClickable.onEnter = pointerEventData =>
                     {
                         if (!CanSelect)
                             return;
@@ -1181,7 +1181,7 @@ namespace BetterLegacy.Arcade
                         AudioManager.inst.PlaySound("LeftRight");
                         selected = new Vector2Int(2, 1);
                     };
-                    nextPageClickable.onClick = delegate (PointerEventData pointerEventData)
+                    nextPageClickable.onClick = pointerEventData =>
                     {
                         if (int.TryParse(localPageField.text, out int p))
                         {
@@ -1258,6 +1258,14 @@ namespace BetterLegacy.Arcade
                     shineController.speed = 0.7f;
                     shine.transform.AsRT().sizeDelta = new Vector2(300f, 24f);
                     shine.transform.GetChild(0).AsRT().sizeDelta = new Vector2(300f, 8f);
+
+                    var locked = UIManager.GenerateUIImage("Lock", level.GetObject<RectTransform>());
+                    locked.GetObject<Image>().sprite = LegacyPlugin.LockSprite;
+                    locked.GetObject<GameObject>().SetActive(false);
+                    locked.GetObject<RectTransform>().anchoredPosition = new Vector2(80f, 40f);
+                    locked.GetObject<RectTransform>().pivot = new Vector2(0.5f, 0.8f);
+                    locked.GetObject<RectTransform>().sizeDelta = new Vector2(80f, 100f);
+                    UIManager.SetRectTransform(locked.GetObject<RectTransform>(), new Vector2(80f, 40f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.8f), new Vector2(80f, 100f));
                 }
 
                 var searchField = UIManager.GenerateUIInputField("Search", localRT);
@@ -1280,10 +1288,7 @@ namespace BetterLegacy.Arcade
                 localSearchField.onValueChanged.ClearAll();
                 localSearchField.textComponent.alignment = TextAnchor.MiddleLeft;
                 localSearchField.textComponent.color = textColor;
-                localSearchField.onValueChanged.AddListener(delegate (string _val)
-                {
-                    LocalSearchTerm = _val;
-                });
+                localSearchField.onValueChanged.AddListener(_val => { LocalSearchTerm = _val; });
             }
 
             // Online
@@ -1383,7 +1388,7 @@ namespace BetterLegacy.Arcade
                         Position = new Vector2Int(1, 1),
                     });
 
-                    onlinePageField.onValueChanged.AddListener(delegate (string _val)
+                    onlinePageField.onValueChanged.AddListener(_val =>
                     {
                         if (CanSelect && int.TryParse(_val, out int p))
                         {
@@ -1394,7 +1399,7 @@ namespace BetterLegacy.Arcade
                         }
                     });
 
-                    prevPageClickable.onEnter = delegate (PointerEventData pointerEventData)
+                    prevPageClickable.onEnter = pointerEventData =>
                     {
                         if (!CanSelect)
                             return;
@@ -1402,7 +1407,7 @@ namespace BetterLegacy.Arcade
                         AudioManager.inst.PlaySound("LeftRight");
                         selected = new Vector2Int(0, 1);
                     };
-                    prevPageClickable.onClick = delegate (PointerEventData pointerEventData)
+                    prevPageClickable.onClick = pointerEventData =>
                     {
                         if (int.TryParse(onlinePageField.text, out int p))
                         {
@@ -1418,7 +1423,7 @@ namespace BetterLegacy.Arcade
                         }
                     };
 
-                    nextPageClickable.onEnter = delegate (PointerEventData pointerEventData)
+                    nextPageClickable.onEnter = pointerEventData =>
                     {
                         if (!CanSelect)
                             return;
@@ -1426,7 +1431,7 @@ namespace BetterLegacy.Arcade
                         AudioManager.inst.PlaySound("LeftRight");
                         selected = new Vector2Int(1, 1);
                     };
-                    nextPageClickable.onClick = delegate (PointerEventData pointerEventData)
+                    nextPageClickable.onClick = pointerEventData =>
                     {
                         if (int.TryParse(onlinePageField.text, out int p))
                         {
@@ -1481,10 +1486,7 @@ namespace BetterLegacy.Arcade
                 onlineSearchField.onValueChanged.ClearAll();
                 onlineSearchField.textComponent.alignment = TextAnchor.MiddleLeft;
                 onlineSearchField.textComponent.color = textColor;
-                onlineSearchField.onValueChanged.AddListener(delegate (string _val)
-                {
-                    OnlineSearchTerm = _val;
-                });
+                onlineSearchField.onValueChanged.AddListener(_val => { OnlineSearchTerm = _val; });
 
                 var reload = UIManager.GenerateUIImage("Reload", onlineRT);
                 UIManager.SetRectTransform(reload.GetObject<RectTransform>(), new Vector2(700f, 270f), ZeroFive, ZeroFive, ZeroFive, new Vector2(200f, 60f));
@@ -1505,7 +1507,7 @@ namespace BetterLegacy.Arcade
                 reloadText.GetObject<TextMeshProUGUI>().fontStyle = FontStyles.Bold;
                 reloadText.GetObject<TextMeshProUGUI>().text = "[SEARCH]";
 
-                reloadClickable.onEnter = delegate (PointerEventData pointerEventData)
+                reloadClickable.onEnter = pointerEventData =>
                 {
                     if (!CanSelect)
                         return;
@@ -1513,7 +1515,7 @@ namespace BetterLegacy.Arcade
                     AudioManager.inst.PlaySound("LeftRight");
                     selected = new Vector2Int(0, 2);
                 };
-                reloadClickable.onClick = delegate (PointerEventData pointerEventData)
+                reloadClickable.onClick = pointerEventData =>
                 {
                     AudioManager.inst.PlaySound("blip");
                     StartCoroutine(SearchOnlineLevels());
@@ -1580,7 +1582,7 @@ namespace BetterLegacy.Arcade
                         Position = new Vector2Int(0, 1),
                     });
 
-                    reloadClickable.onEnter = delegate (PointerEventData pointerEventData)
+                    reloadClickable.onEnter = pointerEventData =>
                     {
                         if (!CanSelect)
                             return;
@@ -1588,7 +1590,7 @@ namespace BetterLegacy.Arcade
                         AudioManager.inst.PlaySound("LeftRight");
                         selected = new Vector2Int(0, 1);
                     };
-                    reloadClickable.onClick = delegate (PointerEventData pointerEventData)
+                    reloadClickable.onClick = pointerEventData =>
                     {
                         AudioManager.inst.PlaySound("blip");
                         OpenLocalBrowser();
@@ -1666,7 +1668,7 @@ namespace BetterLegacy.Arcade
                         Position = new Vector2Int(0, 1),
                     });
 
-                    reloadClickable.onEnter = delegate (PointerEventData pointerEventData)
+                    reloadClickable.onEnter = pointerEventData =>
                     {
                         if (!CanSelect)
                             return;
@@ -1674,7 +1676,7 @@ namespace BetterLegacy.Arcade
                         AudioManager.inst.PlaySound("LeftRight");
                         selected = new Vector2Int(0, 1);
                     };
-                    reloadClickable.onClick = delegate (PointerEventData pointerEventData)
+                    reloadClickable.onClick = pointerEventData =>
                     {
                         AudioManager.inst.PlaySound("blip");
                         DownloadLevel();
@@ -1722,7 +1724,7 @@ namespace BetterLegacy.Arcade
                     reloadText.GetObject<TextMeshProUGUI>().fontStyle = FontStyles.Bold;
                     reloadText.GetObject<TextMeshProUGUI>().text = "[SHUFFLE & PLAY]";
 
-                    reloadClickable.onEnter = delegate (PointerEventData pointerEventData)
+                    reloadClickable.onEnter = pointerEventData =>
                     {
                         if (!CanSelect)
                             return;
@@ -1730,7 +1732,7 @@ namespace BetterLegacy.Arcade
                         AudioManager.inst.PlaySound("LeftRight");
                         selected = new Vector2Int(0, 1);
                     };
-                    reloadClickable.onClick = delegate (PointerEventData pointerEventData)
+                    reloadClickable.onClick = pointerEventData =>
                     {
                         AudioManager.inst.PlaySound("blip");
                         ShuffleQueue(true);
@@ -1765,7 +1767,7 @@ namespace BetterLegacy.Arcade
                     shuffleText.GetObject<TextMeshProUGUI>().fontStyle = FontStyles.Bold;
                     shuffleText.GetObject<TextMeshProUGUI>().text = "[SHUFFLE]";
 
-                    shuffleClickable.onEnter = delegate (PointerEventData pointerEventData)
+                    shuffleClickable.onEnter = pointerEventData =>
                     {
                         if (!CanSelect)
                             return;
@@ -1773,7 +1775,7 @@ namespace BetterLegacy.Arcade
                         AudioManager.inst.PlaySound("LeftRight");
                         selected = new Vector2Int(1, 1);
                     };
-                    shuffleClickable.onClick = delegate (PointerEventData pointerEventData)
+                    shuffleClickable.onClick = pointerEventData =>
                     {
                         AudioManager.inst.PlaySound("blip");
                         ShuffleQueue(false);
@@ -1808,7 +1810,7 @@ namespace BetterLegacy.Arcade
                     playText.GetObject<TextMeshProUGUI>().fontStyle = FontStyles.Bold;
                     playText.GetObject<TextMeshProUGUI>().text = "[PLAY]";
 
-                    playClickable.onEnter = delegate (PointerEventData pointerEventData)
+                    playClickable.onEnter = pointerEventData =>
                     {
                         if (!CanSelect)
                             return;
@@ -1816,7 +1818,7 @@ namespace BetterLegacy.Arcade
                         AudioManager.inst.PlaySound("LeftRight");
                         selected = new Vector2Int(2, 1);
                     };
-                    playClickable.onClick = delegate (PointerEventData pointerEventData)
+                    playClickable.onClick = pointerEventData =>
                     {
                         if (LevelManager.ArcadeQueue.Count < 1)
                         {
@@ -1866,7 +1868,7 @@ namespace BetterLegacy.Arcade
                     clearText.GetObject<TextMeshProUGUI>().fontStyle = FontStyles.Bold;
                     clearText.GetObject<TextMeshProUGUI>().text = "[CLEAR]";
 
-                    clearClickable.onEnter = delegate (PointerEventData pointerEventData)
+                    clearClickable.onEnter = pointerEventData =>
                     {
                         if (!CanSelect)
                             return;
@@ -1874,7 +1876,7 @@ namespace BetterLegacy.Arcade
                         AudioManager.inst.PlaySound("LeftRight");
                         selected = new Vector2Int(3, 1);
                     };
-                    clearClickable.onClick = delegate (PointerEventData pointerEventData)
+                    clearClickable.onClick = pointerEventData =>
                     {
                         AudioManager.inst.PlaySound("blip");
                         LevelManager.ArcadeQueue.Clear();
@@ -1910,7 +1912,7 @@ namespace BetterLegacy.Arcade
                     copyText.GetObject<TextMeshProUGUI>().fontStyle = FontStyles.Bold;
                     copyText.GetObject<TextMeshProUGUI>().text = "[COPY]";
 
-                    copyClickable.onEnter = delegate (PointerEventData pointerEventData)
+                    copyClickable.onEnter = pointerEventData =>
                     {
                         if (!CanSelect)
                             return;
@@ -1918,7 +1920,7 @@ namespace BetterLegacy.Arcade
                         AudioManager.inst.PlaySound("LeftRight");
                         selected = new Vector2Int(4, 1);
                     };
-                    copyClickable.onClick = delegate (PointerEventData pointerEventData)
+                    copyClickable.onClick = pointerEventData =>
                     {
                         AudioManager.inst.PlaySound("blip");
                         RTArcade.CopyArcadeQueue();
@@ -1953,7 +1955,7 @@ namespace BetterLegacy.Arcade
                     pasteText.GetObject<TextMeshProUGUI>().fontStyle = FontStyles.Bold;
                     pasteText.GetObject<TextMeshProUGUI>().text = "[PASTE]";
 
-                    pasteClickable.onEnter = delegate (PointerEventData pointerEventData)
+                    pasteClickable.onEnter = pointerEventData =>
                     {
                         if (!CanSelect)
                             return;
@@ -1961,7 +1963,7 @@ namespace BetterLegacy.Arcade
                         AudioManager.inst.PlaySound("LeftRight");
                         selected = new Vector2Int(5, 1);
                     };
-                    pasteClickable.onClick = delegate (PointerEventData pointerEventData)
+                    pasteClickable.onClick = pointerEventData =>
                     {
                         AudioManager.inst.PlaySound("blip");
                         RTArcade.PasteArcadeQueue();
@@ -2054,7 +2056,7 @@ namespace BetterLegacy.Arcade
                         Position = new Vector2Int(7, 1),
                     });
 
-                    queuePageField.onValueChanged.AddListener(delegate (string _val)
+                    queuePageField.onValueChanged.AddListener(_val =>
                     {
                         if (int.TryParse(_val, out int p))
                         {
@@ -2065,7 +2067,7 @@ namespace BetterLegacy.Arcade
                         }
                     });
 
-                    prevPageClickable.onEnter = delegate (PointerEventData pointerEventData)
+                    prevPageClickable.onEnter = pointerEventData =>
                     {
                         if (!CanSelect)
                             return;
@@ -2073,7 +2075,7 @@ namespace BetterLegacy.Arcade
                         AudioManager.inst.PlaySound("LeftRight");
                         selected = new Vector2Int(6, 1);
                     };
-                    prevPageClickable.onClick = delegate (PointerEventData pointerEventData)
+                    prevPageClickable.onClick = pointerEventData =>
                     {
                         if (int.TryParse(queuePageField.text, out int p))
                         {
@@ -2089,7 +2091,7 @@ namespace BetterLegacy.Arcade
                         }
                     };
 
-                    nextPageClickable.onEnter = delegate (PointerEventData pointerEventData)
+                    nextPageClickable.onEnter = pointerEventData =>
                     {
                         if (!CanSelect)
                             return;
@@ -2097,7 +2099,7 @@ namespace BetterLegacy.Arcade
                         AudioManager.inst.PlaySound("LeftRight");
                         selected = new Vector2Int(7, 1);
                     };
-                    nextPageClickable.onClick = delegate (PointerEventData pointerEventData)
+                    nextPageClickable.onClick = pointerEventData =>
                     {
                         if (int.TryParse(queuePageField.text, out int p))
                         {
@@ -2152,10 +2154,7 @@ namespace BetterLegacy.Arcade
                 queueSearchField.onValueChanged.ClearAll();
                 queueSearchField.textComponent.alignment = TextAnchor.MiddleLeft;
                 queueSearchField.textComponent.color = textColor;
-                queueSearchField.onValueChanged.AddListener(delegate (string _val)
-                {
-                    QueueSearchTerm = _val;
-                });
+                queueSearchField.onValueChanged.AddListener(_val => { QueueSearchTerm = _val; });
             }
 
             // Steam
@@ -2313,7 +2312,7 @@ namespace BetterLegacy.Arcade
                         Position = new Vector2Int(3, 1),
                     });
 
-                    steamPageField.onValueChanged.AddListener(delegate (string _val)
+                    steamPageField.onValueChanged.AddListener(_val =>
                     {
                         if (int.TryParse(_val, out int p))
                         {
@@ -2324,7 +2323,7 @@ namespace BetterLegacy.Arcade
                         }
                     });
 
-                    reloadClickable.onEnter = delegate (PointerEventData pointerEventData)
+                    reloadClickable.onEnter = pointerEventData =>
                     {
                         if (!CanSelect)
                             return;
@@ -2332,14 +2331,14 @@ namespace BetterLegacy.Arcade
                         AudioManager.inst.PlaySound("LeftRight");
                         selected = new Vector2Int(0, 1);
                     };
-                    reloadClickable.onClick = delegate (PointerEventData pointerEventData)
+                    reloadClickable.onClick = pointerEventData =>
                     {
                         AudioManager.inst.PlaySound("blip");
                         steamViewType = SteamViewType.Subscribed;
                         StartCoroutine(SetSteamSearch());
                     };
 
-                    viewTypeClickable.onEnter = delegate (PointerEventData pointerEventData)
+                    viewTypeClickable.onEnter = pointerEventData =>
                     {
                         if (!CanSelect)
                             return;
@@ -2347,7 +2346,7 @@ namespace BetterLegacy.Arcade
                         AudioManager.inst.PlaySound("LeftRight");
                         selected = new Vector2Int(1, 1);
                     };
-                    viewTypeClickable.onClick = delegate (PointerEventData pointerEventData)
+                    viewTypeClickable.onClick = pointerEventData =>
                     {
                         AudioManager.inst.PlaySound("blip");
                         steamViewType = steamViewType == SteamViewType.Online ? SteamViewType.Subscribed : SteamViewType.Online;
@@ -2359,7 +2358,7 @@ namespace BetterLegacy.Arcade
                         viewTypeText.GetObject<TextMeshProUGUI>().text = $"[{(steamViewType == SteamViewType.Online ? "ONLINE" : "SUBSCRIBED")}]";
                     };
 
-                    prevPageClickable.onEnter = delegate (PointerEventData pointerEventData)
+                    prevPageClickable.onEnter = pointerEventData =>
                     {
                         if (!CanSelect)
                             return;
@@ -2367,7 +2366,7 @@ namespace BetterLegacy.Arcade
                         AudioManager.inst.PlaySound("LeftRight");
                         selected = new Vector2Int(2, 1);
                     };
-                    prevPageClickable.onClick = delegate (PointerEventData pointerEventData)
+                    prevPageClickable.onClick = pointerEventData =>
                     {
                         if (int.TryParse(steamPageField.text, out int p))
                         {
@@ -2383,7 +2382,7 @@ namespace BetterLegacy.Arcade
                         }
                     };
 
-                    nextPageClickable.onEnter = delegate (PointerEventData pointerEventData)
+                    nextPageClickable.onEnter = pointerEventData =>
                     {
                         if (!CanSelect)
                             return;
@@ -2391,7 +2390,7 @@ namespace BetterLegacy.Arcade
                         AudioManager.inst.PlaySound("LeftRight");
                         selected = new Vector2Int(3, 1);
                     };
-                    nextPageClickable.onClick = delegate (PointerEventData pointerEventData)
+                    nextPageClickable.onClick = pointerEventData =>
                     {
                         if (int.TryParse(steamPageField.text, out int p))
                         {
@@ -2446,10 +2445,7 @@ namespace BetterLegacy.Arcade
                 steamSearchField.onValueChanged.ClearAll();
                 steamSearchField.textComponent.alignment = TextAnchor.MiddleLeft;
                 steamSearchField.textComponent.color = textColor;
-                steamSearchField.onValueChanged.AddListener(delegate (string _val)
-                {
-                    SteamSearchTerm = _val;
-                });
+                steamSearchField.onValueChanged.AddListener(_val => { SteamSearchTerm = _val; });
             }
 
             selected.x = 1;
@@ -2707,8 +2703,11 @@ namespace BetterLegacy.Arcade
 
                     gameObject.transform.AsRT().anchoredPosition = new Vector2(x, y);
 
+                    var locked = gameObject.transform.Find("Lock").gameObject;
+                    locked.SetActive(level.metadata.requireUnlock && level.playerData != null && !level.playerData.Unlocked);
+
                     var clickable = gameObject.GetComponent<Clickable>();
-                    clickable.onEnter = delegate (PointerEventData pointerEventData)
+                    clickable.onEnter = pointerEventData =>
                     {
                         if (!CanSelect)
                             return;
@@ -2717,8 +2716,45 @@ namespace BetterLegacy.Arcade
                         selected.x = column;
                         selected.y = row + 2;
                     };
-                    clickable.onClick = delegate (PointerEventData pointerEventData)
+                    clickable.onClick = pointerEventData =>
                     {
+                        if (level.metadata.requireUnlock && level.playerData != null && !level.playerData.Unlocked)
+                        {
+                            AudioManager.inst.PlaySound("Block");
+
+                            var animation = new RTAnimation("Blocked Level in Arcade")
+                            {
+                                animationHandlers = new List<AnimationHandlerBase>
+                                {
+                                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                                    {
+                                        new FloatKeyframe(0f, 15f, Ease.Linear),
+                                        new FloatKeyframe(1f, 0f, Ease.ElasticOut),
+                                    }, gameObject.transform.SetLocalRotationEulerZ),
+                                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                                    {
+                                        new FloatKeyframe(0f, 120f, Ease.Linear),
+                                        new FloatKeyframe(2f, 0f, Ease.ElasticOut),
+                                    }, locked.transform.SetLocalRotationEulerZ),
+                                },
+                            };
+                            animation.onComplete = () =>
+                            {
+                                AnimationManager.inst.RemoveID(animation.id);
+                                gameObject.transform.SetLocalRotationEulerZ(0f);
+                                locked.transform.SetLocalRotationEulerZ(0f);
+                            };
+
+                            AnimationManager.inst.animations.Where(x => x.name == animation.name).ToList().ForEach(x =>
+                            {
+                                x.Stop();
+                                AnimationManager.inst.RemoveID(x.id);
+                            });
+                            AnimationManager.inst.Play(animation);
+
+                            return;
+                        }
+
                         AudioManager.inst.PlaySound("blip");
                         StartCoroutine(SelectLocalLevel(level));
                     };
@@ -2803,6 +2839,7 @@ namespace BetterLegacy.Arcade
                         shine1 = gameObject.transform.Find("Shine").GetComponent<Image>(),
                         shine2 = gameObject.transform.Find("Shine/Image").GetComponent<Image>(),
                         Rank = rank,
+                        Locked = locked,
                     });
                 }
 
@@ -2833,7 +2870,7 @@ namespace BetterLegacy.Arcade
         {
             if (!level.music)
             {
-                yield return StartCoroutine(level.LoadAudioClipRoutine(delegate ()
+                yield return StartCoroutine(level.LoadAudioClipRoutine(() =>
                 {
                     AudioManager.inst.StopMusic();
                     PlayLevelMenuManager.inst?.OpenLevel(level);
@@ -2918,7 +2955,7 @@ namespace BetterLegacy.Arcade
             var count = SelectionLimit.Count;
             SelectionLimit.RemoveRange(3, count - 3);
 
-            yield return StartCoroutine(AlephNetworkManager.DownloadJSONFile(query, delegate (string j)
+            yield return StartCoroutine(AlephNetworkManager.DownloadJSONFile(query, j =>
             {
                 try
                 {
@@ -3007,12 +3044,12 @@ namespace BetterLegacy.Arcade
 
                                 if (!OnlineLevelIcons.ContainsKey(id) && num >= 0)
                                 {
-                                    StartCoroutine(AlephNetworkManager.DownloadBytes($"{CoverURL}{num}", delegate (byte[] bytes)
+                                    StartCoroutine(AlephNetworkManager.DownloadBytes($"{CoverURL}{num}", bytes =>
                                     {
                                         var sprite = SpriteManager.LoadSprite(bytes);
                                         OnlineLevelIcons.Add(id, sprite);
                                         icon.sprite = sprite;
-                                    }, delegate (string onError)
+                                    }, onError =>
                                     {
                                         OnlineLevelIcons.Add(id, SteamWorkshop.inst.defaultSteamImageSprite);
                                         icon.sprite = SteamWorkshop.inst.defaultSteamImageSprite;
@@ -3047,7 +3084,7 @@ namespace BetterLegacy.Arcade
                                     Icon = icon,
                                 };
 
-                                clickable.onEnter = delegate (PointerEventData pointerEventData)
+                                clickable.onEnter = pointerEventData =>
                                 {
                                     if (!CanSelect)
                                         return;
@@ -3056,7 +3093,7 @@ namespace BetterLegacy.Arcade
                                     selected.x = column;
                                     selected.y = row + 3;
                                 };
-                                clickable.onClick = delegate (PointerEventData pointerEventData)
+                                clickable.onClick = pointerEventData =>
                                 {
                                     AudioManager.inst.PlaySound("blip");
                                     SelectOnlineLevel(level);
@@ -3164,7 +3201,7 @@ namespace BetterLegacy.Arcade
                 return;
             }
 
-            StartCoroutine(AlephNetworkManager.DownloadBytes(downloadField.text, delegate (byte[] bytes)
+            StartCoroutine(AlephNetworkManager.DownloadBytes(downloadField.text, bytes =>
             {
                 try
                 {
@@ -3302,7 +3339,7 @@ namespace BetterLegacy.Arcade
                     gameObject.transform.AsRT().sizeDelta = new Vector2(1570f, 180f);
 
                     var clickable = gameObject.GetComponent<Clickable>();
-                    clickable.onEnter = delegate (PointerEventData pointerEventData)
+                    clickable.onEnter = pointerEventData =>
                     {
                         if (!CanSelect)
                             return;
@@ -3311,7 +3348,7 @@ namespace BetterLegacy.Arcade
                         selected.x = 0;
                         selected.y = row + 2;
                     };
-                    clickable.onClick = delegate (PointerEventData pointerEventData)
+                    clickable.onClick = pointerEventData =>
                     {
                         AudioManager.inst.PlaySound("blip");
                         LevelManager.ArcadeQueue.RemoveAll(x => x.id == level.id);
@@ -3492,14 +3529,7 @@ namespace BetterLegacy.Arcade
                 if (steamViewType == SteamViewType.Subscribed)
                     StartCoroutine(RefreshSubscribedSteamLevels());
                 if (steamViewType == SteamViewType.Online)
-                {
                     SearchSteam();
-
-                    //StartCoroutine(SteamWorkshopManager.inst.Search(SteamSearchTerm, CurrentPage[5] + 1, delegate ()
-                    //{
-                    //    StartCoroutine(RefreshOnlineSteamLevels());
-                    //}));
-                }
             }
         }
 
@@ -3518,14 +3548,7 @@ namespace BetterLegacy.Arcade
             if (steamViewType == SteamViewType.Subscribed)
                 StartCoroutine(RefreshSubscribedSteamLevels());
             if (steamViewType == SteamViewType.Online)
-            {
                 SearchSteam();
-
-                //StartCoroutine(SteamWorkshopManager.inst.Search(SteamSearchTerm, CurrentPage[5] + 1, delegate ()
-                //{
-                //    StartCoroutine(RefreshOnlineSteamLevels());
-                //}));
-            }
         }
 
         public InputField steamPageField;
@@ -3545,14 +3568,7 @@ namespace BetterLegacy.Arcade
             }
 
             if (steamViewType == SteamViewType.Online)
-            {
                 SearchSteam();
-
-                //StartCoroutine(SteamWorkshopManager.inst.Search(SteamSearchTerm, CurrentPage[5] + 1, delegate ()
-                //{
-                //    StartCoroutine(RefreshOnlineSteamLevels());
-                //}));
-            }
         }
 
         public void SearchSteam()
@@ -3623,7 +3639,7 @@ namespace BetterLegacy.Arcade
                     gameObject.transform.AsRT().sizeDelta = new Vector2(300f, 94f);
 
                     var clickable = gameObject.GetComponent<Clickable>();
-                    clickable.onEnter = delegate (PointerEventData pointerEventData)
+                    clickable.onEnter = pointerEventData =>
                     {
                         if (!CanSelect)
                             return;
@@ -3632,7 +3648,7 @@ namespace BetterLegacy.Arcade
                         selected.x = column;
                         selected.y = row + 2;
                     };
-                    clickable.onClick = delegate (PointerEventData pointerEventData)
+                    clickable.onClick = pointerEventData =>
                     {
                         AudioManager.inst.PlaySound("blip");
                         StartCoroutine(SelectLocalLevel(level));
@@ -3753,12 +3769,10 @@ namespace BetterLegacy.Arcade
 
             var searchTerm = SteamSearchTerm;
 
-            yield return new WaitUntil(() => SteamWorkshopManager.inst.SearchAsync(SteamSearchTerm, CurrentPage[5] + 1, delegate (SteamworksFacepunch.Ugc.Item item, int num)
+            yield return new WaitUntil(() => SteamWorkshopManager.inst.SearchAsync(SteamSearchTerm, CurrentPage[5] + 1, (SteamworksFacepunch.Ugc.Item item, int num) =>
             {
                 if (searchTerm != SteamSearchTerm || currentPage != CurrentPage[5] + 1)
-                {
                     return;
-                }
 
                 var gameObject = levelPrefab.Duplicate(RegularContents[5]);
 
@@ -3782,7 +3796,7 @@ namespace BetterLegacy.Arcade
                 gameObject.transform.AsRT().sizeDelta = new Vector2(300f, 64f);
 
                 var clickable = gameObject.GetComponent<Clickable>();
-                clickable.onEnter = delegate (PointerEventData pointerEventData)
+                clickable.onEnter = pointerEventData =>
                 {
                     if (!CanSelect)
                         return;
@@ -3829,7 +3843,7 @@ namespace BetterLegacy.Arcade
 
                 if (!steamPreviews.ContainsKey(item.Id))
                 {
-                    StartCoroutine(AlephNetworkManager.DownloadBytes(item.PreviewImageUrl, delegate (byte[] bytes)
+                    StartCoroutine(AlephNetworkManager.DownloadBytes(item.PreviewImageUrl, bytes =>
                     {
                         var sprite = SpriteManager.LoadSprite(bytes);
 
@@ -3844,7 +3858,7 @@ namespace BetterLegacy.Arcade
                         {
 
                         }
-                    }, delegate (string onError)
+                    }, onError =>
                     {
                         var sprite = SteamWorkshop.inst.defaultSteamImageSprite;
 
@@ -3879,7 +3893,7 @@ namespace BetterLegacy.Arcade
                     Item = item,
                 };
 
-                clickable.onClick = delegate (PointerEventData pointerEventData)
+                clickable.onClick = pointerEventData =>
                 {
                     AudioManager.inst.PlaySound("blip");
                     SteamLevelMenuManager.inst?.OpenLevel(button);
@@ -3887,139 +3901,6 @@ namespace BetterLegacy.Arcade
 
                 OnlineSteamLevels.Add(button);
             }).IsCompleted);
-
-            //int num = 0;
-            //foreach (var level in SteamWorkshopManager.inst.SearchItems)
-            //{
-            //    var gameObject = localLevelPrefab.Duplicate(RegularContents[5]);
-
-            //    int column = (num) % 5;
-            //    int row = (int)((num) / 5);
-
-            //    if (currentRow != row)
-            //    {
-            //        currentRow = row;
-            //        SelectionLimit.Add(1);
-            //    }
-            //    else
-            //    {
-            //        SelectionLimit[row + 2]++;
-            //    }
-
-            //    float x = left + (column * 320f);
-            //    float y = top - (row * 110f);
-
-            //    gameObject.transform.AsRT().anchoredPosition = new Vector2(x, y);
-            //    gameObject.transform.AsRT().sizeDelta = new Vector2(300f, 94f);
-
-            //    var clickable = gameObject.GetComponent<Clickable>();
-            //    clickable.onEnter = delegate (PointerEventData pointerEventData)
-            //    {
-            //        if (!CanSelect)
-            //            return;
-
-            //        AudioManager.inst.PlaySound("LeftRight");
-            //        selected.x = column;
-            //        selected.y = row + 2;
-            //    };
-
-            //    var image = gameObject.GetComponent<Image>();
-            //    image.color = buttonBGColor;
-
-            //    Destroy(gameObject.transform.Find("Difficulty").gameObject);
-
-            //    if (ArcadePlugin.SteamLevelsRoundness.Value != 0)
-            //        SpriteManager.SetRoundedSprite(image, ArcadePlugin.SteamLevelsRoundness.Value, SpriteManager.RoundedSide.W);
-            //    else
-            //        image.sprite = null;
-
-            //    var title = gameObject.transform.Find("Title").GetComponent<TextMeshProUGUI>();
-            //    UIManager.SetRectTransform(title.rectTransform, new Vector2(8f, 0f), ZeroFive, ZeroFive, ZeroFive, new Vector2(170f, 132f));
-
-            //    title.fontSize = 11;
-            //    title.fontStyle = FontStyles.Bold;
-            //    title.enableWordWrapping = true;
-            //    title.overflowMode = TextOverflowModes.Truncate;
-            //    title.color = textColor;
-            //    title.text = $"Title: {LSText.ClampString(level.Title, 38)}\n" +
-            //        $"Creator: {LSText.ClampString(level.Owner.Name, 38)}\n" +
-            //        $"Subscribed: {(level.IsSubscribed ? "Yes" : "No")}";
-
-            //    var iconBase = gameObject.transform.Find("Icon Base").GetComponent<Image>();
-            //    iconBase.rectTransform.anchoredPosition = new Vector2(-110f, 8f);
-            //    iconBase.rectTransform.sizeDelta = new Vector2(64f, 64f);
-
-            //    if (ArcadePlugin.SteamLevelsIconRoundness.Value != 0)
-            //        SpriteManager.SetRoundedSprite(iconBase, ArcadePlugin.SteamLevelsIconRoundness.Value, SpriteManager.RoundedSide.W);
-            //    else
-            //        iconBase.sprite = null;
-
-            //    var icon = gameObject.transform.Find("Icon Base/Icon").GetComponent<Image>();
-            //    icon.rectTransform.anchoredPosition = Vector2.zero;
-            //    icon.rectTransform.sizeDelta = new Vector2(64f, 64f);
-
-            //    if (!steamPreviews.ContainsKey(level.Id))
-            //    {
-            //        StartCoroutine(AlephNetworkManager.DownloadBytes(level.PreviewImageUrl, delegate (byte[] bytes)
-            //        {
-            //            var sprite = SpriteManager.LoadSprite(bytes);
-
-            //            if (!steamPreviews.ContainsKey(level.Id))
-            //                steamPreviews.Add(level.Id, sprite);
-
-            //            try
-            //            {
-            //                icon.sprite = sprite;
-            //            }
-            //            catch
-            //            {
-
-            //            }
-            //        }, delegate (string onError)
-            //        {
-            //            var sprite = SteamWorkshop.inst.defaultSteamImageSprite;
-
-            //            if (!steamPreviews.ContainsKey(level.Id))
-            //                steamPreviews.Add(level.Id, sprite);
-
-            //            icon.sprite = sprite;
-            //        }));
-            //    }
-            //    else
-            //    {
-            //        icon.sprite = steamPreviews[level.Id];
-            //    }
-
-            //    Destroy(gameObject.transform.Find("Rank").gameObject);
-            //    Destroy(gameObject.transform.Find("Rank Shadow").gameObject);
-            //    Destroy(gameObject.transform.Find("Shine").gameObject);
-
-            //    var button = new SteamLevelButton
-            //    {
-            //        Position = new Vector2Int(column, row),
-            //        Title = level.Title,
-            //        Description = level.Description,
-            //        Creator = level.Owner.Name,
-            //        GameObject = gameObject,
-            //        Clickable = clickable,
-            //        RectTransform = gameObject.transform.AsRT(),
-            //        BaseImage = image,
-            //        TitleText = title,
-            //        BaseIcon = iconBase,
-            //        Icon = icon,
-            //        Item = level,
-            //    };
-
-            //    clickable.onClick = delegate (PointerEventData pointerEventData)
-            //    {
-            //        AudioManager.inst.PlaySound("blip");
-            //        SteamLevelMenuManager.inst?.OpenLevel(button);
-            //    };
-
-            //    OnlineSteamLevels.Add(button);
-
-            //    num++;
-            //}
 
             loadingSteamLevels = false;
             yield break;
@@ -4154,14 +4035,7 @@ namespace BetterLegacy.Arcade
             {
                 var directory = $"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{ID}";
 
-                if (LevelManager.Levels.Has(x => x.id == ID) || RTFile.DirectoryExists(directory))
-                {
-                    CoreHelper.LogError($"Level already exists! No update system in place yet.");
-
-                    yield break;
-                }
-
-                yield return inst.StartCoroutine(AlephNetworkManager.DownloadBytes($"{DownloadURL}{ID}", delegate (byte[] bytes)
+                yield return inst.StartCoroutine(AlephNetworkManager.DownloadBytes($"{DownloadURL}{ID}", bytes =>
                 {
                     Directory.CreateDirectory(directory);
 
@@ -4178,17 +4052,14 @@ namespace BetterLegacy.Arcade
                     LevelManager.Levels.Add(level);
 
                     if (inst.CurrentTab == 0)
-                    {
                         inst.StartCoroutine(inst.RefreshLocalLevels());
-                    }
+
                     else if (inst.OpenedOnlineLevel)
                     {
-                        DownloadLevelMenuManager.inst.Close(delegate ()
+                        DownloadLevelMenuManager.inst.Close(() =>
                         {
                             if (ArcadeConfig.Instance.OpenOnlineLevelAfterDownload.Value)
-                            {
                                 inst.StartCoroutine(inst.SelectLocalLevel(level));
-                            }
                         });
                     }
                 }));
@@ -4222,6 +4093,8 @@ namespace BetterLegacy.Arcade
             public ShineController ShineController { get; set; }
             public Image shine1;
             public Image shine2;
+
+            public GameObject Locked { get; set; }
 
             public RTAnimation EnterAnimation { get; set; }
             public RTAnimation ExitAnimation { get; set; }
