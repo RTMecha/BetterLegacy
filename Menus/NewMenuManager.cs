@@ -24,6 +24,8 @@ namespace BetterLegacy.Menus
 
         public MenuBase CurrentMenu { get; set; }
 
+        public List<MenuBase> interfaces = new List<MenuBase>();
+
         void Awake() => inst = this;
 
         void Update()
@@ -35,6 +37,21 @@ namespace BetterLegacy.Menus
             CurrentMenu.UpdateTheme();
         }
 
+        public void SetCurrentInterface(string id)
+        {
+            if (interfaces.TryFind(x => x.id == id, out MenuBase menu))
+            {
+                if (CurrentMenu != null)
+                {
+                    CurrentMenu.Clear();
+                    CurrentMenu = null;
+                }
+
+                CurrentMenu = menu;
+                StartCoroutine(menu.GenerateUI());
+            }
+        }
+
         public void Test()
         {
             if (CurrentMenu != null)
@@ -43,11 +60,30 @@ namespace BetterLegacy.Menus
                 CurrentMenu = null;
             }
 
-            var jn = JSON.Parse(RTFile.ReadFromFile($"{RTFile.ApplicationDirectory}beatmaps/test_menu.lsi"));
+            for (int i = 0; i < interfaces.Count; i++)
+            {
+                try
+                {
+                    interfaces[i].Clear();
+                }
+                catch
+                {
+
+                }
+            }
+            interfaces.Clear();
+
+            var jn = JSON.Parse(RTFile.ReadFromFile($"{RTFile.ApplicationDirectory}beatmaps/interfaces/test_menu.lsi"));
 
             var menu = CustomMenu.Parse(jn);
             StartCoroutine(menu.GenerateUI());
             CurrentMenu = menu;
+            interfaces.Add(menu);
+
+            jn = JSON.Parse(RTFile.ReadFromFile($"{RTFile.ApplicationDirectory}beatmaps/interfaces/story_mode.lsi"));
+
+            menu = CustomMenu.Parse(jn);
+            interfaces.Add(menu);
         }
     }
 

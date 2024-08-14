@@ -36,7 +36,7 @@ namespace BetterLegacy.Menus.UI
                 new AnimationHandler<float>(new List<IKeyframe<float>>
                 {
                     new FloatKeyframe(0f, 0f, Ease.Linear),
-                    new FloatKeyframe(length, text.Length, Ease.Linear),
+                    new FloatKeyframe(length / (text.Length / 48f), text.Length, Ease.Linear),
                 }, Interpolate),
             };
             textInterpolation.onComplete = () =>
@@ -65,10 +65,18 @@ namespace BetterLegacy.Menus.UI
 
         public float length = 1f;
 
+        public bool playBlipSound;
+
         public string name;
         public Vector2 pos;
         public Vector2 size;
 
+        public Sprite icon;
+        public Image iconUI;
+
+        public bool hideBG;
+
+        public JSONNode iconRectJSON;
         public JSONNode textRectJSON;
         public JSONNode rectJSON;
         public JSONNode funcJSON;
@@ -121,6 +129,13 @@ namespace BetterLegacy.Menus.UI
                 case "Config":
                     {
                         ConfigManager.inst.Show();
+                        break;
+                    }
+                case "SetCurrentInterface":
+                    {
+                        if (parameters != null && parameters.Count >= 1)
+                            NewMenuManager.inst.SetCurrentInterface(parameters[0]);
+
                         break;
                     }
             }

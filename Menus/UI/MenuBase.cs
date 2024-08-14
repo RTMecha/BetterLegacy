@@ -26,6 +26,15 @@ namespace BetterLegacy.Menus.UI
                 CoreHelper.StartCoroutine(GenerateUI());
         }
 
+        public void SetActive(bool active)
+        {
+            canvas?.SetActive(active);
+            isOpen = active;
+        }
+
+        public string name;
+        public string id;
+
         public bool isOpen;
 
         public Vector2Int selected;
@@ -39,8 +48,6 @@ namespace BetterLegacy.Menus.UI
         {
             isOpen = false;
             UnityEngine.Object.Destroy(canvas);
-            elements.Clear();
-            layouts.Clear();
         }
 
         /// <summary>
@@ -151,12 +158,19 @@ namespace BetterLegacy.Menus.UI
             for (int i = 0; i < elements.Count; i++)
             {
                 var element = elements[i];
-                if (element is not MenuButton button || element == null || !button.image || !button.textUI)
+                if (!element.image || !element.textUI)
                     continue;
 
-                var isSelected = button.selectionPosition == selected;
-                button.image.color = isSelected ? Theme.GetObjColor(button.selectedColor) : Theme.GetObjColor(button.color);
-                button.textUI.color = isSelected ? Theme.GetObjColor(button.selectedTextColor) : Theme.GetObjColor(button.textColor);
+                if (element is MenuButton button)
+                {
+                    var isSelected = button.selectionPosition == selected;
+                    button.image.color = isSelected ? Theme.GetObjColor(button.selectedColor) : Theme.GetObjColor(button.color);
+                    button.textUI.color = isSelected ? Theme.GetObjColor(button.selectedTextColor) : Theme.GetObjColor(button.textColor);
+                    continue;
+                }
+
+                element.image.color = Theme.GetObjColor(element.color);
+                element.textUI.color = Theme.GetObjColor(element.textColor);
             }
         }
 
@@ -234,6 +248,8 @@ namespace BetterLegacy.Menus.UI
             if (menuText.rectJSON != null)
                 Parser.ParseRectTransform(menuText.image.rectTransform, menuText.rectJSON);
 
+            menuText.image.enabled = !menuText.hideBG;
+
             menuText.clickable = menuText.gameObject.AddComponent<Clickable>();
 
             var t = UIManager.GenerateUITextMeshPro("Text", menuText.gameObject.transform);
@@ -246,6 +262,15 @@ namespace BetterLegacy.Menus.UI
                 Parser.ParseRectTransform(menuText.textUI.rectTransform, menuText.textRectJSON);
             else
                 UIManager.SetRectTransform(menuText.textUI.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
+
+            if (menuText.icon)
+            {
+                var icon = Creator.NewUIObject("Icon", menuText.gameObject.transform);
+                menuText.iconUI = icon.AddComponent<Image>();
+                menuText.iconUI.sprite = menuText.icon;
+                if (menuText.iconRectJSON != null)
+                    Parser.ParseRectTransform(menuText.iconUI.rectTransform, menuText.iconRectJSON);
+            }
 
             menuText.Spawn();
         }
@@ -277,6 +302,8 @@ namespace BetterLegacy.Menus.UI
             if (menuButton.rectJSON != null)
                 Parser.ParseRectTransform(menuButton.image.rectTransform, menuButton.rectJSON);
 
+            menuButton.image.enabled = !menuButton.hideBG;
+
             menuButton.clickable = menuButton.gameObject.AddComponent<Clickable>();
             menuButton.clickable.onEnter = pointerEventdata =>
             {
@@ -297,6 +324,15 @@ namespace BetterLegacy.Menus.UI
                 Parser.ParseRectTransform(menuButton.textUI.rectTransform, menuButton.textRectJSON);
             else
                 UIManager.SetRectTransform(menuButton.textUI.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
+
+            if (menuButton.icon)
+            {
+                var icon = Creator.NewUIObject("Icon", menuButton.gameObject.transform);
+                menuButton.iconUI = icon.AddComponent<Image>();
+                menuButton.iconUI.sprite = menuButton.icon;
+                if (menuButton.iconRectJSON != null)
+                    Parser.ParseRectTransform(menuButton.iconUI.rectTransform, menuButton.iconRectJSON);
+            }
 
             menuButton.Spawn();
         }

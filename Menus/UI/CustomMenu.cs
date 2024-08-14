@@ -23,10 +23,10 @@ namespace BetterLegacy.Menus.UI
 
         public override IEnumerator GenerateUI()
         {
-            var canvas = UIManager.GenerateUICanvas(nameof(CustomMenu), null);
+            var canvas = UIManager.GenerateUICanvas(nameof(CustomMenu), null, sortingOrder: 900);
             this.canvas = canvas.Canvas.gameObject;
 
-            var gameObject = Creator.NewUIObject("Layout", canvas.Canvas.transform);
+            var gameObject = Creator.NewUIObject("Base Layout", canvas.Canvas.transform);
             UIManager.SetRectTransform(gameObject.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
 
             for (int i = 0; i < layouts.Count; i++)
@@ -57,7 +57,12 @@ namespace BetterLegacy.Menus.UI
                     while (element.isSpawning)
                         yield return null;
 
-                    menuButton.clickable.onClick = p => { menuButton.ParseFunction(menuButton.funcJSON); };
+                    menuButton.clickable.onClick = p =>
+                    {
+                        if (menuButton.playBlipSound)
+                            AudioManager.inst.PlaySound("blip");
+                        menuButton.ParseFunction(menuButton.funcJSON);
+                    };
 
                     continue;
                 }
@@ -66,7 +71,17 @@ namespace BetterLegacy.Menus.UI
                 while (element.isSpawning)
                     yield return null;
 
-                element.clickable.onClick = p => { element.ParseFunction(element.funcJSON); };
+                element.clickable.onClick = p =>
+                {
+                    if (element.playBlipSound)
+                        AudioManager.inst.PlaySound("blip");
+                    element.ParseFunction(element.funcJSON);
+                };
+            }
+
+            if (elements.Count > 0 && elements[0] is MenuButton button)
+            {
+                button.OnEnter();
             }
 
             isOpen = true;
@@ -89,6 +104,9 @@ namespace BetterLegacy.Menus.UI
         public static CustomMenu Parse(JSONNode jn)
         {
             var customMenu = new CustomMenu();
+
+            customMenu.id = jn["id"];
+            customMenu.name = jn["name"];
 
             foreach (var keyValuePair in jn["layouts"].Linq)
             {
@@ -139,12 +157,17 @@ namespace BetterLegacy.Menus.UI
                                 name = jnElement["name"],
                                 parentLayout = jnElement["parent_layout"],
                                 text = FontManager.inst.ReplaceProperties(jnElement["text"]),
+                                icon = jnElement["icon"] != null ? SpriteManager.StringToSprite(jnElement["icon"]) : null,
                                 rectJSON = jnElement["rect"],
+                                textRectJSON = jnElement["text_rect"],
+                                iconRectJSON = jnElement["icon_rect"],
+                                hideBG = jnElement["hide_bg"].AsBool,
                                 color = jnElement["col"].AsInt,
                                 textColor = jnElement["text_col"].AsInt,
                                 selectedColor = jnElement["sel_col"].AsInt,
                                 selectedTextColor = jnElement["sel_text_col"].AsInt,
                                 length = jnElement["anim_length"].AsFloat,
+                                playBlipSound = jnElement["play_blip_sound"].AsBool,
                                 funcJSON = jnElement["func"],
                             });
 
@@ -158,12 +181,17 @@ namespace BetterLegacy.Menus.UI
                                 parentLayout = jnElement["parent_layout"],
                                 text = FontManager.inst.ReplaceProperties(jnElement["text"]),
                                 selectionPosition = new Vector2Int(jnElement["select"]["x"].AsInt, jnElement["select"]["y"].AsInt),
+                                icon = jnElement["icon"] != null ? SpriteManager.StringToSprite(jnElement["icon"]) : null,
                                 rectJSON = jnElement["rect"],
+                                textRectJSON = jnElement["text_rect"],
+                                iconRectJSON = jnElement["icon_rect"],
+                                hideBG = jnElement["hide_bg"].AsBool,
                                 color = jnElement["col"].AsInt,
                                 textColor = jnElement["text_col"].AsInt,
                                 selectedColor = jnElement["sel_col"].AsInt,
                                 selectedTextColor = jnElement["sel_text_col"].AsInt,
                                 length = jnElement["anim_length"].AsFloat,
+                                playBlipSound = jnElement["play_blip_sound"].AsBool,
                                 funcJSON = jnElement["func"],
                             });
 
