@@ -26,9 +26,27 @@ namespace BetterLegacy.Core.Managers.Networking
 
         void Awake() => inst = this;
 
-        public static bool ServerFinished => false;
+        public static bool ServerFinished => true;
 
         public static string ArcadeServerURL => "https://localhost:7206/";
+
+        public static IEnumerator Delete(string path, Action onComplete, Action<string, long> onError, Dictionary<string, string> headers = null)
+        {
+            using var www = UnityWebRequest.Delete(path);
+            www.certificateHandler = new ForceAcceptAll();
+
+            if (headers != null)
+                foreach (var header in headers)
+                    www.SetRequestHeader(header.Key, header.Value);
+
+            yield return www.SendWebRequest();
+            if (www.isNetworkError || www.isHttpError)
+                onError?.Invoke(www.error, www.responseCode);
+            else
+                onComplete?.Invoke();
+
+            yield break;
+        }
 
         #region Client
 
@@ -114,7 +132,7 @@ namespace BetterLegacy.Core.Managers.Networking
                 onComplete?.Invoke(www.downloadHandler.text);
         }
 
-        public static IEnumerator UploadBytes(string url, byte[] bytes, Action<string> onComplete, Action<string, long> onError, Dictionary<string, string> headers = null)
+        public static IEnumerator UploadBytes(string url, byte[] bytes, Action<string> onComplete, Action<string, long, string> onError, Dictionary<string, string> headers = null)
         {
             var form = new WWWForm();
             form.AddBinaryData("file", bytes);
@@ -130,7 +148,7 @@ namespace BetterLegacy.Core.Managers.Networking
             yield return www.SendWebRequest();
 
             if (www.isNetworkError || www.isHttpError)
-                onError?.Invoke(www.error, www.responseCode);
+                onError?.Invoke(www.error, www.responseCode, www.downloadHandler?.text);
             else
                 onComplete?.Invoke(www.downloadHandler.text);
         }
