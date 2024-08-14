@@ -24,6 +24,8 @@ namespace BetterLegacy.Editor.Managers
 
         public static BackgroundObject CurrentSelectedBG => BackgroundEditor.inst == null ? null : (BackgroundObject)DataManager.inst.gameData.backgroundObjects[BackgroundEditor.inst.currentObj];
 
+        public List<BackgroundObject> copiedBackgroundObjects = new List<BackgroundObject>();
+
         public static void Init() => BackgroundEditor.inst.gameObject.AddComponent<RTBackgroundEditor>();
 
         public GameObject shapeButtonCopy;
@@ -81,22 +83,74 @@ namespace BetterLegacy.Editor.Managers
                 hint = "Press this to destroy all background objects, EXCEPT the first one."
             });
 
-            var createBGs = Instantiate(bgLeft.transform.Find("name").gameObject);
-            createBGs.transform.SetParent(bgRight.transform);
-            createBGs.transform.localScale = Vector3.one;
-            createBGs.transform.SetSiblingIndex(2);
-            createBGs.name = "create bgs";
+            var copy = bgRight.transform.Find("create").gameObject.Duplicate(bgRight.transform, "copy", 3);
+            copy.transform.localScale = Vector3.one;
+
+            var copyText = copy.transform.GetChild(0).GetComponent<Text>();
+            copyText.text = "Copy Backgrounds";
+            copy.transform.GetChild(0).localScale = Vector3.one;
+
+            var copyButtons = copy.GetComponent<Button>();
+            copyButtons.onClick.ClearAll();
+            copyButtons.onClick.AddListener(() =>
+            {
+                copiedBackgroundObjects.Clear();
+                copiedBackgroundObjects.AddRange(GameData.Current.BackgroundObjects.Select(x => BackgroundObject.DeepCopy(x)));
+            });
+
+            var copyTip = copy.GetComponent<HoverTooltip>();
+
+            copyTip.tooltipLangauges.Clear();
+            copyTip.tooltipLangauges.Add(new HoverTooltip.Tooltip
+            {
+                desc = "Copy all backgrounds",
+                hint = "Copies all backgrounds."
+            });
+
+            var paste = bgRight.transform.Find("create").gameObject.Duplicate(bgRight.transform, "paste", 4);
+            paste.transform.localScale = Vector3.one;
+
+            var pasteText = paste.transform.GetChild(0).GetComponent<Text>();
+            pasteText.text = "Paste Backgrounds";
+            paste.transform.GetChild(0).localScale = Vector3.one;
+
+            var pasteButtons = paste.GetComponent<Button>();
+            pasteButtons.onClick.ClearAll();
+            pasteButtons.onClick.AddListener(() =>
+            {
+                if (copiedBackgroundObjects == null || copiedBackgroundObjects.Count < 1)
+                    return;
+
+                for (int i = 0; i < copiedBackgroundObjects.Count; i++)
+                {
+                    var backgroundObject = BackgroundObject.DeepCopy(copiedBackgroundObjects[i]);
+                    GameData.Current.backgroundObjects.Add(backgroundObject);
+                }
+
+                BackgroundManager.inst.UpdateBackgrounds();
+                BackgroundEditor.inst.UpdateBackgroundList();
+            });
+
+            var pasteTip = paste.GetComponent<HoverTooltip>();
+
+            pasteTip.tooltipLangauges.Clear();
+            pasteTip.tooltipLangauges.Add(new HoverTooltip.Tooltip
+            {
+                desc = "Paste backgrounds",
+                hint = "Pastes all backgrounds from copied Backgrounds list."
+            });
+
+            var createBGs = bgLeft.transform.Find("name").gameObject.Duplicate(bgRight.transform, "create bgs", 2);
 
             var name = createBGs.transform.Find("name").GetComponent<InputField>();
-            var nameRT = name.GetComponent<RectTransform>();
 
             name.onValueChanged.ClearAll();
 
             Destroy(createBGs.transform.Find("active").gameObject);
-            nameRT.localScale = Vector3.one;
+            name.transform.localScale = Vector3.one;
             name.text = "12";
             name.characterValidation = InputField.CharacterValidation.Integer;
-            nameRT.sizeDelta = new Vector2(80f, 34f);
+            name.transform.AsRT().sizeDelta = new Vector2(80f, 34f);
 
             var createAll = bgRight.transform.Find("create").gameObject.Duplicate(createBGs.transform, "create");
             createAll.transform.localScale = Vector3.one;
@@ -129,6 +183,10 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddGraphic(createAllText, ThemeGroup.Add_Text);
             EditorThemeManager.AddGraphic(destroyAllButtons.image, ThemeGroup.Delete, true);
             EditorThemeManager.AddGraphic(destroyAllText, ThemeGroup.Delete_Text);
+            EditorThemeManager.AddGraphic(copyButtons.image, ThemeGroup.Copy, true);
+            EditorThemeManager.AddGraphic(copyText, ThemeGroup.Copy_Text);
+            EditorThemeManager.AddGraphic(pasteButtons.image, ThemeGroup.Paste, true);
+            EditorThemeManager.AddGraphic(pasteText, ThemeGroup.Paste_Text);
 
             #endregion
 
