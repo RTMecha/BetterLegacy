@@ -173,6 +173,8 @@ namespace BetterLegacy.Editor.Managers
                 UIManager.SetRectTransform(delete.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.one, Vector2.one, new Vector2(32f, 32f));
             }
 
+            prefabHolder.Toggle = EditorManager.inst.GetDialog("Settings Editor").Dialog.Find("snap/toggle/toggle").gameObject.Duplicate(prefabHolder.PrefabParent, "toggle");
+
             prefabHolder.Function1Button = GameObject.Find("Editor Systems/Editor GUI/sizer/main/TimelineBar/GameObject/event").Duplicate(prefabHolder.PrefabParent, "function 1 button");
             var functionButton1Storage = prefabHolder.Function1Button.AddComponent<FunctionButtonStorage>();
             functionButton1Storage.button = prefabHolder.Function1Button.GetComponent<Button>();
