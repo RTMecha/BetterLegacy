@@ -220,101 +220,101 @@ namespace BetterLegacy.Core.Managers
                     var nextKF = list[nextKFIndex] as EventKeyframe;
                     var prevKF = list[prevKFIndex] as EventKeyframe;
 
-                    if (events.Length > i)
+                    if (events.Length <= i)
+                        continue;
+
+                    for (int j = 0; j < nextKF.eventValues.Length; j++)
                     {
-                        for (int j = 0; j < nextKF.eventValues.Length; j++)
+                        if (events[i].Length <= j || prevKF.eventValues.Length <= j || events[i][j] == null)
+                            continue;
+
+                        var total = 0f;
+                        var prevtotal = 0f;
+                        for (int k = 0; k < nextKFIndex; k++)
                         {
-                            if (events[i].Length > j && prevKF.eventValues.Length > j && events[i][j] != null)
-                            {
-                                var total = 0f;
-                                var prevtotal = 0f;
-                                for (int k = 0; k < nextKFIndex; k++)
-                                {
-                                    if (((EventKeyframe)allEvents[i][k + 1]).relative)
-                                        total += allEvents[i][k].eventValues[j];
-                                    else
-                                        total = 0f;
+                            if (((EventKeyframe)allEvents[i][k + 1]).relative)
+                                total += allEvents[i][k].eventValues[j];
+                            else
+                                total = 0f;
 
-                                    if (((EventKeyframe)allEvents[i][k]).relative)
-                                        prevtotal += allEvents[i][k].eventValues[j];
-                                    else
-                                        prevtotal = 0f;
-                                }
-
-                                var next = nextKF.relative ? total + nextKF.eventValues[j] : nextKF.eventValues[j];
-                                var prev = prevKF.relative || nextKF.relative ? prevtotal : prevKF.eventValues[j];
-
-                                bool isLerper = IsLerper(i, j);
-
-                                if (float.IsNaN(prev) || !isLerper)
-                                    prev = 0f;
-
-                                if (float.IsNaN(next))
-                                    next = 0f;
-
-                                if (!isLerper)
-                                    next = 1f;
-
-                                var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curveType.Name)(RTMath.InverseLerp(prevKF.eventTime, nextKF.eventTime, time)));
-
-                                if (prevKFIndex == nextKFIndex)
-                                    x = next;
-
-                                float offset = 0f;
-                                if (offsets.Count > i && offsets[i].Count > j && isLerper)
-                                    offset = offsets[i][j];
-
-                                if (float.IsNaN(offset) || float.IsInfinity(offset))
-                                    offset = 0f;
-
-                                if (float.IsNaN(x) || float.IsInfinity(x))
-                                    x = next;
-
-                                events[i][j](x + offset);
-                            }
+                            if (((EventKeyframe)allEvents[i][k]).relative)
+                                prevtotal += allEvents[i][k].eventValues[j];
+                            else
+                                prevtotal = 0f;
                         }
+
+                        var next = nextKF.relative ? total + nextKF.eventValues[j] : nextKF.eventValues[j];
+                        var prev = prevKF.relative || nextKF.relative ? prevtotal : prevKF.eventValues[j];
+
+                        bool isLerper = IsLerper(i, j);
+
+                        if (float.IsNaN(prev) || !isLerper)
+                            prev = 0f;
+
+                        if (float.IsNaN(next))
+                            next = 0f;
+
+                        if (!isLerper)
+                            next = 1f;
+
+                        var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curveType.Name)(RTMath.InverseLerp(prevKF.eventTime, nextKF.eventTime, time)));
+
+                        if (prevKFIndex == nextKFIndex)
+                            x = next;
+
+                        float offset = 0f;
+                        if (offsets.Count > i && offsets[i].Count > j && isLerper)
+                            offset = offsets[i][j];
+
+                        if (float.IsNaN(offset) || float.IsInfinity(offset))
+                            offset = 0f;
+
+                        if (float.IsNaN(x) || float.IsInfinity(x))
+                            x = next;
+
+                        events[i][j](x + offset);
                     }
                 }
                 else if (list.Count > 0)
                 {
-                    if (events.Length > i)
+                    if (events.Length <= i)
+                        continue;
+
+                    for (int j = 0; j < list[list.Count - 1].eventValues.Length; j++)
                     {
-                        for (int j = 0; j < list[list.Count - 1].eventValues.Length; j++)
+                        if (events[i].Length <= j || events[i][j] == null)
+                            continue;
+
+                        var total = 0f;
+                        for (int k = 0; k < list.Count - 1; k++)
                         {
-                            if (events[i].Length > j && events[i][j] != null)
-                            {
-                                var total = 0f;
-                                for (int k = 0; k < list.Count - 1; k++)
-                                {
-                                    if (((EventKeyframe)allEvents[i][k + 1]).relative)
-                                        total += allEvents[i][k].eventValues[j];
-                                    else
-                                        total = 0f;
-                                }
-
-                                bool isLerper = IsLerper(i, j);
-
-                                var x = list[list.Count - 1].eventValues[j];
-
-                                if (float.IsNaN(x))
-                                    x = 0f;
-
-                                if (!isLerper)
-                                    x = 1f;
-
-                                float offset = 0f;
-                                if (offsets.Count > i && offsets[i].Count > j && isLerper)
-                                    offset = offsets[i][j];
-
-                                if (float.IsNaN(offset) || float.IsInfinity(offset))
-                                    offset = 0f;
-
-                                if (float.IsNaN(x) || float.IsInfinity(x))
-                                    x = allEvents[i][allEvents[i].Count - 1].eventValues[j];
-
-                                events[i][j](x + offset + total);
-                            }
+                            if (((EventKeyframe)allEvents[i][k + 1]).relative)
+                                total += allEvents[i][k].eventValues[j];
+                            else
+                                total = 0f;
                         }
+
+                        bool isLerper = IsLerper(i, j);
+
+                        var x = list[list.Count - 1].eventValues[j];
+
+                        if (float.IsNaN(x))
+                            x = 0f;
+
+                        if (!isLerper)
+                            x = 1f;
+
+                        float offset = 0f;
+                        if (offsets.Count > i && offsets[i].Count > j && isLerper)
+                            offset = offsets[i][j];
+
+                        if (float.IsNaN(offset) || float.IsInfinity(offset))
+                            offset = 0f;
+
+                        if (float.IsNaN(x) || float.IsInfinity(x))
+                            x = allEvents[i][allEvents[i].Count - 1].eventValues[j];
+
+                        events[i][j](x + offset + total);
                     }
                 }
             }
@@ -388,24 +388,25 @@ namespace BetterLegacy.Core.Managers
                 if (float.IsNaN(EventManager.inst.camZoom) || EventManager.inst.camZoom == 0f)
                     EventManager.inst.camZoom = 20f;
 
-                if (!EventsConfig.Instance.EditorCamEnabled.Value)
+                var editorCam = EventsConfig.Instance.EditorCamEnabled.Value;
+                if (!EditorManager.inst || !editorCam)
                     EventManager.inst.cam.orthographicSize = EventManager.inst.camZoom;
                 else if (inst.EditorSpeed != 0f)
                     EventManager.inst.cam.orthographicSize = inst.editorZoom;
 
-                if (!float.IsNaN(EventManager.inst.camRot) && !EventsConfig.Instance.EditorCamEnabled.Value)
+                if (!float.IsNaN(EventManager.inst.camRot) && (!EditorManager.inst || !editorCam))
                     EventManager.inst.camParent.transform.rotation = Quaternion.Euler(new Vector3(inst.camRotOffset.x, inst.camRotOffset.y, EventManager.inst.camRot));
                 else if (!float.IsNaN(inst.editorRotate))
                     EventManager.inst.camParent.transform.rotation = Quaternion.Euler(new Vector3(inst.editorPerRotate.x, inst.editorPerRotate.y, inst.editorRotate));
 
-                if (EditorManager.inst == null || !EventsConfig.Instance.EditorCamEnabled.Value)
+                if (!EditorManager.inst || !editorCam)
                     EventManager.inst.camParentTop.transform.localPosition = new Vector3(EventManager.inst.camPos.x, EventManager.inst.camPos.y, inst.zPosition);
                 else
                     EventManager.inst.camParentTop.transform.localPosition = new Vector3(inst.editorOffset.x, inst.editorOffset.y, inst.zPosition);
 
                 EventManager.inst.camPer.fieldOfView = inst.fieldOfView;
 
-                if (!EventsConfig.Instance.EditorCamEnabled.Value)
+                if (!EditorManager.inst || !editorCam)
                     EventManager.inst.camPer.transform.localPosition = new Vector3(EventManager.inst.camPer.transform.localPosition.x, EventManager.inst.camPer.transform.localPosition.y, -(EventManager.inst.camZoom) + inst.perspectiveZoom);
                 else
                     EventManager.inst.camPer.transform.localPosition = new Vector3(EventManager.inst.camPer.transform.localPosition.x, EventManager.inst.camPer.transform.localPosition.y, -(inst.editorZoom) + inst.perspectiveZoom);
