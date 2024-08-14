@@ -171,7 +171,7 @@ namespace BetterLegacy.Editor.Managers
             var creatorLinkTitle = creator.Find("link/title").GetComponent<Text>();
             creatorLinkTitle.text = "Creator Link";
 
-            content.Find("spacer (1)").AsRT().sizeDelta = new Vector2(732f, 80f);
+            content.Find("spacer (1)").AsRT().sizeDelta = new Vector2(732f, 20f);
 
             content.Find("creator/description").AsRT().sizeDelta = new Vector2(757f, 140f);
             content.Find("creator/description/input").AsRT().sizeDelta = new Vector2(523f, 140f);
@@ -181,6 +181,11 @@ namespace BetterLegacy.Editor.Managers
 
             content.Find("spacer").gameObject.SetActive(true);
             submitBase.gameObject.SetActive(true);
+
+            Creator.NewUIObject("spacer toggles", content, 3).transform.AsRT().sizeDelta = new Vector2(0f, 80f);
+
+            GenerateToggle(content, creatorLinkTitle, "is hub level", "Is Hub Level", 4);
+            GenerateToggle(content, creatorLinkTitle, "unlock required", "Unlock Required", 5);
 
             #region Editor Theme Setup
 
@@ -265,6 +270,26 @@ namespace BetterLegacy.Editor.Managers
                 authData = JSON.Parse(RTFile.ReadFromFile(authPath)).AsObject;
 
             yield break;
+        }
+
+        void GenerateToggle(Transform content, Text creatorLinkTitle, string name, string text, int siblingIndex)
+        {
+            var toggles = Creator.NewUIObject(name, content, siblingIndex);
+            var togglesLayout = toggles.AddComponent<HorizontalLayoutGroup>();
+            togglesLayout.childControlHeight = true;
+            togglesLayout.childControlWidth = false;
+            togglesLayout.childForceExpandHeight = true;
+            togglesLayout.childForceExpandWidth = false;
+            toggles.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+
+            var isHubLevelLabel = creatorLinkTitle.gameObject.Duplicate(toggles.transform, "label");
+            var isHubLevelLabelText = isHubLevelLabel.GetComponent<Text>();
+            isHubLevelLabelText.text = text;
+
+            var isHubLevel = EditorPrefabHolder.Instance.Toggle.Duplicate(toggles.transform, "toggle");
+            var isHubLevelLayoutElement = isHubLevel.AddComponent<LayoutElement>();
+            isHubLevelLayoutElement.preferredWidth = 32f;
+            isHubLevelLayoutElement.minWidth = 32f;
         }
 
         void RenderDifficultyToggles()
@@ -591,6 +616,16 @@ namespace BetterLegacy.Editor.Managers
 
             RenderDifficultyToggles();
             RenderTags();
+
+            var isHubLevel = content.Find("is hub level/toggle").GetComponent<Toggle>();
+            isHubLevel.onValueChanged.ClearAll();
+            isHubLevel.isOn = metadata.isHubLevel;
+            isHubLevel.onValueChanged.AddListener(_val => { metadata.isHubLevel = _val; });
+
+            var requireUnlock = content.Find("unlock required/toggle").GetComponent<Toggle>();
+            requireUnlock.onValueChanged.ClearAll();
+            requireUnlock.isOn = metadata.requireUnlock;
+            requireUnlock.onValueChanged.AddListener(_val => { metadata.requireUnlock = _val; });
 
             content.Find("agreement/text").GetComponent<Text>().text = "If you want to upload to the Steam Workshop, you can convert the level to the current level format for vanilla PA and upload it to the workshop. Beware any modded features not in current PA will not be saved. " +
                 "However, if you want to include modded features, then it's recommended to upload to the arcade server or zip the level.";

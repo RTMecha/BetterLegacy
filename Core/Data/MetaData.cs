@@ -43,6 +43,8 @@ namespace BetterLegacy.Core.Data
         public string arcadeID;
         public string prevID;
         public string nextID;
+        public bool isHubLevel;
+        public bool requireUnlock;
 
         /// <summary>
         /// Gets the game version of the metadata.
@@ -109,6 +111,7 @@ namespace BetterLegacy.Core.Data
             uploaderName = orig.uploaderName,
             index = orig.index,
             collectionID = orig.collectionID,
+            isHubLevel = orig.isHubLevel,
         };
 
         public static MetaData ParseVG(JSONNode jn)
@@ -291,9 +294,7 @@ namespace BetterLegacy.Core.Data
                 float previewStart = 0f;
                 float previewLength = 30f;
 
-                string[] tags = new string[]
-                {
-                };
+                string[] tags = new string[] { };
 
                 try
                 {
@@ -383,6 +384,14 @@ namespace BetterLegacy.Core.Data
 
                 if (!string.IsNullOrEmpty(jn["uploader_name"]))
                     result.uploaderName = jn["uploader_name"];
+                else
+                    result.uploaderName = creator.steam_name;
+
+                if (!string.IsNullOrEmpty(jn["is_hub_level"]))
+                    result.isHubLevel = jn["is_hub_level"].AsBool;
+
+                if (!string.IsNullOrEmpty(jn["require_unlock"]))
+                    result.requireUnlock = jn["require_unlock"].AsBool;
             }
             catch
             {
@@ -469,6 +478,12 @@ namespace BetterLegacy.Core.Data
 
             if (!string.IsNullOrEmpty(uploaderName))
                 jn["uploader_name"] = uploaderName;
+
+            if (isHubLevel)
+                jn["is_hub_level"] = isHubLevel.ToString();
+
+            if (requireUnlock)
+                jn["require_unlock"] = requireUnlock.ToString();
 
             return jn;
         }
