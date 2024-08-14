@@ -6,6 +6,7 @@ using BetterLegacy.Core.Managers.Networking;
 using SimpleJSON;
 using System;
 using System.Collections;
+using System.IO;
 using UnityEngine;
 
 namespace BetterLegacy.Core
@@ -15,6 +16,29 @@ namespace BetterLegacy.Core
     /// </summary>
     public class Level : Exists
     {
+        public Level(MetaData metaData, Sprite icon, AudioClip music)
+        {
+            isStory = true;
+            metadata = metaData;
+            this.icon = icon;
+            this.music = music;
+            LevelModes = new string[] { "level.lsb" };
+            var path = RTFile.ApplicationDirectory + "beatmaps/story/Current";
+            if (!RTFile.DirectoryExists(path))
+                Directory.CreateDirectory(path);
+            this.path = path + "/";
+
+            if (metadata)
+            {
+                if (!string.IsNullOrEmpty(metadata.arcadeID) && metadata.arcadeID != "-1")
+                    id = metadata.arcadeID;
+                else if (!string.IsNullOrEmpty(metadata.LevelBeatmap.beatmap_id) && metadata.LevelBeatmap.beatmap_id != "-1")
+                    id = metadata.LevelBeatmap.beatmap_id;
+                else
+                    id = "-1";
+            }
+        }
+
         public Level(string path)
         {
             this.path = path;
@@ -149,6 +173,8 @@ namespace BetterLegacy.Core
         }
 
         public LevelManager.PlayerData playerData;
+
+        public bool isStory;
 
         public bool IsVG => RTFile.FileExists($"{path}level.vgd") && RTFile.FileExists($"{path}metadata.vgm");
 
