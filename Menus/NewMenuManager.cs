@@ -12,6 +12,9 @@ using UnityEngine.UI;
 using BetterLegacy.Core.Data;
 using System.Collections;
 
+using BetterLegacy.Menus.UI;
+using SimpleJSON;
+
 namespace BetterLegacy.Menus
 {
     public class NewMenuManager : MonoBehaviour
@@ -34,15 +37,28 @@ namespace BetterLegacy.Menus
 
         public void Test()
         {
-            CurrentMenu = new ArcadeMenuTest();
+            if (CurrentMenu != null)
+            {
+                CurrentMenu.Clear();
+                CurrentMenu = null;
+            }
+
+            var jn = JSON.Parse(RTFile.ReadFromFile($"{RTFile.ApplicationDirectory}beatmaps/test_menu.lsi"));
+
+            var menu = CustomMenu.Parse(jn);
+            StartCoroutine(menu.GenerateUI());
+            CurrentMenu = menu;
         }
     }
 
     public class ArcadeMenuTest : MenuBase
     {
+        public ArcadeMenuTest() : base() { }
+
         public override IEnumerator GenerateUI()
         {
             var canvas = UIManager.GenerateUICanvas("Arcade Menu", null);
+            this.canvas = canvas.Canvas.gameObject;
 
             var gameObject = Creator.NewUIObject("Layout", canvas.Canvas.transform);
             gameObject.transform.AsRT().anchoredPosition = Vector2.zero;

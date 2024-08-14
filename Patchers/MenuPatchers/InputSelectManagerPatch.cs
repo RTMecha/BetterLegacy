@@ -13,6 +13,9 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static void StartPrefix()
         {
+            if (Menus.NewMenuManager.inst)
+                Menus.NewMenuManager.inst.CurrentMenu = null; // clear menu for now until Input Select scene is reworked to use the new menu system.
+
             InputDataManager.inst.ClearInputs();
             LSHelpers.HideCursor();
             RTArcade.fromLevel = false;

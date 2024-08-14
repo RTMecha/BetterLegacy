@@ -11,13 +11,13 @@ using BetterLegacy.Components;
 
 using TMPro;
 
-namespace BetterLegacy.Menus
+namespace BetterLegacy.Menus.UI
 {
     public class MenuButton : MenuText
     {
         public bool isHovered;
 
-        public Vector2Int position;
+        public Vector2Int selectionPosition;
         public RTAnimation enterAnimation;
         public RTAnimation exitAnimation;
 
@@ -39,8 +39,8 @@ namespace BetterLegacy.Menus
                     new FloatKeyframe(0.31f, 1.1f, Ease.Linear),
                 }, x =>
                 {
-                    if (transform != null)
-                        transform.localScale = new Vector3(x, x, 1f);
+                    if (gameObject != null)
+                        gameObject.transform.localScale = new Vector3(x, x, 1f);
                 }),
             };
             enterAnimation.onComplete = () =>
@@ -69,8 +69,8 @@ namespace BetterLegacy.Menus
                     new FloatKeyframe(0.31f, 1f, Ease.Linear),
                 }, x =>
                 {
-                    if (transform)
-                        transform.localScale = new Vector3(x, x, 1f);
+                    if (gameObject)
+                        gameObject.transform.localScale = new Vector3(x, x, 1f);
                 }),
             };
             exitAnimation.onComplete = () => { AnimationManager.inst.RemoveID(exitAnimation.id); };
