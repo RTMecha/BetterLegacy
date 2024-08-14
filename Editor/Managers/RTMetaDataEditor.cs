@@ -807,8 +807,10 @@ namespace BetterLegacy.Editor.Managers
 
                     CoreHelper.StartCoroutine(AlephNetworkManager.Delete($"{AlephNetworkManager.ArcadeServerURL}api/level/{id}", () =>
                     {
+                        MetaData.Current.LevelBeatmap.date_published = "";
                         MetaData.Current.serverID = null;
-                        DataManager.inst.SaveMetadata(GameManager.inst.basePath + "metadata.lsb");
+                        var jn = MetaData.Current.ToJSON();
+                        RTFile.WriteToFile(GameManager.inst.basePath + "metadata.lsb", jn.ToString());
 
                         EditorManager.inst.DisplayNotification($"Successfully deleted level off the Arcade server.", 2.5f, EditorManager.NotificationType.Success);
                         RenderEditor();
