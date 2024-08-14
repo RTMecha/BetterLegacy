@@ -153,14 +153,14 @@ namespace BetterLegacy.Editor.Managers
             uploadText.fontSize = 22;
             uploadText.text = "Upload to Server";
 
-            var zip = convert.Duplicate(submitBase, "zip");
+            var zip = convert.Duplicate(submitBase, "delete");
 
             zip.transform.AsRT().anchoredPosition = new Vector2(240f, 0f);
             zip.transform.AsRT().sizeDelta = new Vector2(230f, 48f);
             var zipText = zip.transform.Find("Text").GetComponent<Text>();
             zipText.resizeTextForBestFit = false;
             zipText.fontSize = 22;
-            zipText.text = "ZIP Level";
+            zipText.text = "Delete Level";
 
             content.Find("id").gameObject.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0f);
 
@@ -188,8 +188,8 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddGraphic(convertText, ThemeGroup.Function_1_Text);
             EditorThemeManager.AddGraphic(upload.GetComponent<Image>(), ThemeGroup.Function_1, true);
             EditorThemeManager.AddGraphic(uploadText, ThemeGroup.Function_1_Text);
-            EditorThemeManager.AddGraphic(zip.GetComponent<Image>(), ThemeGroup.Function_1, true);
-            EditorThemeManager.AddGraphic(zipText, ThemeGroup.Function_1_Text);
+            EditorThemeManager.AddGraphic(zip.GetComponent<Image>(), ThemeGroup.Delete, true);
+            EditorThemeManager.AddGraphic(zipText, ThemeGroup.Delete_Text);
             EditorThemeManager.AddGraphic(dialog.GetComponent<Image>(), ThemeGroup.Background_1);
 
             EditorThemeManager.AddLightText(artist.Find("title/title").GetComponent<Text>());
@@ -620,9 +620,9 @@ namespace BetterLegacy.Editor.Managers
             upload.onClick.ClearAll();
             upload.onClick.AddListener(UploadLevel);
 
-            var zip = submitBase.Find("zip").GetComponent<Button>();
+            var zip = submitBase.Find("delete").GetComponent<Button>();
             zip.onClick.ClearAll();
-            zip.onClick.AddListener(ZIPLevel);
+            zip.onClick.AddListener(DeleteLevel);
         }
 
         public void ConvertLevel()
@@ -742,7 +742,7 @@ namespace BetterLegacy.Editor.Managers
 
                     EditorManager.inst.DisplayNotification($"Level uploaded! ID: {id}", 3f, EditorManager.NotificationType.Success);
                     MetadataEditor.inst.Render();
-                }, (string onError, long responseCode) =>
+                }, (string onError, long responseCode, string errorMsg) =>
                 {
                     MetaData.Current.LevelBeatmap.date_published = "";
                     var jn = MetaData.Current.ToJSON();
@@ -760,7 +760,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 if (authData != null && authData["access_token"] != null && authData["refresh_token"] != null)
                                 {
-                                    CoreHelper.StartCoroutine(RefreshTokens());
+                                    CoreHelper.StartCoroutine(RefreshTokens(UploadLevel));
                                     return;
                                 }
                                 ShowLoginPopup();
@@ -770,6 +770,10 @@ namespace BetterLegacy.Editor.Managers
                             EditorManager.inst.DisplayNotification($"Upload failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
                             break;
                     }
+
+                    if (errorMsg != null)
+                        CoreHelper.LogError($"Error Message: {errorMsg}");
+
                 }, headers));
             }
             catch (Exception ex)
@@ -778,40 +782,62 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public void ZIPLevel()
+        public void DeleteLevel()
         {
-            var exportPath = EditorConfig.Instance.ZIPLevelExportPath.Value;
-
-            if (string.IsNullOrEmpty(exportPath))
+            if (!AlephNetworkManager.ServerFinished)
             {
-                if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/exports"))
-                    Directory.CreateDirectory(RTFile.ApplicationDirectory + "beatmaps/exports");
-                exportPath = RTFile.ApplicationDirectory + "beatmaps/exports/";
-            }
-
-            if (exportPath[exportPath.Length - 1] != '/')
-                exportPath += "/";
-
-            if (!RTFile.DirectoryExists(Path.GetDirectoryName(exportPath)))
-            {
-                EditorManager.inst.DisplayNotification("Directory does not exist.", 2f, EditorManager.NotificationType.Error);
+                EditorManager.inst.DisplayNotification("Server is not up yet.", 3f, EditorManager.NotificationType.Warning);
                 return;
             }
 
-            var path = exportPath + EditorManager.inst.currentLoadedLevel + ".zip";
+            var id = MetaData.Current.serverID;
 
             try
             {
-                if (RTFile.FileExists(path))
-                    File.Delete(path);
+                var headers = new Dictionary<string, string>();
+                if (authData != null && authData["access_token"] != null)
+                    headers["Authorization"] = $"Bearer {authData["access_token"].Value}";
 
-                ZipFile.CreateFromDirectory(GameManager.inst.basePath, path);
-                EditorManager.inst.DisplayNotification($"Sucessfully created {EditorManager.inst.currentLoadedLevel}.zip.", 2f, EditorManager.NotificationType.Success);
+                CoreHelper.StartCoroutine(AlephNetworkManager.Delete($"{AlephNetworkManager.ArcadeServerURL}api/level/{id}", () =>
+                {
+                    MetaData.Current.serverID = null;
+                    DataManager.inst.SaveMetadata(GameManager.inst.basePath + "metadata.lsb");
+
+                    EditorManager.inst.DisplayNotification($"Successfully deleted level off the Arcade server.", 2.5f, EditorManager.NotificationType.Success);
+                }, (string onError, long responseCode) =>
+                {
+                    switch (responseCode)
+                    {
+                        case 404:
+                            EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
+                            return;
+                        case 401:
+                            {
+                                if (authData != null && authData["access_token"] != null && authData["refresh_token"] != null)
+                                {
+                                    CoreHelper.StartCoroutine(RefreshTokens(DeleteLevel));
+                                    return;
+                                }
+                                ShowLoginPopup();
+                                break;
+                            }
+                        default:
+                            EditorManager.inst.DisplayNotification($"Delete failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
+                            break;
+                    }
+                }, headers));
             }
             catch (Exception ex)
             {
-                Debug.LogError($"{MetadataEditor.inst.className}There was an error in creating the ZIP file.\n{ex}");
+
+                throw;
             }
+
+        }
+
+        IEnumerator IDeleteLevel()
+        {
+            yield break;
         }
 
         public void ShowLoginPopup()
@@ -824,7 +850,7 @@ namespace BetterLegacy.Editor.Managers
             }, RTEditor.inst.HideWarningPopup, "Login", "Cancel");
         }
 
-        public IEnumerator RefreshTokens()
+        public IEnumerator RefreshTokens(Action onRefreshed)
         {
             EditorManager.inst.DisplayNotification("Access token expired. Refreshing...", 5f, EditorManager.NotificationType.Warning);
 
@@ -856,7 +882,8 @@ namespace BetterLegacy.Editor.Managers
 
             RTFile.WriteToFile(Path.Combine(Application.persistentDataPath, "auth.json"), authData.ToString());
             EditorManager.inst.DisplayNotification("Refreshed tokens! Uploading...", 5f, EditorManager.NotificationType.Success);
-            UploadLevel();
+            //UploadLevel();
+            onRefreshed?.Invoke();
         }
 
         void CreateLoginListener()
