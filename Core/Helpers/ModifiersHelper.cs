@@ -3541,7 +3541,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "textSequence":
                         {
-                            if (modifier.reference.shape != 4 || !modifier.reference.levelObject || modifier.reference.levelObject.visualObject is not TextObject)
+                            if (modifier.reference.shape != 4 || !modifier.reference.levelObject || modifier.reference.levelObject.visualObject is not TextObject textObject)
                                 break;
 
                             var text = modifier.reference.text;
@@ -3550,6 +3550,64 @@ namespace BetterLegacy.Core.Helpers
                             var length = Parser.TryParse(modifier.value, 1f);
 
                             var p = time / length;
+
+                            // new code that i can't figure out
+
+                            //var textWithoutFormatting = text;
+                            //var matches = Regex.Matches(text, "<(.*?)>");
+                            //foreach (var obj in matches)
+                            //{
+                            //    var match = (Match)obj;
+                            //    textWithoutFormatting = textWithoutFormatting.Replace(match.Groups[0].ToString(), "");
+                            //}
+
+                            //var stringLength = (int)Mathf.Lerp(0, textWithoutFormatting.Length + 1, p);
+
+                            //if (textObject.TextMeshPro.maxVisibleCharacters != stringLength)
+                            //{
+                            //    if (Parser.TryParse(modifier.commands[2], true))
+                            //    {
+                            //        if (!Parser.TryParse(modifier.commands[3], false))
+                            //            AudioManager.inst.PlaySound("Click");
+                            //        else if (bool.TryParse(modifier.commands[5], out bool global) && float.TryParse(modifier.commands[6], out float pitch) && float.TryParse(modifier.commands[7], out float vol))
+                            //            ModifiersManager.GetSoundPath(modifier.reference.id, modifier.commands[4], global, pitch, vol, false);
+                            //    }
+                            //}
+
+                            //var stringLength2 = (int)Mathf.Lerp(0, text.Length - 1, p);
+                            ////int num = stringLength2;
+                            ////bool hasChanged = false;
+                            ////while (text[stringLength2] == '<' && text[num] != '>')
+                            ////{
+                            ////    hasChanged = true;
+                            ////    num++;
+                            ////}
+
+                            ////if (hasChanged)
+                            ////    stringLength2 = num + 1;
+
+                            //foreach (var obj in matches)
+                            //{
+                            //    var match = (Match)obj;
+                            //    if (stringLength2 >= match.Index && stringLength2 < match.Index + match.Groups[0].ToString().Length - 1)
+                            //    {
+                            //        stringLength2 = match.Groups[0].ToString().Length;
+                            //    }
+                            //}
+
+                            //if (stringLength2 > 0 && stringLength2 < textObject.TextMeshPro.text.Length - 1)
+                            //{
+                            //    var t = textObject.TextMeshPro.text.Insert(stringLength2, LSText.randomString(1));
+
+                            //    if (modifier.constant)
+                            //        ((TextObject)modifier.reference.levelObject.visualObject).SetText(t);
+                            //    else
+                            //        ((TextObject)modifier.reference.levelObject.visualObject).Text = t;
+                            //}
+
+                            //textObject.TextMeshPro.maxVisibleCharacters = stringLength;
+
+                            // old code
 
                             var stringLength = (int)Mathf.Lerp(0, text.Length, p);
                             var sequencedText = text.Substring(0, stringLength);
@@ -3597,9 +3655,9 @@ namespace BetterLegacy.Core.Helpers
                                 text += LSText.randomString(1);
 
                             if (modifier.constant)
-                                ((TextObject)modifier.reference.levelObject.visualObject).SetText(text);
+                                textObject.SetText(text);
                             else
-                                ((TextObject)modifier.reference.levelObject.visualObject).Text = text;
+                                textObject.Text = text;
 
                             if (Parser.TryParse(modifier.commands[2], true) && (modifier.Result is not string || (string)modifier.Result != textWithoutGlitch))
                             {
