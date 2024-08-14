@@ -327,6 +327,8 @@ namespace BetterLegacy.Core.Helpers
 
         #region Strings
 
+        public static string InterpolateString(string str, float t) => str.Substring(0, Mathf.Clamp((int)RTMath.Lerp(0, str.Length, t), 0, str.Length));
+
         public static KeyValuePair<string, string> ReplaceMatching(KeyValuePair<string, string> keyValuePair, string sequenceText, string pattern)
         {
             var text = keyValuePair.Key;

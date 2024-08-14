@@ -121,6 +121,14 @@ namespace BetterLegacy.Core.Animation
             this.interpolation = interpolation;
         }
 
+        public override void SetKeyframeTime(int index, float t)
+        {
+            if (index >= keyframes.Count || index >= sequence.keyframes.Length)
+                return;
+
+            keyframes[index].Time = t;
+            sequence.keyframes[index].Time = t;
+        }
 
         public List<IKeyframe<T>> keyframes;
 
@@ -145,6 +153,8 @@ namespace BetterLegacy.Core.Animation
         public Action onComplete;
 
         public bool completed = false;
+
+        public abstract void SetKeyframeTime(int index, float t);
 
         public void Completed()
         {

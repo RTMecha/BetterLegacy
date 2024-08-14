@@ -340,6 +340,7 @@ namespace BetterLegacy.Patchers
                 RTFile.WriteToFile("settings/menu.lss", jn.ToString(3));
             }
 
+            NewMenuManager.Init();
             MenuManager.Init();
 
             try
