@@ -41,6 +41,7 @@ namespace BetterLegacy
         static EditorPrefabHolder editorPrefabHolder;
         static CorePrefabHolder corePrefabHolder;
 
+        public static Sprite LockSprite { get; set; }
         public static Sprite EmptyObjectSprite { get; set; }
         public static Sprite AtanPlaceholder { get; set; }
 
@@ -120,6 +121,7 @@ namespace BetterLegacy
                 assetBundle.Unload(false);
                 GetKinoGlitch();
 
+                LockSprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}lock.png");
                 EmptyObjectSprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_empty.png");
                 AtanPlaceholder = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}atan-placeholder.png");
             }
