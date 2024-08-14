@@ -620,6 +620,10 @@ namespace BetterLegacy.Core.Managers
 
         public AssetBundle GetAssetBundle(string _filepath, string _bundle) => AssetBundle.LoadFromFile(Path.Combine(_filepath, _bundle));
 
+        public string ReplaceProperties(string str) => str
+            .Replace("{{version}}", ProjectArrhythmia.GameVersion.ToString())
+            .Replace("{{mod version}}", LegacyPlugin.ModVersion.ToString());
+
         // UNUSED DUE TO FILESIZE
         // - NotoSansSC-VariableFont.ttf
         // - HiMelody-Regular.ttf
