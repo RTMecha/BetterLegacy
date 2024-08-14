@@ -620,9 +620,14 @@ namespace BetterLegacy.Editor.Managers
             upload.onClick.ClearAll();
             upload.onClick.AddListener(UploadLevel);
 
-            var zip = submitBase.Find("delete").GetComponent<Button>();
-            zip.onClick.ClearAll();
-            zip.onClick.AddListener(DeleteLevel);
+            var delete = submitBase.Find("delete").gameObject;
+            delete.SetActive(hasID);
+            if (hasID)
+            {
+                var deleteButton = submitBase.Find("delete").GetComponent<Button>();
+                deleteButton.onClick.ClearAll();
+                deleteButton.onClick.AddListener(DeleteLevel);
+            }
         }
 
         public void ConvertLevel()
@@ -741,7 +746,7 @@ namespace BetterLegacy.Editor.Managers
                         File.Delete(path);
 
                     EditorManager.inst.DisplayNotification($"Level uploaded! ID: {id}", 3f, EditorManager.NotificationType.Success);
-                    MetadataEditor.inst.Render();
+                    RenderEditor();
                 }, (string onError, long responseCode, string errorMsg) =>
                 {
                     MetaData.Current.LevelBeatmap.date_published = "";
@@ -790,54 +795,54 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            var id = MetaData.Current.serverID;
-
-            try
+            RTEditor.inst.ShowWarningPopup("Are you sure you want to remove this level from the Arcade server? This cannot be undone!", () =>
             {
-                var headers = new Dictionary<string, string>();
-                if (authData != null && authData["access_token"] != null)
-                    headers["Authorization"] = $"Bearer {authData["access_token"].Value}";
-
-                CoreHelper.StartCoroutine(AlephNetworkManager.Delete($"{AlephNetworkManager.ArcadeServerURL}api/level/{id}", () =>
+                try
                 {
-                    MetaData.Current.serverID = null;
-                    DataManager.inst.SaveMetadata(GameManager.inst.basePath + "metadata.lsb");
+                    var id = MetaData.Current.serverID;
 
-                    EditorManager.inst.DisplayNotification($"Successfully deleted level off the Arcade server.", 2.5f, EditorManager.NotificationType.Success);
-                }, (string onError, long responseCode) =>
-                {
-                    switch (responseCode)
+                    var headers = new Dictionary<string, string>();
+                    if (authData != null && authData["access_token"] != null)
+                        headers["Authorization"] = $"Bearer {authData["access_token"].Value}";
+
+                    CoreHelper.StartCoroutine(AlephNetworkManager.Delete($"{AlephNetworkManager.ArcadeServerURL}api/level/{id}", () =>
                     {
-                        case 404:
-                            EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
-                            return;
-                        case 401:
-                            {
-                                if (authData != null && authData["access_token"] != null && authData["refresh_token"] != null)
+                        MetaData.Current.serverID = null;
+                        DataManager.inst.SaveMetadata(GameManager.inst.basePath + "metadata.lsb");
+
+                        EditorManager.inst.DisplayNotification($"Successfully deleted level off the Arcade server.", 2.5f, EditorManager.NotificationType.Success);
+                        RenderEditor();
+                        RTEditor.inst.HideWarningPopup();
+                    }, (string onError, long responseCode) =>
+                    {
+                        switch (responseCode)
+                        {
+                            case 404:
+                                EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
+                                RTEditor.inst.HideWarningPopup();
+                                return;
+                            case 401:
                                 {
-                                    CoreHelper.StartCoroutine(RefreshTokens(DeleteLevel));
-                                    return;
+                                    if (authData != null && authData["access_token"] != null && authData["refresh_token"] != null)
+                                    {
+                                        CoreHelper.StartCoroutine(RefreshTokens(DeleteLevel));
+                                        return;
+                                    }
+                                    ShowLoginPopup();
+                                    break;
                                 }
-                                ShowLoginPopup();
+                            default:
+                                EditorManager.inst.DisplayNotification($"Delete failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
+                                RTEditor.inst.HideWarningPopup();
                                 break;
-                            }
-                        default:
-                            EditorManager.inst.DisplayNotification($"Delete failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
-                            break;
-                    }
-                }, headers));
-            }
-            catch (Exception ex)
-            {
-
-                throw;
-            }
-
-        }
-
-        IEnumerator IDeleteLevel()
-        {
-            yield break;
+                        }
+                    }, headers));
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogError($"Had an exception in deleting the level.\nException: {ex}");
+                }
+            }, RTEditor.inst.HideWarningPopup);
         }
 
         public void ShowLoginPopup()
