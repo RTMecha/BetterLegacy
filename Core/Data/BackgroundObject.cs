@@ -148,6 +148,8 @@ namespace BetterLegacy.Core.Data
                 reactiveScaIntensity = bg.reactiveScaIntensity,
                 reactiveZIntensity = bg.reactiveZIntensity,
                 reactiveZSample = bg.reactiveZSample,
+
+                tags = bg.tags.Clone(),
             };
 
             for (int i = 0; i < bg.modifiers.Count; i++)
