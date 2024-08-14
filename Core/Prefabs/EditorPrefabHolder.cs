@@ -10,10 +10,7 @@ namespace BetterLegacy.Core.Prefabs
     public class EditorPrefabHolder
     {
         public static EditorPrefabHolder Instance { get; set; }
-        public EditorPrefabHolder()
-        {
-            Instance = this;
-        }
+        public EditorPrefabHolder() { Instance = this; }
 
         public Transform PrefabParent { get; set; }
         public GameObject StringInputField { get; set; }
@@ -22,6 +19,7 @@ namespace BetterLegacy.Core.Prefabs
         public GameObject Function1Button { get; set; }
         public GameObject Function2Button { get; set; }
         public GameObject Dropdown { get; set; }
+        public GameObject Toggle { get; set; }
     }
 
     public class DeleteButtonStorage : MonoBehaviour
