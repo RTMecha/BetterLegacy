@@ -345,62 +345,6 @@ namespace BetterLegacy.Core.Data
             objectColors.AddRange(DefaultObjectColors.Select(x => new Color(x.r, x.g, x.b, x.a)));
             backgroundColors.AddRange(DefaulBackgroundColors.Select(x => new Color(x.r, x.g, x.b, x.a)));
             effectColors.AddRange(DefaultEffectColors.Select(x => new Color(x.r, x.g, x.b, x.a)));
-
-            //guiColor = LSColors.white;
-            //guiAccentColor = LSColors.white;
-            //backgroundColor = LSColors.gray900;
-            //playerColors.Add(LSColors.HexToColor("E57373"));
-            //playerColors.Add(LSColors.HexToColor("64B5F6"));
-            //playerColors.Add(LSColors.HexToColor("81C784"));
-            //playerColors.Add(LSColors.HexToColor("FFB74D"));
-
-            //objectColors.Add(LSColors.gray100);
-            //objectColors.Add(LSColors.gray200);
-            //objectColors.Add(LSColors.gray300);
-            //objectColors.Add(LSColors.gray400);
-            //objectColors.Add(LSColors.gray500);
-            //objectColors.Add(LSColors.gray600);
-            //objectColors.Add(LSColors.gray700);
-            //objectColors.Add(LSColors.gray800);
-            //objectColors.Add(LSColors.gray900);
-            //objectColors.Add(LSColors.gray100);
-            //objectColors.Add(LSColors.gray200);
-            //objectColors.Add(LSColors.gray300);
-            //objectColors.Add(LSColors.gray400);
-            //objectColors.Add(LSColors.gray500);
-            //objectColors.Add(LSColors.gray600);
-            //objectColors.Add(LSColors.gray700);
-            //objectColors.Add(LSColors.gray800);
-            //objectColors.Add(LSColors.gray900);
-
-            //effectColors.Add(LSColors.gray100);
-            //effectColors.Add(LSColors.gray200);
-            //effectColors.Add(LSColors.gray300);
-            //effectColors.Add(LSColors.gray400);
-            //effectColors.Add(LSColors.gray500);
-            //effectColors.Add(LSColors.gray600);
-            //effectColors.Add(LSColors.gray700);
-            //effectColors.Add(LSColors.gray800);
-            //effectColors.Add(LSColors.gray900);
-            //effectColors.Add(LSColors.gray100);
-            //effectColors.Add(LSColors.gray200);
-            //effectColors.Add(LSColors.gray300);
-            //effectColors.Add(LSColors.gray400);
-            //effectColors.Add(LSColors.gray500);
-            //effectColors.Add(LSColors.gray600);
-            //effectColors.Add(LSColors.gray700);
-            //effectColors.Add(LSColors.gray800);
-            //effectColors.Add(LSColors.gray900);
-
-            //backgroundColors.Add(LSColors.pink100);
-            //backgroundColors.Add(LSColors.pink200);
-            //backgroundColors.Add(LSColors.pink300);
-            //backgroundColors.Add(LSColors.pink400);
-            //backgroundColors.Add(LSColors.pink500);
-            //backgroundColors.Add(LSColors.pink600);
-            //backgroundColors.Add(LSColors.pink700);
-            //backgroundColors.Add(LSColors.pink800);
-            //backgroundColors.Add(LSColors.pink900);
         }
 
         public void Lerp(BeatmapTheme _start, BeatmapTheme _end, float _val)
