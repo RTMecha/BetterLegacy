@@ -517,6 +517,7 @@ namespace BetterLegacy.Core.Managers
             public float TimeInLevel { get; set; }
             public float Percentage { get; set; }
             public float LevelLength { get; set; }
+            public bool Unlocked { get; set; }
 
             public void Update()
             {
@@ -548,6 +549,7 @@ namespace BetterLegacy.Core.Managers
                 playerData.TimeInLevel = jn["t"].AsFloat;
                 playerData.Percentage = jn["p"].AsFloat;
                 playerData.LevelLength = jn["l"].AsFloat;
+                playerData.Unlocked = jn["u"].AsBool;
                 return playerData;
             }
 
@@ -563,6 +565,7 @@ namespace BetterLegacy.Core.Managers
                 jn["t"] = TimeInLevel.ToString();
                 jn["p"] = Percentage.ToString();
                 jn["l"] = LevelLength.ToString();
+                jn["u"] = Unlocked.ToString();
                 return jn;
             }
 
