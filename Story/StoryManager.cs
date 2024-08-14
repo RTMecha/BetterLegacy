@@ -9,6 +9,9 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers.Networking;
 using System.IO.Compression;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Managers;
+using SimpleJSON;
+using BetterLegacy.Core.Optimization;
 
 namespace BetterLegacy.Story
 {
@@ -74,14 +77,31 @@ namespace BetterLegacy.Story
             yield break;
         }
 
-        public IEnumerator Play(string name)
+        public void Play(string name) => StartCoroutine(IPlay(name));
+
+        IEnumerator IPlay(string name)
         {
             StoryLevel storyLevel = LoadLevel(name);
 
-            MetaData.Current = MetaData.Parse(storyLevel.jsonMetadata);
-            GameData.Current = GameData.Parse(storyLevel.json);
+            var level = new Level(MetaData.Parse(JSON.Parse(storyLevel.jsonMetadata)), storyLevel.icon, storyLevel.song);
+            var levelPath = level.path + "level.lsb";
+            var playersPath = level.path + "players.lsb";
+            RTFile.WriteToFile(levelPath, storyLevel.json);
+            RTFile.WriteToFile(playersPath, storyLevel.jsonPlayers);
 
-            AudioManager.inst.PlayMusic(null, storyLevel.song);
+            LevelManager.OnLevelEnd = () =>
+            {
+                LevelManager.Clear();
+                Updater.OnLevelEnd();
+                SceneManager.inst.LoadScene("Main Menu"); // temp
+
+                if (RTFile.FileExists(levelPath))
+                    File.Delete(levelPath);
+                if (RTFile.FileExists(playersPath))
+                    File.Delete(playersPath);
+            };
+
+            StartCoroutine(LevelManager.Play(level));
 
             yield break;
         }
@@ -117,7 +137,7 @@ namespace BetterLegacy.Story
             StartCoroutine(ILoad());
         }
 
-        public IEnumerator ILoad()
+        IEnumerator ILoad()
         {
             if (!HasFiles)
             {
