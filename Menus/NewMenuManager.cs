@@ -156,6 +156,9 @@ namespace BetterLegacy.Menus
                 return;
             }
 
+            if (CurrentAudioSource.clip && CurrentAudioSource.clip.name == Path.GetFileName(songFileCurrent))
+                return;
+
             CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{songFileCurrent}", RTFile.GetAudioType(songFileCurrent), audioClip =>
             {
                 CoreHelper.Log($"Attempting to play music: {songFileCurrent}");
