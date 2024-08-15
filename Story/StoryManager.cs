@@ -12,6 +12,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Managers;
 using SimpleJSON;
 using BetterLegacy.Core.Optimization;
+using BetterLegacy.Core.Data.Player;
 
 namespace BetterLegacy.Story
 {
@@ -77,9 +78,18 @@ namespace BetterLegacy.Story
             yield break;
         }
 
+        public IEnumerator Demo()
+        {
+            InputDataManager.inst.players.Clear();
+            InputDataManager.inst.players.Add(new CustomPlayer(true, 0, null));
+
+            yield return StartCoroutine(ILoad());
+            Play("granite");
+        }
+
         public void Play(string name) => StartCoroutine(IPlay(name));
 
-        IEnumerator IPlay(string name)
+        public IEnumerator IPlay(string name)
         {
             StoryLevel storyLevel = LoadLevel(name);
 
@@ -137,7 +147,7 @@ namespace BetterLegacy.Story
             StartCoroutine(ILoad());
         }
 
-        IEnumerator ILoad()
+        public IEnumerator ILoad()
         {
             if (!HasFiles)
             {
@@ -148,17 +158,17 @@ namespace BetterLegacy.Story
                 yield break;
             }
 
-            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{StoryAssetsPath}covers.asset", (AssetBundle assetBundle) =>
+            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{StoryAssetsPath}covers.asset", assetBundle =>
             {
                 covers = assetBundle;
             }));
 
-            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{StoryAssetsPath}levels.asset", (AssetBundle assetBundle) =>
+            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{StoryAssetsPath}levels.asset", assetBundle =>
             {
                 levels = assetBundle;
             }));
 
-            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{StoryAssetsPath}ost.asset", (AssetBundle assetBundle) =>
+            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{StoryAssetsPath}ost.asset", assetBundle =>
             {
                 songs = assetBundle;
             }));

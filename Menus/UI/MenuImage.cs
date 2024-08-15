@@ -153,6 +153,11 @@ namespace BetterLegacy.Menus.UI
 
                         break;
                     }
+                case "DemoStoryMode":
+                    {
+                        CoreHelper.StartCoroutine(Story.StoryManager.inst.Demo());
+                        break;
+                    }
             }
         }
 
