@@ -159,6 +159,9 @@ namespace BetterLegacy.Core
 
         public static void ParseRectTransform(RectTransform rectTransform, JSONNode jn)
         {
+            if (jn["rot"] != null)
+                rectTransform.SetLocalRotationEulerZ(jn["rot"].AsFloat);
+
             rectTransform.anchoredPosition = jn["anc_pos"] != null && jn["anc_pos"]["x"] != null && jn["anc_pos"]["y"] != null ? jn["anc_pos"].AsVector2() : Vector2.zero;
             rectTransform.anchorMax = jn["anc_max"] != null && jn["anc_max"]["x"] != null && jn["anc_max"]["y"] != null ? jn["anc_max"].AsVector2() : new Vector2(0.5f, 0.5f);
             rectTransform.anchorMin = jn["anc_min"] != null && jn["anc_min"]["x"] != null && jn["anc_min"]["y"] != null ? jn["anc_min"].AsVector2() : new Vector2(0.5f, 0.5f);
