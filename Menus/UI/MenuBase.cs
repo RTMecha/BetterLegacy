@@ -86,6 +86,7 @@ namespace BetterLegacy.Menus.UI
         public void Clear()
         {
             isOpen = false;
+            selected = Vector2Int.zero;
             UnityEngine.Object.Destroy(canvas?.GameObject);
         }
 
