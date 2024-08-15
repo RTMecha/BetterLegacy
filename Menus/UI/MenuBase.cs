@@ -13,12 +13,13 @@ using UnityEngine.UI;
 
 using TMPro;
 using BetterLegacy.Core.Data;
+using LSFunctions;
 
 namespace BetterLegacy.Menus.UI
 {
     public abstract class MenuBase
     {
-        public GameObject canvas;
+        public UICanvas canvas;
 
         public MenuBase(bool setupUI = true)
         {
@@ -28,9 +29,12 @@ namespace BetterLegacy.Menus.UI
 
         public void SetActive(bool active)
         {
-            canvas?.SetActive(active);
+            canvas?.GameObject.SetActive(active);
             isOpen = active;
         }
+
+        public AudioClip music;
+        public string musicName;
 
         public string name;
         public string id;
@@ -39,7 +43,7 @@ namespace BetterLegacy.Menus.UI
 
         public Vector2Int selected;
 
-        public List<MenuText> elements = new List<MenuText>();
+        public List<MenuImage> elements = new List<MenuImage>();
         public Dictionary<string, MenuLayoutBase> layouts = new Dictionary<string, MenuLayoutBase>();
 
         public abstract IEnumerator GenerateUI();
@@ -47,7 +51,7 @@ namespace BetterLegacy.Menus.UI
         public void Clear()
         {
             isOpen = false;
-            UnityEngine.Object.Destroy(canvas);
+            UnityEngine.Object.Destroy(canvas?.GameObject);
         }
 
         /// <summary>
@@ -61,8 +65,12 @@ namespace BetterLegacy.Menus.UI
             {
                 for (int i = 0; i < elements.Count; i++)
                 {
-                    var text = elements[i];
-                    text.textInterpolation?.animationHandlers[0]?.SetKeyframeTime(1, actions.Submit.IsPressed ? text.length * 0.3f : text.length);
+                    var element = elements[i];
+
+                    if (element.isSpawning)
+                    {
+                        element.Update();
+                    }
                 }
                 return;
             }
@@ -152,25 +160,32 @@ namespace BetterLegacy.Menus.UI
             if (!CoreHelper.InGame)
                 Camera.main.backgroundColor = Theme.backgroundColor;
 
+            if (canvas != null)
+                canvas.Canvas.scaleFactor = CoreHelper.ScreenScale;
+
             if (elements == null)
                 return;
 
             for (int i = 0; i < elements.Count; i++)
             {
                 var element = elements[i];
-                if (!element.image || !element.textUI)
+                if (!element.image)
                     continue;
 
                 if (element is MenuButton button)
                 {
                     var isSelected = button.selectionPosition == selected;
-                    button.image.color = isSelected ? Theme.GetObjColor(button.selectedColor) : Theme.GetObjColor(button.color);
+                    button.image.color = isSelected ? LSColors.fadeColor(Theme.GetObjColor(button.selectedColor), button.selectedOpacity) : LSColors.fadeColor(Theme.GetObjColor(button.color), button.opacity);
                     button.textUI.color = isSelected ? Theme.GetObjColor(button.selectedTextColor) : Theme.GetObjColor(button.textColor);
                     continue;
                 }
 
-                element.image.color = Theme.GetObjColor(element.color);
-                element.textUI.color = Theme.GetObjColor(element.textColor);
+                if (element is MenuText text)
+                {
+                    text.textUI.color = Theme.GetObjColor(text.textColor);
+                }
+
+                element.image.color = LSColors.fadeColor(Theme.GetObjColor(element.color), element.opacity);
             }
         }
 
@@ -235,6 +250,34 @@ namespace BetterLegacy.Menus.UI
                 Parser.ParseRectTransform(layout.gameObject.transform.AsRT(), layout.rectJSON);
         }
 
+        public void SetupImage(MenuImage menuImage, Transform parent)
+        {
+            if (menuImage.gameObject)
+                UnityEngine.Object.Destroy(menuImage.gameObject);
+
+            menuImage.gameObject = Creator.NewUIObject(menuImage.name, parent);
+            menuImage.image = menuImage.gameObject.AddComponent<Image>();
+
+            if (menuImage.rectJSON != null)
+                Parser.ParseRectTransform(menuImage.image.rectTransform, menuImage.rectJSON);
+
+            menuImage.clickable = menuImage.gameObject.AddComponent<Clickable>();
+
+            if (menuImage.icon)
+            {
+                menuImage.image.sprite = menuImage.icon;
+            }
+
+            if (menuImage.reactiveSetting.init)
+            {
+                var reactiveAudio = menuImage.gameObject.AddComponent<MenuReactiveAudio>();
+                reactiveAudio.reactiveSetting = menuImage.reactiveSetting;
+                reactiveAudio.ogPosition = menuImage.rectJSON == null || menuImage.rectJSON["anc_pos"] == null ? Vector2.zero : menuImage.rectJSON["anc_pos"].AsVector2();
+            }
+
+            menuImage.Spawn();
+        }
+
         public void SetupText(MenuText menuText, Transform parent)
         {
             if (menuText.gameObject)
@@ -242,8 +285,6 @@ namespace BetterLegacy.Menus.UI
 
             menuText.gameObject = Creator.NewUIObject(menuText.name, parent);
             menuText.image = menuText.gameObject.AddComponent<Image>();
-            menuText.image.rectTransform.anchoredPosition = menuText.pos;
-            menuText.image.rectTransform.sizeDelta = menuText.size;
 
             if (menuText.rectJSON != null)
                 Parser.ParseRectTransform(menuText.image.rectTransform, menuText.rectJSON);
@@ -272,17 +313,22 @@ namespace BetterLegacy.Menus.UI
                     Parser.ParseRectTransform(menuText.iconUI.rectTransform, menuText.iconRectJSON);
             }
 
+            if (menuText.reactiveSetting.init)
+            {
+                var reactiveAudio = menuText.gameObject.AddComponent<MenuReactiveAudio>();
+                reactiveAudio.reactiveSetting = menuText.reactiveSetting;
+                reactiveAudio.ogPosition = menuText.rectJSON == null || menuText.rectJSON["anc_pos"] == null ? Vector2.zero : menuText.rectJSON["anc_pos"].AsVector2();
+            }
+
             menuText.Spawn();
         }
 
-        public MenuText CreateText(string name, Transform parent, string text, Vector2 pos = default, Vector2 size = default)
+        public MenuText CreateText(string name, Transform parent, string text)
         {
             var menuText = new MenuText
             {
                 name = name,
                 text = text,
-                pos = pos,
-                size = size,
             };
             SetupText(menuText, parent);
 
@@ -296,8 +342,6 @@ namespace BetterLegacy.Menus.UI
 
             menuButton.gameObject = Creator.NewUIObject(menuButton.name, parent);
             menuButton.image = menuButton.gameObject.AddComponent<Image>();
-            menuButton.image.rectTransform.anchoredPosition = menuButton.pos;
-            menuButton.image.rectTransform.sizeDelta = menuButton.size;
 
             if (menuButton.rectJSON != null)
                 Parser.ParseRectTransform(menuButton.image.rectTransform, menuButton.rectJSON);
@@ -334,17 +378,22 @@ namespace BetterLegacy.Menus.UI
                     Parser.ParseRectTransform(menuButton.iconUI.rectTransform, menuButton.iconRectJSON);
             }
 
+            if (menuButton.reactiveSetting.init)
+            {
+                var reactiveAudio = menuButton.gameObject.AddComponent<MenuReactiveAudio>();
+                reactiveAudio.reactiveSetting = menuButton.reactiveSetting;
+                reactiveAudio.ogPosition = menuButton.rectJSON == null || menuButton.rectJSON["anc_pos"] == null ? Vector2.zero : menuButton.rectJSON["anc_pos"].AsVector2();
+            }
+
             menuButton.Spawn();
         }
 
-        public MenuButton CreateButton(string name, Transform parent, Vector2Int position, string text, Vector2 pos = default, Vector2 size = default)
+        public MenuButton CreateButton(string name, Transform parent, Vector2Int position, string text)
         {
             var menuButton = new MenuButton
             {
                 name = name,
                 text = text,
-                pos = pos,
-                size = size,
                 selectionPosition = position,
             };
             SetupButton(menuButton, parent);

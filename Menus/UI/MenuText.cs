@@ -17,9 +17,9 @@ using BetterLegacy.Configs;
 
 namespace BetterLegacy.Menus.UI
 {
-    public class MenuText
+    public class MenuText : MenuImage
     {
-        public void Spawn()
+        public override void Spawn()
         {
             var text = this.text;
             var matches = Regex.Matches(text, "<(.*?)>");
@@ -36,7 +36,7 @@ namespace BetterLegacy.Menus.UI
                 new AnimationHandler<float>(new List<IKeyframe<float>>
                 {
                     new FloatKeyframe(0f, 0f, Ease.Linear),
-                    new FloatKeyframe(length / (text.Length / 48f), text.Length, Ease.Linear),
+                    new FloatKeyframe(length * (text.Length / 64f), text.Length, Ease.Linear),
                 }, Interpolate),
             };
             textInterpolation.onComplete = () =>
@@ -49,6 +49,13 @@ namespace BetterLegacy.Menus.UI
             AnimationManager.inst.Play(textInterpolation);
         }
 
+        public static float textLengthDivision = 126f;
+
+        public override void Update()
+        {
+            textInterpolation?.animationHandlers[0]?.SetKeyframeTime(1, InputDataManager.inst.menuActions.Submit.IsPressed ? length * (text.Length / textLengthDivision) * 0.3f : length * (text.Length / textLengthDivision));
+        }
+
         void Interpolate(float x)
         {
             var val = (int)x;
@@ -59,86 +66,17 @@ namespace BetterLegacy.Menus.UI
             textUI.maxVisibleCharacters = val;
         }
 
-        public GameObject gameObject;
-
-        public string parentLayout;
-
-        public float length = 1f;
-
-        public bool playBlipSound;
-
-        public string name;
-        public Vector2 pos;
-        public Vector2 size;
-
-        public Sprite icon;
         public Image iconUI;
 
         public bool hideBG;
 
         public JSONNode iconRectJSON;
         public JSONNode textRectJSON;
-        public JSONNode rectJSON;
-        public JSONNode funcJSON;
 
         public RTAnimation textInterpolation;
 
-        public Clickable clickable;
-        public Image image;
+        public int textColor;
         public string text = "";
         public TextMeshProUGUI textUI;
-
-        public int color;
-        public int textColor;
-        public int selectedColor;
-        public int selectedTextColor;
-
-        public bool isSpawning;
-
-        public void ParseFunction(JSONNode jn)
-        {
-            var parameters = jn["params"];
-
-            string name = jn["name"];
-            switch (name)
-            {
-                case "LoadScene":
-                    {
-                        if (parameters == null)
-                            break;
-
-                        if (parameters.Count >= 2)
-                            SceneManager.inst.LoadScene(parameters[0], Parser.TryParse(parameters[1], true));
-                        else if (parameters.Count >= 1)
-                            SceneManager.inst.LoadScene(parameters[0]);
-
-                        break;
-                    }
-                case "Log":
-                    {
-                        if (parameters != null && parameters.Count >= 1)
-                            CoreHelper.Log(parameters[0]);
-
-                        break;
-                    }
-                case "ExitGame":
-                    {
-                        Application.Quit();
-                        break;
-                    }
-                case "Config":
-                    {
-                        ConfigManager.inst.Show();
-                        break;
-                    }
-                case "SetCurrentInterface":
-                    {
-                        if (parameters != null && parameters.Count >= 1)
-                            NewMenuManager.inst.SetCurrentInterface(parameters[0]);
-
-                        break;
-                    }
-            }
-        }
     }
 }

@@ -21,6 +21,10 @@ namespace BetterLegacy.Menus.UI
         public RTAnimation enterAnimation;
         public RTAnimation exitAnimation;
 
+        public float selectedOpacity;
+        public int selectedColor;
+        public int selectedTextColor;
+
         public void OnEnter()
         {
             if (exitAnimation != null)

@@ -11,6 +11,8 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Core;
 using UnityEngine;
 using BetterLegacy.Core.Helpers;
+using System.IO;
+using BetterLegacy.Core.Managers.Networking;
 
 namespace BetterLegacy.Menus.UI
 {
@@ -23,8 +25,21 @@ namespace BetterLegacy.Menus.UI
 
         public override IEnumerator GenerateUI()
         {
+            if (music)
+                NewMenuManager.inst.PlayMusic(music);
+            else if (RTFile.FileExists($"{Path.GetDirectoryName(filePath)}/{musicName}.ogg"))
+            {
+                CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"{Path.GetDirectoryName(filePath)}/{musicName}.ogg", AudioType.OGGVORBIS, audioClip =>
+                {
+                    music = audioClip;
+                    NewMenuManager.inst.PlayMusic(audioClip);
+                }));
+            }
+
             var canvas = UIManager.GenerateUICanvas(nameof(CustomMenu), null, sortingOrder: 900);
-            this.canvas = canvas.Canvas.gameObject;
+            this.canvas = canvas;
+            canvas.Canvas.scaleFactor = 1f;
+            canvas.CanvasScaler.referenceResolution = new Vector2(1920f, 1080f);
 
             var gameObject = Creator.NewUIObject("Base Layout", canvas.Canvas.transform);
             UIManager.SetRectTransform(gameObject.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
@@ -66,10 +81,19 @@ namespace BetterLegacy.Menus.UI
 
                     continue;
                 }
-                SetupText(element, parent);
 
-                while (element.isSpawning)
-                    yield return null;
+                if (element is MenuText menuText)
+                {
+                    SetupText(menuText, parent);
+                    while (menuText.isSpawning)
+                        yield return null;
+                }
+                else
+                {
+                    SetupImage(element, parent);
+                    while (element.isSpawning)
+                        yield return null;
+                }
 
                 element.clickable.onClick = p =>
                 {
@@ -79,7 +103,7 @@ namespace BetterLegacy.Menus.UI
                 };
             }
 
-            if (elements.Count > 0 && elements[0] is MenuButton button)
+            if (elements.TryFind(x => x is MenuButton, out MenuImage menuImage) && menuImage is MenuButton button)
             {
                 button.OnEnter();
             }
@@ -97,6 +121,7 @@ namespace BetterLegacy.Menus.UI
             base.UpdateTheme();
         }
 
+        public string filePath;
         public bool useGameTheme;
 
         public override BeatmapTheme Theme { get; set; }
@@ -107,6 +132,7 @@ namespace BetterLegacy.Menus.UI
 
             customMenu.id = jn["id"];
             customMenu.name = jn["name"];
+            customMenu.musicName = jn["music_name"];
 
             foreach (var keyValuePair in jn["layouts"].Linq)
             {
@@ -148,56 +174,87 @@ namespace BetterLegacy.Menus.UI
             {
                 var jnElement = jn["elements"][i];
                 string elementType = jnElement["type"];
-                switch (elementType.ToLower())
-                {
-                    case "text":
-                        {
-                            customMenu.elements.Add(new MenuText
-                            {
-                                name = jnElement["name"],
-                                parentLayout = jnElement["parent_layout"],
-                                text = FontManager.inst.ReplaceProperties(jnElement["text"]),
-                                icon = jnElement["icon"] != null ? SpriteManager.StringToSprite(jnElement["icon"]) : null,
-                                rectJSON = jnElement["rect"],
-                                textRectJSON = jnElement["text_rect"],
-                                iconRectJSON = jnElement["icon_rect"],
-                                hideBG = jnElement["hide_bg"].AsBool,
-                                color = jnElement["col"].AsInt,
-                                textColor = jnElement["text_col"].AsInt,
-                                selectedColor = jnElement["sel_col"].AsInt,
-                                selectedTextColor = jnElement["sel_text_col"].AsInt,
-                                length = jnElement["anim_length"].AsFloat,
-                                playBlipSound = jnElement["play_blip_sound"].AsBool,
-                                funcJSON = jnElement["func"],
-                            });
 
-                            break;
-                        }
-                    case "button":
-                        {
-                            customMenu.elements.Add(new MenuButton
-                            {
-                                name = jnElement["name"],
-                                parentLayout = jnElement["parent_layout"],
-                                text = FontManager.inst.ReplaceProperties(jnElement["text"]),
-                                selectionPosition = new Vector2Int(jnElement["select"]["x"].AsInt, jnElement["select"]["y"].AsInt),
-                                icon = jnElement["icon"] != null ? SpriteManager.StringToSprite(jnElement["icon"]) : null,
-                                rectJSON = jnElement["rect"],
-                                textRectJSON = jnElement["text_rect"],
-                                iconRectJSON = jnElement["icon_rect"],
-                                hideBG = jnElement["hide_bg"].AsBool,
-                                color = jnElement["col"].AsInt,
-                                textColor = jnElement["text_col"].AsInt,
-                                selectedColor = jnElement["sel_col"].AsInt,
-                                selectedTextColor = jnElement["sel_text_col"].AsInt,
-                                length = jnElement["anim_length"].AsFloat,
-                                playBlipSound = jnElement["play_blip_sound"].AsBool,
-                                funcJSON = jnElement["func"],
-                            });
+                int loop = 1;
+                if (jnElement["loop"] != null)
+                    loop = jnElement["loop"].AsInt;
+                if (loop < 1)
+                    loop = 1;
 
-                            break;
-                        }
-                }
+                for (int j = 0; j < loop; j++)
+                    switch (elementType.ToLower())
+                    {
+                        case "image":
+                            {
+                                customMenu.elements.Add(new MenuImage
+                                {
+                                    name = jnElement["name"],
+                                    parentLayout = jnElement["parent_layout"],
+                                    icon = jnElement["icon"] != null ? SpriteManager.StringToSprite(jnElement["icon"]) : null,
+                                    rectJSON = jnElement["rect"],
+                                    color = jnElement["col"].AsInt,
+                                    opacity = jnElement["opacity"] == null ? 1f : jnElement["opacity"].AsFloat,
+                                    length = jnElement["anim_length"].AsFloat,
+                                    playBlipSound = jnElement["play_blip_sound"].AsBool,
+                                    funcJSON = jnElement["func"],
+                                    reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j),
+                                    fromLoop = j > 0,
+                                });
+                                break;
+                            }
+                        case "text":
+                            {
+                                customMenu.elements.Add(new MenuText
+                                {
+                                    name = jnElement["name"],
+                                    parentLayout = jnElement["parent_layout"],
+                                    text = FontManager.inst.ReplaceProperties(jnElement["text"]),
+                                    icon = jnElement["icon"] != null ? SpriteManager.StringToSprite(jnElement["icon"]) : null,
+                                    rectJSON = jnElement["rect"],
+                                    textRectJSON = jnElement["text_rect"],
+                                    iconRectJSON = jnElement["icon_rect"],
+                                    hideBG = jnElement["hide_bg"].AsBool,
+                                    color = jnElement["col"].AsInt,
+                                    opacity = jnElement["opacity"] == null ? 1f : jnElement["opacity"].AsFloat,
+                                    textColor = jnElement["text_col"].AsInt,
+                                    length = jnElement["anim_length"].AsFloat,
+                                    playBlipSound = jnElement["play_blip_sound"].AsBool,
+                                    funcJSON = jnElement["func"],
+                                    reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j),
+                                    fromLoop = j > 0,
+                                });
+
+                                break;
+                            }
+                        case "button":
+                            {
+                                customMenu.elements.Add(new MenuButton
+                                {
+                                    name = jnElement["name"],
+                                    parentLayout = jnElement["parent_layout"],
+                                    text = FontManager.inst.ReplaceProperties(jnElement["text"]),
+                                    selectionPosition = new Vector2Int(jnElement["select"]["x"].AsInt, jnElement["select"]["y"].AsInt),
+                                    icon = jnElement["icon"] != null ? SpriteManager.StringToSprite(jnElement["icon"]) : null,
+                                    rectJSON = jnElement["rect"],
+                                    textRectJSON = jnElement["text_rect"],
+                                    iconRectJSON = jnElement["icon_rect"],
+                                    hideBG = jnElement["hide_bg"].AsBool,
+                                    color = jnElement["col"].AsInt,
+                                    opacity = jnElement["opacity"] == null ? 1f : jnElement["opacity"].AsFloat,
+                                    selectedOpacity = jnElement["sel_opacity"] == null ? 1f : jnElement["sel_opacity"].AsFloat,
+                                    textColor = jnElement["text_col"].AsInt,
+                                    selectedColor = jnElement["sel_col"].AsInt,
+                                    selectedTextColor = jnElement["sel_text_col"].AsInt,
+                                    length = jnElement["anim_length"].AsFloat,
+                                    playBlipSound = jnElement["play_blip_sound"].AsBool,
+                                    funcJSON = jnElement["func"],
+                                    reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j),
+                                    fromLoop = j > 0,
+                                });
+
+                                break;
+                            }
+                    }
             }
 
             customMenu.Theme = BeatmapTheme.Parse(jn["theme"]);
