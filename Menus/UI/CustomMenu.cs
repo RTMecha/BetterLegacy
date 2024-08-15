@@ -14,6 +14,7 @@ using BetterLegacy.Core.Helpers;
 using System.IO;
 using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Configs;
+using LSFunctions;
 
 namespace BetterLegacy.Menus.UI
 {
@@ -56,7 +57,8 @@ namespace BetterLegacy.Menus.UI
             for (int i = 0; i < elements.Count; i++)
             {
                 var element = elements[i];
-                var parent = !string.IsNullOrEmpty(element.parentLayout) && layouts.ContainsKey(element.parentLayout) ? layouts[element.parentLayout].gameObject.transform : gameObject.transform;
+                var parent = !string.IsNullOrEmpty(element.parentLayout) && layouts.ContainsKey(element.parentLayout) ? layouts[element.parentLayout].gameObject.transform : !string.IsNullOrEmpty(element.parent) && elements.TryFind(x => x.id == element.parent, out MenuImage menuParent) && menuParent.gameObject ? menuParent.gameObject.transform : gameObject.transform;
+
                 if (element is MenuButton menuButton)
                 {
                     SetupButton(menuButton, parent);
@@ -179,8 +181,10 @@ namespace BetterLegacy.Menus.UI
                             {
                                 customMenu.elements.Add(new MenuImage
                                 {
+                                    id = jnElement["id"] == null ? LSText.randomNumString(16) : jnElement["id"],
                                     name = jnElement["name"],
                                     parentLayout = jnElement["parent_layout"],
+                                    parent = jnElement["parent"],
                                     icon = jnElement["icon"] != null ? SpriteManager.StringToSprite(jnElement["icon"]) : null,
                                     rectJSON = jnElement["rect"],
                                     color = jnElement["col"].AsInt,
@@ -197,8 +201,10 @@ namespace BetterLegacy.Menus.UI
                             {
                                 customMenu.elements.Add(new MenuText
                                 {
+                                    id = jnElement["id"] == null ? LSText.randomNumString(16) : jnElement["id"],
                                     name = jnElement["name"],
                                     parentLayout = jnElement["parent_layout"],
+                                    parent = jnElement["parent"],
                                     text = FontManager.inst.ReplaceProperties(jnElement["text"]),
                                     icon = jnElement["icon"] != null ? SpriteManager.StringToSprite(jnElement["icon"]) : null,
                                     rectJSON = jnElement["rect"],
@@ -221,8 +227,10 @@ namespace BetterLegacy.Menus.UI
                             {
                                 customMenu.elements.Add(new MenuButton
                                 {
+                                    id = jnElement["id"] == null ? LSText.randomNumString(16) : jnElement["id"],
                                     name = jnElement["name"],
                                     parentLayout = jnElement["parent_layout"],
+                                    parent = jnElement["parent"],
                                     text = FontManager.inst.ReplaceProperties(jnElement["text"]),
                                     selectionPosition = new Vector2Int(jnElement["select"]["x"].AsInt, jnElement["select"]["y"].AsInt),
                                     icon = jnElement["icon"] != null ? SpriteManager.StringToSprite(jnElement["icon"]) : null,

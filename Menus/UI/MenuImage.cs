@@ -26,9 +26,11 @@ namespace BetterLegacy.Menus.UI
     {
         public GameObject gameObject;
 
-        public string parentLayout;
-
+        public string id;
         public string name;
+
+        public string parentLayout;
+        public string parent;
 
         public float length = 1f;
 
