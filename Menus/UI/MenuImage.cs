@@ -14,6 +14,7 @@ using TMPro;
 using SimpleJSON;
 using BetterLegacy.Core;
 using BetterLegacy.Configs;
+using BetterLegacy.Core.Managers;
 
 namespace BetterLegacy.Menus.UI
 {
@@ -126,7 +127,10 @@ namespace BetterLegacy.Menus.UI
                         if (parameters == null || parameters.Count < 1)
                             return;
 
-                        var path = $"{RTFile.ApplicationDirectory}beatmaps/interfaces/{parameters[0]}.lsi";
+                        if (parameters.Count > 2)
+                            NewMenuManager.inst.MainDirectory = FontManager.TextTranslater.ReplaceProperties(parameters[2]);
+
+                        var path = $"{NewMenuManager.inst.MainDirectory}{parameters[0].Value}.lsi";
 
                         if (!RTFile.FileExists(path))
                         {
@@ -142,7 +146,8 @@ namespace BetterLegacy.Menus.UI
 
                         if (NewMenuManager.inst.interfaces.Has(x => x.id == menu.id))
                         {
-                            CoreHelper.LogError($"Interface {parameters[0]} is already in the list!");
+                            if (parameters.Count < 2 || Parser.TryParse(parameters[1], false))
+                                NewMenuManager.inst.SetCurrentInterface(menu.id);
 
                             return;
                         }    
@@ -157,6 +162,15 @@ namespace BetterLegacy.Menus.UI
                 case "DemoStoryMode":
                     {
                         CoreHelper.StartCoroutine(Story.StoryManager.inst.Demo());
+                        break;
+                    }
+                case "SetCurrentPath":
+                    {
+                        if (parameters == null || parameters.Count < 1)
+                            return;
+
+                        NewMenuManager.inst.MainDirectory = FontManager.TextTranslater.ReplaceProperties(parameters[0]);
+
                         break;
                     }
             }
