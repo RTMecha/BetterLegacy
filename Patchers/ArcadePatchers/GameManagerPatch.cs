@@ -54,6 +54,8 @@ namespace BetterLegacy.Patchers
             RTEventManager.inst.delayTracker = camBase.AddComponent<EventDelayTracker>();
 
             ExampleManager.onGameAwake?.Invoke(__instance);
+
+            Camera.main.transparencySortMode = TransparencySortMode.CustomAxis;
         }
 
         [HarmonyPatch(nameof(GameManager.Start))]
