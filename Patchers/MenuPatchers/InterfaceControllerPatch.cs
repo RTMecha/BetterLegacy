@@ -105,6 +105,15 @@ namespace BetterLegacy.Patchers
             InputDataManager.inst.BindMenuKeys();
             __instance.MainPanel = __instance.transform.Find("Panel");
 
+            if (__instance.gameObject.scene.name == "Main Menu")
+            {
+                NewMenuManager.inst.Test();
+
+                Destroy(__instance.gameObject);
+
+                return false;
+            }
+
             CoreHelper.Log($"Load On Start: {__instance.loadOnStart}");
             if (__instance.loadOnStart)
             {
