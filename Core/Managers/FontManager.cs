@@ -620,10 +620,6 @@ namespace BetterLegacy.Core.Managers
 
         public AssetBundle GetAssetBundle(string _filepath, string _bundle) => AssetBundle.LoadFromFile(Path.Combine(_filepath, _bundle));
 
-        public string ReplaceProperties(string str) => str
-            .Replace("{{version}}", ProjectArrhythmia.GameVersion.ToString())
-            .Replace("{{mod version}}", LegacyPlugin.ModVersion.ToString());
-
         // UNUSED DUE TO FILESIZE
         // - NotoSansSC-VariableFont.ttf
         // - HiMelody-Regular.ttf
@@ -782,6 +778,13 @@ namespace BetterLegacy.Core.Managers
 
         public static class TextTranslater
         {
+            public static string ReplaceProperties(string str) => str
+                .Replace("{{GameVersion}}", ProjectArrhythmia.GameVersion.ToString())
+                .Replace("{{ModVersion}}", LegacyPlugin.ModVersion.ToString())
+                .Replace("{{AppDirectory}}", RTFile.ApplicationDirectory)
+                .Replace("{{BepInExAssetsDirectory}}", RTFile.BepInExAssetsPath)
+                .Replace("{{LevelPath}}", GameManager.inst ? GameManager.inst.basePath : RTFile.ApplicationDirectory);
+
             public static string PreciseToMilliSeconds(float seconds, string format = "{0:000}") => string.Format(format, TimeSpan.FromSeconds(seconds).Milliseconds);
 
             public static string PreciseToSeconds(float seconds, string format = "{0:00}") => string.Format(format, TimeSpan.FromSeconds(seconds).Seconds);
