@@ -89,6 +89,9 @@ namespace BetterLegacy.Patchers
                 Updater.levelProcessor = null;
             }
 
+            Menus.NewMenuManager.inst.StopMusic();
+            Menus.NewMenuManager.inst.Clear();
+
             #region Editor Theme Setup
 
             EditorThemeManager.AddGraphic(EditorManager.inst.timeline.transform.parent.Find("Panel 2").GetComponent<Image>(), ThemeGroup.Timeline_Background);

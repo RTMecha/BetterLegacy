@@ -14,6 +14,9 @@ using System.Collections;
 
 using BetterLegacy.Menus.UI;
 using SimpleJSON;
+using BetterLegacy.Core.Managers.Networking;
+using BetterLegacy.Configs;
+using System.IO;
 
 namespace BetterLegacy.Menus
 {
@@ -54,12 +57,112 @@ namespace BetterLegacy.Menus
             CurrentMenu.UpdateTheme();
         }
 
-        public void PlayMusic(AudioClip music)
+        public void PlayMusic(AudioClip music, bool allowSame = false)
         {
-            CurrentAudioSource.clip = music;
-            CurrentAudioSource.UnPause();
-            CurrentAudioSource.time = 0f;
-            CurrentAudioSource.Play();
+            if (!CurrentAudioSource.clip || allowSame || music.name != CurrentAudioSource.clip.name)
+            {
+                CoreHelper.Log("Playing music");
+                CurrentAudioSource.clip = music;
+                CurrentAudioSource.UnPause();
+                CurrentAudioSource.time = 0f;
+                CurrentAudioSource.Play();
+            }
+        }
+
+        public void StopMusic()
+        {
+            CurrentAudioSource.Stop();
+        }
+
+        public int randomIndex = -1;
+        public void PlayMusic()
+        {
+            var directory = RTFile.ApplicationDirectory + "settings/menus/";
+
+            if (!MenuConfig.Instance.PlayCustomMusic.Value)
+            {
+                CoreHelper.LogWarning("PlayCustomMusic setting is off, so play default music.");
+                CurrentMenu.PlayDefaultMusic();
+                return;
+            }
+
+            switch (MenuConfig.Instance.MusicLoadMode.Value)
+            {
+                case MenuMusicLoadMode.StoryFolder:
+                    {
+                        directory = RTFile.ApplicationDirectory + "beatmaps/story";
+                        break;
+                    }
+                case MenuMusicLoadMode.EditorFolder:
+                    {
+                        directory = RTFile.ApplicationDirectory + "beatmaps/editor";
+                        break;
+                    }
+                case MenuMusicLoadMode.GlobalFolder:
+                    {
+                        directory = MenuConfig.Instance.MusicGlobalPath.Value;
+                        break;
+                    }
+            }
+
+            if (!RTFile.DirectoryExists(directory))
+            {
+                CoreHelper.LogWarning("Directory does not exist, so play default music.");
+                CurrentMenu.PlayDefaultMusic();
+                return;
+            }
+
+            string oggSearchPattern = "*.ogg";
+            string wavSearchPattern = "*.wav";
+            if (MenuConfig.Instance.MusicLoadMode.Value == MenuMusicLoadMode.StoryFolder || MenuConfig.Instance.MusicLoadMode.Value == MenuMusicLoadMode.EditorFolder)
+            {
+                oggSearchPattern = "level.ogg";
+                wavSearchPattern = "level.wav";
+            }
+
+            var oggFiles = Directory.GetFiles(directory, oggSearchPattern, SearchOption.AllDirectories);
+            var wavFiles = Directory.GetFiles(directory, wavSearchPattern, SearchOption.AllDirectories);
+
+            var songFiles = new string[oggFiles.Length + wavFiles.Length];
+
+            for (int i = 0; i < oggFiles.Length; i++)
+            {
+                songFiles[i] = oggFiles[i];
+            }
+            for (int i = oggFiles.Length; i < songFiles.Length; i++)
+            {
+                songFiles[i] = wavFiles[i - oggFiles.Length];
+            }
+
+            if (songFiles.Length < 1)
+            {
+                CoreHelper.LogWarning("No song files, so play default music.");
+                CurrentMenu.PlayDefaultMusic();
+                return;
+            }
+
+            if (MenuConfig.Instance.MusicIndex.Value >= 0 && MenuConfig.Instance.MusicIndex.Value < songFiles.Length)
+                randomIndex = MenuConfig.Instance.MusicIndex.Value;
+
+            if (randomIndex < 0 || randomIndex >= songFiles.Length)
+                randomIndex = UnityEngine.Random.Range(0, songFiles.Length);
+
+            var songFileCurrent = songFiles[Mathf.Clamp(randomIndex, 0, songFiles.Length - 1)];
+
+            if (string.IsNullOrEmpty(songFileCurrent))
+            {
+                CoreHelper.LogWarning("Path is empty for some reason, so play default music.");
+                CurrentMenu.PlayDefaultMusic();
+                return;
+            }
+
+            CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{songFileCurrent}", RTFile.GetAudioType(songFileCurrent), audioClip =>
+            {
+                CoreHelper.Log($"Attempting to play music: {songFileCurrent}");
+                CurrentMenu.music = audioClip;
+                CurrentMenu.music.name = Path.GetFileName(songFileCurrent);
+                PlayMusic(audioClip);
+            }));
         }
 
         public void SetCurrentInterface(string id)
@@ -75,6 +178,28 @@ namespace BetterLegacy.Menus
                 CurrentMenu = menu;
                 StartCoroutine(menu.GenerateUI());
             }
+        }
+
+        public void Clear()
+        {
+            if (CurrentMenu != null)
+            {
+                CurrentMenu.Clear();
+                CurrentMenu = null;
+            }
+
+            for (int i = 0; i < interfaces.Count; i++)
+            {
+                try
+                {
+                    interfaces[i].Clear();
+                }
+                catch
+                {
+
+                }
+            }
+            interfaces.Clear();
         }
 
         public void Test()

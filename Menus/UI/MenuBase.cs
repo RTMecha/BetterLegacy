@@ -14,6 +14,8 @@ using UnityEngine.UI;
 using TMPro;
 using BetterLegacy.Core.Data;
 using LSFunctions;
+using System.IO;
+using BetterLegacy.Core.Managers.Networking;
 
 namespace BetterLegacy.Menus.UI
 {
@@ -46,6 +48,39 @@ namespace BetterLegacy.Menus.UI
         public List<MenuImage> elements = new List<MenuImage>();
         public Dictionary<string, MenuLayoutBase> layouts = new Dictionary<string, MenuLayoutBase>();
 
+        public string filePath;
+
+        public void PlayDefaultMusic()
+        {
+            if (music)
+            {
+                NewMenuManager.inst.PlayMusic(music);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(musicName))
+                return;
+            
+            if (AudioManager.inst.library.musicClips.ContainsKey(musicName))
+            {
+                var group = AudioManager.inst.library.musicClips[musicName];
+
+                int index = UnityEngine.Random.Range(0, group.Length);
+                if (AudioManager.inst.library.musicClipsRandomIndex.ContainsKey(musicName) && AudioManager.inst.library.musicClipsRandomIndex[musicName] < group.Length)
+                    index = AudioManager.inst.library.musicClipsRandomIndex[musicName];
+
+                NewMenuManager.inst.PlayMusic(group[index]);
+            }
+            else if (RTFile.FileExists($"{Path.GetDirectoryName(filePath)}/{musicName}.ogg"))
+            {
+                CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{Path.GetDirectoryName(filePath)}/{musicName}.ogg", AudioType.OGGVORBIS, audioClip =>
+                {
+                    CoreHelper.Log($"Attempting to play music: {musicName}");
+                    music = audioClip;
+                    NewMenuManager.inst.PlayMusic(audioClip);
+                }));
+            }
+        }
         public abstract IEnumerator GenerateUI();
 
         public void Clear()

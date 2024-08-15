@@ -13,6 +13,7 @@ using UnityEngine;
 using BetterLegacy.Core.Helpers;
 using System.IO;
 using BetterLegacy.Core.Managers.Networking;
+using BetterLegacy.Configs;
 
 namespace BetterLegacy.Menus.UI
 {
@@ -25,16 +26,7 @@ namespace BetterLegacy.Menus.UI
 
         public override IEnumerator GenerateUI()
         {
-            if (music)
-                NewMenuManager.inst.PlayMusic(music);
-            else if (RTFile.FileExists($"{Path.GetDirectoryName(filePath)}/{musicName}.ogg"))
-            {
-                CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"{Path.GetDirectoryName(filePath)}/{musicName}.ogg", AudioType.OGGVORBIS, audioClip =>
-                {
-                    music = audioClip;
-                    NewMenuManager.inst.PlayMusic(audioClip);
-                }));
-            }
+            NewMenuManager.inst.PlayMusic();
 
             var canvas = UIManager.GenerateUICanvas(nameof(CustomMenu), null, sortingOrder: 900);
             this.canvas = canvas;
@@ -121,7 +113,6 @@ namespace BetterLegacy.Menus.UI
             base.UpdateTheme();
         }
 
-        public string filePath;
         public bool useGameTheme;
 
         public override BeatmapTheme Theme { get; set; }
