@@ -181,6 +181,7 @@ namespace BetterLegacy.Patchers
             }
 
             __instance.UpdateSettingString("versionNumber", "4.1.16");
+            __instance.UpdateSettingBool("CanEdit", true);
 
             LegacyPlugin.ParseProfile();
 
