@@ -31,6 +31,7 @@ namespace BetterLegacy.Menus.UI
 
         public string parentLayout;
         public string parent;
+        public int siblingIndex = -1;
 
         public float length = 1f;
 

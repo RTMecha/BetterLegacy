@@ -62,6 +62,8 @@ namespace BetterLegacy.Menus.UI
                 if (element is MenuButton menuButton)
                 {
                     SetupButton(menuButton, parent);
+                    if (menuButton.siblingIndex >= 0 && menuButton.siblingIndex < menuButton.gameObject.transform.parent.childCount)
+                        menuButton.gameObject.transform.SetSiblingIndex(menuButton.siblingIndex);
 
                     while (element.isSpawning)
                         yield return null;
@@ -79,12 +81,16 @@ namespace BetterLegacy.Menus.UI
                 if (element is MenuText menuText)
                 {
                     SetupText(menuText, parent);
+                    if (menuText.siblingIndex >= 0 && menuText.siblingIndex < menuText.gameObject.transform.parent.childCount)
+                        menuText.gameObject.transform.SetSiblingIndex(menuText.siblingIndex);
                     while (menuText.isSpawning)
                         yield return null;
                 }
                 else
                 {
                     SetupImage(element, parent);
+                    if (element.siblingIndex >= 0 && element.siblingIndex < element.gameObject.transform.parent.childCount)
+                        element.gameObject.transform.SetSiblingIndex(element.siblingIndex);
                     while (element.isSpawning)
                         yield return null;
                 }
@@ -185,6 +191,7 @@ namespace BetterLegacy.Menus.UI
                                     name = jnElement["name"],
                                     parentLayout = jnElement["parent_layout"],
                                     parent = jnElement["parent"],
+                                    siblingIndex = jnElement["sibling_index"] == null ? -1 : jnElement["sibling_index"].AsInt,
                                     icon = jnElement["icon"] != null ? SpriteManager.StringToSprite(jnElement["icon"]) : null,
                                     rectJSON = jnElement["rect"],
                                     color = jnElement["col"].AsInt,
@@ -194,7 +201,7 @@ namespace BetterLegacy.Menus.UI
                                     funcJSON = jnElement["func"],
                                     reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j),
                                     fromLoop = j > 0,
-                                });
+                                }); ;
                                 break;
                             }
                         case "text":
@@ -205,6 +212,7 @@ namespace BetterLegacy.Menus.UI
                                     name = jnElement["name"],
                                     parentLayout = jnElement["parent_layout"],
                                     parent = jnElement["parent"],
+                                    siblingIndex = jnElement["sibling_index"] == null ? -1 : jnElement["sibling_index"].AsInt,
                                     text = FontManager.inst.ReplaceProperties(jnElement["text"]),
                                     icon = jnElement["icon"] != null ? SpriteManager.StringToSprite(jnElement["icon"]) : null,
                                     rectJSON = jnElement["rect"],
@@ -231,6 +239,7 @@ namespace BetterLegacy.Menus.UI
                                     name = jnElement["name"],
                                     parentLayout = jnElement["parent_layout"],
                                     parent = jnElement["parent"],
+                                    siblingIndex = jnElement["sibling_index"] == null ? -1 : jnElement["sibling_index"].AsInt,
                                     text = FontManager.inst.ReplaceProperties(jnElement["text"]),
                                     selectionPosition = new Vector2Int(jnElement["select"]["x"].AsInt, jnElement["select"]["y"].AsInt),
                                     icon = jnElement["icon"] != null ? SpriteManager.StringToSprite(jnElement["icon"]) : null,
