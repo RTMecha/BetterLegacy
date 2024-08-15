@@ -33,12 +33,20 @@ namespace BetterLegacy.Menus
 
         public AudioSource CurrentAudioSource { get; set; }
 
+        /// <summary>
+        /// The main directory to load interfaces from. Must end with a slash.
+        /// </summary>
+        public string MainDirectory { get; set; }
+
         void Awake()
         {
             inst = this;
 
             CurrentAudioSource = gameObject.AddComponent<AudioSource>();
             CurrentAudioSource.loop = true;
+            MainDirectory = RTFile.ApplicationDirectory + "beatmaps/interfaces/";
+            if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/interfaces"))
+                Directory.CreateDirectory(RTFile.ApplicationDirectory + "beatmaps/interfaces");
         }
 
         void Update()
@@ -226,7 +234,7 @@ namespace BetterLegacy.Menus
             }
             interfaces.Clear();
 
-            var path = $"{RTFile.ApplicationDirectory}beatmaps/interfaces/test_menu.lsi";
+            var path = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Interfaces/test_menu.lsi";
             var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
             var menu = CustomMenu.Parse(jn);
@@ -235,8 +243,8 @@ namespace BetterLegacy.Menus
             CurrentMenu = menu;
             interfaces.Add(menu);
 
-            path = $"{RTFile.ApplicationDirectory}beatmaps/interfaces/story_mode.lsi";
-            jn = JSON.Parse(RTFile.ReadFromFile($"{RTFile.ApplicationDirectory}beatmaps/interfaces/story_mode.lsi"));
+            path = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Interfaces/story_mode.lsi";
+            jn = JSON.Parse(RTFile.ReadFromFile(path));
 
             menu = CustomMenu.Parse(jn);
             menu.filePath = path;
