@@ -80,6 +80,7 @@ namespace BetterLegacy.Menus
         public void StopMusic()
         {
             CurrentAudioSource.Stop();
+            CurrentAudioSource.clip = null;
         }
 
         public int randomIndex = -1;
@@ -90,7 +91,7 @@ namespace BetterLegacy.Menus
             if (!MenuConfig.Instance.PlayCustomMusic.Value)
             {
                 CoreHelper.LogWarning("PlayCustomMusic setting is off, so play default music.");
-                CurrentMenu.PlayDefaultMusic();
+                CurrentMenu?.PlayDefaultMusic();
                 return;
             }
 
@@ -116,7 +117,7 @@ namespace BetterLegacy.Menus
             if (!RTFile.DirectoryExists(directory))
             {
                 CoreHelper.LogWarning("Directory does not exist, so play default music.");
-                CurrentMenu.PlayDefaultMusic();
+                CurrentMenu?.PlayDefaultMusic();
                 return;
             }
 
@@ -145,7 +146,7 @@ namespace BetterLegacy.Menus
             if (songFiles.Length < 1)
             {
                 CoreHelper.LogWarning("No song files, so play default music.");
-                CurrentMenu.PlayDefaultMusic();
+                CurrentMenu?.PlayDefaultMusic();
                 return;
             }
 
@@ -160,7 +161,7 @@ namespace BetterLegacy.Menus
             if (string.IsNullOrEmpty(songFileCurrent))
             {
                 CoreHelper.LogWarning("Path is empty for some reason, so play default music.");
-                CurrentMenu.PlayDefaultMusic();
+                CurrentMenu?.PlayDefaultMusic();
                 return;
             }
 
@@ -239,8 +240,8 @@ namespace BetterLegacy.Menus
 
             var menu = CustomMenu.Parse(jn);
             menu.filePath = path;
-            StartCoroutine(menu.GenerateUI());
             CurrentMenu = menu;
+            StartCoroutine(menu.GenerateUI());
             interfaces.Add(menu);
 
             path = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Interfaces/story_mode.lsi";
