@@ -19,6 +19,7 @@ using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Configs;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Layouts;
+using SimpleJSON;
 
 namespace BetterLegacy.Menus.UI.Interfaces
 {
@@ -126,7 +127,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         }
 
         /// <summary>
-        /// IEnumerator Coroutine used to Generate all the menus' elements.
+        /// IEnumerator Coroutine used to Generate all the menus' elements. Can be overridden if needed.
         /// </summary>
         /// <returns></returns>
         public virtual IEnumerator GenerateUI()
@@ -181,6 +182,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         if (menuButton.playBlipSound)
                             AudioManager.inst.PlaySound("blip");
                         menuButton.ParseFunction(menuButton.funcJSON);
+                        menuButton.func?.Invoke();
                     };
 
                     continue;
@@ -208,6 +210,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     if (element.playBlipSound)
                         AudioManager.inst.PlaySound("blip");
                     element.ParseFunction(element.funcJSON);
+                    element.func?.Invoke();
                 };
             }
 
@@ -484,6 +487,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 reactiveAudio.ogPosition = menuImage.rectJSON == null || menuImage.rectJSON["anc_pos"] == null ? Vector2.zero : menuImage.rectJSON["anc_pos"].AsVector2();
             }
 
+            if (menuImage.spawnFuncJSON != null)
+                menuImage.ParseFunction(menuImage.spawnFuncJSON);
+            menuImage.spawnFunc?.Invoke();
+
             menuImage.Spawn();
         }
 
@@ -535,6 +542,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 reactiveAudio.reactiveSetting = menuText.reactiveSetting;
                 reactiveAudio.ogPosition = menuText.rectJSON == null || menuText.rectJSON["anc_pos"] == null ? Vector2.zero : menuText.rectJSON["anc_pos"].AsVector2();
             }
+
+            if (menuText.spawnFuncJSON != null)
+                menuText.ParseFunction(menuText.spawnFuncJSON);
+            menuText.spawnFunc?.Invoke();
 
             menuText.Spawn();
         }
@@ -595,6 +606,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 reactiveAudio.reactiveSetting = menuButton.reactiveSetting;
                 reactiveAudio.ogPosition = menuButton.rectJSON == null || menuButton.rectJSON["anc_pos"] == null ? Vector2.zero : menuButton.rectJSON["anc_pos"].AsVector2();
             }
+
+            if (menuButton.spawnFuncJSON != null)
+                menuButton.ParseFunction(menuButton.spawnFuncJSON);
+            menuButton.spawnFunc?.Invoke();
 
             menuButton.Spawn();
         }
