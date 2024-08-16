@@ -8,23 +8,49 @@ using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Components;
+using BetterLegacy.Menus.UI.Interfaces;
 
 using TMPro;
 
 namespace BetterLegacy.Menus.UI.Elements
 {
+    /// <summary>
+    /// Class for handling button elements in the interface. Based on <see cref="MenuText"/>.
+    /// </summary>
     public class MenuButton : MenuText
     {
+        /// <summary>
+        /// True if the element is hovered, otherwise false.
+        /// </summary>
         public bool isHovered;
 
+        /// <summary>
+        /// To be used for where the current selection is. If it's at 0, 0 then it's the default selection. This is compared against <see cref="MenuBase.selected"/> to see if it is selected.
+        /// </summary>
         public Vector2Int selectionPosition;
-        public RTAnimation enterAnimation;
-        public RTAnimation exitAnimation;
 
+
+        RTAnimation enterAnimation;
+        RTAnimation exitAnimation;
+
+        /// <summary>
+        /// Opacity of the image when the element is selected.
+        /// </summary>
         public float selectedOpacity;
+
+        /// <summary>
+        /// Color of the image when the element is selected.
+        /// </summary>
         public int selectedColor;
+
+        /// <summary>
+        /// Color of the text when the element is selected.
+        /// </summary>
         public int selectedTextColor;
 
+        /// <summary>
+        /// Plays the Enter animation when the element is selected. Currently is not customizable.
+        /// </summary>
         public void OnEnter()
         {
             if (exitAnimation != null)
@@ -33,7 +59,7 @@ namespace BetterLegacy.Menus.UI.Elements
                 exitAnimation = null;
             }
 
-            enterAnimation = new RTAnimation("Enter Animation");
+            enterAnimation = new RTAnimation("Interface Element Enter Animation");
             enterAnimation.animationHandlers = new List<AnimationHandlerBase>
             {
                 new AnimationHandler<float>(new List<IKeyframe<float>>
@@ -55,6 +81,9 @@ namespace BetterLegacy.Menus.UI.Elements
             AnimationManager.inst.Play(enterAnimation);
         }
 
+        /// <summary>
+        /// Plays the Exit animation when the element is no longer selected. Currently is not customizable.
+        /// </summary>
         public void OnExit()
         {
             if (enterAnimation != null)
@@ -63,7 +92,7 @@ namespace BetterLegacy.Menus.UI.Elements
                 enterAnimation = null;
             }
 
-            exitAnimation = new RTAnimation("Exit Animation");
+            exitAnimation = new RTAnimation("Interface Element Exit Animation");
             exitAnimation.animationHandlers = new List<AnimationHandlerBase>
             {
                 new AnimationHandler<float>(new List<IKeyframe<float>>
