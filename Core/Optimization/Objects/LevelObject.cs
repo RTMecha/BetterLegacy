@@ -75,7 +75,6 @@ namespace BetterLegacy.Core.Optimization.Objects
                 visualObject.GameObject = null;
                 visualObject.Collider = null;
                 visualObject.Renderer = null;
-                visualObject.Top = null;
             }
             visualObject = null;
         }

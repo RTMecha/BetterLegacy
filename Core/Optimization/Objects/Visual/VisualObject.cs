@@ -9,12 +9,12 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
     {
         public abstract GameObject GameObject { get; set; }
 
-        public abstract Transform Top { get; set; }
-
         public abstract Renderer Renderer { get; set; }
 
         public abstract Collider2D Collider { get; set; }
 
         public abstract void SetColor(Color color);
+
+        public abstract void Clear();
     }
 }

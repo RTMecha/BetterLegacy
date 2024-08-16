@@ -309,7 +309,7 @@ namespace BetterLegacy.Core.Optimization
                     case "text":
                         {
                             if (levelObject.visualObject != null && levelObject.visualObject is Objects.Visual.TextObject)
-                                (levelObject.visualObject as Objects.Visual.TextObject).TextMeshPro.text = beatmapObject.text;
+                                (levelObject.visualObject as Objects.Visual.TextObject).textMeshPro.text = beatmapObject.text;
                             break;
                         } // Text
                     case "keyframe":
@@ -362,9 +362,9 @@ namespace BetterLegacy.Core.Optimization
                     {
                         foreach (var beatmapObject in DataManager.inst.gameData.beatmapObjects.Where(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID && x is BeatmapObject).Select(x => x as BeatmapObject))
                         {
-                            if (beatmapObject.levelObject && beatmapObject.levelObject.visualObject != null && beatmapObject.levelObject.visualObject.Top)
+                            if (beatmapObject.levelObject && beatmapObject.levelObject.visualObject != null && beatmapObject.levelObject.top)
                             {
-                                var top = beatmapObject.levelObject.visualObject.Top;
+                                var top = beatmapObject.levelObject.top;
 
                                 bool hasPosX = prefabObject.events.Count > 0 && prefabObject.events[0] != null && prefabObject.events[0].eventValues.Length > 0;
                                 bool hasPosY = prefabObject.events.Count > 0 && prefabObject.events[0] != null && prefabObject.events[0].eventValues.Length > 1;
@@ -490,9 +490,9 @@ namespace BetterLegacy.Core.Optimization
                     {
                         foreach (var beatmapObject in DataManager.inst.gameData.beatmapObjects.Where(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID && x is BeatmapObject).Select(x => x as BeatmapObject))
                         {
-                            if (beatmapObject.levelObject && beatmapObject.levelObject.visualObject != null && beatmapObject.levelObject.visualObject.Top)
+                            if (beatmapObject.levelObject && beatmapObject.levelObject.visualObject != null && beatmapObject.levelObject.top)
                             {
-                                var top = beatmapObject.levelObject.visualObject.Top;
+                                var top = beatmapObject.levelObject.top;
 
                                 bool hasPosX = prefabObject.events.Count > 0 && prefabObject.events[0] != null && prefabObject.events[0].eventValues.Length > 0;
                                 bool hasPosY = prefabObject.events.Count > 0 && prefabObject.events[0] != null && prefabObject.events[0].eventValues.Length > 1;
@@ -928,9 +928,7 @@ namespace BetterLegacy.Core.Optimization
             // If ILevelObject is not null, then start destroying.
             if (iLevelObject != null)
             {
-                var visualObject = ((LevelObject)iLevelObject).visualObject;
-
-                var top = visualObject.Top;
+                var top = ((LevelObject)iLevelObject).top;
 
                 // Remove GameObject.
                 spawner.RemoveObject(iLevelObject);

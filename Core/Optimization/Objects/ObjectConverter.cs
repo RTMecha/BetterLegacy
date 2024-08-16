@@ -277,10 +277,10 @@ namespace BetterLegacy.Core.Optimization.Objects
             // 6 = image object
             // 9 = player object
             VisualObject visual =
-                sprite == null && beatmapObject.shape == 4 ? new TextObject(visualObject, top.transform, opacity, beatmapObject.text, isBackground) :
-                sprite != null || beatmapObject.shape == 6 ? new ImageObject(visualObject, top.transform, opacity, beatmapObject.text, isBackground, sprite != null ? sprite : AssetManager.SpriteAssets.ContainsKey(beatmapObject.text) ? AssetManager.SpriteAssets[beatmapObject.text] : null) :
-                beatmapObject.shape == 9 ? new PlayerObject(visualObject, top.transform) :
-                new SolidObject(visualObject, top.transform, opacity, hasCollider, isSolid, isBackground, beatmapObject.opacityCollision);
+                sprite == null && beatmapObject.shape == 4 ? new TextObject(visualObject, opacity, beatmapObject.text, isBackground) :
+                sprite != null || beatmapObject.shape == 6 ? new ImageObject(visualObject, opacity, beatmapObject.text, isBackground, sprite != null ? sprite : AssetManager.SpriteAssets.ContainsKey(beatmapObject.text) ? AssetManager.SpriteAssets[beatmapObject.text] : null) :
+                beatmapObject.shape == 9 ? new PlayerObject(visualObject) :
+                new SolidObject(visualObject, opacity, hasCollider, isSolid, isBackground, beatmapObject.opacityCollision);
 
             if (EditorManager.inst && shape != 9)
             {
