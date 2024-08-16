@@ -82,6 +82,12 @@ namespace BetterLegacy.Core.Managers
 
         public static void SetRoundedSprite(UnityEngine.UI.Image image, int roundness, RoundedSide side)
         {
+            if (roundness < 1)
+            {
+                image.sprite = null;
+                return;
+            }
+
             image.sprite = GetRoundedSprite(roundness, side);
             image.type = UnityEngine.UI.Image.Type.Sliced;
         }
