@@ -57,6 +57,16 @@ namespace BetterLegacy.Menus.UI
             for (int i = 0; i < elements.Count; i++)
             {
                 var element = elements[i];
+
+                if (element is MenuEvent menuEvent)
+                {
+                    menuEvent.TriggerEvent();
+                    while (menuEvent.isSpawning)
+                        yield return null;
+
+                    continue;
+                }
+
                 var parent = !string.IsNullOrEmpty(element.parentLayout) && layouts.ContainsKey(element.parentLayout) ? layouts[element.parentLayout].gameObject.transform : !string.IsNullOrEmpty(element.parent) && elements.TryFind(x => x.id == element.parent, out MenuImage menuParent) && menuParent.gameObject ? menuParent.gameObject.transform : gameObject.transform;
 
                 if (element is MenuButton menuButton)
@@ -183,6 +193,18 @@ namespace BetterLegacy.Menus.UI
                 for (int j = 0; j < loop; j++)
                     switch (elementType.ToLower())
                     {
+                        case "event":
+                            {
+                                customMenu.elements.Add(new MenuEvent
+                                {
+                                    id = jnElement["id"] == null ? LSText.randomNumString(16) : jnElement["id"],
+                                    name = jnElement["name"],
+                                    length = jnElement["anim_length"].AsFloat,
+                                    funcJSON = jnElement["func"],
+                                    fromLoop = j > 0,
+                                });
+                                break;
+                            }
                         case "image":
                             {
                                 customMenu.elements.Add(new MenuImage
@@ -198,6 +220,8 @@ namespace BetterLegacy.Menus.UI
                                     opacity = jnElement["opacity"] == null ? 1f : jnElement["opacity"].AsFloat,
                                     length = jnElement["anim_length"].AsFloat,
                                     playBlipSound = jnElement["play_blip_sound"].AsBool,
+                                    rounded = jnElement["rounded"] == null ? 1 : jnElement["rounded"].AsInt,
+                                    roundedSide = jnElement["rounded_side"] == null ? SpriteManager.RoundedSide.W : (SpriteManager.RoundedSide)jnElement["rounded_side"].AsInt,
                                     funcJSON = jnElement["func"],
                                     reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j),
                                     fromLoop = j > 0,
@@ -224,6 +248,8 @@ namespace BetterLegacy.Menus.UI
                                     textColor = jnElement["text_col"].AsInt,
                                     length = jnElement["anim_length"].AsFloat,
                                     playBlipSound = jnElement["play_blip_sound"].AsBool,
+                                    rounded = jnElement["rounded"] == null ? 1 : jnElement["rounded"].AsInt,
+                                    roundedSide = jnElement["rounded_side"] == null ? SpriteManager.RoundedSide.W : (SpriteManager.RoundedSide)jnElement["rounded_side"].AsInt,
                                     funcJSON = jnElement["func"],
                                     reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j),
                                     fromLoop = j > 0,
@@ -255,6 +281,8 @@ namespace BetterLegacy.Menus.UI
                                     selectedTextColor = jnElement["sel_text_col"].AsInt,
                                     length = jnElement["anim_length"].AsFloat,
                                     playBlipSound = jnElement["play_blip_sound"].AsBool,
+                                    rounded = jnElement["rounded"] == null ? 1 : jnElement["rounded"].AsInt,
+                                    roundedSide = jnElement["rounded_side"] == null ? SpriteManager.RoundedSide.W : (SpriteManager.RoundedSide)jnElement["rounded_side"].AsInt,
                                     funcJSON = jnElement["func"],
                                     reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j),
                                     fromLoop = j > 0,
