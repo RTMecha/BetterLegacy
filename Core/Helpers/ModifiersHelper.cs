@@ -2688,7 +2688,7 @@ namespace BetterLegacy.Core.Helpers
                         {
                             if ((EditorManager.inst == null || !EditorManager.inst.isEditing) && modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject)
                                 && levelObject.visualObject is TextObject textObject)
-                                ModifiersManager.SaveProgress(modifier.commands[1], modifier.commands[2], modifier.commands[3], textObject.Text);
+                                ModifiersManager.SaveProgress(modifier.commands[1], modifier.commands[2], modifier.commands[3], textObject.text);
 
                             break;
                         }
@@ -3246,7 +3246,7 @@ namespace BetterLegacy.Core.Helpers
                                 if (levelObject.visualObject is not TextObject)
                                     levelObject.visualObject.Renderer.material.color = LSColors.fadeColor(levelObject.visualObject.Renderer.material.color, num);
                                 else
-                                    ((TextObject)levelObject.visualObject).TextMeshPro.color = LSColors.fadeColor(levelObject.visualObject.Renderer.material.color, num);
+                                    ((TextObject)levelObject.visualObject).textMeshPro.color = LSColors.fadeColor(levelObject.visualObject.Renderer.material.color, num);
                             }
 
                             break;
@@ -3263,7 +3263,7 @@ namespace BetterLegacy.Core.Helpers
                                         if (levelObject.visualObject is not TextObject)
                                             levelObject.visualObject.Renderer.material.color = LSColors.fadeColor(levelObject.visualObject.Renderer.material.color, num);
                                         else
-                                            ((TextObject)levelObject.visualObject).TextMeshPro.color = LSColors.fadeColor(levelObject.visualObject.Renderer.material.color, num);
+                                            ((TextObject)levelObject.visualObject).textMeshPro.color = LSColors.fadeColor(levelObject.visualObject.Renderer.material.color, num);
                                     }
                                 }
 
@@ -3409,7 +3409,7 @@ namespace BetterLegacy.Core.Helpers
                                 if (modifier.constant)
                                     ((TextObject)modifier.reference.levelObject.visualObject).SetText(modifier.value);
                                 else
-                                    ((TextObject)modifier.reference.levelObject.visualObject).Text = modifier.value;
+                                    ((TextObject)modifier.reference.levelObject.visualObject).text = modifier.value;
                             }
                             break;
                         }
@@ -3427,7 +3427,7 @@ namespace BetterLegacy.Core.Helpers
                                         if (modifier.constant)
                                             textObject.SetText(modifier.value);
                                         else
-                                            textObject.Text = modifier.value;
+                                            textObject.text = modifier.value;
                                     }
                                 }
                             }
@@ -3439,7 +3439,7 @@ namespace BetterLegacy.Core.Helpers
                             if (modifier.reference.shape == 4 && modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null &&
                                 modifier.reference.levelObject.visualObject is TextObject)
                             {
-                                ((TextObject)modifier.reference.levelObject.visualObject).Text += modifier.value;
+                                ((TextObject)modifier.reference.levelObject.visualObject).text += modifier.value;
                             }
                             break;
                         }
@@ -3454,7 +3454,7 @@ namespace BetterLegacy.Core.Helpers
                                     if (bm.shape == 4 && bm.levelObject && bm.levelObject.visualObject != null &&
                                         bm.levelObject.visualObject is TextObject textObject)
                                     {
-                                        textObject.Text += modifier.value;
+                                        textObject.text += modifier.value;
                                     }
                                 }
                             }
@@ -3467,13 +3467,13 @@ namespace BetterLegacy.Core.Helpers
                                 modifier.reference.levelObject.visualObject is TextObject && int.TryParse(modifier.value, out int remove))
                             {
                                 var visualObject = (TextObject)modifier.reference.levelObject.visualObject;
-                                string text = string.IsNullOrEmpty(visualObject.TextMeshPro.text) ? "" :
-                                    visualObject.TextMeshPro.text.Substring(0, visualObject.TextMeshPro.text.Length - Mathf.Clamp(remove, 0, visualObject.TextMeshPro.text.Length - 1));
+                                string text = string.IsNullOrEmpty(visualObject.textMeshPro.text) ? "" :
+                                    visualObject.textMeshPro.text.Substring(0, visualObject.textMeshPro.text.Length - Mathf.Clamp(remove, 0, visualObject.textMeshPro.text.Length - 1));
 
                                 if (modifier.constant)
                                     visualObject.SetText(text);
                                 else
-                                    visualObject.Text = text;
+                                    visualObject.text = text;
                             }
                             break;
                         }
@@ -3488,13 +3488,13 @@ namespace BetterLegacy.Core.Helpers
                                     if (bm.shape == 4 && bm.levelObject && bm.levelObject.visualObject != null &&
                                         bm.levelObject.visualObject is TextObject textObject)
                                     {
-                                        string text = string.IsNullOrEmpty(textObject.TextMeshPro.text) ? "" :
-                                            textObject.TextMeshPro.text.Substring(0, textObject.TextMeshPro.text.Length - Mathf.Clamp(remove, 0, textObject.TextMeshPro.text.Length - 1));
+                                        string text = string.IsNullOrEmpty(textObject.textMeshPro.text) ? "" :
+                                            textObject.textMeshPro.text.Substring(0, textObject.textMeshPro.text.Length - Mathf.Clamp(remove, 0, textObject.textMeshPro.text.Length - 1));
 
                                         if (modifier.constant)
                                             textObject.SetText(text);
                                         else
-                                            textObject.Text = text;
+                                            textObject.text = text;
                                     }
                                 }
                             }
@@ -3506,13 +3506,13 @@ namespace BetterLegacy.Core.Helpers
                                 modifier.reference.levelObject.visualObject is TextObject && int.TryParse(modifier.value, out int remove))
                             {
                                 var visualObject = (TextObject)modifier.reference.levelObject.visualObject;
-                                string text = string.IsNullOrEmpty(visualObject.TextMeshPro.text) ? "" : visualObject.TextMeshPro.text.Length > remove ?
-                                    visualObject.TextMeshPro.text.Remove(remove, 1) : "";
+                                string text = string.IsNullOrEmpty(visualObject.textMeshPro.text) ? "" : visualObject.textMeshPro.text.Length > remove ?
+                                    visualObject.textMeshPro.text.Remove(remove, 1) : "";
 
                                 if (modifier.constant)
                                     visualObject.SetText(text);
                                 else
-                                    visualObject.Text = text;
+                                    visualObject.text = text;
                             }
                             break;
                         }
@@ -3527,13 +3527,13 @@ namespace BetterLegacy.Core.Helpers
                                     if (bm.shape == 4 && bm.levelObject && bm.levelObject.visualObject != null &&
                                         bm.levelObject.visualObject is TextObject textObject)
                                     {
-                                        string text = string.IsNullOrEmpty(textObject.TextMeshPro.text) ? "" : textObject.TextMeshPro.text.Length > remove ?
-                                            textObject.TextMeshPro.text.Remove(remove, 1) : "";
+                                        string text = string.IsNullOrEmpty(textObject.textMeshPro.text) ? "" : textObject.textMeshPro.text.Length > remove ?
+                                            textObject.textMeshPro.text.Remove(remove, 1) : "";
 
                                         if (modifier.constant)
                                             textObject.SetText(text);
                                         else
-                                            textObject.Text = text;
+                                            textObject.text = text;
                                     }
                                 }
                             }
@@ -3657,7 +3657,7 @@ namespace BetterLegacy.Core.Helpers
                             if (modifier.constant)
                                 textObject.SetText(text);
                             else
-                                textObject.Text = text;
+                                textObject.text = text;
 
                             if (Parser.TryParse(modifier.commands[2], true) && (modifier.Result is not string || (string)modifier.Result != textWithoutGlitch))
                             {
@@ -4947,7 +4947,7 @@ namespace BetterLegacy.Core.Helpers
                     {
                         if (modifier.constant && modifier.reference.shape == 4 && modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null &&
                             modifier.reference.levelObject.visualObject is TextObject textObject)
-                            textObject.Text = modifier.reference.text;
+                            textObject.text = modifier.reference.text;
                         break;
                     }
                 case "setTextOther":
@@ -4960,7 +4960,7 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 if (bm.shape == 4 && bm.levelObject && bm.levelObject.visualObject != null &&
                                     bm.levelObject.visualObject is TextObject textObject)
-                                    textObject.Text = bm.text;
+                                    textObject.text = bm.text;
                             }
                         }
                         break;

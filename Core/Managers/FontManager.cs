@@ -69,14 +69,14 @@ namespace BetterLegacy.Core.Managers
             {
                 try
                 {
-                    if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject is TextObject textObject && textObject.TextMeshPro)
+                    if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject is TextObject textObject && textObject.textMeshPro)
                     {
-                        var tmp = textObject.TextMeshPro;
+                        var tmp = textObject.textMeshPro;
 
                         var currentAudioTime = AudioManager.inst.CurrentAudioSource.time;
                         var currentAudioLength = AudioManager.inst.CurrentAudioSource.clip.length;
 
-                        var str = textObject.Text;
+                        var str = textObject.text;
 
                         #region Audio
 
