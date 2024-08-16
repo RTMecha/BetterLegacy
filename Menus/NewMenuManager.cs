@@ -193,6 +193,8 @@ namespace BetterLegacy.Menus
             }
         }
 
+        public List<BeatmapTheme> themes = new List<BeatmapTheme>();
+
         public void Clear()
         {
             if (CurrentMenu != null)
@@ -213,9 +215,10 @@ namespace BetterLegacy.Menus
                 }
             }
             interfaces.Clear();
+            themes.Clear();
         }
 
-        public void Test()
+        public void StartupInterface()
         {
             if (CurrentMenu != null)
             {
@@ -238,7 +241,9 @@ namespace BetterLegacy.Menus
 
             AudioManager.inst.StopMusic();
 
-            var path = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Interfaces/test_menu.lsi";
+            PlayMusic();
+
+            var path = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Interfaces/main_menu.lsi";
             var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
             var menu = CustomMenu.Parse(jn);
