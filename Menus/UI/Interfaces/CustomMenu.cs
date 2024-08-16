@@ -137,6 +137,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     rounded = jnElement["rounded"] == null ? 1 : jnElement["rounded"].AsInt, // roundness can be prevented by setting rounded to 0.
                                     roundedSide = jnElement["rounded_side"] == null ? SpriteManager.RoundedSide.W : (SpriteManager.RoundedSide)jnElement["rounded_side"].AsInt, // default side should be Whole.
                                     funcJSON = jnElement["func"], // function to run when the element is clicked.
+                                    spawnFuncJSON = jnElement["spawn_func"], // function to run when the element spawns.
                                     reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j),
                                     fromLoop = j > 0, // if element has been spawned from the loop or if its the first / only of its kind.
                                     loop = loop,
@@ -166,6 +167,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     rounded = jnElement["rounded"] == null ? 1 : jnElement["rounded"].AsInt, // roundness can be prevented by setting rounded to 0.
                                     roundedSide = jnElement["rounded_side"] == null ? SpriteManager.RoundedSide.W : (SpriteManager.RoundedSide)jnElement["rounded_side"].AsInt, // default side should be Whole.
                                     funcJSON = jnElement["func"], // function to run when the element is clicked.
+                                    spawnFuncJSON = jnElement["spawn_func"], // function to run when the element spawns.
                                     reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j),
                                     fromLoop = j > 0, // if element has been spawned from the loop or if its the first / only of its kind.
                                     loop = loop,
@@ -200,6 +202,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     rounded = jnElement["rounded"] == null ? 1 : jnElement["rounded"].AsInt, // roundness can be prevented by setting rounded to 0.
                                     roundedSide = jnElement["rounded_side"] == null ? SpriteManager.RoundedSide.W : (SpriteManager.RoundedSide)jnElement["rounded_side"].AsInt, // default side should be Whole.
                                     funcJSON = jnElement["func"], // function to run when the element is clicked.
+                                    spawnFuncJSON = jnElement["spawn_func"], // function to run when the element spawns.
                                     reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j),
                                     fromLoop = j > 0, // if element has been spawned from the loop or if its the first / only of its kind.
                                     loop = loop,
