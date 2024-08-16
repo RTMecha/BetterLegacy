@@ -235,6 +235,8 @@ namespace BetterLegacy.Menus
             }
             interfaces.Clear();
 
+            AudioManager.inst.StopMusic();
+
             var path = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Interfaces/test_menu.lsi";
             var jn = JSON.Parse(RTFile.ReadFromFile(path));
 

@@ -135,5 +135,26 @@ namespace BetterLegacy.Patchers
             __instance.StartCoroutine(canChange(__instance, ___randomLength));
             yield break;
         }
+
+        [HarmonyPatch(nameof(InputSelectManager.LoadLevel))]
+        [HarmonyPrefix]
+        static bool LoadLevel()
+        {
+            LevelManager.OnInputsSelected?.Invoke();
+
+            if (LevelManager.OnInputsSelected != null)
+            {
+                LevelManager.OnInputsSelected = null;
+                return false;
+            }
+
+            if (DataManager.inst.GetSettingBool("IsArcade", false) || LevelManager.IsArcade)
+            {
+                SceneManager.inst.LoadScene("Arcade Select", false);
+                return false;
+            }
+            SaveManager.inst.LoadCurrentStoryLevel();
+            return false;
+        }
     }
 }

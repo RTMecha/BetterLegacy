@@ -36,6 +36,16 @@ namespace BetterLegacy.Core.Managers
         public static float timeInLevelOffset = 0f;
 
         /// <summary>
+        /// Action that occurs when a player selects all controller inputs in the Input Select screen and loads the next scene.
+        /// </summary>
+        public static Action OnInputsSelected { get; set; }
+
+        /// <summary>
+        /// Whether the scene after Input Select should be the Arcade scene or the Interface scene.
+        /// </summary>
+        public static bool IsArcade { get; set; } = true;
+
+        /// <summary>
         /// If the level has ended.
         /// </summary>
         public static bool LevelEnded { get; set; }

@@ -78,10 +78,13 @@ namespace BetterLegacy.Story
             yield break;
         }
 
-        public IEnumerator Demo()
+        public IEnumerator Demo(bool clearInputs)
         {
-            InputDataManager.inst.players.Clear();
-            InputDataManager.inst.players.Add(new CustomPlayer(true, 0, null));
+            if (clearInputs || InputDataManager.inst.players.Any(x => x is not CustomPlayer))
+            {
+                InputDataManager.inst.players.Clear();
+                InputDataManager.inst.players.Add(new CustomPlayer(true, 0, null));
+            }
 
             yield return StartCoroutine(ILoad());
             Play("granite");

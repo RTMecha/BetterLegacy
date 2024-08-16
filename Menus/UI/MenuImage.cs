@@ -82,12 +82,15 @@ namespace BetterLegacy.Menus.UI
             {
                 case "LoadScene":
                     {
-                        if (parameters == null)
+                        if (parameters == null || parameters.Count < 1)
                             break;
+
+                        LevelManager.IsArcade = parameters.Count >= 3 && Parser.TryParse(parameters[2], false);
+                        DataManager.inst.UpdateSettingBool("IsArcade", parameters.Count >= 3 && Parser.TryParse(parameters[2], false));
 
                         if (parameters.Count >= 2)
                             SceneManager.inst.LoadScene(parameters[0], Parser.TryParse(parameters[1], true));
-                        else if (parameters.Count >= 1)
+                        else
                             SceneManager.inst.LoadScene(parameters[0]);
 
                         break;
@@ -161,7 +164,11 @@ namespace BetterLegacy.Menus.UI
                     }
                 case "DemoStoryMode":
                     {
-                        CoreHelper.StartCoroutine(Story.StoryManager.inst.Demo());
+                        DataManager.inst.UpdateSettingBool("IsArcade", false);
+                        LevelManager.IsArcade = false;
+                        SceneManager.inst.LoadScene("Input Select");
+                        LevelManager.OnInputsSelected = () => { CoreHelper.StartCoroutine(Story.StoryManager.inst.Demo(true)); };
+
                         break;
                     }
                 case "SetCurrentPath":
