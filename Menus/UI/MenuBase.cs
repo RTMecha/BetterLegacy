@@ -16,6 +16,7 @@ using BetterLegacy.Core.Data;
 using LSFunctions;
 using System.IO;
 using BetterLegacy.Core.Managers.Networking;
+using BetterLegacy.Configs;
 
 namespace BetterLegacy.Menus.UI
 {
@@ -300,9 +301,9 @@ namespace BetterLegacy.Menus.UI
             menuImage.clickable = menuImage.gameObject.AddComponent<Clickable>();
 
             if (menuImage.icon)
-            {
                 menuImage.image.sprite = menuImage.icon;
-            }
+            else if (MenuConfig.Instance.RoundedUI.Value)
+                SpriteManager.SetRoundedSprite(menuImage.image, menuImage.rounded, menuImage.roundedSide);
 
             if (menuImage.reactiveSetting.init)
             {
@@ -326,6 +327,8 @@ namespace BetterLegacy.Menus.UI
                 Parser.ParseRectTransform(menuText.image.rectTransform, menuText.rectJSON);
 
             menuText.image.enabled = !menuText.hideBG;
+            if (!menuText.hideBG && MenuConfig.Instance.RoundedUI.Value)
+                SpriteManager.SetRoundedSprite(menuText.image, menuText.rounded, menuText.roundedSide);
 
             menuText.clickable = menuText.gameObject.AddComponent<Clickable>();
 
@@ -383,6 +386,8 @@ namespace BetterLegacy.Menus.UI
                 Parser.ParseRectTransform(menuButton.image.rectTransform, menuButton.rectJSON);
 
             menuButton.image.enabled = !menuButton.hideBG;
+            if (!menuButton.hideBG && MenuConfig.Instance.RoundedUI.Value)
+                SpriteManager.SetRoundedSprite(menuButton.image, menuButton.rounded, menuButton.roundedSide);
 
             menuButton.clickable = menuButton.gameObject.AddComponent<Clickable>();
             menuButton.clickable.onEnter = pointerEventdata =>

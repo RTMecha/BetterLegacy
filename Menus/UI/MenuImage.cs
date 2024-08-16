@@ -15,6 +15,9 @@ using SimpleJSON;
 using BetterLegacy.Core;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Managers.Networking;
+using LSFunctions;
+using System.IO;
 
 namespace BetterLegacy.Menus.UI
 {
@@ -52,6 +55,8 @@ namespace BetterLegacy.Menus.UI
         public float timeOffset;
 
         public bool playBlipSound;
+        public int rounded = 1;
+        public SpriteManager.RoundedSide roundedSide = SpriteManager.RoundedSide.W;
 
         public int loop;
         public bool fromLoop;
@@ -177,6 +182,20 @@ namespace BetterLegacy.Menus.UI
                             return;
 
                         NewMenuManager.inst.MainDirectory = FontManager.TextTranslater.ReplaceProperties(parameters[0]);
+
+                        break;
+                    }
+                case "PlaySound":
+                    {
+                        if (parameters == null || parameters.Count < 1 || NewMenuManager.inst.CurrentMenu == null)
+                            return;
+
+                        var filePath = $"{Path.GetDirectoryName(NewMenuManager.inst.CurrentMenu.filePath)}{parameters[0]}";
+                        var audioType = RTFile.GetAudioType(filePath);
+                        if (audioType == AudioType.MPEG)
+                            AudioManager.inst.PlaySound(LSAudio.CreateAudioClipUsingMP3File(filePath));
+                        else
+                            CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{filePath}", audioType, AudioManager.inst.PlaySound));
 
                         break;
                     }

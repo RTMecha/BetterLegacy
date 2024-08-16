@@ -25,6 +25,8 @@ namespace BetterLegacy.Configs
 
         #region General
 
+        public Setting<bool> RoundedUI { get; set; }
+
         /// <summary>
         /// The key to reload the main menu for easy reloading of modified menu file.
         /// </summary>
@@ -84,6 +86,7 @@ namespace BetterLegacy.Configs
             LoadPageEditor = BindEnum(this, "General", "Load Page Editor key", KeyCode.F10, "The key to load the Page Editor.");
             SelectFirstButton = BindEnum(this, "General", "Select First Button", KeyCode.G, "The key to select the first menu button. This is for cases where menu selection disappears.");
             Theme = Bind(this, "General", "Theme", 0, "The theme of the interface.");
+            RoundedUI = Bind(this, "General", "Rounded", false, "If most elements in the interface should have a rounded corner.");
 
             PlayCustomMusic = Bind(this, "Music", "Play Custom Music", true, "If a custom song should play instead of the normal internal menu music.");
             MusicLoadMode = BindEnum(this, "Music", "Load Directory", MenuMusicLoadMode.Settings, "Where the music loads from. Settings path: Project Arrhythmia/settings/menus.");
