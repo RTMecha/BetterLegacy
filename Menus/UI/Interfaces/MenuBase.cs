@@ -22,6 +22,9 @@ using BetterLegacy.Menus.UI.Layouts;
 
 namespace BetterLegacy.Menus.UI.Interfaces
 {
+    /// <summary>
+    /// Base menu class to be used for interfaces. Includes a custom selection system and UI system.
+    /// </summary>
     public abstract class MenuBase
     {
         public UICanvas canvas;
@@ -32,27 +35,64 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 CoreHelper.StartCoroutine(GenerateUI());
         }
 
+        /// <summary>
+        /// For cases where the UI only needs to be set active / inactive instead of destroyed.
+        /// </summary>
+        /// <param name="active"></param>
         public void SetActive(bool active)
         {
             canvas?.GameObject.SetActive(active);
             isOpen = active;
         }
 
+        /// <summary>
+        /// The music to play when the user enters the interface.
+        /// </summary>
         public AudioClip music;
+
+        /// <summary>
+        /// The name to be used if <see cref="music"/> is not loaded.
+        /// </summary>
         public string musicName;
 
+        /// <summary>
+        /// Name of the menu.
+        /// </summary>
         public string name;
+
+        /// <summary>
+        /// Identification of the menu.
+        /// </summary>
         public string id;
 
+        /// <summary>
+        /// True if the menu is open, otherwise false. Prevents main functions like the control system if false.
+        /// </summary>
         public bool isOpen;
 
+        /// <summary>
+        /// Where the user is selecting. To be compared with <see cref="MenuButton.selectionPosition"/>.
+        /// </summary>
         public Vector2Int selected;
 
+        /// <summary>
+        /// All the loaded elements in the menu.
+        /// </summary>
         public List<MenuImage> elements = new List<MenuImage>();
+
+        /// <summary>
+        /// All the layouts to be used for the elements.
+        /// </summary>
         public Dictionary<string, MenuLayoutBase> layouts = new Dictionary<string, MenuLayoutBase>();
 
+        /// <summary>
+        /// The file location of the menu. This isn't necessary for cases where the menu does not have a file origin.
+        /// </summary>
         public string filePath;
 
+        /// <summary>
+        /// Plays the menus' default music.
+        /// </summary>
         public void PlayDefaultMusic()
         {
             if (music)
@@ -84,8 +124,106 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 }));
             }
         }
-        public abstract IEnumerator GenerateUI();
 
+        /// <summary>
+        /// IEnumerator Coroutine used to Generate all the menus' elements.
+        /// </summary>
+        /// <returns></returns>
+        public virtual IEnumerator GenerateUI()
+        {
+            selected = Vector2Int.zero;
+
+            var canvas = UIManager.GenerateUICanvas(nameof(CustomMenu), null, sortingOrder: 900);
+            this.canvas = canvas;
+            canvas.Canvas.scaleFactor = 1f;
+            canvas.CanvasScaler.referenceResolution = new Vector2(1920f, 1080f);
+
+            var gameObject = Creator.NewUIObject("Base Layout", canvas.Canvas.transform);
+            UIManager.SetRectTransform(gameObject.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
+
+            for (int i = 0; i < layouts.Count; i++)
+            {
+                var layout = layouts.ElementAt(i).Value;
+                if (layout is MenuGridLayout gridLayout)
+                    SetupGridLayout(gridLayout, gameObject.transform);
+                if (layout is MenuHorizontalLayout horizontalLayout)
+                    SetupHorizontalLayout(horizontalLayout, gameObject.transform);
+                if (layout is MenuVerticalLayout verticalLayout)
+                    SetupVerticalLayout(verticalLayout, gameObject.transform);
+            }
+
+            for (int i = 0; i < elements.Count; i++)
+            {
+                var element = elements[i];
+
+                if (element is MenuEvent menuEvent)
+                {
+                    menuEvent.TriggerEvent();
+                    while (menuEvent.isSpawning)
+                        yield return null;
+
+                    continue;
+                }
+
+                var parent = GetElementParent(element, gameObject);
+
+                if (element is MenuButton menuButton)
+                {
+                    SetupButton(menuButton, parent);
+                    if (menuButton.siblingIndex >= 0 && menuButton.siblingIndex < menuButton.gameObject.transform.parent.childCount)
+                        menuButton.gameObject.transform.SetSiblingIndex(menuButton.siblingIndex);
+
+                    while (element.isSpawning)
+                        yield return null;
+
+                    menuButton.clickable.onClick = p =>
+                    {
+                        if (menuButton.playBlipSound)
+                            AudioManager.inst.PlaySound("blip");
+                        menuButton.ParseFunction(menuButton.funcJSON);
+                    };
+
+                    continue;
+                }
+
+                if (element is MenuText menuText)
+                {
+                    SetupText(menuText, parent);
+                    if (menuText.siblingIndex >= 0 && menuText.siblingIndex < menuText.gameObject.transform.parent.childCount)
+                        menuText.gameObject.transform.SetSiblingIndex(menuText.siblingIndex);
+                    while (menuText.isSpawning)
+                        yield return null;
+                }
+                else
+                {
+                    SetupImage(element, parent);
+                    if (element.siblingIndex >= 0 && element.siblingIndex < element.gameObject.transform.parent.childCount)
+                        element.gameObject.transform.SetSiblingIndex(element.siblingIndex);
+                    while (element.isSpawning)
+                        yield return null;
+                }
+
+                element.clickable.onClick = p =>
+                {
+                    if (element.playBlipSound)
+                        AudioManager.inst.PlaySound("blip");
+                    element.ParseFunction(element.funcJSON);
+                };
+            }
+
+            if (elements.TryFind(x => x is MenuButton, out MenuImage menuImage) && menuImage is MenuButton button)
+            {
+                button.OnEnter();
+            }
+
+            isOpen = true;
+
+            yield break;
+        }
+
+        /// <summary>
+        /// Clears the menu.
+        /// </summary>
         public void Clear()
         {
             isOpen = false;
@@ -107,14 +245,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     var element = elements[i];
 
                     if (element.isSpawning)
-                    {
-                        element.Update();
-                    }
+                        element.UpdateSpawnCondition();
 
                     if (element is MenuButton menuButton)
-                    {
                         menuButton.isHovered = false;
-                    }
                 }
                 return;
             }
@@ -233,8 +367,24 @@ namespace BetterLegacy.Menus.UI.Interfaces
             }
         }
 
-        public abstract BeatmapTheme Theme { get; set; }
+        /// <summary>
+        /// The current theme to use for the menu colors.
+        /// </summary>
+        public BeatmapTheme Theme { get; set; }
 
+        /// <summary>
+        /// Gets an elements' parent, whether it be a layout or another element.
+        /// </summary>
+        /// <param name="element">The element to parent.</param>
+        /// <param name="defaultLayout">The default GameObject to parent to if no parent is found.</param>
+        /// <returns></returns>
+        public Transform GetElementParent(MenuImage element, GameObject defaultLayout) => !string.IsNullOrEmpty(element.parentLayout) && layouts.ContainsKey(element.parentLayout) ? layouts[element.parentLayout].gameObject.transform : !string.IsNullOrEmpty(element.parent) && elements.TryFind(x => x.id == element.parent, out MenuImage menuParent) && menuParent.gameObject ? menuParent.gameObject.transform : defaultLayout.transform;
+
+        /// <summary>
+        /// Initializes a <see cref="MenuGridLayout"/>s' UI.
+        /// </summary>
+        /// <param name="layout">The layout to generate UI for.</param>
+        /// <param name="parent">The parent to set the layout to.</param>
         public void SetupGridLayout(MenuGridLayout layout, Transform parent)
         {
             if (layout.gameObject)
@@ -254,6 +404,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 Parser.ParseRectTransform(layout.gameObject.transform.AsRT(), layout.rectJSON);
         }
 
+        /// <summary>
+        /// Initializes a <see cref="MenuHorizontalLayout"/>s' UI.
+        /// </summary>
+        /// <param name="layout">The layout to generate UI for.</param>
+        /// <param name="parent">The parent to set the layout to.</param>
         public void SetupHorizontalLayout(MenuHorizontalLayout layout, Transform parent)
         {
             if (layout.gameObject)
@@ -274,6 +429,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 Parser.ParseRectTransform(layout.gameObject.transform.AsRT(), layout.rectJSON);
         }
 
+        /// <summary>
+        /// Initializes a <see cref="MenuVerticalLayout"/>s' UI.
+        /// </summary>
+        /// <param name="layout">The layout to generate UI for.</param>
+        /// <param name="parent">The parent to set the layout to.</param>
         public void SetupVerticalLayout(MenuVerticalLayout layout, Transform parent)
         {
             if (layout.gameObject)
@@ -294,6 +454,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 Parser.ParseRectTransform(layout.gameObject.transform.AsRT(), layout.rectJSON);
         }
 
+        /// <summary>
+        /// Initializes a <see cref="MenuImage"/>s' UI.
+        /// </summary>
+        /// <param name="menuImage">The element to generate UI for.</param>
+        /// <param name="parent">The parent to set the element to.</param>
         public void SetupImage(MenuImage menuImage, Transform parent)
         {
             if (menuImage.gameObject)
@@ -322,6 +487,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
             menuImage.Spawn();
         }
 
+        /// <summary>
+        /// Initializes a <see cref="MenuText"/>s' UI.
+        /// </summary>
+        /// <param name="menuText">The element to generate UI for.</param>
+        /// <param name="parent">The parent to set the element to.</param>
         public void SetupText(MenuText menuText, Transform parent)
         {
             if (menuText.gameObject)
@@ -369,18 +539,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
             menuText.Spawn();
         }
 
-        public MenuText CreateText(string name, Transform parent, string text)
-        {
-            var menuText = new MenuText
-            {
-                name = name,
-                text = text,
-            };
-            SetupText(menuText, parent);
-
-            return menuText;
-        }
-
+        /// <summary>
+        /// Initializes a <see cref="MenuButton"/>s' UI.
+        /// </summary>
+        /// <param name="menuButton">The element to generate UI for.</param>
+        /// <param name="parent">The parent to set the element to.</param>
         public void SetupButton(MenuButton menuButton, Transform parent)
         {
             if (menuButton.gameObject)
@@ -434,19 +597,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
             }
 
             menuButton.Spawn();
-        }
-
-        public MenuButton CreateButton(string name, Transform parent, Vector2Int position, string text)
-        {
-            var menuButton = new MenuButton
-            {
-                name = name,
-                text = text,
-                selectionPosition = position,
-            };
-            SetupButton(menuButton, parent);
-
-            return menuButton;
         }
     }
 }

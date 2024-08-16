@@ -26,101 +26,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         {
 
         }
-
-        public override IEnumerator GenerateUI()
-        {
-            selected = Vector2Int.zero;
-
-            NewMenuManager.inst.PlayMusic();
-
-            var canvas = UIManager.GenerateUICanvas(nameof(CustomMenu), null, sortingOrder: 900);
-            this.canvas = canvas;
-            canvas.Canvas.scaleFactor = 1f;
-            canvas.CanvasScaler.referenceResolution = new Vector2(1920f, 1080f);
-
-            var gameObject = Creator.NewUIObject("Base Layout", canvas.Canvas.transform);
-            UIManager.SetRectTransform(gameObject.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
-
-            for (int i = 0; i < layouts.Count; i++)
-            {
-                var layout = layouts.ElementAt(i).Value;
-                if (layout is MenuGridLayout gridLayout)
-                    SetupGridLayout(gridLayout, gameObject.transform);
-                if (layout is MenuHorizontalLayout horizontalLayout)
-                    SetupHorizontalLayout(horizontalLayout, gameObject.transform);
-                if (layout is MenuVerticalLayout verticalLayout)
-                    SetupVerticalLayout(verticalLayout, gameObject.transform);
-            }
-
-            for (int i = 0; i < elements.Count; i++)
-            {
-                var element = elements[i];
-
-                if (element is MenuEvent menuEvent)
-                {
-                    menuEvent.TriggerEvent();
-                    while (menuEvent.isSpawning)
-                        yield return null;
-
-                    continue;
-                }
-
-                var parent = !string.IsNullOrEmpty(element.parentLayout) && layouts.ContainsKey(element.parentLayout) ? layouts[element.parentLayout].gameObject.transform : !string.IsNullOrEmpty(element.parent) && elements.TryFind(x => x.id == element.parent, out MenuImage menuParent) && menuParent.gameObject ? menuParent.gameObject.transform : gameObject.transform;
-
-                if (element is MenuButton menuButton)
-                {
-                    SetupButton(menuButton, parent);
-                    if (menuButton.siblingIndex >= 0 && menuButton.siblingIndex < menuButton.gameObject.transform.parent.childCount)
-                        menuButton.gameObject.transform.SetSiblingIndex(menuButton.siblingIndex);
-
-                    while (element.isSpawning)
-                        yield return null;
-
-                    menuButton.clickable.onClick = p =>
-                    {
-                        if (menuButton.playBlipSound)
-                            AudioManager.inst.PlaySound("blip");
-                        menuButton.ParseFunction(menuButton.funcJSON);
-                    };
-
-                    continue;
-                }
-
-                if (element is MenuText menuText)
-                {
-                    SetupText(menuText, parent);
-                    if (menuText.siblingIndex >= 0 && menuText.siblingIndex < menuText.gameObject.transform.parent.childCount)
-                        menuText.gameObject.transform.SetSiblingIndex(menuText.siblingIndex);
-                    while (menuText.isSpawning)
-                        yield return null;
-                }
-                else
-                {
-                    SetupImage(element, parent);
-                    if (element.siblingIndex >= 0 && element.siblingIndex < element.gameObject.transform.parent.childCount)
-                        element.gameObject.transform.SetSiblingIndex(element.siblingIndex);
-                    while (element.isSpawning)
-                        yield return null;
-                }
-
-                element.clickable.onClick = p =>
-                {
-                    if (element.playBlipSound)
-                        AudioManager.inst.PlaySound("blip");
-                    element.ParseFunction(element.funcJSON);
-                };
-            }
-
-            if (elements.TryFind(x => x is MenuButton, out MenuImage menuImage) && menuImage is MenuButton button)
-            {
-                button.OnEnter();
-            }
-
-            isOpen = true;
-
-            yield break;
-        }
-
+        
         public override void UpdateTheme()
         {
             if (useGameTheme && CoreHelper.InGame)
@@ -131,8 +37,16 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         public bool useGameTheme;
 
-        public override BeatmapTheme Theme { get; set; }
+        /// <summary>
+        /// The theme to choose from in the default themes list. If the value is -1, then it will use the players' preferred theme.
+        /// </summary>
+        public int currentTheme = -1;
 
+        /// <summary>
+        /// Parses a Custom Menu from a JSON file.
+        /// </summary>
+        /// <param name="jn">JSON to parse.</param>
+        /// <returns>Returns a parsed Custom Menu.</returns>
         public static CustomMenu Parse(JSONNode jn)
         {
             var customMenu = new CustomMenu();
@@ -182,6 +96,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 var jnElement = jn["elements"][i];
                 string elementType = jnElement["type"];
 
+                // loop function
                 int loop = 1;
                 if (jnElement["loop"] != null)
                     loop = jnElement["loop"].AsInt;
@@ -197,9 +112,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 {
                                     id = jnElement["id"] == null ? LSText.randomNumString(16) : jnElement["id"],
                                     name = jnElement["name"],
-                                    length = jnElement["anim_length"].AsFloat,
-                                    funcJSON = jnElement["func"],
-                                    fromLoop = j > 0,
+                                    length = jnElement["anim_length"].AsFloat, // how long the UI pauses for when this element spawns.
+                                    funcJSON = jnElement["func"], // the function to run.
+                                    fromLoop = j > 0, // if element has been spawned from the loop or if its the first / only of its kind.
+                                    loop = loop,
                                 });
                                 break;
                             }
@@ -218,11 +134,12 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     opacity = jnElement["opacity"] == null ? 1f : jnElement["opacity"].AsFloat,
                                     length = jnElement["anim_length"].AsFloat,
                                     playBlipSound = jnElement["play_blip_sound"].AsBool,
-                                    rounded = jnElement["rounded"] == null ? 1 : jnElement["rounded"].AsInt,
-                                    roundedSide = jnElement["rounded_side"] == null ? SpriteManager.RoundedSide.W : (SpriteManager.RoundedSide)jnElement["rounded_side"].AsInt,
-                                    funcJSON = jnElement["func"],
+                                    rounded = jnElement["rounded"] == null ? 1 : jnElement["rounded"].AsInt, // roundness can be prevented by setting rounded to 0.
+                                    roundedSide = jnElement["rounded_side"] == null ? SpriteManager.RoundedSide.W : (SpriteManager.RoundedSide)jnElement["rounded_side"].AsInt, // default side should be Whole.
+                                    funcJSON = jnElement["func"], // function to run when the element is clicked.
                                     reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j),
-                                    fromLoop = j > 0,
+                                    fromLoop = j > 0, // if element has been spawned from the loop or if its the first / only of its kind.
+                                    loop = loop,
                                 }); ;
                                 break;
                             }
@@ -246,11 +163,12 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     textColor = jnElement["text_col"].AsInt,
                                     length = jnElement["anim_length"].AsFloat,
                                     playBlipSound = jnElement["play_blip_sound"].AsBool,
-                                    rounded = jnElement["rounded"] == null ? 1 : jnElement["rounded"].AsInt,
-                                    roundedSide = jnElement["rounded_side"] == null ? SpriteManager.RoundedSide.W : (SpriteManager.RoundedSide)jnElement["rounded_side"].AsInt,
-                                    funcJSON = jnElement["func"],
+                                    rounded = jnElement["rounded"] == null ? 1 : jnElement["rounded"].AsInt, // roundness can be prevented by setting rounded to 0.
+                                    roundedSide = jnElement["rounded_side"] == null ? SpriteManager.RoundedSide.W : (SpriteManager.RoundedSide)jnElement["rounded_side"].AsInt, // default side should be Whole.
+                                    funcJSON = jnElement["func"], // function to run when the element is clicked.
                                     reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j),
-                                    fromLoop = j > 0,
+                                    fromLoop = j > 0, // if element has been spawned from the loop or if its the first / only of its kind.
+                                    loop = loop,
                                 });
 
                                 break;
@@ -279,11 +197,12 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     selectedTextColor = jnElement["sel_text_col"].AsInt,
                                     length = jnElement["anim_length"].AsFloat,
                                     playBlipSound = jnElement["play_blip_sound"].AsBool,
-                                    rounded = jnElement["rounded"] == null ? 1 : jnElement["rounded"].AsInt,
-                                    roundedSide = jnElement["rounded_side"] == null ? SpriteManager.RoundedSide.W : (SpriteManager.RoundedSide)jnElement["rounded_side"].AsInt,
-                                    funcJSON = jnElement["func"],
+                                    rounded = jnElement["rounded"] == null ? 1 : jnElement["rounded"].AsInt, // roundness can be prevented by setting rounded to 0.
+                                    roundedSide = jnElement["rounded_side"] == null ? SpriteManager.RoundedSide.W : (SpriteManager.RoundedSide)jnElement["rounded_side"].AsInt, // default side should be Whole.
+                                    funcJSON = jnElement["func"], // function to run when the element is clicked.
                                     reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j),
-                                    fromLoop = j > 0,
+                                    fromLoop = j > 0, // if element has been spawned from the loop or if its the first / only of its kind.
+                                    loop = loop,
                                 });
 
                                 break;
