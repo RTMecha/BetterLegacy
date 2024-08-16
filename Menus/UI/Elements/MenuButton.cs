@@ -11,7 +11,7 @@ using BetterLegacy.Components;
 
 using TMPro;
 
-namespace BetterLegacy.Menus.UI
+namespace BetterLegacy.Menus.UI.Elements
 {
     public class MenuButton : MenuText
     {

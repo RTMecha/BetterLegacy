@@ -17,8 +17,10 @@ using LSFunctions;
 using System.IO;
 using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Configs;
+using BetterLegacy.Menus.UI.Elements;
+using BetterLegacy.Menus.UI.Layouts;
 
-namespace BetterLegacy.Menus.UI
+namespace BetterLegacy.Menus.UI.Interfaces
 {
     public abstract class MenuBase
     {
@@ -107,6 +109,11 @@ namespace BetterLegacy.Menus.UI
                     if (element.isSpawning)
                     {
                         element.Update();
+                    }
+
+                    if (element is MenuButton menuButton)
+                    {
+                        menuButton.isHovered = false;
                     }
                 }
                 return;

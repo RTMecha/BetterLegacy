@@ -15,7 +15,7 @@ using SimpleJSON;
 using BetterLegacy.Core;
 using BetterLegacy.Configs;
 
-namespace BetterLegacy.Menus.UI
+namespace BetterLegacy.Menus.UI.Elements
 {
     public class MenuText : MenuImage
     {

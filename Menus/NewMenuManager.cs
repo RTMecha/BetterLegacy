@@ -17,6 +17,7 @@ using SimpleJSON;
 using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Configs;
 using System.IO;
+using BetterLegacy.Menus.UI.Interfaces;
 
 namespace BetterLegacy.Menus
 {

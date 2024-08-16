@@ -15,8 +15,10 @@ using System.IO;
 using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Configs;
 using LSFunctions;
+using BetterLegacy.Menus.UI.Elements;
+using BetterLegacy.Menus.UI.Layouts;
 
-namespace BetterLegacy.Menus.UI
+namespace BetterLegacy.Menus.UI.Interfaces
 {
     public class CustomMenu : MenuBase
     {
@@ -27,6 +29,8 @@ namespace BetterLegacy.Menus.UI
 
         public override IEnumerator GenerateUI()
         {
+            selected = Vector2Int.zero;
+
             NewMenuManager.inst.PlayMusic();
 
             var canvas = UIManager.GenerateUICanvas(nameof(CustomMenu), null, sortingOrder: 900);
@@ -41,17 +45,11 @@ namespace BetterLegacy.Menus.UI
             {
                 var layout = layouts.ElementAt(i).Value;
                 if (layout is MenuGridLayout gridLayout)
-                {
                     SetupGridLayout(gridLayout, gameObject.transform);
-                }
                 if (layout is MenuHorizontalLayout horizontalLayout)
-                {
                     SetupHorizontalLayout(horizontalLayout, gameObject.transform);
-                }
                 if (layout is MenuVerticalLayout verticalLayout)
-                {
                     SetupVerticalLayout(verticalLayout, gameObject.transform);
-                }
             }
 
             for (int i = 0; i < elements.Count; i++)

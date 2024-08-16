@@ -3,7 +3,7 @@ using SimpleJSON;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace BetterLegacy.Menus.UI
+namespace BetterLegacy.Menus.UI.Layouts
 {
     public class MenuGridLayout : MenuLayoutBase
     {

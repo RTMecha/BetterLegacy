@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BetterLegacy.Menus.UI
+namespace BetterLegacy.Menus.UI.Layouts
 {
     public abstract class MenuHorizontalOrVerticalLayout : MenuLayoutBase
     {

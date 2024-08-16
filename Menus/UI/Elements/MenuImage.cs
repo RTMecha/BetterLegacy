@@ -18,8 +18,9 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
 using LSFunctions;
 using System.IO;
+using BetterLegacy.Menus.UI.Interfaces;
 
-namespace BetterLegacy.Menus.UI
+namespace BetterLegacy.Menus.UI.Elements
 {
     /// <summary>
     /// TODO: Make this the base for other menu items.

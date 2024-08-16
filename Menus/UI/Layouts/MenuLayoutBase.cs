@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 using UnityEngine;
 
-namespace BetterLegacy.Menus.UI
+namespace BetterLegacy.Menus.UI.Layouts
 {
     public abstract class MenuLayoutBase
     {
