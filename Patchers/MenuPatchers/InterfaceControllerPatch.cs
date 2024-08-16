@@ -110,7 +110,7 @@ namespace BetterLegacy.Patchers
 
             if (__instance.gameObject.scene.name == "Main Menu")
             {
-                NewMenuManager.inst.Test();
+                NewMenuManager.inst.StartupInterface();
 
                 Destroy(__instance.gameObject);
 
