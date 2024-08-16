@@ -73,6 +73,21 @@ namespace BetterLegacy.Menus.UI.Elements
         public JSONNode funcJSON;
 
         /// <summary>
+        /// Function JSON called whenever the element is clicked.
+        /// </summary>
+        public Action func;
+
+        /// <summary>
+        /// Function JSON to parse when the element spawns.
+        /// </summary>
+        public JSONNode spawnFuncJSON;
+
+        /// <summary>
+        /// Function called when the element spawns.
+        /// </summary>
+        public Action spawnFunc;
+
+        /// <summary>
         /// Interaction component.
         /// </summary>
         public Clickable clickable;
@@ -163,11 +178,24 @@ namespace BetterLegacy.Menus.UI.Elements
                 isSpawning = false;
         }
 
+        public void ParseFunction(JSONNode jn)
+        {
+            if (jn.IsArray)
+            {
+                for (int i = 0; i < jn.Count; i++)
+                    ParseFunctionSingle(jn[i]);
+
+                return;
+            }
+
+            ParseFunctionSingle(jn);
+        }
+
         /// <summary>
         /// Parses the "func" JSON and performs an action based on the name and parameters.
         /// </summary>
         /// <param name="jn">The func JSON. Must have a name and a params array.</param>
-        public void ParseFunction(JSONNode jn)
+        public void ParseFunctionSingle(JSONNode jn)
         {
             var parameters = jn["params"];
             string name = jn["name"];
@@ -305,6 +333,33 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         /// <returns>A string containing the objects' ID and name.</returns>
         public override string ToString() => $"{id} - {name}";
+
+        /// <summary>
+        /// Generates a JSON based on a direct RectTransforms' values.
+        /// </summary>
+        /// <param name="rectTransform">RectTransform to convert to JSON.</param>
+        /// <returns></returns>
+        public static JSONNode GenerateRectTransformJSON(RectTransform rectTransform) => GenerateRectTransformJSON(rectTransform.anchoredPosition, rectTransform.anchorMax, rectTransform.anchorMin, rectTransform.pivot, rectTransform.sizeDelta);
+
+        /// <summary>
+        /// Generates JSON based on a RectTransforms' values.
+        /// </summary>
+        /// <param name="anc_pos">From anchoredPosition.</param>
+        /// <param name="anc_max">From anchorMax.</param>
+        /// <param name="anc_min">From anchorMin.</param>
+        /// <param name="pivot">From pivot.</param>
+        /// <param name="size">From size.</param>
+        /// <returns></returns>
+        public static JSONNode GenerateRectTransformJSON(Vector2 anc_pos, Vector2 anc_max, Vector2 anc_min, Vector2 pivot, Vector2 size)
+        {
+            var jn = JSON.Parse("{}");
+            jn["anc_pos"] = anc_pos.ToJSON();
+            jn["anc_max"] = anc_max.ToJSON();
+            jn["anc_min"] = anc_min.ToJSON();
+            jn["pivot"] = pivot.ToJSON();
+            jn["size"] = size.ToJSON();
+            return jn;
+        }
 
         #endregion
     }
