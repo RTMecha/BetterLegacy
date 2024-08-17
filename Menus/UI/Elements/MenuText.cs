@@ -152,6 +152,10 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         public int textColor;
 
+        public float textHue;
+        public float textSat;
+        public float textVal;
+
         /// <summary>
         /// The elements' text.
         /// </summary>
