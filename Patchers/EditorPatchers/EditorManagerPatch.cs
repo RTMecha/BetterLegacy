@@ -89,8 +89,9 @@ namespace BetterLegacy.Patchers
                 Updater.levelProcessor = null;
             }
 
-            Menus.NewMenuManager.inst.StopMusic();
-            Menus.NewMenuManager.inst.Clear();
+            Menus.InterfaceManager.inst.StopMusic();
+            Menus.InterfaceManager.inst.Clear();
+            CoreHelper.InStory = false;
 
             #region Editor Theme Setup
 
