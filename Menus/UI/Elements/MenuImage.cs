@@ -27,6 +27,8 @@ namespace BetterLegacy.Menus.UI.Elements
     /// </summary>
     public class MenuImage
     {
+        #region Public Fields
+
         /// <summary>
         /// GameObject reference.
         /// </summary>
@@ -113,6 +115,21 @@ namespace BetterLegacy.Menus.UI.Elements
         public int color;
 
         /// <summary>
+        /// Hue color offset.
+        /// </summary>
+        public float hue;
+
+        /// <summary>
+        /// Saturation color offset.
+        /// </summary>
+        public float sat;
+
+        /// <summary>
+        /// Value color offset.
+        /// </summary>
+        public float val;
+
+        /// <summary>
         /// True if the element is spawning (playing spawn animations, etc), otherwise false.
         /// </summary>
         public bool isSpawning;
@@ -156,6 +173,14 @@ namespace BetterLegacy.Menus.UI.Elements
         /// Contains all reactive settings.
         /// </summary>
         public ReactiveSetting reactiveSetting;
+
+        #endregion
+
+        #region Private Fields
+
+        List<RTAnimation> animations = new List<RTAnimation>();
+
+        #endregion
 
         #region Methods
 
@@ -278,6 +303,14 @@ namespace BetterLegacy.Menus.UI.Elements
                         var value = DataManager.inst.GetSettingInt(parameters.IsArray ? parameters[0] : parameters["setting"], parameters.IsArray ? parameters[1].AsInt : parameters["default"].AsInt) > (parameters.IsArray ? parameters[2].AsInt : parameters["value"].AsInt);
                         return !not ? value : !value;
                     }
+                case "IsScene":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["scene"] == null)
+                            break;
+
+                        var value = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == (parameters.IsArray ? parameters[0] : parameters["scene"]);
+                        return !not ? value : !value;
+                    }
             }
 
             return false;
@@ -286,7 +319,7 @@ namespace BetterLegacy.Menus.UI.Elements
         /// <summary>
         /// Parses the "func" JSON and performs an action based on the name and parameters.
         /// </summary>
-        /// <param name="jn">The func JSON. Must have a name and a params array. If it has a "if_func"</param>
+        /// <param name="jn">The func JSON. Must have a name and a params array. If it has a "if_func", then it will parse and check if it's true.</param>
         public void ParseFunctionSingle(JSONNode jn, bool allowIfFunc = true)
         {
             if (jn["if_func"] != null && allowIfFunc)
@@ -513,7 +546,7 @@ namespace BetterLegacy.Menus.UI.Elements
                 case "SetCurrentInterface":
                     {
                         if (parameters != null && (parameters.IsArray && parameters.Count >= 1 || parameters.IsObject && parameters["id"] != null))
-                            NewMenuManager.inst.SetCurrentInterface(parameters.IsArray ? parameters[0] : parameters["id"]);
+                            InterfaceManager.inst.SetCurrentInterface(parameters.IsArray ? parameters[0] : parameters["id"]);
 
                         break;
                     }
@@ -526,7 +559,8 @@ namespace BetterLegacy.Menus.UI.Elements
                 // Function has no parameters.
                 case "Reload":
                     {
-                        NewMenuManager.inst.StartupInterface();
+                        ChangeLogMenu.Seen = false;
+                        InterfaceManager.inst.StartupInterface();
 
                         break;
                     }
@@ -565,9 +599,9 @@ namespace BetterLegacy.Menus.UI.Elements
                             return;
 
                         if (parameters.IsArray && parameters.Count > 2 || parameters.IsObject && parameters["path"] != null)
-                            NewMenuManager.inst.MainDirectory = RTFile.ApplicationDirectory + FontManager.TextTranslater.ReplaceProperties(parameters.IsArray ? parameters[2] : parameters["path"]);
+                            InterfaceManager.inst.MainDirectory = RTFile.ApplicationDirectory + FontManager.TextTranslater.ReplaceProperties(parameters.IsArray ? parameters[2] : parameters["path"]);
 
-                        var path = RTFile.CombinePath(NewMenuManager.inst.MainDirectory, $"{(parameters.IsArray ? parameters[0].Value : parameters["file"].Value)}.lsi");
+                        var path = RTFile.CombinePath(InterfaceManager.inst.MainDirectory, $"{(parameters.IsArray ? parameters[0].Value : parameters["file"].Value)}.lsi");
 
                         if (!RTFile.FileExists(path))
                         {
@@ -581,18 +615,18 @@ namespace BetterLegacy.Menus.UI.Elements
                         var menu = CustomMenu.Parse(interfaceJN);
                         menu.filePath = path;
 
-                        if (NewMenuManager.inst.interfaces.Has(x => x.id == menu.id))
+                        if (InterfaceManager.inst.interfaces.Has(x => x.id == menu.id))
                         {
                             if (parameters.IsArray && (parameters.Count < 2 || Parser.TryParse(parameters[1], false)) || parameters.IsObject && Parser.TryParse(parameters["load"], true))
-                                NewMenuManager.inst.SetCurrentInterface(menu.id);
+                                InterfaceManager.inst.SetCurrentInterface(menu.id);
 
                             return;
                         }    
 
-                        NewMenuManager.inst.interfaces.Add(menu);
+                        InterfaceManager.inst.interfaces.Add(menu);
 
                         if (parameters.IsArray && (parameters.Count < 2 || Parser.TryParse(parameters[1], false)) || parameters.IsObject && Parser.TryParse(parameters["load"], true))
-                            NewMenuManager.inst.SetCurrentInterface(menu.id);
+                            InterfaceManager.inst.SetCurrentInterface(menu.id);
 
                         break;
                     }
@@ -638,7 +672,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["path"] == null)
                             return;
 
-                        NewMenuManager.inst.MainDirectory = RTFile.ApplicationDirectory + FontManager.TextTranslater.ReplaceProperties(parameters.IsArray ? parameters[0] : parameters["path"]);
+                        InterfaceManager.inst.MainDirectory = RTFile.ApplicationDirectory + FontManager.TextTranslater.ReplaceProperties(parameters.IsArray ? parameters[0] : parameters["path"]);
 
                         break;
                     }
@@ -665,7 +699,7 @@ namespace BetterLegacy.Menus.UI.Elements
                 // }
                 case "PlaySound":
                     {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["sound"] == null || NewMenuManager.inst.CurrentMenu == null)
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["sound"] == null || InterfaceManager.inst.CurrentMenu == null)
                             return;
 
                         string sound = parameters.IsArray ? parameters[0] : parameters["sound"];
@@ -676,7 +710,7 @@ namespace BetterLegacy.Menus.UI.Elements
                             return;
                         }
 
-                        var filePath = $"{Path.GetDirectoryName(NewMenuManager.inst.CurrentMenu.filePath)}{sound}";
+                        var filePath = $"{Path.GetDirectoryName(InterfaceManager.inst.CurrentMenu.filePath)}{sound}";
                         var audioType = RTFile.GetAudioType(filePath);
                         if (audioType == AudioType.MPEG)
                             AudioManager.inst.PlaySound(LSAudio.CreateAudioClipUsingMP3File(filePath));
@@ -743,7 +777,7 @@ namespace BetterLegacy.Menus.UI.Elements
                 #region AnimateID
 
                 // Finds an element with a matching ID and animates it.
-                // Supports only JSON array.
+                // Supports both JSON array and JSON object.
                 //
                 // - JSON Array Structure -
                 // 0 = ID
@@ -792,15 +826,154 @@ namespace BetterLegacy.Menus.UI.Elements
                 //     ]
                 //   } < function to run when animation is complete.
                 // ]
+                // 
+                // - JSON Object Structure -
+                // "id"
+                // "type"
+                // "loop"
+                // "events" ("x", "y", "z")
+                // Example:
+                // {
+                //   "id": "0",
+                //   "type": "1", < animates scale
+                //   "loop": "False", < loop doesn't need to exist.
+                //   "events": {
+                //     "x": [
+                //       {
+                //         "t": "0",
+                //         "val": "0"
+                //       }
+                //     ],
+                //     "y": [
+                //       {
+                //         "t": "0",
+                //         "val": "0"
+                //       }
+                //     ],
+                //     "y": [
+                //       {
+                //         "t": "0",
+                //         "val": "0"
+                //       }
+                //     ]
+                //   },
+                //   "done_func": { < function code here
+                //   }
+                // }
                 case "AnimateID":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["id"] == null)
+                            return;
+
+                        var isArray = parameters.IsArray;
+                        string id = isArray ? parameters[0] : parameters["id"]; // ID of an object to animate
+                        var type = Parser.TryParse(isArray ? parameters[1] : parameters["type"], 0); // which type to animate (e.g. 0 = position, 1 = scale, 2 = rotation)
+
+                        if (InterfaceManager.inst.CurrentMenu.elements.TryFind(x => x.id == id, out MenuImage element))
+                        {
+                            var animation = new RTAnimation($"Interface Element Animation {element.id}"); // no way element animation reference :scream:
+
+                            animation.loop = isArray ? parameters[2].AsBool : parameters["loop"].AsBool;
+
+                            var events = isArray ? parameters[3] : parameters["events"];
+
+                            JSONNode lastX = null;
+                            float x = 0f;
+                            if (events["x"] != null)
+                            {
+                                List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                for (int i = 0; i < events["x"].Count; i++)
+                                {
+                                    var kf = events["x"][i];
+                                    var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? element.GetTransform(type, 0) : 0f);
+                                    x = kf["rel"].AsBool ? x + val : val;
+                                    keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                    lastX = kf["val"];
+                                }
+                                animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, x => { element.SetTransform(type, 0, x); }));
+                            }
+
+                            JSONNode lastY = null;
+                            float y = 0f;
+                            if (events["y"] != null)
+                            {
+                                List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                for (int i = 0; i < events["y"].Count; i++)
+                                {
+                                    var kf = events["y"][i];
+                                    var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? element.GetTransform(type, 1) : 0f);
+                                    y = kf["rel"].AsBool ? y + val : val;
+                                    keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, y, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                    lastY = kf["val"];
+                                }
+                                animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, x => { element.SetTransform(type, 1, x); }));
+                            }
+
+                            JSONNode lastZ = null;
+                            float z = 0f;
+                            if (events["z"] != null)
+                            {
+                                List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                for (int i = 0; i < events["z"].Count; i++)
+                                {
+                                    var kf = events["z"][i];
+                                    var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? element.GetTransform(type, 2) : 0f);
+                                    z = kf["rel"].AsBool ? z + val : val;
+                                    keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, z, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                    lastZ = kf["val"];
+                                }
+                                animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, x => { element.SetTransform(type, 2, x); }));
+                            }
+
+                            animation.onComplete = () =>
+                            {
+                                if (animation.loop)
+                                {
+                                    if (isArray && parameters.Count > 4 && parameters[4] != null || parameters["done_func"] != null)
+                                        ParseFunction(isArray ? parameters[4] : parameters["done_func"]);
+
+                                    return;
+                                }
+
+                                AnimationManager.inst.RemoveID(animation.id);
+                                animations.RemoveAll(x => x.id == animation.id);
+
+                                if (lastX != null)
+                                    element.SetTransform(type, 0, x);
+                                if (lastY != null)
+                                    element.SetTransform(type, 1, y);
+                                if (lastZ != null)
+                                    element.SetTransform(type, 2, z);
+
+                                if (isArray && parameters.Count > 4 && parameters[4] != null || parameters["done_func"] != null)
+                                    ParseFunction(isArray ? parameters[4] : parameters["done_func"]);
+                            };
+
+                            animations.Add(animation);
+                            AnimationManager.inst.Play(animation);
+                        }
+
+                        break;
+                    }
+
+                #endregion
+
+                #region AnimateName
+
+                // Same as animate ID, except instead of searching for an elements' ID, you search for a name.
+                // No example needed.
+                case "AnimateName": // in case you'd rather find an objects' name instead of ID.
                     {
                         if (parameters == null || parameters.Count < 1)
                             return;
 
-                        var id = parameters[0]; // ID of an object to animate
+                        var elementName = parameters[0]; // Name of an object to animate
                         var type = Parser.TryParse(parameters[1], 0); // which type to animate (e.g. 0 = position, 1 = scale, 2 = rotation)
 
-                        if (NewMenuManager.inst.CurrentMenu.elements.TryFind(x => x.id == id, out MenuImage element))
+                        if (InterfaceManager.inst.CurrentMenu.elements.TryFind(x => x.name == elementName, out MenuImage element))
                         {
                             var animation = new RTAnimation("Interface Element Animation"); // no way element animation reference :scream:
 
@@ -891,103 +1064,88 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 #endregion
 
-                #region AnimateName
+                #region StopAnimations
 
-                // Same as animate ID, except instead of searching for an elements' ID, you search for a name.
-                // No example needed.
-                case "AnimateName": // in case you'd rather find an objects' name instead of ID.
+                // Stops all local animations created from the element.
+                // Supports both JSON array and JSON object.
+                //
+                // - JSON Array Structure -
+                // 0 = stop (runs onComplete method)
+                // 1 = id
+                // 2 = name
+                // Example:
+                // [
+                //   "True", < makes the animation run its on complete function.
+                //   "0", < makes the animation run its on complete function.
+                //   "0" < makes the animation run its on complete function.
+                // ]
+                //
+                // - JSON Object Structure -
+                // "stop"
+                // "id"
+                // "name"
+                // Example:
+                // {
+                //   "run_done_func": "False", < doesn't run on complete functions.
+                //   "id": "0", < tries to find an element with the matching ID.
+                //   "name": "355367" < checks if the animations' name contains this. If it does, then stop the animation. (name is based on the element ID it animates)
+                // }
+                case "StopAnimations":
                     {
-                        if (parameters == null || parameters.Count < 1)
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["run_done_func"] == null)
                             return;
 
-                        var elementName = parameters[0]; // Name of an object to animate
-                        var type = Parser.TryParse(parameters[1], 0); // which type to animate (e.g. 0 = position, 1 = scale, 2 = rotation)
+                        var stop = parameters.IsArray ? parameters[0].AsBool : parameters["run_done_func"].AsBool;
 
-                        if (NewMenuManager.inst.CurrentMenu.elements.TryFind(x => x.name == elementName, out MenuImage element))
+                        var animations = this.animations;
+                        string id = parameters.IsArray && parameters.Count > 1 ? parameters[1] : parameters.IsObject && parameters["id"] != null ? parameters["id"] : "";
+                        if (!string.IsNullOrEmpty(id) && InterfaceManager.inst.CurrentMenu.elements.TryFind(x => x.id == id, out MenuImage menuImage))
+                            animations = menuImage.animations;
+
+                        string animName = parameters.IsArray && parameters.Count > 2 ? parameters[2] : parameters.IsObject && parameters["name"] != null ? parameters["name"] : "";
+
+                        for (int i = 0; i < animations.Count; i++)
                         {
-                            var animation = new RTAnimation("Interface Element Animation"); // no way element animation reference :scream:
+                            var animation = animations[i];
+                            if (!string.IsNullOrEmpty(animName) && !animation.name.Replace("Interface Element Animation ", "").Contains(animName))
+                                continue;
 
-                            animation.loop = parameters[2].AsBool;
+                            if (stop)
+                                animation.onComplete?.Invoke();
 
-                            JSONNode lastX = null;
-                            float x = 0f;
-                            if (parameters[3]["x"] != null)
-                            {
-                                List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
-                                for (int i = 0; i < parameters[3]["x"].Count; i++)
-                                {
-                                    var kf = parameters[3]["x"][i];
-                                    var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? element.GetTransform(type, 0) : 0f);
-                                    x = kf["rel"].AsBool ? x + val : val;
-                                    keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
-
-                                    lastX = kf["val"];
-                                }
-                                animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, x => { element.SetTransform(type, 0, x); }));
-                            }
-
-                            JSONNode lastY = null;
-                            float y = 0f;
-                            if (parameters[3]["y"] != null)
-                            {
-                                List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
-                                for (int i = 0; i < parameters[3]["y"].Count; i++)
-                                {
-                                    var kf = parameters[3]["y"][i];
-                                    var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? element.GetTransform(type, 1) : 0f);
-                                    y = kf["rel"].AsBool ? y + val : val;
-                                    keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, y, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
-
-                                    lastY = kf["val"];
-                                }
-                                animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, x => { element.SetTransform(type, 1, x); }));
-                            }
-
-                            JSONNode lastZ = null;
-                            float z = 0f;
-                            if (parameters[3]["z"] != null)
-                            {
-                                List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
-                                for (int i = 0; i < parameters[3]["z"].Count; i++)
-                                {
-                                    var kf = parameters[3]["z"][i];
-                                    var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? element.GetTransform(type, 2) : 0f);
-                                    z = kf["rel"].AsBool ? z + val : val;
-                                    keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, z, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
-
-                                    lastZ = kf["val"];
-                                }
-                                animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, x => { element.SetTransform(type, 2, x); }));
-                            }
-
-                            animation.onComplete = () =>
-                            {
-                                if (animation.loop)
-                                {
-                                    if (parameters.Count > 4 && parameters[4] != null)
-                                        ParseFunction(parameters[4]);
-                                    return;
-                                }
-
-                                AnimationManager.inst.RemoveID(animation.id);
-                                animations.RemoveAll(x => x.id == animation.id);
-
-                                if (lastX != null)
-                                    element.SetTransform(type, 0, x);
-                                if (lastY != null)
-                                    element.SetTransform(type, 1, y);
-                                if (lastZ != null)
-                                    element.SetTransform(type, 2, z);
-
-                                if (parameters.Count <= 4 || parameters[4] == null)
-                                    return;
-
-                                ParseFunction(parameters[4]);
-                            };
-
-                            animations.Add(animation);
-                            AnimationManager.inst.Play(animation);
+                            animation.Stop();
+                            AnimationManager.inst.RemoveID(animation.id);
                         }
+
+                        break;
+                    }
+
+                #endregion
+
+                #region SetColor
+
+                // Sets the elements' color slot.
+                // Supports both JSON array and JSON object.
+                //
+                // - JSON Array Structure -
+                // 0 = color
+                // Example:
+                // [
+                //   "2"
+                // ]
+                //
+                // - JSON Object Structure -
+                // "col"
+                // Example:
+                // {
+                //   "col": "17" < uses Beatmap Theme object color slots, so max should be 17 (including 0).
+                // }
+                case "SetColor":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["col"] == null)
+                            return;
+
+                        color = parameters["col"];
 
                         break;
                     }
@@ -1049,22 +1207,26 @@ namespace BetterLegacy.Menus.UI.Elements
         /// <param name="pivot">From pivot.</param>
         /// <param name="size">From size.</param>
         /// <returns></returns>
-        public static JSONNode GenerateRectTransformJSON(Vector2 anc_pos, Vector2 anc_max, Vector2 anc_min, Vector2 pivot, Vector2 size)
+        public static JSONNode GenerateRectTransformJSON(Vector2 anc_pos, Vector2 anc_max, Vector2 anc_min, Vector2 pivot, Vector2 size, float rot = 0f)
         {
             var jn = JSON.Parse("{}");
-            jn["anc_pos"] = anc_pos.ToJSON();
-            jn["anc_max"] = anc_max.ToJSON();
-            jn["anc_min"] = anc_min.ToJSON();
-            jn["pivot"] = pivot.ToJSON();
-            jn["size"] = size.ToJSON();
+
+            if (anc_pos != Vector2.zero)
+                jn["anc_pos"] = anc_pos.ToJSON();
+            if (anc_max != new Vector2(0.5f, 0.5f))
+                jn["anc_max"] = anc_max.ToJSON();
+            if (anc_min != new Vector2(0.5f, 0.5f))
+                jn["anc_min"] = anc_min.ToJSON();
+            if (pivot != new Vector2(0.5f, 0.5f))
+                jn["pivot"] = pivot.ToJSON();
+            if (pivot != new Vector2(100f, 100f))
+                jn["size"] = size.ToJSON();
+
+            if (rot != 0f)
+                jn["rot"] = rot.ToString();
+
             return jn;
         }
-
-        #endregion
-
-        #region Private Fields
-
-        List<RTAnimation> animations = new List<RTAnimation>();
 
         #endregion
     }
