@@ -94,6 +94,7 @@ namespace BetterLegacy.Story
 
         public IEnumerator IPlay(string name)
         {
+            CoreHelper.InStory = true;
             StoryLevel storyLevel = LoadLevel(name);
 
             var level = new Level(MetaData.Parse(JSON.Parse(storyLevel.jsonMetadata)), storyLevel.icon, storyLevel.song);
@@ -112,6 +113,8 @@ namespace BetterLegacy.Story
                     File.Delete(levelPath);
                 if (RTFile.FileExists(playersPath))
                     File.Delete(playersPath);
+
+                CoreHelper.InStory = false;
             };
 
             StartCoroutine(LevelManager.Play(level));

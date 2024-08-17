@@ -64,6 +64,11 @@ namespace BetterLegacy.Core.Helpers
         public static bool InMenu => MenuManager.inst.ic;
 
         /// <summary>
+        /// If the player is in the Classic Arrhythmia story mode.
+        /// </summary>
+        public static bool InStory { get; set; }
+
+        /// <summary>
         /// If the game is loading.
         /// </summary>
         public static bool Loading => GameManager.inst && GameManager.inst.gameState == GameManager.State.Loading;
@@ -326,6 +331,8 @@ namespace BetterLegacy.Core.Helpers
         #endregion
 
         #region Strings
+
+        public static string[] GetLines(string str) => str.Split(new string[] { "\n", "\r\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
 
         public static string InterpolateString(string str, float t) => str.Substring(0, Mathf.Clamp((int)RTMath.Lerp(0, str.Length, t), 0, str.Length));
 
