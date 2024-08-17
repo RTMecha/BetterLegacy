@@ -291,7 +291,7 @@ namespace BetterLegacy.Menus.UI.Elements
         {
             if (jn["if_func"] != null && allowIfFunc)
             {
-                if (!ParseIfFunctionSingle(jn["if_func"]))
+                if (!ParseIfFunction(jn["if_func"]))
                     return;
             }
 
