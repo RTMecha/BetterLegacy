@@ -30,17 +30,12 @@ namespace BetterLegacy
         public static readonly Harmony harmony = new Harmony("BetterLegacy");
         public static Core.Version ModVersion => new Core.Version(PluginInfo.PLUGIN_VERSION);
 
-        static CoreConfig coreConfig;
-        static EditorConfig editorConfig;
-        static ArcadeConfig arcadeConfig;
-        static MenuConfig menuConfig;
-        static EventsConfig eventsConfig;
-        static ModifiersConfig modifiersConfig;
-        static PlayerConfig playerConfig;
-        static ExampleConfig exampleConfig;
         static EditorPrefabHolder editorPrefabHolder;
         static CorePrefabHolder corePrefabHolder;
 
+        public static List<BaseConfig> configs = new List<BaseConfig>();
+
+        public static Sprite PALogoSprite { get; set; }
         public static Sprite LockSprite { get; set; }
         public static Sprite EmptyObjectSprite { get; set; }
         public static Sprite AtanPlaceholder { get; set; }
@@ -96,14 +91,14 @@ namespace BetterLegacy
                 if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "profile"))
                     Directory.CreateDirectory(RTFile.ApplicationDirectory + "profile");
 
-                coreConfig = new CoreConfig();
-                editorConfig = new EditorConfig();
-                arcadeConfig = new ArcadeConfig();
-                menuConfig = new MenuConfig();
-                eventsConfig = new EventsConfig();
-                modifiersConfig = new ModifiersConfig();
-                playerConfig = new PlayerConfig();
-                exampleConfig = new ExampleConfig();
+                configs.Add(new CoreConfig());
+                configs.Add(new EditorConfig());
+                configs.Add(new ArcadeConfig());
+                configs.Add(new MenuConfig());
+                configs.Add(new EventsConfig());
+                configs.Add(new ModifiersConfig());
+                configs.Add(new PlayerConfig());
+                configs.Add(new ExampleConfig());
             }
             catch (Exception ex)
             {
@@ -124,6 +119,7 @@ namespace BetterLegacy
                 LockSprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}lock.png");
                 EmptyObjectSprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_empty.png");
                 AtanPlaceholder = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}atan-placeholder.png");
+                PALogoSprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}pa_logo.png");
             }
             catch (Exception ex)
             {
