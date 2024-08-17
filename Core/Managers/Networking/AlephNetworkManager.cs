@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 using UnityEngine;
 using UnityEngine.Networking;
@@ -18,7 +20,7 @@ namespace BetterLegacy.Core.Managers.Networking
 
         public static void Init()
         {
-            var gameObject = new GameObject("NetworkManager");
+            var gameObject = new GameObject(nameof(AlephNetworkManager));
             gameObject.transform.SetParent(SystemManager.inst.transform);
             gameObject.AddComponent<AlephNetworkManager>();
             gameObject.AddComponent<AlephNetworkEditorManager>();
@@ -47,6 +49,27 @@ namespace BetterLegacy.Core.Managers.Networking
 
             yield break;
         }
+
+        public static IEnumerator GetResponseCode(string url, Action<long> result)
+        {
+            using var www = UnityWebRequest.Get(url);
+            www.certificateHandler = new ForceAcceptAll();
+            yield return www.SendWebRequest();
+            result?.Invoke(www.responseCode);
+        }
+
+        public static async Task<bool> URLExistsAsync(string url) => await Task.Run(() =>
+        {
+            using var www = UnityWebRequest.Get(url);
+            www.certificateHandler = new ForceAcceptAll();
+
+            var webRequest = www.SendWebRequest();
+
+            while (!webRequest.isDone)
+                Thread.Sleep(1);
+
+            return !www.isNetworkError && !www.isHttpError;
+        });
 
         #region Client
 
