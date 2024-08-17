@@ -77,6 +77,10 @@ namespace BetterLegacy.Core
             return (T)binaryFormatter.Deserialize(fileStream);
         }
 
+        public static string CombinePath(string path1, string path2) => Path.Combine(path1, path2).Replace("\\", "/");
+        
+        public static string CombinePath(params string[] paths) => Path.Combine(paths).Replace("\\", "/");
+
         public static AudioType GetAudioType(string str)
         {
             var l = str.LastIndexOf('.');
