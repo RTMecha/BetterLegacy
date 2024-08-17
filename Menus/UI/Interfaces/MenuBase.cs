@@ -20,6 +20,7 @@ using BetterLegacy.Configs;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Layouts;
 using SimpleJSON;
+using BetterLegacy.Core.Animation;
 
 namespace BetterLegacy.Menus.UI.Interfaces
 {
@@ -92,6 +93,16 @@ namespace BetterLegacy.Menus.UI.Interfaces
         public string filePath;
 
         /// <summary>
+        /// Looping animation to be used for all events.
+        /// </summary>
+        public RTAnimation loopingEvents;
+
+        /// <summary>
+        /// Animation to be used for all events when the menu spawns.
+        /// </summary>
+        public RTAnimation spawnEvents;
+
+        /// <summary>
         /// Plays the menus' default music.
         /// </summary>
         public void PlayDefaultMusic()
@@ -138,6 +149,26 @@ namespace BetterLegacy.Menus.UI.Interfaces
             this.canvas = canvas;
             canvas.Canvas.scaleFactor = 1f;
             canvas.CanvasScaler.referenceResolution = new Vector2(1920f, 1080f);
+
+            if (!CoreHelper.InGame)
+            {
+                canvas.Canvas.worldCamera = Camera.main;
+                canvas.Canvas.renderMode = RenderMode.ScreenSpaceCamera;
+                yield return null;
+                canvas.Canvas.renderMode = RenderMode.WorldSpace;
+            }
+
+            if (loopingEvents != null)
+            {
+                loopingEvents.loop = true;
+                AnimationManager.inst.Play(loopingEvents);
+            }
+            
+            if (spawnEvents != null)
+            {
+                spawnEvents.loop = false;
+                AnimationManager.inst.Play(spawnEvents);
+            }
 
             var gameObject = Creator.NewUIObject("Base Layout", canvas.Canvas.transform);
             UIManager.SetRectTransform(gameObject.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
@@ -231,7 +262,15 @@ namespace BetterLegacy.Menus.UI.Interfaces
         {
             isOpen = false;
             selected = Vector2Int.zero;
+
+            for (int i = 0; i < elements.Count; i++)
+                elements[i]?.Clear();
+
             UnityEngine.Object.Destroy(canvas?.GameObject);
+            if (loopingEvents != null)
+                AnimationManager.inst.RemoveID(loopingEvents.id);
+            if (spawnEvents != null)
+                AnimationManager.inst.RemoveID(spawnEvents.id);
         }
 
         /// <summary>
@@ -364,6 +403,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 if (element is MenuText text)
                 {
                     text.textUI.color = Theme.GetObjColor(text.textColor);
+                    text.UpdateText();
                 }
 
                 element.image.color = LSColors.fadeColor(Theme.GetObjColor(element.color), element.opacity);
