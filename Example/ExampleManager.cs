@@ -555,7 +555,7 @@ namespace BetterLegacy.Example
                     baseCanvas.SetActive(ExampleConfig.Instance.EnabledInEditor.Value);
                 else if (GameManager.inst)
                     baseCanvas.SetActive(ExampleConfig.Instance.EnabledInGame.Value);
-                else if (Menus.MenuManager.inst && Menus.MenuManager.inst.ic || Menus.NewMenuManager.inst && Menus.NewMenuManager.inst.CurrentMenu != null)
+                else if (Menus.MenuManager.inst && Menus.MenuManager.inst.ic || Menus.InterfaceManager.inst && Menus.InterfaceManager.inst.CurrentMenu != null)
                     baseCanvas.SetActive(ExampleConfig.Instance.EnabledInMenus.Value);
 
                 canvas.scaleFactor = CoreHelper.ScreenScale;

@@ -18,13 +18,17 @@ using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Configs;
 using System.IO;
 using BetterLegacy.Menus.UI.Interfaces;
+using LSFunctions;
+using System.Text.RegularExpressions;
+using BetterLegacy.Menus.UI.Elements;
+using BetterLegacy.Menus.UI.Layouts;
 
 namespace BetterLegacy.Menus
 {
-    public class NewMenuManager : MonoBehaviour
+    public class InterfaceManager : MonoBehaviour
     {
-        public static NewMenuManager inst;
-        public static void Init() => Creator.NewGameObject(nameof(NewMenuManager), SystemManager.inst.transform).AddComponent<NewMenuManager>();
+        public static InterfaceManager inst;
+        public static void Init() => Creator.NewGameObject(nameof(InterfaceManager), SystemManager.inst.transform).AddComponent<InterfaceManager>();
 
         public float[] samples = new float[256];
 
@@ -218,6 +222,24 @@ namespace BetterLegacy.Menus
             themes.Clear();
         }
 
+        public void LoadThemes()
+        {
+            themes.Clear();
+            var jn = JSON.Parse(RTFile.ReadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Interfaces/default_themes.lst"));
+            for (int i = 0; i < jn["themes"].Count; i++)
+                themes.Add(BeatmapTheme.Parse(jn["themes"][i]));
+
+            if (!RTFile.DirectoryExists($"{RTFile.ApplicationDirectory}beatmaps/interfaces/themes"))
+                return;
+
+            var files = Directory.GetFiles($"{RTFile.ApplicationDirectory}beatmaps/interfaces/themes");
+            for (int i = 0; i < files.Length; i++)
+            {
+                jn = JSON.Parse(RTFile.ReadFromFile(files[i]));
+                themes.Add(BeatmapTheme.Parse(jn));
+            }
+        }
+
         public void StartupInterface()
         {
             if (CurrentMenu != null)
@@ -241,15 +263,13 @@ namespace BetterLegacy.Menus
 
             AudioManager.inst.StopMusic();
 
-            PlayMusic();
+            LoadThemes();
 
             var path = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Interfaces/main_menu.lsi";
             var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
             var menu = CustomMenu.Parse(jn);
             menu.filePath = path;
-            CurrentMenu = menu;
-            StartCoroutine(menu.GenerateUI());
             interfaces.Add(menu);
 
             path = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Interfaces/story_mode.lsi";
@@ -258,6 +278,129 @@ namespace BetterLegacy.Menus
             menu = CustomMenu.Parse(jn);
             menu.filePath = path;
             interfaces.Add(menu);
+
+            if (!MenuConfig.Instance.ShowChangelog.Value || ChangeLogMenu.Seen)
+            {
+                SetCurrentInterface("0");
+                PlayMusic();
+                return;
+            }
+
+            try
+            {
+                StartCoroutine(IStartupInterface());
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Error: {ex}");
+            }
+        }
+
+        IEnumerator IStartupInterface()
+        {
+            yield return StartCoroutine(AlephNetworkManager.DownloadJSONFile("https://raw.githubusercontent.com/RTMecha/BetterLegacy/master/updates.lss", x =>
+            {
+                var changeLogMenu = new ChangeLogMenu();
+
+                changeLogMenu.layouts.Add("updates", new MenuVerticalLayout
+                {
+                    name = "updates",
+                    childControlWidth = true,
+                    childForceExpandWidth = true,
+                    spacing = 4f,
+                    rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(0f, -32f), new Vector2(1f, 1f), new Vector2(0f, 0f), new Vector2(0.5f, 0.5f), new Vector2(-64f, -256f)),
+                });
+
+                changeLogMenu.elements.Add(new MenuText
+                {
+                    id = "1",
+                    name = "Title",
+                    text = "<size=60><b>BetterLegacy Changelog",
+                    rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(-620f, 440f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(400f, 64f)),
+                    icon = LegacyPlugin.PALogoSprite,
+                    iconRectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(-256f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(64f, 64f)),
+                    hideBG = true,
+                    textColor = 6
+                });
+
+                var lines = CoreHelper.GetLines(x);
+
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    var line = lines[i];
+
+                    var regex = new Regex(@"([0-9]+).([0-9]+).([0-9]+) > \[(.*?) ([0-9]+), ([0-9]+)]");
+                    var match = regex.Match(line);
+                    if (match.Success)
+                    {
+                        line = line.Replace(match.Groups[0].ToString(), $"<b>{match.Groups[0]}</b>");
+
+                        if (i != 0)
+                            break; // only current update should show.
+                    }
+
+                    changeLogMenu.AddUpdateNote(line);
+                }
+
+                changeLogMenu.elements.Add(new MenuButton
+                {
+                    id = "0",
+                    name = "Next Menu Button",
+                    text = "<b><align=center>[ NEXT ]",
+                    rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(0f, -400f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 64f)),
+                    func = () => { SetCurrentInterface("0"); },
+                    opacity = 0.1f,
+                    selectedOpacity = 1f,
+                    color = 6,
+                    selectedColor = 6,
+                    textColor = 6,
+                    selectedTextColor = 7,
+                    length = 1f,
+                });
+
+                CurrentMenu = changeLogMenu;
+                StartCoroutine(changeLogMenu.GenerateUI());
+                PlayMusic();
+
+                ChangeLogMenu.Seen = true;
+            }, onError =>
+            {
+                CoreHelper.LogError($"Couldn't reach updates file, continuing...\nError: {onError}");
+                SetCurrentInterface("0");
+                PlayMusic();
+            }));
+            yield break;
+        }
+    }
+
+    public class ChangeLogMenu : MenuBase
+    {
+        public ChangeLogMenu() : base(false) { }
+
+        public static bool Seen { get; set; }
+
+        public void AddUpdateNote(string note)
+        {
+            elements.Add(new MenuText
+            {
+                id = LSText.randomNumString(16),
+                name = "Update Note",
+                text = note,
+                parentLayout = "updates",
+                rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 36f)),
+                hideBG = true,
+                textColor = 6
+            });
+        }
+
+        public override void UpdateTheme()
+        {
+            if (Parser.TryParse(MenuConfig.Instance.InterfaceThemeID.Value, -1) >= 0 && InterfaceManager.inst.themes.TryFind(x => x.id == MenuConfig.Instance.InterfaceThemeID.Value, out BeatmapTheme interfaceTheme))
+                Theme = interfaceTheme;
+            else
+                Theme = InterfaceManager.inst.themes[0];
+
+            base.UpdateTheme();
         }
     }
 

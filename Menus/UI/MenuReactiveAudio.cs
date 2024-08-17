@@ -23,8 +23,8 @@ namespace BetterLegacy.Menus.UI
             {
                 case ReactiveSetting.ControlType.Position:
                     {
-                        float x = NewMenuManager.inst.samples[reactiveSetting.channels[0]] * reactiveSetting.intensity[0];
-                        float y = NewMenuManager.inst.samples[reactiveSetting.channels[1]] * reactiveSetting.intensity[1];
+                        float x = InterfaceManager.inst.samples[reactiveSetting.channels[0]] * reactiveSetting.intensity[0];
+                        float y = InterfaceManager.inst.samples[reactiveSetting.channels[1]] * reactiveSetting.intensity[1];
 
                         gameObject.transform.localPosition = ogPosition + new Vector2(x, y);
 
@@ -32,8 +32,8 @@ namespace BetterLegacy.Menus.UI
                     }
                 case ReactiveSetting.ControlType.Scale:
                     {
-                        float x = NewMenuManager.inst.samples[reactiveSetting.channels[0]] * reactiveSetting.intensity[0];
-                        float y = NewMenuManager.inst.samples[reactiveSetting.channels[1]] * reactiveSetting.intensity[1];
+                        float x = InterfaceManager.inst.samples[reactiveSetting.channels[0]] * reactiveSetting.intensity[0];
+                        float y = InterfaceManager.inst.samples[reactiveSetting.channels[1]] * reactiveSetting.intensity[1];
 
                         gameObject.transform.localScale = ogScale + new Vector3(x, y, 0f);
 
@@ -41,7 +41,7 @@ namespace BetterLegacy.Menus.UI
                     }
                 case ReactiveSetting.ControlType.Rotation:
                     {
-                        float x = NewMenuManager.inst.samples[reactiveSetting.channels[0]] * reactiveSetting.intensity[0];
+                        float x = InterfaceManager.inst.samples[reactiveSetting.channels[0]] * reactiveSetting.intensity[0];
 
                         gameObject.transform.SetLocalRotationEulerZ(x);
 

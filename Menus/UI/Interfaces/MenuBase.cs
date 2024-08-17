@@ -109,7 +109,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         {
             if (music)
             {
-                NewMenuManager.inst.PlayMusic(music);
+                InterfaceManager.inst.PlayMusic(music);
                 return;
             }
 
@@ -124,7 +124,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 if (AudioManager.inst.library.musicClipsRandomIndex.ContainsKey(musicName) && AudioManager.inst.library.musicClipsRandomIndex[musicName] < group.Length)
                     index = AudioManager.inst.library.musicClipsRandomIndex[musicName];
 
-                NewMenuManager.inst.PlayMusic(group[index]);
+                InterfaceManager.inst.PlayMusic(group[index]);
             }
             else if (RTFile.FileExists($"{Path.GetDirectoryName(filePath)}/{musicName}.ogg"))
             {
@@ -132,7 +132,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 {
                     CoreHelper.Log($"Attempting to play music: {musicName}");
                     music = audioClip;
-                    NewMenuManager.inst.PlayMusic(audioClip);
+                    InterfaceManager.inst.PlayMusic(audioClip);
                 }));
             }
         }
@@ -170,6 +170,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 AnimationManager.inst.Play(spawnEvents);
             }
 
+            CoreHelper.Log("Creating layouts...");
+
             var gameObject = Creator.NewUIObject("Base Layout", canvas.Canvas.transform);
             UIManager.SetRectTransform(gameObject.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
 
@@ -184,9 +186,14 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     SetupVerticalLayout(verticalLayout, gameObject.transform);
             }
 
+            CoreHelper.Log("Creating elements...");
+
+            int num = 0;
             for (int i = 0; i < elements.Count; i++)
             {
                 var element = elements[i];
+
+                //CoreHelper.Log($"Creating {element}...");
 
                 if (element is MenuEvent menuEvent)
                 {
@@ -205,6 +212,16 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     if (menuButton.siblingIndex >= 0 && menuButton.siblingIndex < menuButton.gameObject.transform.parent.childCount)
                         menuButton.gameObject.transform.SetSiblingIndex(menuButton.siblingIndex);
 
+                    if (menuButton.autoAlignSelectionPosition && !string.IsNullOrEmpty(element.parentLayout) && layouts.ContainsKey(element.parentLayout))
+                    {
+                        if (layouts[element.parentLayout] is MenuVerticalLayout)
+                            menuButton.selectionPosition = new Vector2Int(0, num);
+                        if (layouts[element.parentLayout] is MenuHorizontalLayout)
+                            menuButton.selectionPosition = new Vector2Int(num, 0);
+
+                        // idk how to handle MenuGridLayout
+                    }
+
                     while (element.isSpawning)
                         yield return null;
 
@@ -212,10 +229,13 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     {
                         if (menuButton.playBlipSound)
                             AudioManager.inst.PlaySound("blip");
-                        menuButton.ParseFunction(menuButton.funcJSON);
+
+                        if (menuButton.funcJSON != null)
+                            menuButton.ParseFunction(menuButton.funcJSON);
                         menuButton.func?.Invoke();
                     };
 
+                    num++;
                     continue;
                 }
 
@@ -240,7 +260,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 {
                     if (element.playBlipSound)
                         AudioManager.inst.PlaySound("blip");
-                    element.ParseFunction(element.funcJSON);
+                    if (element.funcJSON != null)
+                        element.ParseFunction(element.funcJSON);
                     element.func?.Invoke();
                 };
             }
@@ -395,18 +416,18 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 if (element is MenuButton button)
                 {
                     var isSelected = button.selectionPosition == selected;
-                    button.image.color = isSelected ? LSColors.fadeColor(Theme.GetObjColor(button.selectedColor), button.selectedOpacity) : LSColors.fadeColor(Theme.GetObjColor(button.color), button.opacity);
-                    button.textUI.color = isSelected ? Theme.GetObjColor(button.selectedTextColor) : Theme.GetObjColor(button.textColor);
+                    button.image.color = isSelected ? LSColors.fadeColor(CoreHelper.ChangeColorHSV(Theme.GetObjColor(button.selectedColor), button.selectedHue, button.selectedSat, button.selectedVal), button.selectedOpacity) : LSColors.fadeColor(CoreHelper.ChangeColorHSV(Theme.GetObjColor(button.color), button.hue, button.sat, button.val), button.opacity);
+                    button.textUI.color = isSelected ? CoreHelper.ChangeColorHSV(Theme.GetObjColor(button.selectedTextColor), button.selectedTextHue, button.selectedTextSat, button.selectedTextVal) : CoreHelper.ChangeColorHSV(Theme.GetObjColor(button.textColor), button.textHue, button.textSat, button.textVal);
                     continue;
                 }
 
                 if (element is MenuText text)
                 {
-                    text.textUI.color = Theme.GetObjColor(text.textColor);
+                    text.textUI.color = CoreHelper.ChangeColorHSV(Theme.GetObjColor(text.textColor), text.textHue, text.textSat, text.textVal);
                     text.UpdateText();
                 }
 
-                element.image.color = LSColors.fadeColor(Theme.GetObjColor(element.color), element.opacity);
+                element.image.color = LSColors.fadeColor(CoreHelper.ChangeColorHSV(Theme.GetObjColor(element.color), element.hue, element.sat, element.val), element.opacity);
             }
         }
 
