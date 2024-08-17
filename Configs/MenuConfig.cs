@@ -47,6 +47,16 @@ namespace BetterLegacy.Configs
         /// </summary>
         public Setting<int> Theme { get; set; }
 
+        /// <summary>
+        /// The theme of the new interface.
+        /// </summary>
+        public Setting<string> InterfaceThemeID { get; set; }
+
+        /// <summary>
+        /// If the changelog screen should show on game startup.
+        /// </summary>
+        public Setting<bool> ShowChangelog { get; set; }
+
         #endregion
 
         #region Music
@@ -86,7 +96,9 @@ namespace BetterLegacy.Configs
             LoadPageEditor = BindEnum(this, "General", "Load Page Editor key", KeyCode.F10, "The key to load the Page Editor.");
             SelectFirstButton = BindEnum(this, "General", "Select First Button", KeyCode.G, "The key to select the first menu button. This is for cases where menu selection disappears.");
             Theme = Bind(this, "General", "Theme", 0, "The theme of the interface.");
+            InterfaceThemeID = Bind(this, "General", "Interface Theme ID", "-1", "The theme of the new interface.");
             RoundedUI = Bind(this, "General", "Rounded", false, "If most elements in the interface should have a rounded corner.");
+            ShowChangelog = Bind(this, "General", "Show Changelog", true, "If the changelog screen should show on game startup.");
 
             PlayCustomMusic = Bind(this, "Music", "Play Custom Music", true, "If a custom song should play instead of the normal internal menu music.");
             MusicLoadMode = BindEnum(this, "Music", "Load Directory", MenuMusicLoadMode.Settings, "Where the music loads from. Settings path: Project Arrhythmia/settings/menus.");
