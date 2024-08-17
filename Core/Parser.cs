@@ -136,37 +136,35 @@ namespace BetterLegacy.Core
         }
 
         public static Vector2 TryParse(JSONNode jn, Vector2 defaultValue)
-            => new Vector2(
-                jn["x"] == null ? defaultValue.x : jn["x"].AsFloat,
-                jn["y"] == null ? defaultValue.y : jn["y"].AsFloat);
+            => jn == null ? defaultValue :
+                            jn.IsArray ? new Vector2(jn.Count > 0 ? jn[0].AsFloat : defaultValue.x, jn.Count > 1 ? jn[1].AsFloat : defaultValue.y) :
+                            new Vector2(jn["x"] == null ? defaultValue.x : jn["x"].AsFloat, jn["y"] == null ? defaultValue.y : jn["y"].AsFloat);
 
         public static Vector3 TryParse(JSONNode jn, Vector3 defaultValue)
-            => new Vector3(
-                jn["x"] == null ? defaultValue.x : jn["x"].AsFloat,
-                jn["y"] == null ? defaultValue.y : jn["y"].AsFloat,
-                jn["z"] == null ? defaultValue.z : jn["z"].AsFloat);
+            => jn == null ? defaultValue :
+                            jn.IsArray ? new Vector3(jn.Count > 0 ? jn[0].AsFloat : defaultValue.x, jn.Count > 1 ? jn[1].AsFloat : defaultValue.y, jn.Count > 2 ? jn[2].AsFloat : defaultValue.z) :
+                            new Vector3(jn["x"] == null ? defaultValue.x : jn["x"].AsFloat, jn["y"] == null ? defaultValue.y : jn["y"].AsFloat, jn["z"] == null ? defaultValue.z : jn["z"].AsFloat);
 
         public static Vector2Int TryParse(JSONNode jn, Vector2Int defaultValue)
-            => new Vector2Int(
-                jn["x"] == null ? defaultValue.x : jn["x"].AsInt,
-                jn["y"] == null ? defaultValue.y : jn["y"].AsInt);
+            => jn == null ? defaultValue :
+                            jn.IsArray ? new Vector2Int(jn.Count > 0 ? jn[0].AsInt : defaultValue.x, jn.Count > 1 ? jn[1].AsInt : defaultValue.y) :
+                            new Vector2Int(jn["x"] == null ? defaultValue.x : jn["x"].AsInt, jn["y"] == null ? defaultValue.y : jn["y"].AsInt);
 
         public static Vector3Int TryParse(JSONNode jn, Vector3Int defaultValue)
-            => new Vector3Int(
-                jn["x"] == null ? defaultValue.x : jn["x"].AsInt,
-                jn["y"] == null ? defaultValue.y : jn["y"].AsInt,
-                jn["z"] == null ? defaultValue.z : jn["z"].AsInt);
+            => jn == null ? defaultValue :
+                            jn.IsArray ? new Vector3Int(jn.Count > 0 ? jn[0].AsInt : defaultValue.x, jn.Count > 1 ? jn[1].AsInt : defaultValue.y, jn.Count > 2 ? jn[2].AsInt : defaultValue.z) :
+                            new Vector3Int(jn["x"] == null ? defaultValue.x : jn["x"].AsInt, jn["y"] == null ? defaultValue.y : jn["y"].AsInt, jn["z"] == null ? defaultValue.z : jn["z"].AsInt);
 
         public static void ParseRectTransform(RectTransform rectTransform, JSONNode jn)
         {
             if (jn["rot"] != null)
                 rectTransform.SetLocalRotationEulerZ(jn["rot"].AsFloat);
 
-            rectTransform.anchoredPosition = jn["anc_pos"] != null && jn["anc_pos"]["x"] != null && jn["anc_pos"]["y"] != null ? jn["anc_pos"].AsVector2() : Vector2.zero;
-            rectTransform.anchorMax = jn["anc_max"] != null && jn["anc_max"]["x"] != null && jn["anc_max"]["y"] != null ? jn["anc_max"].AsVector2() : new Vector2(0.5f, 0.5f);
-            rectTransform.anchorMin = jn["anc_min"] != null && jn["anc_min"]["x"] != null && jn["anc_min"]["y"] != null ? jn["anc_min"].AsVector2() : new Vector2(0.5f, 0.5f);
-            rectTransform.pivot = jn["pivot"] != null && jn["pivot"]["x"] != null && jn["pivot"]["y"] != null ? jn["pivot"].AsVector2() : new Vector2(0.5f, 0.5f);
-            rectTransform.sizeDelta = jn["size"] != null && jn["size"]["x"] != null && jn["size"]["y"] != null ? jn["size"].AsVector2() : new Vector2(100f, 100f);
+            rectTransform.anchoredPosition = TryParse(jn["anc_pos"], Vector2.zero);
+            rectTransform.anchorMax = TryParse(jn["anc_max"], new Vector2(0.5f, 0.5f));
+            rectTransform.anchorMin = TryParse(jn["anc_min"], new Vector2(0.5f, 0.5f));
+            rectTransform.pivot = TryParse(jn["pivot"], new Vector2(0.5f, 0.5f));
+            rectTransform.sizeDelta = TryParse(jn["size"], new Vector2(100f, 100f));
         }
     }
 }
