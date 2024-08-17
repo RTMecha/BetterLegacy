@@ -9,6 +9,7 @@ using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Components;
+using BetterLegacy.Core.Managers;
 
 using TMPro;
 using SimpleJSON;
@@ -24,14 +25,30 @@ namespace BetterLegacy.Menus.UI.Elements
     {
         public override void Spawn()
         {
-            var text = this.text;
+            timeOffset = Time.time;
+
+            textWithoutFormatting = text;
 
             // Here we replace every instance of <formatting> in the text. Examples include <b>, <i>, <color=#FFFFFF>, etc. We do this to ensure the maxVisibleCharacters value is correct.
             var matches = Regex.Matches(text, "<(.*?)>");
             foreach (var obj in matches)
             {
                 var match = (Match)obj;
-                text = text.Replace(match.Groups[0].ToString(), "");
+                textWithoutFormatting = textWithoutFormatting.Replace(match.Groups[0].ToString(), "");
+            }
+
+            // Regular formatting should be ignored.
+            var quickElementMatches = Regex.Matches(textWithoutFormatting, "{{QuickElement=(.*?)}}");
+
+            foreach (var obj in quickElementMatches)
+            {
+                var match = (Match)obj;
+
+                if (cachedQuickElements == null)
+                    cachedQuickElements = new List<Tuple<float, Match, QuickElement>>(); // if there aren't any matches, there isn't any need for the cachedQuickElements list.
+
+                if (QuickElementManager.AllQuickElements.TryGetValue(match.Groups[1].ToString(), out QuickElement quickElement))
+                    cachedQuickElements.Add(new Tuple<float, Match, QuickElement>(-1f, match, quickElement));
             }
 
             isSpawning = true;
@@ -41,7 +58,7 @@ namespace BetterLegacy.Menus.UI.Elements
                 new AnimationHandler<float>(new List<IKeyframe<float>>
                 {
                     new FloatKeyframe(0f, 0f, Ease.Linear),
-                    new FloatKeyframe(length * (text.Length / 64f), text.Length, Ease.Linear),
+                    new FloatKeyframe(length * (text.Length / 64f), textWithoutFormatting.Length, Ease.Linear),
                                              // ^ Regular spawn length is sometimes too slow for text interpolation so it's sped up relative to the text length. 
                                              // For example, if the text is 32 characters long, it'd be fine. But if it were just 3 letters, it'd be really slow looking.
                 }, Interpolate),
@@ -49,7 +66,7 @@ namespace BetterLegacy.Menus.UI.Elements
             textInterpolation.onComplete = () =>
             {
                 AnimationManager.inst.RemoveID(textInterpolation.id);
-                Interpolate(text.Length);
+                Interpolate(textWithoutFormatting.Length);
                 isSpawning = false;
                 textInterpolation = null;
             };
@@ -76,6 +93,33 @@ namespace BetterLegacy.Menus.UI.Elements
                 AudioManager.inst.PlaySound("Click"); // TODO: Maybe look into custom sound fonts?
 
             textUI.maxVisibleCharacters = val;
+        }
+
+        /// <summary>
+        /// Updates <see cref="textUI"/>s' formatting, so it can utilize QuickElements.
+        /// </summary>
+        public void UpdateText()
+        {
+            time = Time.time - timeOffset * (InputDataManager.inst.menuActions.Submit.IsPressed ? length * 0.3f : length);
+
+            if (cachedQuickElements == null)
+                return;
+
+            for (int i = 0; i < cachedQuickElements.Count; i++)
+            {
+                var matchPair = cachedQuickElements[i];
+                var time = matchPair.Item1 < 0f ? this.time + 1f : matchPair.Item1;
+                var match = matchPair.Item2;
+                var quickElement = matchPair.Item3;
+
+                if (textUI.maxVisibleCharacters > match.Index + match.Groups[1].ToString().Length && matchPair.Item1 < 0f)
+                {
+                    cachedQuickElements[i] = new Tuple<float, Match, QuickElement>(this.time, match, quickElement);
+                    time = this.time;
+                }
+
+                textUI.text = text.Replace(match.Groups[0].ToString(), QuickElementManager.ConvertQuickElement(quickElement, this.time - time));
+            }
         }
 
         /// <summary>
@@ -117,5 +161,13 @@ namespace BetterLegacy.Menus.UI.Elements
         /// The text component of the element.
         /// </summary>
         public TextMeshProUGUI textUI;
+
+        #region Private Fields
+        
+        string textWithoutFormatting;
+
+        List<Tuple<float, Match, QuickElement>> cachedQuickElements;
+
+        #endregion
     }
 }
