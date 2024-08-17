@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using BeatmapObject = DataManager.GameData.BeatmapObject;
@@ -24,12 +25,60 @@ namespace BetterLegacy.Core.Managers
         {
             inst = this;
 
-            if (Resources.LoadAll<QuickElement>("terminal/quick-elements") != null)
+            var resources = Resources.LoadAll<QuickElement>("terminal/quick-elements");
+            if (resources != null)
             {
-                foreach (QuickElement quickElement in Resources.LoadAll<QuickElement>("terminal/quick-elements"))
+                foreach (var quickElement in resources)
                 {
                     if (!quickElements.ContainsKey(quickElement.name))
                         quickElements.Add(quickElement.name, quickElement);
+                }
+
+                if (quickElements.ContainsKey("loading_bar_1"))
+                    quickElements["loading_bar_1"].effects.Add(new QuickElement.Effect { data = new List<string> { "loop" }, name = "loop", });
+
+                if (!quickElements.ContainsKey("blink_loop"))
+                {
+                    quickElements.Add("blink_loop", new QuickElement
+                    {
+                        name = "blink_loop",
+                        keyframes = new List<QuickElement.Keyframe>
+                        {
+                            new QuickElement.Keyframe
+                            {
+                                text = "(._.)",
+                                time = 1f
+                            },
+                            new QuickElement.Keyframe
+                            {
+                                text = "(-_-)",
+                                time = 0.1f
+                            },
+                            new QuickElement.Keyframe
+                            {
+                                text = "(._.)",
+                                time = 0.1f
+                            },
+                            new QuickElement.Keyframe
+                            {
+                                text = "(-_-)",
+                                time = 0.1f
+                            },
+                            new QuickElement.Keyframe
+                            {
+                                text = "(._.)",
+                                time = 1f
+                            },
+                        },
+                        effects = new List<QuickElement.Effect>
+                        {
+                            new QuickElement.Effect
+                            {
+                                name = "loop",
+                                data = new List<string> { "loop" },
+                            }
+                        }
+                    });
                 }
             }
 
@@ -40,21 +89,22 @@ namespace BetterLegacy.Core.Managers
         {
             get
             {
-                foreach (var qe in quickElements)
-                {
-                    if (!allQuickElements.ContainsKey(qe.Key))
-                    {
-                        allQuickElements.Add(qe.Key, qe.Value);
-                    }
-                }
+                //foreach (var qe in quickElements)
+                //{
+                //    if (!allQuickElements.ContainsKey(qe.Key))
+                //    {
+                //        allQuickElements.Add(qe.Key, qe.Value);
+                //    }
+                //}
 
-                foreach (var qe in customQuickElements)
-                {
-                    if (!allQuickElements.ContainsKey(qe.Key))
-                    {
-                        allQuickElements.Add(qe.Key, qe.Value);
-                    }
-                }
+                //foreach (var qe in customQuickElements)
+                //{
+                //    if (!allQuickElements.ContainsKey(qe.Key))
+                //    {
+                //        allQuickElements.Add(qe.Key, qe.Value);
+                //    }
+                //}
+                allQuickElements = quickElements.Union(customQuickElements).ToDictionary(x => x.Key, x => x.Value);
 
                 return allQuickElements;
             }
@@ -70,200 +120,177 @@ namespace BetterLegacy.Core.Managers
 
         public static void CreateNewQuickElement(string name)
         {
-            if (!AllQuickElements.ContainsKey(name))
-            {
-                var quickElement = ScriptableObject.CreateInstance<QuickElement>();
-                quickElement.name = name;
+            if (AllQuickElements.ContainsKey(name))
+                return;
 
-                quickElement.keyframes = new List<QuickElement.Keyframe>();
-                quickElement.effects = new List<QuickElement.Effect>();
+            var quickElement = ScriptableObject.CreateInstance<QuickElement>();
+            quickElement.name = name;
 
-                var kf1 = new QuickElement.Keyframe();
-                kf1.text = "._.";
-                kf1.time = 1f;
+            quickElement.keyframes = new List<QuickElement.Keyframe>();
+            quickElement.effects = new List<QuickElement.Effect>();
 
-                quickElement.keyframes.Add(kf1);
+            var kf1 = new QuickElement.Keyframe();
+            kf1.text = "._.";
+            kf1.time = 1f;
 
-                var kf2 = new QuickElement.Keyframe();
-                kf2.text = "-_-";
-                kf2.time = 0.1f;
+            quickElement.keyframes.Add(kf1);
 
-                quickElement.keyframes.Add(kf2);
+            var kf2 = new QuickElement.Keyframe();
+            kf2.text = "-_-";
+            kf2.time = 0.1f;
 
-                var kf3 = new QuickElement.Keyframe();
-                kf3.text = "._.";
-                kf3.time = 1f;
+            quickElement.keyframes.Add(kf2);
 
-                quickElement.keyframes.Add(kf3);
+            var kf3 = new QuickElement.Keyframe();
+            kf3.text = "._.";
+            kf3.time = 1f;
 
-                var loop = new QuickElement.Effect();
-                loop.name = "loop";
-                loop.data = new List<string>();
-                loop.data.Add("loop");
+            quickElement.keyframes.Add(kf3);
 
-                quickElement.effects.Add(loop);
+            var loop = new QuickElement.Effect();
+            loop.name = "loop";
+            loop.data = new List<string>();
+            loop.data.Add("loop");
 
-                customQuickElements.Add(name, quickElement);
-            }
+            quickElement.effects.Add(loop);
+
+            customQuickElements.Add(name, quickElement);
         }
 
-        public static string ConvertQuickElement(BeatmapObject beatmapObject, string element)
+        public static string ConvertQuickElement(string element, float t) => !AllQuickElements.ContainsKey(element) ? "" : ConvertQuickElement(AllQuickElements[element], t);
+
+        public static string ConvertQuickElement(QuickElement quickElement, float t)
         {
-            if (AllQuickElements.ContainsKey(element) && AllQuickElements[element].keyframes.Count > 0)
+            if (quickElement == null || quickElement.keyframes == null || quickElement.keyframes.Count < 1)
+                return "";
+
+            var times = new List<float>();
+            var texts = new List<string>();
+
+            float totalTime = 0f;
+            foreach (var kf in quickElement.keyframes)
             {
-                var quickElement = AllQuickElements[element];
-
-                if (quickElement.effects != null && quickElement.effects.Find(x => x.data.Count > 0 && x.name == "loop") != null)
-                {
-                    var times = new List<float>();
-                    var texts = new List<string>();
-
-                    float totaltime = 0f;
-                    foreach (var kf in quickElement.keyframes)
-                    {
-                        texts.Add(kf.text);
-                        times.Add(totaltime);
-                        totaltime += kf.time;
-                    }
-
-                    var currentTime = AudioManager.inst.CurrentAudioSource.time - beatmapObject.StartTime;
-                    var index = times.FindIndex(x => x > currentTime % totaltime) - 1;
-
-                    if (index >= 0 && texts.Count > index)
-                        return texts[index];
-                    else if (texts.Count > 0)
-                        return texts[texts.Count - 1];
-                    else
-                        return "error";
-                }
-                else
-                {
-                    var times = new List<float>();
-                    var texts = new List<string>();
-
-                    float totaltime = 0f;
-                    foreach (var kf in quickElement.keyframes)
-                    {
-                        texts.Add(kf.text);
-                        times.Add(totaltime);
-                        totaltime += kf.time;
-                    }
-
-                    var currentTime = AudioManager.inst.CurrentAudioSource.time - beatmapObject.StartTime;
-                    var index = times.FindIndex(x => x > currentTime) - 1;
-
-                    if (index >= 0 && texts.Count > index)
-                        return texts[index];
-                    else if (texts.Count > 0)
-                        return texts[texts.Count - 1];
-                    else
-                        return "error";
-                }
+                texts.Add(kf.text);
+                times.Add(totalTime);
+                totalTime += kf.time;
             }
 
-            return "";
+            var looping = quickElement.effects != null && quickElement.effects.Find(x => x.data.Count > 0 && x.name == "loop") != null;
+            var index = times.FindIndex(x => x > (looping ? t % totalTime : t)) - 1;
+            if (t < 0f)
+                index = 0;
+
+            return index >= 0 && texts.Count > index ? texts[index] : texts.Count > 0 ? texts[texts.Count - 1] : "error";
         }
+
+        public static string ConvertQuickElement(BeatmapObject beatmapObject, string element) => ConvertQuickElement(element, AudioManager.inst.CurrentAudioSource.time - beatmapObject.StartTime);
 
         public static void SaveExternalQuickElements()
         {
             if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/quickelements"))
-            {
                 Directory.CreateDirectory(RTFile.ApplicationDirectory + "beatmaps/quickelements");
-            }
 
-            foreach (var quickElement in customQuickElements)
+            foreach (var quickElementPair in customQuickElements)
             {
-                if (!quickElements.ContainsKey(quickElement.Key))
+                if (quickElements.ContainsKey(quickElementPair.Key))
+                    continue;
+
+                var quickElement = quickElementPair.Value;
+                var jn = JSON.Parse("{}");
+
+                jn["name"] = quickElement.name;
+
+                for (int i = 0; i < quickElement.keyframes.Count; i++)
                 {
-                    var jn = JSON.Parse("{}");
-
-                    jn["name"] = quickElement.Value.name;
-
-                    for (int i = 0; i < quickElement.Value.keyframes.Count; i++)
-                    {
-                        jn["keys"][i]["text"] = quickElement.Value.keyframes[i].text;
-                        jn["keys"][i]["time"] = quickElement.Value.keyframes[i].time.ToString();
-                    }
-
-                    for (int i = 0; i < quickElement.Value.effects.Count; i++)
-                    {
-                        jn["effects"][i]["name"] = quickElement.Value.effects[i].name;
-                        for (int j = 0; j < quickElement.Value.effects[i].data.Count; j++)
-                        {
-                            jn["effects"][i]["data"][j] = quickElement.Value.effects[i].data[j];
-                        }
-                    }
-
-                    RTFile.WriteToFile("beatmaps/quickelements/" + quickElement.Value.name + ".lsqe", jn.ToString(3));
+                    jn["keys"][i]["text"] = quickElement.keyframes[i].text;
+                    jn["keys"][i]["time"] = quickElement.keyframes[i].time.ToString();
                 }
+
+                for (int i = 0; i < quickElement.effects.Count; i++)
+                {
+                    jn["effects"][i]["name"] = quickElement.effects[i].name;
+                    for (int j = 0; j < quickElement.effects[i].data.Count; j++)
+                        jn["effects"][i]["data"][j] = quickElement.effects[i].data[j];
+                }
+
+                RTFile.WriteToFile($"{RTFile.ApplicationDirectory}beatmaps/quickelements/{RTFile.ValidateFileName(quickElement.name.ToLower().Replace(" ", "_"))}.lsqe", jn.ToString(3));
             }
         }
 
         public static IEnumerator LoadExternalQuickElements()
         {
-            if (RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/quickelements"))
+            if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/quickelements"))
+                yield break;
+
+            var files = Directory.GetFiles(RTFile.ApplicationDirectory + "beatmaps/quickelements", "*.lsqe");
+            foreach (var file in files)
             {
-                var files = Directory.GetFiles(RTFile.ApplicationDirectory + "beatmaps/quickelements", "*.lsqe");
-                foreach (var file in files)
+                var json = FileManager.inst.LoadJSONFileRaw(file);
+                var jn = JSON.Parse(json);
+
+                var quickElement = ScriptableObject.CreateInstance<QuickElement>();
+
+                quickElement.name = Path.GetFileName(file).Replace(".lsqe", "");
+                if (!string.IsNullOrEmpty(jn["name"]))
                 {
-                    var json = FileManager.inst.LoadJSONFileRaw(file);
-                    var jn = JSON.Parse(json);
+                    quickElement.name = jn["name"];
+                }
 
-                    var quickElement = ScriptableObject.CreateInstance<QuickElement>();
+                try
+                {
+                    ((ScriptableObject)quickElement).name = quickElement.name;
+                }
+                catch (System.Exception ex)
+                {
+                    Helpers.CoreHelper.LogError($"Error: {ex}");
+                }
 
-                    quickElement.name = Path.GetFileName(file).Replace(".lsqe", "");
-                    if (!string.IsNullOrEmpty(jn["name"]))
-                    {
-                        quickElement.name = jn["name"];
-                    }
+                quickElement.keyframes = new List<QuickElement.Keyframe>();
+                quickElement.effects = new List<QuickElement.Effect>();
 
-                    quickElement.keyframes = new List<QuickElement.Keyframe>();
-                    quickElement.effects = new List<QuickElement.Effect>();
-
-                    if (jn["keys"] != null)
-                    {
-                        for (int i = 0; i < jn["keys"].Count; i++)
-                        {
-                            var keyframe = new QuickElement.Keyframe();
-                            keyframe.text = jn["keys"][i]["text"];
-
-                            keyframe.time = 1f;
-                            if (float.TryParse(jn["keys"][i]["time"], out float result))
-                            {
-                                keyframe.time = result;
-                            }
-
-                            quickElement.keyframes.Add(keyframe);
-                        }
-                    }
-                    else
+                if (jn["keys"] != null)
+                {
+                    for (int i = 0; i < jn["keys"].Count; i++)
                     {
                         var keyframe = new QuickElement.Keyframe();
-                        keyframe.text = "null";
+                        keyframe.text = jn["keys"][i]["text"];
+
                         keyframe.time = 1f;
+                        if (float.TryParse(jn["keys"][i]["time"], out float result))
+                        {
+                            keyframe.time = result;
+                        }
 
                         quickElement.keyframes.Add(keyframe);
                     }
-
-                    if (jn["effects"] != null)
-                    {
-                        for (int i = 0; i < jn["effects"].Count; i++)
-                        {
-                            var effect = new QuickElement.Effect();
-                            effect.name = jn["effects"][i]["name"];
-                            effect.data = new List<string>();
-                            for (int j = 0; j < jn["effects"][i]["data"].Count; j++)
-                            {
-                                effect.data.Add(jn["effects"][i]["data"][j]);
-                            }
-
-                            quickElement.effects.Add(effect);
-                        }
-                    }
-
-                    if (!AllQuickElements.ContainsKey(quickElement.name))
-                        customQuickElements.Add(quickElement.name, quickElement);
                 }
+                else
+                {
+                    var keyframe = new QuickElement.Keyframe();
+                    keyframe.text = "null";
+                    keyframe.time = 1f;
+
+                    quickElement.keyframes.Add(keyframe);
+                }
+
+                if (jn["effects"] != null)
+                {
+                    for (int i = 0; i < jn["effects"].Count; i++)
+                    {
+                        var effect = new QuickElement.Effect();
+                        effect.name = jn["effects"][i]["name"];
+                        effect.data = new List<string>();
+                        for (int j = 0; j < jn["effects"][i]["data"].Count; j++)
+                        {
+                            effect.data.Add(jn["effects"][i]["data"][j]);
+                        }
+
+                        quickElement.effects.Add(effect);
+                    }
+                }
+
+                if (!AllQuickElements.ContainsKey(quickElement.name))
+                    customQuickElements.Add(quickElement.name, quickElement);
             }
 
             yield break;
