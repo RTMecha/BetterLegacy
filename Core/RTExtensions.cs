@@ -139,6 +139,20 @@ namespace BetterLegacy.Core
             transform.localScale = sca;
         }
 
+        public static void SetLocalRotationEulerX(this Transform transform, float x)
+        {
+            var rot = transform.localRotation.eulerAngles;
+            rot.x = x;
+            transform.localRotation = Quaternion.Euler(rot);
+        }
+        
+        public static void SetLocalRotationEulerY(this Transform transform, float y)
+        {
+            var rot = transform.localRotation.eulerAngles;
+            rot.y = y;
+            transform.localRotation = Quaternion.Euler(rot);
+        }
+        
         public static void SetLocalRotationEulerZ(this Transform transform, float z)
         {
             var rot = transform.localRotation.eulerAngles;
