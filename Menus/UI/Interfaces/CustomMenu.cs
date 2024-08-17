@@ -28,6 +28,14 @@ namespace BetterLegacy.Menus.UI.Interfaces
         {
             if (useGameTheme && CoreHelper.InGame)
                 Theme = CoreHelper.CurrentBeatmapTheme;
+            else if (loadedTheme != null)
+                Theme = loadedTheme;
+            else if (Parser.TryParse(currentTheme, -1) >= 0 && InterfaceManager.inst.themes.TryFind(x => x.id == currentTheme, out BeatmapTheme current))
+                Theme = current;
+            else if (Parser.TryParse(MenuConfig.Instance.InterfaceThemeID.Value, -1) >= 0 && InterfaceManager.inst.themes.TryFind(x => x.id == MenuConfig.Instance.InterfaceThemeID.Value, out BeatmapTheme interfaceTheme))
+                Theme = interfaceTheme;
+            else
+                Theme = InterfaceManager.inst.themes[0];
 
             base.UpdateTheme();
         }
@@ -37,7 +45,12 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// <summary>
         /// The theme to choose from in the default themes list. If the value is -1, then it will use the players' preferred theme.
         /// </summary>
-        public int currentTheme = -1;
+        public string currentTheme = "-1";
+
+        /// <summary>
+        /// The theme loaded from the file.
+        /// </summary>
+        public BeatmapTheme loadedTheme;
 
         /// <summary>
         /// Parses a Custom Menu from a JSON file.
@@ -132,6 +145,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     rectJSON = jnElement["rect"],
                                     color = jnElement["col"].AsInt,
                                     opacity = jnElement["opacity"] == null ? 1f : jnElement["opacity"].AsFloat,
+                                    hue = jnElement["hue"].AsFloat,
+                                    sat = jnElement["sat"].AsFloat,
+                                    val = jnElement["val"].AsFloat,
                                     length = jnElement["anim_length"].AsFloat,
                                     playBlipSound = jnElement["play_blip_sound"].AsBool,
                                     rounded = jnElement["rounded"] == null ? 1 : jnElement["rounded"].AsInt, // roundness can be prevented by setting rounded to 0.
@@ -164,7 +180,13 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     hideBG = jnElement["hide_bg"].AsBool,
                                     color = jnElement["col"].AsInt,
                                     opacity = jnElement["opacity"] == null ? 1f : jnElement["opacity"].AsFloat,
+                                    hue = jnElement["hue"].AsFloat,
+                                    sat = jnElement["sat"].AsFloat,
+                                    val = jnElement["val"].AsFloat,
                                     textColor = jnElement["text_col"].AsInt,
+                                    textHue = jnElement["text_hue"].AsFloat,
+                                    textSat = jnElement["text_sat"].AsFloat,
+                                    textVal = jnElement["text_val"].AsFloat,
                                     length = jnElement["anim_length"].AsFloat,
                                     playBlipSound = jnElement["play_blip_sound"].AsBool,
                                     rounded = jnElement["rounded"] == null ? 1 : jnElement["rounded"].AsInt, // roundness can be prevented by setting rounded to 0.
@@ -192,6 +214,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     siblingIndex = jnElement["sibling_index"] == null ? -1 : jnElement["sibling_index"].AsInt,
                                     text = FontManager.TextTranslater.ReplaceProperties(jnElement["text"]),
                                     selectionPosition = new Vector2Int(jnElement["select"]["x"].AsInt, jnElement["select"]["y"].AsInt),
+                                    autoAlignSelectionPosition = jnElement["align_select"].AsBool,
                                     icon = jnElement["icon"] != null ? SpriteManager.StringToSprite(jnElement["icon"]) : null,
                                     rectJSON = jnElement["rect"],
                                     textRectJSON = jnElement["text_rect"],
@@ -199,16 +222,27 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     hideBG = jnElement["hide_bg"].AsBool,
                                     color = jnElement["col"].AsInt,
                                     opacity = jnElement["opacity"] == null ? 1f : jnElement["opacity"].AsFloat,
+                                    hue = jnElement["hue"].AsFloat,
+                                    sat = jnElement["sat"].AsFloat,
+                                    val = jnElement["val"].AsFloat,
                                     selectedOpacity = jnElement["sel_opacity"] == null ? 1f : jnElement["sel_opacity"].AsFloat,
                                     textColor = jnElement["text_col"].AsInt,
+                                    textHue = jnElement["text_hue"].AsFloat,
+                                    textSat = jnElement["text_sat"].AsFloat,
+                                    textVal = jnElement["text_val"].AsFloat,
                                     selectedColor = jnElement["sel_col"].AsInt,
                                     selectedTextColor = jnElement["sel_text_col"].AsInt,
+                                    selectedTextHue = jnElement["sel_text_hue"].AsFloat,
+                                    selectedTextSat = jnElement["sel_text_sat"].AsFloat,
+                                    selectedTextVal = jnElement["sel_text_val"].AsFloat,
                                     length = jnElement["anim_length"].AsFloat,
                                     playBlipSound = jnElement["play_blip_sound"].AsBool,
                                     rounded = jnElement["rounded"] == null ? 1 : jnElement["rounded"].AsInt, // roundness can be prevented by setting rounded to 0.
                                     roundedSide = jnElement["rounded_side"] == null ? SpriteManager.RoundedSide.W : (SpriteManager.RoundedSide)jnElement["rounded_side"].AsInt, // default side should be Whole.
                                     funcJSON = jnElement["func"], // function to run when the element is clicked.
                                     spawnFuncJSON = jnElement["spawn_func"], // function to run when the element spawns.
+                                    enterFuncJSON = jnElement["enter_func"], // function to run when the element is hovered over.
+                                    exitFuncJSON = jnElement["exit_func"], // function to run when the element is hovered over.
                                     reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j),
                                     fromLoop = j > 0, // if element has been spawned from the loop or if its the first / only of its kind.
                                     loop = loop,
@@ -222,7 +256,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     }
             }
 
-            customMenu.Theme = BeatmapTheme.Parse(jn["theme"]);
+            customMenu.loadedTheme = BeatmapTheme.Parse(jn["theme"]);
             customMenu.useGameTheme = jn["game_theme"].AsBool;
 
             return customMenu;
