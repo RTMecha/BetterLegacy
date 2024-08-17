@@ -11,12 +11,7 @@ namespace BetterLegacy.Core.Animation
     {
         public static AnimationManager inst;
 
-        public static void Init()
-        {
-            var gameObject = new GameObject("AnimationManager");
-            gameObject.AddComponent<AnimationManager>();
-            gameObject.transform.SetParent(SystemManager.inst.transform);
-        }
+        public static void Init() => Creator.NewGameObject(nameof(AnimationManager), SystemManager.inst.transform).AddComponent<AnimationManager>();
 
         void Awake() => inst = this;
 
@@ -37,15 +32,9 @@ namespace BetterLegacy.Core.Animation
             animation.Play();
         }
 
-        public void RemoveName(string name)
-        {
-            animations.RemoveAll(x => x.name == name);
-        }
+        public void RemoveName(string name) => animations.RemoveAll(x => x.name == name);
 
-        public void RemoveID(string id)
-        {
-            animations.RemoveAll(x => x.id == id);
-        }
+        public void RemoveID(string id) => animations.RemoveAll(x => x.id == id);
 
         public List<RTAnimation> animations = new List<RTAnimation>();
     }
