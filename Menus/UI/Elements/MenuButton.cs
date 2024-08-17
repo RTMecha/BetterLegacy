@@ -11,6 +11,7 @@ using BetterLegacy.Components;
 using BetterLegacy.Menus.UI.Interfaces;
 
 using TMPro;
+using SimpleJSON;
 
 namespace BetterLegacy.Menus.UI.Elements
 {
@@ -19,6 +20,8 @@ namespace BetterLegacy.Menus.UI.Elements
     /// </summary>
     public class MenuButton : MenuText
     {
+        #region Public Fields
+
         /// <summary>
         /// True if the element is hovered, otherwise false.
         /// </summary>
@@ -28,10 +31,6 @@ namespace BetterLegacy.Menus.UI.Elements
         /// To be used for where the current selection is. If it's at 0, 0 then it's the default selection. This is compared against <see cref="MenuBase.selected"/> to see if it is selected.
         /// </summary>
         public Vector2Int selectionPosition;
-
-
-        RTAnimation enterAnimation;
-        RTAnimation exitAnimation;
 
         /// <summary>
         /// Opacity of the image when the element is selected.
@@ -44,15 +43,93 @@ namespace BetterLegacy.Menus.UI.Elements
         public int selectedColor;
 
         /// <summary>
+        /// Hue color offset when the element is selected.
+        /// </summary>
+        public float selectedHue;
+
+        /// <summary>
+        /// Saturation color offset when the element is selected.
+        /// </summary>
+        public float selectedSat;
+
+        /// <summary>
+        /// Value color offset when the element is selected.
+        /// </summary>
+        public float selectedVal;
+
+        /// <summary>
         /// Color of the text when the element is selected.
         /// </summary>
         public int selectedTextColor;
 
         /// <summary>
-        /// Plays the Enter animation when the element is selected. Currently is not customizable.
+        /// Texts' hue color offset when the element is selected.
+        /// </summary>
+        public float selectedTextHue;
+
+        /// <summary>
+        /// Texts' saturation color offset when the element is selected.
+        /// </summary>
+        public float selectedTextSat;
+
+        /// <summary>
+        /// Texts' value color offset when the element is selected.
+        /// </summary>
+        public float selectedTextVal;
+
+        /// <summary>
+        /// Function JSON to parse when the mouse enters the element.
+        /// </summary>
+        public JSONNode enterFuncJSON;
+
+        /// <summary>
+        /// Function JSON to parse when the mouse exits the element.
+        /// </summary>
+        public JSONNode exitFuncJSON;
+
+        /// <summary>
+        /// Function called when the mouse enters the element.
+        /// </summary>
+        public Action enterFunc;
+
+        /// <summary>
+        /// Function called when the mouse exits the element.
+        /// </summary>
+        public Action exitFunc;
+
+        /// <summary>
+        /// If <see cref="selectionPosition"/> should be automatically aligned with the buttons' layout parent.
+        /// </summary>
+        public bool autoAlignSelectionPosition;
+
+        #endregion
+
+        #region Private Fields
+
+        RTAnimation enterAnimation;
+        RTAnimation exitAnimation;
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Plays the Enter animation when the element is selected.
         /// </summary>
         public void OnEnter()
         {
+            if (enterFuncJSON != null)
+            {
+                ParseFunction(enterFuncJSON);
+                return;
+            }
+
+            if (enterFunc != null)
+            {
+                enterFunc();
+                return;
+            }
+
             if (exitAnimation != null)
             {
                 AnimationManager.inst.RemoveID(exitAnimation.id);
@@ -82,10 +159,22 @@ namespace BetterLegacy.Menus.UI.Elements
         }
 
         /// <summary>
-        /// Plays the Exit animation when the element is no longer selected. Currently is not customizable.
+        /// Plays the Exit animation when the element is no longer selected.
         /// </summary>
         public void OnExit()
         {
+            if (exitFuncJSON != null)
+            {
+                ParseFunction(exitFuncJSON);
+                return;
+            }
+
+            if (exitFunc != null)
+            {
+                exitFunc();
+                return;
+            }
+
             if (enterAnimation != null)
             {
                 AnimationManager.inst.RemoveID(enterAnimation.id);
@@ -109,5 +198,7 @@ namespace BetterLegacy.Menus.UI.Elements
             exitAnimation.onComplete = () => { AnimationManager.inst.RemoveID(exitAnimation.id); };
             AnimationManager.inst.Play(exitAnimation);
         }
+
+        #endregion
     }
 }
