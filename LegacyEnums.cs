@@ -37,6 +37,17 @@
         Editor,
     }
 
+    public enum SceneName
+    {
+        Main_Menu,
+        Input_Select,
+        Game,
+        Editor,
+        Interface,
+        post_level,
+        Arcade_Level
+    }
+
     public enum LoadingDisplayType
     {
         Doggo,
