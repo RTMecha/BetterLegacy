@@ -10,6 +10,7 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Managers;
 using BetterLegacy.Example;
 using BetterLegacy.Menus;
+using BetterLegacy.Menus.UI.Interfaces;
 using HarmonyLib;
 using LSFunctions;
 using System;
@@ -139,9 +140,10 @@ namespace BetterLegacy.Patchers
             if (!LevelManager.finished)
                 LevelManager.timeInLevel = Time.time - LevelManager.timeInLevelOffset;
 
-            if (CoreHelper.Paused && !LevelManager.LevelEnded && InputDataManager.inst.menuActions.Cancel.WasPressed)
+            if (!CoreHelper.IsUsingInputField && CoreHelper.Paused && !LevelManager.LevelEnded && InputDataManager.inst.menuActions.Cancel.WasPressed)
             {
-                __instance.menuUI?.GetComponent<InterfaceController>()?.SwitchBranch("unpause");
+                //__instance.menuUI?.GetComponent<InterfaceController>()?.SwitchBranch("unpause");
+                PauseMenu.UnPause();
             }
 
             if (CoreHelper.Playing)
@@ -151,12 +153,12 @@ namespace BetterLegacy.Patchers
                     GameData.Current.levelModifiers[i].Activate();
                 }
 
-                if (!CoreHelper.InEditor)
+                if (!CoreHelper.IsUsingInputField && !CoreHelper.InEditor)
                 {
                     foreach (var player in PlayerManager.Players)
                     {
                         if (player.Player && player.Player.Actions.Pause.WasPressed)
-                            __instance.Pause();
+                            PauseMenu.Pause();
                     }
                 }
 
