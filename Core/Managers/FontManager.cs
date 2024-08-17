@@ -778,7 +778,7 @@ namespace BetterLegacy.Core.Managers
 
         public static class TextTranslater
         {
-            public static string ReplaceProperties(string str) => str
+            public static string ReplaceProperties(string str) => string.IsNullOrEmpty(str) ? str : str
                 .Replace("{{GameVersion}}", ProjectArrhythmia.GameVersion.ToString())
                 .Replace("{{ModVersion}}", LegacyPlugin.ModVersion.ToString())
                 .Replace("{{AppDirectory}}", RTFile.ApplicationDirectory)
