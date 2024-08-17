@@ -15,6 +15,8 @@ namespace BetterLegacy.Patchers
 
         public static bool loading;
         public static Text loadingText;
+        public static string previousScene;
+
         [HarmonyPatch(nameof(SceneManager.Awake))]
         [HarmonyPrefix]
         static void AwakePrefix(SceneManager __instance) => loadingText = __instance.icon.GetComponent<Text>();
@@ -44,6 +46,15 @@ namespace BetterLegacy.Patchers
 
             CoreHelper.CurrentSceneType = __0 == "Editor" ? SceneType.Editor : __0 == "Game" ? SceneType.Game : SceneType.Interface;
             CoreHelper.Log($"Set Scene\nType: {CoreHelper.CurrentSceneType}\nName: {__0}");
+
+            try
+            {
+                previousScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            }
+            catch (System.Exception ex)
+            {
+                CoreHelper.LogError($"Error: {ex}");
+            }
 
             __result = DisplayLoadingScreen(__0, __1);
             return false;
