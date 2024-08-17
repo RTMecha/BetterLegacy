@@ -22,10 +22,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 {
     public class CustomMenu : MenuBase
     {
-        public CustomMenu() : base(false)
-        {
-
-        }
+        public CustomMenu() : base(false) { }
         
         public override void UpdateTheme()
         {
@@ -108,7 +105,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     {
                         case "event":
                             {
-                                customMenu.elements.Add(new MenuEvent
+                                var element = new MenuEvent
                                 {
                                     id = jnElement["id"] == null ? LSText.randomNumString(16) : jnElement["id"],
                                     name = jnElement["name"],
@@ -116,12 +113,15 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     funcJSON = jnElement["func"], // the function to run.
                                     fromLoop = j > 0, // if element has been spawned from the loop or if its the first / only of its kind.
                                     loop = loop,
-                                });
+                                };
+
+                                if (jnElement["spawn_if_func"] == null || element.ParseIfFunction(jnElement["spawn_if_func"]))
+                                    customMenu.elements.Add(element);
                                 break;
                             }
                         case "image":
                             {
-                                customMenu.elements.Add(new MenuImage
+                                var element = new MenuImage
                                 {
                                     id = jnElement["id"] == null ? LSText.randomNumString(16) : jnElement["id"],
                                     name = jnElement["name"],
@@ -141,12 +141,15 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j),
                                     fromLoop = j > 0, // if element has been spawned from the loop or if its the first / only of its kind.
                                     loop = loop,
-                                }); ;
+                                };
+
+                                if (jnElement["spawn_if_func"] == null || element.ParseIfFunction(jnElement["spawn_if_func"]))
+                                    customMenu.elements.Add(element);
                                 break;
                             }
                         case "text":
                             {
-                                customMenu.elements.Add(new MenuText
+                                var element = new MenuText
                                 {
                                     id = jnElement["id"] == null ? LSText.randomNumString(16) : jnElement["id"],
                                     name = jnElement["name"],
@@ -171,13 +174,16 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j),
                                     fromLoop = j > 0, // if element has been spawned from the loop or if its the first / only of its kind.
                                     loop = loop,
-                                });
+                                };
+
+                                if (jnElement["spawn_if_func"] == null || element.ParseIfFunction(jnElement["spawn_if_func"]))
+                                    customMenu.elements.Add(element);
 
                                 break;
                             }
                         case "button":
                             {
-                                customMenu.elements.Add(new MenuButton
+                                var element = new MenuButton
                                 {
                                     id = jnElement["id"] == null ? LSText.randomNumString(16) : jnElement["id"],
                                     name = jnElement["name"],
@@ -206,7 +212,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j),
                                     fromLoop = j > 0, // if element has been spawned from the loop or if its the first / only of its kind.
                                     loop = loop,
-                                });
+                                };
+
+                                if (jnElement["spawn_if_func"] == null || element.ParseIfFunction(jnElement["spawn_if_func"]))
+                                    customMenu.elements.Add(element);
 
                                 break;
                             }
