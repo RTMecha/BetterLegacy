@@ -65,6 +65,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             customMenu.name = jn["name"];
             customMenu.musicName = jn["music_name"];
 
+            customMenu.prefabs.AddRange(ParsePrefabs(jn["prefabs"]));
             ParseLayouts(customMenu.layouts, jn["layouts"]);
             customMenu.elements.AddRange(ParseElements(jn["elements"]));
 
@@ -72,6 +73,15 @@ namespace BetterLegacy.Menus.UI.Interfaces
             customMenu.useGameTheme = jn["game_theme"].AsBool;
 
             return customMenu;
+        }
+
+        public static IEnumerable<MenuPrefab> ParsePrefabs(JSONNode jn)
+        {
+            if (jn == null || !jn.IsArray)
+                yield break;
+
+            for (int i = 0; i < jn.Count; i++)
+                yield return MenuPrefab.Parse(jn[i]);
         }
 
         public static void ParseLayouts(Dictionary<string, MenuLayoutBase> layouts, JSONNode jn)
@@ -117,7 +127,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         }
 
-        public static IEnumerable<MenuImage> ParseElements(JSONNode jn)
+        public static IEnumerable<MenuImage> ParseElements(JSONNode jn, List<MenuPrefab> prefabs = null)
         {
             if (jn == null || !jn.IsArray)
                 yield break;
@@ -137,6 +147,35 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 for (int j = 0; j < loop; j++)
                     switch (elementType.ToLower())
                     {
+                        case "prefab":
+                            {
+                                if (prefabs == null || jnElement["id"] == null || !prefabs.TryFind(x => x.id == jnElement["id"], out MenuPrefab prefab))
+                                    break;
+
+                                for (int k = 0; k < prefab.elements.Count; k++)
+                                {
+                                    var element = prefab.elements[k];
+                                    if (element is MenuEvent menuEvent)
+                                    {
+                                        yield return MenuEvent.DeepCopy(menuEvent, false);
+                                        continue;
+                                    }
+                                    if (element is MenuText menuText)
+                                    {
+                                        yield return MenuText.DeepCopy(menuText, false);
+                                        continue;
+                                    }
+                                    if (element is MenuButton menuButton)
+                                    {
+                                        yield return MenuButton.DeepCopy(menuButton, false);
+                                        continue;
+                                    }
+
+                                    yield return MenuImage.DeepCopy(element, false);
+                                }
+
+                                break;
+                            }
                         case "event":
                             {
                                 var element = new MenuEvent

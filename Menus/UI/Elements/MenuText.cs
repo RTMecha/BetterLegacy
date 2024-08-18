@@ -15,6 +15,7 @@ using TMPro;
 using SimpleJSON;
 using BetterLegacy.Core;
 using BetterLegacy.Configs;
+using LSFunctions;
 
 namespace BetterLegacy.Menus.UI.Elements
 {
@@ -165,6 +166,44 @@ namespace BetterLegacy.Menus.UI.Elements
         /// The text component of the element.
         /// </summary>
         public TextMeshProUGUI textUI;
+
+        public static MenuText DeepCopy(MenuText orig, bool newID = true)
+        {
+            return new MenuText
+            {
+                id = newID ? LSText.randomNumString(16) : orig.id,
+                name = orig.name,
+                parentLayout = orig.parentLayout,
+                parent = orig.parent,
+                siblingIndex = orig.siblingIndex,
+                icon = orig.icon,
+                rectJSON = orig.rectJSON,
+                color = orig.color,
+                opacity = orig.opacity,
+                hue = orig.hue,
+                sat = orig.sat,
+                val = orig.val,
+                length = orig.length,
+                playBlipSound = orig.playBlipSound,
+                rounded = orig.rounded, // roundness can be prevented by setting rounded to 0.
+                roundedSide = orig.roundedSide, // default side should be Whole.
+                funcJSON = orig.funcJSON, // function to run when the element is clicked.
+                spawnFuncJSON = orig.spawnFuncJSON, // function to run when the element spawns.
+                reactiveSetting = orig.reactiveSetting,
+                fromLoop = false, // if element has been spawned from the loop or if its the first / only of its kind.
+                loop = orig.loop,
+                func = orig.func,
+                spawnFunc = orig.spawnFunc,
+                text = orig.text,
+                hideBG = orig.hideBG,
+                iconRectJSON = orig.iconRectJSON,
+                textRectJSON = orig.textRectJSON,
+                textColor = orig.textColor,
+                textHue = orig.textHue,
+                textSat = orig.textSat,
+                textVal = orig.textVal,
+            };
+        }
 
         #region Private Fields
         

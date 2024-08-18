@@ -375,7 +375,6 @@ namespace BetterLegacy.Menus.UI.Elements
                         var isArcade = parameters.IsArray && parameters.Count >= 3 ? parameters[2].AsBool : parameters.IsObject ? parameters["is_arcade"].AsBool : false;
 
                         LevelManager.IsArcade = isArcade;
-                        DataManager.inst.UpdateSettingBool("IsArcade", isArcade);
 
                         if (parameters.IsArray && parameters.Count >= 2 || parameters.IsObject && parameters["show_loading"] != null)
                             SceneManager.inst.LoadScene(parameters.IsArray ? parameters[0] : parameters["scene"], Parser.TryParse(parameters.IsArray ? parameters[1] : parameters["show_loading"], true));
@@ -639,7 +638,6 @@ namespace BetterLegacy.Menus.UI.Elements
                 // Function has no parameters.
                 case "DemoStoryMode":
                     {
-                        DataManager.inst.UpdateSettingBool("IsArcade", false);
                         LevelManager.IsArcade = false;
                         SceneManager.inst.LoadScene("Input Select");
                         LevelManager.OnInputsSelected = () => { CoreHelper.StartCoroutine(Story.StoryManager.inst.Demo(true)); };
@@ -1151,6 +1149,19 @@ namespace BetterLegacy.Menus.UI.Elements
                     }
 
                 #endregion
+
+                case "LoadLevel":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["id"] == null)
+                            return;
+
+                        if (LevelManager.Levels.TryFind(x => x.id == (parameters.IsArray ? parameters[0] : parameters["id"]), out Level level))
+                        {
+                            CoreHelper.StartCoroutine(LevelManager.Play(level));
+                        }
+
+                        break;
+                    }
             }
         }
 
@@ -1183,6 +1194,36 @@ namespace BetterLegacy.Menus.UI.Elements
             }
 
             return 0f;
+        }
+
+        public static MenuImage DeepCopy(MenuImage orig, bool newID = true)
+        {
+            return new MenuImage
+            {
+                id = newID ? LSText.randomNumString(16) : orig.id,
+                name = orig.name,
+                parentLayout = orig.parentLayout,
+                parent = orig.parent,
+                siblingIndex = orig.siblingIndex,
+                icon = orig.icon,
+                rectJSON = orig.rectJSON,
+                color = orig.color,
+                opacity = orig.opacity,
+                hue = orig.hue,
+                sat = orig.sat,
+                val = orig.val,
+                length = orig.length,
+                playBlipSound = orig.playBlipSound,
+                rounded = orig.rounded, // roundness can be prevented by setting rounded to 0.
+                roundedSide = orig.roundedSide, // default side should be Whole.
+                funcJSON = orig.funcJSON, // function to run when the element is clicked.
+                spawnFuncJSON = orig.spawnFuncJSON, // function to run when the element spawns.
+                reactiveSetting = orig.reactiveSetting,
+                fromLoop = false, // if element has been spawned from the loop or if its the first / only of its kind.
+                loop = orig.loop,
+                func = orig.func,
+                spawnFunc = orig.spawnFunc,
+            };
         }
 
         /// <summary>

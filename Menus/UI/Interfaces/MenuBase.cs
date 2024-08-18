@@ -87,6 +87,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// </summary>
         public Dictionary<string, MenuLayoutBase> layouts = new Dictionary<string, MenuLayoutBase>();
 
+        public List<MenuPrefab> prefabs = new List<MenuPrefab>();
+
         /// <summary>
         /// The file location of the menu. This isn't necessary for cases where the menu does not have a file origin.
         /// </summary>

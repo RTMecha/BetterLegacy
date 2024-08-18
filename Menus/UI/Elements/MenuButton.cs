@@ -12,6 +12,7 @@ using BetterLegacy.Menus.UI.Interfaces;
 
 using TMPro;
 using SimpleJSON;
+using LSFunctions;
 
 namespace BetterLegacy.Menus.UI.Elements
 {
@@ -197,6 +198,60 @@ namespace BetterLegacy.Menus.UI.Elements
             };
             exitAnimation.onComplete = () => { AnimationManager.inst.RemoveID(exitAnimation.id); };
             AnimationManager.inst.Play(exitAnimation);
+        }
+
+        public static MenuButton DeepCopy(MenuButton orig, bool newID = true, bool newSelectionPosition = false, Vector2Int selectionPosition = default)
+        {
+            return new MenuButton
+            {
+                id = newID ? LSText.randomNumString(16) : orig.id,
+                name = orig.name,
+                parentLayout = orig.parentLayout,
+                parent = orig.parent,
+                siblingIndex = orig.siblingIndex,
+                icon = orig.icon,
+                rectJSON = orig.rectJSON,
+                color = orig.color,
+                opacity = orig.opacity,
+                hue = orig.hue,
+                sat = orig.sat,
+                val = orig.val,
+                length = orig.length,
+                playBlipSound = orig.playBlipSound,
+                rounded = orig.rounded, // roundness can be prevented by setting rounded to 0.
+                roundedSide = orig.roundedSide, // default side should be Whole.
+                funcJSON = orig.funcJSON, // function to run when the element is clicked.
+                spawnFuncJSON = orig.spawnFuncJSON, // function to run when the element spawns.
+                reactiveSetting = orig.reactiveSetting,
+                fromLoop = false, // if element has been spawned from the loop or if its the first / only of its kind.
+                loop = orig.loop,
+                func = orig.func,
+                spawnFunc = orig.spawnFunc,
+                text = orig.text,
+                hideBG = orig.hideBG,
+                iconRectJSON = orig.iconRectJSON,
+                textRectJSON = orig.textRectJSON,
+                textColor = orig.textColor,
+                textHue = orig.textHue,
+                textSat = orig.textSat,
+                textVal = orig.textVal,
+
+                selectionPosition = newSelectionPosition ? selectionPosition : orig.selectionPosition,
+                autoAlignSelectionPosition = orig.autoAlignSelectionPosition,
+                enterFunc = orig.enterFunc,
+                exitFunc = orig.exitFunc,
+                enterFuncJSON = orig.enterFuncJSON,
+                exitFuncJSON = orig.exitFuncJSON,
+                selectedColor = orig.selectedColor,
+                selectedOpacity = orig.selectedOpacity,
+                selectedHue = orig.selectedHue,
+                selectedSat = orig.selectedSat,
+                selectedVal = orig.selectedVal,
+                selectedTextColor = orig.selectedTextColor,
+                selectedTextHue = orig.selectedTextHue,
+                selectedTextSat = orig.selectedTextSat,
+                selectedTextVal = orig.selectedTextVal
+            };
         }
 
         #endregion
