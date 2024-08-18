@@ -402,6 +402,8 @@ namespace BetterLegacy.Core.Managers
         #region Game Modes
         public static void SetGameMode(int mode) => DataManager.inst.UpdateSettingInt("ArcadeDifficulty", mode);
 
+        public static DifficultyMode DifficultyMode => (DifficultyMode)DataManager.inst.GetSettingInt("ArcadeDifficulty", 0);
+
         public static bool IsZenMode => DataManager.inst.GetSettingInt("ArcadeDifficulty", 0) == 0;
         public static bool IsNormal => DataManager.inst.GetSettingInt("ArcadeDifficulty", 0) == 1;
         public static bool Is1Life => DataManager.inst.GetSettingInt("ArcadeDifficulty", 0) == 2;
