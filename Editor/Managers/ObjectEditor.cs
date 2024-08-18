@@ -3133,14 +3133,14 @@ namespace BetterLegacy.Editor.Managers
                 var deleteButton = tfv.Find("inspect").GetComponent<Button>();
                 deleteButton.onClick.ClearAll();
                 if (active)
-                    deleteButton.onClick.AddListener(() => { RTEditor.Inspect(levelObject); });
+                    deleteButton.onClick.AddListener(() => { ModCompatibility.Inspect(levelObject); });
             }
 
             if (tfv.Find("inspectbeatmapobject"))
             {
                 var deleteButton = tfv.Find("inspectbeatmapobject").GetComponent<Button>();
                 deleteButton.onClick.ClearAll();
-                deleteButton.onClick.AddListener(() => { RTEditor.Inspect(beatmapObject); });
+                deleteButton.onClick.AddListener(() => { ModCompatibility.Inspect(beatmapObject); });
             }
         }
 

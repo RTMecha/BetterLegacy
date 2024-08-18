@@ -618,9 +618,6 @@ namespace BetterLegacy.Editor.Managers
         public List<GameObject> customFunctions = new List<GameObject>();
         public string debugSearch;
 
-        static Type UEInspector => ModCompatibility.UnityExplorerInstalled ? AccessTools.TypeByName("UnityExplorer.InspectorManager") : null;
-        static Type UEUIManager => ModCompatibility.UnityExplorerInstalled ? AccessTools.TypeByName("UnityExplorer.UI.UIManager") : null;
-
         #endregion
 
         #region Autosave
@@ -7633,18 +7630,6 @@ namespace BetterLegacy.Editor.Managers
             return gameObject;
         }
 
-        public static void Inspect(object obj)
-        {
-            if (!ModCompatibility.UnityExplorerInstalled)
-                return;
-
-            var ui = UEUIManager;
-            var inspector = UEInspector;
-            ui.GetProperty("ShowMenu").SetValue(ui, true);
-            inspector.GetMethod("Inspect", new[] { typeof(object), AccessTools.TypeByName("UnityExplorer.CacheObject.CacheObjectBase") })
-            .Invoke(inspector, new object[] { obj, null });
-        }
-
         void CreateDebug()
         {
             if (!ModCompatibility.UnityExplorerInstalled)
@@ -7680,82 +7665,72 @@ namespace BetterLegacy.Editor.Managers
                 RefreshDebugger();
             });
 
-            EditorHelper.AddEditorDropdown("Show Explorer", "", "View", SearchSprite, () =>
-            {
-                var ui = UEUIManager;
-                ui.GetProperty("ShowMenu").SetValue(ui, true);
-            });
+            EditorHelper.AddEditorDropdown("Show Explorer", "", "View", SearchSprite, ModCompatibility.ShowExplorer);
 
             GenerateDebugButton(
                 "Inspect DataManager",
                 "DataManager is a pretty important storage component of Project Arrhythmia. It contains the GameData, all the external Beatmap Themes, etc.",
-                () => { Inspect(DataManager.inst); });
+                () => { ModCompatibility.Inspect(DataManager.inst); });
 
             GenerateDebugButton(
                 "Inspect EditorManager",
                 "EditorManager handles the main unmodded editor related things.",
-                () => { Inspect(EditorManager.inst); });
+                () => { ModCompatibility.Inspect(EditorManager.inst); });
 
             GenerateDebugButton(
                 "Inspect RTEditor",
                 "EditorManager handles the main modded editor related things.",
-                () => { Inspect(inst); });
+                () => { ModCompatibility.Inspect(inst); });
 
             GenerateDebugButton(
                 "Inspect ObjEditor",
                 "ObjEditor is the component that handles regular object editor stuff.",
-                () => { Inspect(ObjEditor.inst); });
+                () => { ModCompatibility.Inspect(ObjEditor.inst); });
 
             GenerateDebugButton(
                 "Inspect ObjectEditor",
                 "ObjectEditor is the component that handles modded object editor stuff.",
-                () => { Inspect(ObjectEditor.inst); });
+                () => { ModCompatibility.Inspect(ObjectEditor.inst); });
 
             GenerateDebugButton(
                 "Inspect ObjectManager",
                 "ObjectManager is the component that handles regular object stuff.",
-                () => { Inspect(ObjectManager.inst); });
+                () => { ModCompatibility.Inspect(ObjectManager.inst); });
 
             GenerateDebugButton(
                 "Inspect GameManager",
                 "GameManager normally handles all the level loading, however now it's handled by LevelManager.",
-                () => { Inspect(GameManager.inst); });
+                () => { ModCompatibility.Inspect(GameManager.inst); });
 
             GenerateDebugButton(
                 "Inspect Example",
                 "ExampleManager handles everything to do with Example, your little companion.",
-                () => { Inspect(ExampleManager.inst); });
+                () => { ModCompatibility.Inspect(ExampleManager.inst); });
 
             GenerateDebugButton(
                 "Inspect Object Editor UI",
                 "Take a closer look at the Object Editor UI since the parent tree for it is pretty deep.",
-                () => { Inspect(ObjEditor.inst.ObjectView); });
+                () => { ModCompatibility.Inspect(ObjEditor.inst.ObjectView); });
 
             GenerateDebugButton(
                 "Inspect LevelProcessor",
                 "LevelProcessor is the main handler for updating object animation and spawning / despawning objects.",
-                () => { Inspect(Updater.levelProcessor); });
+                () => { ModCompatibility.Inspect(Updater.levelProcessor); });
 
             GenerateDebugButton(
                 "Inspect Current GameData",
                 "GameData stores all the main level data.",
-                () => { Inspect(GameData.Current); });
+                () => { ModCompatibility.Inspect(GameData.Current); });
 
             GenerateDebugButton(
                 "Inspect Current MetaData",
                 "MetaData stores all the extra level info.",
-                () => { Inspect(MetaData.Current); });
+                () => { ModCompatibility.Inspect(MetaData.Current); });
 
             GenerateDebugButton(
                 "Current Event Keyframe",
                 "The current selected Event Keyframe. Based on the type and index number.",
-                () =>
-                {
-                    if (EventEditor.inst.currentEventType >= GameData.Current.eventObjects.allEvents.Count || EventEditor.inst.currentEvent >= GameData.Current.eventObjects.allEvents[EventEditor.inst.currentEventType].Count)
-                        return;
-
-                    Inspect(GameData.Current.eventObjects.allEvents[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent]);
-                });
+                () => { ModCompatibility.Inspect(RTEventEditor.inst.CurrentSelectedKeyframe); });
 
             ReloadFunctions();
         }

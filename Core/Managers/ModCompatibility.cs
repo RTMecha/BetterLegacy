@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using HarmonyLib;
+using System;
+using System.Collections.Generic;
 
 using UnityEngine;
 
@@ -30,5 +32,46 @@ namespace BetterLegacy.Core.Managers
         }
 
         public static bool UnityExplorerInstalled { get; private set; }
+        public static Type UEInspector => UnityExplorerInstalled ? AccessTools.TypeByName("UnityExplorer.InspectorManager") : null;
+        public static Type UEUIManager => UnityExplorerInstalled ? AccessTools.TypeByName("UnityExplorer.UI.UIManager") : null;
+
+        public static void Inspect(object obj)
+        {
+            if (!UnityExplorerInstalled)
+                return;
+
+            var ui = UEUIManager;
+            var inspector = UEInspector;
+            ui.GetProperty("ShowMenu").SetValue(ui, true);
+            inspector.GetMethod("Inspect", new[] { typeof(object), AccessTools.TypeByName("UnityExplorer.CacheObject.CacheObjectBase") })
+            .Invoke(inspector, new object[] { obj, null });
+        }
+
+        public static void ShowExplorer()
+        {
+            if (!UnityExplorerInstalled)
+                return;
+
+            var ui = UEUIManager;
+            ui.GetProperty("ShowMenu").SetValue(ui, true);
+        }
+
+        public static void HideExplorer()
+        {
+            if (!UnityExplorerInstalled)
+                return;
+
+            var ui = UEUIManager;
+            ui.GetProperty("ShowMenu").SetValue(ui, false);
+        }
+
+        public static void ToggleExplorer()
+        {
+            if (!UnityExplorerInstalled)
+                return;
+
+            var ui = UEUIManager;
+            ui.GetProperty("ShowMenu").SetValue(ui, !(bool)ui.GetProperty("ShowMenu").GetValue(ui));
+        }
     }
 }
