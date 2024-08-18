@@ -213,7 +213,7 @@ namespace BetterLegacy.Arcade
                         return;
                     }
 
-                    LevelManager.current = 0;
+                    LevelManager.currentQueueIndex = 0;
                     if (LevelManager.ArcadeQueue.Count > 1)
                     {
                         LevelManager.CurrentLevel = LevelManager.ArcadeQueue[0];

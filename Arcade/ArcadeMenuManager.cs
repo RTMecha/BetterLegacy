@@ -819,7 +819,7 @@ namespace BetterLegacy.Arcade
                 AudioManager.inst.PlayMusic(MenuManager.inst.currentMenuMusicName, MenuManager.inst.currentMenuMusic);
             }
 
-            LevelManager.current = 0;
+            LevelManager.currentQueueIndex = 0;
 
             #region Interface Setup
 
@@ -3475,7 +3475,7 @@ namespace BetterLegacy.Arcade
                 }
             }
 
-            LevelManager.current = 0;
+            LevelManager.currentQueueIndex = 0;
             LevelManager.ArcadeQueue.AddRange(queue);
 
             if (play)

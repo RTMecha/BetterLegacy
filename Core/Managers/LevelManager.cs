@@ -78,7 +78,7 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// The current index in <see cref="ArcadeQueue"/>
         /// </summary>
-        public static int current;
+        public static int currentQueueIndex;
 
         public static bool finished = false;
 
@@ -275,6 +275,55 @@ namespace BetterLegacy.Core.Managers
 
             var level = new Level(path.Replace("level.lsb", "").Replace("level.vgd", ""));
             inst.StartCoroutine(Play(level));
+        }
+
+        public static void UpdateCurrentLevelProgress()
+        {
+            if (!IsArcade && !DataManager.inst.GetSettingBool("IsArcade", false) || CurrentLevel == null)
+                return;
+
+            CoreHelper.Log($"Setting Player Data");
+            int prevHits = CurrentLevel.playerData != null ? CurrentLevel.playerData.Hits : -1;
+
+            PlayedLevelCount++;
+
+            // TODO: Implement achievement system (not the Steam one, the custom one)
+            //if (Saves.Where(x => x.Completed).Count() >= 100)
+            //{
+            //    SteamWrapper.inst.achievements.SetAchievement("GREAT_TESTER");
+            //}
+
+            if (PlayerManager.IsZenMode || PlayerManager.IsPractice)
+                return;
+
+            if (CurrentLevel.playerData == null)
+                CurrentLevel.playerData = new PlayerData { ID = CurrentLevel.id, };
+
+            CoreHelper.Log($"Updating save data\n" +
+                $"Deaths [OLD = {CurrentLevel.playerData.Deaths} > NEW = {GameManager.inst.deaths.Count}]\n" +
+                $"Hits: [OLD = {CurrentLevel.playerData.Hits} > NEW = {GameManager.inst.hits.Count}]\n" +
+                $"Boosts: [OLD = {CurrentLevel.playerData.Boosts} > NEW = {BoostCount}]");
+
+            if (CurrentLevel.playerData.Deaths == 0 || CurrentLevel.playerData.Deaths > GameManager.inst.deaths.Count)
+                CurrentLevel.playerData.Deaths = GameManager.inst.deaths.Count;
+            if (CurrentLevel.playerData.Hits == 0 || CurrentLevel.playerData.Hits > GameManager.inst.hits.Count)
+                CurrentLevel.playerData.Hits = GameManager.inst.hits.Count;
+            if (CurrentLevel.playerData.Boosts == 0 || CurrentLevel.playerData.Boosts > BoostCount)
+                CurrentLevel.playerData.Boosts = BoostCount;
+            CurrentLevel.playerData.Completed = true;
+
+            if (Saves.Has(x => x.ID == CurrentLevel.id))
+            {
+                var saveIndex = Saves.FindIndex(x => x.ID == CurrentLevel.id);
+                Saves[saveIndex] = CurrentLevel.playerData;
+            }
+            else
+                Saves.Add(CurrentLevel.playerData);
+
+            if (Levels.TryFind(x => x.id == CurrentLevel.id, out Level level))
+                level.playerData = CurrentLevel.playerData;
+
+            SaveProgress();
         }
 
         /// <summary>

@@ -786,7 +786,7 @@ namespace BetterLegacy.Menus
                         {
                             if (ArcadeHelper.endedLevel)
                             {
-                                LevelManager.current -= 1;
+                                LevelManager.currentQueueIndex -= 1;
                                 AudioManager.inst.SetMusicTime(0f);
                                 GameManager.inst.hits.Clear();
                                 GameManager.inst.deaths.Clear();

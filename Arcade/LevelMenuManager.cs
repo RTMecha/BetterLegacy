@@ -96,7 +96,7 @@ namespace BetterLegacy.Arcade
 
             levelFolder = FolderButton();
 
-            LevelManager.current = 0;
+            LevelManager.currentQueueIndex = 0;
             LevelManager.ArcadeQueue.Clear();
 
             yield return inst.StartCoroutine(GenerateOpenFilePopup());
@@ -231,7 +231,7 @@ namespace BetterLegacy.Arcade
                 playButtButt.onClick.RemoveAllListeners();
                 playButtButt.onClick.AddListener(delegate ()
                 {
-                    LevelManager.current = 0;
+                    LevelManager.currentQueueIndex = 0;
                     if (LevelManager.ArcadeQueue.Count > 1)
                     {
                         LevelManager.CurrentLevel = LevelManager.ArcadeQueue[0];
