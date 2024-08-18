@@ -168,7 +168,7 @@ namespace BetterLegacy.Editor.Managers
                     CreateBackgrounds(result);
             });
 
-            bgRight.transform.Find("backgrounds").AsRT().sizeDelta = new Vector2(366f, 524f);
+            bgRight.transform.Find("backgrounds").AsRT().sizeDelta = new Vector2(366f, 440f);
 
             #region Editor Themes
 
