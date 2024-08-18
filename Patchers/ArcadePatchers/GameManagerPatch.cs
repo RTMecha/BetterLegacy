@@ -142,7 +142,6 @@ namespace BetterLegacy.Patchers
 
             if (!CoreHelper.IsUsingInputField && CoreHelper.Paused && !LevelManager.LevelEnded && InputDataManager.inst.menuActions.Cancel.WasPressed)
             {
-                //__instance.menuUI?.GetComponent<InterfaceController>()?.SwitchBranch("unpause");
                 PauseMenu.UnPause();
             }
 
