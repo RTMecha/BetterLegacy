@@ -162,6 +162,9 @@ namespace BetterLegacy.Core.Helpers
 
         #region Unity
 
+        /// <summary>
+        /// If the user is interacting with an InputField.
+        /// </summary>
         public static bool IsUsingInputField { get; set; }
 
         /// <summary>
@@ -222,6 +225,11 @@ namespace BetterLegacy.Core.Helpers
             yield break;
         }
 
+        /// <summary>
+        /// Converts a string array to a Dropdown OptionData list.
+        /// </summary>
+        /// <param name="str">String array to convert.</param>
+        /// <returns>Returns a list of <see cref="Dropdown.OptionData"/> based on the string array.</returns>
         public static List<Dropdown.OptionData> StringToOptionData(params string[] str) => str.Select(x => new Dropdown.OptionData(x)).ToList();
 
         #endregion
@@ -260,6 +268,12 @@ namespace BetterLegacy.Core.Helpers
         /// </summary>
         /// <param name="message">The message to log.</param>
         public static void LogError(string message) => Debug.LogError($"{LegacyPlugin.className}{message}");
+
+        /// <summary>
+        /// For logging an exception with a className. Message is logged as an error.
+        /// </summary>
+        /// <param name="exception">The exception to log.</param>
+        public static void LogException(Exception exception) => LogError($"Exception: {exception}");
 
         /// <summary>
         /// Logs the initialization of an object with a provided class name.
@@ -324,9 +338,17 @@ namespace BetterLegacy.Core.Helpers
             return LSColors.ColorFromHSV(hue, sat, val < 0.5 ? -val + 1 : -(val - 1));
         }
 
+        /// <summary>
+        /// Gets a custom player object color.
+        /// </summary>
+        /// <param name="playerIndex">Index reference.</param>
+        /// <param name="col"></param>
+        /// <param name="alpha"></param>
+        /// <param name="hex"></param>
+        /// <returns></returns>
         public static Color GetPlayerColor(int playerIndex, int col, float alpha, string hex)
-            => LSColors.fadeColor(col >= 0 && col < 4 ? CoreHelper.CurrentBeatmapTheme.playerColors[col] : col == 4 ? CoreHelper.CurrentBeatmapTheme.guiColor : col > 4 && col < 23 ? CoreHelper.CurrentBeatmapTheme.objectColors[col - 5] :
-                col == 23 ? CoreHelper.CurrentBeatmapTheme.playerColors[playerIndex % 4] : col == 24 ? LSColors.HexToColor(hex) : col == 25 ? CoreHelper.CurrentBeatmapTheme.guiAccentColor : LSColors.pink500, alpha);
+            => LSColors.fadeColor(col >= 0 && col < 4 ? CurrentBeatmapTheme.playerColors[col] : col == 4 ? CurrentBeatmapTheme.guiColor : col > 4 && col < 23 ? CurrentBeatmapTheme.objectColors[col - 5] :
+                col == 23 ? CurrentBeatmapTheme.playerColors[playerIndex % 4] : col == 24 ? LSColors.HexToColor(hex) : col == 25 ? CurrentBeatmapTheme.guiAccentColor : LSColors.pink500, alpha);
 
         #endregion
 
