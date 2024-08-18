@@ -29,6 +29,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
     {
         public static PauseMenu Current { get; set; }
 
+        static bool currentCursorVisibility;
+
         public PauseMenu() : base(false)
         {
             if (!CoreHelper.InGame || CoreHelper.InEditor)
@@ -46,6 +48,15 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 childForceExpandWidth = true,
                 spacing = 4f,
                 rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(-500f, 200f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(800f, 200f)),
+            });
+
+            layouts.Add("info", new MenuVerticalLayout
+            {
+                name = "info",
+                childControlWidth = true,
+                childForceExpandWidth = true,
+                spacing = 4f,
+                rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(500f, 200f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(600f, 200f)),
             });
 
             elements.Add(new MenuImage
@@ -122,7 +133,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 RestartLevel, // 1
                 () => { SceneManager.inst.LoadScene("Editor", true); }, // 2
                 ConfigManager.inst.Show, // 3
-                GameManager.inst.QuitToArcade, // 4
+                QuitToArcade, // 4
                 Application.Quit, // 5
             };
 
@@ -147,6 +158,29 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         opacity = 0f,
                         length = 0f,
                     });
+                }
+
+                if (i == 3 && ModCompatibility.UnityExplorerInstalled)
+                {
+                    elements.Add(new MenuButton
+                    {
+                        id = num.ToString(),
+                        name = "Explorer Button",
+                        text = "<b> [ SHOW EXPLORER ]",
+                        parentLayout = "buttons",
+                        selectionPosition = new Vector2Int(0, num),
+                        rectJSON = SimpleJSON.JSON.Parse("{\"size\": { \"x\": \"200\",\"y\": \"64\" } }"),
+                        opacity = 0.1f,
+                        val = -40f,
+                        textVal = 40f,
+                        selectedOpacity = 1f,
+                        selectedVal = 40f,
+                        selectedTextVal = -40f,
+                        length = 1f,
+                        playBlipSound = true,
+                        func = ModCompatibility.ShowExplorer,
+                    });
+                    num++;
                 }
 
                 elements.Add(new MenuButton
@@ -194,6 +228,56 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 length = 0.6f,
             });
 
+            elements.Add(new MenuText
+            {
+                id = "463472367",
+                name = "Info Text",
+                text = $"<align=right>Times hit: {GameManager.inst.hits.Count}",
+                rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 32f)),
+                hideBG = true,
+                textVal = 40f,
+                length = 0.3f,
+                parentLayout = "info",
+            });
+            
+            elements.Add(new MenuText
+            {
+                id = "738347853",
+                name = "Info Text",
+                text = $"<align=right>Times died: {GameManager.inst.deaths.Count}",
+                rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 32f)),
+                hideBG = true,
+                textVal = 40f,
+                length = 0.3f,
+                parentLayout = "info",
+            });
+
+            var levelRank = LevelManager.GetLevelRank(LevelManager.CurrentLevel);
+
+            elements.Add(new MenuText
+            {
+                id = "738347853",
+                name = "Info Text",
+                text = $"<align=right>Current rank: <#{LSColors.ColorToHex(levelRank.color)}>{levelRank.name}</color>",
+                rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 32f)),
+                hideBG = true,
+                textVal = 40f,
+                length = 0.3f,
+                parentLayout = "info",
+            });
+            
+            elements.Add(new MenuText
+            {
+                id = "738347853",
+                name = "Info Text",
+                text = $"<align=right>Level completed: {FontManager.TextTranslater.Percentage(AudioManager.inst.CurrentAudioSource.time, AudioManager.inst.CurrentAudioSource.clip.length)}%",
+                rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 32f)),
+                hideBG = true,
+                textVal = 40f,
+                length = 0.3f,
+                parentLayout = "info",
+            });
+
             CoreHelper.StartCoroutine(GenerateUI());
         }
 
@@ -235,24 +319,34 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 countdown.text = num;
                 countdown.textUI.text = num;
                 countdown.textUI.maxVisibleCharacters = 9999;
-                yield return new WaitForSeconds(1f);
+                yield return new WaitForSeconds(0.5f);
             }
 
             AudioManager.inst.PlaySound("blip");
 
             countdown.text = "<align=center><size=120><b><font=Fredoka One>GO!";
             countdown.textUI.text = "<align=center><size=120><b><font=Fredoka One>GO!";
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(0.2f);
 
             Current?.Clear();
             Current = null;
             if (InterfaceManager.inst.CurrentMenu is PauseMenu)
                 InterfaceManager.inst.CurrentMenu = null;
-            LSHelpers.HideCursor();
+            if (!currentCursorVisibility)
+                LSHelpers.HideCursor();
             AudioManager.inst.CurrentAudioSource.UnPause();
             GameManager.inst.gameState = GameManager.State.Playing;
 
             yield break;
+        }
+
+        public static void QuitToArcade()
+        {
+            Current?.Clear();
+            Current = null;
+            if (InterfaceManager.inst.CurrentMenu is PauseMenu)
+                InterfaceManager.inst.CurrentMenu = null;
+            GameManager.inst.QuitToArcade();
         }
 
         public static void RestartLevel()
@@ -262,7 +356,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             if (ArcadeHelper.endedLevel)
             {
-                LevelManager.current -= 1;
+                LevelManager.currentQueueIndex -= 1;
                 AudioManager.inst.SetMusicTime(0f);
                 GameManager.inst.hits.Clear();
                 GameManager.inst.deaths.Clear();
@@ -286,6 +380,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             if (!CoreHelper.Playing)
                 return;
 
+            currentCursorVisibility = Cursor.visible;
             LSHelpers.ShowCursor();
             AudioManager.inst.CurrentAudioSource.Pause();
             InputDataManager.inst.SetAllControllerRumble(0f);
