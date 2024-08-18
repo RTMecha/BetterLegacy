@@ -61,6 +61,11 @@ namespace BetterLegacy.Configs
         /// </summary>
         public Setting<int> ShuffleQueueAmount { get; set; }
 
+        /// <summary>
+        /// The yield instruction used for spacing out levels being loaded in the Arcade. Some options will load faster but freeze the game, while others load slower but allow you to see them loading in the menus.
+        /// </summary>
+        public Setting<YieldType> LoadYieldMode { get; set; }
+
         #endregion
 
         #region UI
@@ -198,6 +203,7 @@ namespace BetterLegacy.Configs
             LoadSteamLevels = Bind(this, "Level", "Load Steam Levels After Local Loaded", true, "If subscribed Steam levels should load after the local levels have loaded.");
             QueuePlaysLevel = Bind(this, "Level", "Play First Queued", false, "If enabled, the game will immediately load into the first queued level, otherwise it will open it in the Play Level Menu.");
             ShuffleQueueAmount = Bind(this, "Level", "Shuffle Queue Amount", 5, "How many levels should be added to the Queue.", 1, 50);
+            LoadYieldMode = BindEnum(this, "Level", "Load Yield Mode", YieldType.FixedUpdate, "The yield instruction used for spacing out levels being loaded in the Arcade. Some options will load faster but freeze the game, while others load slower but allow you to see them loading in the menus.");
 
             #endregion
 
