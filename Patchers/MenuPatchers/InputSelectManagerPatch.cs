@@ -73,7 +73,7 @@ namespace BetterLegacy.Patchers
                 __instance.ic.Replaceline(4, "[PHASE] or [SPACE] to add a simulation.");
                 if (InputDataManager.inst.players.Count > 0)
                 {
-                    if (DataManager.inst.GetSettingBool("IsArcade", false))
+                    if (LevelManager.IsArcade)
                         __instance.ic.Replaceline(5, "[START] or [ENTER] to choose arcade simulation.");
                     else
                         __instance.ic.Replaceline(5, "[START] or [ENTER] to start story simulation.");
@@ -139,17 +139,17 @@ namespace BetterLegacy.Patchers
 
         [HarmonyPatch(nameof(InputSelectManager.LoadLevel))]
         [HarmonyPrefix]
-        static bool LoadLevel()
+        static bool LoadLevelPrefix()
         {
             LevelManager.OnInputsSelected?.Invoke();
 
-            if (LevelManager.OnInputsSelected != null)
+            if (LevelManager.OnInputsSelected != null) // if we want to run a custom function instead of doing the normal methods.
             {
                 LevelManager.OnInputsSelected = null;
                 return false;
             }
 
-            if (DataManager.inst.GetSettingBool("IsArcade", false) || LevelManager.IsArcade)
+            if (LevelManager.IsArcade)
             {
                 SceneManager.inst.LoadScene("Arcade Select", false);
                 return false;

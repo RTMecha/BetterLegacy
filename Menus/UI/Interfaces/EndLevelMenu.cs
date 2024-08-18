@@ -41,7 +41,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             CoreHelper.Log($"Setting More Info");
             {
-
                 int dataPointMax = 24;
                 int[] hitsNormalized = new int[dataPointMax + 1];
                 foreach (var playerDataPoint in GameManager.inst.hits)
@@ -231,11 +230,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     });
                 }
 
-                LevelManager.currentQueueIndex += 1;
-                if (LevelManager.ArcadeQueue.Count > 1 && LevelManager.currentQueueIndex < LevelManager.ArcadeQueue.Count)
+                if (!LevelManager.IsNextEndOfQueue)
                 {
-                    CoreHelper.Log($"Selecting next Arcade level in queue [{LevelManager.currentQueueIndex + 1} / {LevelManager.ArcadeQueue.Count}]");
-                    LevelManager.CurrentLevel = LevelManager.ArcadeQueue[LevelManager.currentQueueIndex];
+                    CoreHelper.Log($"Selecting next Arcade level in queue [{LevelManager.currentQueueIndex + 2} / {LevelManager.ArcadeQueue.Count}]");
 
                     elements.Add(new MenuButton
                     {
@@ -253,10 +250,35 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         selectedTextVal = -40f,
                         length = 0.3f,
                         playBlipSound = true,
-                        func = Continue,
+                        func = ArcadeHelper.NextLevel,
                     });
                 }
                 
+                if (LevelManager.HasQueue)
+                {
+                    var level = LevelManager.ArcadeQueue[0];
+                    LevelManager.ArcadeQueue.TryFind(x => x.metadata != null && x.metadata.isHubLevel, out level);
+
+                    elements.Add(new MenuButton
+                    {
+                        id = "674",
+                        name = "Return Button",
+                        text = "<b><align=center>[ RESTART QUEUE ]",
+                        parentLayout = "buttons",
+                        autoAlignSelectionPosition = true,
+                        rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(100f, 64f)),
+                        opacity = 0.1f,
+                        val = -40f,
+                        textVal = 40f,
+                        selectedOpacity = 1f,
+                        selectedVal = 40f,
+                        selectedTextVal = -40f,
+                        length = 0.3f,
+                        playBlipSound = true,
+                        func = ArcadeHelper.FirstLevel,
+                    });
+                }
+
                 elements.Add(new MenuButton
                 {
                     id = "1",
@@ -273,7 +295,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     length = 0.3f,
                     playBlipSound = true,
                     rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(100f, 64f)),
-                    func = ToArcade,
+                    func = ArcadeHelper.QuitToArcade,
                 });
                 
                 elements.Add(new MenuButton
@@ -292,7 +314,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     length = 0.3f,
                     playBlipSound = true,
                     rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(100f, 64f)),
-                    func = RestartLevel,
+                    func = () => ArcadeHelper.RestartLevel(Close),
                 });
                 elements.Add(new MenuText
                 {
@@ -329,57 +351,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
             base.UpdateTheme();
         }
 
-        public static void RestartLevel()
-        {
-            if (CoreHelper.InEditor)
-                return;
-
-            if (ArcadeHelper.endedLevel)
-            {
-                LevelManager.currentQueueIndex -= 1;
-                AudioManager.inst.SetMusicTime(0f);
-                GameManager.inst.hits.Clear();
-                GameManager.inst.deaths.Clear();
-                ArcadeHelper.endedLevel = false;
-
-                UnPause();
-                LevelManager.LevelEnded = false;
-
-                return;
-            }
-
-            AudioManager.inst.SetMusicTime(0f);
-            GameManager.inst.hits.Clear();
-            GameManager.inst.deaths.Clear();
-            UnPause();
-            ArcadeHelper.endedLevel = false;
-        }
-
-        public static void ToArcade()
-        {
-            Current?.Clear();
-            Current = null;
-            if (InterfaceManager.inst.CurrentMenu is PauseMenu)
-                InterfaceManager.inst.CurrentMenu = null;
-            GameManager.inst.QuitToArcade();
-        }
-
-        public static void Continue()
-        {
-            Current?.Clear();
-            Current = null;
-            if (InterfaceManager.inst.CurrentMenu is PauseMenu)
-                InterfaceManager.inst.CurrentMenu = null;
-            SceneManager.inst.LoadScene("Game");
-        }
-
-        // BetterLegacy.Menus.UI.Interfaces.EndLevelMenu.Init()
         public static void Init()
         {
             if (InterfaceManager.inst.CurrentMenu is PauseMenu)
-            {
                 PauseMenu.Current = null;
-            }
 
             InterfaceManager.inst.CurrentMenu?.Clear();
             InterfaceManager.inst.CurrentMenu = null;
@@ -387,16 +362,14 @@ namespace BetterLegacy.Menus.UI.Interfaces
             Current = new EndLevelMenu();
         }
 
-        public static void UnPause()
+        public static void Close()
         {
-            if (!CoreHelper.Paused)
-                return;
-
             Current?.Clear();
             Current = null;
             if (InterfaceManager.inst.CurrentMenu is PauseMenu)
                 InterfaceManager.inst.CurrentMenu = null;
             AudioManager.inst.CurrentAudioSource.UnPause();
+            AudioManager.inst.CurrentAudioSource.Play();
             GameManager.inst.gameState = GameManager.State.Playing;
         }
     }

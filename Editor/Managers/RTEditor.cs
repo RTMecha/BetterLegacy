@@ -2574,19 +2574,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorHelper.AddEditorDropdown("Quit to Arcade", "", "File", titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
             {
-                ShowWarningPopup("Are you sure you want to quit to the arcade? Any unsaved progress will be lost!", () =>
-                {
-                    DG.Tweening.DOTween.Clear();
-                    Updater.UpdateObjects(false);
-                    DataManager.inst.gameData = null;
-                    DataManager.inst.gameData = new GameData();
-
-                    ArcadeManager.inst.skippedLoad = false;
-                    ArcadeManager.inst.forcedSkip = false;
-                    DataManager.inst.UpdateSettingBool("IsArcade", true);
-
-                    SceneManager.inst.LoadScene("Input Select");
-                }, HideWarningPopup);
+                ShowWarningPopup("Are you sure you want to quit to the arcade? Any unsaved progress will be lost!", ArcadeHelper.QuitToArcade, HideWarningPopup);
             }, 7);
 
             EditorHelper.AddEditorDropdown("Switch to Arcade Mode", "", "File", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_right_small.png"), () =>

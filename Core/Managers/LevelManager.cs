@@ -75,6 +75,20 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public static List<Level> ArcadeQueue { get; set; }
 
+        public static bool HasQueue => ArcadeQueue != null && ArcadeQueue.Count > 0;
+
+        /// <summary>
+        /// If <see cref="currentQueueIndex"/> is at the end of the Arcade Queue list.
+        /// </summary>
+        public static bool IsNextEndOfQueue
+            => ArcadeQueue.Count <= 1 || currentQueueIndex + 1 >= ArcadeQueue.Count;
+
+        /// <summary>
+        /// If <see cref="currentQueueIndex"/> is at the end of the Arcade Queue list.
+        /// </summary>
+        public static bool IsEndOfQueue
+            => ArcadeQueue.Count <= 1 || currentQueueIndex >= ArcadeQueue.Count;
+
         /// <summary>
         /// The current index in <see cref="ArcadeQueue"/>
         /// </summary>
@@ -177,8 +191,10 @@ namespace BetterLegacy.Core.Managers
 
             Debug.Log($"{className}Updating states...");
 
-            CoreHelper.UpdateDiscordStatus($"Level: {level.metadata.song.title}", "In Arcade", "arcade");
-            DataManager.inst.UpdateSettingBool("IsArcade", true);
+            if (IsArcade)
+                CoreHelper.UpdateDiscordStatus($"Level: {level.metadata.LevelBeatmap.name}", "In Arcade", "arcade");
+            else
+                CoreHelper.UpdateDiscordStatus($"Story: {level.metadata.LevelBeatmap.name}", "In Story", "arcade");
 
             while (!GameManager.inst.introTitle && !GameManager.inst.introArtist)
                 yield return null;
@@ -266,7 +282,7 @@ namespace BetterLegacy.Core.Managers
             Debug.Log($"{className}Loading level from {path}");
 
             if (setLevelEnd)
-                OnLevelEnd = delegate ()
+                OnLevelEnd = () =>
                 {
                     Clear();
                     Updater.OnLevelEnd();
@@ -279,7 +295,7 @@ namespace BetterLegacy.Core.Managers
 
         public static void UpdateCurrentLevelProgress()
         {
-            if (!IsArcade && !DataManager.inst.GetSettingBool("IsArcade", false) || CurrentLevel == null)
+            if (!IsArcade || CurrentLevel == null)
                 return;
 
             CoreHelper.Log($"Setting Player Data");
@@ -554,6 +570,25 @@ namespace BetterLegacy.Core.Managers
         }
 
         public static PlayerData GetPlayerData(string id) => Saves.Find(x => x.ID == id);
+
+        public static DataManager.LevelRank GetLevelRank(List<SaveManager.SaveGroup.Save.PlayerDataPoint> hits)
+        {
+            if (PlayerManager.IsZenMode || PlayerManager.IsPractice)
+                return DataManager.inst.levelRanks[0];
+
+            int dataPointMax = 24;
+            int[] hitsNormalized = new int[dataPointMax + 1];
+            foreach (var playerDataPoint in hits)
+            {
+                int num5 = (int)RTMath.SuperLerp(0f, AudioManager.inst.CurrentAudioSource.clip.length, 0f, (float)dataPointMax, playerDataPoint.time);
+                hitsNormalized[num5]++;
+            }
+
+            return DataManager.inst.levelRanks.Find(x => hitsNormalized.Sum() >= x.minHits && hitsNormalized.Sum() <= x.maxHits);
+        }
+
+        public static DataManager.LevelRank GetLevelRank(int hits)
+            => DataManager.inst.levelRanks.TryFind(x => hits >= x.minHits && hits <= x.maxHits, out DataManager.LevelRank levelRank) ? levelRank : DataManager.inst.levelRanks[0];
 
         public static DataManager.LevelRank GetLevelRank(Level level)
             => level.playerData != null && DataManager.inst.levelRanks.Has(LevelRankPredicate(level)) ? DataManager.inst.levelRanks.Find(LevelRankPredicate(level)) : DataManager.inst.levelRanks[0];

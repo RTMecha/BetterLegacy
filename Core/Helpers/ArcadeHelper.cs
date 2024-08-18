@@ -3,6 +3,7 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
+using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
 using LSFunctions;
 using SimpleJSON;
@@ -20,6 +21,97 @@ namespace BetterLegacy.Core.Helpers
     {
         public static GameObject buttonPrefab;
         public static bool endedLevel;
+
+        public static void FirstLevel()
+        {
+            if (!LevelManager.HasQueue)
+                return;
+
+            var prev = LevelManager.currentQueueIndex;
+            LevelManager.currentQueueIndex = 0;
+
+            CoreHelper.Log($"Update queue - Prev: {prev} > Current: {LevelManager.currentQueueIndex}");
+
+            LevelManager.LevelEnded = false;
+            LevelManager.CurrentLevel = LevelManager.ArcadeQueue[LevelManager.currentQueueIndex];
+
+            InterfaceManager.inst.CurrentMenu?.Clear();
+            InterfaceManager.inst.CurrentMenu = null;
+            PauseMenu.Current = null;
+            EndLevelMenu.Current = null;
+
+            SceneManager.inst.LoadScene("Game");
+        }
+
+        public static void NextLevel()
+        {
+            var prev = LevelManager.currentQueueIndex;
+            LevelManager.currentQueueIndex++;
+
+            CoreHelper.Log($"Update queue - Prev: {prev} > Current: {LevelManager.currentQueueIndex}");
+
+            if (LevelManager.IsEndOfQueue)
+                return;
+
+            LevelManager.LevelEnded = false;
+            LevelManager.CurrentLevel = LevelManager.ArcadeQueue[LevelManager.currentQueueIndex];
+
+            InterfaceManager.inst.CurrentMenu?.Clear();
+            InterfaceManager.inst.CurrentMenu = null;
+            PauseMenu.Current = null;
+            EndLevelMenu.Current = null;
+
+            SceneManager.inst.LoadScene("Game");
+        }
+
+        public static void RestartLevel(Action action)
+        {
+            if (CoreHelper.InEditor)
+                return;
+
+            var levelHasEnded = endedLevel;
+
+            if (levelHasEnded)
+                LevelManager.LevelEnded = false;
+
+            AudioManager.inst.SetMusicTime(0f);
+            GameManager.inst.hits.Clear();
+            GameManager.inst.deaths.Clear();
+            action?.Invoke();
+            endedLevel = false;
+        }
+
+        public static void QuitToArcade()
+        {
+            InterfaceManager.inst.CurrentMenu?.Clear();
+            InterfaceManager.inst.CurrentMenu = null;
+            PauseMenu.Current = null;
+            EndLevelMenu.Current = null;
+
+            CoreHelper.Log("Quitting to arcade...");
+            DG.Tweening.DOTween.Clear();
+            DataManager.inst.gameData = null;
+            DataManager.inst.gameData = new GameData();
+            InputDataManager.inst.SetAllControllerRumble(0f);
+
+            LevelManager.LevelEnded = false;
+
+            if (CoreHelper.InEditor)
+            {
+                ArcadeManager.inst.skippedLoad = false;
+                ArcadeManager.inst.forcedSkip = false;
+                LevelManager.IsArcade = true;
+                SceneManager.inst.LoadScene("Input Select");
+                return;
+            }
+
+            if (!LevelManager.IsArcade)
+            {
+                SceneManager.inst.LoadScene("Main Menu");
+                return;
+            }
+            SceneManager.inst.LoadScene("Arcade Select");
+        }
 
         public static void EndOfLevel()
         {
@@ -290,7 +382,7 @@ namespace BetterLegacy.Core.Helpers
             fromLevel = false;
             ArcadeManager.inst.skippedLoad = false;
             ArcadeManager.inst.forcedSkip = false;
-            DataManager.inst.UpdateSettingBool("IsArcade", true);
+            LevelManager.IsArcade = true;
 
             if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + LevelManager.ListPath))
                 Directory.CreateDirectory(RTFile.ApplicationDirectory + LevelManager.ListPath);
