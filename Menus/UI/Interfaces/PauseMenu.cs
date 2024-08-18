@@ -180,6 +180,29 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     num++;
                 }
 
+                if (i == 3 && LevelManager.Hub != null)
+                {
+                    elements.Add(new MenuButton
+                    {
+                        id = num.ToString(),
+                        name = "Return Button",
+                        text = "<b> [ RETURN TO HUB ]",
+                        parentLayout = "buttons",
+                        selectionPosition = new Vector2Int(0, num),
+                        rectJSON = SimpleJSON.JSON.Parse("{\"size\": { \"x\": \"200\",\"y\": \"64\" } }"),
+                        opacity = 0.1f,
+                        val = -40f,
+                        textVal = 40f,
+                        selectedOpacity = 1f,
+                        selectedVal = 40f,
+                        selectedTextVal = -40f,
+                        length = 1f,
+                        playBlipSound = true,
+                        func = ArcadeHelper.ReturnToHub,
+                    });
+                    num++;
+                }
+
                 elements.Add(new MenuButton
                 {
                     id = num.ToString(),

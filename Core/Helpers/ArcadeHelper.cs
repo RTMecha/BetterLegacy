@@ -22,6 +22,22 @@ namespace BetterLegacy.Core.Helpers
         public static GameObject buttonPrefab;
         public static bool endedLevel;
 
+        public static void ReturnToHub()
+        {
+            if (LevelManager.Hub == null)
+                return;
+
+            LevelManager.LevelEnded = false;
+            LevelManager.CurrentLevel = LevelManager.Hub;
+
+            InterfaceManager.inst.CurrentMenu?.Clear();
+            InterfaceManager.inst.CurrentMenu = null;
+            PauseMenu.Current = null;
+            EndLevelMenu.Current = null;
+
+            SceneManager.inst.LoadScene("Game");
+        }
+
         public static void FirstLevel()
         {
             if (!LevelManager.HasQueue)
@@ -95,6 +111,7 @@ namespace BetterLegacy.Core.Helpers
             InputDataManager.inst.SetAllControllerRumble(0f);
 
             LevelManager.LevelEnded = false;
+            LevelManager.Hub = null;
 
             if (CoreHelper.InEditor)
             {

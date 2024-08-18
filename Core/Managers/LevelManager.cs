@@ -66,6 +66,16 @@ namespace BetterLegacy.Core.Managers
         public static Level CurrentLevel { get; set; }
 
         /// <summary>
+        /// The current hub level to return to.
+        /// </summary>
+        public static Level Hub { get; set; }
+
+        /// <summary>
+        /// The level that was played before the current.
+        /// </summary>
+        public static Level PreviousLevel { get; set; }
+
+        /// <summary>
         /// Local levels from within the arcade folder.
         /// </summary>
         public static List<Level> Levels { get; set; }
@@ -147,7 +157,11 @@ namespace BetterLegacy.Core.Managers
             if (level.playerData == null && Saves.TryFind(x => x.ID == level.id, out PlayerData playerData))
                 level.playerData = playerData;
 
+            PreviousLevel = CurrentLevel;
             CurrentLevel = level;
+
+            if (level.metadata != null && level.metadata.isHubLevel)
+                Hub = level;
 
             Debug.Log($"{className}Switching to Game scene");
 

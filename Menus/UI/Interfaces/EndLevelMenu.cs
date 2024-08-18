@@ -257,7 +257,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 if (LevelManager.HasQueue)
                 {
                     var level = LevelManager.ArcadeQueue[0];
-                    LevelManager.ArcadeQueue.TryFind(x => x.metadata != null && x.metadata.isHubLevel, out level);
+                    //LevelManager.ArcadeQueue.TryFind(x => x.metadata != null && x.metadata.isHubLevel, out level);
 
                     elements.Add(new MenuButton
                     {
@@ -276,6 +276,28 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         length = 0.3f,
                         playBlipSound = true,
                         func = ArcadeHelper.FirstLevel,
+                    });
+                }
+
+                if (LevelManager.Hub != null)
+                {
+                    elements.Add(new MenuButton
+                    {
+                        id = "625235",
+                        name = "Return Button",
+                        text = "<b><align=center>[ RETURN TO HUB ]",
+                        parentLayout = "buttons",
+                        autoAlignSelectionPosition = true,
+                        rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(100f, 64f)),
+                        opacity = 0.1f,
+                        val = -40f,
+                        textVal = 40f,
+                        selectedOpacity = 1f,
+                        selectedVal = 40f,
+                        selectedTextVal = -40f,
+                        length = 0.3f,
+                        playBlipSound = true,
+                        func = ArcadeHelper.ReturnToHub,
                     });
                 }
 
