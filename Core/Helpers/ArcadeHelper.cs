@@ -1,5 +1,6 @@
 ﻿using BetterLegacy.Configs;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Menus.UI.Interfaces;
 using LSFunctions;
 using System.Linq;
 using UnityEngine;
@@ -15,6 +16,13 @@ namespace BetterLegacy.Core.Helpers
         public static void EndOfLevel()
         {
             endedLevel = true;
+
+            if (EndLevelMenu.Current != null)
+                return;
+
+            EndLevelMenu.Init();
+            return;
+
             var __instance = GameManager.inst;
             GameManager.inst.players.SetActive(false);
             InputDataManager.inst.SetAllControllerRumble(0f);
@@ -207,11 +215,11 @@ namespace BetterLegacy.Core.Helpers
                 ic.interfaceBranches[endOfLevelIndex].elements[2] = levelSummary;
 
                 InterfaceController.InterfaceElement buttons = null;
-                LevelManager.current += 1;
-                if (LevelManager.ArcadeQueue.Count > 1 && LevelManager.current < LevelManager.ArcadeQueue.Count)
+                LevelManager.currentQueueIndex += 1;
+                if (LevelManager.ArcadeQueue.Count > 1 && LevelManager.currentQueueIndex < LevelManager.ArcadeQueue.Count)
                 {
-                    CoreHelper.Log($"Selecting next Arcade level in queue [{LevelManager.current + 1} / {LevelManager.ArcadeQueue.Count}]");
-                    LevelManager.CurrentLevel = LevelManager.ArcadeQueue[LevelManager.current];
+                    CoreHelper.Log($"Selecting next Arcade level in queue [{LevelManager.currentQueueIndex + 1} / {LevelManager.ArcadeQueue.Count}]");
+                    LevelManager.CurrentLevel = LevelManager.ArcadeQueue[LevelManager.currentQueueIndex];
                     buttons = new InterfaceController.InterfaceElement(InterfaceController.InterfaceElement.Type.Buttons, (metadata.artist.getUrl() != null) ? "[NEXT]:next&&[TO ARCADE]:toarcade&&[REPLAY]:replay&&[MORE INFO]:end_of_level_more_info&&[GET SONG]:getsong" : "[NEXT]:next&&[TO ARCADE]:toarcade&&[REPLAY]:replay&&[MORE INFO]:end_of_level_more_info");
                 }
                 else
