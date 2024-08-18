@@ -318,14 +318,12 @@ namespace BetterLegacy.Patchers
         {
             BackgroundManagerPatch.bgColorToLerp = bgColorToLerp;
 
-            if (GameStorageManager.inst)
+            if (GameStorageManager.inst && EventManager.inst)
             {
-                GameStorageManager.inst.perspectiveCam.backgroundColor = bgColorToLerp;
+                EventManager.inst.camPer.backgroundColor = bgColorToLerp;
                 if (GameStorageManager.inst.checkpointImages.Count > 0)
                     foreach (var image in GameStorageManager.inst.checkpointImages)
-                    {
                         image.color = timelineColorToLerp;
-                    }
 
                 GameStorageManager.inst.timelinePlayer.color = timelineColorToLerp;
                 GameStorageManager.inst.timelineLeftCap.color = timelineColorToLerp;
@@ -341,18 +339,15 @@ namespace BetterLegacy.Patchers
                     __instance.introArtist.color = timelineColorToLerp;
             }
             if (__instance.guiImages.Length > 0)
-            {
                 foreach (var image in __instance.guiImages)
-                {
                     image.color = timelineColorToLerp;
-                }
-            }
 
+            if (!__instance.menuUI.activeInHierarchy)
+                return false;
             var componentsInChildren2 = __instance.menuUI.GetComponentsInChildren<TextMeshProUGUI>();
             for (int i = 0; i < componentsInChildren2.Length; i++)
-            {
                 componentsInChildren2[i].color = CoreHelper.InvertColorHue(CoreHelper.InvertColorValue(bgColorToLerp));
-            }
+
             return false;
         }
 
@@ -366,8 +361,9 @@ namespace BetterLegacy.Patchers
 
         static IEnumerator GoToNextLevelLoop(GameManager __instance)
         {
-            if (AudioManager.inst.masterVol <= 0f)
-                SteamWrapper.inst.achievements.SetAchievement("NO_AUDIO");
+            // TODO: Implement custom achievements.
+            //if (AudioManager.inst.masterVol <= 0f)
+            //    SteamWrapper.inst.achievements.SetAchievement("NO_AUDIO");
 
             __instance.gameState = GameManager.State.Finish;
             Time.timeScale = 1f;
