@@ -3551,6 +3551,37 @@ namespace BetterLegacy.Core.Helpers
 
                             var p = time / length;
 
+                            if (!Parser.TryParse(modifier.commands[1], true))
+                            {
+                                var textWithoutFormatting = text;
+                                var matches = Regex.Matches(text, "<(.*?)>");
+                                foreach (var obj in matches)
+                                {
+                                    var match = (Match)obj;
+                                    textWithoutFormatting = textWithoutFormatting.Replace(match.Groups[0].ToString(), "");
+                                }
+
+                                var stringLength2 = (int)Mathf.Lerp(0, textWithoutFormatting.Length, p);
+                                textObject.textMeshPro.maxVisibleCharacters = stringLength2;
+
+                                if (modifier.Result is not int result || result != stringLength2)
+                                {
+                                    modifier.Result = stringLength2;
+                                    if (!Parser.TryParse(modifier.commands[3], false))
+                                    {
+                                        AudioManager.inst.PlaySound("Click");
+                                        break;
+                                    }
+
+                                    if (bool.TryParse(modifier.commands[5], out bool global) && float.TryParse(modifier.commands[6], out float pitch) && float.TryParse(modifier.commands[7], out float vol))
+                                        ModifiersManager.GetSoundPath(modifier.reference.id, modifier.commands[4], global, pitch, vol, false);
+
+                                    break;
+                                }
+
+                                break;
+                            }
+
                             // new code that i can't figure out
 
                             //var textWithoutFormatting = text;
@@ -4497,44 +4528,7 @@ namespace BetterLegacy.Core.Helpers
                             if (EditorManager.inst || modifier.constant || !LevelManager.CurrentLevel)
                                 break;
 
-                            if (LevelManager.Saves.Where(x => x.Completed).Count() >= 100)
-                            {
-                                SteamWrapper.inst.achievements.SetAchievement("GREAT_TESTER");
-                            }
-
-                            if (!PlayerManager.IsZenMode && !PlayerManager.IsPractice)
-                            {
-                                if (LevelManager.CurrentLevel.playerData == null)
-                                {
-                                    LevelManager.CurrentLevel.playerData = new LevelManager.PlayerData
-                                    {
-                                        ID = LevelManager.CurrentLevel.id,
-                                    };
-                                }
-
-                                if (LevelManager.CurrentLevel.playerData.Deaths == 0 || LevelManager.CurrentLevel.playerData.Deaths > GameManager.inst.deaths.Count)
-                                    LevelManager.CurrentLevel.playerData.Deaths = GameManager.inst.deaths.Count;
-                                if (LevelManager.CurrentLevel.playerData.Hits == 0 || LevelManager.CurrentLevel.playerData.Hits > GameManager.inst.hits.Count)
-                                    LevelManager.CurrentLevel.playerData.Hits = GameManager.inst.hits.Count;
-                                if (LevelManager.CurrentLevel.playerData.Boosts == 0 || LevelManager.CurrentLevel.playerData.Boosts > LevelManager.BoostCount)
-                                    LevelManager.CurrentLevel.playerData.Boosts = LevelManager.BoostCount;
-                                LevelManager.CurrentLevel.playerData.Completed = true;
-
-                                if (LevelManager.Saves.Has(x => x.ID == LevelManager.CurrentLevel.id))
-                                {
-                                    var saveIndex = LevelManager.Saves.FindIndex(x => x.ID == LevelManager.CurrentLevel.id);
-                                    LevelManager.Saves[saveIndex] = LevelManager.CurrentLevel.playerData;
-                                }
-                                else
-                                    LevelManager.Saves.Add(LevelManager.CurrentLevel.playerData);
-
-                                if (LevelManager.Levels.TryFind(x => x.id == LevelManager.CurrentLevel.id, out Level level))
-                                {
-                                    level.playerData = LevelManager.CurrentLevel.playerData;
-                                }
-                            }
-
-                            LevelManager.SaveProgress();
+                            LevelManager.UpdateCurrentLevelProgress();
 
                             break;
                         }
