@@ -152,27 +152,41 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 if (prefabs == null || jnElement["id"] == null || !prefabs.TryFind(x => x.id == jnElement["id"], out MenuPrefab prefab))
                                     break;
 
-                                for (int k = 0; k < prefab.elements.Count; k++)
+                                var element = new MenuPrefabObject
                                 {
-                                    var element = prefab.elements[k];
-                                    if (element is MenuEvent menuEvent)
-                                    {
-                                        yield return MenuEvent.DeepCopy(menuEvent, false);
-                                        continue;
-                                    }
-                                    if (element is MenuText menuText)
-                                    {
-                                        yield return MenuText.DeepCopy(menuText, false);
-                                        continue;
-                                    }
-                                    if (element is MenuButton menuButton)
-                                    {
-                                        yield return MenuButton.DeepCopy(menuButton, false);
-                                        continue;
-                                    }
+                                    prefabID = jnElement["id"],
+                                    prefab = prefab,
+                                    id = jnElement["id"] == null ? LSText.randomNumString(16) : jnElement["id"],
+                                    name = jnElement["name"],
+                                    length = jnElement["anim_length"].AsFloat, // how long the UI pauses for when this element spawns.
+                                    fromLoop = j > 0, // if element has been spawned from the loop or if its the first / only of its kind.
+                                    loop = loop,
+                                };
 
-                                    yield return MenuImage.DeepCopy(element, false);
-                                }
+                                if (jnElement["spawn_if_func"] == null || element.ParseIfFunction(jnElement["spawn_if_func"]))
+                                    yield return element;
+
+                                //for (int k = 0; k < prefab.elements.Count; k++)
+                                //{
+                                //    var element = prefab.elements[k];
+                                //    if (element is MenuEvent menuEvent)
+                                //    {
+                                //        yield return MenuEvent.DeepCopy(menuEvent, false);
+                                //        continue;
+                                //    }
+                                //    if (element is MenuText menuText)
+                                //    {
+                                //        yield return MenuText.DeepCopy(menuText, false);
+                                //        continue;
+                                //    }
+                                //    if (element is MenuButton menuButton)
+                                //    {
+                                //        yield return MenuButton.DeepCopy(menuButton, false);
+                                //        continue;
+                                //    }
+
+                                //    yield return MenuImage.DeepCopy(element, false);
+                                //}
 
                                 break;
                             }

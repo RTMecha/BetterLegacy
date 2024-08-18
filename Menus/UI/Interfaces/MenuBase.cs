@@ -89,6 +89,40 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         public List<MenuPrefab> prefabs = new List<MenuPrefab>();
 
+        public void ApplyPrefab(MenuPrefab prefab)
+        {
+            elements.AddRange(ApplyPrefabElements(prefab));
+        }
+
+        /// <summary>
+        /// Iterates through a <see cref="MenuPrefab"/>s' elements and returns elements to be applied to the interface.
+        /// </summary>
+        /// <param name="prefab">Prefab to apply.</param>
+        /// <returns>Returns iterated copies of the prefabs' elements.</returns>
+        public IEnumerable<MenuImage> ApplyPrefabElements(MenuPrefab prefab)
+        {
+            for (int i = 0; i < prefab.elements.Count; i++)
+            {
+                var element = prefab.elements[i];
+                if (element is MenuEvent menuEvent)
+                {
+                    yield return MenuEvent.DeepCopy(menuEvent, false);
+                    continue;
+                }
+                if (element is MenuText menuText)
+                {
+                    yield return MenuText.DeepCopy(menuText, false);
+                    continue;
+                }
+                if (element is MenuText menuButton)
+                {
+                    yield return MenuText.DeepCopy(menuButton, false);
+                    continue;
+                }
+                yield return MenuImage.DeepCopy(element, false);
+            }
+        }
+
         /// <summary>
         /// The file location of the menu. This isn't necessary for cases where the menu does not have a file origin.
         /// </summary>
@@ -177,6 +211,16 @@ namespace BetterLegacy.Menus.UI.Interfaces
             var gameObject = Creator.NewUIObject("Base Layout", canvas.Canvas.transform);
             UIManager.SetRectTransform(gameObject.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
 
+            for (int i = 0; i < prefabs.Count; i++)
+            {
+                for (int j = 0; j < prefabs[i].layouts.Count; j++)
+                {
+                    var layout = prefabs[i].layouts.ElementAt(i);
+                    if (!layouts.ContainsKey(layout.Key))
+                        layouts.Add(layout.Key, layout.Value);
+                }
+            }
+
             for (int i = 0; i < layouts.Count; i++)
             {
                 var layout = layouts.ElementAt(i).Value;
@@ -191,11 +235,43 @@ namespace BetterLegacy.Menus.UI.Interfaces
             CoreHelper.Log("Creating elements...");
 
             int num = 0;
+            int count = elements.Count;
+            for (int i = 0; i < count; i++)
+            {
+                var element = elements[num];
+
+                if (element is MenuPrefabObject prefabObject)
+                {
+                    if (prefabObject.prefab == null)
+                    {
+                        num++;
+                        continue;
+                    }
+
+                    var list = ApplyPrefabElements(prefabObject.prefab).ToList();
+
+                    for (int j = 0; j < list.Count; j++)
+                    {
+                        elements.Insert(num, list[j]);
+                        num++;
+                    }
+
+                    prefabObject.Spawn();
+                    while (prefabObject.isSpawning)
+                        yield return null;
+                    num++;
+                }
+            }
+
+            num = 0;
             for (int i = 0; i < elements.Count; i++)
             {
                 var element = elements[i];
 
                 //CoreHelper.Log($"Creating {element}...");
+
+                if (element is MenuPrefabObject prefabObject)
+                    continue;
 
                 if (element is MenuEvent menuEvent)
                 {
