@@ -60,9 +60,21 @@ namespace BetterLegacy.Patchers
         }
 
         [HarmonyPatch(nameof(GameManager.Start))]
-        [HarmonyPostfix]
-        static void StartPostfix(GameManager __instance)
+        [HarmonyPrefix]
+        static bool StartPrefix()
         {
+            AudioManager.inst.CurrentAudioSource.time = 0f;
+            Instance.gameState = GameManager.State.Loading;
+            InputDataManager.inst.PlayerPrefabs = Instance.PlayerPrefabs;
+            InputDataManager.inst.playersCanJoin = false;
+            Instance.playerGUI.SetActive(true);
+            Instance.menuUI.GetComponentInChildren<Image>().enabled = false;
+            if (!CoreHelper.InEditor)
+                Instance.LoadLevelCurrent();
+            Instance.initialPlayerCount = InputDataManager.inst.players.Count;
+            InputDataManager.playerDisconnectedEvent += Instance.PlayerDisconnected;
+            InputDataManager.playerReconnectedEvent += Instance.PlayerReconnected;
+
             CoreHelper.SetCameraRenderDistance();
             CoreHelper.SetAntiAliasing();
             var beatmapTheme = GameManager.inst.LiveTheme;
@@ -75,69 +87,29 @@ namespace BetterLegacy.Patchers
                 guiAccentColor = beatmapTheme.guiColor,
                 guiColor = beatmapTheme.guiColor,
                 playerColors = beatmapTheme.playerColors,
-                objectColors = new List<Color>
-                {
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                },
+                objectColors = CoreHelper.NewColorList(18),
                 backgroundColors = beatmapTheme.backgroundColors,
-                effectColors = new List<Color>
-                {
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                    LSColors.pink500,
-                },
+                effectColors = CoreHelper.NewColorList(18),
             };
 
             (CoreHelper.InEditor || PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value ? (Action)PlayerManager.LoadGlobalModels : PlayerManager.LoadLocalModels).Invoke();
 
-            PlayerManager.SetupImages(__instance);
+            PlayerManager.SetupImages(Instance);
 
-            __instance.gameObject.AddComponent<GameStorageManager>();
+            Instance.gameObject.AddComponent<GameStorageManager>();
 
             ArcadeHelper.fromLevel = true;
 
             LevelManager.timeInLevelOffset = Time.time;
             LevelManager.timeInLevel = 0f;
-            LevelManager.finished = false;
+            return false;
         }
 
         [HarmonyPatch(nameof(GameManager.Update))]
         [HarmonyPrefix]
         static bool UpdatePrefix(GameManager __instance)
         {
-            if (!LevelManager.finished)
+            if (!LevelManager.LevelEnded)
                 LevelManager.timeInLevel = Time.time - LevelManager.timeInLevelOffset;
 
             if (!CoreHelper.IsUsingInputField && CoreHelper.Paused && !LevelManager.LevelEnded && InputDataManager.inst.menuActions.Cancel.WasPressed)
@@ -297,7 +269,7 @@ namespace BetterLegacy.Patchers
         {
             if (!LevelManager.LoadingFromHere && LevelManager.CurrentLevel)
             {
-                LevelManager.finished = false;
+                LevelManager.LevelEnded = false;
                 CoreHelper.StartCoroutine(LevelManager.Play(LevelManager.CurrentLevel));
             }
             return false;
@@ -369,7 +341,6 @@ namespace BetterLegacy.Patchers
             DG.Tweening.DOTween.Clear();
             InputDataManager.inst.SetAllControllerRumble(0f);
 
-            LevelManager.finished = true;
             LevelManager.LevelEnded = true;
             LevelManager.OnLevelEnd?.Invoke();
             yield break;

@@ -350,6 +350,19 @@ namespace BetterLegacy.Core.Helpers
             => LSColors.fadeColor(col >= 0 && col < 4 ? CurrentBeatmapTheme.playerColors[col] : col == 4 ? CurrentBeatmapTheme.guiColor : col > 4 && col < 23 ? CurrentBeatmapTheme.objectColors[col - 5] :
                 col == 23 ? CurrentBeatmapTheme.playerColors[playerIndex % 4] : col == 24 ? LSColors.HexToColor(hex) : col == 25 ? CurrentBeatmapTheme.guiAccentColor : LSColors.pink500, alpha);
 
+        /// <summary>
+        /// Creates and fills a color list.
+        /// </summary>
+        /// <param name="count">Amount to fill.</param>
+        /// <returns></returns>
+        public static List<Color> NewColorList(int count)
+        {
+            var list = new List<Color>();
+            while (list.Count < count)
+                list.Add(LSColors.pink500);
+            return list;
+        }
+
         #endregion
 
         #region Strings
