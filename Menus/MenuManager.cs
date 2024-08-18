@@ -588,10 +588,7 @@ namespace BetterLegacy.Menus
                                 prevScene = ic.gameObject.scene.name;
                                 fromPageLevel = true;
 
-                                LevelManager.OnLevelEnd = delegate ()
-                                {
-                                    CoreHelper.StartCoroutine(ReturnToMenu());
-                                };
+                                LevelManager.OnLevelEnd = () => { CoreHelper.StartCoroutine(ReturnToMenu()); };
 
                                 LevelManager.Load(RTFile.ApplicationDirectory + data[1] + "/level.lsb", false);
                             }
@@ -786,7 +783,6 @@ namespace BetterLegacy.Menus
                         {
                             if (ArcadeHelper.endedLevel)
                             {
-                                LevelManager.currentQueueIndex -= 1;
                                 AudioManager.inst.SetMusicTime(0f);
                                 GameManager.inst.hits.Clear();
                                 GameManager.inst.deaths.Clear();
