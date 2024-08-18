@@ -46,7 +46,7 @@ namespace BetterLegacy.Core
                 var baseData = new GameData();
                 baseData.beatmapData = new LevelBeatmapData();
                 baseData.beatmapData.editorData = new LevelEditorData();
-                baseData.beatmapData.levelData = new DataManager.GameData.BeatmapData.LevelData();
+                baseData.beatmapData.levelData = new LevelData();
 
                 if (gameDatas != null && gameDatas.Length > 0)
                     for (int i = 0; i < gameDatas.Length; i++)

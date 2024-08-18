@@ -334,6 +334,8 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
+        public GameData combinedGameData;
+
         public void Combine()
         {
             var combineList = new List<GameData>();
@@ -369,6 +371,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             var combinedGameData = ProjectData.Combiner.Combine(combineList.ToArray());
+            this.combinedGameData = combinedGameData;
 
             string save = savePath;
             if (!save.Contains("level.lsb") && save.LastIndexOf('/') == save.Length - 1)
