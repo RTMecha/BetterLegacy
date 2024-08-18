@@ -108,6 +108,8 @@ namespace BetterLegacy.Core
         public int currentMode = 0;
         public string[] LevelModes { get; set; }
 
+        public bool Locked => metadata != null && metadata.requireUnlock && playerData != null && !playerData.Unlocked;
+
         public void LoadAudioClip()
         {
             if (RTFile.FileExists(path + "level.ogg") && !music)
