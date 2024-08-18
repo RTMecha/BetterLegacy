@@ -826,6 +826,8 @@ namespace BetterLegacy.Core.Managers
                 var result = "";
                 for (int i = 0; i < (int)(progress / count); i++)
                     result += s;
+                while (result.Length < count)
+                    result = " " + result;
 
                 return result;
             }

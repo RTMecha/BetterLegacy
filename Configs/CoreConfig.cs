@@ -36,7 +36,7 @@ namespace BetterLegacy.Configs
 
         public Dictionary<string, BaseSetting> defaultSettings = new Dictionary<string, BaseSetting>();
 
-        #region Configs
+        #region Settings
 
         #region Default Settings
 
@@ -61,6 +61,11 @@ namespace BetterLegacy.Configs
         /// The amount the FPS is limited to. If the number is -1, it is unlimited.
         /// </summary>
         public Setting<int> FPSLimit { get; set; }
+
+        /// <summary>
+        /// Customizes the type of loading bar that is used.
+        /// </summary>
+        public Setting<LoadingDisplayType> LoadingDisplayType { get; set; }
 
         /// <summary>
         /// Total volume.
@@ -385,6 +390,7 @@ namespace BetterLegacy.Configs
             SFXVol = Bind(this, "Settings", "Volume SFX", 9, "SFX volume.", 0, 9);
             Language = BindEnum(this, "Settings", "Language", BetterLegacy.Language.English, "The language the game is in.");
             ControllerRumble = Bind(this, "Settings", "Controller Vibrate", true, "If the controllers should vibrate.");
+            LoadingDisplayType = BindEnum(this, "Settings", "Loading Display Type", BetterLegacy.LoadingDisplayType.EqualsBar, "Customizes the type of loading bar that is used.");
 
             #endregion
 
@@ -397,8 +403,8 @@ namespace BetterLegacy.Configs
             IncreasedClipPlanes = Bind(this, "Game", "Increase Camera Clip Planes", true, "Increases the clip panes to a very high amount, allowing for object render depth to go really high or really low. Off is the unmodded setting.");
             EvaluateCode = Bind(this, "Game", "Evaluate Custom Code", false, "If custom written code should evaluate. Turn this on if you're sure the level you're using isn't going to mess anything up with a code Modifier or custom player code.");
 
-            InterfaceBlurSize = Bind(this, "Game", "Interface Blur Size", 3f, "The size of the in-game interface blur.");
-            InterfaceBlurColor = Bind(this, "Game", "Interface Blur Color", new Color(0.4f, 0.4f, 0.4f), "The color of the in-game interface blur.");
+            InterfaceBlurSize = Bind(this, "Game", "Interface Blur Size", 3f, "The size of the in-game interface blur. (Unused for now.)");
+            InterfaceBlurColor = Bind(this, "Game", "Interface Blur Color", new Color(0.4f, 0.4f, 0.4f), "The color of the in-game interface blur. (Unused for now.)");
 
             #endregion
 
@@ -481,13 +487,16 @@ namespace BetterLegacy.Configs
 
         void DebugInfoChanged() => RTDebugger.Init();
 
+        /// <summary>
+        /// Unused for now.
+        /// </summary>
         void InterfaceBlurChanged()
         {
-            if (GameStorageManager.inst && GameStorageManager.inst.guiBlur)
-            {
-                GameStorageManager.inst.guiBlur.material.SetFloat("_Size", InterfaceBlurSize.Value);
-                GameStorageManager.inst.guiBlur.material.color = InterfaceBlurColor.Value;
-            }
+            //if (GameStorageManager.inst && GameStorageManager.inst.guiBlur)
+            //{
+            //    GameStorageManager.inst.guiBlur.material.SetFloat("_Size", InterfaceBlurSize.Value);
+            //    GameStorageManager.inst.guiBlur.material.color = InterfaceBlurColor.Value;
+            //}
         }
 
         void DiscordChanged()
