@@ -65,9 +65,15 @@
         EndOfFrame,
         FixedUpdate,
     }
-
+    
+    /// <summary>
+    /// How a level list should be sorted.
+    /// </summary>
     public enum LevelSort
     {
+        /// <summary>
+        /// The default. Levels without icons are usually sorted first.
+        /// </summary>
         Cover,
         Artist,
         Creator,
@@ -81,10 +87,41 @@
 
     public enum MenuMusicLoadMode
     {
+        /// <summary>
+        /// Takes from Project Arrhythmia/settings/menus
+        /// </summary>
         Settings,
+        /// <summary>
+        /// Takes from story folder.
+        /// </summary>
         StoryFolder,
+        /// <summary>
+        /// Takes from editor folder.
+        /// </summary>
         EditorFolder,
+        /// <summary>
+        /// Takes from global folder.
+        /// </summary>
         GlobalFolder
+    }
+
+    /// <summary>
+    /// How <i>complex</i> something is.<br></br><br></br>Can be used for <i>Examples</i>' tutorials or for displaying editor features. If used for editor features, Normal is vanilla and Advanced is fully modded.
+    /// </summary>
+    public enum Complexity
+    {
+        /// <summary>
+        /// If used for editor feature display, only show the most basic of features.
+        /// </summary>
+        Simple,
+        /// <summary>
+        /// If used for editor feature display, only show vanilla features.
+        /// </summary>
+        Normal,
+        /// <summary>
+        /// If used for editor feature display, show all features.
+        /// </summary>
+        Advanced
     }
 
     public enum WaveformType
@@ -146,8 +183,14 @@
         Catalyst
     }
 
+    /// <summary>
+    /// Theem group used for applying Editor Themes.
+    /// </summary>
     public enum ThemeGroup
     {
+        /// <summary>
+        /// If no theme color should be applied to the element. Used for cases where we want the element to be rounded but not take from a theme color.
+        /// </summary>
         Null,
 
         Background_1,
@@ -417,6 +460,7 @@
         French,
         Dutch,
         German,
+        Chinese,
         AncientAutobot,
         Matoran
     }
