@@ -799,7 +799,7 @@ namespace BetterLegacy.Core.Managers
                 return string.Format("{0:D0}:{1:D1}:{2:D2}", timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds);
             }
 
-            public static string Percentage(float t, float length) => string.Format("{0:000}", ((int)RTMath.Percentage(t, length)).ToString());
+            public static string Percentage(float t, float length) => string.Format("{0:000}", (int)RTMath.Percentage(t, length));
 
             public static string ConvertHealthToEquals(int _num, int _max = 3)
             {
@@ -821,9 +821,16 @@ namespace BetterLegacy.Core.Managers
                 return str += "]";
             }
 
-            public static string ArrayToStringParams(params object[] vs) => ArrayToString(vs);
+            public static string ConvertBar(string s, float progress, int count = 10)
+            {
+                var result = "";
+                for (int i = 0; i < (int)(progress / count); i++)
+                    result += s;
 
-            public static string ArrayToString(object[] vs)
+                return result;
+            }
+
+            public static string ArrayToString(params object[] vs)
             {
                 string s = "";
                 if (vs.Length > 0)
