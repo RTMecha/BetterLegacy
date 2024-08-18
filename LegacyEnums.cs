@@ -52,8 +52,18 @@
     {
         Doggo,
         Waveform,
+        Bar,
         Percentage,
         EqualsBar
+    }
+
+    public enum YieldType
+    {
+        None,
+        Delay,
+        Null,
+        EndOfFrame,
+        FixedUpdate,
     }
 
     public enum LevelSort
