@@ -16,6 +16,8 @@ namespace BetterLegacy.Core
     /// </summary>
     public class Level : Exists
     {
+        public Level() { }
+
         public Level(MetaData metaData, Sprite icon, AudioClip music)
         {
             isStory = true;
@@ -50,6 +52,22 @@ namespace BetterLegacy.Core
 
             icon = RTFile.FileExists($"{path}level.jpg") ? SpriteManager.LoadSprite($"{path}level.jpg") : RTFile.FileExists($"{path}cover.jpg") ? SpriteManager.LoadSprite($"{path}cover.jpg") : SteamWorkshop.inst.defaultSteamImageSprite;
 
+            UpdateDefaults();
+        }
+
+        public Level(string path, MetaData metadata)
+        {
+            this.path = path;
+
+            this.metadata = metadata;
+
+            icon = RTFile.FileExists($"{path}level.jpg") ? SpriteManager.LoadSprite($"{path}level.jpg") : RTFile.FileExists($"{path}cover.jpg") ? SpriteManager.LoadSprite($"{path}cover.jpg") : SteamWorkshop.inst.defaultSteamImageSprite;
+
+            UpdateDefaults();
+        }
+
+        public void UpdateDefaults()
+        {
             if (metadata)
             {
                 if (!string.IsNullOrEmpty(metadata.arcadeID) && metadata.arcadeID != "-1")
