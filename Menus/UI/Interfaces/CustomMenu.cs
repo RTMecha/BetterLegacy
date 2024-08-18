@@ -65,9 +65,23 @@ namespace BetterLegacy.Menus.UI.Interfaces
             customMenu.name = jn["name"];
             customMenu.musicName = jn["music_name"];
 
-            foreach (var keyValuePair in jn["layouts"].Linq)
+            ParseLayouts(customMenu.layouts, jn["layouts"]);
+            customMenu.elements.AddRange(ParseElements(jn["elements"]));
+
+            customMenu.loadedTheme = BeatmapTheme.Parse(jn["theme"]);
+            customMenu.useGameTheme = jn["game_theme"].AsBool;
+
+            return customMenu;
+        }
+
+        public static void ParseLayouts(Dictionary<string, MenuLayoutBase> layouts, JSONNode jn)
+        {
+            if (jn == null || !jn.IsObject)
+                return;
+
+            foreach (var keyValuePair in jn.Linq)
             {
-                if (customMenu.layouts.ContainsKey(keyValuePair.Key))
+                if (layouts.ContainsKey(keyValuePair.Key))
                     continue;
 
                 var jnLayout = keyValuePair.Value;
@@ -78,7 +92,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         {
                             var gridLayout = MenuGridLayout.Parse(jnLayout);
                             gridLayout.name = keyValuePair.Key;
-                            customMenu.layouts.Add(keyValuePair.Key, gridLayout);
+                            layouts.Add(keyValuePair.Key, gridLayout);
 
                             break;
                         }
@@ -86,7 +100,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         {
                             var horizontalLayout = MenuHorizontalLayout.Parse(jnLayout);
                             horizontalLayout.name = keyValuePair.Key;
-                            customMenu.layouts.Add(keyValuePair.Key, horizontalLayout);
+                            layouts.Add(keyValuePair.Key, horizontalLayout);
 
                             break;
                         }
@@ -94,16 +108,23 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         {
                             var verticalLayout = MenuVerticalLayout.Parse(jnLayout);
                             verticalLayout.name = keyValuePair.Key;
-                            customMenu.layouts.Add(keyValuePair.Key, verticalLayout);
+                            layouts.Add(keyValuePair.Key, verticalLayout);
 
                             break;
                         }
                 }
             }
 
-            for (int i = 0; i < jn["elements"].Count; i++)
+        }
+
+        public static IEnumerable<MenuImage> ParseElements(JSONNode jn)
+        {
+            if (jn == null || !jn.IsArray)
+                yield break;
+
+            for (int i = 0; i < jn.Count; i++)
             {
-                var jnElement = jn["elements"][i];
+                var jnElement = jn[i];
                 string elementType = jnElement["type"];
 
                 // loop function
@@ -129,7 +150,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 };
 
                                 if (jnElement["spawn_if_func"] == null || element.ParseIfFunction(jnElement["spawn_if_func"]))
-                                    customMenu.elements.Add(element);
+                                    yield return element;
                                 break;
                             }
                         case "image":
@@ -160,7 +181,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 };
 
                                 if (jnElement["spawn_if_func"] == null || element.ParseIfFunction(jnElement["spawn_if_func"]))
-                                    customMenu.elements.Add(element);
+                                    yield return element;
                                 break;
                             }
                         case "text":
@@ -199,7 +220,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 };
 
                                 if (jnElement["spawn_if_func"] == null || element.ParseIfFunction(jnElement["spawn_if_func"]))
-                                    customMenu.elements.Add(element);
+                                    yield return element;
 
                                 break;
                             }
@@ -249,17 +270,12 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 };
 
                                 if (jnElement["spawn_if_func"] == null || element.ParseIfFunction(jnElement["spawn_if_func"]))
-                                    customMenu.elements.Add(element);
+                                    yield return element;
 
                                 break;
                             }
                     }
             }
-
-            customMenu.loadedTheme = BeatmapTheme.Parse(jn["theme"]);
-            customMenu.useGameTheme = jn["game_theme"].AsBool;
-
-            return customMenu;
         }
     }
 }
