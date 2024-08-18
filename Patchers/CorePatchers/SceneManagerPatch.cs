@@ -108,6 +108,9 @@ namespace BetterLegacy.Patchers
         {
             Instance.background.SetActive(active);
             Instance.icon.SetActive(active);
+
+            if (!active)
+                loadingImage?.gameObject.SetActive(false);
         }
 
         public static bool displayLoadingText = true;
