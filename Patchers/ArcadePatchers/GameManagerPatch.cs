@@ -126,7 +126,7 @@ namespace BetterLegacy.Patchers
 
             __instance.gameObject.AddComponent<GameStorageManager>();
 
-            RTArcade.fromLevel = true;
+            ArcadeHelper.fromLevel = true;
 
             LevelManager.timeInLevelOffset = Time.time;
             LevelManager.timeInLevel = 0f;

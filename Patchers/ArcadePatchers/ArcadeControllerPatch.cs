@@ -22,7 +22,7 @@ namespace BetterLegacy.Patchers
             }
 
             InputDataManager.inst.playersCanJoin = false;
-            RTArcade.ReloadMenu();
+            ArcadeHelper.ReloadMenu();
 
             return true;
         }

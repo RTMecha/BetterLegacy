@@ -394,7 +394,7 @@ namespace BetterLegacy.Arcade
                 {
                     if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.V))
                     {
-                        RTArcade.PasteArcadeQueue();
+                        ArcadeHelper.PasteArcadeQueue();
                     }
 
                     queuePageField.caretColor = highlightColor;
@@ -1923,7 +1923,7 @@ namespace BetterLegacy.Arcade
                     copyClickable.onClick = pointerEventData =>
                     {
                         AudioManager.inst.PlaySound("blip");
-                        RTArcade.CopyArcadeQueue();
+                        ArcadeHelper.CopyArcadeQueue();
                     };
 
                     Settings[4].Add(new Tab
@@ -1966,7 +1966,7 @@ namespace BetterLegacy.Arcade
                     pasteClickable.onClick = pointerEventData =>
                     {
                         AudioManager.inst.PlaySound("blip");
-                        RTArcade.PasteArcadeQueue();
+                        ArcadeHelper.PasteArcadeQueue();
                     };
 
                     Settings[4].Add(new Tab

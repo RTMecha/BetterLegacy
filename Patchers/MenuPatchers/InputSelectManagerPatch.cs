@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Core.Managers;
+﻿using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using HarmonyLib;
 using LSFunctions;
 using System.Collections;
@@ -18,7 +19,7 @@ namespace BetterLegacy.Patchers
 
             InputDataManager.inst.ClearInputs();
             LSHelpers.HideCursor();
-            RTArcade.fromLevel = false;
+            ArcadeHelper.fromLevel = false;
         }
 
         [HarmonyPatch(nameof(InputSelectManager.Update))]

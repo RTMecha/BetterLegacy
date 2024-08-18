@@ -46,7 +46,6 @@ namespace BetterLegacy.Patchers
             StoryManager.Init();
 
             AudioManager.inst.gameObject.AddComponent<SoundManager>();
-            ArcadeManager.inst.gameObject.AddComponent<RTArcade>();
 
             try
             {

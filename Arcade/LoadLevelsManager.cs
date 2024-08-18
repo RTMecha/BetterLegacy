@@ -185,7 +185,7 @@ namespace BetterLegacy.Arcade
 
             ((Image)loader["Image"]).color = new Color(0.14f, 0.14f, 0.14f, 1f);
 
-            StartCoroutine(RTArcade.GetLevelList());
+            StartCoroutine(ArcadeHelper.GetLevelList());
 
             yield break;
         }
@@ -276,7 +276,7 @@ namespace BetterLegacy.Arcade
         public void End()
         {
             CoreHelper.Log("Loading done!");
-            CoreHelper.StartCoroutine(RTArcade.OnLoadingEnd());
+            CoreHelper.StartCoroutine(ArcadeHelper.OnLoadingEnd());
             Destroy(menuUI);
             Destroy(gameObject);
         }
