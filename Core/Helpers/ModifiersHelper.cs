@@ -11,6 +11,7 @@ using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Optimization.Objects;
 using BetterLegacy.Core.Optimization.Objects.Visual;
 using BetterLegacy.Editor.Managers;
+using BetterLegacy.Menus.UI.Interfaces;
 using DG.Tweening;
 using LSFunctions;
 using SimpleJSON;
@@ -524,7 +525,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "inEditor":
                     {
-                        return EditorManager.inst != null;
+                        return CoreHelper.InEditor;
                     }
                 case "randomGreater":
                     {
@@ -1283,6 +1284,10 @@ namespace BetterLegacy.Core.Helpers
                             return Parser.TryParse(DateTime.Now.ToString("yyyy"), 0) > num;
                         break;
                     }
+                case "levelUnlocked":
+                    {
+                        return LevelManager.Levels.TryFind(x => x.id == modifier.value, out Level level) && !level.Locked;
+                    }
             }
 
             modifier.Inactive?.Invoke(modifier);
@@ -1484,6 +1489,38 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 LevelManager.Load($"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{System.IO.Path.GetFileName(GameManager.inst.basePath.Substring(0, GameManager.inst.basePath.Length - 1))}/{modifier.value}/level.lsb");
                             }
+                            break;
+                        }
+                    case "loadLevelPrevious":
+                        {
+                            if (CoreHelper.InEditor)
+                                return;
+                            
+                            if (LevelManager.PreviousLevel != null)
+                                CoreHelper.StartCoroutine(LevelManager.Play(LevelManager.PreviousLevel));
+
+                            break;
+                        }
+                    case "loadLevelHub":
+                        {
+                            if (CoreHelper.InEditor)
+                                return;
+                            
+                            if (LevelManager.Hub != null)
+                                CoreHelper.StartCoroutine(LevelManager.Play(LevelManager.Hub));
+
+                            break;
+                        }
+                    case "endLevel":
+                        {
+                            if (CoreHelper.InEditor)
+                            {
+                                EditorManager.inst.DisplayNotification("End level func", 1f, EditorManager.NotificationType.Success);
+                                return;
+                            }
+
+                            EndLevelMenu.Init();
+
                             break;
                         }
                     case "quitToMenu":

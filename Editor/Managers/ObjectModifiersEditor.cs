@@ -703,7 +703,6 @@ namespace BetterLegacy.Editor.Managers
                     case "copyColorOther":
                     case "loadLevel":
                     case "loadLevelInternal":
-                    case "loadLevelID":
                     case "setText":
                     case "setTextOther":
                     case "addText":
@@ -744,6 +743,13 @@ namespace BetterLegacy.Editor.Managers
 
                             singleGenerator("Pitch", 6, 1f);
                             singleGenerator("Volume", 7, 1f);
+
+                            break;
+                        }
+                    case "levelUnlocked":
+                    case "loadLevelID":
+                        {
+                            stringGenerator("ID", 0);
 
                             break;
                         }
