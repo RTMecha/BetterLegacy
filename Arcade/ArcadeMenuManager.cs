@@ -814,6 +814,7 @@ namespace BetterLegacy.Arcade
             yield return StartCoroutine(DeleteComponents());
             UpdateTheme();
 
+            LevelManager.Hub = null;
             if (MenuManager.inst)
             {
                 AudioManager.inst.PlayMusic(MenuManager.inst.currentMenuMusicName, MenuManager.inst.currentMenuMusic);
