@@ -104,8 +104,6 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public static int currentQueueIndex;
 
-        public static bool finished = false;
-
         /// <summary>
         /// How many times a player has boosted.
         /// </summary>
