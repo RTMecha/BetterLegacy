@@ -66,6 +66,18 @@
         FixedUpdate,
     }
     
+    public enum Rank
+    {
+        Null,
+        SS,
+        S,
+        A,
+        B,
+        C,
+        D,
+        F
+    }
+
     /// <summary>
     /// How a level list should be sorted.
     /// </summary>

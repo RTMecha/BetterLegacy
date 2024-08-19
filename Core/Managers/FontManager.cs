@@ -459,9 +459,9 @@ namespace BetterLegacy.Core.Managers
 
                         if (beatmapObject.text.Contains("<levelRank>"))
                         {
-                            DataManager.LevelRank levelRank =
-                                EditorManager.inst == null && LevelManager.CurrentLevel != null ?
-                                    LevelManager.GetLevelRank(LevelManager.CurrentLevel) :
+                            var levelRank =
+                                !CoreHelper.InEditor && LevelManager.CurrentLevel != null ?
+                                    LevelManager.GetLevelRank(LevelManager.CurrentLevel) : CoreHelper.InEditor ? LevelManager.EditorRank :
                                     DataManager.inst.levelRanks[0];
 
                             str = str.Replace("<levelRank>", $"<color=#{LSColors.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>");
@@ -469,8 +469,8 @@ namespace BetterLegacy.Core.Managers
 
                         if (beatmapObject.text.Contains("<levelRankName>"))
                         {
-                            DataManager.LevelRank levelRank =
-                                EditorManager.inst == null && LevelManager.CurrentLevel != null ?
+                            var levelRank =
+                                !CoreHelper.InEditor && LevelManager.CurrentLevel != null ?
                                     LevelManager.GetLevelRank(LevelManager.CurrentLevel) :
                                     DataManager.inst.levelRanks[0];
 
@@ -479,12 +479,81 @@ namespace BetterLegacy.Core.Managers
 
                         if (beatmapObject.text.Contains("<levelRankColor>"))
                         {
-                            DataManager.LevelRank levelRank =
-                                EditorManager.inst == null && LevelManager.CurrentLevel != null ?
-                                    LevelManager.GetLevelRank(LevelManager.CurrentLevel) :
+                            var levelRank =
+                                !CoreHelper.InEditor && LevelManager.CurrentLevel != null ?
+                                    LevelManager.GetLevelRank(LevelManager.CurrentLevel) : CoreHelper.InEditor ? LevelManager.EditorRank :
                                     DataManager.inst.levelRanks[0];
 
                             str = str.Replace("<levelRankColor>", $"<color=#{LSColors.ColorToHex(levelRank.color)}>");
+                        }
+                        
+                        if (beatmapObject.text.Contains("<levelRankCurrent>"))
+                        {
+                            var levelRank = !CoreHelper.InEditor ? LevelManager.GetLevelRank(GameManager.inst.hits) : LevelManager.EditorRank;
+
+                            str = str.Replace("<levelRankCurrent>", $"<color=#{LSColors.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>");
+                        }
+
+                        if (beatmapObject.text.Contains("<levelRankCurrentName>"))
+                        {
+                            var levelRank = !CoreHelper.InEditor ? LevelManager.GetLevelRank(GameManager.inst.hits) : LevelManager.EditorRank;
+
+                            str = str.Replace("<levelRankCurrentName>", levelRank.name);
+                        }
+
+                        if (beatmapObject.text.Contains("<levelRankCurrentColor>"))
+                        {
+                            var levelRank = !CoreHelper.InEditor ? LevelManager.GetLevelRank(GameManager.inst.hits) : LevelManager.EditorRank;
+
+                            str = str.Replace("<levelRankCurrentColor>", $"<color=#{LSColors.ColorToHex(levelRank.color)}>");
+                        }
+
+                        // Level Rank Other
+                        {
+                            CoreHelper.RegexMatch(beatmapObject.text, new Regex(@"<levelRankOther=([0-9]+)>"), match =>
+                            {
+                                DataManager.LevelRank levelRank;
+                                if (LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level))
+                                {
+                                    levelRank = LevelManager.GetLevelRank(level);
+                                }
+                                else
+                                {
+                                    levelRank = CoreHelper.InEditor ? LevelManager.EditorRank : DataManager.inst.levelRanks[0];
+                                }
+
+                                str = str.Replace(match.Groups[0].ToString(), $"<color=#{LSColors.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>");
+                            });
+
+                            CoreHelper.RegexMatch(beatmapObject.text, new Regex(@"<levelRankOtherName=([0-9]+)>"), match =>
+                            {
+                                DataManager.LevelRank levelRank;
+                                if (LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level))
+                                {
+                                    levelRank = LevelManager.GetLevelRank(level);
+                                }
+                                else
+                                {
+                                    levelRank = CoreHelper.InEditor ? LevelManager.EditorRank : DataManager.inst.levelRanks[0];
+                                }
+
+                                str = str.Replace(match.Groups[0].ToString(), levelRank.name);
+                            });
+
+                            CoreHelper.RegexMatch(beatmapObject.text, new Regex(@"<levelRankOtherColor=([0-9]+)>"), match =>
+                            {
+                                DataManager.LevelRank levelRank;
+                                if (LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level))
+                                {
+                                    levelRank = LevelManager.GetLevelRank(level);
+                                }
+                                else
+                                {
+                                    levelRank = CoreHelper.InEditor ? LevelManager.EditorRank : DataManager.inst.levelRanks[0];
+                                }
+
+                                str = str.Replace(match.Groups[0].ToString(), $"<color=#{LSColors.ColorToHex(levelRank.color)}>");
+                            });
                         }
 
                         if (beatmapObject.text.Contains("<accuracy>"))

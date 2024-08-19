@@ -1910,7 +1910,20 @@ namespace BetterLegacy.Editor.Managers
                     case "levelRankGreaterEquals":
                     case "levelRankLesser":
                     case "levelRankGreater":
+                    case "levelRankOtherEquals":
+                    case "levelRankOtherLesserEquals":
+                    case "levelRankOtherGreaterEquals":
+                    case "levelRankOtherLesser":
+                    case "levelRankOtherGreater":
+                    case "levelRankCurrentEquals":
+                    case "levelRankCurrentLesserEquals":
+                    case "levelRankCurrentGreaterEquals":
+                    case "levelRankCurrentLesser":
+                    case "levelRankCurrentGreater":
                         {
+                            if (cmd.Contains("Other"))
+                                stringGenerator("ID", 1);
+
                             dropdownGenerator("Rank", 0, DataManager.inst.levelRanks.Select(x => x.name).ToList());
 
                             break;
