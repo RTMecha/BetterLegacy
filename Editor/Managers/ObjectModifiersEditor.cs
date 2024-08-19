@@ -713,6 +713,7 @@ namespace BetterLegacy.Editor.Managers
                     case "code":
                     case "setWindowTitle":
                     case "realTimeDayWeekEquals":
+                    case "loadInterface":
                         {
                             if (cmd == "setTextOther" || cmd == "addTextOther" || cmd == "setImageOther")
                             {

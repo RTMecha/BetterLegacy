@@ -11,6 +11,7 @@ using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Optimization.Objects;
 using BetterLegacy.Core.Optimization.Objects.Visual;
 using BetterLegacy.Editor.Managers;
+using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
 using DG.Tweening;
 using LSFunctions;
@@ -4875,6 +4876,51 @@ namespace BetterLegacy.Core.Helpers
                                         videeoPlayer.Play(videeoPlayer.gameObject, /*RTFile.BasePath +*/ modifier.value, (UnityEngine.Video.VideoAudioOutputMode)audioOutputType);
                                 }
                             }
+
+                            break;
+                        }
+                    case "loadInterface":
+                        {
+                            if (CoreHelper.InEditor) // don't want interfaces to load in editor
+                            {
+                                CoreHelper.LogError($"Cannot load interface in the editor!");
+                                return;
+                            }
+
+                            var path = RTFile.CombinePath(RTFile.BasePath, modifier.value + ".lsi");
+
+                            if (!RTFile.FileExists(path))
+                            {
+                                CoreHelper.LogError($"Interface with file name: \"{modifier.value}\" does not exist.");
+                                return;
+                            }
+
+                            var menu = CustomMenu.Parse(JSON.Parse(RTFile.ReadFromFile(path)));
+
+                            menu.filePath = path;
+
+                            if (string.IsNullOrEmpty(menu.id) || menu.id == "0")
+                            {
+                                CoreHelper.LogError($"Menu ID cannot be empty nor 0.");
+                                return;
+                            }
+
+                            InterfaceManager.inst.MainDirectory = RTFile.BasePath;
+
+                            LSHelpers.ShowCursor();
+                            AudioManager.inst.CurrentAudioSource.Pause();
+                            InputDataManager.inst.SetAllControllerRumble(0f);
+                            GameManager.inst.gameState = GameManager.State.Paused;
+                            ArcadeHelper.endedLevel = false;
+
+                            if (InterfaceManager.inst.interfaces.Has(x => x.id == menu.id))
+                            {
+                                InterfaceManager.inst.SetCurrentInterface(menu.id);
+                                menu = null;
+                                return;
+                            }
+                            InterfaceManager.inst.interfaces.Add(menu);
+                            InterfaceManager.inst.SetCurrentInterface(menu.id);
 
                             break;
                         }
