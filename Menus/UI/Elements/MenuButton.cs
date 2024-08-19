@@ -103,6 +103,11 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         public bool autoAlignSelectionPosition;
 
+        /// <summary>
+        /// If the original hover functions should still run despite <see cref="enterFuncJSON"/> or <see cref="enterFunc"/> existing.
+        /// </summary>
+        public bool allowOriginalHoverMethods = false;
+
         #endregion
 
         #region Private Fields
@@ -122,13 +127,15 @@ namespace BetterLegacy.Menus.UI.Elements
             if (enterFuncJSON != null)
             {
                 ParseFunction(enterFuncJSON);
-                return;
+                if (!allowOriginalHoverMethods)
+                    return;
             }
 
             if (enterFunc != null)
             {
                 enterFunc();
-                return;
+                if (!allowOriginalHoverMethods)
+                    return;
             }
 
             if (exitAnimation != null)
@@ -167,13 +174,15 @@ namespace BetterLegacy.Menus.UI.Elements
             if (exitFuncJSON != null)
             {
                 ParseFunction(exitFuncJSON);
-                return;
+                if (!allowOriginalHoverMethods)
+                    return;
             }
 
             if (exitFunc != null)
             {
                 exitFunc();
-                return;
+                if (!allowOriginalHoverMethods)
+                    return;
             }
 
             if (enterAnimation != null)
