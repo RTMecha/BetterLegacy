@@ -475,8 +475,8 @@ namespace BetterLegacy.Core.Helpers
 
                 var level = new Level(path + "/", metadata);
 
-                if (LevelManager.Saves.Has(x => x.ID == level.id))
-                    level.playerData = LevelManager.Saves.Find(x => x.ID == level.id);
+                if (LevelManager.Saves.TryFind(x => x.ID == level.id, out LevelManager.PlayerData playerData))
+                    level.playerData = playerData;
 
                 if (LoadLevelsManager.inst)
                     LoadLevelsManager.inst.UpdateInfo(level.icon, $"Loading {name}", i);
