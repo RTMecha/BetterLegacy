@@ -500,6 +500,31 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 #endregion
 
+                #region Close
+
+                // Closes the interface and returns to the game (if user is in the Game scene).
+                // Function has no parameters.
+                case "Close":
+                    {
+                        string id = InterfaceManager.inst.CurrentMenu?.id;
+                        InterfaceManager.inst.CurrentMenu?.Clear();
+                        InterfaceManager.inst.CurrentMenu = null;
+                        PauseMenu.Current = null;
+                        EndLevelMenu.Current = null;
+                        InterfaceManager.inst.StopMusic();
+
+                        if (CoreHelper.InGame)
+                        {
+                            AudioManager.inst.CurrentAudioSource.UnPause();
+                            GameManager.inst.gameState = GameManager.State.Playing;
+                            InterfaceManager.inst.interfaces.RemoveAll(x => x.id == id);
+                        }
+
+                        break;
+                    }
+
+                #endregion
+
                 #region ExitGame
 
                 // Exits the game.
@@ -1119,6 +1144,174 @@ namespace BetterLegacy.Menus.UI.Elements
                     }
 
                 #endregion
+
+                case "AnimateEvent":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["type"] == null)
+                            return;
+
+                        var isArray = parameters.IsArray;
+                        var type = isArray ? parameters[0] : parameters["type"];
+
+                        if (type.IsNumber)
+                            return;
+
+                        var events = isArray ? parameters[2] : parameters["events"];
+                        var animation = new RTAnimation($"Interface Element Animation {id}"); // no way element animation reference :scream:
+
+                        animation.loop = isArray ? parameters[1].AsBool : parameters["loop"].AsBool;
+
+                        switch (type.Value)
+                        {
+                            case "MoveCamera":
+                                {
+                                    JSONNode lastX = null;
+                                    float x = 0f;
+                                    if (events["x"] != null)
+                                    {
+                                        List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                        for (int i = 0; i < events["x"].Count; i++)
+                                        {
+                                            var kf = events["x"][i];
+                                            var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localPosition.x : 0f);
+                                            x = kf["rel"].AsBool ? x + val : val;
+                                            keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                            lastX = kf["val"];
+                                        }
+                                        animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.MoveCameraX));
+                                    }
+
+                                    JSONNode lastY = null;
+                                    float y = 0f;
+                                    if (events["y"] != null)
+                                    {
+                                        List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                        for (int i = 0; i < events["y"].Count; i++)
+                                        {
+                                            var kf = events["y"][i];
+                                            var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localPosition.y : 0f);
+                                            y = kf["rel"].AsBool ? y + val : val;
+                                            keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, y, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                            lastY = kf["val"];
+                                        }
+                                        animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.MoveCameraY));
+                                    }
+
+                                    animation.onComplete = () =>
+                                    {
+                                        if (animation.loop)
+                                        {
+                                            if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
+                                                ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
+
+                                            return;
+                                        }
+
+                                        AnimationManager.inst.RemoveID(animation.id);
+                                        animations.RemoveAll(x => x.id == animation.id);
+
+                                        if (lastX != null)
+                                            MenuEffectsManager.inst.MoveCameraX(x);
+                                        if (lastY != null)
+                                            MenuEffectsManager.inst.MoveCameraY(y);
+
+                                        if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
+                                            ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
+                                    };
+
+                                    break;
+                                }
+                            case "ZoomCamera":
+                                {
+                                    JSONNode lastX = null;
+                                    float x = 0f;
+                                    if (events["x"] != null)
+                                    {
+                                        List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                        for (int i = 0; i < events["x"].Count; i++)
+                                        {
+                                            var kf = events["x"][i];
+                                            var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.orthographicSize : 0f);
+                                            x = kf["rel"].AsBool ? x + val : val;
+                                            keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                            lastX = kf["val"];
+                                        }
+                                        animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.ZoomCamera));
+                                    }
+
+                                    animation.onComplete = () =>
+                                    {
+                                        if (animation.loop)
+                                        {
+                                            if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
+                                                ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
+
+                                            return;
+                                        }
+
+                                        AnimationManager.inst.RemoveID(animation.id);
+                                        animations.RemoveAll(x => x.id == animation.id);
+
+                                        if (lastX != null)
+                                            MenuEffectsManager.inst.ZoomCamera(x);
+
+                                        if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
+                                            ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
+                                    };
+
+                                    break;
+                                }
+                            case "RotateCamera":
+                                {
+                                    JSONNode lastX = null;
+                                    float x = 0f;
+                                    if (events["x"] != null)
+                                    {
+                                        List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                        for (int i = 0; i < events["x"].Count; i++)
+                                        {
+                                            var kf = events["x"][i];
+                                            var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
+                                            x = kf["rel"].AsBool ? x + val : val;
+                                            keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                            lastX = kf["val"];
+                                        }
+                                        animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.RotateCamera));
+                                    }
+
+                                    animation.onComplete = () =>
+                                    {
+                                        if (animation.loop)
+                                        {
+                                            if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
+                                                ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
+
+                                            return;
+                                        }
+
+                                        AnimationManager.inst.RemoveID(animation.id);
+                                        animations.RemoveAll(x => x.id == animation.id);
+
+                                        if (lastX != null)
+                                            MenuEffectsManager.inst.RotateCamera(x);
+
+                                        if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
+                                            ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
+                                    };
+
+                                    break;
+                                }
+                        }
+
+                        animations.Add(animation);
+                        AnimationManager.inst.Play(animation);
+
+                        break;
+                    }
 
                 #region SetColor
 
