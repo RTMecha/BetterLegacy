@@ -29,6 +29,7 @@ namespace BetterLegacy.Menus
 			analogGlitch._shader = LegacyPlugin.analogGlitchShader;
 			digitalGlitch = camera.gameObject.GetComponent<DigitalGlitch>() ?? camera.gameObject.AddComponent<DigitalGlitch>();
 			digitalGlitch._shader = LegacyPlugin.digitalGlitchShader;
+            analogGlitch.enabled = false; // disabled by default due to there still being a slight effect when it is enabled.
 
             // Chroma
 			chroma = ScriptableObject.CreateInstance<ChromaticAberration>();
@@ -166,9 +167,23 @@ namespace BetterLegacy.Menus
 			ppvolume.isGlobal = true;
 		}
 
-		public void MoveCamera(Vector2 pos) => Camera.main.transform.localPosition = pos;
+        public void MoveCameraX(float x)
+        {
+            var cam = Camera.main.transform;
+            var camPos = cam.localPosition;
+            cam.localPosition = new Vector3(x, camPos.y, -10f);
+        }
+        
+        public void MoveCameraY(float y)
+        {
+            var cam = Camera.main.transform;
+            var camPos = cam.localPosition;
+            cam.localPosition = new Vector3(camPos.x, y, -10f);
+        }
 
-		public void ZoomCamera(float zoom) => Camera.main.orthographicSize = (zoom == 0 ? 5f : zoom);
+		public void MoveCamera(Vector2 pos) => Camera.main.transform.localPosition = new Vector3(pos.x, pos.y, -10f);
+
+		public void ZoomCamera(float zoom) => Camera.main.orthographicSize = zoom == 0 ? 5f : zoom;
 
 		public void RotateCamera(float rotate) => Camera.main.transform.SetLocalRotationEulerZ(rotate);
 
