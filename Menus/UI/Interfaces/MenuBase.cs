@@ -58,6 +58,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
         public string musicName;
 
         /// <summary>
+        /// If true, the user is allowed to have their own music play. Otherwise, prevent custom music.
+        /// </summary>
+        public bool allowCustomMusic = true;
+
+        /// <summary>
         /// Name of the menu.
         /// </summary>
         public string name;

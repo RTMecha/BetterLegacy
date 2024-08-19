@@ -64,6 +64,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             customMenu.id = jn["id"];
             customMenu.name = jn["name"];
             customMenu.musicName = jn["music_name"];
+            customMenu.allowCustomMusic = jn["allow_custom_music"] != null ? jn["allow_custom_music"].AsBool : true;
 
             customMenu.prefabs.AddRange(ParsePrefabs(jn["prefabs"]));
             ParseLayouts(customMenu.layouts, jn["layouts"]);
