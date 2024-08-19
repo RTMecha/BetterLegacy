@@ -57,6 +57,8 @@ namespace BetterLegacy.Configs
         /// </summary>
         public Setting<bool> ShowChangelog { get; set; }
 
+        public Setting<bool> ShowFX { get; set; }
+
         #endregion
 
         #region Music
@@ -99,6 +101,7 @@ namespace BetterLegacy.Configs
             InterfaceThemeID = Bind(this, "General", "Interface Theme ID", "-1", "The theme of the new interface.");
             RoundedUI = Bind(this, "General", "Rounded", false, "If most elements in the interface should have a rounded corner.");
             ShowChangelog = Bind(this, "General", "Show Changelog", true, "If the changelog screen should show on game startup.");
+            ShowFX = Bind(this, "General", "Show Effects", true, "If menu effects should be enabled.");
 
             PlayCustomMusic = Bind(this, "Music", "Play Custom Music", true, "If a custom song should play instead of the normal internal menu music.");
             MusicLoadMode = BindEnum(this, "Music", "Load Directory", MenuMusicLoadMode.Settings, "Where the music loads from. Settings path: Project Arrhythmia/settings/menus.");
