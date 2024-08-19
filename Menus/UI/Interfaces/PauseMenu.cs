@@ -304,6 +304,18 @@ namespace BetterLegacy.Menus.UI.Interfaces
             {
                 id = "738347853",
                 name = "Info Text",
+                text = $"<align=right>Time in level: {LevelManager.timeInLevel}",
+                rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 32f)),
+                hideBG = true,
+                textVal = 40f,
+                length = 0.3f,
+                parentLayout = "info",
+            });
+            
+            elements.Add(new MenuText
+            {
+                id = "738347853",
+                name = "Info Text",
                 text = $"<align=right>Level completed: {FontManager.TextTranslater.Percentage(AudioManager.inst.CurrentAudioSource.time, AudioManager.inst.CurrentAudioSource.clip.length)}%",
                 rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 32f)),
                 hideBG = true,
