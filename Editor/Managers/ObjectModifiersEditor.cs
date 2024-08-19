@@ -748,6 +748,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     case "levelUnlocked":
                     case "loadLevelID":
+                    case "levelCompletedOther":
                         {
                             stringGenerator("ID", 0);
 

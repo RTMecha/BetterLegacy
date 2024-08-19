@@ -1518,6 +1518,14 @@ namespace BetterLegacy.Core.Helpers
                     {
                         return LevelManager.Levels.TryFind(x => x.id == modifier.value, out Level level) && !level.Locked;
                     }
+                case "levelCompleted":
+                    {
+                        return CoreHelper.InEditor || LevelManager.CurrentLevel != null && LevelManager.CurrentLevel.playerData != null && LevelManager.CurrentLevel.playerData.Completed;
+                    }
+                case "levelCompletedOther":
+                    {
+                        return CoreHelper.InEditor || LevelManager.Levels.TryFind(x => x.id == modifier.value, out Level level) && level.playerData != null && level.playerData.Completed;
+                    }
             }
 
             modifier.Inactive?.Invoke(modifier);
