@@ -105,7 +105,6 @@ namespace BetterLegacy.Patchers
             InputDataManager.inst.BindMenuKeys();
             __instance.MainPanel = __instance.transform.Find("Panel");
 
-            Menus.InterfaceManager.inst.StopMusic();
             Menus.InterfaceManager.inst.Clear();
 
             if (__instance.gameObject.scene.name == "Main Menu")

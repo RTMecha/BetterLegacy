@@ -72,18 +72,32 @@ namespace BetterLegacy.Menus
 
         public void PlayMusic(AudioClip music, bool allowSame = false)
         {
-            if (!CurrentAudioSource.clip || allowSame || music.name != CurrentAudioSource.clip.name)
+            if (!CoreHelper.InGame)
             {
-                CoreHelper.Log("Playing music");
-                CurrentAudioSource.clip = music;
-                CurrentAudioSource.UnPause();
-                CurrentAudioSource.time = 0f;
-                CurrentAudioSource.Play();
+                AudioManager.inst.PlayMusic(null, music);
+                return;
             }
+
+            if (!CurrentAudioSource.clip || allowSame || music.name != CurrentAudioSource.clip.name)
+                CurrentAudioSource.clip = music;
+
+            if (!CurrentAudioSource.clip)
+                return;
+
+            CoreHelper.Log("Playing music");
+            CurrentAudioSource.UnPause();
+            CurrentAudioSource.time = 0f;
+            CurrentAudioSource.Play();
         }
 
         public void StopMusic()
         {
+            if (!CoreHelper.InGame)
+            {
+                AudioManager.inst.StopMusic();
+                return;
+            }
+
             CurrentAudioSource.Stop();
             CurrentAudioSource.clip = null;
         }
@@ -93,7 +107,7 @@ namespace BetterLegacy.Menus
         {
             var directory = RTFile.ApplicationDirectory + "settings/menus/";
 
-            if (!MenuConfig.Instance.PlayCustomMusic.Value)
+            if (!MenuConfig.Instance.PlayCustomMusic.Value || CurrentMenu != null && !CurrentMenu.allowCustomMusic)
             {
                 CoreHelper.LogWarning("PlayCustomMusic setting is off, so play default music.");
                 CurrentMenu?.PlayDefaultMusic();
@@ -261,7 +275,7 @@ namespace BetterLegacy.Menus
             }
             interfaces.Clear();
 
-            AudioManager.inst.StopMusic();
+            //AudioManager.inst.StopMusic();
 
             LoadThemes();
 

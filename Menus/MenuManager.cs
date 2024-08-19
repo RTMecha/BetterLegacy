@@ -96,8 +96,6 @@ namespace BetterLegacy.Menus
         public static bool fromPageLevel = false;
         public static string currentInterface;
 
-        public static int randomIndex = -1;
-
         public void PlayMusic()
         {
             var directory = RTFile.ApplicationDirectory + "settings/menus/";
@@ -164,14 +162,14 @@ namespace BetterLegacy.Menus
             songs = songFiles;
 
             if (MenuConfig.Instance.MusicIndex.Value >= 0 && MenuConfig.Instance.MusicIndex.Value < songFiles.Length)
-                randomIndex = MenuConfig.Instance.MusicIndex.Value;
+                InterfaceManager.inst.randomIndex = MenuConfig.Instance.MusicIndex.Value;
 
-            if (randomIndex < 0 || randomIndex >= songFiles.Length)
+            if (InterfaceManager.inst.randomIndex < 0 || InterfaceManager.inst.randomIndex >= songFiles.Length)
             {
-                randomIndex = UnityEngine.Random.Range(0, songFiles.Length);
+                InterfaceManager.inst.randomIndex = UnityEngine.Random.Range(0, songFiles.Length);
             }
 
-            var songFileCurrent = songFiles[Mathf.Clamp(randomIndex, 0, songFiles.Length - 1)];
+            var songFileCurrent = songFiles[Mathf.Clamp(InterfaceManager.inst.randomIndex, 0, songFiles.Length - 1)];
 
             if (string.IsNullOrEmpty(songFileCurrent))
             {

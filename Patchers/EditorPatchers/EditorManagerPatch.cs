@@ -89,7 +89,8 @@ namespace BetterLegacy.Patchers
                 Updater.levelProcessor = null;
             }
 
-            Menus.InterfaceManager.inst.StopMusic();
+            if (Menus.InterfaceManager.inst.CurrentAudioSource.clip != null)
+                Menus.InterfaceManager.inst.StopMusic();
             Menus.InterfaceManager.inst.Clear();
             CoreHelper.InStory = false;
 
