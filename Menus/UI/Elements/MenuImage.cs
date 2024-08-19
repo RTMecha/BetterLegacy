@@ -198,7 +198,7 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         public virtual void UpdateSpawnCondition()
         {
-            time = Time.time - timeOffset * (InputDataManager.inst.menuActions.Submit.IsPressed ? 0.3f : 1f);
+            time = (Time.time - timeOffset) * (InputDataManager.inst.menuActions.Submit.IsPressed ? MenuConfig.Instance.SpeedUpSpeedMultiplier.Value : MenuConfig.Instance.RegularSpeedMultiplier.Value);
             if (time > length)
                 isSpawning = false;
         }
@@ -1145,6 +1145,64 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 #endregion
 
+                #region AnimateEvent
+
+                // Animates a specific type of event (e.g. camera).
+                // Supports both JSON array and JSON object.
+                //
+                // - JSON Array Structure -
+                // 0 = type (name, "MoveCamera", "ZoomCamera", "RotateCamera")
+                // 1 = looping (boolean true or false)
+                // 2 = keyframes
+                // 3 = anim done func
+                // Example:
+                // [
+                //   "MoveCamera",
+                //   "False",
+                //   {
+                //     "x": [
+                //       {
+                //         "t": "0",
+                //         "val": "0"
+                //       }
+                //     ],
+                //     "y": [
+                //       {
+                //         "t": "0",
+                //         "val": "0"
+                //       }
+                //     ]
+                //   }
+                // ]
+                // 
+                // - JSON Object Structure -
+                // "type"
+                // "loop"
+                // "events"
+                // "done_func"
+                // Example: (zooms the camera in and out)
+                // {
+                //   "type": "ZoomCamera",
+                //   "loop": "True",
+                //   "events": {
+                //     "x": [
+                //       {
+                //         "t": "0",
+                //         "val": "5" < 5 is the default camera zoom.
+                //       },
+                //       {
+                //         "t": "1",
+                //         "val": "7",
+                //         "ct": "InOutSine"
+                //       },
+                //       {
+                //         "t": "2",
+                //         "val": "5",
+                //         "ct": "InOutSine"
+                //       }
+                //     ]
+                //   }
+                // }
                 case "AnimateEvent":
                     {
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["type"] == null)
@@ -1313,6 +1371,8 @@ namespace BetterLegacy.Menus.UI.Elements
                         break;
                     }
 
+                #endregion
+
                 #region SetColor
 
                 // Sets the elements' color slot.
@@ -1343,18 +1403,49 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 #endregion
 
+                #region LoadLevel
+
+                // Finds a level by its' ID and loads it.
+                // Supports both JSON array and JSON object.
+                //
+                // - JSON Array Structure -
+                // 0 = id
+                // Example:
+                // [
+                //   "6365672" < loads level with this as its ID.
+                // ]
+                // 
+                // - JSON Object Structure -
+                // "id"
+                // Example:
+                // {
+                //   "id": "6365672"
+                // }
                 case "LoadLevel":
                     {
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["id"] == null)
                             return;
 
                         if (LevelManager.Levels.TryFind(x => x.id == (parameters.IsArray ? parameters[0] : parameters["id"]), out Level level))
-                        {
                             CoreHelper.StartCoroutine(LevelManager.Play(level));
-                        }
 
                         break;
                     }
+
+                #endregion
+
+                #region Specific Functions
+
+                // Opens the System Error Discord server link.
+                // Function has no parameters.
+                case "ModderDiscord":
+                    {
+                        Application.OpenURL("https://discord.gg/nB27X2JZcY");
+
+                        break;
+                    }
+
+                    #endregion
             }
         }
 

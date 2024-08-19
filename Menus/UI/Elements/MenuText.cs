@@ -78,8 +78,8 @@ namespace BetterLegacy.Menus.UI.Elements
 
         public override void UpdateSpawnCondition()
         {
-            // Speeds up the text interpolation if a Submit key is being held.
-            textInterpolation?.animationHandlers[0]?.SetKeyframeTime(1, InputDataManager.inst.menuActions.Submit.IsPressed ? length * (text.Length / textLengthDivision) * 0.3f : length * (text.Length / textLengthDivision));
+            // Speeds up the text interpolation if a Submit key is being held. MenuConfig.Instance.SpeedUpSpeedMultiplier.Value : MenuConfig.Instance.RegularSpeedMultiplier.Value
+            textInterpolation?.animationHandlers[0]?.SetKeyframeTime(1, InputDataManager.inst.menuActions.Submit.IsPressed ? length * (text.Length / textLengthDivision) * MenuConfig.Instance.SpeedUpSpeedMultiplier.Value : length * (text.Length / textLengthDivision) * MenuConfig.Instance.RegularSpeedMultiplier.Value);
         }
 
         /// <summary>
@@ -101,7 +101,7 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         public void UpdateText()
         {
-            time = Time.time - timeOffset * (InputDataManager.inst.menuActions.Submit.IsPressed ? length * 0.3f : length);
+            time = (Time.time - timeOffset) * (InputDataManager.inst.menuActions.Submit.IsPressed ? length * MenuConfig.Instance.SpeedUpSpeedMultiplier.Value : length * MenuConfig.Instance.RegularSpeedMultiplier.Value);
 
             if (cachedQuickElements == null)
                 return;
