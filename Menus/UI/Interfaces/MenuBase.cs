@@ -114,9 +114,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     yield return MenuText.DeepCopy(menuText, false);
                     continue;
                 }
-                if (element is MenuText menuButton)
+                if (element is MenuButton menuButton)
                 {
-                    yield return MenuText.DeepCopy(menuButton, false);
+                    yield return MenuButton.DeepCopy(menuButton, false);
                     continue;
                 }
                 yield return MenuImage.DeepCopy(element, false);
@@ -186,8 +186,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
             canvas.Canvas.scaleFactor = 1f;
             canvas.CanvasScaler.referenceResolution = new Vector2(1920f, 1080f);
 
+            canvas.GameObject.AddComponent<CursorManager>();
+
             if (!CoreHelper.InGame)
             {
+                canvas.GameObject.AddComponent<MenuEffectsManager>();
                 canvas.Canvas.worldCamera = Camera.main;
                 canvas.Canvas.renderMode = RenderMode.ScreenSpaceCamera;
                 yield return null;
