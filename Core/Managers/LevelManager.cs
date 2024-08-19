@@ -312,7 +312,6 @@ namespace BetterLegacy.Core.Managers
                 return;
 
             CoreHelper.Log($"Setting Player Data");
-            int prevHits = CurrentLevel.playerData != null ? CurrentLevel.playerData.Hits : -1;
 
             PlayedLevelCount++;
 
@@ -325,27 +324,20 @@ namespace BetterLegacy.Core.Managers
             if (PlayerManager.IsZenMode || PlayerManager.IsPractice)
                 return;
 
-            if (CurrentLevel.playerData == null)
+            var makeNewPlayerData = CurrentLevel.playerData == null;
+            if (makeNewPlayerData)
                 CurrentLevel.playerData = new PlayerData { ID = CurrentLevel.id, };
 
             CoreHelper.Log($"Updating save data\n" +
+                $"New Player Data = {makeNewPlayerData}\n" +
                 $"Deaths [OLD = {CurrentLevel.playerData.Deaths} > NEW = {GameManager.inst.deaths.Count}]\n" +
                 $"Hits: [OLD = {CurrentLevel.playerData.Hits} > NEW = {GameManager.inst.hits.Count}]\n" +
                 $"Boosts: [OLD = {CurrentLevel.playerData.Boosts} > NEW = {BoostCount}]");
 
-            if (CurrentLevel.playerData.Deaths == 0 || CurrentLevel.playerData.Deaths > GameManager.inst.deaths.Count)
-                CurrentLevel.playerData.Deaths = GameManager.inst.deaths.Count;
-            if (CurrentLevel.playerData.Hits == 0 || CurrentLevel.playerData.Hits > GameManager.inst.hits.Count)
-                CurrentLevel.playerData.Hits = GameManager.inst.hits.Count;
-            if (CurrentLevel.playerData.Boosts == 0 || CurrentLevel.playerData.Boosts > BoostCount)
-                CurrentLevel.playerData.Boosts = BoostCount;
-            CurrentLevel.playerData.Completed = true;
+            CurrentLevel.playerData.Update(GameManager.inst.deaths.Count, GameManager.inst.hits.Count, BoostCount, true);
 
             if (Saves.Has(x => x.ID == CurrentLevel.id))
-            {
-                var saveIndex = Saves.FindIndex(x => x.ID == CurrentLevel.id);
-                Saves[saveIndex] = CurrentLevel.playerData;
-            }
+                Saves[Saves.FindIndex(x => x.ID == CurrentLevel.id)] = CurrentLevel.playerData;
             else
                 Saves.Add(CurrentLevel.playerData);
 
@@ -649,35 +641,44 @@ namespace BetterLegacy.Core.Managers
                     Percentage = calc;
             }
 
-            public static PlayerData Parse(JSONNode jn)
+            public void Update(int deaths, int hits, int boosts, bool completed)
             {
-                var playerData = new PlayerData();
-                playerData.ID = jn["id"];
-                playerData.Completed = jn["c"].AsBool;
-                playerData.Hits = jn["h"].AsInt;
-                playerData.Deaths = jn["d"].AsInt;
-                playerData.Boosts = jn["b"].AsInt;
-                playerData.PlayedTimes = jn["pt"].AsInt;
-                playerData.TimeInLevel = jn["t"].AsFloat;
-                playerData.Percentage = jn["p"].AsFloat;
-                playerData.LevelLength = jn["l"].AsFloat;
-                playerData.Unlocked = jn["u"].AsBool;
-                return playerData;
+                if (Deaths == 0 || Deaths > deaths)
+                    Deaths = deaths;
+                if (Hits == 0 || Hits > hits)
+                    CurrentLevel.playerData.Hits = hits;
+                if (Boosts == 0 || Boosts > boosts)
+                    CurrentLevel.playerData.Boosts = boosts;
+                Completed = true;
             }
+
+            public static PlayerData Parse(JSONNode jn) => new PlayerData
+            {
+                ID = jn["id"],
+                Completed = jn["c"].AsBool,
+                Hits = jn["h"].AsInt,
+                Deaths = jn["d"].AsInt,
+                Boosts = jn["b"].AsInt,
+                PlayedTimes = jn["pt"].AsInt,
+                TimeInLevel = jn["t"].AsFloat,
+                Percentage = jn["p"].AsFloat,
+                LevelLength = jn["l"].AsFloat,
+                Unlocked = jn["u"].AsBool,
+            };
 
             public JSONNode ToJSON()
             {
                 var jn = JSON.Parse("{}");
                 jn["id"] = ID;
-                jn["c"] = Completed.ToString();
-                jn["h"] = Hits.ToString();
-                jn["d"] = Deaths.ToString();
-                jn["b"] = Boosts.ToString();
-                jn["pt"] = PlayedTimes.ToString();
-                jn["t"] = TimeInLevel.ToString();
-                jn["p"] = Percentage.ToString();
-                jn["l"] = LevelLength.ToString();
-                jn["u"] = Unlocked.ToString();
+                jn["c"] = Completed;
+                jn["h"] = Hits;
+                jn["d"] = Deaths;
+                jn["b"] = Boosts;
+                jn["pt"] = PlayedTimes;
+                jn["t"] = TimeInLevel;
+                jn["p"] = Percentage;
+                jn["l"] = LevelLength;
+                jn["u"] = Unlocked;
                 return jn;
             }
 
