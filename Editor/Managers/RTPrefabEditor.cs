@@ -1256,9 +1256,6 @@ namespace BetterLegacy.Editor.Managers
 
             EditorManager.inst.ClearDialogs();
 
-            Debug.Log($"{PrefabEditor.inst.className}Expanding Prefab Object.");
-            StartCoroutine(AddExpandedPrefabToLevel(prefabObject));
-
             Debug.Log($"{PrefabEditor.inst.className}Removing Prefab Object's spawned objects.");
             Updater.UpdatePrefab(prefabObject, false);
 
@@ -1268,7 +1265,12 @@ namespace BetterLegacy.Editor.Managers
             DataManager.inst.gameData.beatmapObjects.RemoveAll(x => x.prefabInstanceID == id && x.fromPrefab);
             ObjectEditor.inst.DeselectAllObjects();
 
+            Debug.Log($"{PrefabEditor.inst.className}Expanding Prefab Object.");
+            StartCoroutine(AddExpandedPrefabToLevel(prefabObject));
+
             ObjectEditor.inst.RenderTimelineObjects();
+
+            prefabObject = null;
         }
 
         public void AddPrefabObjectToLevel(BasePrefab prefab)
@@ -1313,20 +1315,28 @@ namespace BetterLegacy.Editor.Managers
 
         public IEnumerator AddExpandedPrefabToLevel(PrefabObject prefabObject)
         {
+            var updateExpandedObjectsYieldType = EditorConfig.Instance.UpdateExpandedObjectsYieldMode.Value;
+            var expandObjectsYieldType = EditorConfig.Instance.ExpandObjectsYieldMode.Value;
+
             RTEditor.inst.ienumRunning = true;
             float delay = 0f;
             float audioTime = EditorManager.inst.CurrentAudioPos;
 
-            var prefab = (Prefab)DataManager.inst.gameData.prefabs.Find(x => x.ID == prefabObject.prefabID);
+            var prefab = prefabObject.Prefab;
 
             var ids = prefab.objects.ToDictionary(x => x.id, x => LSText.randomString(16));
 
             EditorManager.inst.ClearDialogs();
 
+            var sw = CoreHelper.StartNewStopwatch();
+
             var expandedObjects = new List<BeatmapObject>();
-            foreach (var beatmapObject in prefab.objects)
+            for (int i = 0; i < prefab.objects.Count; i++)
             {
-                yield return new WaitForSeconds(delay);
+                var beatmapObject = prefab.objects[i];
+                if (i > 0 && expandObjectsYieldType != YieldType.None)
+                    yield return CoreHelper.GetYieldInstruction(expandObjectsYieldType, ref delay);
+
                 var beatmapObjectCopy = BeatmapObject.DeepCopy((BeatmapObject)beatmapObject, false);
                 if (ids.ContainsKey(beatmapObject.id))
                     beatmapObjectCopy.id = ids[beatmapObject.id];
@@ -1340,16 +1350,11 @@ namespace BetterLegacy.Editor.Managers
                 beatmapObjectCopy.prefabID = prefab.ID;
                 beatmapObjectCopy.StartTime += prefabObject.StartTime + prefab.Offset;
 
-                if (EditorManager.inst != null)
-                {
-                    beatmapObjectCopy.editorData.layer = prefabObject.editorData.layer;
-                    beatmapObjectCopy.editorData.Bin = Mathf.Clamp(beatmapObjectCopy.editorData.Bin, 0, 14);
-                }
+                beatmapObjectCopy.editorData.layer = prefabObject.editorData.layer;
+                beatmapObjectCopy.editorData.Bin = Mathf.Clamp(beatmapObjectCopy.editorData.Bin, 0, 14);
 
                 if (!AssetManager.SpriteAssets.ContainsKey(beatmapObject.text) && prefab.SpriteAssets.ContainsKey(beatmapObject.text))
-                {
                     AssetManager.SpriteAssets.Add(beatmapObject.text, prefab.SpriteAssets[beatmapObject.text]);
-                }
 
                 beatmapObjectCopy.prefabInstanceID = prefabObject.ID;
                 DataManager.inst.gameData.beatmapObjects.Add(beatmapObjectCopy);
@@ -1358,25 +1363,25 @@ namespace BetterLegacy.Editor.Managers
 
                 expandedObjects.Add(beatmapObjectCopy);
 
-                if (ObjectEditor.inst != null)
-                {
-                    var timelineObject = new TimelineObject(beatmapObjectCopy);
-                    timelineObject.selected = true;
-                    ObjectEditor.inst.CurrentSelection = timelineObject;
+                var timelineObject = new TimelineObject(beatmapObjectCopy);
+                timelineObject.selected = true;
+                ObjectEditor.inst.CurrentSelection = timelineObject;
 
-                    ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                }
-
-                delay += 0.0001f;
+                ObjectEditor.inst.RenderTimelineObject(timelineObject);
             }
 
-            foreach (var beatmapObject in expandedObjects)
+            delay = 0f;
+            for (int i = 0; i < expandedObjects.Count; i++)
             {
-                Updater.UpdateObject(beatmapObject);
+                if (i > 0 && updateExpandedObjectsYieldType != YieldType.None)
+                    yield return CoreHelper.GetYieldInstruction(updateExpandedObjectsYieldType, ref delay);
+                Updater.UpdateObject(expandedObjects[i]);
             }
 
             expandedObjects.Clear();
             expandedObjects = null;
+
+            CoreHelper.StopAndLogStopwatch(sw);
 
             if (prefab.objects.Count > 1 || prefab.prefabObjects.Count > 1)
                 EditorManager.inst.ShowDialog("Multi Object Editor", false);
@@ -1385,8 +1390,9 @@ namespace BetterLegacy.Editor.Managers
             else if (ObjectEditor.inst.CurrentSelection.IsPrefabObject)
                 PrefabEditor.inst.OpenPrefabDialog();
 
-            EditorManager.inst.DisplayNotification("Expanded Prefab Object [" + prefabObject + "].", 1f, EditorManager.NotificationType.Success, false);
+            EditorManager.inst.DisplayNotification($"Expanded Prefab Object {prefab.Name} in {sw.Elapsed}!.", 5f, EditorManager.NotificationType.Success, false);
             RTEditor.inst.ienumRunning = false;
+            sw = null;
             yield break;
         }
 

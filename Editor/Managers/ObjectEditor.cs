@@ -693,26 +693,27 @@ namespace BetterLegacy.Editor.Managers
                 RTEditor.inst.SetLayer(RTEditor.LayerType.Objects);
 
             if (CurrentSelection.IsBeatmapObject && prefab.objects.Count > 0)
-            {
                 ClearKeyframes(CurrentSelection.GetData<BeatmapObject>());
-            }
 
             if (prefab.objects.Count > 1 || prefab.prefabObjects.Count > 1)
                 EditorManager.inst.ClearDialogs();
+
+            var sw = CoreHelper.StartNewStopwatch();
+
+            var pasteObjectsYieldType = EditorConfig.Instance.PasteObjectsYieldMode.Value;
+            var updatePastedObjectsYieldType = EditorConfig.Instance.UpdatePastedObjectsYieldMode.Value;
 
             //Objects
             {
                 var ids = prefab.objects.ToDictionary(x => x.id, x => LSText.randomString(16));
 
-                var prefabInstances = new Dictionary<string, string>();
-                foreach (var beatmapObject in prefab.objects)
-                    if (!string.IsNullOrEmpty(beatmapObject.prefabInstanceID) && !prefabInstances.ContainsKey(beatmapObject.prefabInstanceID))
-                        prefabInstances.Add(beatmapObject.prefabInstanceID, LSText.randomString(16));
-
                 var pastedObjects = new List<BeatmapObject>();
-                foreach (var beatmapObject in prefab.objects)
+                for (int i = 0; i < prefab.objects.Count; i++)
                 {
-                    yield return new WaitForSeconds(delay);
+                    var beatmapObject = prefab.objects[i];
+                    if (i > 0 && pasteObjectsYieldType != YieldType.None)
+                        yield return CoreHelper.GetYieldInstruction(pasteObjectsYieldType, ref delay);
+
                     var beatmapObjectCopy = BeatmapObject.DeepCopy((BeatmapObject)beatmapObject, false);
 
                     if (ids.ContainsKey(beatmapObject.id) && !retainID)
@@ -739,9 +740,7 @@ namespace BetterLegacy.Editor.Managers
                         ++beatmapObjectCopy.editorData.Bin;
 
                     if (!AssetManager.SpriteAssets.ContainsKey(beatmapObject.text) && prefab.SpriteAssets.ContainsKey(beatmapObject.text))
-                    {
                         AssetManager.SpriteAssets.Add(beatmapObject.text, prefab.SpriteAssets[beatmapObject.text]);
-                    }
 
                     beatmapObjectCopy.editorData.layer = RTEditor.inst.Layer;
                     DataManager.inst.gameData.beatmapObjects.Add(beatmapObjectCopy);
@@ -760,8 +759,12 @@ namespace BetterLegacy.Editor.Managers
                     delay += 0.0001f;
                 }
 
-                foreach (var beatmapObject in pastedObjects)
+                delay = 0f;
+                for (int i = 0; i < pastedObjects.Count; i++)
                 {
+                    var beatmapObject = pastedObjects[i];
+                    if (i > 0 && updatePastedObjectsYieldType != YieldType.None)
+                        yield return CoreHelper.GetYieldInstruction(updatePastedObjectsYieldType, ref delay);
                     Updater.UpdateObject(beatmapObject);
                 }
 
@@ -773,9 +776,13 @@ namespace BetterLegacy.Editor.Managers
             {
                 var prefabInstanceIDs = prefab.prefabObjects.ToDictionary(x => x.ID, x => LSText.randomString(16));
 
-                foreach (var prefabObject in prefab.prefabObjects)
+                delay = 0f;
+                for (int i = 0; i < prefab.prefabObjects.Count; i++)
                 {
-                    yield return new WaitForSeconds(delay);
+                    var prefabObject = prefab.prefabObjects[i];
+                    if (i > 0 && pasteObjectsYieldType != YieldType.None)
+                        yield return CoreHelper.GetYieldInstruction(pasteObjectsYieldType, ref delay);
+
                     var prefabObjectCopy = PrefabObject.DeepCopy((PrefabObject)prefabObject, false);
                     if (prefabInstanceIDs.ContainsKey(prefabObject.ID))
                         prefabObjectCopy.ID = prefabInstanceIDs[prefabObject.ID];
@@ -802,20 +809,17 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
+            CoreHelper.StopAndLogStopwatch(sw);
+
             string stri = "object";
             if (prefab.objects.Count == 1)
-            {
                 stri = prefab.objects[0].name;
-            }
             if (prefab.objects.Count > 1)
-            {
                 stri = prefab.Name;
-            }
-            {
-                string s = prefab.objects.Count == 1 ? "" : "s";
-                var reg = regen ? "" : $"and kept Prefab Instance ID [ {prefab.ID} ]";
-                EditorManager.inst.DisplayNotification($"Pasted Beatmap Object{s} [ {stri} ]{reg}!", 1.5f, EditorManager.NotificationType.Success);
-            }
+
+            EditorManager.inst.DisplayNotification(
+                $"Pasted Beatmap Object{(prefab.objects.Count == 1 ? "" : "s")} [ {stri} ] {(regen ? "" : $"and kept Prefab Instance ID")} in {sw.Elapsed}!",
+                6f, EditorManager.NotificationType.Success);
 
             if (select)
             {

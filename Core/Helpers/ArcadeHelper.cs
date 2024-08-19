@@ -429,22 +429,8 @@ namespace BetterLegacy.Core.Helpers
                 var path = folder.Replace("\\", "/");
                 var name = Path.GetFileName(path);
 
-                switch (loadYieldMode)
-                {
-                    case YieldType.Delay:
-                        yield return new WaitForSeconds(delay);
-                        delay += 0.0001f;
-                        break;
-                    case YieldType.Null:
-                        yield return null;
-                        break;
-                    case YieldType.EndOfFrame:
-                        yield return new WaitForEndOfFrame();
-                        break;
-                    case YieldType.FixedUpdate:
-                        yield return new WaitForFixedUpdate();
-                        break;
-                }
+                if (loadYieldMode != YieldType.None)
+                    yield return CoreHelper.GetYieldInstruction(loadYieldMode, ref delay);
 
                 MetaData metadata = null;
 

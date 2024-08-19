@@ -526,7 +526,28 @@ namespace BetterLegacy.Core.Helpers
 
         #endregion
 
+        public static string DefaultYieldInstructionDescription => "Some options will run faster but freeze the game, while others run slower but allow you to see them update in real time.";
+
+        public static YieldInstruction GetYieldInstruction(YieldType yieldType, ref float delay)
+        {
+            switch (yieldType)
+            {
+                case YieldType.Delay: delay += 0.0001f; return new WaitForSeconds(delay);
+                case YieldType.Null: return null;
+                case YieldType.EndOfFrame: return new WaitForEndOfFrame();
+                case YieldType.FixedUpdate: return new WaitForFixedUpdate();
+            }
+            return null;
+        }
+
         #region Misc
+
+        public static System.Diagnostics.Stopwatch StartNewStopwatch() => System.Diagnostics.Stopwatch.StartNew();
+        public static void StopAndLogStopwatch(System.Diagnostics.Stopwatch sw, string message = "")
+        {
+            sw.Stop();
+            Log($"{(string.IsNullOrEmpty(message) ? message : message + "\n")}Time taken: {sw.Elapsed}");
+        }
 
         public static IEnumerator Empty()
         {
