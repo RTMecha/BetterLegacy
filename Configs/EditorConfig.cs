@@ -120,6 +120,7 @@ namespace BetterLegacy.Configs
         public Setting<bool> LevelPausesOnStart { get; set; }
         public Setting<bool> BackupPreviousLoadedLevel { get; set; }
         public Setting<bool> SettingPathReloads { get; set; }
+        public Setting<Rank> EditorRank { get; set; }
         public Setting<bool> CopyPasteGlobal { get; set; }
         public Setting<YieldType> ExpandObjectsYieldMode { get; set; }
         public Setting<YieldType> UpdateExpandedObjectsYieldMode { get; set; }
@@ -1271,11 +1272,12 @@ namespace BetterLegacy.Configs
             LevelPausesOnStart = Bind(this, "Data", "Level Pauses on Start", false, "Editor pauses on level load.");
             BackupPreviousLoadedLevel = Bind(this, "Data", "Backup Previous Loaded Level", false, "Saves the previously loaded level when loading a different level to a level-previous.lsb file.");
             SettingPathReloads = Bind(this, "Data", "Setting Path Reloads", true, "With this setting on, update the list for levels, prefabs and themes when changing the directory.");
+            EditorRank = BindEnum(this, "Data", "Editor Rank", Rank.Null, "What rank should be used when displaying / calculating level rank while in the editor.");
             CopyPasteGlobal = Bind(this, "Data", "Copy Paste From Global Folder", false, "If copied objects & event keyframes are saved to a global file for any instance of Project Arrhythmia to load when pasting. Turn off if copy & paste is breaking.");
-            ExpandObjectsYieldMode = Bind(this, "Data", "Expand Objects Yield Mode", YieldType.None, $"The yield instruction used for spacing out expanding objects from a Prefab Object. {CoreHelper.DefaultYieldInstructionDescription}");
-            UpdateExpandedObjectsYieldMode = Bind(this, "Data", "Update Expand Objects Yield Mode", YieldType.None, $"The yield instruction used for spacing out updating the expanded objects of a Prefab Object. {CoreHelper.DefaultYieldInstructionDescription}");
-            PasteObjectsYieldMode = Bind(this, "Data", "Paste Objects Yield Mode", YieldType.None, $"The yield instruction used for spacing out pasting objects. {CoreHelper.DefaultYieldInstructionDescription}");
-            UpdatePastedObjectsYieldMode = Bind(this, "Data", "Update Pasted Objects Yield Mode", YieldType.None, $"The yield instruction used for spacing out updating pasted objects. {CoreHelper.DefaultYieldInstructionDescription}");
+            ExpandObjectsYieldMode = BindEnum(this, "Data", "Expand Objects Yield Mode", YieldType.None, $"The yield instruction used for spacing out expanding objects from a Prefab Object. {CoreHelper.DefaultYieldInstructionDescription}");
+            UpdateExpandedObjectsYieldMode = BindEnum(this, "Data", "Update Expand Objects Yield Mode", YieldType.None, $"The yield instruction used for spacing out updating the expanded objects of a Prefab Object. {CoreHelper.DefaultYieldInstructionDescription}");
+            PasteObjectsYieldMode = BindEnum(this, "Data", "Paste Objects Yield Mode", YieldType.None, $"The yield instruction used for spacing out pasting objects. {CoreHelper.DefaultYieldInstructionDescription}");
+            UpdatePastedObjectsYieldMode = BindEnum(this, "Data", "Update Pasted Objects Yield Mode", YieldType.None, $"The yield instruction used for spacing out updating pasted objects. {CoreHelper.DefaultYieldInstructionDescription}");
             CombinerOutputFormat = BindEnum(this, "Data", "Combiner Output Format", FileType.LS, "Which PA file type the level combiner outputs.");
             SavingSavesThemeOpacity = Bind(this, "Data", "Saving Saves Theme Opacity", false, "Turn this off if you don't want themes to break in unmodded PA.");
             UpdatePrefabListOnFilesChanged = Bind(this, "Data", "Update Prefab List on Files Changed", false, "When you add a prefab to your prefab path, the editor will automatically update the prefab list for you.");

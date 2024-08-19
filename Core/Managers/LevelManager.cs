@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Components.Player;
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Optimization;
@@ -585,6 +586,9 @@ namespace BetterLegacy.Core.Managers
 
         public static DataManager.LevelRank GetLevelRank(List<SaveManager.SaveGroup.Save.PlayerDataPoint> hits)
         {
+            if (CoreHelper.InEditor)
+                return EditorRank;
+
             if (PlayerManager.IsZenMode || PlayerManager.IsPractice)
                 return DataManager.inst.levelRanks[0];
 
@@ -600,10 +604,12 @@ namespace BetterLegacy.Core.Managers
         }
 
         public static DataManager.LevelRank GetLevelRank(int hits)
-            => DataManager.inst.levelRanks.TryFind(x => hits >= x.minHits && hits <= x.maxHits, out DataManager.LevelRank levelRank) ? levelRank : DataManager.inst.levelRanks[0];
+            => CoreHelper.InEditor ? EditorRank : DataManager.inst.levelRanks.TryFind(x => hits >= x.minHits && hits <= x.maxHits, out DataManager.LevelRank levelRank) ? levelRank : DataManager.inst.levelRanks[0];
 
         public static DataManager.LevelRank GetLevelRank(Level level)
-            => level.playerData != null && DataManager.inst.levelRanks.Has(LevelRankPredicate(level)) ? DataManager.inst.levelRanks.Find(LevelRankPredicate(level)) : DataManager.inst.levelRanks[0];
+            => CoreHelper.InEditor ? EditorRank : level.playerData != null && DataManager.inst.levelRanks.Has(LevelRankPredicate(level)) ? DataManager.inst.levelRanks.Find(LevelRankPredicate(level)) : DataManager.inst.levelRanks[0];
+
+        public static DataManager.LevelRank EditorRank => DataManager.inst.levelRanks[(int)EditorConfig.Instance.EditorRank.Value];
 
         public static float CalculateAccuracy(int hits, float length)
             => 100f / ((hits / (length / PlayerManager.AcurracyDivisionAmount)) + 1f);
