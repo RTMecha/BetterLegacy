@@ -9,6 +9,7 @@ using LSFunctions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -67,7 +68,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 //    SteamWrapper.inst.achievements.SetAchievement("F_RANK");
 
                 CoreHelper.Log($"Setting End UI");
-                var sayings = LSText.WordWrap(levelRank.sayings[Random.Range(0, levelRank.sayings.Length)], 32);
                 string easy = LSColors.GetThemeColorHex("easy");
                 string normal = LSColors.GetThemeColorHex("normal");
                 string hard = LSColors.GetThemeColorHex("hard");
@@ -90,12 +90,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(-700f, 140f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(400f, 400f)),
                 });
                 
-                layouts.Add("sayings", new MenuVerticalLayout
-                {
-                    name = "sayings",
-                    rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(420f, -300f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(400f, 400f)),
-                });
-
                 layouts.Add("buttons", new MenuHorizontalLayout
                 {
                     name = "buttons",
@@ -214,20 +208,43 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     line++;
                 }
 
-                for (int i = 0; i < sayings.Count; i++)
+                var saying = levelRank.sayings[Random.Range(0, levelRank.sayings.Length)];
+                var sayings = LSText.WordWrap(saying, 32);
+
+                if (Example.ExampleManager.inst && Example.ExampleManager.inst.Visible)
                 {
-                    var text = sayings[i];
-                    elements.Add(new MenuText
+                    var matches = Regex.Matches(saying, @"{{QuickElement=(.*?)}}");
+                    foreach (var obj in matches)
                     {
-                        id = LSText.randomNumString(16),
-                        name = "Sayings Text",
-                        text = text,
-                        parentLayout = "sayings",
-                        length = 0.1f,
-                        rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 32f)),
-                        hideBG = true,
-                        textVal = 40f,
+                        var match = (Match)obj;
+                        saying = saying.Replace(match.Groups[0].ToString(), "");
+                    }
+
+                    Example.ExampleManager.inst.Say(saying);
+                }
+                else
+                {
+                    layouts.Add("sayings", new MenuVerticalLayout
+                    {
+                        name = "sayings",
+                        rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(420f, -300f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(400f, 400f)),
                     });
+
+                    for (int i = 0; i < sayings.Count; i++)
+                    {
+                        var text = sayings[i];
+                        elements.Add(new MenuText
+                        {
+                            id = LSText.randomNumString(16),
+                            name = "Sayings Text",
+                            text = text,
+                            parentLayout = "sayings",
+                            length = 0.1f,
+                            rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 32f)),
+                            hideBG = true,
+                            textVal = 40f,
+                        });
+                    }
                 }
 
                 if (!LevelManager.IsNextEndOfQueue)
