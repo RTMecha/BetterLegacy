@@ -496,7 +496,7 @@ namespace BetterLegacy.Core.Data
         /// <summary>
         /// Formats the song URL into a correct link format, in cases where the artist name is included in the song link somewhere.
         /// </summary>
-        public string SongURL => string.IsNullOrEmpty(LevelSong.link) || string.IsNullOrEmpty(artist.Link) ? null : CoreHelper.GetURL(0, LevelSong.linkType, LevelSong.linkType == 2 ? artist.Link + "," + LevelSong.link : LevelSong.link);
+        public string SongURL => string.IsNullOrEmpty(LevelSong.link) || string.IsNullOrEmpty(artist.Link) ? null : CoreHelper.GetURL(CoreHelper.LinkType.Song, LevelSong.linkType, LevelSong.linkType == 2 ? artist.Link + "," + LevelSong.link : LevelSong.link);
 
         #region Operators
 
@@ -548,20 +548,11 @@ namespace BetterLegacy.Core.Data
             this.linkType = linkType;
         }
 
-        public string URL => CoreHelper.GetURL(1, linkType, link);
+        public string URL => CoreHelper.GetURL(CoreHelper.LinkType.Creator, linkType, link);
 
 
         public int linkType;
         public string link;
-
-        public static List<DataManager.LinkType> creatorLinkTypes = new List<DataManager.LinkType>
-        {
-            new DataManager.LinkType("YouTube", "https://www.youtube.com/c/{0}"),
-            new DataManager.LinkType("Newgrounds", "https://{0}.newgrounds.com/"),
-            new DataManager.LinkType("Discord", "https://discord.gg/{0}"),
-            new DataManager.LinkType("Patreon", "https://patreon.com/{0}"),
-            new DataManager.LinkType("Twitter", "https://twitter.com/{0}"),
-        };
 
         #region Operators
 
@@ -586,7 +577,6 @@ namespace BetterLegacy.Core.Data
             this.link = link;
         }
 
-        public string URL => CoreHelper.GetURL(0, linkType, link);
         public int linkType = 2;
         public string link = "album/full-devoid";
         public string[] tags;

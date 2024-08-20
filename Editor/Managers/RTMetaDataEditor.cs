@@ -523,7 +523,7 @@ namespace BetterLegacy.Editor.Managers
             openCreatorURL.onClick.ClearAll();
             openCreatorURL.onClick.AddListener(() =>
             {
-                if (metadata.LevelCreator.URL != null)
+                if (!string.IsNullOrEmpty(metadata.LevelCreator.URL))
                     Application.OpenURL(metadata.LevelCreator.URL);
             });
 
@@ -547,7 +547,7 @@ namespace BetterLegacy.Editor.Managers
 
             var creatorLinkTypes = content.Find("creator/link/inputs/dropdown").GetComponent<Dropdown>();
             creatorLinkTypes.onValueChanged.ClearAll();
-            creatorLinkTypes.options = LevelCreator.creatorLinkTypes.Select(x => new Dropdown.OptionData(x.name)).ToList();
+            creatorLinkTypes.options = CoreHelper.ArtistLinks.Select(x => new Dropdown.OptionData(x.name)).ToList();
             creatorLinkTypes.value = metadata.LevelCreator.linkType;
             creatorLinkTypes.onValueChanged.AddListener(_val =>
             {
@@ -568,7 +568,7 @@ namespace BetterLegacy.Editor.Managers
             openSongURL.onClick.ClearAll();
             openSongURL.onClick.AddListener(() =>
             {
-                if (!string.IsNullOrEmpty(metadata.LevelSong.link))
+                if (!string.IsNullOrEmpty(metadata.SongURL))
                     Application.OpenURL(metadata.SongURL);
             });
 
@@ -592,7 +592,7 @@ namespace BetterLegacy.Editor.Managers
 
             var songLinkTypes = content.Find("song/link/inputs/dropdown").GetComponent<Dropdown>();
             songLinkTypes.onValueChanged.ClearAll();
-            songLinkTypes.options = CoreHelper.InstanceLinks.Select(x => new Dropdown.OptionData(x.name)).ToList();
+            songLinkTypes.options = CoreHelper.SongLinks.Select(x => new Dropdown.OptionData(x.name)).ToList();
             songLinkTypes.value = metadata.LevelSong.linkType;
             songLinkTypes.onValueChanged.AddListener(_val =>
             {

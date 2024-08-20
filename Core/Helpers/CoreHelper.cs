@@ -120,7 +120,7 @@ namespace BetterLegacy.Core.Helpers
         /// The current pitch setting.
         /// </summary>
         public static float Pitch => InEditor ? 1f : new List<float>
-            { 0.1f, 0.5f, 0.8f, 1f, 1.2f, 1.5f, 2f, 3f, }[Mathf.Clamp(DataManager.inst.GetSettingEnum("ArcadeGameSpeed", 2), 0, 7)];
+            { 0.1f, 0.5f, 0.8f, 1f, 1.2f, 1.5f, 2f, 3f, }[Mathf.Clamp(PlayerManager.ArcadeGameSpeed, 0, 7)];
 
         /// <summary>
         /// Gets the current interpolated theme or if the user is in the theme editor, the preview theme.
@@ -432,35 +432,61 @@ namespace BetterLegacy.Core.Helpers
 
         #region Links
 
-        public static string GetURL(int type, int site, string link)
+        public enum LinkType
+        {
+            Song,
+            Artist,
+            Creator
+        }
+
+        public static string GetURL(LinkType type, int site, string link)
         {
             if (string.IsNullOrEmpty(link))
                 return link;
 
-            var userLinks = UserLinks;
-            var instanceLinks = InstanceLinks;
+            var userLinks = ArtistLinks;
+            var instanceLinks = SongLinks;
+            var creatorLinks = CreatorLinks;
 
-            if (type != 0)
+            switch (type)
             {
-                if (site < 0 || site >= userLinks.Count)
-                    return null;
+                case LinkType.Song:
+                    {
+                        if (site < 0 || site >= instanceLinks.Count)
+                            return null;
 
-                return userLinks[site].linkFormat;
+
+                        if (site < 0 || site >= instanceLinks.Count)
+                            return null;
+
+                        if (instanceLinks[site].linkFormat.Contains("{1}"))
+                        {
+                            var split = link.Split(',');
+                            return string.Format(instanceLinks[site].linkFormat, split[0], split[1]);
+                        }
+                        else
+                            return string.Format(instanceLinks[site].linkFormat, link);
+                    }
+                case LinkType.Artist:
+                    {
+                        if (site < 0 || site >= userLinks.Count)
+                            return null;
+
+                        return userLinks[site].linkFormat;
+                    }
+                case LinkType.Creator:
+                    {
+                        if (site < 0 || site >= creatorLinks.Count)
+                            return null;
+
+                        return creatorLinks[site].linkFormat;
+                    }
             }
 
-            if (site < 0 || site >= instanceLinks.Count)
-                return null;
-
-            if (instanceLinks[site].linkFormat.Contains("{1}"))
-            {
-                var split = link.Split(',');
-                return string.Format(instanceLinks[site].linkFormat, split[0], split[1]);
-            }
-            else
-                return string.Format(instanceLinks[site].linkFormat, link);
+            return null;
         }
 
-        public static List<DataManager.LinkType> InstanceLinks => new List<DataManager.LinkType>
+        public static List<DataManager.LinkType> SongLinks => new List<DataManager.LinkType>
         {
             new DataManager.LinkType("Spotify", "https://open.spotify.com/artist/{0}"),
             new DataManager.LinkType("SoundCloud", "https://soundcloud.com/{0}"),
@@ -469,13 +495,22 @@ namespace BetterLegacy.Core.Helpers
             new DataManager.LinkType("Newgrounds", "https://newgrounds.com/audio/listen/{0}"),
         };
 
-        public static List<DataManager.LinkType> UserLinks => new List<DataManager.LinkType>
+        public static List<DataManager.LinkType> ArtistLinks => new List<DataManager.LinkType>
         {
             new DataManager.LinkType("Spotify", "https://open.spotify.com/artist/{0}"),
             new DataManager.LinkType("SoundCloud", "https://soundcloud.com/{0}"),
             new DataManager.LinkType("Bandcamp", "https://{0}.bandcamp.com"),
             new DataManager.LinkType("YouTube", "https://youtube.com/c/{0}"),
             new DataManager.LinkType("Newgrounds", "https://{0}.newgrounds.com/"),
+        };
+
+        public static List<DataManager.LinkType> CreatorLinks => new List<DataManager.LinkType>
+        {
+            new DataManager.LinkType("YouTube", "https://www.youtube.com/c/{0}"),
+            new DataManager.LinkType("Newgrounds", "https://{0}.newgrounds.com/"),
+            new DataManager.LinkType("Discord", "https://discord.gg/{0}"),
+            new DataManager.LinkType("Patreon", "https://patreon.com/{0}"),
+            new DataManager.LinkType("Twitter", "https://twitter.com/{0}"),
         };
 
         #endregion
