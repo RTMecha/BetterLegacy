@@ -270,9 +270,9 @@ namespace BetterLegacy.Configs
 
             PageFieldRoundness.SettingChanged += MiscRoundedChanged;
 
-            PlayLevelMenuButtonsRoundness.SettingChanged += PlayLevelMenuRoundnessChanged;
+            //PlayLevelMenuButtonsRoundness.SettingChanged += PlayLevelMenuRoundnessChanged;
 
-            PlayLevelMenuIconRoundness.SettingChanged += PlayLevelMenuRoundnessChanged;
+            //PlayLevelMenuIconRoundness.SettingChanged += PlayLevelMenuRoundnessChanged;
 
             LocalLevelOrderby.SettingChanged += LocalLevelSortChanged;
             LocalLevelAscend.SettingChanged += LocalLevelSortChanged;
@@ -339,7 +339,7 @@ namespace BetterLegacy.Configs
             }
         }
 
-        void PlayLevelMenuRoundnessChanged() => PlayLevelMenuManager.inst?.UpdateRoundness();
+        //void PlayLevelMenuRoundnessChanged() => PlayLevelMenuManager.inst?.UpdateRoundness();
 
         void MiscRoundedChanged() => ArcadeMenuManager.inst?.UpdateMiscRoundness();
 

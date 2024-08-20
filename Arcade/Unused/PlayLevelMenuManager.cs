@@ -14,7 +14,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace BetterLegacy.Arcade
+namespace BetterLegacy.Arcade.Unused
 {
     public class PlayLevelMenuManager : MonoBehaviour
     {
@@ -71,8 +71,8 @@ namespace BetterLegacy.Arcade
             background.color = LSColors.HexToColor(currentTheme["values"]["bg"]);
             settingsImage1.color = background.color;
 
-            if (!ArcadeMenuManager.inst || !ArcadeMenuManager.inst.OpenedLocalLevel)
-                return;
+            //if (!ArcadeMenuManager.inst || !ArcadeMenuManager.inst.OpenedLocalLevel)
+            //    return;
 
             UpdateControls();
 
@@ -1150,7 +1150,7 @@ namespace BetterLegacy.Arcade
                 AnimationManager.inst.RemoveID(animation.id);
                 animating = false;
 
-                ArcadeMenuManager.inst.OpenedLocalLevel = true;
+                //ArcadeMenuManager.inst.OpenedLocalLevel = true;
             };
             AnimationManager.inst.Play(animation);
         }
@@ -1182,7 +1182,7 @@ namespace BetterLegacy.Arcade
                     AudioManager.inst.PlayMusic(MenuManager.inst.currentMenuMusicName, MenuManager.inst.currentMenuMusic);
                 }
 
-                ArcadeMenuManager.inst.OpenedLocalLevel = false;
+                //ArcadeMenuManager.inst.OpenedLocalLevel = false;
             };
             AnimationManager.inst.Play(animation);
         }

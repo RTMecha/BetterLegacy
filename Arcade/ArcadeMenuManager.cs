@@ -144,7 +144,7 @@ namespace BetterLegacy.Arcade
         /// <summary>
         /// If local level view has been opened.
         /// </summary>
-        public bool OpenedLocalLevel { get; set; }
+        //public bool OpenedLocalLevel { get; set; }
 
         /// <summary>
         /// If online level view has been opened.
@@ -183,7 +183,7 @@ namespace BetterLegacy.Arcade
             UpdateTheme();
 
             // Check if main UI should be updated or not.
-            if (!init || OpenedLocalLevel || OpenedOnlineLevel || OpenedSteamLevel)
+            if (!init || InterfaceManager.inst.CurrentMenu != null || OpenedOnlineLevel || OpenedSteamLevel)
                 return;
 
             UpdateControls();
@@ -842,7 +842,7 @@ namespace BetterLegacy.Arcade
             canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.Normal;
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.scaleFactor = CoreHelper.ScreenScale;
-            canvas.sortingOrder = 10000;
+            canvas.sortingOrder = 9999;
 
             var canvasScaler = inter.AddComponent<CanvasScaler>();
             canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
@@ -867,11 +867,11 @@ namespace BetterLegacy.Arcade
 
             var playLevelMenuImage = playLevelMenuBase.AddComponent<Image>();
 
-            var playLevelMenu = playLevelMenuBase.AddComponent<PlayLevelMenuManager>();
-            playLevelMenu.rectTransform = playLevelMenuBaseRT;
-            playLevelMenu.background = playLevelMenuImage;
+            //var playLevelMenu = playLevelMenuBase.AddComponent<PlayLevelMenuManager>();
+            //playLevelMenu.rectTransform = playLevelMenuBaseRT;
+            //playLevelMenu.background = playLevelMenuImage;
 
-            StartCoroutine(playLevelMenu.SetupPlayLevelMenu());
+            //StartCoroutine(playLevelMenu.SetupPlayLevelMenu());
 
             var downloadLevelMenuBase = new GameObject("Download Level Menu");
             downloadLevelMenuBase.transform.SetParent(inter.transform);
@@ -2874,7 +2874,8 @@ namespace BetterLegacy.Arcade
                 yield return StartCoroutine(level.LoadAudioClipRoutine(() =>
                 {
                     AudioManager.inst.StopMusic();
-                    PlayLevelMenuManager.inst?.OpenLevel(level);
+                    //PlayLevelMenuManager.inst?.OpenLevel(level);
+                    PlayLevelMenu.Init(level);
                     AudioManager.inst.PlayMusic(level.metadata.song.title, level.music);
                     AudioManager.inst.SetPitch(CoreHelper.Pitch);
                 }));
@@ -2882,7 +2883,8 @@ namespace BetterLegacy.Arcade
             else
             {
                 AudioManager.inst.StopMusic();
-                PlayLevelMenuManager.inst?.OpenLevel(level);
+                //PlayLevelMenuManager.inst?.OpenLevel(level);
+                PlayLevelMenu.Init(level);
                 AudioManager.inst.PlayMusic(level.metadata.song.title, level.music);
                 AudioManager.inst.SetPitch(CoreHelper.Pitch);
             }
