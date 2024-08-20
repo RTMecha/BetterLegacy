@@ -140,7 +140,7 @@ namespace BetterLegacy.Core.Data
 
                 string steam_name = "Mecha";
                 int steam_id = -1;
-                string creatorLink = "";
+                string creatorLink = null;
                 int creatorLinkType = 0;
 
                 try
@@ -165,9 +165,7 @@ namespace BetterLegacy.Core.Data
                 float previewStart = 0f;
                 float previewLength = 30f;
 
-                string[] tags = new string[]
-                {
-                };
+                string[] tags = new string[] { };
 
                 try
                 {
@@ -237,14 +235,14 @@ namespace BetterLegacy.Core.Data
             return result;
         }
 
-        public static MetaData Parse(JSONNode jn)
+        public static MetaData Parse(JSONNode jn, bool setDefaultValues = true)
         {
             MetaData result;
             try
             {
                 string name = "Artist Name";
                 int linkType = 0;
-                string link = "kaixomusic";
+                string link = !setDefaultValues ? null : "kaixomusic";
                 try
                 {
                     if (!string.IsNullOrEmpty(jn["artist"]["name"]))
@@ -263,7 +261,7 @@ namespace BetterLegacy.Core.Data
 
                 string steam_name = "RTMecha";
                 int steam_id = -1;
-                string creatorLink = "";
+                string creatorLink = null;
                 int creatorLinkType = 0;
 
                 try
@@ -287,7 +285,7 @@ namespace BetterLegacy.Core.Data
                 string title = "Intertia";
                 int difficulty = 2;
                 string description = "This is the default description!";
-                string songLink = "album/full-devoid";
+                string songLink = !setDefaultValues ? null : "album/full-devoid";
                 int songLinkType = 2;
                 float bpm = 120f;
                 float time = 60f;
@@ -498,7 +496,7 @@ namespace BetterLegacy.Core.Data
         /// <summary>
         /// Formats the song URL into a correct link format, in cases where the artist name is included in the song link somewhere.
         /// </summary>
-        public string SongURL => CoreHelper.GetURL(0, LevelSong.linkType, LevelSong.linkType == 2 ? artist.Name + "," + LevelSong.link : LevelSong.link);
+        public string SongURL => string.IsNullOrEmpty(LevelSong.link) || string.IsNullOrEmpty(artist.Link) ? null : CoreHelper.GetURL(0, LevelSong.linkType, LevelSong.linkType == 2 ? artist.Link + "," + LevelSong.link : LevelSong.link);
 
         #region Operators
 
@@ -550,8 +548,7 @@ namespace BetterLegacy.Core.Data
             this.linkType = linkType;
         }
 
-        public string URL
-            => linkType < 0 || linkType > creatorLinkTypes.Count - 1 || link.Contains("http://") || link.Contains("https://") ? null : string.Format(creatorLinkTypes[linkType].linkFormat, link);
+        public string URL => CoreHelper.GetURL(1, linkType, link);
 
 
         public int linkType;
