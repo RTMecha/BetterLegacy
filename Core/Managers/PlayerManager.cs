@@ -413,6 +413,8 @@ namespace BetterLegacy.Core.Managers
 
         public static List<float> GameSpeeds => new List<float> { 0.1f, 0.5f, 0.8f, 1f, 1.2f, 1.5f, 2f, 3f, };
 
+        public static List<string> ChallengeModeNames => new List<string> { "ZEN", "NORMAL", "ONE LIFE", "ONE HIT", "PRACTICE" };
+
         public static int ArcadeGameSpeed => DataManager.inst.GetSettingEnum("ArcadeGameSpeed", 2);
 
         public static void SetGameSpeed(int speed) => DataManager.inst.UpdateSettingEnum("ArcadeGameSpeed", speed);
