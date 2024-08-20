@@ -120,12 +120,17 @@ namespace BetterLegacy.Arcade
                 length = 0.1f,
             });
 
+            var name = CoreHelper.ReplaceFormatting(CurrentLevel.metadata.LevelBeatmap.name);
+            int size = 110;
+            if (name.Length > 13)
+                size = (int)(size * ((float)13f / name.Length));
+
             elements.Add(new MenuText
             {
                 id = "4624859539",
                 name = "Title",
                 rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(-80f, 280f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(100f, 100f)),
-                text = "<size=120><b>" + CurrentLevel.metadata.LevelBeatmap.name,
+                text = $"<size={size}><b>{name}",
                 hideBG = true,
                 textColor = 6,
             });
@@ -155,9 +160,9 @@ namespace BetterLegacy.Arcade
             {
                 id = "638553",
                 name = "Song Button",
-                rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(320f, 200f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(500f, 48f)),
+                rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(340f, 200f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(500f, 48f)),
                 selectionPosition = new Vector2Int(0, 1),
-                text = $"<align=center>[ {CurrentLevel.metadata.LevelSong.title} ]",
+                text = $" [ {CurrentLevel.metadata.LevelSong.title} ]",
                 opacity = 0f,
                 selectedOpacity = 1f,
                 color = 6,
@@ -187,9 +192,9 @@ namespace BetterLegacy.Arcade
             {
                 id = "638553",
                 name = "Artist Button",
-                rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(320f, 150f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(500f, 48f)),
+                rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(340f, 150f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(500f, 48f)),
                 selectionPosition = new Vector2Int(0, 2),
-                text = $"<align=center>[ {CurrentLevel.metadata.LevelArtist.Name} ]",
+                text = $" [ {CurrentLevel.metadata.LevelArtist.Name} ]",
                 opacity = 0f,
                 selectedOpacity = 1f,
                 color = 6,
@@ -219,9 +224,9 @@ namespace BetterLegacy.Arcade
             {
                 id = "638553",
                 name = "Creator Button",
-                rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(320f, 100f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(500f, 48f)),
+                rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(340f, 100f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(500f, 48f)),
                 selectionPosition = new Vector2Int(0, 3),
-                text = $"<align=center>[ {CurrentLevel.metadata.LevelCreator.steam_name} ]",
+                text = $" [ {CurrentLevel.metadata.LevelCreator.steam_name} ]",
                 opacity = 0f,
                 selectedOpacity = 1f,
                 color = 6,
@@ -241,22 +246,22 @@ namespace BetterLegacy.Arcade
             elements.Add(new MenuText
             {
                 id = "4624859539",
-                name = "Difficulty Label",
+                name = "Difficulty",
                 rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(-100f, 50f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(100f, 100f)),
-                text = $"<size=40>Difficulty:",
+                text = $"<size=40>Difficulty: <b><#{LSColors.ColorToHex(difficulty.color)}><voffset=-13><size=64>■</voffset><size=40>{difficulty.name}",
                 hideBG = true,
                 textColor = 6,
             });
             
-            elements.Add(new MenuText
-            {
-                id = "4624859539",
-                name = "Difficulty",
-                rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(320f, 50f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(500f, 48f)),
-                text = $"<size=40><align=center><b><#{LSColors.ColorToHex(difficulty.color)}><voffset=-13><size=64>■</voffset><size=40>{difficulty.name}",
-                hideBG = true,
-                textColor = 6,
-            });
+            //elements.Add(new MenuText
+            //{
+            //    id = "4624859539",
+            //    name = "Difficulty",
+            //    rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(320f, 50f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(500f, 48f)),
+            //    text = $"<size=40><align=center><b><#{LSColors.ColorToHex(difficulty.color)}><voffset=-13><size=64>■</voffset><size=40>{difficulty.name}",
+            //    hideBG = true,
+            //    textColor = 6,
+            //});
 
             elements.Add(new MenuText
             {
@@ -287,8 +292,8 @@ namespace BetterLegacy.Arcade
             {
                 id = "92595",
                 name = "Rank",
-                rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(-200f, -90f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(100f, 100f), -10f),
-                text = $"<size=140><b><#{LSColors.ColorToHex(levelRank.color)}>{levelRank.name}",
+                rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(-250f, -90f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(100f, 100f), -10f),
+                text = $"<size=140><b><align=center><#{LSColors.ColorToHex(levelRank.color)}>{levelRank.name}",
                 hideBG = true,
                 textColor = 6,
             });
