@@ -22,6 +22,7 @@ using LSFunctions;
 using System.Text.RegularExpressions;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Layouts;
+using BetterLegacy.Arcade;
 
 namespace BetterLegacy.Menus
 {
@@ -213,6 +214,16 @@ namespace BetterLegacy.Menus
 
         public List<BeatmapTheme> themes = new List<BeatmapTheme>();
 
+        public void CloseMenus()
+        {
+            CurrentMenu?.Clear();
+            CurrentMenu = null;
+            PauseMenu.Current = null;
+            EndLevelMenu.Current = null;
+            ArcadeMenu.Current = null;
+            PlayLevelMenu.Current = null;
+        }
+
         public void Clear()
         {
             if (CurrentMenu != null)
@@ -274,10 +285,6 @@ namespace BetterLegacy.Menus
                 }
             }
             interfaces.Clear();
-
-            //AudioManager.inst.StopMusic();
-
-            LoadThemes();
 
             var path = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Interfaces/main_menu.lsi";
             var jn = JSON.Parse(RTFile.ReadFromFile(path));

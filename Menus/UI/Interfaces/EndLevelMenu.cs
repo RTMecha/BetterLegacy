@@ -392,21 +392,14 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         public static void Init()
         {
-            if (InterfaceManager.inst.CurrentMenu is PauseMenu)
-                PauseMenu.Current = null;
-
-            InterfaceManager.inst.CurrentMenu?.Clear();
-            InterfaceManager.inst.CurrentMenu = null;
+            InterfaceManager.inst.CloseMenus();
 
             Current = new EndLevelMenu();
         }
 
         public static void Close()
         {
-            Current?.Clear();
-            Current = null;
-            if (InterfaceManager.inst.CurrentMenu is PauseMenu)
-                InterfaceManager.inst.CurrentMenu = null;
+            InterfaceManager.inst.CloseMenus();
             AudioManager.inst.CurrentAudioSource.UnPause();
             AudioManager.inst.CurrentAudioSource.Play();
             GameManager.inst.gameState = GameManager.State.Playing;

@@ -401,10 +401,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             countdown.textUI.text = "<align=center><size=120><b><font=Fredoka One>GO!";
             yield return new WaitForSeconds(0.2f);
 
-            Current?.Clear();
-            Current = null;
-            if (InterfaceManager.inst.CurrentMenu is PauseMenu)
-                InterfaceManager.inst.CurrentMenu = null;
+            InterfaceManager.inst.CloseMenus();
             if (!currentCursorVisibility)
                 LSHelpers.HideCursor();
             AudioManager.inst.CurrentAudioSource.UnPause();

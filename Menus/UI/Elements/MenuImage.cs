@@ -507,10 +507,7 @@ namespace BetterLegacy.Menus.UI.Elements
                 case "Close":
                     {
                         string id = InterfaceManager.inst.CurrentMenu?.id;
-                        InterfaceManager.inst.CurrentMenu?.Clear();
-                        InterfaceManager.inst.CurrentMenu = null;
-                        PauseMenu.Current = null;
-                        EndLevelMenu.Current = null;
+                        InterfaceManager.inst.CloseMenus();
                         InterfaceManager.inst.StopMusic();
 
                         if (CoreHelper.InGame)
@@ -657,21 +654,6 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 #endregion
 
-                #region DemoStoryMode
-
-                // Demos the BetterLegacy story mode. Temporary until the story mode is implemented.
-                // Function has no parameters.
-                case "DemoStoryMode":
-                    {
-                        LevelManager.IsArcade = false;
-                        SceneManager.inst.LoadScene("Input Select");
-                        LevelManager.OnInputsSelected = () => { CoreHelper.StartCoroutine(Story.StoryManager.inst.Demo(true)); };
-
-                        break;
-                    }
-
-                #endregion
-
                 #region SetCurrentPath
 
                 // Sets the main directory for the menus to use in some cases.
@@ -739,6 +721,82 @@ namespace BetterLegacy.Menus.UI.Elements
                             AudioManager.inst.PlaySound(LSAudio.CreateAudioClipUsingMP3File(filePath));
                         else
                             CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{filePath}", audioType, AudioManager.inst.PlaySound));
+
+                        break;
+                    }
+
+                #endregion
+
+                #region SetElementActive
+
+                // Sets an element active or inactive.
+                // Supports both JSON array and JSON object.
+                //
+                // - JSON Array Structure -
+                // 0 = id
+                // 1 = actiive
+                // Example:
+                // [
+                //   "525778246", < finds an element with this ID.
+                //   "False" < sets the element inactive.
+                // ]
+                //
+                // - JSON Object Structure -
+                // "id"
+                // "active"
+                // Example:
+                // {
+                //   "id": "525778246",
+                //   "active": "True" < sets the element active
+                // }
+                case "SetElementActive":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && parameters["id"] == null || InterfaceManager.inst.CurrentMenu == null)
+                            return;
+
+                        if (InterfaceManager.inst.CurrentMenu.elements.TryFind(x => x.id == (parameters.IsArray ? parameters[0] : parameters["id"]), out MenuImage menuImage) &&
+                            menuImage.gameObject && bool.TryParse(parameters.IsArray ? parameters[1] : parameters["active"], out bool active))
+                        {
+                            menuImage.gameObject.SetActive(active);
+                        }
+
+                        break;
+                    }
+
+                #endregion
+
+                #region SetLayoutActive
+
+                // Sets a layout active or inactive.
+                // Supports both JSON array and JSON object.
+                //
+                // - JSON Array Structure -
+                // 0 = name
+                // 1 = active
+                // Example:
+                // [
+                //   "layout_name", < finds a layout with this ID.
+                //   "False" < sets the layout inactive.
+                // ]
+                //
+                // - JSON Object Structure -
+                // "name"
+                // "active"
+                // Example:
+                // {
+                //   "id": "layout_name",
+                //   "active": "True" < sets the layout active
+                // }
+                case "SetLayoutActive":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && parameters["name"] == null || InterfaceManager.inst.CurrentMenu == null)
+                            return;
+
+                        if (InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["name"], out Layouts.MenuLayoutBase layout) &&
+                            layout.gameObject && bool.TryParse(parameters.IsArray ? parameters[1] : parameters["active"], out bool active))
+                        {
+                            layout.gameObject.SetActive(active);
+                        }
 
                         break;
                     }
@@ -1436,6 +1494,23 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 #region Specific Functions
 
+                #region DemoStoryMode
+
+                // Demos the BetterLegacy story mode. Temporary until the story mode is implemented.
+                // Function has no parameters.
+                case "DemoStoryMode":
+                    {
+                        LevelManager.IsArcade = false;
+                        SceneManager.inst.LoadScene("Input Select");
+                        LevelManager.OnInputsSelected = () => { CoreHelper.StartCoroutine(Story.StoryManager.inst.Demo(true)); };
+
+                        break;
+                    }
+
+                #endregion
+
+                #region ModderDiscord
+
                 // Opens the System Error Discord server link.
                 // Function has no parameters.
                 case "ModderDiscord":
@@ -1445,7 +1520,9 @@ namespace BetterLegacy.Menus.UI.Elements
                         break;
                     }
 
-                    #endregion
+                #endregion
+
+                #endregion
             }
         }
 

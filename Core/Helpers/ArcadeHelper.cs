@@ -22,6 +22,13 @@ namespace BetterLegacy.Core.Helpers
         public static GameObject buttonPrefab;
         public static bool endedLevel;
 
+        public static void LoadInputSelect()
+        {
+            LevelManager.Levels.Clear();
+            InterfaceManager.inst.CloseMenus();
+            SceneManager.inst.LoadScene("Input Select");
+        }
+
         public static void ReturnToHub()
         {
             if (LevelManager.Hub == null)
@@ -30,10 +37,7 @@ namespace BetterLegacy.Core.Helpers
             LevelManager.LevelEnded = false;
             LevelManager.CurrentLevel = LevelManager.Hub;
 
-            InterfaceManager.inst.CurrentMenu?.Clear();
-            InterfaceManager.inst.CurrentMenu = null;
-            PauseMenu.Current = null;
-            EndLevelMenu.Current = null;
+            InterfaceManager.inst.CloseMenus();
 
             SceneManager.inst.LoadScene("Game");
         }
@@ -51,10 +55,7 @@ namespace BetterLegacy.Core.Helpers
             LevelManager.LevelEnded = false;
             LevelManager.CurrentLevel = LevelManager.ArcadeQueue[LevelManager.currentQueueIndex];
 
-            InterfaceManager.inst.CurrentMenu?.Clear();
-            InterfaceManager.inst.CurrentMenu = null;
-            PauseMenu.Current = null;
-            EndLevelMenu.Current = null;
+            InterfaceManager.inst.CloseMenus();
 
             SceneManager.inst.LoadScene("Game");
         }
@@ -72,10 +73,7 @@ namespace BetterLegacy.Core.Helpers
             LevelManager.LevelEnded = false;
             LevelManager.CurrentLevel = LevelManager.ArcadeQueue[LevelManager.currentQueueIndex];
 
-            InterfaceManager.inst.CurrentMenu?.Clear();
-            InterfaceManager.inst.CurrentMenu = null;
-            PauseMenu.Current = null;
-            EndLevelMenu.Current = null;
+            InterfaceManager.inst.CloseMenus();
 
             SceneManager.inst.LoadScene("Game");
         }
@@ -99,10 +97,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static void QuitToArcade()
         {
-            InterfaceManager.inst.CurrentMenu?.Clear();
-            InterfaceManager.inst.CurrentMenu = null;
-            PauseMenu.Current = null;
-            EndLevelMenu.Current = null;
+            InterfaceManager.inst.CloseMenus();
 
             CoreHelper.Log("Quitting to arcade...");
             DG.Tweening.DOTween.Clear();
@@ -372,10 +367,7 @@ namespace BetterLegacy.Core.Helpers
         public static void ReloadMenu()
         {
             if (fromLevel)
-            {
-                var menu = new GameObject("Arcade Menu System");
-                Component component = ArcadeConfig.Instance.UseNewArcadeUI.Value ? menu.AddComponent<ArcadeMenuManager>() : menu.AddComponent<LevelMenuManager>();
-            }
+                LoadArcadeMenu();
             else
             {
                 var menu = new GameObject("Load Level System");
@@ -437,7 +429,7 @@ namespace BetterLegacy.Core.Helpers
                 if (RTFile.FileExists($"{path}/metadata.vgm"))
                     metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile($"{path}/metadata.vgm")));
                 else if (RTFile.FileExists($"{path}/metadata.lsb"))
-                    metadata = MetaData.Parse(JSON.Parse(RTFile.ReadFromFile($"{path}/metadata.lsb")));
+                    metadata = MetaData.Parse(JSON.Parse(RTFile.ReadFromFile($"{path}/metadata.lsb")), false);
 
                 if (metadata == null)
                 {
@@ -571,13 +563,27 @@ namespace BetterLegacy.Core.Helpers
 
         }
 
+        public static bool useCurrentInterface = false;
+        public static void LoadArcadeMenu()
+        {
+            if (useCurrentInterface)
+            {
+                ArcadeMenu.Init();
+                return;
+            }
+
+            var menu = new GameObject("Arcade Menu System");
+            if (ArcadeConfig.Instance.UseNewArcadeUI.Value)
+                menu.AddComponent<ArcadeMenuManager>();
+            else
+                menu.AddComponent<LevelMenuManager>();
+        }
+
         public static IEnumerator OnLoadingEnd()
         {
             yield return new WaitForSeconds(0.1f);
             AudioManager.inst.PlaySound("loadsound");
-            var menu = new GameObject("Arcade Menu System");
-            Component component = ArcadeConfig.Instance.UseNewArcadeUI.Value ? menu.AddComponent<ArcadeMenuManager>() : menu.AddComponent<LevelMenuManager>();
-
+            LoadArcadeMenu();
             yield break;
         }
     }
