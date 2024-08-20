@@ -3565,7 +3565,7 @@ namespace BetterLegacy.Arcade
                 LSHelpers.DeleteChildren(RegularContents[5]);
                 yield return StartCoroutine(SteamWorkshopManager.inst.GetSubscribedItems());
 
-                SteamWorkshopManager.inst.Levels = LevelManager.SortLevels(SteamWorkshopManager.inst.Levels, (int)ArcadeConfig.Instance.SteamLevelOrderby.Value, ArcadeConfig.Instance.SteamLevelAscend.Value);
+                SteamWorkshopManager.inst.Levels = LevelManager.SortLevels(SteamWorkshopManager.inst.Levels, ArcadeConfig.Instance.SteamLevelOrderby.Value, ArcadeConfig.Instance.SteamLevelAscend.Value);
 
                 StartCoroutine(RefreshSubscribedSteamLevels());
             }

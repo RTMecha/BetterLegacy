@@ -555,7 +555,7 @@ namespace BetterLegacy.Arcade
 
         public static void Sort()
         {
-            LevelManager.Sort(levelFilter, levelAscend);
+            LevelManager.Sort((LevelSort)levelFilter, levelAscend);
         }
 
         public static IEnumerator GenerateUIList()

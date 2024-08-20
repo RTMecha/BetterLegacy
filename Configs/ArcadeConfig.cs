@@ -285,7 +285,7 @@ namespace BetterLegacy.Configs
 
         void SteamLevelSortChanged()
         {
-            SteamWorkshopManager.inst.Levels = LevelManager.SortLevels(SteamWorkshopManager.inst.Levels, (int)SteamLevelOrderby.Value, SteamLevelAscend.Value);
+            SteamWorkshopManager.inst.Levels = LevelManager.SortLevels(SteamWorkshopManager.inst.Levels, SteamLevelOrderby.Value, SteamLevelAscend.Value);
 
             if (ArcadeMenuManager.inst && ArcadeMenuManager.inst.CurrentTab == 5 && ArcadeMenuManager.inst.steamViewType == ArcadeMenuManager.SteamViewType.Subscribed)
             {
@@ -299,7 +299,7 @@ namespace BetterLegacy.Configs
 
         void LocalLevelSortChanged()
         {
-            LevelManager.Sort((int)LocalLevelOrderby.Value, LocalLevelAscend.Value);
+            LevelManager.Sort(LocalLevelOrderby.Value, LocalLevelAscend.Value);
 
             if (LevelMenuManager.inst)
             {

@@ -360,48 +360,51 @@ namespace BetterLegacy.Core.Managers
 
         /// <summary>
         /// Sorts a Level list by a specific order and ascending / descending.
-        /// Orderby 0 = Has icon, 1 = Artist name, 2 = Creator name, 3 = Folder name, 4 = Song title, 5 = Difficulty, 6 = Date edited, 7 = Date created
         /// </summary>
         /// <param name="levels">The Level list to sort.</param>
-        /// <param name="orderby">How the Level list should be ordered by.</param>
+        /// <param name="sort">How the Level list should be ordered by.</param>
         /// <param name="ascend">Whether the list should ascend of descend.</param>
         /// <returns>Returns a sorted Level list.</returns>
-        public static List<Level> SortLevels(List<Level> levels, int orderby, bool ascend)
+        public static List<Level> SortLevels(List<Level> levels, LevelSort sort, bool ascend)
         {
-            switch (orderby)
+            switch (sort)
             {
-                case 0:
+                case LevelSort.Cover:
                     return
                         (ascend ? levels.OrderBy(x => x.icon != SteamWorkshop.inst.defaultSteamImageSprite) :
                         levels.OrderByDescending(x => x.icon != SteamWorkshop.inst.defaultSteamImageSprite)).ToList();
-                case 1:
+                case LevelSort.Artist:
                     return
                         (ascend ? levels.OrderBy(x => x.metadata.artist.Name) :
                         levels.OrderByDescending(x => x.metadata.artist.Name)).ToList();
-                case 2:
+                case LevelSort.Creator:
                     return
                         (ascend ? levels.OrderBy(x => x.metadata.creator.steam_name) :
                         levels.OrderByDescending(x => x.metadata.creator.steam_name)).ToList();
-                case 3:
+                case LevelSort.File:
                     return
                         (ascend ? levels.OrderBy(x => System.IO.Path.GetFileName(x.path)) :
                         levels.OrderByDescending(x => System.IO.Path.GetFileName(x.path))).ToList();
-                case 4:
+                case LevelSort.Title:
                     return
                         (ascend ? levels.OrderBy(x => x.metadata.song.title) :
                         levels.OrderByDescending(x => x.metadata.song.title)).ToList();
-                case 5:
+                case LevelSort.Difficulty:
                     return
                         (ascend ? levels.OrderBy(x => x.metadata.song.difficulty) :
                         levels.OrderByDescending(x => x.metadata.song.difficulty)).ToList();
-                case 6:
+                case LevelSort.DateEdited:
                     return
                         (ascend ? levels.OrderBy(x => x.metadata.beatmap.date_edited) :
                         levels.OrderByDescending(x => x.metadata.beatmap.date_edited)).ToList();
-                case 7:
+                case LevelSort.DateCreated:
                     return
                         (ascend ? levels.OrderBy(x => x.metadata.LevelBeatmap.date_created) :
                         levels.OrderByDescending(x => x.metadata.LevelBeatmap.date_created)).ToList();
+                case LevelSort.DatePublished:
+                    return
+                        (ascend ? levels.OrderBy(x => x.metadata.LevelBeatmap.date_published) :
+                        levels.OrderByDescending(x => x.metadata.LevelBeatmap.date_published)).ToList();
             }
 
             return levels;
@@ -409,11 +412,10 @@ namespace BetterLegacy.Core.Managers
 
         /// <summary>
         /// Sorts <see cref="Levels"/> by a specific order and ascending / descending.
-        /// Orderby 0 = Has icon, 1 = Artist name, 2 = Creator name, 3 = Folder name, 4 = Song title, 5 = Difficulty, 6 = Date edited, 7 = Date created
         /// </summary>
-        /// <param name="orderby">How the Level list should be ordered by.</param>
+        /// <param name="sort">How the Level list should be ordered by.</param>
         /// <param name="ascend">Whether the list should ascend of descend.</param>
-        public static void Sort(int orderby, bool ascend) => Levels = SortLevels(Levels, orderby, ascend);
+        public static void Sort(LevelSort sort, bool ascend) => Levels = SortLevels(Levels, sort, ascend);
 
         /// <summary>
         /// Updates the Beatmap JSON depending on version.
@@ -579,8 +581,8 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// The regular level rank calculation method.
         /// </summary>
-        /// <param name="hits"></param>
-        /// <returns></returns>
+        /// <param name="hits">Hits player data list.</param>
+        /// <returns>A calculated rank from hits.</returns>
         public static DataManager.LevelRank GetLevelRank(List<SaveManager.SaveGroup.Save.PlayerDataPoint> hits)
         {
             if (CoreHelper.InEditor)
@@ -603,16 +605,16 @@ namespace BetterLegacy.Core.Managers
         /// <summary>
         /// Gets a level rank by hit count.
         /// </summary>
-        /// <param name="hits"></param>
-        /// <returns></returns>
+        /// <param name="hits">Hit count.</param>
+        /// <returns>A calculated rank from the amount of hits.</returns>
         public static DataManager.LevelRank GetLevelRank(int hits)
             => CoreHelper.InEditor ? EditorRank : DataManager.inst.levelRanks.TryFind(x => hits >= x.minHits && hits <= x.maxHits, out DataManager.LevelRank levelRank) ? levelRank : DataManager.inst.levelRanks[0];
 
         /// <summary>
         /// Gets a levels' rank.
         /// </summary>
-        /// <param name="level"></param>
-        /// <returns></returns>
+        /// <param name="level">Level to get a rank from.</param>
+        /// <returns>A levels' stored rank.</returns>
         public static DataManager.LevelRank GetLevelRank(Level level)
             => CoreHelper.InEditor ? EditorRank : level.playerData != null && DataManager.inst.levelRanks.Has(LevelRankPredicate(level)) ? DataManager.inst.levelRanks.Find(LevelRankPredicate(level)) : DataManager.inst.levelRanks[0];
 
@@ -629,9 +631,9 @@ namespace BetterLegacy.Core.Managers
         {
             public string ID { get; set; }
             public bool Completed { get; set; }
-            public int Hits { get; set; }
-            public int Deaths { get; set; }
-            public int Boosts { get; set; }
+            public int Hits { get; set; } = -1;
+            public int Deaths { get; set; } = -1;
+            public int Boosts { get; set; } = -1;
             public int PlayedTimes { get; set; }
             public float TimeInLevel { get; set; }
             public float Percentage { get; set; }
@@ -658,13 +660,13 @@ namespace BetterLegacy.Core.Managers
 
             public void Update(int deaths, int hits, int boosts, bool completed)
             {
-                if (Deaths == 0 || Deaths > deaths)
+                if (Deaths == -1 || Deaths > deaths)
                     Deaths = deaths;
-                if (Hits == 0 || Hits > hits)
+                if (Hits == -1 || Hits > hits)
                     CurrentLevel.playerData.Hits = hits;
-                if (Boosts == 0 || Boosts > boosts)
+                if (Boosts == -1 || Boosts > boosts)
                     CurrentLevel.playerData.Boosts = boosts;
-                Completed = true;
+                Completed = completed;
             }
 
             public static PlayerData Parse(JSONNode jn) => new PlayerData
@@ -697,7 +699,7 @@ namespace BetterLegacy.Core.Managers
                 return jn;
             }
 
-            public override string ToString() => ID;
+            public override string ToString() => $"{ID} - Hits: {Hits} Deaths: {Deaths}";
         }
     }
 }
