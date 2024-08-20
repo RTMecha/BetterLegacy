@@ -400,15 +400,18 @@ namespace BetterLegacy.Core.Managers
         }
 
         #region Game Modes
+
         public static void SetGameMode(int mode) => DataManager.inst.UpdateSettingInt("ArcadeDifficulty", mode);
 
         public static DifficultyMode DifficultyMode => (DifficultyMode)DataManager.inst.GetSettingInt("ArcadeDifficulty", 0);
 
-        public static bool IsZenMode => DataManager.inst.GetSettingInt("ArcadeDifficulty", 0) == 0;
-        public static bool IsNormal => DataManager.inst.GetSettingInt("ArcadeDifficulty", 0) == 1;
-        public static bool Is1Life => DataManager.inst.GetSettingInt("ArcadeDifficulty", 0) == 2;
-        public static bool IsNoHit => DataManager.inst.GetSettingInt("ArcadeDifficulty", 0) == 3;
-        public static bool IsPractice => DataManager.inst.GetSettingInt("ArcadeDifficulty", 0) == 4;
+        public static bool IsZenMode => DifficultyMode == DifficultyMode.ZenMode;
+        public static bool IsNormal => DifficultyMode == DifficultyMode.Normal;
+        public static bool Is1Life => DifficultyMode == DifficultyMode.OneLife;
+        public static bool IsNoHit => DifficultyMode == DifficultyMode.OneHit;
+        public static bool IsPractice => DifficultyMode == DifficultyMode.Practice;
+
+        public static List<float> GameSpeeds => new List<float> { 0.1f, 0.5f, 0.8f, 1f, 1.2f, 1.5f, 2f, 3f, };
 
         public static int ArcadeGameSpeed => DataManager.inst.GetSettingEnum("ArcadeGameSpeed", 2);
 
