@@ -162,6 +162,9 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         public string text = "";
 
+        public bool enableWordWrapping = false;
+        public TMPro.TextAlignmentOptions alignment = TextAlignmentOptions.Left;
+
         /// <summary>
         /// The text component of the element.
         /// </summary>

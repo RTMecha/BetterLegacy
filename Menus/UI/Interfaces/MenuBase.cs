@@ -143,6 +143,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// </summary>
         public RTAnimation spawnEvents;
 
+        public bool allowEffects = true;
+        public int layer = 900;
+
         /// <summary>
         /// Plays the menus' default music.
         /// </summary>
@@ -186,14 +189,16 @@ namespace BetterLegacy.Menus.UI.Interfaces
         {
             selected = Vector2Int.zero;
 
-            var canvas = UIManager.GenerateUICanvas(nameof(CustomMenu), null, sortingOrder: 900);
+            InterfaceManager.inst.LoadThemes();
+
+            var canvas = UIManager.GenerateUICanvas(nameof(CustomMenu), null, sortingOrder: layer);
             this.canvas = canvas;
             canvas.Canvas.scaleFactor = 1f;
             canvas.CanvasScaler.referenceResolution = new Vector2(1920f, 1080f);
 
             canvas.GameObject.AddComponent<CursorManager>();
 
-            if (!CoreHelper.InGame)
+            if (!CoreHelper.InGame && allowEffects)
             {
                 canvas.GameObject.AddComponent<MenuEffectsManager>();
                 canvas.Canvas.worldCamera = Camera.main;
@@ -668,6 +673,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
             menuText.textUI = (TextMeshProUGUI)t["Text"];
             menuText.textUI.text = menuText.text;
             menuText.textUI.maxVisibleCharacters = 0;
+            menuText.textUI.enableWordWrapping = menuText.enableWordWrapping;
+            menuText.textUI.alignment = menuText.alignment;
 
             if (menuText.textRectJSON != null)
                 Parser.ParseRectTransform(menuText.textUI.rectTransform, menuText.textRectJSON);
@@ -732,6 +739,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
             menuButton.textUI = (TextMeshProUGUI)t["Text"];
             menuButton.textUI.text = menuButton.text;
             menuButton.textUI.maxVisibleCharacters = 0;
+            menuButton.textUI.enableWordWrapping = menuButton.enableWordWrapping;
+            menuButton.textUI.alignment = menuButton.alignment;
 
             if (menuButton.textRectJSON != null)
                 Parser.ParseRectTransform(menuButton.textUI.rectTransform, menuButton.textRectJSON);
