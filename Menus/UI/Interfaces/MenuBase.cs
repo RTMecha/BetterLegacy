@@ -415,7 +415,13 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 if (selected.x > 0)
                 {
                     AudioManager.inst.PlaySound("LeftRight");
-                    selected.x--;
+
+                    int num = 1;
+                    while (!elements.Has(x => x is MenuButton menuButton && menuButton.selectionPosition.y == selected.y && menuButton.selectionPosition.x == selected.x - num))
+                    {
+                        num++;
+                    }
+                    selected.x -= num;
                 }
                 else
                     AudioManager.inst.PlaySound("Block");
@@ -426,7 +432,13 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 if (selected.x < elements.FindAll(x => x is MenuButton menuButton && menuButton.selectionPosition.y == selected.y).Select(x => x as MenuButton).Max(x => x.selectionPosition.x))
                 {
                     AudioManager.inst.PlaySound("LeftRight");
-                    selected.x++;
+
+                    int num = 1;
+                    while (!elements.Has(x => x is MenuButton menuButton && menuButton.selectionPosition.y == selected.y && menuButton.selectionPosition.x == selected.x + num))
+                    {
+                        num++;
+                    }
+                    selected.x += num;
                 }
                 else
                     AudioManager.inst.PlaySound("Block");
@@ -670,6 +682,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             var t = UIManager.GenerateUITextMeshPro("Text", menuText.gameObject.transform);
             ((RectTransform)t["RectTransform"]).anchoredPosition = Vector2.zero;
+            ((RectTransform)t["RectTransform"]).localRotation = Quaternion.identity;
             menuText.textUI = (TextMeshProUGUI)t["Text"];
             menuText.textUI.text = menuText.text;
             menuText.textUI.maxVisibleCharacters = 0;
@@ -736,6 +749,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             var t = UIManager.GenerateUITextMeshPro("Text", menuButton.gameObject.transform);
             ((RectTransform)t["RectTransform"]).anchoredPosition = Vector2.zero;
+            ((RectTransform)t["RectTransform"]).localRotation = Quaternion.identity;
             menuButton.textUI = (TextMeshProUGUI)t["Text"];
             menuButton.textUI.text = menuButton.text;
             menuButton.textUI.maxVisibleCharacters = 0;
