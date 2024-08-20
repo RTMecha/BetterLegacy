@@ -434,16 +434,30 @@ namespace BetterLegacy.Core.Helpers
 
         public static string GetURL(int type, int site, string link)
         {
-            if (type != 0)
-                return UserLinks[site].linkFormat;
+            if (string.IsNullOrEmpty(link))
+                return link;
 
-            if (InstanceLinks[site].linkFormat.Contains("{1}"))
+            var userLinks = UserLinks;
+            var instanceLinks = InstanceLinks;
+
+            if (type != 0)
+            {
+                if (site < 0 || site >= userLinks.Count)
+                    return null;
+
+                return userLinks[site].linkFormat;
+            }
+
+            if (site < 0 || site >= instanceLinks.Count)
+                return null;
+
+            if (instanceLinks[site].linkFormat.Contains("{1}"))
             {
                 var split = link.Split(',');
-                return string.Format(InstanceLinks[site].linkFormat, split[0], split[1]);
+                return string.Format(instanceLinks[site].linkFormat, split[0], split[1]);
             }
             else
-                return string.Format(InstanceLinks[site].linkFormat, link);
+                return string.Format(instanceLinks[site].linkFormat, link);
         }
 
         public static List<DataManager.LinkType> InstanceLinks => new List<DataManager.LinkType>
