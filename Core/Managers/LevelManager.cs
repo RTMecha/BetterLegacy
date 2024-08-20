@@ -576,6 +576,11 @@ namespace BetterLegacy.Core.Managers
 
         public static PlayerData GetPlayerData(string id) => Saves.Find(x => x.ID == id);
 
+        /// <summary>
+        /// The regular level rank calculation method.
+        /// </summary>
+        /// <param name="hits"></param>
+        /// <returns></returns>
         public static DataManager.LevelRank GetLevelRank(List<SaveManager.SaveGroup.Save.PlayerDataPoint> hits)
         {
             if (CoreHelper.InEditor)
@@ -595,9 +600,19 @@ namespace BetterLegacy.Core.Managers
             return DataManager.inst.levelRanks.Find(x => hitsNormalized.Sum() >= x.minHits && hitsNormalized.Sum() <= x.maxHits);
         }
 
+        /// <summary>
+        /// Gets a level rank by hit count.
+        /// </summary>
+        /// <param name="hits"></param>
+        /// <returns></returns>
         public static DataManager.LevelRank GetLevelRank(int hits)
             => CoreHelper.InEditor ? EditorRank : DataManager.inst.levelRanks.TryFind(x => hits >= x.minHits && hits <= x.maxHits, out DataManager.LevelRank levelRank) ? levelRank : DataManager.inst.levelRanks[0];
 
+        /// <summary>
+        /// Gets a levels' rank.
+        /// </summary>
+        /// <param name="level"></param>
+        /// <returns></returns>
         public static DataManager.LevelRank GetLevelRank(Level level)
             => CoreHelper.InEditor ? EditorRank : level.playerData != null && DataManager.inst.levelRanks.Has(LevelRankPredicate(level)) ? DataManager.inst.levelRanks.Find(LevelRankPredicate(level)) : DataManager.inst.levelRanks[0];
 
