@@ -1,4 +1,5 @@
 ﻿using LSFunctions;
+using SimpleJSON;
 using SteamworksFacepunch;
 using SteamworksFacepunch.Data;
 using SteamworksFacepunch.Ugc;
@@ -122,19 +123,15 @@ namespace BetterLegacy.Core.Managers.Networking
 
                 var level = new Level(pchFolder + "/");
 
-                if (level.InvalidID)
+                try
                 {
-                    try
-                    {
-                        level.metadata.arcadeID = LSText.randomNumString(16);
-                        var metadataJN = level.metadata.ToJSON();
-                        RTFile.WriteToFile($"{level.path}metadata.lsb", metadataJN.ToString(3));
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.LogError($"{className}Could not load due to ID being invalid and couldn't set a new ID.\n{ex}");
-                        yield break;
-                    }
+                    if (GetLevelID(publishedFileID) == null)
+                        AddLevelID(ref level, publishedFileID);
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"{className}Could not load due to ID being invalid and couldn't set a new ID.\n{ex}");
+                    yield break;
                 }
 
                 if (LevelManager.Saves.Has(x => x.ID == level.id))
@@ -146,6 +143,27 @@ namespace BetterLegacy.Core.Managers.Networking
 
                 yield break;
             }
+        }
+
+        public static string steamLevelsJSONPath = $"{RTFile.ApplicationDirectory}/profile/steam_levels.json";
+        public void AddLevelID(ref Level level, PublishedFileId publishedFileID)
+        {
+            level.metadata.arcadeID = LSText.randomNumString(16);
+            Debug.Log($"{className}Convert {publishedFileID.Value} to {level.metadata.arcadeID}");
+
+            level.id = level.metadata.arcadeID;
+            var jn = JSON.Parse(RTFile.FileExists(steamLevelsJSONPath) ? RTFile.ReadFromFile(steamLevelsJSONPath) : "{}");
+            jn[publishedFileID.Value.ToString()] = level.metadata.arcadeID;
+            RTFile.WriteToFile(steamLevelsJSONPath, jn.ToString());
+        }
+
+        public string GetLevelID(PublishedFileId publishedFileID)
+        {
+            if (!RTFile.FileExists(steamLevelsJSONPath))
+                return null;
+
+            var jn = JSON.Parse(RTFile.ReadFromFile(steamLevelsJSONPath));
+            return jn[publishedFileID.Value.ToString()];
         }
 
         public void CreateEntry(Item entry)
