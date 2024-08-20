@@ -81,7 +81,7 @@ namespace BetterLegacy.Core.Managers.Networking
         {
             if (!Initialized)
             {
-                Debug.LogError($"{className}Steam is not initialized! Try restarting with Steam open or updating the steam_api64.dll file to the newer version provided in the RTFunctions latest release.");
+                Debug.LogError($"{className}Steam is not initialized! Try restarting with Steam open or updating the steam_api64.dll file to the newer version provided in the BetterLegacy latest release.");
                 yield break;
             }
 
