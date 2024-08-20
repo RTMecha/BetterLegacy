@@ -367,6 +367,18 @@ namespace BetterLegacy.Core.Helpers
 
         #region Strings
 
+        public static string ReplaceFormatting(string str)
+        {
+            // Here we replace every instance of <formatting> in the text. Examples include <b>, <i>, <color=#FFFFFF>.
+            var matches = Regex.Matches(str, "<(.*?)>");
+            foreach (var obj in matches)
+            {
+                var match = (Match)obj;
+                str = str.Replace(match.Groups[0].ToString(), "");
+            }
+            return str;
+        }
+
         public static string[] GetLines(string str) => str.Split(new string[] { "\n", "\r\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
 
         public static string InterpolateString(string str, float t) => str.Substring(0, Mathf.Clamp((int)RTMath.Lerp(0, str.Length, t), 0, str.Length));
