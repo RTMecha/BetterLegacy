@@ -1607,7 +1607,15 @@ namespace BetterLegacy.Example
 
                     draggingLeftHand = false;
 
-                    SelectObject(image);
+                    try
+                    {
+                        SelectObject(image);
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreHelper.LogException(ex);
+                    }
+
                     SetLastInteracted();
 
                     var animation = new RTAnimation("Example Hand Reset")
@@ -1662,7 +1670,15 @@ namespace BetterLegacy.Example
 
                     draggingRightHand = false;
 
-                    SelectObject(image);
+                    try
+                    {
+                        SelectObject(image);
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreHelper.LogException(ex);
+                    }
+
                     SetLastInteracted();
 
                     var animation = new RTAnimation("Example Hand Reset")
@@ -2281,7 +2297,7 @@ namespace BetterLegacy.Example
         void SelectObject(Image image)
         {
             var rect = EditorManager.RectTransformToScreenSpace(image.rectTransform);
-            if (rect.Overlaps(EditorManager.RectTransformToScreenSpace(EditorManager.inst.GetDialog("Open File Popup").Dialog.Find("mask").AsRT())))
+            if (CoreHelper.InEditor && rect.Overlaps(EditorManager.RectTransformToScreenSpace(EditorManager.inst.GetDialog("Open File Popup").Dialog.Find("mask").AsRT())))
                 foreach (var levelItem in EditorManager.inst.loadedLevels.Select(x => x as EditorWrapper))
                 {
                     if (levelItem.GameObject.activeInHierarchy && rect.Overlaps(EditorManager.RectTransformToScreenSpace(levelItem.GameObject.transform.AsRT())))
