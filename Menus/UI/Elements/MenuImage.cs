@@ -1494,6 +1494,19 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 #region Specific Functions
 
+                #region Profile
+
+                case "Profile":
+                    {
+                        InterfaceManager.inst.CloseMenus();
+                        var profileMenu = new ProfileMenu();
+                        InterfaceManager.inst.CurrentMenu = profileMenu;
+
+                        break;
+                    }
+
+                #endregion
+
                 #region DemoStoryMode
 
                 // Demos the BetterLegacy story mode. Temporary until the story mode is implemented.
