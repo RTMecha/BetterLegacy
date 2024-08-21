@@ -351,6 +351,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 });
             }
 
+            exitFunc = UnPause;
+
             CoreHelper.StartCoroutine(GenerateUI());
         }
 

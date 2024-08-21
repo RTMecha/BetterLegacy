@@ -143,6 +143,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// </summary>
         public RTAnimation spawnEvents;
 
+        public Action exitFunc;
+
         public bool allowEffects = true;
         public int layer = 900;
 
@@ -370,7 +372,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// <summary>
         /// Clears the menu.
         /// </summary>
-        public void Clear()
+        public virtual void Clear()
         {
             isOpen = false;
             selected = Vector2Int.zero;
@@ -412,7 +414,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             if (actions.Left.WasPressed)
             {
-                if (selected.x > 0)
+                if (selected.x > elements.Where(x => x is MenuButton menuButton && menuButton.selectionPosition.y == selected.y).Select(x => x as MenuButton).Min(x => x.selectionPosition.x))
                 {
                     AudioManager.inst.PlaySound("LeftRight");
 
@@ -493,6 +495,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         button.OnExit();
                     }
                 }
+            }
+
+            if (actions.Cancel.WasPressed)
+            {
+                exitFunc?.Invoke();
             }
         }
 

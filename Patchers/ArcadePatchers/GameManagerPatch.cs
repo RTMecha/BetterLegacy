@@ -112,10 +112,10 @@ namespace BetterLegacy.Patchers
             if (!LevelManager.LevelEnded)
                 LevelManager.timeInLevel = Time.time - LevelManager.timeInLevelOffset;
 
-            if (!CoreHelper.IsUsingInputField && CoreHelper.Paused && !LevelManager.LevelEnded && InputDataManager.inst.menuActions.Cancel.WasPressed)
-            {
-                PauseMenu.UnPause();
-            }
+            //if (!CoreHelper.IsUsingInputField && CoreHelper.Paused && !LevelManager.LevelEnded && InputDataManager.inst.menuActions.Cancel.WasPressed)
+            //{
+            //    PauseMenu.UnPause();
+            //}
 
             if (CoreHelper.Playing)
             {
