@@ -705,7 +705,8 @@ namespace BetterLegacy.Core.Managers
             public JSONNode ToJSON()
             {
                 var jn = JSON.Parse("{}");
-                jn["n"] = LevelName;
+                if (!string.IsNullOrEmpty(LevelName))
+                    jn["n"] = LevelName;
                 jn["id"] = ID;
                 jn["c"] = Completed;
                 jn["h"] = Hits;
