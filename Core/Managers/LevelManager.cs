@@ -338,7 +338,7 @@ namespace BetterLegacy.Core.Managers
 
             var makeNewPlayerData = CurrentLevel.playerData == null;
             if (makeNewPlayerData)
-                CurrentLevel.playerData = new PlayerData { ID = CurrentLevel.id, };
+                CurrentLevel.playerData = new PlayerData { ID = CurrentLevel.id, LevelName = CurrentLevel.metadata?.LevelBeatmap?.name, };
 
             CoreHelper.Log($"Updating save data\n" +
                 $"New Player Data = {makeNewPlayerData}\n" +
@@ -641,6 +641,12 @@ namespace BetterLegacy.Core.Managers
         public static List<PlayerData> Saves { get; set; } = new List<PlayerData>();
         public class PlayerData
         {
+            public PlayerData()
+            {
+
+            }
+
+            public string LevelName { get; set; }
             public string ID { get; set; }
             public bool Completed { get; set; }
             public int Hits { get; set; } = -1;
@@ -683,6 +689,7 @@ namespace BetterLegacy.Core.Managers
 
             public static PlayerData Parse(JSONNode jn) => new PlayerData
             {
+                LevelName = jn["n"],
                 ID = jn["id"],
                 Completed = jn["c"].AsBool,
                 Hits = jn["h"].AsInt,
@@ -698,6 +705,7 @@ namespace BetterLegacy.Core.Managers
             public JSONNode ToJSON()
             {
                 var jn = JSON.Parse("{}");
+                jn["n"] = LevelName;
                 jn["id"] = ID;
                 jn["c"] = Completed;
                 jn["h"] = Hits;
