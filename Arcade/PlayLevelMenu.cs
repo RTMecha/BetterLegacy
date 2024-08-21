@@ -278,12 +278,13 @@ namespace BetterLegacy.Arcade
                         if (LevelManager.CurrentLevelCollection.Count > 1)
                             LevelManager.CurrentLevel = LevelManager.CurrentLevelCollection[LevelManager.currentLevelIndex];
                     }
-                    else
+                    else if (LevelManager.ArcadeQueue.Count > 1)
                     {
                         LevelManager.currentQueueIndex = 0;
-                        if (LevelManager.ArcadeQueue.Count > 1)
-                            LevelManager.CurrentLevel = LevelManager.ArcadeQueue[0];
+                        LevelManager.CurrentLevel = LevelManager.ArcadeQueue[0];
                     }
+                    else
+                        LevelManager.CurrentLevel = CurrentLevel;
 
                     ArcadeMenuManager.inst.menuUI.SetActive(false);
                     InterfaceManager.inst.CloseMenus();
@@ -292,7 +293,7 @@ namespace BetterLegacy.Arcade
                 },
             });
 
-            if (LevelManager.CurrentLevelCollection != null)
+            if (LevelManager.CurrentLevelCollection == null)
             {
                 var queueButton = new MenuButton
                 {
@@ -541,6 +542,7 @@ namespace BetterLegacy.Arcade
 
             allowEffects = false;
             layer = 10000;
+            defaultSelection = new Vector2Int(0, 4);
             CoreHelper.StartCoroutine(GenerateUI());
         }
 
@@ -565,7 +567,7 @@ namespace BetterLegacy.Arcade
         {
             if (MenuManager.inst)
                 AudioManager.inst.PlayMusic(MenuManager.inst.currentMenuMusicName, MenuManager.inst.currentMenuMusic);
-
+            LevelManager.CurrentLevelCollection = null;
             InterfaceManager.inst.CloseMenus();
         }
 

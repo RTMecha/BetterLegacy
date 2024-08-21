@@ -2690,7 +2690,10 @@ namespace BetterLegacy.Arcade
             foreach (var levelCollection in ILocalLevelCollections)
             {
                 if (num < max - MaxLevelsPerPage || num >= max)
+                {
+                    num++;
                     continue;
+                }
 
                 var gameObject = levelPrefab.Duplicate(RegularContents[0]);
 
@@ -2803,7 +2806,10 @@ namespace BetterLegacy.Arcade
             foreach (var level in ILocalLevels)
             {
                 if (string.IsNullOrEmpty(level.id) || level.id == "0" || num < max - MaxLevelsPerPage || num >= max)
+                {
+                    num++;
                     continue;
+                }
 
                 var gameObject = levelPrefab.Duplicate(RegularContents[0]);
 
