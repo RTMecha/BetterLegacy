@@ -81,6 +81,15 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public static List<Level> Levels { get; set; }
 
+        public static LevelCollection CurrentLevelCollection { get; set; }
+
+        public static int currentLevelIndex;
+
+        /// <summary>
+        /// Local collections from the arcade folder.
+        /// </summary>
+        public static List<LevelCollection> LevelCollections { get; set; }
+
         /// <summary>
         /// Levels added to the queue.
         /// </summary>
@@ -130,6 +139,7 @@ namespace BetterLegacy.Core.Managers
             inst = this;
             Levels = new List<Level>();
             ArcadeQueue = new List<Level>();
+            LevelCollections = new List<LevelCollection>();
 
             if (!RTFile.FileExists(RTFile.ApplicationDirectory + "profile/saves.les") && RTFile.FileExists(RTFile.ApplicationDirectory + "settings/save.lss"))
                 UpgradeProgress();
@@ -150,6 +160,8 @@ namespace BetterLegacy.Core.Managers
         /// <returns></returns>
         public static IEnumerator Play(Level level)
         {
+            CoreHelper.Log($"{level} is null: {level == null}");
+
             LoadingFromHere = true;
             LevelEnded = false;
 

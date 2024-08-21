@@ -194,6 +194,8 @@ namespace BetterLegacy.Core
 
         public LevelManager.PlayerData playerData;
 
+        public bool fromCollection;
+
         public bool isStory;
 
         public bool IsVG => RTFile.FileExists($"{path}level.vgd") && RTFile.FileExists($"{path}metadata.vgm");

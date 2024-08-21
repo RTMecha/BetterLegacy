@@ -209,7 +209,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 }
 
                 var saying = levelRank.sayings[Random.Range(0, levelRank.sayings.Length)];
-                var sayings = LSText.WordWrap(saying, 32);
 
                 if (Example.ExampleManager.inst && Example.ExampleManager.inst.Visible)
                 {
@@ -224,6 +223,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 }
                 else
                 {
+                    var sayings = LSText.WordWrap(saying, 32);
                     layouts.Add("sayings", new MenuVerticalLayout
                     {
                         name = "sayings",
@@ -247,9 +247,12 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     }
                 }
 
-                if (!LevelManager.IsNextEndOfQueue)
+                if (LevelManager.CurrentLevelCollection != null && (LevelManager.CurrentLevelCollection.Count <= 1 || LevelManager.currentLevelIndex + 1 >= LevelManager.CurrentLevelCollection.Count) || !LevelManager.IsNextEndOfQueue)
                 {
-                    CoreHelper.Log($"Selecting next Arcade level in queue [{LevelManager.currentQueueIndex + 2} / {LevelManager.ArcadeQueue.Count}]");
+                    if (LevelManager.CurrentLevelCollection != null)
+                        CoreHelper.Log($"Selecting next Arcade level in collection [{LevelManager.currentLevelIndex + 2} / {LevelManager.CurrentLevelCollection.Count}]");
+                    else
+                        CoreHelper.Log($"Selecting next Arcade level in queue [{LevelManager.currentQueueIndex + 2} / {LevelManager.ArcadeQueue.Count}]");
 
                     elements.Add(new MenuButton
                     {
@@ -273,9 +276,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 
                 if (LevelManager.HasQueue)
                 {
-                    var level = LevelManager.ArcadeQueue[0];
-                    //LevelManager.ArcadeQueue.TryFind(x => x.metadata != null && x.metadata.isHubLevel, out level);
-
                     elements.Add(new MenuButton
                     {
                         id = "674",

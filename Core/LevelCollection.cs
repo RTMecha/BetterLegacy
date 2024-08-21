@@ -48,20 +48,37 @@ namespace BetterLegacy.Core
         /// </summary>
         public List<Level> levels = new List<Level>();
 
+        public int Count => levels.Count;
+
+        public Level this[int index]
+        {
+            get => levels[index];
+            set => levels[index] = value;
+        }
+
+        public Level this[string id]
+        {
+            get => levels.Find(x => x.id == id);
+            set
+            {
+                var index = levels.FindIndex(x => x.id == id);
+                levels[index] = value;
+            }
+        }
+
         public static LevelCollection Parse(string path, JSONNode jn)
         {
             var collection = new LevelCollection();
             collection.ID = jn["id"];
             collection.Name = jn["name"];
+            collection.Path = path;
 
             for (int i = 0; i < jn["levels"].Count; i++)
             {
-                var levelFolder = $"{path}{jn["levels"][i]}/";
+                var levelFolder = $"{path}{jn["levels"][i].Value}/";
 
-                if (!RTFile.FileExists($"{levelFolder}level.lsb") && !RTFile.FileExists($"{levelFolder}level.vgd"))
-                    continue;
-
-                collection.levels.Add(new Level(levelFolder));
+                if (RTFile.FileExists($"{levelFolder}level.lsb") || RTFile.FileExists($"{levelFolder}level.vgd"))
+                    collection.levels.Add(new Level(levelFolder) { fromCollection = true });
             }
 
             collection.Icon = RTFile.FileExists($"{path}icon.png") ? SpriteManager.LoadSprite($"{path}icon.png") : SpriteManager.LoadSprite($"{path}icon.jpg");
@@ -85,16 +102,9 @@ namespace BetterLegacy.Core
             collection.Save();
         }
 
-        public Level EntryLevel
-        {
-            get
-            {
-                if (levels.TryFind(x => x.metadata.isHubLevel && (!x.metadata.requireUnlock || x.playerData != null && x.playerData.Unlocked), out Level level))
-                    return level;
+        public Level EntryLevel => EntryLevelIndex >= 0 ? this[EntryLevelIndex] : this[0];
 
-                return levels[0];
-            }
-        }
+        public int EntryLevelIndex => levels.FindIndex(x => x.metadata.isHubLevel && (!x.metadata.requireUnlock || x.playerData != null && x.playerData.Unlocked));
 
         public void Move(string id, int moveTo)
         {
@@ -103,9 +113,9 @@ namespace BetterLegacy.Core
             if (levelIndex < 0)
                 return;
 
-            var level = levels[levelIndex];
+            var level = this[levelIndex];
             levels.RemoveAt(levelIndex);
-            levels.Insert(Mathf.Clamp(moveTo, 0, levels.Count), level);
+            levels.Insert(Mathf.Clamp(moveTo, 0, Count), level);
         }
 
         public void Save()
@@ -115,8 +125,8 @@ namespace BetterLegacy.Core
             jn["id"] = ID;
             jn["name"] = Name;
 
-            for (int i = 0; i < levels.Count; i++)
-                jn["levels"][i] = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(levels[i].path));
+            for (int i = 0; i < Count; i++)
+                jn["levels"][i] = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(this[i].path));
 
             if (Icon)
                 SpriteManager.SaveSprite(Icon, $"{Path}icon.png");

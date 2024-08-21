@@ -203,8 +203,8 @@ namespace BetterLegacy.Arcade
                 setting.Image.color = selected.y == setting.Position.y && setting.Position.x == selected.x ? highlightColor : Color.Lerp(buttonBGColor, Color.white, 0.01f);
             }
 
-            try
-            {
+            //try
+            //{
                 // Update local levels
                 if (CurrentTab == 0)
                 {
@@ -227,9 +227,12 @@ namespace BetterLegacy.Arcade
                         level.Title.color = isSelected ? textHighlightColor : textColor;
                         level.BaseImage.color = isSelected ? highlightColor : buttonBGColor;
 
-                        var levelRank = LevelManager.GetLevelRank(level.Level);
+                        var levelRank =
+                            level is LocalLevelCollectionButton levelCollectionButton ?
+                                                levelCollectionButton.LevelCollection.levels.All(x =>LevelManager.GetLevelRank(x).name == "SS") :
+                                                        LevelManager.GetLevelRank(level.Level).name == "SS";
 
-                        if (level.Level.metadata.song.difficulty != 6)
+                        if (level is LocalLevelCollectionButton levelCollectionButton1 ? !levelCollectionButton1.LevelCollection.levels.All(x => x.metadata.LevelSong.difficulty == 6) : level.Level.metadata.song.difficulty != 6)
                         {
                             var shineController = level.ShineController;
 
@@ -241,12 +244,12 @@ namespace BetterLegacy.Arcade
                             level.shine1?.SetColor(color);
                             level.shine2?.SetColor(color);
 
-                            if ((selectOnly && isSelected || !selectOnly) && levelRank.name == "SS" && shineController.currentLoop == 0)
+                            if ((selectOnly && isSelected || !selectOnly) && levelRank && shineController.currentLoop == 0)
                             {
                                 shineController.LoopAnimation(-1, LSColors.yellow400);
                             }
 
-                            if ((selectOnly && !isSelected || levelRank.name != "SS") && shineController.currentLoop == -1)
+                            if ((selectOnly && !isSelected || !levelRank) && shineController.currentLoop == -1)
                             {
                                 shineController.StopAnimation();
                             }
@@ -649,11 +652,11 @@ namespace BetterLegacy.Arcade
                             }
                         }
                 }
-            }
-            catch
-            {
+            //}
+            //catch
+            //{
 
-            }
+            //}
         }
 
         /// <summary>
@@ -2632,15 +2635,19 @@ namespace BetterLegacy.Arcade
             }
         }
 
-        public int LocalPageCount => ILocalLevels.Count() / MaxLevelsPerPage;
+        public int LocalPageCount => (ILocalLevels.Count() + ILocalLevelCollections.Count()) / MaxLevelsPerPage;
 
-        public IEnumerable<Level> ILocalLevels => LevelManager.Levels.Where(level => string.IsNullOrEmpty(LocalSearchTerm)
+        public IEnumerable<LevelCollection> ILocalLevelCollections => LevelManager.LevelCollections.Where(collection => string.IsNullOrEmpty(LocalSearchTerm)
+                        || collection.ID == LocalSearchTerm
+                        || collection.Name.ToLower().Contains(LocalSearchTerm.ToLower()));
+
+        public IEnumerable<Level> ILocalLevels => LevelManager.Levels.Where(level => !level.fromCollection && (string.IsNullOrEmpty(LocalSearchTerm)
                         || level.id == LocalSearchTerm
                         || level.metadata.LevelSong.tags.Contains(LocalSearchTerm)
                         || level.metadata.artist.Name.ToLower().Contains(LocalSearchTerm.ToLower())
                         || level.metadata.creator.steam_name.ToLower().Contains(LocalSearchTerm.ToLower())
                         || level.metadata.song.title.ToLower().Contains(LocalSearchTerm.ToLower())
-                        || level.metadata.song.getDifficulty().ToLower().Contains(LocalSearchTerm.ToLower()));
+                        || level.metadata.song.getDifficulty().ToLower().Contains(LocalSearchTerm.ToLower())));
 
         public void SetLocalLevelsPage(int page)
         {
@@ -2680,53 +2687,167 @@ namespace BetterLegacy.Arcade
             }
 
             int num = 0;
+            foreach (var levelCollection in ILocalLevelCollections)
+            {
+                if (num < max - MaxLevelsPerPage || num >= max)
+                    continue;
+
+                var gameObject = levelPrefab.Duplicate(RegularContents[0]);
+
+                int column = (num % MaxLevelsPerPage) % 5;
+                int row = (int)((num % MaxLevelsPerPage) / 5);
+
+                if (currentRow != row)
+                {
+                    currentRow = row;
+                    SelectionLimit.Add(1);
+                }
+                else
+                {
+                    SelectionLimit[row + 2]++;
+                }
+
+                float x = left + (column * 320f);
+                float y = top - (row * 190f);
+
+                gameObject.transform.AsRT().anchoredPosition = new Vector2(x, y);
+
+                var clickable = gameObject.GetComponent<Clickable>();
+                clickable.onEnter = pointerEventData =>
+                {
+                    if (!CanSelect)
+                        return;
+
+                    AudioManager.inst.PlaySound("LeftRight");
+                    selected.x = column;
+                    selected.y = row + 2;
+                };
+                clickable.onClick = pointerEventData =>
+                {
+                    AudioManager.inst.PlaySound("blip");
+
+                    // TODO: LEVELCOLLECTION MENU
+                    LevelManager.currentQueueIndex = 0;
+                    //LevelManager.ArcadeQueue.Clear();
+                    //LevelManager.ArcadeQueue.AddRange(levelCollection.levels);
+                    LevelManager.CurrentLevelCollection = levelCollection;
+
+                    StartCoroutine(SelectLocalLevel(levelCollection.levels[0]));
+                };
+
+                var image = gameObject.GetComponent<Image>();
+                image.color = buttonBGColor;
+
+                if (ArcadeConfig.Instance.LocalLevelsRoundness.Value != 0)
+                    SpriteManager.SetRoundedSprite(image, ArcadeConfig.Instance.LocalLevelsRoundness.Value, SpriteManager.RoundedSide.W);
+                else
+                    image.sprite = null;
+
+                var title = gameObject.transform.Find("Title").GetComponent<TextMeshProUGUI>();
+                UIManager.SetRectTransform(title.rectTransform, new Vector2(0f, -60f), ZeroFive, ZeroFive, ZeroFive, new Vector2(280f, 60f));
+
+                title.fontSize = 20;
+                title.fontStyle = FontStyles.Bold;
+                title.enableWordWrapping = true;
+                title.overflowMode = TextOverflowModes.Truncate;
+                title.color = textColor;
+                title.text = levelCollection.Name;
+
+                var iconBase = gameObject.transform.Find("Icon Base").GetComponent<Image>();
+                iconBase.rectTransform.anchoredPosition = new Vector2(-90f, 30f);
+
+                if (ArcadeConfig.Instance.LocalLevelsIconRoundness.Value != 0)
+                    SpriteManager.SetRoundedSprite(iconBase, ArcadeConfig.Instance.LocalLevelsIconRoundness.Value, SpriteManager.RoundedSide.W);
+                else
+                    iconBase.sprite = null;
+
+                var icon = gameObject.transform.Find("Icon Base/Icon").GetComponent<Image>();
+                icon.rectTransform.anchoredPosition = Vector2.zero;
+
+                icon.sprite = levelCollection.Icon ?? SteamWorkshop.inst.defaultSteamImageSprite;
+
+                if (gameObject.transform.Find("Difficulty"))
+                    Destroy(gameObject.transform.Find("Difficulty").gameObject);
+                if (gameObject.transform.Find("Rank"))
+                    Destroy(gameObject.transform.Find("Rank").gameObject);
+                if (gameObject.transform.Find("Rank Shadow"))
+                    Destroy(gameObject.transform.Find("Rank Shadow").gameObject);
+
+                var shineController = gameObject.transform.Find("Shine").GetComponent<ShineController>();
+
+                shineController.maxDelay = 1f;
+                shineController.minDelay = 0.2f;
+                shineController.offset = 260f;
+                shineController.offsetOverShoot = 32f;
+                shineController.speed = 0.7f;
+
+                LocalLevels.Add(new LocalLevelCollectionButton
+                {
+                    Position = new Vector2Int(column, row),
+                    GameObject = gameObject,
+                    Clickable = clickable,
+                    RectTransform = gameObject.transform.AsRT(),
+                    BaseImage = image,
+                    Title = title,
+                    BaseIcon = iconBase,
+                    Icon = icon,
+                    LevelCollection = levelCollection,
+                    ShineController = shineController,
+                    shine1 = gameObject.transform.Find("Shine").GetComponent<Image>(),
+                    shine2 = gameObject.transform.Find("Shine/Image").GetComponent<Image>(),
+                });
+
+                num++;
+            }
+
             foreach (var level in ILocalLevels)
             {
-                if (level.id != null && level.id != "0" && num >= max - MaxLevelsPerPage && num < max)
+                if (string.IsNullOrEmpty(level.id) || level.id == "0" || num < max - MaxLevelsPerPage || num >= max)
+                    continue;
+
+                var gameObject = levelPrefab.Duplicate(RegularContents[0]);
+
+                int column = (num % MaxLevelsPerPage) % 5;
+                int row = (int)((num % MaxLevelsPerPage) / 5);
+
+                if (currentRow != row)
                 {
-                    var gameObject = levelPrefab.Duplicate(RegularContents[0]);
+                    currentRow = row;
+                    SelectionLimit.Add(1);
+                }
+                else
+                {
+                    SelectionLimit[row + 2]++;
+                }
 
-                    int column = (num % MaxLevelsPerPage) % 5;
-                    int row = (int)((num % MaxLevelsPerPage) / 5);
+                float x = left + (column * 320f);
+                float y = top - (row * 190f);
 
-                    if (currentRow != row)
+                gameObject.transform.AsRT().anchoredPosition = new Vector2(x, y);
+
+                var locked = gameObject.transform.Find("Lock").gameObject;
+                locked.SetActive(level.metadata.requireUnlock && level.playerData != null && !level.playerData.Unlocked);
+
+                var clickable = gameObject.GetComponent<Clickable>();
+                clickable.onEnter = pointerEventData =>
+                {
+                    if (!CanSelect)
+                        return;
+
+                    AudioManager.inst.PlaySound("LeftRight");
+                    selected.x = column;
+                    selected.y = row + 2;
+                };
+                clickable.onClick = pointerEventData =>
+                {
+                    if (level.metadata.requireUnlock && level.playerData != null && !level.playerData.Unlocked)
                     {
-                        currentRow = row;
-                        SelectionLimit.Add(1);
-                    }
-                    else
-                    {
-                        SelectionLimit[row + 2]++;
-                    }
+                        AudioManager.inst.PlaySound("Block");
 
-                    float x = left + (column * 320f);
-                    float y = top - (row * 190f);
-
-                    gameObject.transform.AsRT().anchoredPosition = new Vector2(x, y);
-
-                    var locked = gameObject.transform.Find("Lock").gameObject;
-                    locked.SetActive(level.metadata.requireUnlock && level.playerData != null && !level.playerData.Unlocked);
-
-                    var clickable = gameObject.GetComponent<Clickable>();
-                    clickable.onEnter = pointerEventData =>
-                    {
-                        if (!CanSelect)
-                            return;
-
-                        AudioManager.inst.PlaySound("LeftRight");
-                        selected.x = column;
-                        selected.y = row + 2;
-                    };
-                    clickable.onClick = pointerEventData =>
-                    {
-                        if (level.metadata.requireUnlock && level.playerData != null && !level.playerData.Unlocked)
+                        var animation = new RTAnimation("Blocked Level in Arcade")
                         {
-                            AudioManager.inst.PlaySound("Block");
-
-                            var animation = new RTAnimation("Blocked Level in Arcade")
+                            animationHandlers = new List<AnimationHandlerBase>
                             {
-                                animationHandlers = new List<AnimationHandlerBase>
-                                {
                                     new AnimationHandler<float>(new List<IKeyframe<float>>
                                     {
                                         new FloatKeyframe(0f, 15f, Ease.Linear),
@@ -2737,112 +2858,111 @@ namespace BetterLegacy.Arcade
                                         new FloatKeyframe(0f, 120f, Ease.Linear),
                                         new FloatKeyframe(2f, 0f, Ease.ElasticOut),
                                     }, locked.transform.SetLocalRotationEulerZ),
-                                },
-                            };
-                            animation.onComplete = () =>
-                            {
-                                AnimationManager.inst.RemoveID(animation.id);
-                                gameObject.transform.SetLocalRotationEulerZ(0f);
-                                locked.transform.SetLocalRotationEulerZ(0f);
-                            };
+                            },
+                        };
+                        animation.onComplete = () =>
+                        {
+                            AnimationManager.inst.RemoveID(animation.id);
+                            gameObject.transform.SetLocalRotationEulerZ(0f);
+                            locked.transform.SetLocalRotationEulerZ(0f);
+                        };
 
-                            AnimationManager.inst.animations.Where(x => x.name == animation.name).ToList().ForEach(x =>
-                            {
-                                x.Stop();
-                                AnimationManager.inst.RemoveID(x.id);
-                            });
-                            AnimationManager.inst.Play(animation);
+                        AnimationManager.inst.animations.Where(x => x.name == animation.name).ToList().ForEach(x =>
+                        {
+                            x.Stop();
+                            AnimationManager.inst.RemoveID(x.id);
+                        });
+                        AnimationManager.inst.Play(animation);
 
-                            return;
-                        }
-
-                        AudioManager.inst.PlaySound("blip");
-                        StartCoroutine(SelectLocalLevel(level));
-                    };
-
-                    var image = gameObject.GetComponent<Image>();
-                    image.color = buttonBGColor;
-
-                    var difficulty = gameObject.transform.Find("Difficulty").GetComponent<Image>();
-                    UIManager.SetRectTransform(difficulty.rectTransform, Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(8f, 0f));
-                    difficulty.color = CoreHelper.GetDifficulty(level.metadata.song.difficulty).color;
-
-                    if (ArcadeConfig.Instance.LocalLevelsRoundness.Value != 0)
-                        SpriteManager.SetRoundedSprite(image, ArcadeConfig.Instance.LocalLevelsRoundness.Value, SpriteManager.RoundedSide.W);
-                    else
-                        image.sprite = null;
-
-                    var title = gameObject.transform.Find("Title").GetComponent<TextMeshProUGUI>();
-                    UIManager.SetRectTransform(title.rectTransform, new Vector2(0f, -60f), ZeroFive, ZeroFive, ZeroFive, new Vector2(280f, 60f));
-
-                    title.fontSize = 20;
-                    title.fontStyle = FontStyles.Bold;
-                    title.enableWordWrapping = true;
-                    title.overflowMode = TextOverflowModes.Truncate;
-                    title.color = textColor;
-                    title.text = level.metadata.LevelBeatmap.name;
-
-                    var iconBase = gameObject.transform.Find("Icon Base").GetComponent<Image>();
-                    iconBase.rectTransform.anchoredPosition = new Vector2(-90f, 30f);
-
-                    if (ArcadeConfig.Instance.LocalLevelsIconRoundness.Value != 0)
-                        SpriteManager.SetRoundedSprite(iconBase, ArcadeConfig.Instance.LocalLevelsIconRoundness.Value, SpriteManager.RoundedSide.W);
-                    else
-                        iconBase.sprite = null;
-
-                    var icon = gameObject.transform.Find("Icon Base/Icon").GetComponent<Image>();
-                    icon.rectTransform.anchoredPosition = Vector2.zero;
-
-                    icon.sprite = level.icon ?? SteamWorkshop.inst.defaultSteamImageSprite;
-
-                    var rank = gameObject.transform.Find("Rank").GetComponent<TextMeshProUGUI>();
-                    var rankShadow = gameObject.transform.Find("Rank Shadow").GetComponent<TextMeshProUGUI>();
-                    rank.gameObject.SetActive(level.metadata.song.difficulty != 6);
-                    rankShadow.gameObject.SetActive(level.metadata.song.difficulty != 6);
-
-                    if (level.metadata.song.difficulty != 6)
-                    {
-                        UIManager.SetRectTransform(rank.rectTransform, new Vector2(90f, 30f), ZeroFive, ZeroFive, ZeroFive, Vector2.zero);
-                        rank.transform.localRotation = Quaternion.Euler(0f, 0f, 356f);
-
-                        var levelRank = LevelManager.GetLevelRank(level);
-                        rank.fontSize = 64;
-                        rank.text = $"<align=right><color=#{CoreHelper.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>";
-
-                        UIManager.SetRectTransform(rankShadow.rectTransform, new Vector2(87f, 28f), ZeroFive, ZeroFive, ZeroFive, Vector2.zero);
-                        rankShadow.transform.localRotation = Quaternion.Euler(0f, 0f, 356f);
-
-                        rankShadow.fontSize = 68;
-                        rankShadow.text = $"<align=right><color=#00000035><b>{levelRank.name}</b></color>";
+                        return;
                     }
 
-                    var shineController = gameObject.transform.Find("Shine").GetComponent<ShineController>();
+                    AudioManager.inst.PlaySound("blip");
+                    StartCoroutine(SelectLocalLevel(level));
+                };
 
-                    shineController.maxDelay = 1f;
-                    shineController.minDelay = 0.2f;
-                    shineController.offset = 260f;
-                    shineController.offsetOverShoot = 32f;
-                    shineController.speed = 0.7f;
+                var image = gameObject.GetComponent<Image>();
+                image.color = buttonBGColor;
 
-                    LocalLevels.Add(new LocalLevelButton
-                    {
-                        Position = new Vector2Int(column, row),
-                        GameObject = gameObject,
-                        Clickable = clickable,
-                        RectTransform = gameObject.transform.AsRT(),
-                        BaseImage = image,
-                        DifficultyImage = difficulty,
-                        Title = title,
-                        BaseIcon = iconBase,
-                        Icon = icon,
-                        Level = level,
-                        ShineController = shineController,
-                        shine1 = gameObject.transform.Find("Shine").GetComponent<Image>(),
-                        shine2 = gameObject.transform.Find("Shine/Image").GetComponent<Image>(),
-                        Rank = rank,
-                        Locked = locked,
-                    });
+                var difficulty = gameObject.transform.Find("Difficulty").GetComponent<Image>();
+                UIManager.SetRectTransform(difficulty.rectTransform, Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(8f, 0f));
+                difficulty.color = CoreHelper.GetDifficulty(level.metadata.song.difficulty).color;
+
+                if (ArcadeConfig.Instance.LocalLevelsRoundness.Value != 0)
+                    SpriteManager.SetRoundedSprite(image, ArcadeConfig.Instance.LocalLevelsRoundness.Value, SpriteManager.RoundedSide.W);
+                else
+                    image.sprite = null;
+
+                var title = gameObject.transform.Find("Title").GetComponent<TextMeshProUGUI>();
+                UIManager.SetRectTransform(title.rectTransform, new Vector2(0f, -60f), ZeroFive, ZeroFive, ZeroFive, new Vector2(280f, 60f));
+
+                title.fontSize = 20;
+                title.fontStyle = FontStyles.Bold;
+                title.enableWordWrapping = true;
+                title.overflowMode = TextOverflowModes.Truncate;
+                title.color = textColor;
+                title.text = level.metadata.LevelBeatmap.name;
+
+                var iconBase = gameObject.transform.Find("Icon Base").GetComponent<Image>();
+                iconBase.rectTransform.anchoredPosition = new Vector2(-90f, 30f);
+
+                if (ArcadeConfig.Instance.LocalLevelsIconRoundness.Value != 0)
+                    SpriteManager.SetRoundedSprite(iconBase, ArcadeConfig.Instance.LocalLevelsIconRoundness.Value, SpriteManager.RoundedSide.W);
+                else
+                    iconBase.sprite = null;
+
+                var icon = gameObject.transform.Find("Icon Base/Icon").GetComponent<Image>();
+                icon.rectTransform.anchoredPosition = Vector2.zero;
+
+                icon.sprite = level.icon ?? SteamWorkshop.inst.defaultSteamImageSprite;
+
+                var rank = gameObject.transform.Find("Rank").GetComponent<TextMeshProUGUI>();
+                var rankShadow = gameObject.transform.Find("Rank Shadow").GetComponent<TextMeshProUGUI>();
+                rank.gameObject.SetActive(level.metadata.song.difficulty != 6);
+                rankShadow.gameObject.SetActive(level.metadata.song.difficulty != 6);
+
+                if (level.metadata.song.difficulty != 6)
+                {
+                    UIManager.SetRectTransform(rank.rectTransform, new Vector2(90f, 30f), ZeroFive, ZeroFive, ZeroFive, Vector2.zero);
+                    rank.transform.localRotation = Quaternion.Euler(0f, 0f, 356f);
+
+                    var levelRank = LevelManager.GetLevelRank(level);
+                    rank.fontSize = 64;
+                    rank.text = $"<align=right><color=#{CoreHelper.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>";
+
+                    UIManager.SetRectTransform(rankShadow.rectTransform, new Vector2(87f, 28f), ZeroFive, ZeroFive, ZeroFive, Vector2.zero);
+                    rankShadow.transform.localRotation = Quaternion.Euler(0f, 0f, 356f);
+
+                    rankShadow.fontSize = 68;
+                    rankShadow.text = $"<align=right><color=#00000035><b>{levelRank.name}</b></color>";
                 }
+
+                var shineController = gameObject.transform.Find("Shine").GetComponent<ShineController>();
+
+                shineController.maxDelay = 1f;
+                shineController.minDelay = 0.2f;
+                shineController.offset = 260f;
+                shineController.offsetOverShoot = 32f;
+                shineController.speed = 0.7f;
+
+                LocalLevels.Add(new LocalLevelButton
+                {
+                    Position = new Vector2Int(column, row),
+                    GameObject = gameObject,
+                    Clickable = clickable,
+                    RectTransform = gameObject.transform.AsRT(),
+                    BaseImage = image,
+                    DifficultyImage = difficulty,
+                    Title = title,
+                    BaseIcon = iconBase,
+                    Icon = icon,
+                    Level = level,
+                    ShineController = shineController,
+                    shine1 = gameObject.transform.Find("Shine").GetComponent<Image>(),
+                    shine2 = gameObject.transform.Find("Shine/Image").GetComponent<Image>(),
+                    Rank = rank,
+                    Locked = locked,
+                });
 
                 num++;
             }
@@ -4069,6 +4189,11 @@ namespace BetterLegacy.Arcade
 
                 yield break;
             }
+        }
+
+        public class LocalLevelCollectionButton : LocalLevelButton
+        {
+            public LevelCollection LevelCollection { get; set; }
         }
 
         public class LocalLevelButton
