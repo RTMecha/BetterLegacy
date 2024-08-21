@@ -143,25 +143,19 @@ namespace BetterLegacy.Menus
 
             string oggSearchPattern = "*.ogg";
             string wavSearchPattern = "*.wav";
+            string mp3SearchPattern = "*.mp3";
             if (MenuConfig.Instance.MusicLoadMode.Value == MenuMusicLoadMode.StoryFolder || MenuConfig.Instance.MusicLoadMode.Value == MenuMusicLoadMode.EditorFolder)
             {
                 oggSearchPattern = "level.ogg";
                 wavSearchPattern = "level.wav";
+                mp3SearchPattern = "level.mp3";
             }
 
             var oggFiles = Directory.GetFiles(directory, oggSearchPattern, SearchOption.AllDirectories);
             var wavFiles = Directory.GetFiles(directory, wavSearchPattern, SearchOption.AllDirectories);
+            var mp3Files = Directory.GetFiles(directory, mp3SearchPattern, SearchOption.AllDirectories);
 
-            var songFiles = new string[oggFiles.Length + wavFiles.Length];
-
-            for (int i = 0; i < oggFiles.Length; i++)
-            {
-                songFiles[i] = oggFiles[i];
-            }
-            for (int i = oggFiles.Length; i < songFiles.Length; i++)
-            {
-                songFiles[i] = wavFiles[i - oggFiles.Length];
-            }
+            var songFiles = oggFiles.Union(wavFiles).Union(mp3Files).ToArray();
 
             if (songFiles.Length < 1)
             {
@@ -188,7 +182,18 @@ namespace BetterLegacy.Menus
             if (CurrentAudioSource.clip && CurrentAudioSource.clip.name == Path.GetFileName(songFileCurrent))
                 return;
 
-            CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{songFileCurrent}", RTFile.GetAudioType(songFileCurrent), audioClip =>
+            var audioType = RTFile.GetAudioType(songFileCurrent);
+            if (audioType == AudioType.MPEG)
+            {
+                CoreHelper.Log($"Attempting to play music: {songFileCurrent}");
+                var audioClip = LSAudio.CreateAudioClipUsingMP3File(songFileCurrent);
+                CurrentMenu.music = audioClip;
+                CurrentMenu.music.name = Path.GetFileName(songFileCurrent);
+                PlayMusic(audioClip);
+                return;
+            }
+
+            CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{songFileCurrent}", audioType, audioClip =>
             {
                 CoreHelper.Log($"Attempting to play music: {songFileCurrent}");
                 CurrentMenu.music = audioClip;
