@@ -73,6 +73,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
             customMenu.loadedTheme = BeatmapTheme.Parse(jn["theme"]);
             customMenu.useGameTheme = jn["game_theme"].AsBool;
 
+            if (CoreHelper.InGame)
+                customMenu.exitFunc = InterfaceManager.inst.CloseMenus;
+
             return customMenu;
         }
 
