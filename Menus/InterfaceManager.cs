@@ -206,12 +206,7 @@ namespace BetterLegacy.Menus
         {
             if (interfaces.TryFind(x => x.id == id, out MenuBase menu))
             {
-                if (CurrentMenu != null)
-                {
-                    CurrentMenu.Clear();
-                    CurrentMenu = null;
-                }
-
+                CloseMenus();
                 CurrentMenu = menu;
                 StartCoroutine(menu.GenerateUI());
             }
