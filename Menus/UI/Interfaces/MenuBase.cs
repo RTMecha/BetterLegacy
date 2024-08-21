@@ -82,6 +82,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// </summary>
         public Vector2Int selected;
 
+        public Vector2Int defaultSelection;
+
         /// <summary>
         /// All the loaded elements in the menu.
         /// </summary>
@@ -189,7 +191,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// <returns></returns>
         public virtual IEnumerator GenerateUI()
         {
-            selected = Vector2Int.zero;
+            selected = defaultSelection;
 
             InterfaceManager.inst.LoadThemes();
 
