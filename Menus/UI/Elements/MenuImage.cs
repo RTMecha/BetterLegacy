@@ -20,6 +20,7 @@ using LSFunctions;
 using System.IO;
 using BetterLegacy.Menus.UI.Interfaces;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Story;
 
 namespace BetterLegacy.Menus.UI.Elements
 {
@@ -1516,7 +1517,76 @@ namespace BetterLegacy.Menus.UI.Elements
                     {
                         LevelManager.IsArcade = false;
                         SceneManager.inst.LoadScene("Input Select");
-                        LevelManager.OnInputsSelected = () => { CoreHelper.StartCoroutine(Story.StoryManager.inst.Demo(true)); };
+                        LevelManager.OnInputsSelected = () => { CoreHelper.StartCoroutine(StoryManager.inst.Demo(true)); };
+
+                        break;
+                    }
+
+                case "LoadStoryLevel":
+                    {
+                        break;
+                    }
+
+                case "SaveStoryBool":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["name"] == null || parameters["value"] == null))
+                            return;
+
+                        var isArray = parameters.IsArray;
+                        string saveName = isArray ? parameters[0] : parameters["name"];
+                        var value = isArray ? parameters[1].AsBool : parameters["value"].AsBool;
+                        if (isArray ? parameters.Count > 2 && parameters[2].AsBool : parameters["toggle"] != null && parameters["toggle"].AsBool)
+                            value = !StoryManager.inst.LoadBool(saveName, value);
+
+                        StoryManager.inst.SaveBool(saveName, value);
+
+                        break;
+                    }
+                    
+                case "SaveStoryInt":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["name"] == null || parameters["value"] == null))
+                            return;
+
+                        var isArray = parameters.IsArray;
+                        string saveName = isArray ? parameters[0] : parameters["name"];
+                        var value = isArray ? parameters[1].AsInt : parameters["value"].AsInt;
+                        if (isArray ? parameters.Count > 2 && parameters[2].AsBool : parameters["relative"] != null && parameters["relative"].AsBool)
+                            value += StoryManager.inst.LoadInt(saveName, value);
+
+                        StoryManager.inst.SaveInt(saveName, value);
+
+                        break;
+                    }
+                    
+                case "SaveStoryFloat":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["name"] == null || parameters["value"] == null))
+                            return;
+
+                        var isArray = parameters.IsArray;
+                        string saveName = isArray ? parameters[0] : parameters["name"];
+                        var value = isArray ? parameters[1].AsFloat : parameters["value"].AsFloat;
+                        if (isArray ? parameters.Count > 2 && parameters[2].AsBool : parameters["relative"] != null && parameters["relative"].AsBool)
+                            value += StoryManager.inst.LoadFloat(saveName, value);
+
+                        StoryManager.inst.SaveFloat(saveName, value);
+
+                        break;
+                    }
+                    
+                case "SaveStoryString":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["name"] == null || parameters["value"] == null))
+                            return;
+
+                        var isArray = parameters.IsArray;
+                        string saveName = isArray ? parameters[0] : parameters["name"];
+                        var value = isArray ? parameters[1].Value : parameters["value"].Value;
+                        if (isArray ? parameters.Count > 2 && parameters[2].AsBool : parameters["relative"] != null && parameters["relative"].AsBool)
+                            value += StoryManager.inst.LoadString(saveName, value);
+
+                        StoryManager.inst.SaveString(saveName, value);
 
                         break;
                     }

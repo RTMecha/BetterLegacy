@@ -33,9 +33,73 @@ namespace BetterLegacy.Story
 
         public bool AssetBundlesLoaded => covers != null && levels != null && songs != null;
 
+        public JSONNode storySavesJSON;
+
         public static void Init() => new GameObject(nameof(StoryManager), typeof(StoryManager)).transform.SetParent(SystemManager.inst.transform);
 
-        void Awake() => inst = this;
+        void Awake()
+        {
+            inst = this;
+            var storySavesPath = RTFile.ApplicationDirectory + "profile/story_saves.lss";
+            storySavesJSON = JSON.Parse(RTFile.FileExists(storySavesPath) ? RTFile.ReadFromFile(storySavesPath) : "{}");
+        }
+
+        public void Save()
+        {
+            try
+            {
+                RTFile.WriteToFile(RTFile.ApplicationDirectory + "profile/story_saves.lss", storySavesJSON.ToString());
+            }
+            catch (System.Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
+        }
+
+        public void SaveBool(string name, bool value)
+        {
+            CoreHelper.Log($"Saving {name} > {value}");
+            storySavesJSON[name]["bool"] = value;
+            Save();
+        }
+        
+        public void SaveInt(string name, int value)
+        {
+            CoreHelper.Log($"Saving {name} > {value}");
+            storySavesJSON[name]["int"] = value;
+            Save();
+        }
+        
+        public void SaveFloat(string name, float value)
+        {
+            CoreHelper.Log($"Saving {name} > {value}");
+            storySavesJSON[name]["float"] = value;
+            Save();
+        }
+
+        public void SaveString(string name, string value)
+        {
+            CoreHelper.Log($"Saving {name} > {value}");
+            if (string.IsNullOrEmpty(value))
+                return;
+            storySavesJSON[name]["string"] = value;
+            Save();
+        }
+
+        public void SaveNode(string name, JSONNode value)
+        {
+            CoreHelper.Log($"Saving {name} > {value}");
+            if (value == null)
+                return;
+            storySavesJSON[name][value.IsArray ? "array" : "object"] = value;
+            Save();
+        }
+
+        public bool LoadBool(string name, bool defaultValue) => storySavesJSON[name] == null || storySavesJSON[name]["bool"] == null ? defaultValue : storySavesJSON[name]["bool"].AsBool;
+        public int LoadInt(string name, int defaultValue) => storySavesJSON[name] == null || storySavesJSON[name]["int"] == null ? defaultValue : storySavesJSON[name]["int"].AsInt;
+        public float LoadFloat(string name, float defaultValue) => storySavesJSON[name] == null || storySavesJSON[name]["float"] == null ? defaultValue : storySavesJSON[name]["float"].AsFloat;
+        public string LoadString(string name, string defaultValue) => storySavesJSON[name] == null || storySavesJSON[name]["string"] == null ? defaultValue : storySavesJSON[name]["string"].Value;
+        public JSONNode LoadJSON(string name) => storySavesJSON[name] == null ? null : storySavesJSON[name]["array"] != null ? storySavesJSON[name]["array"] : storySavesJSON[name]["object"] != null ? storySavesJSON[name]["object"] : null;
 
         public void Clear(bool unloadAllLoadedObjects = true)
         {
