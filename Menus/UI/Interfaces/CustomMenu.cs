@@ -52,6 +52,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// </summary>
         public BeatmapTheme loadedTheme;
 
+        public Dictionary<string, Sprite> spriteAssets = new Dictionary<string, Sprite>();
+
         /// <summary>
         /// Parses a Custom Menu from a JSON file.
         /// </summary>
@@ -65,10 +67,23 @@ namespace BetterLegacy.Menus.UI.Interfaces
             customMenu.name = jn["name"];
             customMenu.musicName = jn["music_name"];
             customMenu.allowCustomMusic = jn["allow_custom_music"] != null ? jn["allow_custom_music"].AsBool : true;
+            customMenu.defaultSelection = Parser.TryParse(jn["default_select"], Vector2Int.zero);
+            customMenu.layer = jn["layer"] != null ? jn["layer"].AsInt : 900;
+
+            if (jn["sprites"] != null)
+            {
+                foreach (var keyValuePair in jn["sprites"].Linq)
+                {
+                    if (customMenu.spriteAssets.ContainsKey(keyValuePair.Key))
+                        continue;
+
+                    customMenu.spriteAssets.Add(keyValuePair.Key, SpriteManager.StringToSprite(keyValuePair.Value));
+                }
+            }
 
             customMenu.prefabs.AddRange(ParsePrefabs(jn["prefabs"]));
             ParseLayouts(customMenu.layouts, jn["layouts"]);
-            customMenu.elements.AddRange(ParseElements(jn["elements"]));
+            customMenu.elements.AddRange(ParseElements(jn["elements"], customMenu.prefabs, customMenu.spriteAssets));
 
             customMenu.loadedTheme = BeatmapTheme.Parse(jn["theme"]);
             customMenu.useGameTheme = jn["game_theme"].AsBool;
@@ -131,7 +146,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         }
 
-        public static IEnumerable<MenuImage> ParseElements(JSONNode jn, List<MenuPrefab> prefabs = null)
+        public static IEnumerable<MenuImage> ParseElements(JSONNode jn, List<MenuPrefab> prefabs = null, Dictionary<string, Sprite> spriteAssets = null)
         {
             if (jn == null || !jn.IsArray)
                 yield break;
@@ -151,6 +166,35 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 for (int j = 0; j < loop; j++)
                     switch (elementType.ToLower())
                     {
+                        case "auto":
+                            {
+                                if (jnElement["name"] == null)
+                                    break;
+
+                                string name = jnElement["name"];
+                                IEnumerable<MenuImage> collection = null;
+                                switch (name)
+                                {
+                                    case "TopBar":
+                                        {
+                                            collection = GenerateTopBar(jnElement["title"] == null ? "Custom Menu" : jnElement["title"], jnElement["text_col"].AsInt, jnElement["text_val"].AsFloat);
+                                            break;
+                                        }
+                                    case "BottomBar":
+                                        {
+                                            collection = GenerateBottomBar(jnElement["text_col"].AsInt, jnElement["text_val"].AsFloat);
+                                            break;
+                                        }
+                                }
+
+                                if (collection == null)
+                                    break;
+
+                                foreach (var item in collection)
+                                    yield return item;
+
+                                break;
+                            }
                         case "prefab":
                             {
                                 if (prefabs == null || jnElement["id"] == null || !prefabs.TryFind(x => x.id == jnElement["id"], out MenuPrefab prefab))
@@ -219,7 +263,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     parentLayout = jnElement["parent_layout"],
                                     parent = jnElement["parent"],
                                     siblingIndex = jnElement["sibling_index"] == null ? -1 : jnElement["sibling_index"].AsInt,
-                                    icon = jnElement["icon"] != null ? SpriteManager.StringToSprite(jnElement["icon"]) : null,
+                                    icon = jnElement["icon"] != null ? spriteAssets.ContainsKey(jnElement["icon"]) ? spriteAssets[jnElement["icon"]] : SpriteManager.StringToSprite(jnElement["icon"]) : null,
                                     rect = RectValues.TryParse(jnElement["rect"], RectValues.Default),
                                     color = jnElement["col"].AsInt,
                                     opacity = jnElement["opacity"] == null ? 1f : jnElement["opacity"].AsFloat,
@@ -251,7 +295,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     parent = jnElement["parent"],
                                     siblingIndex = jnElement["sibling_index"] == null ? -1 : jnElement["sibling_index"].AsInt,
                                     text = FontManager.TextTranslater.ReplaceProperties(jnElement["text"]),
-                                    icon = jnElement["icon"] != null ? SpriteManager.StringToSprite(jnElement["icon"]) : null,
+                                    icon = jnElement["icon"] != null ? spriteAssets.ContainsKey(jnElement["icon"]) ? spriteAssets[jnElement["icon"]] : SpriteManager.StringToSprite(jnElement["icon"]) : null,
                                     rect = RectValues.TryParse(jnElement["rect"], RectValues.Default),
                                     textRect = RectValues.TryParse(jnElement["text_rect"], RectValues.FullAnchored),
                                     iconRect = RectValues.TryParse(jnElement["icon_rect"], RectValues.Default),
@@ -293,7 +337,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     text = FontManager.TextTranslater.ReplaceProperties(jnElement["text"]),
                                     selectionPosition = new Vector2Int(jnElement["select"]["x"].AsInt, jnElement["select"]["y"].AsInt),
                                     autoAlignSelectionPosition = jnElement["align_select"].AsBool,
-                                    icon = jnElement["icon"] != null ? SpriteManager.StringToSprite(jnElement["icon"]) : null,
+                                    icon = jnElement["icon"] != null ? spriteAssets.ContainsKey(jnElement["icon"]) ? spriteAssets[jnElement["icon"]] : SpriteManager.StringToSprite(jnElement["icon"]) : null,
                                     rect = RectValues.TryParse(jnElement["rect"], RectValues.Default),
                                     textRect = RectValues.TryParse(jnElement["text_rect"], RectValues.FullAnchored),
                                     iconRect = RectValues.TryParse(jnElement["icon_rect"], RectValues.Default),
