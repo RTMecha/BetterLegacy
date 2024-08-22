@@ -280,7 +280,7 @@ namespace BetterLegacy.Core.Helpers
 
                 if ((string.IsNullOrEmpty(metadata.serverID) || metadata.serverID == "-1")
                     && (string.IsNullOrEmpty(metadata.LevelBeatmap.beatmap_id) && metadata.LevelBeatmap.beatmap_id == "-1" || metadata.LevelBeatmap.beatmap_id == "0")
-                    && (string.IsNullOrEmpty(metadata.arcadeID) || metadata.arcadeID == "-1" || metadata.arcadeID == "0"))
+                    && (string.IsNullOrEmpty(metadata.arcadeID) || metadata.arcadeID.Contains("-") /* < don't want negative IDs */ || metadata.arcadeID == "0"))
                 {
                     metadata.arcadeID = LSText.randomNumString(16);
                     var metadataJN = metadata.ToJSON();
