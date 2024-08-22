@@ -797,7 +797,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             return menuPrefab;
         }
 
-        public static IEnumerable<MenuImage> GenerateTopBar(string title)
+        public static IEnumerable<MenuImage> GenerateTopBar(string title, int textColor = 0, float textVal = 40f)
         {
             yield return new MenuText
             {
@@ -807,7 +807,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 rect = RectValues.HorizontalAnchored.AnchoredPosition(0f, 460f).SizeDelta(100f, 100f),
                 textRect = RectValues.FullAnchored.AnchoredPosition(100f, 0f),
                 hideBG = true,
-                textVal = 40f,
+                textColor = textColor,
+                textVal = textVal,
                 length = 0.6f,
             };
 
@@ -819,12 +820,13 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 rect = RectValues.HorizontalAnchored.AnchoredPosition(0f, 400f).SizeDelta(100f, 100f),
                 textRect = RectValues.FullAnchored.AnchoredPosition(80f, 0f),
                 hideBG = true,
-                textVal = 40f,
+                textColor = textColor,
+                textVal = textVal,
                 length = 0.6f,
             };
         }
 
-        public static IEnumerable<MenuImage> GenerateBottomBar()
+        public static IEnumerable<MenuImage> GenerateBottomBar(int textColor = 0, float textVal = 40f)
         {
             yield return new MenuText
             {
@@ -834,7 +836,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 rect = RectValues.HorizontalAnchored.AnchoredPosition(0f, -400f).SizeDelta(100f, 100f),
                 textRect = RectValues.FullAnchored.AnchoredPosition(80f, 0f),
                 hideBG = true,
-                textVal = 40f,
+                textColor = textColor,
+                textVal = textVal,
                 length = 0.6f,
             };
 
@@ -846,7 +849,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 rect = RectValues.HorizontalAnchored.AnchoredPosition(0f, -460f).SizeDelta(100f, 100f),
                 textRect = RectValues.FullAnchored.AnchoredPosition(-100f, 0f),
                 hideBG = true,
-                textVal = 40f,
+                textColor = textColor,
+                textVal = textVal,
                 length = 0.6f,
             };
         }
