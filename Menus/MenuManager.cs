@@ -177,12 +177,40 @@ namespace BetterLegacy.Menus
                 return;
             }
 
-            ic.StartCoroutine(FileManager.inst.LoadMusicFileRaw(songFileCurrent, false, delegate (AudioClip clip)
+            if (InterfaceManager.inst.CurrentAudioSource.clip && InterfaceManager.inst.CurrentAudioSource.clip.name == Path.GetFileName(songFileCurrent) || AudioManager.inst.CurrentAudioSource.clip && AudioManager.inst.CurrentAudioSource.clip.name == Path.GetFileName(songFileCurrent))
             {
-                currentMenuMusic = clip;
-                currentMenuMusicName = Path.GetFileName(songFileCurrent);
+                if (InterfaceManager.inst.CurrentAudioSource.clip)
+                {
+                    currentMenuMusic = InterfaceManager.inst.CurrentAudioSource.clip;
+                    currentMenuMusicName = InterfaceManager.inst.CurrentAudioSource.clip.name;
+                }
+                
+                if (AudioManager.inst.CurrentAudioSource.clip)
+                {
+                    currentMenuMusic = AudioManager.inst.CurrentAudioSource.clip;
+                    currentMenuMusicName = AudioManager.inst.CurrentAudioSource.clip.name;
+                }
 
-                AudioManager.inst.PlayMusic(Path.GetFileName(songFileCurrent), clip);
+                return;
+            }
+
+            var audioType = RTFile.GetAudioType(songFileCurrent);
+            if (audioType == AudioType.MPEG)
+            {
+                CoreHelper.Log($"Attempting to play music: {songFileCurrent}");
+                var audioClip = LSAudio.CreateAudioClipUsingMP3File(songFileCurrent);
+                currentMenuMusic = audioClip;
+                currentMenuMusicName = Path.GetFileName(songFileCurrent);
+                AudioManager.inst.PlayMusic(Path.GetFileName(songFileCurrent), audioClip);
+                return;
+            }
+
+            CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{songFileCurrent}", audioType, audioClip =>
+            {
+                CoreHelper.Log($"Attempting to play music: {songFileCurrent}");
+                currentMenuMusic = audioClip;
+                currentMenuMusicName = Path.GetFileName(songFileCurrent);
+                AudioManager.inst.PlayMusic(Path.GetFileName(songFileCurrent), audioClip);
             }));
         }
 
