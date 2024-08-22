@@ -19,6 +19,7 @@ using BetterLegacy.Core.Managers.Networking;
 using LSFunctions;
 using System.IO;
 using BetterLegacy.Menus.UI.Interfaces;
+using BetterLegacy.Core.Data;
 
 namespace BetterLegacy.Menus.UI.Elements
 {
@@ -65,9 +66,9 @@ namespace BetterLegacy.Menus.UI.Elements
         public float length = 1f;
 
         /// <summary>
-        /// RectTransform values in a JSON format.
+        /// RectTransform values.
         /// </summary>
-        public JSONNode rectJSON;
+        public RectValues rect = RectValues.Default;
 
         /// <summary>
         /// Function JSON to parse whenever the element is clicked.
@@ -1570,35 +1571,32 @@ namespace BetterLegacy.Menus.UI.Elements
             return 0f;
         }
 
-        public static MenuImage DeepCopy(MenuImage orig, bool newID = true)
+        public static MenuImage DeepCopy(MenuImage orig, bool newID = true) => new MenuImage
         {
-            return new MenuImage
-            {
-                id = newID ? LSText.randomNumString(16) : orig.id,
-                name = orig.name,
-                parentLayout = orig.parentLayout,
-                parent = orig.parent,
-                siblingIndex = orig.siblingIndex,
-                icon = orig.icon,
-                rectJSON = orig.rectJSON,
-                color = orig.color,
-                opacity = orig.opacity,
-                hue = orig.hue,
-                sat = orig.sat,
-                val = orig.val,
-                length = orig.length,
-                playBlipSound = orig.playBlipSound,
-                rounded = orig.rounded, // roundness can be prevented by setting rounded to 0.
-                roundedSide = orig.roundedSide, // default side should be Whole.
-                funcJSON = orig.funcJSON, // function to run when the element is clicked.
-                spawnFuncJSON = orig.spawnFuncJSON, // function to run when the element spawns.
-                reactiveSetting = orig.reactiveSetting,
-                fromLoop = false, // if element has been spawned from the loop or if its the first / only of its kind.
-                loop = orig.loop,
-                func = orig.func,
-                spawnFunc = orig.spawnFunc,
-            };
-        }
+            id = newID ? LSText.randomNumString(16) : orig.id,
+            name = orig.name,
+            parentLayout = orig.parentLayout,
+            parent = orig.parent,
+            siblingIndex = orig.siblingIndex,
+            icon = orig.icon,
+            rect = orig.rect,
+            color = orig.color,
+            opacity = orig.opacity,
+            hue = orig.hue,
+            sat = orig.sat,
+            val = orig.val,
+            length = orig.length,
+            playBlipSound = orig.playBlipSound,
+            rounded = orig.rounded, // roundness can be prevented by setting rounded to 0.
+            roundedSide = orig.roundedSide, // default side should be Whole.
+            funcJSON = orig.funcJSON, // function to run when the element is clicked.
+            spawnFuncJSON = orig.spawnFuncJSON, // function to run when the element spawns.
+            reactiveSetting = orig.reactiveSetting,
+            fromLoop = false, // if element has been spawned from the loop or if its the first / only of its kind.
+            loop = orig.loop,
+            func = orig.func,
+            spawnFunc = orig.spawnFunc,
+        };
 
         /// <summary>
         /// Provides a way to see the object in UnityExplorer.
@@ -1611,7 +1609,7 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         /// <param name="rectTransform">RectTransform to convert to JSON.</param>
         /// <returns></returns>
-        public static JSONNode GenerateRectTransformJSON(RectTransform rectTransform) => GenerateRectTransformJSON(rectTransform.anchoredPosition, rectTransform.anchorMax, rectTransform.anchorMin, rectTransform.pivot, rectTransform.sizeDelta);
+        //public static JSONNode GenerateRectTransformJSON(RectTransform rectTransform) => GenerateRectTransformJSON(rectTransform.anchoredPosition, rectTransform.anchorMax, rectTransform.anchorMin, rectTransform.pivot, rectTransform.sizeDelta);
 
         /// <summary>
         /// Generates JSON based on a RectTransforms' values.
@@ -1622,26 +1620,26 @@ namespace BetterLegacy.Menus.UI.Elements
         /// <param name="pivot">From pivot.</param>
         /// <param name="size">From size.</param>
         /// <returns></returns>
-        public static JSONNode GenerateRectTransformJSON(Vector2 anc_pos, Vector2 anc_max, Vector2 anc_min, Vector2 pivot, Vector2 size, float rot = 0f)
-        {
-            var jn = JSON.Parse("{}");
+        //public static JSONNode GenerateRectTransformJSON(Vector2 anc_pos, Vector2 anc_max, Vector2 anc_min, Vector2 pivot, Vector2 size, float rot = 0f)
+        //{
+        //    var jn = JSON.Parse("{}");
 
-            if (anc_pos != Vector2.zero)
-                jn["anc_pos"] = anc_pos.ToJSON();
-            if (anc_max != new Vector2(0.5f, 0.5f))
-                jn["anc_max"] = anc_max.ToJSON();
-            if (anc_min != new Vector2(0.5f, 0.5f))
-                jn["anc_min"] = anc_min.ToJSON();
-            if (pivot != new Vector2(0.5f, 0.5f))
-                jn["pivot"] = pivot.ToJSON();
-            if (pivot != new Vector2(100f, 100f))
-                jn["size"] = size.ToJSON();
+        //    if (anc_pos != Vector2.zero)
+        //        jn["anc_pos"] = anc_pos.ToJSON();
+        //    if (anc_max != new Vector2(0.5f, 0.5f))
+        //        jn["anc_max"] = anc_max.ToJSON();
+        //    if (anc_min != new Vector2(0.5f, 0.5f))
+        //        jn["anc_min"] = anc_min.ToJSON();
+        //    if (pivot != new Vector2(0.5f, 0.5f))
+        //        jn["pivot"] = pivot.ToJSON();
+        //    if (pivot != new Vector2(100f, 100f))
+        //        jn["size"] = size.ToJSON();
 
-            if (rot != 0f)
-                jn["rot"] = rot.ToString();
+        //    if (rot != 0f)
+        //        jn["rot"] = rot.ToString();
 
-            return jn;
-        }
+        //    return jn;
+        //}
 
         #endregion
     }

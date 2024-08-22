@@ -27,7 +27,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 spacing = 4f,
                 childControlWidth = true,
                 childForceExpandWidth = true,
-                rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(800f, 100f)),
+                //rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(800f, 100f)),
+                rect = RectValues.Default.SizeDelta(800f, 100f),
             });
 
             for (int i = 0; i < LevelManager.Saves.Count; i++)
@@ -43,7 +44,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     id = id,
                     name = "Element Base",
                     parentLayout = "buttons",
-                    rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(400f, 64f)),
+                    //rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(400f, 64f)),
+                    rect = RectValues.Default.SizeDelta(400f, 64f),
                     text = $" <b><#{LSColors.ColorToHex(levelRank.color)}>{levelRank.name}</color></b>  {save.LevelName} - ID: {save.ID}",
                     selectionPosition = new Vector2Int(0, index),
                     opacity = 0.1f,
@@ -60,7 +62,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     id = "0",
                     name = "Delete",
                     parent = id,
-                    rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(450f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(126f, 64f)),
+                    //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(450f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(126f, 64f)),
+                    rect = RectValues.Default.AnchoredPosition(450f, 0f).SizeDelta(126f, 64f),
                     text = "[ DELETE ]",
                     selectionPosition = new Vector2Int(1, index),
                     opacity = 1f,

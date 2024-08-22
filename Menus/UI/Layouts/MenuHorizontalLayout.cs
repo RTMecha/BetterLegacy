@@ -2,6 +2,7 @@
 
 using SimpleJSON;
 using UnityEngine;
+using BetterLegacy.Core.Data;
 
 namespace BetterLegacy.Menus.UI.Layouts
 {
@@ -23,7 +24,7 @@ namespace BetterLegacy.Menus.UI.Layouts
                 spacing = jn["spacing"].AsFloat,
                 childAlignment = (TextAnchor)jn["align"].AsInt,
 
-                rectJSON = jn["rect"],
+                rect = RectValues.TryParse(jn["rect"], RectValues.Default),
             };
 
             return horizontalLayout;

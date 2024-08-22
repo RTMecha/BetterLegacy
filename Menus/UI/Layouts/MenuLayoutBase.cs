@@ -1,4 +1,5 @@
-﻿using SimpleJSON;
+﻿using BetterLegacy.Core.Data;
+using SimpleJSON;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,6 @@ namespace BetterLegacy.Menus.UI.Layouts
 
         public TextAnchor childAlignment;
 
-        public JSONNode rectJSON;
+        public RectValues rect = RectValues.Default;
     }
 }

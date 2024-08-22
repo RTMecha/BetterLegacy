@@ -576,8 +576,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             layout.gridLayout.startAxis = layout.startAxis;
             layout.gridLayout.startCorner = layout.startCorner;
 
-            if (layout.rectJSON != null)
-                Parser.ParseRectTransform(layout.gameObject.transform.AsRT(), layout.rectJSON);
+            layout.rect.AssignToRectTransform(layout.gameObject.transform.AsRT());
         }
 
         /// <summary>
@@ -601,8 +600,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             layout.horizontalLayout.spacing = layout.spacing;
             layout.horizontalLayout.childAlignment = layout.childAlignment;
 
-            if (layout.rectJSON != null)
-                Parser.ParseRectTransform(layout.gameObject.transform.AsRT(), layout.rectJSON);
+            layout.rect.AssignToRectTransform(layout.gameObject.transform.AsRT());
         }
 
         /// <summary>
@@ -626,8 +624,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             layout.verticalLayout.spacing = layout.spacing;
             layout.verticalLayout.childAlignment = layout.childAlignment;
 
-            if (layout.rectJSON != null)
-                Parser.ParseRectTransform(layout.gameObject.transform.AsRT(), layout.rectJSON);
+            layout.rect.AssignToRectTransform(layout.gameObject.transform.AsRT());
         }
 
         /// <summary>
@@ -643,8 +640,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             menuImage.gameObject = Creator.NewUIObject(menuImage.name, parent);
             menuImage.image = menuImage.gameObject.AddComponent<Image>();
 
-            if (menuImage.rectJSON != null)
-                Parser.ParseRectTransform(menuImage.image.rectTransform, menuImage.rectJSON);
+            menuImage.rect.AssignToRectTransform(menuImage.image.rectTransform);
 
             menuImage.clickable = menuImage.gameObject.AddComponent<Clickable>();
 
@@ -657,7 +653,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             {
                 var reactiveAudio = menuImage.gameObject.AddComponent<MenuReactiveAudio>();
                 reactiveAudio.reactiveSetting = menuImage.reactiveSetting;
-                reactiveAudio.ogPosition = menuImage.rectJSON == null || menuImage.rectJSON["anc_pos"] == null ? Vector2.zero : menuImage.rectJSON["anc_pos"].AsVector2();
+                reactiveAudio.ogPosition = menuImage.rect.anchoredPosition;
             }
 
             if (menuImage.spawnFuncJSON != null)
@@ -680,8 +676,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             menuText.gameObject = Creator.NewUIObject(menuText.name, parent);
             menuText.image = menuText.gameObject.AddComponent<Image>();
 
-            if (menuText.rectJSON != null)
-                Parser.ParseRectTransform(menuText.image.rectTransform, menuText.rectJSON);
+            menuText.rect.AssignToRectTransform(menuText.image.rectTransform);
 
             menuText.image.enabled = !menuText.hideBG;
             if (!menuText.hideBG && MenuConfig.Instance.RoundedUI.Value)
@@ -698,25 +693,21 @@ namespace BetterLegacy.Menus.UI.Interfaces
             menuText.textUI.enableWordWrapping = menuText.enableWordWrapping;
             menuText.textUI.alignment = menuText.alignment;
 
-            if (menuText.textRectJSON != null)
-                Parser.ParseRectTransform(menuText.textUI.rectTransform, menuText.textRectJSON);
-            else
-                UIManager.SetRectTransform(menuText.textUI.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
+            menuText.textRect.AssignToRectTransform(menuText.textUI.rectTransform);
 
             if (menuText.icon)
             {
                 var icon = Creator.NewUIObject("Icon", menuText.gameObject.transform);
                 menuText.iconUI = icon.AddComponent<Image>();
                 menuText.iconUI.sprite = menuText.icon;
-                if (menuText.iconRectJSON != null)
-                    Parser.ParseRectTransform(menuText.iconUI.rectTransform, menuText.iconRectJSON);
+                menuText.iconRect.AssignToRectTransform(menuText.iconUI.rectTransform);
             }
 
             if (menuText.reactiveSetting.init)
             {
                 var reactiveAudio = menuText.gameObject.AddComponent<MenuReactiveAudio>();
                 reactiveAudio.reactiveSetting = menuText.reactiveSetting;
-                reactiveAudio.ogPosition = menuText.rectJSON == null || menuText.rectJSON["anc_pos"] == null ? Vector2.zero : menuText.rectJSON["anc_pos"].AsVector2();
+                reactiveAudio.ogPosition = menuText.rect.anchoredPosition;
             }
 
             if (menuText.spawnFuncJSON != null)
@@ -739,8 +730,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             menuButton.gameObject = Creator.NewUIObject(menuButton.name, parent);
             menuButton.image = menuButton.gameObject.AddComponent<Image>();
 
-            if (menuButton.rectJSON != null)
-                Parser.ParseRectTransform(menuButton.image.rectTransform, menuButton.rectJSON);
+            menuButton.rect.AssignToRectTransform(menuButton.image.rectTransform);
 
             menuButton.image.enabled = !menuButton.hideBG;
             if (!menuButton.hideBG && MenuConfig.Instance.RoundedUI.Value)
@@ -765,25 +755,21 @@ namespace BetterLegacy.Menus.UI.Interfaces
             menuButton.textUI.enableWordWrapping = menuButton.enableWordWrapping;
             menuButton.textUI.alignment = menuButton.alignment;
 
-            if (menuButton.textRectJSON != null)
-                Parser.ParseRectTransform(menuButton.textUI.rectTransform, menuButton.textRectJSON);
-            else
-                UIManager.SetRectTransform(menuButton.textUI.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
+            menuButton.textRect.AssignToRectTransform(menuButton.textUI.rectTransform);
 
             if (menuButton.icon)
             {
                 var icon = Creator.NewUIObject("Icon", menuButton.gameObject.transform);
                 menuButton.iconUI = icon.AddComponent<Image>();
                 menuButton.iconUI.sprite = menuButton.icon;
-                if (menuButton.iconRectJSON != null)
-                    Parser.ParseRectTransform(menuButton.iconUI.rectTransform, menuButton.iconRectJSON);
+                menuButton.iconRect.AssignToRectTransform(menuButton.iconUI.rectTransform);
             }
 
             if (menuButton.reactiveSetting.init)
             {
                 var reactiveAudio = menuButton.gameObject.AddComponent<MenuReactiveAudio>();
                 reactiveAudio.reactiveSetting = menuButton.reactiveSetting;
-                reactiveAudio.ogPosition = menuButton.rectJSON == null || menuButton.rectJSON["anc_pos"] == null ? Vector2.zero : menuButton.rectJSON["anc_pos"].AsVector2();
+                reactiveAudio.ogPosition = menuButton.rect.anchoredPosition;
             }
 
             if (menuButton.spawnFuncJSON != null)
@@ -791,6 +777,78 @@ namespace BetterLegacy.Menus.UI.Interfaces
             menuButton.spawnFunc?.Invoke();
 
             menuButton.Spawn();
+        }
+
+        public static MenuPrefab GenerateTopBarPrefab(string title)
+        {
+            var menuPrefab = new MenuPrefab();
+
+            menuPrefab.elements.AddRange(GenerateTopBar(title));
+
+            return menuPrefab;
+        }
+        
+        public static MenuPrefab GenerateBottomBarPrefab()
+        {
+            var menuPrefab = new MenuPrefab();
+
+            menuPrefab.elements.AddRange(GenerateBottomBar());
+
+            return menuPrefab;
+        }
+
+        public static IEnumerable<MenuImage> GenerateTopBar(string title)
+        {
+            yield return new MenuText
+            {
+                id = "264726346",
+                name = "Top Title",
+                text = $"{title} | BetterLegacy {LegacyPlugin.ModVersion}",
+                rect = RectValues.HorizontalAnchored.AnchoredPosition(0f, 460f).SizeDelta(100f, 100f),
+                textRect = RectValues.FullAnchored.AnchoredPosition(100f, 0f),
+                hideBG = true,
+                textVal = 40f,
+                length = 0.6f,
+            };
+
+            yield return new MenuText
+            {
+                id = "800",
+                name = "Top Bar",
+                text = "<size=56>----------------------------------------------------------------",
+                rect = RectValues.HorizontalAnchored.AnchoredPosition(0f, 400f).SizeDelta(100f, 100f),
+                textRect = RectValues.FullAnchored.AnchoredPosition(80f, 0f),
+                hideBG = true,
+                textVal = 40f,
+                length = 0.6f,
+            };
+        }
+
+        public static IEnumerable<MenuImage> GenerateBottomBar()
+        {
+            yield return new MenuText
+            {
+                id = "801",
+                name = "Bottom Bar",
+                text = "<size=56>----------------------------------------------------------------",
+                rect = RectValues.HorizontalAnchored.AnchoredPosition(0f, -400f).SizeDelta(100f, 100f),
+                textRect = RectValues.FullAnchored.AnchoredPosition(80f, 0f),
+                hideBG = true,
+                textVal = 40f,
+                length = 0.6f,
+            };
+
+            yield return new MenuText
+            {
+                id = "264726346",
+                name = "Bottom Title",
+                text = $"<align=right><#F05355><b>Project Arrhythmia</b></color> Unified Operating System | Version {ProjectArrhythmia.GameVersion}",
+                rect = RectValues.HorizontalAnchored.AnchoredPosition(0f, -460f).SizeDelta(100f, 100f),
+                textRect = RectValues.FullAnchored.AnchoredPosition(-100f, 0f),
+                hideBG = true,
+                textVal = 40f,
+                length = 0.6f,
+            };
         }
     }
 }

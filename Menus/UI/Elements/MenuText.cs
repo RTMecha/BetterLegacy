@@ -16,6 +16,7 @@ using SimpleJSON;
 using BetterLegacy.Core;
 using BetterLegacy.Configs;
 using LSFunctions;
+using BetterLegacy.Core.Data;
 
 namespace BetterLegacy.Menus.UI.Elements
 {
@@ -134,14 +135,14 @@ namespace BetterLegacy.Menus.UI.Elements
         public bool hideBG;
 
         /// <summary>
-        /// RectTransform values for the icon in a JSON format. If left null, the RectTransform values will be set to their defaults.
+        /// RectTransform values for the icon..
         /// </summary>
-        public JSONNode iconRectJSON;
+        public RectValues iconRect = RectValues.Default;
 
         /// <summary>
-        /// RectTransform values for the text in a JSON format. If left null, the RectTransform values will be set to their defaults.
+        /// RectTransform values for the text.
         /// </summary>
-        public JSONNode textRectJSON;
+        public RectValues textRect = RectValues.FullAnchored;
 
         /// <summary>
         /// The animation of the text typewriter effect.
@@ -180,7 +181,7 @@ namespace BetterLegacy.Menus.UI.Elements
                 parent = orig.parent,
                 siblingIndex = orig.siblingIndex,
                 icon = orig.icon,
-                rectJSON = orig.rectJSON,
+                rect = orig.rect,
                 color = orig.color,
                 opacity = orig.opacity,
                 hue = orig.hue,
@@ -199,8 +200,8 @@ namespace BetterLegacy.Menus.UI.Elements
                 spawnFunc = orig.spawnFunc,
                 text = orig.text,
                 hideBG = orig.hideBG,
-                iconRectJSON = orig.iconRectJSON,
-                textRectJSON = orig.textRectJSON,
+                iconRect = orig.iconRect,
+                textRect = orig.textRect,
                 textColor = orig.textColor,
                 textHue = orig.textHue,
                 textSat = orig.textSat,

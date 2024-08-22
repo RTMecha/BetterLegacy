@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Core;
+using BetterLegacy.Core.Data;
 using SimpleJSON;
 using UnityEngine;
 using UnityEngine.UI;
@@ -31,7 +32,7 @@ namespace BetterLegacy.Menus.UI.Layouts
 
                 childAlignment = (TextAnchor)jn["align"].AsInt,
 
-                rectJSON = jn["rect"],
+                rect = RectValues.TryParse(jn["rect"], RectValues.Default),
             };
 
             return gridLayout;

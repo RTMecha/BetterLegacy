@@ -23,6 +23,7 @@ using System.Text.RegularExpressions;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Layouts;
 using BetterLegacy.Arcade;
+using BetterLegacy.Patchers;
 
 namespace BetterLegacy.Menus
 {
@@ -179,7 +180,7 @@ namespace BetterLegacy.Menus
                 return;
             }
 
-            if (CurrentAudioSource.clip && CurrentAudioSource.clip.name == Path.GetFileName(songFileCurrent))
+            if (CurrentAudioSource.clip && CurrentAudioSource.clip.name == Path.GetFileName(songFileCurrent) || AudioManager.inst.CurrentAudioSource.clip && AudioManager.inst.CurrentAudioSource.clip.name == Path.GetFileName(songFileCurrent))
                 return;
 
             var audioType = RTFile.GetAudioType(songFileCurrent);
@@ -319,6 +320,8 @@ namespace BetterLegacy.Menus
 
         IEnumerator IStartupInterface()
         {
+            CoreHelper.Log($"Is loading scene: {SceneManagerPatch.loading}");
+
             yield return StartCoroutine(AlephNetworkManager.DownloadJSONFile("https://raw.githubusercontent.com/RTMecha/BetterLegacy/master/updates.lss", x =>
             {
                 var changeLogMenu = new ChangeLogMenu();
@@ -329,7 +332,8 @@ namespace BetterLegacy.Menus
                     childControlWidth = true,
                     childForceExpandWidth = true,
                     spacing = 4f,
-                    rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(0f, -32f), new Vector2(1f, 1f), new Vector2(0f, 0f), new Vector2(0.5f, 0.5f), new Vector2(-64f, -256f)),
+                    //rect = new RectValues(new Vector2(0f, -32f), new Vector2(1f, 1f), new Vector2(0f, 0f), new Vector2(0.5f, 0.5f), new Vector2(-64f, -256f)),
+                    rect = RectValues.FullAnchored.AnchoredPosition(0f, -32f).SizeDelta(-64f, -256f),
                 });
 
                 changeLogMenu.elements.Add(new MenuText
@@ -337,9 +341,11 @@ namespace BetterLegacy.Menus
                     id = "1",
                     name = "Title",
                     text = "<size=60><b>BetterLegacy Changelog",
-                    rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(-620f, 440f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(400f, 64f)),
+                    //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(-620f, 440f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(400f, 64f)),
+                    rect = RectValues.Default.AnchoredPosition(-640f, 440f).SizeDelta(400f, 64f),
                     icon = LegacyPlugin.PALogoSprite,
-                    iconRectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(-256f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(64f, 64f)),
+                    //iconRectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(-256f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(64f, 64f)),
+                    iconRect = RectValues.Default.AnchoredPosition(-256f, 0f).SizeDelta(64f, 64f),
                     hideBG = true,
                     textColor = 6
                 });
@@ -368,7 +374,8 @@ namespace BetterLegacy.Menus
                     id = "0",
                     name = "Next Menu Button",
                     text = "<b><align=center>[ NEXT ]",
-                    rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(0f, -400f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 64f)),
+                    //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(0f, -400f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 64f)),
+                    rect = RectValues.Default.AnchoredPosition(0f, -400f).SizeDelta(300f, 64f),
                     func = () => { SetCurrentInterface("0"); },
                     opacity = 0.1f,
                     selectedOpacity = 1f,
@@ -411,7 +418,8 @@ namespace BetterLegacy.Menus
                 name = "Update Note",
                 text = note,
                 parentLayout = "updates",
-                rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 36f)),
+                //rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 36f)),
+                rect = RectValues.Default.SizeDelta(0f, 36f),
                 hideBG = true,
                 textColor = 6
             });
