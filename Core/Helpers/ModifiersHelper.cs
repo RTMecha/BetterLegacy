@@ -1592,8 +1592,35 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playSoundOnline":
                         {
-                            if (bool.TryParse(modifier.commands[1], out bool global) && float.TryParse(modifier.commands[2], out float pitch) && float.TryParse(modifier.commands[3], out float vol) && bool.TryParse(modifier.commands[4], out bool loop) && !string.IsNullOrEmpty(modifier.value))
+                            if (float.TryParse(modifier.commands[1], out float pitch) && float.TryParse(modifier.commands[2], out float vol) && bool.TryParse(modifier.commands[3], out bool loop) && !string.IsNullOrEmpty(modifier.value))
                                 ModifiersManager.DownloadSoundAndPlay(modifier.reference.id, modifier.value, pitch, vol, loop);
+
+                            break;
+                        }
+                    case "playDefaultSound":
+                        {
+                            if (float.TryParse(modifier.commands[1], out float pitch) && float.TryParse(modifier.commands[2], out float vol) && bool.TryParse(modifier.commands[3], out bool loop) && AudioManager.inst.library.soundClips.TryGetValue(modifier.value, out AudioClip[] audioClips))
+                            {
+                                var clip = audioClips[UnityEngine.Random.Range(0, audioClips.Length)];
+                                var audioSource = Camera.main.gameObject.AddComponent<AudioSource>();
+                                audioSource.clip = clip;
+                                audioSource.playOnAwake = true;
+                                audioSource.loop = loop;
+                                audioSource.pitch = pitch * AudioManager.inst.CurrentAudioSource.pitch;
+                                audioSource.volume = vol * AudioManager.inst.sfxVol;
+                                audioSource.Play();
+
+                                float x = pitch * AudioManager.inst.CurrentAudioSource.pitch;
+                                if (x == 0f)
+                                    x = 1f;
+                                if (x < 0f)
+                                    x = -x;
+
+                                if (!loop)
+                                    CoreHelper.StartCoroutine(AudioManager.inst.DestroyWithDelay(audioSource, clip.length / x));
+                                else if (!ModifiersManager.audioSources.ContainsKey(modifier.reference.id))
+                                    ModifiersManager.audioSources.Add(modifier.reference.id, audioSource);
+                            }
 
                             break;
                         }
