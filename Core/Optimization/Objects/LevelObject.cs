@@ -179,26 +179,18 @@ namespace BetterLegacy.Core.Optimization.Objects
                 float sat = satSequence.Interpolate(time - StartTime);
                 float val = valSequence.Interpolate(time - StartTime);
 
-                float a = opacity - 1f;
+                float a = -(opacity - 1f);
 
-                a = -a;
-
-                float b = a >= 0f && a <= 1f ? color.a * a : color.a;
-
-                visualObject.SetColor(LSFunctions.LSColors.fadeColor(ChangeColorHSV(color, hue, sat, val), b));
+                visualObject.SetColor(LSFunctions.LSColors.fadeColor(ChangeColorHSV(color, hue, sat, val), a >= 0f && a <= 1f ? color.a * a : color.a));
             }
             else if (opacitySequence != null)
             {
                 Color color = colorSequence.Interpolate(time - StartTime);
                 float opacity = opacitySequence.Interpolate(time - StartTime);
 
-                float a = opacity - 1f;
+                float a = -(opacity - 1f);
 
-                a = -a;
-
-                float b = a >= 0f && a <= 1f ? color.a * a : color.a;
-
-                visualObject.SetColor(LSFunctions.LSColors.fadeColor(color, b));
+                visualObject.SetColor(LSFunctions.LSColors.fadeColor(color, a >= 0f && a <= 1f ? color.a * a : color.a));
             }
             else
             {
