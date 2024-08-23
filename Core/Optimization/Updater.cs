@@ -352,7 +352,7 @@ namespace BetterLegacy.Core.Optimization
         /// </summary>
         /// <param name="prefabObject">The Prefab Object to update.</param>
         /// <param name="context">The context to update.</param>
-        public static void UpdatePrefab(BasePrefabObject prefabObject, string context)
+        public static void UpdatePrefab(PrefabObject prefabObject, string context)
         {
             string lower = context.ToLower().Replace(" ", "").Replace("_", "");
             switch (lower)
@@ -416,8 +416,6 @@ namespace BetterLegacy.Core.Optimization
                     {
                         float t = 1f;
 
-                        var moddedPrefab = (PrefabObject)prefabObject;
-
                         if (prefabObject.RepeatOffsetTime != 0f)
                             t = prefabObject.RepeatOffsetTime;
 
@@ -427,11 +425,11 @@ namespace BetterLegacy.Core.Optimization
 
                         for (int i = 0; i < prefabObject.RepeatCount + 1; i++)
                         {
-                            foreach (var beatmapObject in DataManager.inst.gameData.beatmapObjects.Where(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID))
+                            foreach (var beatmapObject in DataManager.inst.gameData.beatmapObjects.Where(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID).Select(x => x as BeatmapObject))
                             {
-                                if (prefab.objects.TryFind(x => x.id == ((BeatmapObject)beatmapObject).originalID, out BaseBeatmapObject original))
+                                if (prefab.objects.TryFind(x => x.id == beatmapObject.originalID, out BaseBeatmapObject original))
                                 {
-                                    beatmapObject.StartTime = prefabObject.StartTime + prefab.Offset + ((original.StartTime + timeToAdd) / Mathf.Clamp(moddedPrefab.speed, 0.01f, MaxFastSpeed));
+                                    beatmapObject.StartTime = prefabObject.StartTime + prefab.Offset + ((original.StartTime + timeToAdd) / Mathf.Clamp(prefabObject.speed, 0.01f, MaxFastSpeed));
 
                                     if (lower == "speed")
                                     {
@@ -439,35 +437,59 @@ namespace BetterLegacy.Core.Optimization
                                         {
                                             for (int k = 0; k < beatmapObject.events[j].Count; k++)
                                             {
-                                                beatmapObject.events[i][k].eventTime = original.events[i][k].eventTime / Mathf.Clamp(moddedPrefab.speed, 0.01f, MaxFastSpeed);
+                                                beatmapObject.events[i][k].eventTime = original.events[i][k].eventTime / Mathf.Clamp(prefabObject.speed, 0.01f, MaxFastSpeed);
                                             }
                                         }
 
                                         UpdateObject(beatmapObject, "Keyframes");
                                     }
 
-                                    UpdateObject(beatmapObject, "Start Time");
+                                    //UpdateObject(beatmapObject, "Start Time");
+
+                                    // Update Start Time
+                                    if (TryGetObject(beatmapObject, out LevelObject levelObject))
+                                    {
+                                        levelObject.StartTime = beatmapObject.StartTime;
+                                        levelObject.KillTime = beatmapObject.StartTime + beatmapObject.GetObjectLifeLength(0.0f, true);
+
+                                        levelObject.SetActive(beatmapObject.Alive);
+
+                                        for (int j = 0; j < levelObject.parentObjects.Count; j++)
+                                        {
+                                            var levelParent = levelObject.parentObjects[j];
+                                            var parent = levelParent.BeatmapObject;
+
+                                            levelParent.TimeOffset = parent.StartTime;
+                                        }
+                                    }
                                 }
                             }
 
                             timeToAdd += t;
                         }
 
+                        if (!levelProcessor || !levelProcessor.engine || levelProcessor.engine.objectSpawner == null)
+                            return;
+
+                        var spawner = levelProcessor.engine.objectSpawner;
+
+                        spawner.activateList.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
+                        spawner.deactivateList.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
+                        spawner.RecalculateObjectStates();
+
                         break;
                     }
                 case "autokill":
                     {
-                        var pr = prefabObject as PrefabObject;
-
                         foreach (var beatmapObject in DataManager.inst.gameData.beatmapObjects.Where(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID))
                         {
-                            if (pr.autoKillType != PrefabObject.AutoKillType.Regular && prefabObject.StartTime + pr.Prefab?.Offset + beatmapObject.GetObjectLifeLength(_oldStyle: true) > pr.autoKillOffset)
+                            if (prefabObject.autoKillType != PrefabObject.AutoKillType.Regular && prefabObject.StartTime + prefabObject.Prefab?.Offset + beatmapObject.GetObjectLifeLength(_oldStyle: true) > prefabObject.autoKillOffset)
                             {
                                 beatmapObject.autoKillType = ObjectAutoKillType.SongTime;
-                                beatmapObject.autoKillOffset = pr.autoKillType == PrefabObject.AutoKillType.StartTimeOffset ? prefabObject.StartTime + pr.Prefab?.Offset ?? 0f + pr.autoKillOffset : pr.autoKillOffset;
+                                beatmapObject.autoKillOffset = prefabObject.autoKillType == PrefabObject.AutoKillType.StartTimeOffset ? prefabObject.StartTime + prefabObject.Prefab?.Offset ?? 0f + prefabObject.autoKillOffset : prefabObject.autoKillOffset;
                             }
 
-                            if (pr.autoKillType == PrefabObject.AutoKillType.Regular)
+                            if (prefabObject.autoKillType == PrefabObject.AutoKillType.Regular)
                             {
                                 UpdatePrefab(prefabObject);
                             }
@@ -480,7 +502,7 @@ namespace BetterLegacy.Core.Optimization
             }
         }
 
-        public static IEnumerator IUpdatePrefab(BasePrefabObject prefabObject, string context)
+        public static IEnumerator IUpdatePrefab(PrefabObject prefabObject, string context)
         {
             string lower = context.ToLower().Replace(" ", "").Replace("_", "");
             switch (lower)
@@ -544,8 +566,6 @@ namespace BetterLegacy.Core.Optimization
                     {
                         float t = 1f;
 
-                        var moddedPrefab = (PrefabObject)prefabObject;
-
                         if (prefabObject.RepeatOffsetTime != 0f)
                             t = prefabObject.RepeatOffsetTime;
 
@@ -555,11 +575,11 @@ namespace BetterLegacy.Core.Optimization
 
                         for (int i = 0; i < prefabObject.RepeatCount + 1; i++)
                         {
-                            foreach (var beatmapObject in DataManager.inst.gameData.beatmapObjects.Where(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID))
+                            foreach (var beatmapObject in DataManager.inst.gameData.beatmapObjects.Where(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID).Select(x => x as BeatmapObject))
                             {
-                                if (prefab.objects.TryFind(x => x.id == ((BeatmapObject)beatmapObject).originalID, out BaseBeatmapObject original))
+                                if (prefab.objects.TryFind(x => x.id == beatmapObject.originalID, out BaseBeatmapObject original))
                                 {
-                                    beatmapObject.StartTime = prefabObject.StartTime + prefab.Offset + ((original.StartTime + timeToAdd) / Mathf.Clamp(moddedPrefab.speed, 0.01f, MaxFastSpeed));
+                                    beatmapObject.StartTime = prefabObject.StartTime + prefab.Offset + ((original.StartTime + timeToAdd) / Mathf.Clamp(prefabObject.speed, 0.01f, MaxFastSpeed));
 
                                     if (lower == "speed")
                                     {
@@ -567,35 +587,59 @@ namespace BetterLegacy.Core.Optimization
                                         {
                                             for (int k = 0; k < beatmapObject.events[j].Count; k++)
                                             {
-                                                beatmapObject.events[i][k].eventTime = original.events[i][k].eventTime / Mathf.Clamp(moddedPrefab.speed, 0.01f, MaxFastSpeed);
+                                                beatmapObject.events[i][k].eventTime = original.events[i][k].eventTime / Mathf.Clamp(prefabObject.speed, 0.01f, MaxFastSpeed);
                                             }
                                         }
 
                                         UpdateObject(beatmapObject, "Keyframes");
                                     }
 
-                                    UpdateObject(beatmapObject, "Start Time");
+                                    //UpdateObject(beatmapObject, "Start Time");
+
+                                    // Update Start Time
+                                    if (TryGetObject(beatmapObject, out LevelObject levelObject))
+                                    {
+                                        levelObject.StartTime = beatmapObject.StartTime;
+                                        levelObject.KillTime = beatmapObject.StartTime + beatmapObject.GetObjectLifeLength(0.0f, true);
+
+                                        levelObject.SetActive(beatmapObject.Alive);
+
+                                        for (int j = 0; j < levelObject.parentObjects.Count; j++)
+                                        {
+                                            var levelParent = levelObject.parentObjects[j];
+                                            var parent = levelParent.BeatmapObject;
+
+                                            levelParent.TimeOffset = parent.StartTime;
+                                        }
+                                    }
                                 }
                             }
 
                             timeToAdd += t;
                         }
 
+                        if (!levelProcessor || !levelProcessor.engine || levelProcessor.engine.objectSpawner == null)
+                            break;
+
+                        var spawner = levelProcessor.engine.objectSpawner;
+
+                        spawner.activateList.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
+                        spawner.deactivateList.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
+                        spawner.RecalculateObjectStates();
+
                         break;
                     }
                 case "autokill":
                     {
-                        var pr = prefabObject as PrefabObject;
-
                         foreach (var beatmapObject in DataManager.inst.gameData.beatmapObjects.Where(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID))
                         {
-                            if (pr.autoKillType != PrefabObject.AutoKillType.Regular && prefabObject.StartTime + pr.Prefab?.Offset + beatmapObject.GetObjectLifeLength(_oldStyle: true) > pr.autoKillOffset)
+                            if (prefabObject.autoKillType != PrefabObject.AutoKillType.Regular && prefabObject.StartTime + prefabObject.Prefab?.Offset + beatmapObject.GetObjectLifeLength(_oldStyle: true) > prefabObject.autoKillOffset)
                             {
                                 beatmapObject.autoKillType = ObjectAutoKillType.SongTime;
-                                beatmapObject.autoKillOffset = pr.autoKillType == PrefabObject.AutoKillType.StartTimeOffset ? prefabObject.StartTime + pr.Prefab?.Offset ?? 0f + pr.autoKillOffset : pr.autoKillOffset;
+                                beatmapObject.autoKillOffset = prefabObject.autoKillType == PrefabObject.AutoKillType.StartTimeOffset ? prefabObject.StartTime + prefabObject.Prefab?.Offset ?? 0f + prefabObject.autoKillOffset : prefabObject.autoKillOffset;
                             }
 
-                            if (pr.autoKillType == PrefabObject.AutoKillType.Regular)
+                            if (prefabObject.autoKillType == PrefabObject.AutoKillType.Regular)
                             {
                                 UpdatePrefab(prefabObject);
                             }

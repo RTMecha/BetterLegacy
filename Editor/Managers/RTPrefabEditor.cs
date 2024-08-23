@@ -648,10 +648,10 @@ namespace BetterLegacy.Editor.Managers
             var prefabObjects = DataManager.inst.gameData.prefabObjects.Where(x => x.prefabID == currentPrefab.prefabID).ToList();
             for (int i = 0; i < prefabObjects.Count; i++)
             {
-                var prefabObject = prefabObjects[i];
+                var prefabObject = prefabObjects[i] as PrefabObject;
 
                 if (prefabObject.editorData.layer == EditorManager.inst.layer)
-                    ObjectEditor.inst.RenderTimelineObjectPosition(GetTimelineObject((PrefabObject)prefabObject));
+                    ObjectEditor.inst.RenderTimelineObjectPosition(GetTimelineObject(prefabObject));
 
                 StartCoroutine(Updater.IUpdatePrefab(prefabObject, "Start Time"));
             }
