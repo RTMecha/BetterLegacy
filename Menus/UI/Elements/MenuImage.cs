@@ -131,6 +131,9 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         public float val;
 
+        public bool useOverrideColor;
+        public Color overrideColor;
+
         /// <summary>
         /// True if the element is spawning (playing spawn animations, etc), otherwise false.
         /// </summary>
@@ -468,6 +471,62 @@ namespace BetterLegacy.Menus.UI.Elements
                             (isArray && parameters.Count > 2 && parameters[2].AsBool ||
                             parameters.IsObject && parameters["relative"] != null && parameters["relative"].AsBool ?
                                     DataManager.inst.GetSettingInt(settingName) : 0));
+
+                        break;
+                    }
+
+                #endregion
+
+                #region Wait
+
+                // Waits a set amount of seconds and runs a function.
+                // Supports both JSON array and JSON object.
+                // 
+                // - JSON Array Structure -
+                // 0 = time
+                // 1 = function
+                // Example:
+                // [
+                //   "1", < waits 1 second
+                //   {
+                //     "name": "PlaySound", < runs PlaySound func after 1 second.
+                //     "params": [ "blip" ]
+                //   }
+                // ]
+                // 
+                // - JSON Object Structure -
+                // "t"
+                // "func"
+                // Example:
+                // {
+                //   "t": "1",
+                //   "func": {
+                //     "name": "PlaySound",
+                //     "params": {
+                //       "sound": "blip"
+                //     }
+                //   }
+                // }
+                case "Wait":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["t"] == null || parameters["func"] == null))
+                            break;
+
+                        var isArray = parameters.IsArray;
+                        var t = isArray ? parameters[0].AsFloat : parameters["t"].AsFloat;
+                        JSONNode func = isArray ? parameters[1] : parameters["func"];
+
+                        CoreHelper.PerformActionAfterSeconds(t, () =>
+                        {
+                            try
+                            {
+                                ParseFunction(func);
+                            }
+                            catch
+                            {
+
+                            }
+                        });
 
                         break;
                     }
@@ -951,6 +1010,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         var isArray = parameters.IsArray;
                         string id = isArray ? parameters[0] : parameters["id"]; // ID of an object to animate
                         var type = Parser.TryParse(isArray ? parameters[1] : parameters["type"], 0); // which type to animate (e.g. 0 = position, 1 = scale, 2 = rotation)
+                        var isColor = type == 3;
 
                         if (InterfaceManager.inst.CurrentMenu.elements.TryFind(x => x.id == id, out MenuImage element))
                         {
@@ -962,7 +1022,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
                             JSONNode lastX = null;
                             float x = 0f;
-                            if (events["x"] != null)
+                            if (!isColor && events["x"] != null)
                             {
                                 List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
                                 for (int i = 0; i < events["x"].Count; i++)
@@ -976,10 +1036,28 @@ namespace BetterLegacy.Menus.UI.Elements
                                 }
                                 animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, x => { element.SetTransform(type, 0, x); }));
                             }
+                            if (isColor && events["x"] != null)
+                            {
+                                List<IKeyframe<Color>> keyframes = new List<IKeyframe<Color>>();
+                                for (int i = 0; i < events["x"].Count; i++)
+                                {
+                                    var kf = events["x"][i];
+                                    var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? element.GetTransform(type, 0) : 0f);
+                                    x = kf["rel"].AsBool ? x + val : val;
+                                    keyframes.Add(new ThemeKeyframe(kf["t"].AsFloat, (int)x, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                    lastX = kf["val"];
+                                }
+                                animation.animationHandlers.Add(new AnimationHandler<Color>(keyframes, x =>
+                                {
+                                    element.useOverrideColor = true;
+                                    element.overrideColor = x;
+                                }));
+                            }
 
                             JSONNode lastY = null;
                             float y = 0f;
-                            if (events["y"] != null)
+                            if (!isColor && events["y"] != null)
                             {
                                 List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
                                 for (int i = 0; i < events["y"].Count; i++)
@@ -996,7 +1074,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
                             JSONNode lastZ = null;
                             float z = 0f;
-                            if (events["z"] != null)
+                            if (!isColor && events["z"] != null)
                             {
                                 List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
                                 for (int i = 0; i < events["z"].Count; i++)
@@ -1024,12 +1102,14 @@ namespace BetterLegacy.Menus.UI.Elements
                                 AnimationManager.inst.RemoveID(animation.id);
                                 animations.RemoveAll(x => x.id == animation.id);
 
-                                if (lastX != null)
+                                if (!isColor && lastX != null)
                                     element.SetTransform(type, 0, x);
-                                if (lastY != null)
+                                if (!isColor && lastY != null)
                                     element.SetTransform(type, 1, y);
-                                if (lastZ != null)
+                                if (!isColor && lastZ != null)
                                     element.SetTransform(type, 2, z);
+                                if (isColor && lastX != null)
+                                    element.overrideColor = CoreHelper.CurrentBeatmapTheme.GetObjColor((int)x);
 
                                 if (isArray && parameters.Count > 4 && parameters[4] != null || parameters["done_func"] != null)
                                     ParseFunction(isArray ? parameters[4] : parameters["done_func"]);
@@ -1456,7 +1536,50 @@ namespace BetterLegacy.Menus.UI.Elements
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["col"] == null)
                             return;
 
-                        color = parameters["col"];
+                        color = parameters.IsArray ? parameters[0].AsInt : parameters["col"].AsInt;
+
+                        break;
+                    }
+
+                #endregion
+
+                #region SetText
+
+                // Sets an objects' text.
+                // Supports both JSON array and JSON object.
+                // 
+                // - JSON Array Structure -
+                // 0 = id
+                // 0 = text
+                // Example:
+                // [
+                //   "100",
+                //   "This is a text example!"
+                // ]
+                // 
+                // - JSON Object Structure -
+                // "id"
+                // "text"
+                // Example:
+                // {
+                //   "id": "100",
+                //   "text": "This is a text example!"
+                // }
+                case "SetText":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["id"] == null || parameters["text"] == null) || InterfaceManager.inst.CurrentMenu == null)
+                            return;
+
+                        var isArray = parameters.IsArray;
+                        string array = isArray ? parameters[0] : parameters["id"];
+                        string text = isArray ? parameters[1] : parameters["text"];
+
+                        if (InterfaceManager.inst.CurrentMenu.elements.TryFind(x => x.id == array, out MenuImage menuImage) && menuImage is MenuText menuText)
+                        {
+                            menuText.text = text;
+                            menuText.textUI.maxVisibleCharacters = text.Length;
+                            menuText.textUI.text = text;
+                        }
 
                         break;
                     }
@@ -1465,7 +1588,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 #region LoadLevel
 
-                // Finds a level by its' ID and loads it.
+                // Finds a level by its' ID and loads it. On,y work if the user has already loaded levels.
                 // Supports both JSON array and JSON object.
                 //
                 // - JSON Array Structure -

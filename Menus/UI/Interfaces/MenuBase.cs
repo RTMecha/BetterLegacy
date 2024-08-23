@@ -528,18 +528,54 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 if (element is MenuButton button)
                 {
                     var isSelected = button.selectionPosition == selected;
-                    button.image.color = isSelected ? LSColors.fadeColor(CoreHelper.ChangeColorHSV(Theme.GetObjColor(button.selectedColor), button.selectedHue, button.selectedSat, button.selectedVal), button.selectedOpacity) : LSColors.fadeColor(CoreHelper.ChangeColorHSV(Theme.GetObjColor(button.color), button.hue, button.sat, button.val), button.opacity);
-                    button.textUI.color = isSelected ? CoreHelper.ChangeColorHSV(Theme.GetObjColor(button.selectedTextColor), button.selectedTextHue, button.selectedTextSat, button.selectedTextVal) : CoreHelper.ChangeColorHSV(Theme.GetObjColor(button.textColor), button.textHue, button.textSat, button.textVal);
+                    button.image.color = isSelected ?
+                        LSColors.fadeColor(
+                            CoreHelper.ChangeColorHSV(
+                                button.useOverrideSelectedColor ? button.overrideSelectedColor : Theme.GetObjColor(button.selectedColor),
+                                button.selectedHue,
+                                button.selectedSat,
+                                button.selectedVal),
+                            button.selectedOpacity) :
+                        LSColors.fadeColor(
+                            CoreHelper.ChangeColorHSV(
+                                button.useOverrideColor ? button.overrideColor : Theme.GetObjColor(button.color),
+                                button.hue,
+                                button.sat,
+                                button.val),
+                            button.opacity); ;
+                    button.textUI.color = isSelected ?
+                        CoreHelper.ChangeColorHSV(
+                            button.useOverrideSelectedTextColor ? button.overrideSelectedTextColor : Theme.GetObjColor(button.selectedTextColor),
+                            button.selectedTextHue,
+                            button.selectedTextSat,
+                            button.selectedTextVal) :
+                        CoreHelper.ChangeColorHSV(
+                            button.useOverrideTextColor ? button.overrideTextColor : Theme.GetObjColor(button.textColor),
+                            button.textHue,
+                            button.textSat,
+                            button.textVal);
                     continue;
                 }
 
                 if (element is MenuText text)
                 {
-                    text.textUI.color = CoreHelper.ChangeColorHSV(Theme.GetObjColor(text.textColor), text.textHue, text.textSat, text.textVal);
+                    text.textUI.color =
+                        CoreHelper.ChangeColorHSV(
+                            text.useOverrideTextColor ? text.overrideTextColor : Theme.GetObjColor(text.textColor),
+                            text.textHue,
+                            text.textSat,
+                            text.textVal);
                     text.UpdateText();
                 }
 
-                element.image.color = LSColors.fadeColor(CoreHelper.ChangeColorHSV(Theme.GetObjColor(element.color), element.hue, element.sat, element.val), element.opacity);
+                element.image.color =
+                    LSColors.fadeColor(
+                        CoreHelper.ChangeColorHSV(
+                            element.useOverrideColor ? element.overrideColor : Theme.GetObjColor(element.color),
+                            element.hue,
+                            element.sat,
+                            element.val),
+                        element.opacity);
             }
         }
 

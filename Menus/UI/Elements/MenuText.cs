@@ -158,6 +158,9 @@ namespace BetterLegacy.Menus.UI.Elements
         public float textSat;
         public float textVal;
 
+        public bool useOverrideTextColor;
+        public Color overrideTextColor;
+
         /// <summary>
         /// The elements' text.
         /// </summary>
