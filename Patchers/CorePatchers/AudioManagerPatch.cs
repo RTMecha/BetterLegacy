@@ -1,5 +1,6 @@
 ﻿using BetterLegacy.Core.Managers;
 using HarmonyLib;
+using UnityEngine;
 
 namespace BetterLegacy.Patchers
 {
@@ -37,6 +38,17 @@ namespace BetterLegacy.Patchers
             else
                 __instance.pitch = __0;
 
+            return false;
+        }
+
+        [HarmonyPatch(nameof(AudioManager.SetMusicTime))]
+        [HarmonyPrefix]
+        static bool SetMusicTimePrefix(AudioManager __instance, float __0)
+        {
+            if (__instance.CurrentAudioSource.clip == null)
+                return false;
+            
+            __instance.CurrentAudioSource.time = Mathf.Clamp(__0, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
             return false;
         }
     }
