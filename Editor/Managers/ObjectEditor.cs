@@ -339,6 +339,9 @@ namespace BetterLegacy.Editor.Managers
             spawner.activateList.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
             spawner.deactivateList.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
             spawner.RecalculateObjectStates();
+
+            if (EditorConfig.Instance.UpdateHomingKeyframesDrag.Value)
+                System.Threading.Tasks.Task.Run(Updater.UpdateHomingKeyframes);
         }
 
         void HandleKeyframesDrag()

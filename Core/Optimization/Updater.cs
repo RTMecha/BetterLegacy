@@ -1141,5 +1141,17 @@ namespace BetterLegacy.Core.Optimization
             return gameObject;
         }
 
+        public static void UpdateHomingKeyframes()
+        {
+            foreach (var cachedSequence in levelProcessor.converter.cachedSequences.Values)
+            {
+                for (int i = 0; i < cachedSequence.Position3DSequence.keyframes.Length; i++)
+                    cachedSequence.Position3DSequence.keyframes[i].Stop();
+                for (int i = 0; i < cachedSequence.RotationSequence.keyframes.Length; i++)
+                    cachedSequence.RotationSequence.keyframes[i].Stop();
+                for (int i = 0; i < cachedSequence.ColorSequence.keyframes.Length; i++)
+                    cachedSequence.ColorSequence.keyframes[i].Stop();
+            }
+        }
     }
 }

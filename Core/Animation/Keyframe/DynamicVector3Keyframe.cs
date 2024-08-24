@@ -14,6 +14,7 @@ namespace BetterLegacy.Core.Animation.Keyframe
         public EaseFunction Ease { get; set; }
         public Vector3 Value { get; set; }
         public Vector3 OriginalValue { get; set; }
+        public IKeyframe<Vector3> PreviousKeyframe { get; set; }
         public AxisMode Axis { get; set; }
 
         public float Delay { get; set; }
@@ -32,7 +33,7 @@ namespace BetterLegacy.Core.Animation.Keyframe
             }
         }
 
-        public DynamicVector3Keyframe(float time, Vector3 value, EaseFunction ease, float delay, float min, float max, bool flee, AxisMode axisMode)
+        public DynamicVector3Keyframe(float time, Vector3 value, EaseFunction ease, float delay, float min, float max, bool flee, IKeyframe<Vector3> previousKeyframe, AxisMode axisMode)
         {
             Time = time;
             Value = value;
@@ -43,12 +44,21 @@ namespace BetterLegacy.Core.Animation.Keyframe
             MinRange = min;
             MaxRange = max;
             Flee = flee;
+            PreviousKeyframe = previousKeyframe;
             Axis = axisMode;
         }
 
         public void Start()
         {
-            Value = OriginalValue;
+            if (PreviousKeyframe is StaticVector3Keyframe staticVector3Keyframe)
+            {
+                var target = staticVector3Keyframe.Target;
+                Value = OriginalValue + new Vector3(target.x, target.y, 0f);
+            }
+            else
+            {
+                Value = OriginalValue;
+            }
         }
 
         public void Stop()

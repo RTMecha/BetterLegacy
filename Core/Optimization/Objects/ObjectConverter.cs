@@ -457,9 +457,26 @@ namespace BetterLegacy.Core.Optimization.Objects
 
                 currentValue = kf.relative && eventKeyframe.random != 6 ? new Vector3(currentValue.x, currentValue.y, 0f) + value : value;
 
-                currentKeyfame = eventKeyframe.random == 5 || eventKeyframe.random != 6 && eventKeyframes.Count > num + 1 && eventKeyframes[num + 1].random == 5 ? new StaticVector3Keyframe(eventKeyframe.eventTime, currentValue, Ease.GetEaseFunction(eventKeyframe.curveType.Name), currentKeyfame, (AxisMode)Mathf.Clamp((int)eventKeyframe.eventRandomValues[3], 0, 2)) :
-                    eventKeyframe.random == 6 ? new DynamicVector3Keyframe(eventKeyframe.eventTime, currentValue, Ease.GetEaseFunction(eventKeyframe.curveType.Name),
-                    eventKeyframe.eventRandomValues[2], eventKeyframe.eventRandomValues[0], eventKeyframe.eventRandomValues[1], kf.relative, (AxisMode)Mathf.Clamp((int)eventKeyframe.eventRandomValues[3], 0, 2)) :
+                var isStaticHoming = eventKeyframe.random == 5 || eventKeyframe.random != 6 && eventKeyframes.Count > num + 1 && eventKeyframes[num + 1].random == 5;
+                var isDynamicHoming = eventKeyframe.random == 6 || eventKeyframe.random != 6 && eventKeyframes.Count > num + 1 && eventKeyframes[num + 1].random == 6;
+
+                currentKeyfame =
+                    isStaticHoming ? new StaticVector3Keyframe(
+                        eventKeyframe.eventTime,
+                        currentValue,
+                        Ease.GetEaseFunction(eventKeyframe.curveType.Name),
+                        currentKeyfame,
+                        (AxisMode)Mathf.Clamp((int)eventKeyframe.eventRandomValues[3], 0, 2)) :
+                    isDynamicHoming ? new DynamicVector3Keyframe(
+                        eventKeyframe.eventTime,
+                        currentValue,
+                        Ease.GetEaseFunction(eventKeyframe.curveType.Name),
+                        eventKeyframe.eventRandomValues[2],
+                        eventKeyframe.eventRandomValues[0],
+                        eventKeyframe.eventRandomValues[1],
+                        kf.relative,
+                        currentKeyfame,
+                        (AxisMode)Mathf.Clamp((int)eventKeyframe.eventRandomValues[3], 0, 2)) :
                     new Vector3Keyframe(eventKeyframe.eventTime, currentValue, Ease.GetEaseFunction(eventKeyframe.curveType.Name), currentKeyfame);
 
                 if (!keyframes.Has(x => x.Time == currentKeyfame.Time))
@@ -531,9 +548,25 @@ namespace BetterLegacy.Core.Optimization.Objects
 
                 currentValue = kf.relative && eventKeyframe.random != 6 && !color ? currentValue + value : value;
 
-                currentKeyfame = (eventKeyframe.random == 5 || eventKeyframe.random != 6 && eventKeyframes.Count > num + 1 && eventKeyframes[num + 1].random == 5) && !color ? new StaticFloatKeyframe(eventKeyframe.eventTime, currentValue, Ease.GetEaseFunction(eventKeyframe.curveType.Name), currentKeyfame, vector3Sequence) :
-                    eventKeyframe.random == 6 && !color ? new DynamicFloatKeyframe(eventKeyframe.eventTime, currentValue, Ease.GetEaseFunction(eventKeyframe.curveType.Name),
-                    eventKeyframe.eventRandomValues[2], eventKeyframe.eventRandomValues[0], eventKeyframe.eventRandomValues[1], kf.relative, vector3Sequence) :
+                var isStaticHoming = (eventKeyframe.random == 5 || eventKeyframe.random != 6 && eventKeyframes.Count > num + 1 && eventKeyframes[num + 1].random == 5) && !color;
+                var isDynamicHoming = (eventKeyframe.random == 6 || eventKeyframe.random != 6 && eventKeyframes.Count > num + 1 && eventKeyframes[num + 1].random == 6) && !color;
+
+                currentKeyfame =
+                    isStaticHoming ? new StaticFloatKeyframe(
+                        eventKeyframe.eventTime,
+                        currentValue,
+                        Ease.GetEaseFunction(eventKeyframe.curveType.Name),
+                        currentKeyfame,
+                        vector3Sequence) :
+                    isDynamicHoming ? new DynamicFloatKeyframe(
+                        eventKeyframe.eventTime,
+                        currentValue,
+                        Ease.GetEaseFunction(eventKeyframe.curveType.Name),
+                        eventKeyframe.eventRandomValues[2],
+                        eventKeyframe.eventRandomValues[0],
+                        eventKeyframe.eventRandomValues[1],
+                        kf.relative,
+                        vector3Sequence) :
                     new FloatKeyframe(eventKeyframe.eventTime, currentValue, Ease.GetEaseFunction(eventKeyframe.curveType.Name), currentKeyfame);
 
                 if (!keyframes.Has(x => x.Time == currentKeyfame.Time))
@@ -552,6 +585,7 @@ namespace BetterLegacy.Core.Optimization.Objects
         {
             List<IKeyframe<Color>> keyframes = new List<IKeyframe<Color>>(eventKeyframes.Count);
 
+            int num = 0;
             foreach (BaseEventKeyframe eventKeyframe in eventKeyframes)
             {
                 int value = (int)eventKeyframe.eventValues[0];
@@ -559,10 +593,11 @@ namespace BetterLegacy.Core.Optimization.Objects
                 value = Mathf.Clamp(value, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
 
                 if (!keyframes.Has(x => x.Time == eventKeyframe.eventTime))
-                    keyframes.Add(eventKeyframe.random == 6 ? new DynamicThemeKeyframe(eventKeyframe.eventTime, value, Ease.GetEaseFunction(eventKeyframe.curveType.Name),
+                    keyframes.Add(eventKeyframe.random == 6 || eventKeyframe.random != 6 && eventKeyframes.Count > num + 1 && eventKeyframes[num + 1].random == 6 ? new DynamicThemeKeyframe(eventKeyframe.eventTime, value, Ease.GetEaseFunction(eventKeyframe.curveType.Name),
                     eventKeyframe.eventRandomValues[2], eventKeyframe.eventRandomValues[0], eventKeyframe.eventRandomValues[1], false,
                     Mathf.Clamp((int)eventKeyframe.eventRandomValues[3], 0, GameManager.inst.LiveTheme.objectColors.Count - 1), vector3Sequence) :
                     new ThemeKeyframe(eventKeyframe.eventTime, value, Ease.GetEaseFunction(eventKeyframe.curveType.Name)));
+                num++;
             }
 
             // If there is no keyframe, add default

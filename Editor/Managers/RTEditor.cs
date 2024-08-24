@@ -263,6 +263,11 @@ namespace BetterLegacy.Editor.Managers
                 AudioManager.inst.SetMusicTime(Mathf.Clamp(timelineSlider.value / EditorManager.inst.Zoom, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
                 changingTime = false;
             }));
+            timelineSlider.onValueChanged.AddListener(x =>
+            {
+                if (EditorConfig.Instance.UpdateHomingKeyframesDrag.Value)
+                    System.Threading.Tasks.Task.Run(Updater.UpdateHomingKeyframes);
+            });
 
             DestroyImmediate(EditorManager.inst.mouseTooltip);
             mouseTooltip = EditorManager.inst.notificationPrefabs[0].Duplicate(EditorManager.inst.notification.transform.parent, "tooltip");
@@ -9197,54 +9202,56 @@ namespace BetterLegacy.Editor.Managers
         {
             #region Sorting
 
+            var loadedLevels = EditorManager.inst.loadedLevels.OrderBy(x => x is EditorWrapper editorWrapper && !editorWrapper.isFolder);
+
             switch (levelFilter)
             {
                 case 0:
                     {
-                        EditorManager.inst.loadedLevels = (levelAscend ? EditorManager.inst.loadedLevels.OrderBy(x => x.albumArt != SteamWorkshop.inst.defaultSteamImageSprite) :
-                            EditorManager.inst.loadedLevels.OrderByDescending(x => x.albumArt != SteamWorkshop.inst.defaultSteamImageSprite)).OrderBy(x => x is EditorWrapper editorWrapper && !editorWrapper.isFolder).ToList();
+                        EditorManager.inst.loadedLevels = (levelAscend ? loadedLevels.OrderBy(x => x.albumArt != SteamWorkshop.inst.defaultSteamImageSprite) :
+                            loadedLevels.OrderByDescending(x => x.albumArt != SteamWorkshop.inst.defaultSteamImageSprite)).ToList();
                         break;
                     }
                 case 1:
                     {
-                        EditorManager.inst.loadedLevels = (levelAscend ? EditorManager.inst.loadedLevels.OrderBy(x => x.metadata?.artist?.Name) :
-                            EditorManager.inst.loadedLevels.OrderByDescending(x => x.metadata?.artist?.Name)).OrderBy(x => x is EditorWrapper editorWrapper && !editorWrapper.isFolder).ToList();
+                        EditorManager.inst.loadedLevels = (levelAscend ? loadedLevels.OrderBy(x => x.metadata?.artist?.Name) :
+                            loadedLevels.OrderByDescending(x => x.metadata?.artist?.Name)).ToList();
                         break;
                     }
                 case 2:
                     {
-                        EditorManager.inst.loadedLevels = (levelAscend ? EditorManager.inst.loadedLevels.OrderBy(x => x.metadata?.creator?.steam_name) :
-                            EditorManager.inst.loadedLevels.OrderByDescending(x => x.metadata?.creator?.steam_name)).OrderBy(x => x is EditorWrapper editorWrapper && !editorWrapper.isFolder).ToList();
+                        EditorManager.inst.loadedLevels = (levelAscend ? loadedLevels.OrderBy(x => x.metadata?.creator?.steam_name) :
+                            loadedLevels.OrderByDescending(x => x.metadata?.creator?.steam_name)).ToList();
                         break;
                     }
                 case 3:
                     {
-                        EditorManager.inst.loadedLevels = (levelAscend ? EditorManager.inst.loadedLevels.OrderBy(x => x.folder) :
-                            EditorManager.inst.loadedLevels.OrderByDescending(x => x.folder)).OrderBy(x => x is EditorWrapper editorWrapper && !editorWrapper.isFolder).ToList();
+                        EditorManager.inst.loadedLevels = (levelAscend ? loadedLevels.OrderBy(x => x.folder) :
+                            loadedLevels.OrderByDescending(x => x.folder)).ToList();
                         break;
                     }
                 case 4:
                     {
-                        EditorManager.inst.loadedLevels = (levelAscend ? EditorManager.inst.loadedLevels.OrderBy(x => x.metadata?.song?.title) :
-                            EditorManager.inst.loadedLevels.OrderByDescending(x => x.metadata?.song?.title)).OrderBy(x => x is EditorWrapper editorWrapper && !editorWrapper.isFolder).ToList();
+                        EditorManager.inst.loadedLevels = (levelAscend ? loadedLevels.OrderBy(x => x.metadata?.song?.title) :
+                            loadedLevels.OrderByDescending(x => x.metadata?.song?.title)).ToList();
                         break;
                     }
                 case 5:
                     {
-                        EditorManager.inst.loadedLevels = (levelAscend ? EditorManager.inst.loadedLevels.OrderBy(x => x.metadata?.song?.difficulty) :
-                            EditorManager.inst.loadedLevels.OrderByDescending(x => x.metadata?.song?.difficulty)).OrderBy(x => x is EditorWrapper editorWrapper && !editorWrapper.isFolder).ToList();
+                        EditorManager.inst.loadedLevels = (levelAscend ? loadedLevels.OrderBy(x => x.metadata?.song?.difficulty) :
+                            loadedLevels.OrderByDescending(x => x.metadata?.song?.difficulty)).ToList();
                         break;
                     }
                 case 6:
                     {
-                        EditorManager.inst.loadedLevels = (levelAscend ? EditorManager.inst.loadedLevels.OrderBy(x => x.metadata?.beatmap?.date_edited) :
-                            EditorManager.inst.loadedLevels.OrderByDescending(x => x.metadata?.beatmap?.date_edited)).OrderBy(x => x is EditorWrapper editorWrapper && !editorWrapper.isFolder).ToList();
+                        EditorManager.inst.loadedLevels = (levelAscend ? loadedLevels.OrderBy(x => x.metadata?.beatmap?.date_edited) :
+                            loadedLevels.OrderByDescending(x => x.metadata?.beatmap?.date_edited)).ToList();
                         break;
                     }
                 case 7:
                     {
-                        EditorManager.inst.loadedLevels = (levelAscend ? EditorManager.inst.loadedLevels.OrderBy(x => x.metadata is MetaData metadata ? metadata.LevelBeatmap.date_created : "") :
-                            EditorManager.inst.loadedLevels.OrderByDescending(x => x.metadata is MetaData metadata ? metadata.LevelBeatmap.date_created : "")).OrderBy(x => x is EditorWrapper editorWrapper && !editorWrapper.isFolder).ToList();
+                        EditorManager.inst.loadedLevels = (levelAscend ? loadedLevels.OrderBy(x => x.metadata is MetaData metadata ? metadata.LevelBeatmap.date_created : "") :
+                            loadedLevels.OrderByDescending(x => x.metadata is MetaData metadata ? metadata.LevelBeatmap.date_created : "")).ToList();
                         break;
                     }
             }

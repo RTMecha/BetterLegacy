@@ -57,6 +57,7 @@ namespace BetterLegacy.Configs
         public Setting<bool> DraggingPlaysSound { get; set; }
         public Setting<bool> DraggingPlaysSoundOnlyWithBPM { get; set; }
         public Setting<bool> ShowCollapsePrefabWarning { get; set; }
+        public Setting<bool> UpdateHomingKeyframesDrag { get; set; }
         public Setting<bool> RoundToNearest { get; set; }
         public Setting<bool> ScrollOnEasing { get; set; }
         public Setting<bool> PrefabExampleTemplate { get; set; }
@@ -1210,6 +1211,7 @@ namespace BetterLegacy.Configs
             DraggingPlaysSound = Bind(this, "General", "Dragging Plays Sound", true, "If dragging an object plays a sound.");
             DraggingPlaysSoundOnlyWithBPM = Bind(this, "General", "Dragging Plays Sound Only With BPM", true, "If dragging an object plays a sound ONLY when BPM Snap is active.");
             ShowCollapsePrefabWarning = Bind(this, "General", "Show Collapse Prefab Warning", true, "If a warning should popup when the user is trying to apply a prefab. Can be good for accidental Apply Prefab button clicks.");
+            UpdateHomingKeyframesDrag = Bind(this, "General", "Update Homing Keyframes on Drag", true, "If all homing keyframes should retarget when the audio position is changed via the timeline cursor.");
             RoundToNearest = Bind(this, "General", "Round To Nearest", true, "If numbers should be rounded up to 3 decimal points (for example, 0.43321245 into 0.433).");
             ScrollOnEasing = Bind(this, "General", "Scroll on Easing Changes Value", true, "If Scolling on an easing dropdown changes the easing.");
             PrefabExampleTemplate = Bind(this, "General", "Prefab Example Template", true, "Example Template prefab will always be generated into the internal prefabs for you to use.");
