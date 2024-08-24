@@ -242,7 +242,7 @@ namespace BetterLegacy.Core.Data
             {
                 string name = "Artist Name";
                 int linkType = 0;
-                string link = !setDefaultValues ? null : "kaixomusic";
+                string link = !setDefaultValues ? "" : "kaixomusic";
                 try
                 {
                     if (!string.IsNullOrEmpty(jn["artist"]["name"]))
@@ -261,7 +261,7 @@ namespace BetterLegacy.Core.Data
 
                 string steam_name = "RTMecha";
                 int steam_id = -1;
-                string creatorLink = null;
+                string creatorLink = "";
                 int creatorLinkType = 0;
 
                 try
@@ -434,39 +434,54 @@ namespace BetterLegacy.Core.Data
             var jn = JSON.Parse("{}");
 
             jn["artist"]["name"] = artist.Name;
-            jn["artist"]["link"] = artist.Link;
-            jn["artist"]["linkType"] = artist.LinkType.ToString();
+            jn["artist"]["link"] = !string.IsNullOrEmpty(artist.Link) ? artist.Link : "kaixo";
+            jn["artist"]["linkType"] = !string.IsNullOrEmpty(artist.Link) ? artist.LinkType.ToString() : 2;
 
             jn["creator"]["steam_name"] = creator.steam_name;
             jn["creator"]["steam_id"] = creator.steam_id.ToString();
-            jn["creator"]["link"] = LevelCreator.link;
-            jn["creator"]["linkType"] = LevelCreator.linkType.ToString();
+            if (!string.IsNullOrEmpty(LevelCreator.link))
+            {
+                jn["creator"]["link"] = LevelCreator.link;
+                jn["creator"]["linkType"] = LevelCreator.linkType.ToString();
+            }
 
             jn["song"]["title"] = song.title;
             jn["song"]["difficulty"] = song.difficulty.ToString();
             jn["song"]["description"] = song.description;
-            jn["song"]["link"] = LevelSong.link;
-            jn["song"]["linkType"] = LevelSong.linkType.ToString();
+
+            if (!string.IsNullOrEmpty(LevelSong.link))
+            {
+                jn["song"]["link"] = LevelSong.link;
+                jn["song"]["linkType"] = LevelSong.linkType.ToString();
+            }
             jn["song"]["bpm"] = song.BPM.ToString();
             jn["song"]["t"] = song.time.ToString();
             jn["song"]["preview_start"] = song.previewStart.ToString();
             jn["song"]["preview_length"] = song.previewLength.ToString();
-            for (int i = 0; i < LevelSong.tags.Length; i++)
-                jn["song"]["tags"][i] = LevelSong.tags[i];
 
-            jn["beatmap"]["name"] = LevelBeatmap.name;
+            if (LevelSong.tags != null)
+                for (int i = 0; i < LevelSong.tags.Length; i++)
+                    jn["song"]["tags"][i] = LevelSong.tags[i];
+
+            jn["beatmap"]["name"] = !string.IsNullOrEmpty(LevelBeatmap.name) ? LevelBeatmap.name : song.title;
             jn["beatmap"]["date_created"] = LevelBeatmap.date_created;
+
+            if (!string.IsNullOrEmpty(LevelBeatmap.date_published))
+                jn["beatmap"]["date_published"] = LevelBeatmap.date_published;
             jn["beatmap"]["date_edited"] = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
             jn["beatmap"]["version_number"] = beatmap.version_number.ToString();
             jn["beatmap"]["game_version"] = beatmap.game_version;
             jn["beatmap"]["mod_version"] = LevelBeatmap.mod_version;
-            jn["beatmap"]["workshop_id"] = LevelBeatmap.beatmap_id;
+            jn["beatmap"]["workshop_id"] = !string.IsNullOrEmpty(LevelBeatmap.beatmap_id) ? LevelBeatmap.beatmap_id : "-1";
 
             if (!string.IsNullOrEmpty(serverID))
                 jn["server_id"] = serverID;
 
             if (!string.IsNullOrEmpty(arcadeID))
                 jn["arcade_id"] = arcadeID;
+
+            if (!string.IsNullOrEmpty(collectionID))
+                jn["collection_id"] = collectionID;
 
             if (!string.IsNullOrEmpty(prevID))
                 jn["storyline"]["prev_level"] = prevID;

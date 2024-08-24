@@ -397,59 +397,14 @@ namespace BetterLegacy.Patchers
             JSONNode jn;
             try
             {
-                if (__1 is MetaData)
-                {
                     jn = ((MetaData)__1).ToJSON();
 
                     Debug.Log($"{__instance.className}Saving Metadata Full");
                     RTFile.WriteToFile(__0, jn.ToString());
-                }
-                else
-                {
-                    jn = JSON.Parse("{}");
-                    jn["artist"]["name"] = __1.artist.Name;
-                    jn["artist"]["link"] = __1.artist.Link;
-                    jn["artist"]["linkType"] = __1.artist.LinkType.ToString();
-                    jn["creator"]["steam_name"] = __1.creator.steam_name;
-                    jn["creator"]["steam_id"] = __1.creator.steam_id.ToString();
-                    jn["song"]["title"] = __1.song.title;
-                    jn["song"]["difficulty"] = __1.song.difficulty.ToString();
-                    jn["song"]["description"] = __1.song.description;
-                    jn["song"]["bpm"] = __1.song.BPM.ToString();
-                    jn["song"]["t"] = __1.song.time.ToString();
-                    jn["song"]["preview_start"] = __1.song.BPM.ToString();
-                    jn["song"]["preview_length"] = __1.song.time.ToString();
-                    jn["beatmap"]["date_edited"] = __1.beatmap.date_edited;
-                    jn["beatmap"]["version_number"] = __1.beatmap.version_number.ToString();
-                    jn["beatmap"]["game_version"] = __1.beatmap.game_version;
-                    jn["beatmap"]["workshop_id"] = __1.beatmap.workshop_id.ToString();
-
-                    Debug.Log($"{__instance.className}Saving Metadata");
-                    LSFile.WriteToFile(__0, jn.ToString());
-                }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                jn = JSON.Parse("{}");
-                jn["artist"]["name"] = __1.artist.Name;
-                jn["artist"]["link"] = __1.artist.Link;
-                jn["artist"]["linkType"] = __1.artist.LinkType.ToString();
-                jn["creator"]["steam_name"] = __1.creator.steam_name;
-                jn["creator"]["steam_id"] = __1.creator.steam_id.ToString();
-                jn["song"]["title"] = __1.song.title;
-                jn["song"]["difficulty"] = __1.song.difficulty.ToString();
-                jn["song"]["description"] = __1.song.description;
-                jn["song"]["bpm"] = __1.song.BPM.ToString();
-                jn["song"]["t"] = __1.song.time.ToString();
-                jn["song"]["preview_start"] = __1.song.BPM.ToString();
-                jn["song"]["preview_length"] = __1.song.time.ToString();
-                jn["beatmap"]["date_edited"] = __1.beatmap.date_edited;
-                jn["beatmap"]["version_number"] = __1.beatmap.version_number.ToString();
-                jn["beatmap"]["game_version"] = __1.beatmap.game_version;
-                jn["beatmap"]["workshop_id"] = __1.beatmap.workshop_id.ToString();
-
-                Debug.Log($"{__instance.className}Saving Metadata");
-                RTFile.WriteToFile(__0, jn.ToString());
+                CoreHelper.LogException(ex);
             }
 
             __result = result;
