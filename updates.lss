@@ -1,3 +1,19 @@
+1.3.0 > [Aug 24, 2024]
+- Completely reworked the menus to use a new & improved system that is far more capable compared to the original.
+- Updated play level menu to use the new system. The main arcade system will remain the same as it is for the time being.
+- Changed Props and Static Prefab Type icons.
+- Added Unlock Required and Is Hub Level toggles to MetaData. This is used for collections that require unlocking or have a hub level respectively.
+- New modifiers include: playDefaultSound, levelRankOtherEquals, (etc), levelRankCurrentEquals (etc), levelUnlocked, levelCompleted,  levelCompletedOther, loadLevelPrevious, loadLevelHub and endLevel modifiers.
+- Added some new formatting for text objects to use, <levelRankCurrent>, <levelRankCurrentName>, <levelRankCurrentColor>, <levelRankOther=id>, <levelRankOtherName=id> and <levelRankOtherColor=id>.
+- The editor config now has a "Editor Rank" setting located in Config Manager > Editor > Data. This is used for the above text formatting and modifiers, or anything related to level ranks while you're in the editor.
+- Editor Config now has an Editor Complexity setting. This will eventually replace the Show Modded Features setting and will be used for people who prefer a simpler or an advanced editor.
+- Added a few "Yield Mode" settings. This is used for the time between each iteration in certain functions. Yield Modes' Null, Delay, EndOfFrame takes longer but doesn't freeze the game, FixedUpdate is quicker but has a chance to lag the game and None is often quicker but will freeze the game for the amount of time it takes to run.
+- Removed blur bg from pause menu. Didn't work how I wanted it to unfortunately.
+- You can now copy and paste every levels' Background Objects into another.
+- Fixed Steam levels not having their IDs' remembered in player saves.
+- Level collections now work, though currently there isn't any way to create / edit them. (They're also missing their own selection menu so yeah)
+- Fixed dynamic homing rotation keyframe resetting after a regular rotation keyframe starts.
+- Homing keyframes now properly re-target when the object respawns.
 1.2.3 > [Aug 13, 2024]
 - Fixed Prefab Popup settings not updating when the values are changed.
 - Reloading Prefab types should now refresh the UI.
