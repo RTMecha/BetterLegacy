@@ -1,3 +1,9 @@
+1.3.1 > [Aug 24, 2024]
+- Fixed the metadata.lsb file not saving in some cases.
+- Homing keyframe behavior should now be more consistent across all homing types.
+-- Fixed dynamic homing rotation keyframe resetting after a regular rotation keyframe starts.
+-- Homing keyframes now properly re-target when the object respawns. (Plus there is now a setting in Config Manager > Editor > General for updating homing keyframes when time is changed)
+-- Going from dynamic to static homing should now be more consistent, however going the other way around isn't yet.
 1.3.0 > [Aug 24, 2024]
 - Completely reworked the menus to use a new & improved system that is far more capable compared to the original.
 - Updated play level menu to use the new system. The main arcade system will remain the same as it is for the time being.
