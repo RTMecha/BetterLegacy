@@ -53,6 +53,11 @@ namespace BetterLegacy.Core.Animation.Keyframe
 
         }
 
+        public void Stop()
+        {
+            Active = false;
+        }
+
         public Vector2 Interpolate(IKeyframe<Vector2> other, float time)
         {
             var second = (DynamicVector2Keyframe)other;

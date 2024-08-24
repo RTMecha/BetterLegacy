@@ -87,6 +87,11 @@ namespace BetterLegacy.Core.Animation.Keyframe
 
         }
 
+        public void Stop()
+        {
+            Active = false;
+        }
+
         public Side PlayerSide { get; set; }
 
         public enum Side

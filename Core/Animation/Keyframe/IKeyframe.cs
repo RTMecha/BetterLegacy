@@ -12,6 +12,8 @@
 
         public void Start();
 
+        public void Stop();
+
         public T Interpolate(IKeyframe<T> other, float time);
     }
 }

@@ -26,6 +26,11 @@ namespace BetterLegacy.Core.Animation.Keyframe
 
         }
 
+        public void Stop()
+        {
+            Active = false;
+        }
+
         public Color Interpolate(IKeyframe<Color> other, float time)
         {
             var second = (ColorKeyframe)other;

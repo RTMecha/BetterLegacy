@@ -62,6 +62,11 @@ namespace BetterLegacy.Core.Animation.Keyframe
 
         }
 
+        public void Stop()
+        {
+            Active = false;
+        }
+
         public Color Interpolate(IKeyframe<Color> other, float time)
         {
             var value = other is ThemeKeyframe vector3Keyframe ? vector3Keyframe.Value : other is DynamicThemeKeyframe dynamicVector3Keyframe ? dynamicVector3Keyframe.Value : 0;

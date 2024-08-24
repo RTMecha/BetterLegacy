@@ -51,6 +51,11 @@ namespace BetterLegacy.Core.Animation.Keyframe
             Value = OriginalValue;
         }
 
+        public void Stop()
+        {
+            Active = false;
+        }
+
         public Vector3 Interpolate(IKeyframe<Vector3> other, float time)
         {
             //var secondValue = other is DynamicVector3Keyframe keyframe ? keyframe.Value : ((Vector3Keyframe)other).Value;

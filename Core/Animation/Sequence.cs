@@ -30,9 +30,9 @@ namespace BetterLegacy.Core.Animation
                 throw new NoKeyframeException("Cannot interpolate in an empty sequence!");
 
             Time = time;
-            for (int i = 0; i < keyframes.Length; i++)
-                if (time < keyframes[i].Time)
-                    keyframes[i].Active = false;
+            //for (int i = 0; i < keyframes.Length; i++)
+            //    if (time < keyframes[i].Time)
+            //        keyframes[i].Active = false;
 
             if (keyframes.Length == 1 || time < keyframes[0].Time)
             {

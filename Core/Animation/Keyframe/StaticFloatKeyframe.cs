@@ -52,12 +52,20 @@ namespace BetterLegacy.Core.Animation.Keyframe
                 Target = Player.transform.position;
         }
 
+        public void Stop()
+        {
+            Active = false;
+        }
+
         public float Interpolate(IKeyframe<float> other, float time)
         {
             var value = other is FloatKeyframe vector3Keyframe ? vector3Keyframe.Value : other is DynamicFloatKeyframe dynamicVector3Keyframe ? dynamicVector3Keyframe.Value : other is StaticFloatKeyframe staticVector3Keyframe ? staticVector3Keyframe.Value : 0f;
             var ease = other is FloatKeyframe vector3Keyframe1 ? vector3Keyframe1.Ease(time) : other is DynamicFloatKeyframe dynamicVector3Keyframe1 ? dynamicVector3Keyframe1.Ease(time) : other is StaticFloatKeyframe staticVector3Keyframe1 ? staticVector3Keyframe1.Ease(time) : 0f;
 
-            var prevtarget = PreviousKeyframe != null && PreviousKeyframe is StaticFloatKeyframe ? ((StaticFloatKeyframe)PreviousKeyframe).Angle : 0f;
+            var prevtarget =
+                PreviousKeyframe is StaticFloatKeyframe staticFloatKeyframe ? staticFloatKeyframe.Angle : 
+                PreviousKeyframe is DynamicFloatKeyframe dynamicFloatKeyframe ? dynamicFloatKeyframe.Angle :
+                0f;
 
             Angle = -RTMath.VectorAngle(PositionSequence.Value, Target);
             return RTMath.Lerp(prevtarget + Value, Angle + value, ease);
