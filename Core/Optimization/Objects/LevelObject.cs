@@ -141,12 +141,13 @@ namespace BetterLegacy.Core.Optimization.Objects
             }
         }
 
+        bool active = false;
         public void SetActive(bool active)
         {
             if (parentObjects.Count > 0)
                 parentObjects[parentObjects.Count - 1].GameObject?.SetActive(active);
 
-            if (!active)
+            if (!active && this.active)
             {
                 desyncParentIndex = parentObjects.Count;
                 spawned = false;
@@ -163,6 +164,8 @@ namespace BetterLegacy.Core.Optimization.Objects
                 for (int i = 0; i < colorSequence.keyframes.Length; i++)
                     colorSequence.keyframes[i].Stop();
             }
+
+            this.active = active;
         }
 
         public static Color ChangeColorHSV(Color color, float hue, float sat, float val)
