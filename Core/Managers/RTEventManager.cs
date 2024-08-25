@@ -203,7 +203,12 @@ namespace BetterLegacy.Core.Managers
             var time = currentTime;
 
             if (shakeSequence != null && shakeSequence.keyframes != null && shakeSequence.keyframes.Length > 0 && EventsConfig.Instance.ShakeEventMode.Value == ShakeType.Catalyst)
-                EventManager.inst.shakeVector = shakeSequence.Interpolate((time * (shakeSpeed < 0.001f ? 1f : shakeSpeed)) % shakeLength);
+            {
+                for (int i = 0; i < shakeSequence.keyframes.Length; i++)
+                    shakeSequence.keyframes[i].SetEase(ShakeEase);
+                var speed = shakeSpeed < 0.001f ? 1f : shakeSpeed;
+                EventManager.inst.shakeVector = shakeSequence.Interpolate((time * speed) % shakeLength);
+            }
 
             for (int i = 0; i < allEvents.Count; i++)
             {
@@ -825,7 +830,6 @@ namespace BetterLegacy.Core.Managers
         public static void updateCameraShakeSmoothness(float x) => inst.shakeSmoothness = x;
 
         // 3 - 4
-
         public static void updateCameraShakeSpeed(float x) => inst.shakeSpeed = x;
 
         #endregion
@@ -2240,23 +2244,9 @@ namespace BetterLegacy.Core.Managers
         };
 
         public float shakeSpeed = 1f;
-        public float shakeSmoothness = 1;
-        public EaseFunction shakeEase = Ease.Linear;
+        public float shakeSmoothness = 1f;
 
-        public static float ShakeEase(float t)
-        {
-            return Ease.InterpolateEase(t, Mathf.Clamp(inst.shakeSmoothness, 0f, 4f));
-            //int count = Mathf.Clamp((int)inst.shakeSmoothness, 0, 7);
-
-            //float mult = t;
-
-            //for (int i = 0; i < count; i++)
-            //{
-            //    mult *= t;
-            //}
-
-            //return t <= .5 ? (count == 0 ? count + 1 : (count) * 2) * mult : 1 - Mathf.Pow(-2 * t + 2, count + 1) / 2;
-        }
+        public static float ShakeEase(float t) => Ease.InterpolateEase(t, Mathf.Clamp(inst.shakeSmoothness, 0f, 4f));
 
         public void SetupShake()
         {
@@ -2282,7 +2272,7 @@ namespace BetterLegacy.Core.Managers
                 if (y < 0f)
                     y = Math.Max(-3f, y);
 
-                var kf = new Vector2Keyframe(t, new Vector2(x, y), ShakeEase);
+                var kf = new Vector2Keyframe(t, new Vector2(x, y), Ease.Linear);
 
                 if (!setFirstKeyframe)
                 {
@@ -2294,7 +2284,7 @@ namespace BetterLegacy.Core.Managers
                 t += Random.Range(0.065f, 0.07f);
             }
 
-            list.Add(new Vector2Keyframe(t, firstKeyframe.Value, ShakeEase));
+            list.Add(new Vector2Keyframe(t, firstKeyframe.Value, Ease.Linear));
             shakeLength = t;
             shakeSequence = new Sequence<Vector2>(list);
         }

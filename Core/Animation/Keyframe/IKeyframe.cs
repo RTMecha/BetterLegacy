@@ -14,6 +14,8 @@
 
         public void Stop();
 
+        public void SetEase(EaseFunction ease);
+
         public T Interpolate(IKeyframe<T> other, float time);
     }
 }

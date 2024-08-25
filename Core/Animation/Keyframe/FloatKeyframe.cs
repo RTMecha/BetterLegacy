@@ -31,6 +31,11 @@
             Active = false;
         }
 
+        public void SetEase(EaseFunction ease)
+        {
+            Ease = ease;
+        }
+
         public float Interpolate(IKeyframe<float> other, float time)
         {
             var value = other is FloatKeyframe vector3Keyframe ? vector3Keyframe.Value : other is DynamicFloatKeyframe dynamicVector3Keyframe ? dynamicVector3Keyframe.Value : other is StaticFloatKeyframe staticVector3Keyframe ? staticVector3Keyframe.Value : 0f;

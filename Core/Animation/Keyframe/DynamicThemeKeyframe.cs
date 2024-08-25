@@ -67,6 +67,11 @@ namespace BetterLegacy.Core.Animation.Keyframe
             Active = false;
         }
 
+        public void SetEase(EaseFunction ease)
+        {
+            Ease = ease;
+        }
+
         public Color Interpolate(IKeyframe<Color> other, float time)
         {
             var value = other is ThemeKeyframe vector3Keyframe ? vector3Keyframe.Value : other is DynamicThemeKeyframe dynamicVector3Keyframe ? dynamicVector3Keyframe.Value : 0;

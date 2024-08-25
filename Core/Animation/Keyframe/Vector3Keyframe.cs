@@ -33,6 +33,11 @@ namespace BetterLegacy.Core.Animation.Keyframe
             Active = false;
         }
 
+        public void SetEase(EaseFunction ease)
+        {
+            Ease = ease;
+        }
+
         public Vector3 Interpolate(IKeyframe<Vector3> other, float time)
         {
             var value = other is Vector3Keyframe vector3Keyframe ? vector3Keyframe.Value : other is DynamicVector3Keyframe dynamicVector3Keyframe ? dynamicVector3Keyframe.OriginalValue : other is StaticVector3Keyframe staticVector3Keyframe ? staticVector3Keyframe.Value : Vector3.zero;
