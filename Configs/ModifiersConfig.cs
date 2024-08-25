@@ -9,7 +9,7 @@ namespace BetterLegacy.Configs
     {
         public static ModifiersConfig Instance { get; set; }
 
-        public ModifiersConfig() : base("Modifiers") // Set config name via base("")
+        public ModifiersConfig() : base(nameof(ModifiersConfig)) // Set config name via base("")
         {
             Instance = this;
             BindSettings();

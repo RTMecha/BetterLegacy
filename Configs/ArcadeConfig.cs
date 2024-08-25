@@ -16,7 +16,7 @@ namespace BetterLegacy.Configs
     {
         public static ArcadeConfig Instance { get; set; }
 
-        public ArcadeConfig() : base("Arcade") // Set config name via base("")
+        public ArcadeConfig() : base(nameof(ArcadeConfig)) // Set config name via base("")
         {
             Instance = this;
             BindSettings();

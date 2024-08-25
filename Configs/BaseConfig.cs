@@ -19,7 +19,7 @@ namespace BetterLegacy.Configs
         public List<BaseSetting> Settings { get; set; } = new List<BaseSetting>();
         public JSONNode JSON { get; set; }
         public string Name { get; set; }
-        public string FullPath => RTFile.ApplicationDirectory + "profile/" + Name.ToLower().Replace(" ", "_") + ".lsc";
+        public string FullPath => RTFile.ApplicationDirectory + "profile/" + Name.ToLower().Replace("config", "").Replace(" ", "_") + ".lsc";
 
         public Action SettingChanged { get; set; }
 

@@ -14,7 +14,7 @@ namespace BetterLegacy.Configs
     {
         public static PlayerConfig Instance { get; set; }
 
-        public PlayerConfig() : base("Player") // Set config name via base("")
+        public PlayerConfig() : base(nameof(PlayerConfig)) // Set config name via base("")
         {
             Instance = this;
             BindSettings();

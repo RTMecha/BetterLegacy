@@ -17,7 +17,7 @@ namespace BetterLegacy.Configs
     {
         public static CoreConfig Instance { get; set; }
 
-        public CoreConfig() : base("Core") // Set config name via base("")
+        public CoreConfig() : base(nameof(CoreConfig)) // Set config name via base("")
         {
             Instance = this;
             BindSettings();

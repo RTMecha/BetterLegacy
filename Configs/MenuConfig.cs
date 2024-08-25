@@ -13,7 +13,7 @@ namespace BetterLegacy.Configs
     {
         public static MenuConfig Instance { get; set; }
 
-        public MenuConfig() : base("Menu") // Set config name via base("")
+        public MenuConfig() : base(nameof(MenuConfig)) // Set config name via base("")
         {
             Instance = this;
             BindSettings();

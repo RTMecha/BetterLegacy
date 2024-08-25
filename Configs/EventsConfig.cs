@@ -11,7 +11,7 @@ namespace BetterLegacy.Configs
     {
         public static EventsConfig Instance { get; set; }
 
-        public EventsConfig() : base("Events") // Set config name via base("")
+        public EventsConfig() : base(nameof(EventsConfig)) // Set config name via base("")
         {
             Instance = this;
             BindSettings();

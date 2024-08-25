@@ -22,7 +22,7 @@ namespace BetterLegacy.Configs
     {
         public static EditorConfig Instance { get; set; }
 
-        public EditorConfig() : base("Editor")
+        public EditorConfig() : base(nameof(EditorConfig))
         {
             Instance = this;
             BindSettings();

@@ -12,7 +12,7 @@ namespace BetterLegacy.Configs
     {
         public static ExampleConfig Instance { get; set; }
 
-        public ExampleConfig() : base("Example") // Set config name via base("")
+        public ExampleConfig() : base(nameof(ExampleConfig)) // Set config name via base("")
         {
             Instance = this;
             BindSettings();
