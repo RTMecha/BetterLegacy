@@ -1080,9 +1080,9 @@ namespace BetterLegacy.Editor.Managers
                 label.transform.localScale = Vector3.one;
                 label.transform.AsRT().sizeDelta = new Vector2(366f, 42f);
                 var labelText = label.GetComponent<Text>();
-                labelText.text = "FEATURES BELOW ARE WIP & SUBJECT TO CHANGE (Requires Catalyst Shake)";
+                labelText.text = "(Requires Catalyst Shake)";
 
-                var interpolation = GenerateUIElement("interpolation", "Single", shake, 13, "Interpolation");
+                var interpolation = GenerateUIElement("interpolation", "Single", shake, 13, "Smoothness");
                 var speed = GenerateUIElement("speed", "Single", shake, 15, "Speed");
 
                 EditorThemeManager.AddLightText(labelText);
