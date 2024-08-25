@@ -168,11 +168,11 @@ namespace BetterLegacy.Core
         {
             if (a.Major < b.Major)
                 return true;
-            if (a.Minor < b.Minor)
+            if (a.Minor < b.Minor && a.Major <= b.Major)
                 return true;
-            if (a.Patch < b.Patch)
+            if (a.Patch < b.Patch && a.Minor <= b.Minor && a.Major <= b.Major)
                 return true;
-            if (a.IterationIndex < b.IterationIndex)
+            if (!string.IsNullOrEmpty(a.Iteration) && !string.IsNullOrEmpty(b.Iteration) && a.IterationIndex < b.IterationIndex && a.Patch <= b.Patch && a.Minor <= b.Minor && a.Major <= b.Major)
                 return true;
 
             return false;
@@ -228,11 +228,11 @@ namespace BetterLegacy.Core
         {
             if (a.Major <= b.Major)
                 return true;
-            if (a.Minor <= b.Minor)
+            if (a.Minor <= b.Minor && a.Major <= b.Major)
                 return true;
-            if (a.Patch <= b.Patch)
+            if (a.Patch <= b.Patch && a.Minor <= b.Minor && a.Major <= b.Major)
                 return true;
-            if (a.IterationIndex <= b.IterationIndex)
+            if (!string.IsNullOrEmpty(a.Iteration) && !string.IsNullOrEmpty(b.Iteration) && a.IterationIndex <= b.IterationIndex && a.Patch <= b.Patch && a.Minor <= b.Minor && a.Major <= b.Major)
                 return true;
 
             return false;
