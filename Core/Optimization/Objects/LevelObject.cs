@@ -116,7 +116,7 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             try
             {
-                top = this.parentObjects[parentObjects.Count - 1].Transform.parent;
+                top = this.parentObjects[this.parentObjects.Count - 1].Transform.parent;
 
                 var pc = beatmapObject.GetParentChain();
 
@@ -151,16 +151,16 @@ namespace BetterLegacy.Core.Optimization.Objects
             {
                 desyncParentIndex = parentObjects.Count;
                 spawned = false;
-                for (int i = 0; i < parentObjects.Count; i++)
-                {
-                    var parentObject = parentObjects[i];
+                //for (int i = 0; i < parentObjects.Count; i++)
+                //{
+                    var parentObject = parentObjects[0];
                     for (int j = 0; j < parentObject.Position3DSequence.keyframes.Length; j++)
                         parentObject.Position3DSequence.keyframes[j].Stop();
                     for (int j = 0; j < parentObject.ScaleSequence.keyframes.Length; j++)
                         parentObject.ScaleSequence.keyframes[j].Stop();
                     for (int j = 0; j < parentObject.RotationSequence.keyframes.Length; j++)
                         parentObject.RotationSequence.keyframes[j].Stop();
-                }
+                //}
                 for (int i = 0; i < colorSequence.keyframes.Length; i++)
                     colorSequence.keyframes[i].Stop();
             }
