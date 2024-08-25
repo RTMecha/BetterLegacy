@@ -514,14 +514,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                 if (keyframes.Has(x => x.Time == eventKeyframe.eventTime))
                     continue;
 
-                if (eventKeyframe.random != 6)
-                {
-                    keyframes.Add(new Vector2Keyframe(eventKeyframe.eventTime, currentValue, Ease.GetEaseFunction(eventKeyframe.curveType.Name)));
-                }
-                else
-                {
-                    keyframes.Add(new DynamicVector2Keyframe(eventKeyframe.eventTime, currentValue, Ease.GetEaseFunction(eventKeyframe.curveType.Name)));
-                }
+                keyframes.Add(new Vector2Keyframe(eventKeyframe.eventTime, currentValue, Ease.GetEaseFunction(eventKeyframe.curveType.Name)));
             }
 
             // If there is no keyframe, add default
