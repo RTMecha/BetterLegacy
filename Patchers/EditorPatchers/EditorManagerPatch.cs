@@ -735,10 +735,14 @@ namespace BetterLegacy.Patchers
                 Instance.savingBeatmap = true;
             }
 
+            var gameData = GameData.Current;
+            if (gameData.beatmapData is LevelBeatmapData levelBeatmapData && levelBeatmapData.levelData is LevelData levelData)
+                levelData.modVersion = LegacyPlugin.ModVersion.ToString();
+
             if (EditorConfig.Instance.SaveAsync.Value)
-                yield return CoreHelper.StartCoroutineAsync(ProjectData.Writer.SaveData(_path, GameData.Current));
+                yield return CoreHelper.StartCoroutineAsync(ProjectData.Writer.SaveData(_path, gameData));
             else
-                yield return CoreHelper.StartCoroutine(ProjectData.Writer.SaveData(_path, GameData.Current));
+                yield return CoreHelper.StartCoroutine(ProjectData.Writer.SaveData(_path, gameData));
 
             yield return new WaitForSeconds(0.5f);
             if (Instance != null)
