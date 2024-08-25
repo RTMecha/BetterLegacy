@@ -403,6 +403,11 @@ namespace BetterLegacy.Menus
                 CurrentGenerateUICoroutine = StartCoroutine(changeLogMenu.GenerateUI());
                 PlayMusic();
 
+                if (CoreHelper.InEditor || SceneManagerPatch.loading)
+                {
+                    CloseMenus();
+                }
+
                 ChangeLogMenu.Seen = true;
             }, onError =>
             {
