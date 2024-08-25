@@ -8595,6 +8595,10 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.loading = false;
             fromNewLevel = false;
 
+            rawJSON = null;
+            rawMetadataJSON = null;
+            song = null;
+
             yield break;
         }
 

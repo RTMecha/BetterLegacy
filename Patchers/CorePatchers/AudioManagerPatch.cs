@@ -1,5 +1,6 @@
 ﻿using BetterLegacy.Core.Managers;
 using HarmonyLib;
+using System.Collections;
 using UnityEngine;
 
 namespace BetterLegacy.Patchers
@@ -50,6 +51,30 @@ namespace BetterLegacy.Patchers
             
             __instance.CurrentAudioSource.time = Mathf.Clamp(__0, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
             return false;
+        }
+
+        [HarmonyPatch(nameof(AudioManager.animateMusicFade))]
+        [HarmonyPrefix]
+        static bool animateMusicFadePrefix(AudioManager __instance, ref IEnumerator __result, float __0)
+        {
+            __result = AnimateMusicFade(__instance, __0);
+            return false;
+        }
+
+        static IEnumerator AnimateMusicFade(AudioManager __instance, float duration)
+        {
+            __instance.isFading = true;
+            float percent = 0f;
+            while (percent < 1f)
+            {
+                percent += Time.deltaTime * 1f / duration;
+                __instance.musicSources[__instance.activeMusicSourceIndex].volume = Mathf.Lerp(0f, __instance.musicVol, percent);
+                __instance.musicSources[1 - __instance.activeMusicSourceIndex].volume = Mathf.Lerp(__instance.musicVol, 0f, percent);
+                yield return null;
+            }
+            __instance.isFading = false;
+            __instance.musicSources[1 - __instance.activeMusicSourceIndex].clip = null; // clear clip from memory
+            yield break;
         }
     }
 }
