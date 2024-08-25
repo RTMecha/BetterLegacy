@@ -1,3 +1,9 @@
+1.3.3 > [Aug 25, 2024]
+- Fixed folders appearing at the bottom instead of the top of the level list.
+- Fixed homing keyframes sending an error log when there is no player.
+- Examples' dialogue should now always disappear even in cases of lag or low FPS.
+- Removed unused scale homing keyframe code.
+- Added preferred player count to metadata.
 1.3.2 > [Aug 25, 2024]
 - Started investigating memory leaks.
 - Stop interface from loading if the EditorOnStartup mod is installed.
