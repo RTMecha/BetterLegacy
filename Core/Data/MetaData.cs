@@ -339,6 +339,7 @@ namespace BetterLegacy.Core.Data
                 string workshopID = "-1";
                 int num = 0;
                 var modVersion = LegacyPlugin.ModVersion.ToString();
+                LevelBeatmap.PreferredPlayerCount preferredPlayerCount = LevelBeatmap.PreferredPlayerCount.Any;
 
                 try
                 {
@@ -360,6 +361,8 @@ namespace BetterLegacy.Core.Data
                         num = jn["beatmap"]["version_number"].AsInt;
                     if (!string.IsNullOrEmpty(jn["beatmap"]["workshop_id"]))
                         workshopID = jn["beatmap"]["workshop_id"];
+                    if (!string.IsNullOrEmpty(jn["beatmap"]["preferred_players"]))
+                        preferredPlayerCount = (LevelBeatmap.PreferredPlayerCount)jn["beatmap"]["preferred_players"].AsInt;
                 }
                 catch (Exception ex)
                 {
@@ -367,6 +370,7 @@ namespace BetterLegacy.Core.Data
                 }
 
                 var beatmap = new LevelBeatmap(levelName, dateEdited, dateCreated, datePublished, gameVersion, num, workshopID, modVersion);
+                beatmap.preferredPlayerCount = preferredPlayerCount;
 
                 result = new MetaData(artist, creator, song, beatmap);
                 if (!string.IsNullOrEmpty(jn["server_id"]))
@@ -473,6 +477,7 @@ namespace BetterLegacy.Core.Data
             jn["beatmap"]["game_version"] = beatmap.game_version;
             jn["beatmap"]["mod_version"] = LevelBeatmap.mod_version;
             jn["beatmap"]["workshop_id"] = !string.IsNullOrEmpty(LevelBeatmap.beatmap_id) ? LevelBeatmap.beatmap_id : "-1";
+            jn["beatmap"]["preferred_players"] = ((int)LevelBeatmap.preferredPlayerCount).ToString();
 
             if (!string.IsNullOrEmpty(serverID))
                 jn["server_id"] = serverID;
@@ -634,6 +639,18 @@ namespace BetterLegacy.Core.Data
         public string date_created;
         public string date_published;
         public string mod_version;
+
+        public PreferredPlayerCount preferredPlayerCount;
+
+        public enum PreferredPlayerCount
+        {
+            Any,
+            One,
+            Two,
+            Three,
+            Four,
+            MoreThanFour
+        }
 
         #region Operators
 

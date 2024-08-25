@@ -187,6 +187,28 @@ namespace BetterLegacy.Editor.Managers
             GenerateToggle(content, creatorLinkTitle, "is hub level", "Is Hub Level", 4);
             GenerateToggle(content, creatorLinkTitle, "unlock required", "Unlock Required", 5);
 
+            // Preferred Player Count
+            {
+                var preferredPlayerCount = Creator.NewUIObject("preferred player count", content, 6);
+                var preferredPlayerCountLayout = preferredPlayerCount.AddComponent<HorizontalLayoutGroup>();
+                preferredPlayerCountLayout.childControlHeight = true;
+                preferredPlayerCountLayout.childControlWidth = false;
+                preferredPlayerCountLayout.childForceExpandHeight = true;
+                preferredPlayerCountLayout.childForceExpandWidth = false;
+                preferredPlayerCount.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+
+                var preferredPlayerCountLabel = creatorLinkTitle.gameObject.Duplicate(preferredPlayerCount.transform, "label");
+                var preferredPlayerCountLabelText = preferredPlayerCountLabel.GetComponent<Text>();
+                preferredPlayerCountLabelText.text = "Preferred Player count";
+                preferredPlayerCountLabelText.rectTransform.sizeDelta = new Vector2(260f, 32f);
+
+                var preferredPlayerCountDropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(preferredPlayerCount.transform, "dropdown");
+                var preferredPlayerCountLE = preferredPlayerCountDropdown.GetComponent<LayoutElement>() ?? preferredPlayerCountDropdown.AddComponent<LayoutElement>();
+                preferredPlayerCountLE.preferredWidth = 126f;
+                preferredPlayerCountLE.minWidth = 126f;
+                preferredPlayerCountDropdown.transform.AsRT().sizeDelta = new Vector2(256f, 32f);
+            }
+
             #region Editor Theme Setup
 
             EditorThemeManager.AddGraphic(convertImage, ThemeGroup.Function_1, true);
@@ -282,14 +304,15 @@ namespace BetterLegacy.Editor.Managers
             togglesLayout.childForceExpandWidth = false;
             toggles.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
 
-            var isHubLevelLabel = creatorLinkTitle.gameObject.Duplicate(toggles.transform, "label");
-            var isHubLevelLabelText = isHubLevelLabel.GetComponent<Text>();
-            isHubLevelLabelText.text = text;
+            var label = creatorLinkTitle.gameObject.Duplicate(toggles.transform, "label");
+            var labelText = label.GetComponent<Text>();
+            labelText.text = text;
+            labelText.rectTransform.sizeDelta = new Vector2(260f, 32f);
 
-            var isHubLevel = EditorPrefabHolder.Instance.Toggle.Duplicate(toggles.transform, "toggle");
-            var isHubLevelLayoutElement = isHubLevel.AddComponent<LayoutElement>();
-            isHubLevelLayoutElement.preferredWidth = 32f;
-            isHubLevelLayoutElement.minWidth = 32f;
+            var toggle = EditorPrefabHolder.Instance.Toggle.Duplicate(toggles.transform, "toggle");
+            var layoutElement = toggle.AddComponent<LayoutElement>();
+            layoutElement.preferredWidth = 32f;
+            layoutElement.minWidth = 32f;
         }
 
         void RenderDifficultyToggles()
@@ -626,6 +649,14 @@ namespace BetterLegacy.Editor.Managers
             requireUnlock.onValueChanged.ClearAll();
             requireUnlock.isOn = metadata.requireUnlock;
             requireUnlock.onValueChanged.AddListener(_val => { metadata.requireUnlock = _val; });
+
+            var preferredPlayerCount = content.Find("preferred player count/dropdown").GetComponent<Dropdown>();
+            preferredPlayerCount.options = CoreHelper.StringToOptionData("Any", "One", "Two", "Three", "Four", "More than four");
+            preferredPlayerCount.value = (int)metadata.LevelBeatmap.preferredPlayerCount;
+            preferredPlayerCount.onValueChanged.AddListener(x =>
+            {
+                metadata.LevelBeatmap.preferredPlayerCount = (LevelBeatmap.PreferredPlayerCount)x;
+            });
 
             content.Find("agreement/text").GetComponent<Text>().text = "If you want to upload to the Steam Workshop, you can convert the level to the current level format for vanilla PA and upload it to the workshop. Beware any modded features not in current PA will not be saved. " +
                 "However, if you want to include modded features, then it's recommended to upload to the arcade server or zip the level.";
