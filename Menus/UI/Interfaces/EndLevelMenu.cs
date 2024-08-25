@@ -375,7 +375,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 elements.AddRange(GenerateBottomBar());
             }
 
-            CoreHelper.StartCoroutine(GenerateUI());
+            InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
         }
 
         public override void UpdateTheme()

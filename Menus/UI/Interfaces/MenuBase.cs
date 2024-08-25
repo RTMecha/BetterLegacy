@@ -31,11 +31,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
     {
         public UICanvas canvas;
 
-        public MenuBase(bool setupUI = true)
-        {
-            if (setupUI)
-                CoreHelper.StartCoroutine(GenerateUI());
-        }
+        public MenuBase(bool setupUI = true) { }
 
         /// <summary>
         /// For cases where the UI only needs to be set active / inactive instead of destroyed.

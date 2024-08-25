@@ -35,6 +35,7 @@ namespace BetterLegacy.Menus
         public float[] samples = new float[256];
 
         public MenuBase CurrentMenu { get; set; }
+        public Coroutine CurrentGenerateUICoroutine { get; set; }
 
         public List<MenuBase> interfaces = new List<MenuBase>();
 
@@ -209,7 +210,7 @@ namespace BetterLegacy.Menus
             {
                 CloseMenus();
                 CurrentMenu = menu;
-                StartCoroutine(menu.GenerateUI());
+                CurrentGenerateUICoroutine = StartCoroutine(menu.GenerateUI());
             }
         }
 
@@ -223,6 +224,12 @@ namespace BetterLegacy.Menus
             EndLevelMenu.Current = null;
             ArcadeMenu.Current = null;
             PlayLevelMenu.Current = null;
+
+            if (CurrentGenerateUICoroutine != null)
+            {
+                StopCoroutine(CurrentGenerateUICoroutine);
+                CurrentGenerateUICoroutine = null;
+            }
         }
 
         public void Clear()
@@ -246,6 +253,12 @@ namespace BetterLegacy.Menus
             }
             interfaces.Clear();
             themes.Clear();
+
+            if (CurrentGenerateUICoroutine != null)
+            {
+                StopCoroutine(CurrentGenerateUICoroutine);
+                CurrentGenerateUICoroutine = null;
+            }
         }
 
         public void LoadThemes()
@@ -387,7 +400,7 @@ namespace BetterLegacy.Menus
                 });
 
                 CurrentMenu = changeLogMenu;
-                StartCoroutine(changeLogMenu.GenerateUI());
+                CurrentGenerateUICoroutine = StartCoroutine(changeLogMenu.GenerateUI());
                 PlayMusic();
 
                 ChangeLogMenu.Seen = true;

@@ -88,7 +88,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             }
 
             exitFunc = () => { InterfaceManager.inst.SetCurrentInterface("0"); };
-            CoreHelper.StartCoroutine(GenerateUI());
+            InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
         }
 
         public override void UpdateTheme()

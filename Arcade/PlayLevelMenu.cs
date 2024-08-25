@@ -569,7 +569,7 @@ namespace BetterLegacy.Arcade
             allowEffects = false;
             layer = 10000;
             defaultSelection = new Vector2Int(0, 4);
-            CoreHelper.StartCoroutine(GenerateUI());
+            InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
         }
 
         public override void UpdateTheme()
