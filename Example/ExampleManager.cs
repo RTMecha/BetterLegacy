@@ -2028,19 +2028,14 @@ namespace BetterLegacy.Example
 
             dialogue = dialogue.Replace("{{Username}}", CoreConfig.Instance.DisplayName.Value);
 
-            var regex = new Regex(@"{{Config_(.*?)_(.*?)}}");
-            var match = regex.Match(dialogue);
-            if (match.Success)
+            foreach (var obj in Regex.Matches(dialogue, @"{{Config_(.*?)_(.*?)}}"))
             {
-                var str = match.Groups[1].ToString();
-                BaseConfig baseConfig = str == "CoreConfig" ? CoreConfig.Instance : EditorConfig.Instance;
+                var match = (Match)obj;
+                var configName = match.Groups[1].ToString();
+                var config = LegacyPlugin.configs.Find(x => x.Name == configName);
+                var setting = config.Settings.Find(x => x.Key == match.Groups[2].ToString());
 
-                var setting = baseConfig.Settings.Find(x => x.Key == match.Groups[2].ToString());
-
-                if (setting != null)
-                {
-                    dialogue = dialogue.Replace("{{Config_" + match.Groups[1].ToString() + "_" + match.Groups[2].ToString() + "}}", setting.BoxedValue.ToString());
-                }
+                dialogue = dialogue.Replace(match.Groups[0].ToString(), setting.BoxedValue.ToString());
             }
 
             if (stopOthers)
@@ -2156,6 +2151,9 @@ namespace BetterLegacy.Example
                 animation = null;
 
                 talking = false;
+
+                if (dialogueBase)
+                    dialogueBase.transform.localScale = new Vector3(0f, 0f, 1f);
 
                 if (DebugsOn)
                     Debug.Log($"{className}Say onComplete");
