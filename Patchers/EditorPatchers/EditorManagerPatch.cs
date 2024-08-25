@@ -91,6 +91,7 @@ namespace BetterLegacy.Patchers
 
             if (Menus.InterfaceManager.inst.CurrentAudioSource.clip != null)
                 Menus.InterfaceManager.inst.StopMusic();
+            Menus.InterfaceManager.inst.CloseMenus();
             Menus.InterfaceManager.inst.Clear();
             CoreHelper.InStory = false;
 
