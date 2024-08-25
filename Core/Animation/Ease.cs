@@ -79,9 +79,15 @@ namespace BetterLegacy.Core.Animation
         /// <summary>
         /// lol
         /// </summary>
-        /// <param name="t"></param>
-        /// <returns></returns>
-        public static float Outstant(float t) => 1f;
+        /// <param name="t">Time elapsed.</param>
+        /// <returns>Eased timescale.</returns>
+        public static float Outstant(float t) => 1.0f;
+
+        public static float InterpolateEase(float t, float ease) => ease == 0.0f ? t :
+            ease > 0f && ease <= 1f ? RTMath.Lerp(Linear(t), QuadInOut(t), ease) :
+            ease > 1f && ease <= 2f ? RTMath.Lerp(QuadInOut(t), CubicInOut(t), ease - 1f) :
+            ease > 2f && ease <= 3f ? RTMath.Lerp(CubicInOut(t), QuartInOut(t), ease - 2f) :
+            ease > 3f && ease <= 4f ? RTMath.Lerp(QuartInOut(t), QuintInOut(t), ease - 3f) : 1f;
 
         #region Sine
 

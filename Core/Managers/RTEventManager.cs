@@ -2245,16 +2245,17 @@ namespace BetterLegacy.Core.Managers
 
         public static float ShakeEase(float t)
         {
-            int count = Mathf.Clamp((int)inst.shakeSmoothness, 0, 7);
+            return Ease.InterpolateEase(t, Mathf.Clamp(inst.shakeSmoothness, 0f, 4f));
+            //int count = Mathf.Clamp((int)inst.shakeSmoothness, 0, 7);
 
-            float mult = t;
+            //float mult = t;
 
-            for (int i = 0; i < count; i++)
-            {
-                mult *= t;
-            }
+            //for (int i = 0; i < count; i++)
+            //{
+            //    mult *= t;
+            //}
 
-            return t <= .5 ? (count == 0 ? count + 1 : (count) * 2) * mult : 1 - Mathf.Pow(-2 * t + 2, count + 1) / 2;
+            //return t <= .5 ? (count == 0 ? count + 1 : (count) * 2) * mult : 1 - Mathf.Pow(-2 * t + 2, count + 1) / 2;
         }
 
         public void SetupShake()
@@ -2268,9 +2269,20 @@ namespace BetterLegacy.Core.Managers
             bool setFirstKeyframe = false;
 
             float t = 0f;
-            while (t < AudioManager.inst.CurrentAudioSource.clip.length)
+            while (t < 10f)
             {
-                var kf = new Vector2Keyframe(t, new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f)), ShakeEase);
+                var x = Random.Range(-6f, 6f);
+                var y = Random.Range(-6f, 6f);
+                if (x >= 0f)
+                    x = Math.Min(3f, x);
+                if (x < 0f)
+                    x = Math.Max(-3f, x);
+                if (y >= 0f)
+                    y = Math.Min(3f, y);
+                if (y < 0f)
+                    y = Math.Max(-3f, y);
+
+                var kf = new Vector2Keyframe(t, new Vector2(x, y), ShakeEase);
 
                 if (!setFirstKeyframe)
                 {
@@ -2279,7 +2291,7 @@ namespace BetterLegacy.Core.Managers
                 }
 
                 list.Add(kf);
-                t += Random.Range(0.08f, 0.14f);
+                t += Random.Range(0.065f, 0.07f);
             }
 
             list.Add(new Vector2Keyframe(t, firstKeyframe.Value, ShakeEase));

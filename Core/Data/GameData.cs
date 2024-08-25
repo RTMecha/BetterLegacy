@@ -947,6 +947,23 @@ namespace BetterLegacy.Core.Data
                     gameData.eventObjects.allEvents[3][i].eventValues[1] = 1f;
                 }
 
+            try
+            {
+                if (gameData.beatmapData is LevelBeatmapData levelBeatmapData &&
+                    levelBeatmapData.levelData is LevelData modLevelData &&
+                    Version.TryParse(modLevelData.modVersion, out Version modVersion) && modVersion < new Version(1, 3, 4))
+                {
+                    for (int i = 0; i < gameData.eventObjects.allEvents[3].Count; i++)
+                    {
+                        gameData.eventObjects.allEvents[3][i].eventValues[3] = 0f;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
+
             ProjectData.Reader.ClampEventListValues(gameData.eventObjects.allEvents, EventCount);
 
             return gameData;
@@ -1465,7 +1482,7 @@ namespace BetterLegacy.Core.Data
                     0f, // Shake Intensity
 					1f, // Shake X
 					1f, // Shake Y
-					1f, // Shake Interpolation
+					0f, // Shake Interpolation
 					1f, // Shake Speed
                 },
                 id = LSText.randomNumString(8),

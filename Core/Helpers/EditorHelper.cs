@@ -196,5 +196,17 @@ namespace BetterLegacy.Core.Helpers
 
             return true;
         }
+
+        public static bool FixSmoothShakeKeyframes()
+        {
+            if (!GameData.IsValid || !EditorManager.inst || !EditorManager.inst.hasLoadedLevel)
+                return false;
+
+            var gameData = GameData.Current;
+            for (int i = 0; i < gameData.eventObjects.allEvents[3].Count; i++)
+                gameData.eventObjects.allEvents[3][i].eventValues[3] = 0f;
+
+            return true;
+        }
     }
 }
