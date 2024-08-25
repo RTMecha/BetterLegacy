@@ -35,7 +35,7 @@ namespace BetterLegacy.Core.Animation.Keyframe
             get
             {
                 var player = PlayerManager.GetClosestPlayer(PositionSequence.Value);
-                if (player.Player)
+                if (player && player.Player)
                     return player.Player.transform.Find("Player");
                 return null;
             }
