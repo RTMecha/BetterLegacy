@@ -8444,9 +8444,9 @@ namespace BetterLegacy.Editor.Managers
             string errorMessage = "";
             bool hadError = false;
             if (RTFile.FileExists(fullPath + "/level.ogg"))
-                yield return this.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip($"file://{fullPath}/level.ogg", AudioType.OGGVORBIS, x => song = x, onError => { hadError = true; errorMessage = onError; }));
+                yield return this.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip($"file://{fullPath}/level.ogg", AudioType.OGGVORBIS, x => { song = x; x = null; }, onError => { hadError = true; errorMessage = onError; }));
             else if (RTFile.FileExists(fullPath + "/level.wav"))
-                yield return this.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip($"file://{fullPath}/level.wav", AudioType.WAV, x => song = x, onError => { hadError = true; errorMessage = onError; }));
+                yield return this.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip($"file://{fullPath}/level.wav", AudioType.WAV, x => { song = x; x = null; }, onError => { hadError = true; errorMessage = onError; }));
             else if (RTFile.FileExists(fullPath + "/level.mp3"))
                 yield return song = LSAudio.CreateAudioClipUsingMP3File(fullPath + "/level.mp3");
 
