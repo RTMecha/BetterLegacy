@@ -160,6 +160,8 @@ namespace BetterLegacy.Core
             transform.localRotation = Quaternion.Euler(rot);
         }
 
+        public static RectValues GetRectValues(this RectTransform rectTransform) => RectValues.FromRectTransform(rectTransform);
+
         #endregion
 
         #region Data
@@ -659,6 +661,48 @@ namespace BetterLegacy.Core
             b.onClick.AddListener(unityAction);
         }
 
+        public static void NewListener(this Button.ButtonClickedEvent b, Action action)
+        {
+            b.ClearAll();
+            b.AddListener(() => { action?.Invoke(); });
+        }
+
+        public static void NewListener(this InputField.OnChangeEvent s, Action<string> action)
+        {
+            s.ClearAll();
+            s.AddListener(x => { action?.Invoke(x); });
+        }
+        
+        public static void NewListener(this InputField.SubmitEvent s, Action<string> action)
+        {
+            s.ClearAll();
+            s.AddListener(x => { action?.Invoke(x); });
+        }
+        
+        public static void NewListener(this Toggle.ToggleEvent t, Action<bool> action)
+        {
+            t.ClearAll();
+            t.AddListener(x => { action?.Invoke(x); });
+        }
+        
+        public static void NewListener(this Dropdown.DropdownEvent d, Action<int> action)
+        {
+            d.ClearAll();
+            d.AddListener(x => { action?.Invoke(x); });
+        }
+        
+        public static void NewListener(this Slider.SliderEvent s, Action<float> action)
+        {
+            s.ClearAll();
+            s.AddListener(x => { action?.Invoke(x); });
+        }
+        
+        public static void NewListener(this Scrollbar.ScrollEvent s, Action<float> action)
+        {
+            s.ClearAll();
+            s.AddListener(x => { action?.Invoke(x); });
+        }
+        
         public static void NewValueChangedListener(this InputField i, string value, UnityAction<string> unityAction)
         {
             i.onValueChanged.ClearAll();
