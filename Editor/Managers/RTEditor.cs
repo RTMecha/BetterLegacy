@@ -471,7 +471,7 @@ namespace BetterLegacy.Editor.Managers
         public static List<Dropdown> EasingDropdowns { get; set; } = new List<Dropdown>();
 
         List<MultiColorButton> multiColorButtons = new List<MultiColorButton>();
-        int currentMultiColorSelection = 0;
+        int currentMultiColorSelection = -1;
 
         #region Dragging
 
@@ -3884,25 +3884,23 @@ namespace BetterLegacy.Editor.Managers
 
             LSHelpers.DeleteChildren(parent);
 
-            scrollView.transform.AsRT().sizeDelta = new Vector2(383f, 690f);
+            scrollView.transform.AsRT().anchoredPosition = new Vector2(240f, 345f);
+            scrollView.transform.AsRT().sizeDelta = new Vector2(410f, 690f);
 
-            dataLeft.GetChild(1).gameObject.SetActive(true);
+            dataLeft.Find("Object Editor Title").AsRT().anchoredPosition = new Vector2(405f, -16f);
+            dataLeft.Find("Object Editor Title").AsRT().sizeDelta = new Vector2(760f, 32f);
+            multiObjectEditorDialog.Find("data/right/Object Editor Title").gameObject.SetActive(false);
 
-            dataLeft.GetChild(1).gameObject.name = "label layer";
+            var list = new List<GameObject>();
+            list.Add(dataLeft.GetChild(1).gameObject);
+            list.Add(dataLeft.GetChild(3).gameObject);
+            for (int i = 0; i < list.Count; i++)
+                Destroy(list[i]);
 
-            dataLeft.GetChild(3).gameObject.SetActive(true);
-
-            dataLeft.GetChild(3).gameObject.name = "label depth";
-
-            dataLeft.GetChild(1).SetParent(parent);
-
-            dataLeft.GetChild(2).SetParent(parent);
+            //dataLeft.GetChild(1).SetParent(parent);
 
             var textHolder = multiObjectEditorDialog.Find("data/right/text holder/Text");
             var textHolderText = textHolder.GetComponent<Text>();
-            textHolderText.text = textHolderText.text.Replace(
-                "The current version of the editor doesn't support any editing functionality.",
-                "On the left you'll see all the Multi Object Editor tools you'll need.");
 
             EditorThemeManager.AddLightText(textHolderText);
 
@@ -3915,356 +3913,186 @@ namespace BetterLegacy.Editor.Managers
 
             textHolder.AsRT().sizeDelta = new Vector2(-68f, 0f);
 
-            var zoom = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/right/zoom/zoom");
-
-            var labelL = parent.Find("label layer");
-            labelL.SetParent(transform);
-            Destroy(parent.Find("label depth").gameObject);
-
-            Action<string, string, bool, UnityAction, UnityAction, UnityAction, Action<InputField>> inputFieldGenerator
-                = (string name, string placeHolder, bool doMiddle, UnityAction leftButton, UnityAction middleButton, UnityAction rightButton, Action<InputField> action) =>
-            {
-                var gameObject = EditorPrefabHolder.Instance.NumberInputField.Duplicate(parent, name);
-                gameObject.transform.localScale = Vector3.one;
-                var inputFieldStorage = gameObject.GetComponent<InputFieldStorage>();
-                ((Text)inputFieldStorage.inputField.placeholder).text = placeHolder;
-
-                gameObject.transform.AsRT().sizeDelta = new Vector2(428f, 32f);
-
-                inputFieldStorage.inputField.onValueChanged.ClearAll();
-                inputFieldStorage.inputField.text = "1";
-                inputFieldStorage.inputField.transform.AsRT().sizeDelta = new Vector2(300f, 32f);
-
-                Destroy(inputFieldStorage.leftGreaterButton.gameObject);
-                Destroy(inputFieldStorage.rightGreaterButton.gameObject);
-
-                if (doMiddle)
-                {
-                    inputFieldStorage.middleButton.onClick.ClearAll();
-                    inputFieldStorage.middleButton.onClick.AddListener(middleButton);
-
-                    EditorThemeManager.AddSelectable(inputFieldStorage.middleButton, ThemeGroup.Function_2, false);
-                }
-                else
-                    Destroy(inputFieldStorage.middleButton.gameObject);
-
-                inputFieldStorage.leftButton.onClick.ClearAll();
-                inputFieldStorage.leftButton.onClick.AddListener(leftButton);
-
-                EditorThemeManager.AddSelectable(inputFieldStorage.leftButton, ThemeGroup.Function_2, false);
-
-                inputFieldStorage.rightButton.onClick.RemoveAllListeners();
-                inputFieldStorage.rightButton.onClick.AddListener(rightButton);
-
-                EditorThemeManager.AddSelectable(inputFieldStorage.rightButton, ThemeGroup.Function_2, false);
-
-                EditorThemeManager.AddInputField(inputFieldStorage.inputField);
-
-                action(inputFieldStorage.inputField);
-            };
-
-            Action<string, string, Transform, UnityAction> buttonGenerator = (string name, string text, Transform parent, UnityAction unityAction) =>
-            {
-                var gameObject = eventButton.Duplicate(parent, name);
-                gameObject.transform.localScale = Vector3.one;
-                var buttonStorage = gameObject.GetComponent<FunctionButtonStorage>();
-
-                ((RectTransform)gameObject.transform).sizeDelta = new Vector2(404f, 32f);
-
-                buttonStorage.text.text = text;
-
-                buttonStorage.button.onClick.ClearAll();
-                buttonStorage.button.onClick.AddListener(unityAction);
-
-                EditorThemeManager.AddGraphic(buttonStorage.button.image, ThemeGroup.Function_1, true);
-                EditorThemeManager.AddGraphic(buttonStorage.text, ThemeGroup.Function_1_Text);
-            };
-
-            Action<string, string, string, UnityAction, UnityAction> multiButtonGenerator = (string name, string function1Text, string function2Text, UnityAction function1, UnityAction function2) =>
-            {
-                var functionsBase = new GameObject(name);
-                functionsBase.transform.SetParent(parent);
-                functionsBase.transform.localScale = Vector3.one;
-
-                var functionsBaseRT = functionsBase.AddComponent<RectTransform>();
-                functionsBaseRT.sizeDelta = new Vector2(390f, 32f);
-
-                var functionsBaseHLG = functionsBase.AddComponent<HorizontalLayoutGroup>();
-                functionsBaseHLG.childControlHeight = false;
-                functionsBaseHLG.childControlWidth = false;
-                functionsBaseHLG.childForceExpandHeight = false;
-                functionsBaseHLG.childForceExpandWidth = false;
-                functionsBaseHLG.spacing = 8f;
-
-                var function1Object = eventButton.Duplicate(functionsBaseRT, name);
-                function1Object.transform.localScale = Vector3.one;
-                var function1Storage = function1Object.GetComponent<FunctionButtonStorage>();
-
-                function1Object.transform.AsRT().sizeDelta = new Vector2(180f, 32f);
-
-                function1Storage.text.text = function1Text;
-
-                EditorThemeManager.AddGraphic(function1Storage.button.image, ThemeGroup.Function_1, true);
-                EditorThemeManager.AddGraphic(function1Storage.text, ThemeGroup.Function_1_Text);
-
-                function1Storage.button.onClick.ClearAll();
-                function1Storage.button.onClick.AddListener(function1);
-
-                var function2Object = eventButton.Duplicate(functionsBaseRT, name);
-                function2Object.transform.localScale = Vector3.one;
-                var function2Storage = function2Object.GetComponent<FunctionButtonStorage>();
-
-                function2Object.transform.AsRT().sizeDelta = new Vector2(180f, 32f);
-
-                function2Storage.text.text = function2Text;
-
-                EditorThemeManager.AddGraphic(function2Storage.button.image, ThemeGroup.Function_1, true);
-                EditorThemeManager.AddGraphic(function2Storage.text, ThemeGroup.Function_1_Text);
-
-                function2Storage.button.onClick.ClearAll();
-                function2Storage.button.onClick.AddListener(function2);
-            };
-
-            // man i need to clean this up but aaaa
+            Destroy(dataLeft.GetComponent<VerticalLayoutGroup>());
 
             // Layers
             {
                 GenerateLabels(parent, 20f, "Set Group Layer");
 
-                inputFieldGenerator("layer", "Enter layer...", true, () =>
+                var inputFieldStorage = GenerateInputField(parent, "layer", "1", "Enter layer...", true, true);
+                inputFieldStorage.GetComponent<HorizontalLayoutGroup>().spacing = 0f;
+                inputFieldStorage.leftGreaterButton.onClick.NewListener(() =>
                 {
-                    if (parent.Find("layer") && parent.Find("layer").GetChild(0).gameObject.TryGetComponent(out InputField inputField))
-                    {
-                        if (int.TryParse(inputField.text, out int num))
-                        {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
-                            {
-                                if (timelineObject.IsBeatmapObject)
-                                    timelineObject.GetData<BeatmapObject>().editorData.layer = Mathf.Clamp(timelineObject.GetData<BeatmapObject>().editorData.layer - 1, 0, int.MaxValue);
-                                if (timelineObject.IsPrefabObject)
-                                    timelineObject.GetData<PrefabObject>().editorData.layer = Mathf.Clamp(timelineObject.GetData<PrefabObject>().editorData.layer - 1, 0, int.MaxValue);
-                            }
-                        }
-                    }
-
-                }, () =>
-                {
-                    if (parent.Find("layer") && parent.Find("layer").GetChild(0).gameObject.TryGetComponent(out InputField inputField))
-                    {
-                        TriggerHelper.AddEventTriggers(parent.Find("layer").gameObject, TriggerHelper.ScrollDeltaInt(inputField, min: 0));
-
-                        if (int.TryParse(inputField.text, out int num))
-                        {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
-                            {
-                                if (timelineObject.IsBeatmapObject)
-                                    timelineObject.GetData<BeatmapObject>().editorData.layer = Mathf.Clamp(num - 1, 0, int.MaxValue);
-                                if (timelineObject.IsPrefabObject)
-                                    timelineObject.GetData<PrefabObject>().editorData.layer = Mathf.Clamp(num - 1, 0, int.MaxValue);
-                            }
-                        }
-                    }
-                }, () =>
-                {
-                    if (parent.Find("layer") && parent.Find("layer").GetChild(0).gameObject.TryGetComponent(out InputField inputField))
-                    {
-                        if (int.TryParse(inputField.text, out int num))
-                        {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
-                            {
-                                if (timelineObject.IsBeatmapObject)
-                                    timelineObject.GetData<BeatmapObject>().editorData.layer = Mathf.Clamp(timelineObject.GetData<BeatmapObject>().editorData.layer + 1, 0, int.MaxValue);
-                                if (timelineObject.IsPrefabObject)
-                                    timelineObject.GetData<PrefabObject>().editorData.layer = Mathf.Clamp(timelineObject.GetData<PrefabObject>().editorData.layer + 1, 0, int.MaxValue);
-                            }
-                        }
-                    }
-                }, inputField =>
-                {
-                    TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputField));
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
+                        timelineObject.Layer = 0;
                 });
+                inputFieldStorage.leftButton.onClick.NewListener(() =>
+                {
+                    if (!int.TryParse(inputFieldStorage.inputField.text, out int num))
+                        return;
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
+                        timelineObject.Layer = Mathf.Clamp(timelineObject.Layer - num, 0, int.MaxValue);
+                });
+                inputFieldStorage.middleButton.onClick.NewListener(() =>
+                {
+                    if (!int.TryParse(inputFieldStorage.inputField.text, out int num))
+                        return;
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
+                        timelineObject.Layer = Mathf.Clamp(num - 1, 0, int.MaxValue);
+                });
+                inputFieldStorage.rightButton.onClick.NewListener(() =>
+                {
+                    if (!int.TryParse(inputFieldStorage.inputField.text, out int num))
+                        return;
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
+                        timelineObject.Layer = Mathf.Clamp(timelineObject.Layer + num, 0, int.MaxValue);
+                });
+                TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
             }
 
             // Depth
             {
                 GenerateLabels(parent, 20f, "Set Group Depth");
 
-                inputFieldGenerator("depth", "Enter depth...", true, () =>
+                var inputFieldStorage = GenerateInputField(parent, "depth", "1", "Enter depth...", true);
+                inputFieldStorage.leftButton.onClick.NewListener(() =>
                 {
-                    if (parent.Find("depth") && parent.Find("depth").GetChild(0).gameObject.TryGetComponent(out InputField inputField))
+                    if (!int.TryParse(inputFieldStorage.inputField.text, out int num))
+                        return;
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                     {
-                        if (int.TryParse(inputField.text, out int num))
-                        {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-                                bm.Depth -= num;
-                                Updater.UpdateObject(bm, "Depth");
-                            }
-                        }
+                        var bm = timelineObject.GetData<BeatmapObject>();
+                        bm.Depth -= num;
+                        Updater.UpdateObject(bm, "Depth");
                     }
-                }, () =>
-                {
-                    if (parent.Find("depth") && parent.Find("depth").GetChild(0).gameObject.TryGetComponent(out InputField inputField))
-                    {
-                        TriggerHelper.AddEventTriggers(parent.Find("depth").gameObject, TriggerHelper.ScrollDeltaInt(inputField, min: 0));
-
-                        if (int.TryParse(inputField.text, out int num))
-                        {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-                                bm.Depth = num;
-                                Updater.UpdateObject(bm, "Depth");
-                            }
-                        }
-                    }
-                }, () =>
-                {
-                    if (parent.Find("depth") && parent.Find("depth").GetChild(0).gameObject.TryGetComponent(out InputField inputField))
-                    {
-                        if (int.TryParse(inputField.text, out int num))
-                        {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-                                bm.Depth += num;
-                                Updater.UpdateObject(bm, "Depth");
-                            }
-                        }
-                    }
-                }, inputField =>
-                {
-                    TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputField));
                 });
+                inputFieldStorage.middleButton.onClick.NewListener(() =>
+                {
+                    if (!int.TryParse(inputFieldStorage.inputField.text, out int num))
+                        return;
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                    {
+                        var bm = timelineObject.GetData<BeatmapObject>();
+                        bm.Depth = num;
+                        Updater.UpdateObject(bm, "Depth");
+                    }
+                });
+                inputFieldStorage.rightButton.onClick.NewListener(() =>
+                {
+                    if (!int.TryParse(inputFieldStorage.inputField.text, out int num))
+                        return;
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                    {
+                        var bm = timelineObject.GetData<BeatmapObject>();
+                        bm.Depth += num;
+                        Updater.UpdateObject(bm, "Depth");
+                    }
+                });
+                TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
             }
 
             // Song Time
             {
                 GenerateLabels(parent, 20f, "Set Song Time");
 
-                inputFieldGenerator("time", "Enter time...", true, () =>
+                var inputFieldStorage = GenerateInputField(parent, "time", "1", "Enter time...", true);
+                inputFieldStorage.leftButton.onClick.NewListener(() =>
                 {
-                    if (parent.Find("time") && parent.Find("time").GetChild(0).gameObject.TryGetComponent(out InputField inputField)
-                        && float.TryParse(inputField.text, out float num))
+                    if (!float.TryParse(inputFieldStorage.inputField.text, out float num))
+                        return;
+                    //float first = ObjectEditor.inst.SelectedObjects.Min(x => x.Time);
+
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                     {
-                        float first = ObjectEditor.inst.SelectedObjects.Min(x => x.Time);
+                        //timelineObject.Time = AudioManager.inst.CurrentAudioSource.time - first + timelineObject.Time + num;
+                        timelineObject.Time = timelineObject.Time - num;
+                        if (timelineObject.IsBeatmapObject)
+                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "StartTime");
+                        if (timelineObject.IsPrefabObject)
+                            Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
 
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
-                        {
-                            timelineObject.Time = AudioManager.inst.CurrentAudioSource.time - first + timelineObject.Time + num;
-                            if (timelineObject.IsBeatmapObject)
-                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "StartTime");
-                            if (timelineObject.IsPrefabObject)
-                                Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
-
-                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                        }
+                        ObjectEditor.inst.RenderTimelineObjectPosition(timelineObject);
                     }
-                }, () =>
-                {
-                    if (parent.Find("time") && parent.Find("time").GetChild(0).gameObject.TryGetComponent(out InputField inputField))
-                    {
-                        TriggerHelper.AddEventTriggers(parent.Find("time").gameObject, TriggerHelper.ScrollDelta(inputField));
-
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
-                        {
-                            timelineObject.Time = AudioManager.inst.CurrentAudioSource.time;
-                            if (timelineObject.IsBeatmapObject)
-                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "StartTime");
-                            if (timelineObject.IsPrefabObject)
-                                Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
-
-                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                        }
-                    }
-                }, () =>
-                {
-                    if (parent.Find("time") && parent.Find("time").GetChild(0).gameObject.TryGetComponent(out InputField inputField)
-                        && float.TryParse(inputField.text, out float num))
-                    {
-                        float first = ObjectEditor.inst.SelectedObjects.Min(x => x.Time);
-
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                        {
-                            timelineObject.Time = AudioManager.inst.CurrentAudioSource.time - first + timelineObject.Time - num;
-                            if (timelineObject.IsBeatmapObject)
-                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "StartTime");
-                            if (timelineObject.IsPrefabObject)
-                                Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
-
-                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                        }
-                    }
-                }, inputField =>
-                {
-                    TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDelta(inputField));
                 });
+                inputFieldStorage.middleButton.onClick.NewListener(() =>
+                {
+                    if (!float.TryParse(inputFieldStorage.inputField.text, out float num))
+                        return;
+
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
+                    {
+                        timelineObject.Time = num;
+                        if (timelineObject.IsBeatmapObject)
+                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "StartTime");
+                        if (timelineObject.IsPrefabObject)
+                            Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
+
+                        ObjectEditor.inst.RenderTimelineObjectPosition(timelineObject);
+                    }
+                });
+                inputFieldStorage.rightButton.onClick.NewListener(() =>
+                {
+                    if (!float.TryParse(inputFieldStorage.inputField.text, out float num))
+                        return;
+                    //float first = ObjectEditor.inst.SelectedObjects.Min(x => x.Time);
+
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
+                    {
+                        //timelineObject.Time = AudioManager.inst.CurrentAudioSource.time - first + timelineObject.Time - num;
+                        timelineObject.Time = timelineObject.Time + num;
+                        if (timelineObject.IsBeatmapObject)
+                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "StartTime");
+                        if (timelineObject.IsPrefabObject)
+                            Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
+
+                        ObjectEditor.inst.RenderTimelineObjectPosition(timelineObject);
+                    }
+                });
+                TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField));
             }
 
             // Autokill Offset
             {
                 GenerateLabels(parent, 20f, "Set Autokill Offset");
 
-                inputFieldGenerator("autokill offset", "Enter autokill...", true, () =>
+                var inputFieldStorage = GenerateInputField(parent, "autokill offset", "0", "Enter autokill...", true);
+                inputFieldStorage.leftButton.onClick.NewListener(() =>
                 {
-                    if (parent.Find("autokill offset") && parent.Find("autokill offset").GetChild(0).gameObject.TryGetComponent(out InputField inputField)
-                    && float.TryParse(inputField.text, out float num))
+                    if (!float.TryParse(inputFieldStorage.inputField.text, out float num))
+                        return;
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
-                        {
-                            if (timelineObject.IsBeatmapObject)
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-                                bm.autoKillOffset -= num;
-                                Updater.UpdateObject(bm, "Autokill");
-                            }
-
-                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                        }
+                        var bm = timelineObject.GetData<BeatmapObject>();
+                        bm.autoKillOffset -= num;
+                        Updater.UpdateObject(bm, "Autokill");
+                        ObjectEditor.inst.RenderTimelineObject(timelineObject);
                     }
-                }, () =>
-                {
-                    if (parent.Find("autokill offset") && parent.Find("autokill offset").GetChild(0).gameObject.TryGetComponent(out InputField inputField)
-                        && float.TryParse(inputField.text, out float num))
-                    {
-                        TriggerHelper.AddEventTriggers(parent.Find("autokill offset").gameObject, TriggerHelper.ScrollDelta(inputField));
-
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
-                        {
-                            if (timelineObject.IsBeatmapObject)
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-                                bm.autoKillOffset = num;
-                                Updater.UpdateObject(bm, "Autokill");
-                            }
-
-                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                        }
-                    }
-                }, () =>
-                {
-                    if (parent.Find("autokill offset") && parent.Find("autokill offset").GetChild(0).gameObject.TryGetComponent(out InputField inputField)
-                        && float.TryParse(inputField.text, out float num))
-                    {
-                        float first = ObjectEditor.inst.SelectedObjects.Min(x => x.Time);
-
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                        {
-                            if (timelineObject.IsBeatmapObject)
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-                                bm.autoKillOffset += num;
-                                Updater.UpdateObject(bm, "Autokill");
-                            }
-
-                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                        }
-                    }
-                }, inputField =>
-                {
-                    TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDelta(inputField));
                 });
+                inputFieldStorage.middleButton.onClick.NewListener(() =>
+                {
+                    if (!float.TryParse(inputFieldStorage.inputField.text, out float num))
+                        return;
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                    {
+                        var bm = timelineObject.GetData<BeatmapObject>();
+                        bm.autoKillOffset = num;
+                        Updater.UpdateObject(bm, "Autokill");
+                        ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                    }
+                });
+                inputFieldStorage.rightButton.onClick.NewListener(() =>
+                {
+                    if (!float.TryParse(inputFieldStorage.inputField.text, out float num))
+                        return;
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                    {
+                        var bm = timelineObject.GetData<BeatmapObject>();
+                        bm.autoKillOffset += num;
+                        Updater.UpdateObject(bm, "Autokill");
+                        ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                    }
+                });
+                TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDelta(inputFieldStorage.inputField));
             }
 
             // Name
@@ -4381,72 +4209,70 @@ namespace BetterLegacy.Editor.Managers
             {
                 GenerateLabels(parent, 20f, "Clear data from objects");
 
-                buttonGenerator("clear tags", "Clear Tags", parent, () =>
-                {
-                    ShowWarningPopup("You are about to clear tags from all selected objects, this <b>CANNOT</b> be undone!", () =>
-                    {
-                        foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
-                        {
-                            beatmapObject.tags.Clear();
-                        }
+                GenerateButtons(parent, 32f, 8f,
+                     new ButtonFunction("Clear tags", () =>
+                     {
+                         ShowWarningPopup("You are about to clear tags from all selected objects, this <b>CANNOT</b> be undone!", () =>
+                         {
+                             foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                             {
+                                 beatmapObject.tags.Clear();
+                             }
 
-                        HideWarningPopup();
-                    }, HideWarningPopup);
-                });
+                             HideWarningPopup();
+                         }, HideWarningPopup);
+                     }) { FontSize = 16 },
+                     new ButtonFunction("Clear animations", () =>
+                     {
+                         ShowWarningPopup("You are about to clear animations from all selected objects, this <b>CANNOT</b> be undone!", () =>
+                         {
+                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                             {
+                                 var bm = timelineObject.GetData<BeatmapObject>();
+                                 foreach (var tkf in timelineObject.InternalSelections)
+                                 {
+                                     Destroy(tkf.GameObject);
+                                 }
+                                 timelineObject.InternalSelections.Clear();
+                                 for (int i = 0; i < bm.events.Count; i++)
+                                 {
+                                     bm.events[i] = bm.events[i].OrderBy(x => x.eventTime).ToList();
+                                     var firstKF = EventKeyframe.DeepCopy((EventKeyframe)bm.events[i][0], false);
+                                     bm.events[i].Clear();
+                                     bm.events[i].Add(firstKF);
+                                 }
+                                 if (ObjectEditor.inst.SelectedObjects.Count == 1)
+                                 {
+                                     ObjectEditor.inst.ResizeKeyframeTimeline(bm);
+                                     ObjectEditor.inst.RenderKeyframes(bm);
+                                 }
 
-                buttonGenerator("clear animations", "Clear Animations", parent, () =>
-                {
-                    ShowWarningPopup("You are about to clear animations from all selected objects, this <b>CANNOT</b> be undone!", () =>
-                    {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                        {
-                            var bm = timelineObject.GetData<BeatmapObject>();
-                            foreach (var tkf in timelineObject.InternalSelections)
-                            {
-                                Destroy(tkf.GameObject);
-                            }
-                            timelineObject.InternalSelections.Clear();
-                            for (int i = 0; i < bm.events.Count; i++)
-                            {
-                                bm.events[i] = bm.events[i].OrderBy(x => x.eventTime).ToList();
-                                var firstKF = EventKeyframe.DeepCopy((EventKeyframe)bm.events[i][0], false);
-                                bm.events[i].Clear();
-                                bm.events[i].Add(firstKF);
-                            }
-                            if (ObjectEditor.inst.SelectedObjects.Count == 1)
-                            {
-                                ObjectEditor.inst.ResizeKeyframeTimeline(bm);
-                                ObjectEditor.inst.RenderKeyframes(bm);
-                            }
+                                 Updater.UpdateObject(bm, "Keyframes");
+                                 ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                             }
 
-                            Updater.UpdateObject(bm, "Keyframes");
-                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                        }
+                             HideWarningPopup();
+                         }, HideWarningPopup);
+                     }) { FontSize = 16 },
+                     new ButtonFunction("Clear modifiers", () =>
+                     {
+                         ShowWarningPopup("You are about to clear modifiers from all selected objects, this <b>CANNOT</b> be undone!", () =>
+                         {
+                             foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                             {
+                                 beatmapObject.modifiers.Clear();
+                                 Updater.UpdateObject(beatmapObject);
+                             }
 
-                        HideWarningPopup();
-                    }, HideWarningPopup);
-                });
-
-                buttonGenerator("clear modifiers", "Clear Modifiers", parent, () =>
-                {
-                    ShowWarningPopup("You are about to clear modifiers from all selected objects, this <b>CANNOT</b> be undone!", () =>
-                    {
-                        foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
-                        {
-                            beatmapObject.modifiers.Clear();
-                            Updater.UpdateObject(beatmapObject);
-                        }
-
-                        HideWarningPopup();
-                    }, HideWarningPopup);
-                });
+                             HideWarningPopup();
+                         }, HideWarningPopup);
+                     }) { FontSize = 16 });
             }
 
             // Optimization
             {
                 GenerateLabels(parent, 20f, "Auto optimize objects");
-
-                buttonGenerator("optimize", "Optimize", parent, () =>
+                GenerateButtons(parent, 32f, 0f, new ButtonFunction("Optimize", () =>
                 {
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                     {
@@ -4455,14 +4281,13 @@ namespace BetterLegacy.Editor.Managers
                         Updater.UpdateObject(beatmapObject, "Autokill");
                         ObjectEditor.inst.RenderTimelineObjectPosition(timelineObject);
                     }
-                });
+                }));
             }
 
             // Song Time Autokill
             {
-                GenerateLabels(parent, 20f, "Set Autokill offset to current time");
-
-                buttonGenerator("set autokill", "Set", parent, () =>
+                GenerateLabels(parent, 20f, "Set autokill to current time");
+                GenerateButtons(parent, 32f, 0f, new ButtonFunction("Set", () =>
                 {
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                     {
@@ -4482,7 +4307,7 @@ namespace BetterLegacy.Editor.Managers
                         ObjectEditor.inst.RenderTimelineObject(timelineObject);
                         Updater.UpdateObject(beatmapObject, "Autokill");
                     }
-                });
+                }));
             }
 
             // Set Autokill Type
@@ -4550,35 +4375,32 @@ namespace BetterLegacy.Editor.Managers
             // Set Parent
             {
                 GenerateLabels(parent, 20f, "Set Parent");
-
-                buttonGenerator("set parent (search)", "Search List", parent, EditorManager.inst.OpenParentPopup);
-
-                buttonGenerator("set parent (dropper)", "Picker", parent, () =>
-                {
-                    parentPickerEnabled = true;
-                    selectingMultiple = true;
-                });
-
-                buttonGenerator("set parent (remove)", "Remove", parent, () =>
-                {
-                    ShowWarningPopup("Are you sure you want to remove parents from all selected objects? This <b>CANNOT</b> be undone!", () =>
+                GenerateButtons(parent, 32f, 8f,
+                    new ButtonFunction("Search list", EditorManager.inst.OpenParentPopup),
+                    new ButtonFunction("Picker", () =>
                     {
-                        foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                        parentPickerEnabled = true;
+                        selectingMultiple = true;
+                    }),
+                    new ButtonFunction("Remove", () =>
+                    {
+                        ShowWarningPopup("Are you sure you want to remove parents from all selected objects? This <b>CANNOT</b> be undone!", () =>
                         {
-                            beatmapObject.parent = "";
-                            Updater.UpdateObject(beatmapObject);
-                        }
+                            foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
+                            {
+                                beatmapObject.parent = "";
+                                Updater.UpdateObject(beatmapObject);
+                            }
 
-                        HideWarningPopup();
-                    }, HideWarningPopup);
-                });
+                            HideWarningPopup();
+                        }, HideWarningPopup);
+                    }));
             }
 
             // Force Snap BPM
             {
                 GenerateLabels(parent, 20f, "Force Snap Start Time to BPM");
-
-                buttonGenerator("snap", "Snap", parent, () =>
+                GenerateButtons(parent, 32f, 8f, new ButtonFunction("Snap", () =>
                 {
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                     {
@@ -4588,9 +4410,9 @@ namespace BetterLegacy.Editor.Managers
                         if (timelineObject.IsPrefabObject)
                             Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), "Start Time");
 
-                        ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                        ObjectEditor.inst.RenderTimelineObjectPosition(timelineObject);
                     }
-                });
+                }));
             }
 
             // Cycle Object Type
@@ -4697,28 +4519,22 @@ namespace BetterLegacy.Editor.Managers
             // Assign Objects to Prefab
             {
                 GenerateLabels(parent, 20f, "Assign Objects to Prefab");
-
-                buttonGenerator("assign prefab", "Assign", parent, () =>
-                {
-                    selectingMultiple = true;
-                    prefabPickerEnabled = true;
-                });
-            }
-
-            // Remove Prefab Reference
-            {
-                GenerateLabels(parent, 20f, "Remove Prefab references");
-
-                buttonGenerator("remove prefab", "Remove", parent, () =>
-                {
-                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                GenerateButtons(parent, 32f, 8f,
+                    new ButtonFunction("Assign", () =>
                     {
-                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                        beatmapObject.prefabID = "";
-                        beatmapObject.prefabInstanceID = "";
-                        ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                    }
-                });
+                        selectingMultiple = true;
+                        prefabPickerEnabled = true;
+                    }),
+                    new ButtonFunction("Remove", () =>
+                    {
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        {
+                            var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                            beatmapObject.prefabID = "";
+                            beatmapObject.prefabInstanceID = "";
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                        }
+                    }));
             }
 
             // Lock
@@ -4744,8 +4560,7 @@ namespace BetterLegacy.Editor.Managers
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
                         }
                     }));
-
-                buttonGenerator("lock swap", "Swap Lock", parent, () =>
+                GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
                 {
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                     {
@@ -4753,7 +4568,7 @@ namespace BetterLegacy.Editor.Managers
 
                         ObjectEditor.inst.RenderTimelineObject(timelineObject);
                     }
-                });
+                }));
             }
 
             // Collapse
@@ -4779,8 +4594,7 @@ namespace BetterLegacy.Editor.Managers
                             ObjectEditor.inst.RenderTimelineObject(timelineObject);
                         }
                     }));
-
-                buttonGenerator("collapse swap", "Swap Collapse", parent, () =>
+                GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
                 {
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
                     {
@@ -4788,10 +4602,10 @@ namespace BetterLegacy.Editor.Managers
 
                         ObjectEditor.inst.RenderTimelineObject(timelineObject);
                     }
-                });
+                }));
             }
 
-            // Background Swap
+            // Render Type
             {
                 GenerateLabels(parent, 20f, "Modify Object Render Type");
 
@@ -4801,7 +4615,8 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
                             beatmapObject.background = true;
-                            Updater.UpdateObject(beatmapObject);
+                            if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
+                                levelObject.visualObject.GameObject.layer = beatmapObject.background ? 9 : 8;
                         }
                     }),
                     new ButtonFunction("Off", () =>
@@ -4809,21 +4624,22 @@ namespace BetterLegacy.Editor.Managers
                         foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
                             beatmapObject.background = false;
-                            Updater.UpdateObject(beatmapObject);
+                            if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
+                                levelObject.visualObject.GameObject.layer = beatmapObject.background ? 9 : 8;
                         }
                     }));
-
-                buttonGenerator("render type swap", "Swap Render Type", parent, () =>
+                GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
                 {
                     foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                     {
                         beatmapObject.background = !beatmapObject.background;
-                        Updater.UpdateObject(beatmapObject);
+                        if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
+                            levelObject.visualObject.GameObject.layer = beatmapObject.background ? 9 : 8;
                     }
-                });
+                }));
             }
 
-            // LDM Swap
+            // LDM
             {
                 GenerateLabels(parent, 20f, "Modify Low Detail Mode");
 
@@ -4844,15 +4660,14 @@ namespace BetterLegacy.Editor.Managers
                             Updater.UpdateObject(beatmapObject);
                         }
                     }));
-
-                buttonGenerator("ldm swap", "Swap LDM", parent, () =>
+                GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
                 {
                     foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                     {
                         beatmapObject.LDM = !beatmapObject.LDM;
                         Updater.UpdateObject(beatmapObject);
                     }
-                });
+                }));
             }
 
             // Sync object selection
@@ -4869,368 +4684,266 @@ namespace BetterLegacy.Editor.Managers
                 multiSyncGLG.spacing = new Vector2(4f, 4f);
                 multiSyncGLG.cellSize = new Vector2(61.6f, 49f);
 
-                // Start Time
+                GenerateButton(syncLayout.transform, new ButtonFunction("ST", () =>
                 {
-                    buttonGenerator("start time", "ST", syncLayout.transform, () =>
+                    ShowObjectSearch(beatmapObject =>
                     {
-                        EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(beatmapObject =>
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            {
-                                timelineObject.Time = beatmapObject.StartTime;
-                                ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "StartTime");
-                            }
-                            EditorManager.inst.HideDialog("Object Search Popup");
-                        });
+                            timelineObject.Time = beatmapObject.StartTime;
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "StartTime");
+                        }
+                        EditorManager.inst.HideDialog("Object Search Popup");
                     });
-                }
-
-                // Name
+                })); // Start Time
+                GenerateButton(syncLayout.transform, new ButtonFunction("N", () =>
                 {
-                    buttonGenerator("name", "N", syncLayout.transform, () =>
+                    ShowObjectSearch(beatmapObject =>
                     {
-                        EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(beatmapObject =>
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            {
-                                timelineObject.GetData<BeatmapObject>().name = beatmapObject.name;
-                                ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                            }
-                            EditorManager.inst.HideDialog("Object Search Popup");
-                        });
+                            timelineObject.GetData<BeatmapObject>().name = beatmapObject.name;
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                        }
+                        EditorManager.inst.HideDialog("Object Search Popup");
                     });
-                }
-
-                // Object Type
+                })); // Name
+                GenerateButton(syncLayout.transform, new ButtonFunction("OT", () =>
                 {
-                    buttonGenerator("object type", "OT", syncLayout.transform, () =>
+                    ShowObjectSearch(beatmapObject =>
                     {
-                        EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(beatmapObject =>
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            {
-                                timelineObject.GetData<BeatmapObject>().objectType = beatmapObject.objectType;
-                                ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "ObjectType");
-                            }
-                            EditorManager.inst.HideDialog("Object Search Popup");
-                        });
+                            timelineObject.GetData<BeatmapObject>().objectType = beatmapObject.objectType;
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "ObjectType");
+                        }
+                        EditorManager.inst.HideDialog("Object Search Popup");
                     });
-                }
-
-                // Autokill Type
+                })); // Object Type
+                GenerateButton(syncLayout.transform, new ButtonFunction("AKT", () =>
                 {
-                    buttonGenerator("autokill type", "AKT", syncLayout.transform, () =>
+                    ShowObjectSearch(beatmapObject =>
                     {
-                        EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(beatmapObject =>
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            {
-                                timelineObject.GetData<BeatmapObject>().autoKillType = beatmapObject.autoKillType;
-                                ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "AutoKill");
-                            }
-                            EditorManager.inst.HideDialog("Object Search Popup");
-                        });
+                            timelineObject.GetData<BeatmapObject>().autoKillType = beatmapObject.autoKillType;
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "AutoKill");
+                        }
+                        EditorManager.inst.HideDialog("Object Search Popup");
                     });
-                }
-
-                // Autokill Offset
+                })); // Autokill Type
+                GenerateButton(syncLayout.transform, new ButtonFunction("AKO", () =>
                 {
-                    buttonGenerator("autokill offset", "AKO", syncLayout.transform, () =>
+                    ShowObjectSearch(beatmapObject =>
                     {
-                        EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(beatmapObject =>
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            {
-                                timelineObject.GetData<BeatmapObject>().autoKillOffset = beatmapObject.autoKillOffset;
-                                ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "AutoKill");
-                            }
-                            EditorManager.inst.HideDialog("Object Search Popup");
-                        });
+                            timelineObject.GetData<BeatmapObject>().autoKillOffset = beatmapObject.autoKillOffset;
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "AutoKill");
+                        }
+                        EditorManager.inst.HideDialog("Object Search Popup");
                     });
-                }
-
-                // Parent
+                })); // Autokill Offset
+                GenerateButton(syncLayout.transform, new ButtonFunction("P", () =>
                 {
-                    buttonGenerator("parent", "P", syncLayout.transform, () =>
+                    ShowObjectSearch(beatmapObject =>
                     {
-                        EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(beatmapObject =>
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            {
-                                timelineObject.GetData<BeatmapObject>().parent = beatmapObject.parent;
-                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Parent");
-                            }
-                            EditorManager.inst.HideDialog("Object Search Popup");
-                        });
+                            timelineObject.GetData<BeatmapObject>().parent = beatmapObject.parent;
+                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Parent");
+                        }
+                        EditorManager.inst.HideDialog("Object Search Popup");
                     });
-                }
-
-                // Parent Desync
+                })); // Parent
+                GenerateButton(syncLayout.transform, new ButtonFunction("PD", () =>
                 {
-                    buttonGenerator("parent desync", "PD", syncLayout.transform, () =>
+                    ShowObjectSearch(beatmapObject =>
                     {
-                        EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(beatmapObject =>
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            {
-                                timelineObject.GetData<BeatmapObject>().desync = beatmapObject.desync;
-                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Parent");
-                            }
-                            EditorManager.inst.HideDialog("Object Search Popup");
-                        });
+                            timelineObject.GetData<BeatmapObject>().desync = beatmapObject.desync;
+                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Parent");
+                        }
+                        EditorManager.inst.HideDialog("Object Search Popup");
                     });
-                }
-
-                // Parent Type
+                })); // Parent Desync
+                GenerateButton(syncLayout.transform, new ButtonFunction("PT", () =>
                 {
-                    buttonGenerator("parent type", "PT", syncLayout.transform, () =>
+                    ShowObjectSearch(beatmapObject =>
                     {
-                        EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(beatmapObject =>
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            {
-                                timelineObject.GetData<BeatmapObject>().parentType = beatmapObject.parentType;
-                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "ParentType");
-                            }
-                            EditorManager.inst.HideDialog("Object Search Popup");
-                        });
+                            timelineObject.GetData<BeatmapObject>().parentType = beatmapObject.parentType;
+                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "ParentType");
+                        }
+                        EditorManager.inst.HideDialog("Object Search Popup");
                     });
-                }
-
-                // Parent Offset
+                })); // Parent Type
+                GenerateButton(syncLayout.transform, new ButtonFunction("PO", () =>
                 {
-                    buttonGenerator("parent offset", "PO", syncLayout.transform, () =>
+                    ShowObjectSearch(beatmapObject =>
                     {
-                        EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(beatmapObject =>
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            {
-                                timelineObject.GetData<BeatmapObject>().parentOffsets = beatmapObject.parentOffsets.Clone();
-                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "ParentOffset");
-                            }
-                            EditorManager.inst.HideDialog("Object Search Popup");
-                        });
+                            timelineObject.GetData<BeatmapObject>().parentOffsets = beatmapObject.parentOffsets.Clone();
+                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "ParentOffset");
+                        }
+                        EditorManager.inst.HideDialog("Object Search Popup");
                     });
-                }
-
-                // Parent Additive
+                })); // Parent Offset
+                GenerateButton(syncLayout.transform, new ButtonFunction("PA", () =>
                 {
-                    buttonGenerator("parent additive", "PA", syncLayout.transform, () =>
+                    ShowObjectSearch(beatmapObject =>
                     {
-                        EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(beatmapObject =>
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            {
-                                timelineObject.GetData<BeatmapObject>().parentAdditive = beatmapObject.parentAdditive;
-                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "ParentOffset");
-                            }
-                            EditorManager.inst.HideDialog("Object Search Popup");
-                        });
+                            timelineObject.GetData<BeatmapObject>().parentAdditive = beatmapObject.parentAdditive;
+                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "ParentOffset");
+                        }
+                        EditorManager.inst.HideDialog("Object Search Popup");
                     });
-                }
-
-                // Parent Parallax
+                })); // Parent Additive
+                GenerateButton(syncLayout.transform, new ButtonFunction("PP", () =>
                 {
-                    buttonGenerator("parent parallax", "PP", syncLayout.transform, () =>
+                    ShowObjectSearch(beatmapObject =>
                     {
-                        EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(beatmapObject =>
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            {
-                                timelineObject.GetData<BeatmapObject>().parallaxSettings = beatmapObject.parallaxSettings.Copy();
-                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "ParentOffset");
-                            }
-                            EditorManager.inst.HideDialog("Object Search Popup");
-                        });
+                            timelineObject.GetData<BeatmapObject>().parallaxSettings = beatmapObject.parallaxSettings.Copy();
+                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "ParentOffset");
+                        }
+                        EditorManager.inst.HideDialog("Object Search Popup");
                     });
-                }
-
-                // Origin
+                })); // Parent Parallax
+                GenerateButton(syncLayout.transform, new ButtonFunction("O", () =>
                 {
-                    buttonGenerator("origin", "O", syncLayout.transform, () =>
+                    ShowObjectSearch(beatmapObject =>
                     {
-                        EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(beatmapObject =>
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            {
-                                timelineObject.GetData<BeatmapObject>().origin = beatmapObject.origin;
-                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Origin");
-                            }
-                            EditorManager.inst.HideDialog("Object Search Popup");
-                        });
+                            timelineObject.GetData<BeatmapObject>().origin = beatmapObject.origin;
+                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Origin");
+                        }
+                        EditorManager.inst.HideDialog("Object Search Popup");
                     });
-                }
-
-                // Shape
+                })); // Origin
+                GenerateButton(syncLayout.transform, new ButtonFunction("S", () =>
                 {
-                    buttonGenerator("shape", "S", syncLayout.transform, () =>
+                    ShowObjectSearch(beatmapObject =>
                     {
-                        EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(beatmapObject =>
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            {
-                                timelineObject.GetData<BeatmapObject>().shape = beatmapObject.shape;
-                                timelineObject.GetData<BeatmapObject>().shapeOption = beatmapObject.shapeOption;
-                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Shape");
-                            }
-                            EditorManager.inst.HideDialog("Object Search Popup");
-                        });
+                            timelineObject.GetData<BeatmapObject>().shape = beatmapObject.shape;
+                            timelineObject.GetData<BeatmapObject>().shapeOption = beatmapObject.shapeOption;
+                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Shape");
+                        }
+                        EditorManager.inst.HideDialog("Object Search Popup");
                     });
-                }
-
-                // Text
+                })); // Shape
+                GenerateButton(syncLayout.transform, new ButtonFunction("T", () =>
                 {
-                    buttonGenerator("text", "T", syncLayout.transform, () =>
+                    ShowObjectSearch(beatmapObject =>
                     {
-                        EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(beatmapObject =>
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            {
-                                timelineObject.GetData<BeatmapObject>().text = beatmapObject.text;
-                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Text");
-                            }
-                            EditorManager.inst.HideDialog("Object Search Popup");
-                        });
+                            timelineObject.GetData<BeatmapObject>().text = beatmapObject.text;
+                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Text");
+                        }
+                        EditorManager.inst.HideDialog("Object Search Popup");
                     });
-                }
-
-                // Depth
+                })); // Text
+                GenerateButton(syncLayout.transform, new ButtonFunction("D", () =>
                 {
-                    buttonGenerator("depth", "D", syncLayout.transform, () =>
+                    ShowObjectSearch(beatmapObject =>
                     {
-                        EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(beatmapObject =>
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            {
-                                timelineObject.GetData<BeatmapObject>().Depth = beatmapObject.Depth;
-                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Depth");
-                            }
-                            EditorManager.inst.HideDialog("Object Search Popup");
-                        });
+                            timelineObject.GetData<BeatmapObject>().Depth = beatmapObject.Depth;
+                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Depth");
+                        }
+                        EditorManager.inst.HideDialog("Object Search Popup");
                     });
-                }
-
-                // Keyframes
+                })); // Depth
+                GenerateButton(syncLayout.transform, new ButtonFunction("KF", () =>
                 {
-                    buttonGenerator("keyframes", "KF", syncLayout.transform, () =>
+                    ShowObjectSearch(beatmapObject =>
                     {
-                        EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(beatmapObject =>
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                            var bm = timelineObject.GetData<BeatmapObject>();
+
+                            for (int i = 0; i < bm.events.Count; i++)
                             {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-
-                                for (int i = 0; i < bm.events.Count; i++)
-                                    bm.events[i] = beatmapObject.events[i].Clone();
-
-                                Updater.UpdateObject(bm, "Keyframes");
+                                bm.events[i].Clear();
+                                for (int j = 0; j < beatmapObject.events[i].Count; j++)
+                                    bm.events[i].Add(EventKeyframe.DeepCopy((EventKeyframe)beatmapObject.events[i][j]));
                             }
-                            EditorManager.inst.HideDialog("Object Search Popup");
-                        });
-                    });
-                }
 
-                // Modifiers
+                            Updater.UpdateObject(bm, "Keyframes");
+                        }
+                        EditorManager.inst.HideDialog("Object Search Popup");
+                    });
+                })); // Keyframes
+                GenerateButton(syncLayout.transform, new ButtonFunction("MOD", () =>
                 {
-                    buttonGenerator("modifiers", "MOD", syncLayout.transform, () =>
+                    ShowObjectSearch(beatmapObject =>
                     {
-                        EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(beatmapObject =>
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            {
-                                var bm = timelineObject.GetData<BeatmapObject>();
+                            var bm = timelineObject.GetData<BeatmapObject>();
 
-                                bm.modifiers.AddRange(beatmapObject.modifiers.Select(x => Modifier<BeatmapObject>.DeepCopy(x, bm)));
+                            bm.modifiers.AddRange(beatmapObject.modifiers.Select(x => Modifier<BeatmapObject>.DeepCopy(x, bm)));
 
-                                Updater.UpdateObject(bm);
-                            }
-                            EditorManager.inst.HideDialog("Object Search Popup");
-                        });
+                            Updater.UpdateObject(bm);
+                        }
+                        EditorManager.inst.HideDialog("Object Search Popup");
                     });
-
-                    buttonGenerator("ignore", "IGN", syncLayout.transform, () =>
-                    {
-                        EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(beatmapObject =>
-                        {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            {
-                                timelineObject.GetData<BeatmapObject>().ignoreLifespan = beatmapObject.ignoreLifespan;
-                            }
-                            EditorManager.inst.HideDialog("Object Search Popup");
-                        });
-                    });
-                }
-
-                // Tags
+                })); // Modifiers
+                GenerateButton(syncLayout.transform, new ButtonFunction("IGN", () =>
                 {
-                    buttonGenerator("tag", "TAG", syncLayout.transform, () =>
+                    ShowObjectSearch(beatmapObject =>
                     {
-                        EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(beatmapObject =>
-                        {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            {
-                                timelineObject.GetData<BeatmapObject>().tags = beatmapObject.tags.Clone();
-                            }
-                            EditorManager.inst.HideDialog("Object Search Popup");
-                        });
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                            timelineObject.GetData<BeatmapObject>().ignoreLifespan = beatmapObject.ignoreLifespan;
+                        EditorManager.inst.HideDialog("Object Search Popup");
                     });
-                }
-
-                // Render Type
+                })); // Ignore lifespan
+                GenerateButton(syncLayout.transform, new ButtonFunction("TAG", () =>
                 {
-                    buttonGenerator("rendertype", "RT", syncLayout.transform, () =>
+                    ShowObjectSearch(beatmapObject =>
                     {
-                        EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(beatmapObject =>
-                        {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            {
-                                timelineObject.GetData<BeatmapObject>().background = beatmapObject.background;
-                            }
-                            EditorManager.inst.HideDialog("Object Search Popup");
-                        });
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                            timelineObject.GetData<BeatmapObject>().tags = beatmapObject.tags.Clone();
+                        EditorManager.inst.HideDialog("Object Search Popup");
                     });
-                }
-
-                // Prefab
+                })); // Tags
+                GenerateButton(syncLayout.transform, new ButtonFunction("RT", () =>
                 {
-                    buttonGenerator("prefab", "PR", syncLayout.transform, () =>
+                    ShowObjectSearch(beatmapObject =>
                     {
-                        EditorManager.inst.ShowDialog("Object Search Popup");
-                        RefreshObjectSearch(beatmapObject =>
-                        {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            {
-                                timelineObject.GetData<BeatmapObject>().prefabID = beatmapObject.prefabID;
-                                timelineObject.GetData<BeatmapObject>().prefabInstanceID = beatmapObject.prefabInstanceID;
-                            }
-                            EditorManager.inst.HideDialog("Object Search Popup");
-                        });
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                            timelineObject.GetData<BeatmapObject>().background = beatmapObject.background;
+                        EditorManager.inst.HideDialog("Object Search Popup");
                     });
-                }
+                })); // Render Type
+                GenerateButton(syncLayout.transform, new ButtonFunction("PR", () =>
+                {
+                    ShowObjectSearch(beatmapObject =>
+                    {
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        {
+                            var bm = timelineObject.GetData<BeatmapObject>();
+                            bm.prefabID = beatmapObject.prefabID;
+                            bm.prefabInstanceID = beatmapObject.prefabInstanceID;
+                        }
+                        EditorManager.inst.HideDialog("Object Search Popup");
+                    });
+                })); // Prefab
             }
 
             // Replace Name
@@ -5563,6 +5276,24 @@ namespace BetterLegacy.Editor.Managers
             {
                 GenerateLabels(parent, 20f, "Assign colors");
 
+                var disable = EditorPrefabHolder.Instance.Function2Button.Duplicate(parent, "disable color");
+                var disableX = EditorManager.inst.colorGUI.transform.Find("Image").gameObject.Duplicate(disable.transform, "x");
+                var disableXImage = disableX.GetComponent<Image>();
+                disableXImage.sprite = CloseSprite;
+                RectValues.Default.AnchoredPosition(-170f, 0f).SizeDelta(32f, 32f).AssignToRectTransform(disableXImage.rectTransform);
+                var disableButtonStorage = disable.GetComponent<FunctionButtonStorage>();
+                disableButtonStorage.button.onClick.ClearAll();
+                disableButtonStorage.button.onClick.AddListener(() =>
+                {
+                    disableX.gameObject.SetActive(true);
+                    currentMultiColorSelection = -1;
+                    UpdateMultiColorButtons();
+                });
+                disableButtonStorage.text.text = "Don't set color";
+                EditorThemeManager.AddGraphic(disableXImage, ThemeGroup.Function_2_Text);
+                EditorThemeManager.AddGraphic(disableButtonStorage.text, ThemeGroup.Function_2_Text);
+                EditorThemeManager.AddSelectable(disableButtonStorage.button, ThemeGroup.Function_2);
+
                 var colorLayout = new GameObject("color layout");
                 colorLayout.transform.SetParent(parent);
                 colorLayout.transform.localScale = Vector3.one;
@@ -5583,12 +5314,13 @@ namespace BetterLegacy.Editor.Managers
                     assigner.Graphic = image;
 
                     var selected = colorGUI.transform.GetChild(0).gameObject;
-                    selected.SetActive(i == 0);
+                    selected.SetActive(false);
 
                     var button = colorGUI.GetComponent<Button>();
                     button.onClick.ClearAll();
                     button.onClick.AddListener(() =>
                     {
+                        disableX.gameObject.SetActive(false);
                         currentMultiColorSelection = index;
                         UpdateMultiColorButtons();
                     });
@@ -5645,35 +5377,32 @@ namespace BetterLegacy.Editor.Managers
                 // Assign to All
                 {
                     GenerateLabels(parent, 20f, "Assign to all Color Keyframes");
-
-                    buttonGenerator("assign to all", "Assign", parent, () =>
+                    GenerateButtons(parent, 32f, 0f, new ButtonFunction("Assign", () =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
-                            if (timelineObject.IsBeatmapObject)
+                            var bm = timelineObject.GetData<BeatmapObject>();
+
+                            for (int i = 0; i < bm.events[3].Count; i++)
                             {
-                                var bm = timelineObject.GetData<BeatmapObject>();
-
-                                for (int i = 0; i < bm.events[3].Count; i++)
-                                {
-                                    var kf = bm.events[3][i];
-                                    if (curves.value != 0 && DataManager.inst.AnimationListDictionary.ContainsKey(curves.value - 1))
-                                        kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
-                                    kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
-                                    if (!string.IsNullOrEmpty(opacityIF.text))
-                                        kf.eventValues[1] = -Mathf.Clamp(Parser.TryParse(opacityIF.text, 1f), 0f, 1f) + 1f;
-                                    if (!string.IsNullOrEmpty(hueIF.text))
-                                        kf.eventValues[2] = Parser.TryParse(hueIF.text, 0f);
-                                    if (!string.IsNullOrEmpty(satIF.text))
-                                        kf.eventValues[3] = Parser.TryParse(satIF.text, 0f);
-                                    if (!string.IsNullOrEmpty(valIF.text))
-                                        kf.eventValues[4] = Parser.TryParse(valIF.text, 0f);
-                                }
-
-                                Updater.UpdateObject(bm, "Keyframes");
+                                var kf = bm.events[3][i];
+                                if (curves.value != 0 && DataManager.inst.AnimationListDictionary.ContainsKey(curves.value - 1))
+                                    kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
+                                if (currentMultiColorSelection >= 0)
+                                    kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection + 1, 0, 18);
+                                if (!string.IsNullOrEmpty(opacityIF.text))
+                                    kf.eventValues[1] = -Mathf.Clamp(Parser.TryParse(opacityIF.text, 1f), 0f, 1f) + 1f;
+                                if (!string.IsNullOrEmpty(hueIF.text))
+                                    kf.eventValues[2] = Parser.TryParse(hueIF.text, 0f);
+                                if (!string.IsNullOrEmpty(satIF.text))
+                                    kf.eventValues[3] = Parser.TryParse(satIF.text, 0f);
+                                if (!string.IsNullOrEmpty(valIF.text))
+                                    kf.eventValues[4] = Parser.TryParse(valIF.text, 0f);
                             }
+
+                            Updater.UpdateObject(bm, "Keyframes");
                         }
-                    });
+                    }));
                 }
 
                 // Assign to Index
@@ -5681,77 +5410,73 @@ namespace BetterLegacy.Editor.Managers
                     GenerateLabels(parent, 20f, "Assign to Index");
 
                     var assignIndex = CreateInputField("index", "0", "Enter index...", parent, maxValue: int.MaxValue);
-
-                    buttonGenerator("assign to index", "Assign", parent, () =>
+                    GenerateButtons(parent, 32f, 0f, new ButtonFunction("Assign", () =>
                     {
-                        if (int.TryParse(assignIndex.text, out int num))
+                        if (!int.TryParse(assignIndex.text, out int num))
+                            return;
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
-                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
-                            {
-                                if (timelineObject.IsBeatmapObject)
-                                {
-                                    var bm = timelineObject.GetData<BeatmapObject>();
+                            var bm = timelineObject.GetData<BeatmapObject>();
 
-                                    var kf = bm.events[3][Mathf.Clamp(num, 0, bm.events[3].Count - 1)];
-                                    if (curves.value != 0 && DataManager.inst.AnimationListDictionary.ContainsKey(curves.value - 1))
-                                        kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
-                                    kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
-                                    if (!string.IsNullOrEmpty(opacityIF.text))
-                                        kf.eventValues[1] = -Mathf.Clamp(Parser.TryParse(opacityIF.text, 1f), 0f, 1f) + 1f;
-                                    if (!string.IsNullOrEmpty(hueIF.text))
-                                        kf.eventValues[2] = Parser.TryParse(hueIF.text, 0f);
-                                    if (!string.IsNullOrEmpty(satIF.text))
-                                        kf.eventValues[3] = Parser.TryParse(satIF.text, 0f);
-                                    if (!string.IsNullOrEmpty(valIF.text))
-                                        kf.eventValues[4] = Parser.TryParse(valIF.text, 0f);
+                            var kf = bm.events[3][Mathf.Clamp(num, 0, bm.events[3].Count - 1)];
+                            if (curves.value != 0 && DataManager.inst.AnimationListDictionary.ContainsKey(curves.value - 1))
+                                kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
+                            if (currentMultiColorSelection >= 0)
+                                kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection + 1, 0, 18);
+                            if (!string.IsNullOrEmpty(opacityIF.text))
+                                kf.eventValues[1] = -Mathf.Clamp(Parser.TryParse(opacityIF.text, 1f), 0f, 1f) + 1f;
+                            if (!string.IsNullOrEmpty(hueIF.text))
+                                kf.eventValues[2] = Parser.TryParse(hueIF.text, 0f);
+                            if (!string.IsNullOrEmpty(satIF.text))
+                                kf.eventValues[3] = Parser.TryParse(satIF.text, 0f);
+                            if (!string.IsNullOrEmpty(valIF.text))
+                                kf.eventValues[4] = Parser.TryParse(valIF.text, 0f);
 
-                                    Updater.UpdateObject(bm, "Keyframes");
-                                }
-                            }
+                            Updater.UpdateObject(bm, "Keyframes");
                         }
-                    });
+                    }));
                 }
 
                 // Create Color Keyframe
                 {
                     GenerateLabels(parent, 20f, "Create Color Keyframe");
-
-                    buttonGenerator("create", "Create", parent, () =>
+                    GenerateButtons(parent, 32f, 0f, new ButtonFunction("Create", () =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                         {
-                            if (timelineObject.IsBeatmapObject)
+                            var bm = timelineObject.GetData<BeatmapObject>();
+
+                            var currentTime = AudioManager.inst.CurrentAudioSource.time;
+
+                            if (currentTime < bm.StartTime) // don't want people creating keyframes before the objects' start time.
+                                continue;
+
+                            var index = bm.events[3].FindLastIndex(x => currentTime > bm.StartTime + x.eventTime);
+
+                            if (index >= 0 && currentTime > bm.StartTime)
                             {
-                                var bm = timelineObject.GetData<BeatmapObject>();
+                                var kf = EventKeyframe.DeepCopy((EventKeyframe)bm.events[3][index]);
+                                kf.eventTime = currentTime - bm.StartTime;
+                                if (curves.value != 0 && DataManager.inst.AnimationListDictionary.ContainsKey(curves.value - 1))
+                                    kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
 
-                                var currentTime = AudioManager.inst.CurrentAudioSource.time;
-
-                                var index = bm.events[3].FindLastIndex(x => currentTime > bm.StartTime + x.eventTime);
-
-                                if (index >= 0 && currentTime > bm.StartTime)
-                                {
-                                    var kf = EventKeyframe.DeepCopy((EventKeyframe)bm.events[3][index]);
-                                    kf.eventTime = currentTime - bm.StartTime;
-                                    if (curves.value != 0 && DataManager.inst.AnimationListDictionary.ContainsKey(curves.value - 1))
-                                        kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
-
-                                    kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
-                                    if (!string.IsNullOrEmpty(opacityIF.text))
-                                        kf.eventValues[1] = -Mathf.Clamp(Parser.TryParse(opacityIF.text, 1f), 0f, 1f) + 1f;
-                                    if (!string.IsNullOrEmpty(hueIF.text))
-                                        kf.eventValues[2] = Parser.TryParse(hueIF.text, 0f);
-                                    if (!string.IsNullOrEmpty(satIF.text))
-                                        kf.eventValues[3] = Parser.TryParse(satIF.text, 0f);
-                                    if (!string.IsNullOrEmpty(valIF.text))
-                                        kf.eventValues[4] = Parser.TryParse(valIF.text, 0f);
-                                    bm.events[3].Add(kf);
-                                }
-
-                                Updater.UpdateObject(bm, "Keyframes");
-                                ObjectEditor.inst.RenderTimelineObject(ObjectEditor.inst.GetTimelineObject(bm));
+                                if (currentMultiColorSelection >= 0)
+                                    kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection + 1, 0, 18);
+                                if (!string.IsNullOrEmpty(opacityIF.text))
+                                    kf.eventValues[1] = -Mathf.Clamp(Parser.TryParse(opacityIF.text, 1f), 0f, 1f) + 1f;
+                                if (!string.IsNullOrEmpty(hueIF.text))
+                                    kf.eventValues[2] = Parser.TryParse(hueIF.text, 0f);
+                                if (!string.IsNullOrEmpty(satIF.text))
+                                    kf.eventValues[3] = Parser.TryParse(satIF.text, 0f);
+                                if (!string.IsNullOrEmpty(valIF.text))
+                                    kf.eventValues[4] = Parser.TryParse(valIF.text, 0f);
+                                bm.events[3].Add(kf);
                             }
+
+                            Updater.UpdateObject(bm, "Keyframes");
+                            ObjectEditor.inst.RenderTimelineObject(ObjectEditor.inst.GetTimelineObject(bm));
                         }
-                    });
+                    }));
                 }
             }
 
@@ -6387,6 +6112,43 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        public InputFieldStorage GenerateInputField(Transform parent, string name, string defaultValue, string placeholder, bool doMiddle = false, bool doLeftGreater = false, bool doRightGreater = false)
+        {
+            var gameObject = EditorPrefabHolder.Instance.NumberInputField.Duplicate(parent, name);
+            gameObject.transform.localScale = Vector3.one;
+            var inputFieldStorage = gameObject.GetComponent<InputFieldStorage>();
+            inputFieldStorage.inputField.PlaceholderText().text = placeholder;
+
+            gameObject.transform.AsRT().sizeDelta = new Vector2(428f, 32f);
+
+            inputFieldStorage.inputField.onValueChanged.ClearAll();
+            inputFieldStorage.inputField.text = defaultValue;
+            inputFieldStorage.inputField.transform.AsRT().sizeDelta = new Vector2(300f, 32f);
+
+            if (doLeftGreater)
+                EditorThemeManager.AddSelectable(inputFieldStorage.leftGreaterButton, ThemeGroup.Function_2, false);
+            else
+                Destroy(inputFieldStorage.leftGreaterButton.gameObject);
+            
+            if (doRightGreater)
+                EditorThemeManager.AddSelectable(inputFieldStorage.rightGreaterButton, ThemeGroup.Function_2, false);
+            else
+                Destroy(inputFieldStorage.rightGreaterButton.gameObject);
+
+            if (doMiddle)
+                EditorThemeManager.AddSelectable(inputFieldStorage.middleButton, ThemeGroup.Function_2, false);
+            else
+                Destroy(inputFieldStorage.middleButton.gameObject);
+
+            EditorThemeManager.AddSelectable(inputFieldStorage.leftButton, ThemeGroup.Function_2, false);
+
+            EditorThemeManager.AddSelectable(inputFieldStorage.rightButton, ThemeGroup.Function_2, false);
+
+            EditorThemeManager.AddInputField(inputFieldStorage.inputField);
+
+            return inputFieldStorage;
+        }
+
         /// <summary>
         /// Generates a horizontal group of buttons.
         /// </summary>
@@ -6403,17 +6165,21 @@ namespace BetterLegacy.Editor.Managers
 
             for (int i = 0; i < buttons.Length; i++)
             {
-                var b = buttons[i];
-                var button = EditorPrefabHolder.Instance.Function1Button.Duplicate(p.transform, b.Name);
-                var buttonStorage = button.GetComponent<FunctionButtonStorage>();
-                buttonStorage.button.onClick.ClearAll();
-                buttonStorage.button.onClick.AddListener(() => { b.Action?.Invoke(); });
-                buttonStorage.text.fontSize = b.FontSize;
-                buttonStorage.text.text = b.Name;
-
-                EditorThemeManager.AddGraphic(buttonStorage.button.image, ThemeGroup.Function_1, true);
-                EditorThemeManager.AddGraphic(buttonStorage.text, ThemeGroup.Function_1_Text);
+                GenerateButton(p.transform, buttons[i]);
             }
+        }
+
+        public void GenerateButton(Transform parent, ButtonFunction buttonFunction)
+        {
+            var button = EditorPrefabHolder.Instance.Function1Button.Duplicate(parent, buttonFunction.Name);
+            var buttonStorage = button.GetComponent<FunctionButtonStorage>();
+            buttonStorage.button.onClick.ClearAll();
+            buttonStorage.button.onClick.AddListener(() => { buttonFunction.Action?.Invoke(); });
+            buttonStorage.text.fontSize = buttonFunction.FontSize;
+            buttonStorage.text.text = buttonFunction.Name;
+
+            EditorThemeManager.AddGraphic(buttonStorage.button.image, ThemeGroup.Function_1, true);
+            EditorThemeManager.AddGraphic(buttonStorage.text, ThemeGroup.Function_1_Text);
         }
 
         InputField CreateInputField(string name, string value, string placeholder, Transform parent, float length = 340f, bool isInteger = true, float minValue = 0f, float maxValue = 0f)
@@ -9035,6 +8801,12 @@ namespace BetterLegacy.Editor.Managers
 
         #region Refresh Popups / Dialogs
 
+        public void ShowObjectSearch(Action<BeatmapObject> onSelect, bool clearParent = false)
+        {
+            EditorManager.inst.ShowDialog("Object Search Popup");
+            RefreshObjectSearch(onSelect, clearParent);
+        }
+
         public void RefreshObjectSearch(Action<BeatmapObject> onSelect, bool clearParent = false)
         {
             var dialog = EditorManager.inst.GetDialog("Object Search Popup").Dialog;
@@ -9468,19 +9240,7 @@ namespace BetterLegacy.Editor.Managers
         }
 
         public void ClosePropertiesWindow() => EditorManager.inst.HideDialog("Editor Properties Popup");
-
-        public List<Color> categoryColors = new List<Color>
-        {
-            LSColors.HexToColor("FFE7E7"),
-            LSColors.HexToColor("C0ACE1"),
-            LSColors.HexToColor("F17BB8"),
-            LSColors.HexToColor("2F426D"),
-            LSColors.HexToColor("4076DF"),
-            LSColors.HexToColor("6CCBCF"),
-            LSColors.HexToColor("1B1B1C")
-
-        };
-
+        
         bool generatedPropertiesPrefabs = false;
         List<GameObject> editorPropertiesPrefabs = new List<GameObject>();
 
@@ -13068,7 +12828,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             public string Name { get; set; }
-            public int FontSize { get; set; } = 16;
+            public int FontSize { get; set; } = 20;
             public Action Action { get; set; }
         }
 
