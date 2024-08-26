@@ -3897,8 +3897,6 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < list.Count; i++)
                 Destroy(list[i]);
 
-            //dataLeft.GetChild(1).SetParent(parent);
-
             var textHolder = multiObjectEditorDialog.Find("data/right/text holder/Text");
             var textHolderText = textHolder.GetComponent<Text>();
 
@@ -5377,32 +5375,85 @@ namespace BetterLegacy.Editor.Managers
                 // Assign to All
                 {
                     GenerateLabels(parent, 20f, "Assign to all Color Keyframes");
-                    GenerateButtons(parent, 32f, 0f, new ButtonFunction("Assign", () =>
-                    {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                    GenerateButtons(parent, 32f, 8f,
+                        new ButtonFunction("Set", () =>
                         {
-                            var bm = timelineObject.GetData<BeatmapObject>();
-
-                            for (int i = 0; i < bm.events[3].Count; i++)
+                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
-                                var kf = bm.events[3][i];
-                                if (curves.value != 0 && DataManager.inst.AnimationListDictionary.ContainsKey(curves.value - 1))
-                                    kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
-                                if (currentMultiColorSelection >= 0)
-                                    kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection + 1, 0, 18);
-                                if (!string.IsNullOrEmpty(opacityIF.text))
-                                    kf.eventValues[1] = -Mathf.Clamp(Parser.TryParse(opacityIF.text, 1f), 0f, 1f) + 1f;
-                                if (!string.IsNullOrEmpty(hueIF.text))
-                                    kf.eventValues[2] = Parser.TryParse(hueIF.text, 0f);
-                                if (!string.IsNullOrEmpty(satIF.text))
-                                    kf.eventValues[3] = Parser.TryParse(satIF.text, 0f);
-                                if (!string.IsNullOrEmpty(valIF.text))
-                                    kf.eventValues[4] = Parser.TryParse(valIF.text, 0f);
-                            }
+                                var bm = timelineObject.GetData<BeatmapObject>();
 
-                            Updater.UpdateObject(bm, "Keyframes");
-                        }
-                    }));
+                                for (int i = 0; i < bm.events[3].Count; i++)
+                                {
+                                    var kf = bm.events[3][i];
+                                    if (curves.value != 0 && DataManager.inst.AnimationListDictionary.ContainsKey(curves.value - 1))
+                                        kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
+                                    if (currentMultiColorSelection >= 0)
+                                        kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
+                                    if (!string.IsNullOrEmpty(opacityIF.text))
+                                        kf.eventValues[1] = -Mathf.Clamp(Parser.TryParse(opacityIF.text, 1f), 0f, 1f) + 1f;
+                                    if (!string.IsNullOrEmpty(hueIF.text))
+                                        kf.eventValues[2] = Parser.TryParse(hueIF.text, 0f);
+                                    if (!string.IsNullOrEmpty(satIF.text))
+                                        kf.eventValues[3] = Parser.TryParse(satIF.text, 0f);
+                                    if (!string.IsNullOrEmpty(valIF.text))
+                                        kf.eventValues[4] = Parser.TryParse(valIF.text, 0f);
+                                }
+
+                                Updater.UpdateObject(bm, "Keyframes");
+                            }
+                        }),
+                        new ButtonFunction("Add", () =>
+                        {
+                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                            {
+                                var bm = timelineObject.GetData<BeatmapObject>();
+
+                                for (int i = 0; i < bm.events[3].Count; i++)
+                                {
+                                    var kf = bm.events[3][i];
+                                    if (curves.value != 0 && DataManager.inst.AnimationListDictionary.ContainsKey(curves.value - 1))
+                                        kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
+                                    if (currentMultiColorSelection >= 0)
+                                        kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18); // color slots can't be added onto.
+                                    if (!string.IsNullOrEmpty(opacityIF.text))
+                                        kf.eventValues[1] = Mathf.Clamp(kf.eventValues[1] - Parser.TryParse(opacityIF.text, 1f), 0f, 1f);
+                                    if (!string.IsNullOrEmpty(hueIF.text))
+                                        kf.eventValues[2] += Parser.TryParse(hueIF.text, 0f);
+                                    if (!string.IsNullOrEmpty(satIF.text))
+                                        kf.eventValues[3] += Parser.TryParse(satIF.text, 0f);
+                                    if (!string.IsNullOrEmpty(valIF.text))
+                                        kf.eventValues[4] += Parser.TryParse(valIF.text, 0f);
+                                }
+
+                                Updater.UpdateObject(bm, "Keyframes");
+                            }
+                        }),
+                        new ButtonFunction("Sub", () =>
+                        {
+                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                            {
+                                var bm = timelineObject.GetData<BeatmapObject>();
+
+                                for (int i = 0; i < bm.events[3].Count; i++)
+                                {
+                                    var kf = bm.events[3][i];
+                                    if (curves.value != 0 && DataManager.inst.AnimationListDictionary.ContainsKey(curves.value - 1))
+                                        kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
+                                    if (currentMultiColorSelection >= 0)
+                                        kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18); // color slots can't be added onto.
+                                    if (!string.IsNullOrEmpty(opacityIF.text))
+                                        kf.eventValues[1] = Mathf.Clamp(kf.eventValues[1] + Parser.TryParse(opacityIF.text, 1f), 0f, 1f);
+                                    if (!string.IsNullOrEmpty(hueIF.text))
+                                        kf.eventValues[2] -= Parser.TryParse(hueIF.text, 0f);
+                                    if (!string.IsNullOrEmpty(satIF.text))
+                                        kf.eventValues[3] -= Parser.TryParse(satIF.text, 0f);
+                                    if (!string.IsNullOrEmpty(valIF.text))
+                                        kf.eventValues[4] -= Parser.TryParse(valIF.text, 0f);
+                                }
+
+                                Updater.UpdateObject(bm, "Keyframes");
+                            }
+                        }));
                 }
 
                 // Assign to Index
@@ -5410,31 +5461,82 @@ namespace BetterLegacy.Editor.Managers
                     GenerateLabels(parent, 20f, "Assign to Index");
 
                     var assignIndex = CreateInputField("index", "0", "Enter index...", parent, maxValue: int.MaxValue);
-                    GenerateButtons(parent, 32f, 0f, new ButtonFunction("Assign", () =>
-                    {
-                        if (!int.TryParse(assignIndex.text, out int num))
-                            return;
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                    GenerateButtons(parent, 32f, 8f,
+                        new ButtonFunction("Set", () =>
                         {
-                            var bm = timelineObject.GetData<BeatmapObject>();
+                            if (!int.TryParse(assignIndex.text, out int num))
+                                return;
+                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                            {
+                                var bm = timelineObject.GetData<BeatmapObject>();
 
-                            var kf = bm.events[3][Mathf.Clamp(num, 0, bm.events[3].Count - 1)];
-                            if (curves.value != 0 && DataManager.inst.AnimationListDictionary.ContainsKey(curves.value - 1))
-                                kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
-                            if (currentMultiColorSelection >= 0)
-                                kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection + 1, 0, 18);
-                            if (!string.IsNullOrEmpty(opacityIF.text))
-                                kf.eventValues[1] = -Mathf.Clamp(Parser.TryParse(opacityIF.text, 1f), 0f, 1f) + 1f;
-                            if (!string.IsNullOrEmpty(hueIF.text))
-                                kf.eventValues[2] = Parser.TryParse(hueIF.text, 0f);
-                            if (!string.IsNullOrEmpty(satIF.text))
-                                kf.eventValues[3] = Parser.TryParse(satIF.text, 0f);
-                            if (!string.IsNullOrEmpty(valIF.text))
-                                kf.eventValues[4] = Parser.TryParse(valIF.text, 0f);
+                                var kf = bm.events[3][Mathf.Clamp(num, 0, bm.events[3].Count - 1)];
+                                if (curves.value != 0 && DataManager.inst.AnimationListDictionary.ContainsKey(curves.value - 1))
+                                    kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
+                                if (currentMultiColorSelection >= 0)
+                                    kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
+                                if (!string.IsNullOrEmpty(opacityIF.text))
+                                    kf.eventValues[1] = Mathf.Clamp(kf.eventValues[1] - Parser.TryParse(opacityIF.text, 1f), 0f, 1f);
+                                if (!string.IsNullOrEmpty(hueIF.text))
+                                    kf.eventValues[2] = Parser.TryParse(hueIF.text, 0f);
+                                if (!string.IsNullOrEmpty(satIF.text))
+                                    kf.eventValues[3] = Parser.TryParse(satIF.text, 0f);
+                                if (!string.IsNullOrEmpty(valIF.text))
+                                    kf.eventValues[4] = Parser.TryParse(valIF.text, 0f);
 
-                            Updater.UpdateObject(bm, "Keyframes");
-                        }
-                    }));
+                                Updater.UpdateObject(bm, "Keyframes");
+                            }
+                        }),
+                        new ButtonFunction("Add", () =>
+                        {
+                            if (!int.TryParse(assignIndex.text, out int num))
+                                return;
+                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                            {
+                                var bm = timelineObject.GetData<BeatmapObject>();
+
+                                var kf = bm.events[3][Mathf.Clamp(num, 0, bm.events[3].Count - 1)];
+                                if (curves.value != 0 && DataManager.inst.AnimationListDictionary.ContainsKey(curves.value - 1))
+                                    kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
+                                if (currentMultiColorSelection >= 0)
+                                    kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
+                                if (!string.IsNullOrEmpty(opacityIF.text))
+                                    kf.eventValues[1] = Mathf.Clamp(kf.eventValues[1] - Parser.TryParse(opacityIF.text, 1f), 0f, 1f);
+                                if (!string.IsNullOrEmpty(hueIF.text))
+                                    kf.eventValues[2] += Parser.TryParse(hueIF.text, 0f);
+                                if (!string.IsNullOrEmpty(satIF.text))
+                                    kf.eventValues[3] += Parser.TryParse(satIF.text, 0f);
+                                if (!string.IsNullOrEmpty(valIF.text))
+                                    kf.eventValues[4] += Parser.TryParse(valIF.text, 0f);
+
+                                Updater.UpdateObject(bm, "Keyframes");
+                            }
+                        }),
+                        new ButtonFunction("Sub", () =>
+                        {
+                            if (!int.TryParse(assignIndex.text, out int num))
+                                return;
+                            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                            {
+                                var bm = timelineObject.GetData<BeatmapObject>();
+
+                                var kf = bm.events[3][Mathf.Clamp(num, 0, bm.events[3].Count - 1)];
+                                if (curves.value != 0 && DataManager.inst.AnimationListDictionary.ContainsKey(curves.value - 1))
+                                    kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
+                                if (currentMultiColorSelection >= 0)
+                                    kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
+                                if (!string.IsNullOrEmpty(opacityIF.text))
+                                    kf.eventValues[1] = Mathf.Clamp(kf.eventValues[1] + Parser.TryParse(opacityIF.text, 1f), 0f, 1f);
+                                if (!string.IsNullOrEmpty(hueIF.text))
+                                    kf.eventValues[2] -= Parser.TryParse(hueIF.text, 0f);
+                                if (!string.IsNullOrEmpty(satIF.text))
+                                    kf.eventValues[3] -= Parser.TryParse(satIF.text, 0f);
+                                if (!string.IsNullOrEmpty(valIF.text))
+                                    kf.eventValues[4] -= Parser.TryParse(valIF.text, 0f);
+
+                                Updater.UpdateObject(bm, "Keyframes");
+                            }
+                        }));
                 }
 
                 // Create Color Keyframe
@@ -5461,7 +5563,7 @@ namespace BetterLegacy.Editor.Managers
                                     kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
 
                                 if (currentMultiColorSelection >= 0)
-                                    kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection + 1, 0, 18);
+                                    kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
                                 if (!string.IsNullOrEmpty(opacityIF.text))
                                     kf.eventValues[1] = -Mathf.Clamp(Parser.TryParse(opacityIF.text, 1f), 0f, 1f) + 1f;
                                 if (!string.IsNullOrEmpty(hueIF.text))
