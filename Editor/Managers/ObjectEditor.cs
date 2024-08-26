@@ -822,7 +822,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorManager.inst.DisplayNotification(
                 $"Pasted Beatmap Object{(prefab.objects.Count == 1 ? "" : "s")} [ {stri} ] {(regen ? "" : $"and kept Prefab Instance ID")} in {sw.Elapsed}!",
-                6f, EditorManager.NotificationType.Success);
+                prefab.objects.Count + prefab.prefabObjects.Count, EditorManager.NotificationType.Success);
 
             if (select)
             {
@@ -3074,7 +3074,8 @@ namespace BetterLegacy.Editor.Managers
             renderType.onValueChanged.AddListener(_val =>
             {
                 beatmapObject.background = _val == 1;
-                Updater.UpdateObject(beatmapObject);
+                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
+                    levelObject.visualObject.GameObject.layer = beatmapObject.background ? 9 : 8;
             });
         }
 
