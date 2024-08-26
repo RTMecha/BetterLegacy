@@ -1,0 +1,25 @@
+﻿### Major feature
+- Arcade server
+- Level collections
+- Custom Achievement system
+- Story mode
+- Example tutorials
+### Minor feature
+- Animation editor
+- Color picker rework
+- Timeline object index order
+- Unclamped timeline
+- Text editor
+- Editor Complexity
+- New modifiers [prizeObject]
+### Misc
+- Catalyst Shake fix
+- Make sure Window Event keyframes are consistent across monitors + add a fake Desktop thing like Rhythm Doctor
+- Follow Player keyframe needs to have a setting for not resetting
+- Follow Player keyframe modifier
+- Documentation & tooltips
+- Example customization
+- Fully implement Background Object tags
+- loadLevel modifiers custom end function
+- Possible multi object editor rework???
+- Find a way to implement Re-rendering waveform.
