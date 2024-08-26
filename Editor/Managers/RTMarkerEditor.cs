@@ -111,6 +111,8 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.AddLightText(ttindex);
 
+            EditorHelper.SetComplexity(indexparent, Complexity.Normal);
+
             // Makes label consistent with other labels. Originally said "Marker Time" where other labels do not mention "Marker".
             var timeLabel = MarkerEditor.inst.left.GetChild(3).GetChild(0).GetComponent<Text>();
             timeLabel.text = "Time";
@@ -161,6 +163,8 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddSelectable(makeNoteStorage.button, ThemeGroup.Function_2);
             EditorThemeManager.AddGraphic(makeNoteStorage.text, ThemeGroup.Function_2_Text);
 
+            EditorHelper.SetComplexity(makeNote, Complexity.Advanced);
+
             var snapToBPM = EditorPrefabHolder.Instance.Function2Button.Duplicate(MarkerEditor.inst.left, "snap bpm", 5);
             var snapToBPMStorage = snapToBPM.GetComponent<FunctionButtonStorage>();
             snapToBPMStorage.text.text = "Snap BPM";
@@ -168,6 +172,8 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.AddSelectable(snapToBPMStorage.button, ThemeGroup.Function_2);
             EditorThemeManager.AddGraphic(snapToBPMStorage.text, ThemeGroup.Function_2_Text);
+
+            EditorHelper.SetComplexity(snapToBPM, Complexity.Normal);
 
             var prefab = MarkerEditor.inst.markerPrefab;
             var prefabCopy = prefab.Duplicate(transform, prefab.name);

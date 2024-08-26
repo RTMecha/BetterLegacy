@@ -1067,7 +1067,7 @@ namespace BetterLegacy.Editor.Managers
                 var direction = GenerateUIElement("direction", "Vector2", shake, 10, "Direction X", "Direction Y");
 
                 var labelBase = Instantiate(uiDictionary["Label"]);
-                labelBase.name = "label";
+                labelBase.name = "notice-label";
                 labelBase.transform.SetParent(shake);
                 labelBase.transform.localScale = Vector3.one;
                 labelBase.transform.AsRT().sizeDelta = new Vector2(366f, 42f);
@@ -1189,13 +1189,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var mode = gradient.transform.Find("curves").gameObject.Duplicate(gradient.transform, "mode");
                 var modeDropdown = mode.GetComponent<Dropdown>();
-                modeDropdown.options = new List<Dropdown.OptionData>
-                    {
-                        new Dropdown.OptionData("Linear"),
-                        new Dropdown.OptionData("Additive"),
-                        new Dropdown.OptionData("Multiply"),
-                        new Dropdown.OptionData("Screen"),
-                    };
+                modeDropdown.options = CoreHelper.StringToOptionData("Linear", "Additive", "Multiply", "Screen");
 
                 EditorThemeManager.AddInputFields(intensity["UI"], true, "Event Editor");
                 EditorThemeManager.AddInputFields(colorShiftTop["UI"], true, "Event Editor");
@@ -1358,11 +1352,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var renderTypeD = gradient.transform.Find("curves").gameObject.Duplicate(videoBG.transform, "rendertype");
                 var renderTypeDropdown = renderTypeD.GetComponent<Dropdown>();
-                renderTypeDropdown.options = new List<Dropdown.OptionData>
-                    {
-                        new Dropdown.OptionData("Background"),
-                        new Dropdown.OptionData("Foreground"),
-                    };
+                renderTypeDropdown.options = CoreHelper.StringToOptionData("Background", "Foreground");
 
                 EditorThemeManager.AddInputFields(position["UI"], true, "Event Editor");
                 EditorThemeManager.AddInputFields(scale["UI"], true, "Event Editor");
@@ -1386,11 +1376,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var direction = gradient.transform.Find("curves").gameObject.Duplicate(bars.transform, "direction");
                 var directionDropdown = direction.GetComponent<Dropdown>();
-                directionDropdown.options = new List<Dropdown.OptionData>
-                    {
-                        new Dropdown.OptionData("Horizontal"),
-                        new Dropdown.OptionData("Vertical"),
-                    };
+                directionDropdown.options = CoreHelper.StringToOptionData("Horizontal", "Vertical");
 
                 EditorThemeManager.AddInputFields(intensity["UI"], true, "Event Editor");
                 EditorThemeManager.AddDropdown(directionDropdown);
@@ -1818,25 +1804,31 @@ namespace BetterLegacy.Editor.Managers
                 var dialog = EventEditor.inst.dialogRight.GetChild(i);
 
                 var edit = dialog.Find("edit");
-                DestroyImmediate(edit.Find("spacer").gameObject);
+                edit.Find("spacer").gameObject.SetActive(!RTEditor.NotSimple);
+                EditorConfig.UpdateEditorComplexity += () => { edit?.Find("spacer")?.gameObject?.SetActive(!RTEditor.NotSimple); };
 
                 var copy = EditorPrefabHolder.Instance.Function1Button.Duplicate(edit, "copy", 5);
                 var copyStorage = copy.GetComponent<FunctionButtonStorage>();
                 var copyText = copyStorage.text;
                 copyText.text = "Copy";
-                ((RectTransform)copy.transform).sizeDelta = new Vector2(70f, 32f);
+                copy.transform.AsRT().sizeDelta = new Vector2(70f, 32f);
 
                 var paste = EditorPrefabHolder.Instance.Function1Button.Duplicate(edit, "paste", 6);
                 var pasteStorage = paste.GetComponent<FunctionButtonStorage>();
                 var pasteText = pasteStorage.text;
                 pasteText.text = "Paste";
-                ((RectTransform)paste.transform).sizeDelta = new Vector2(70f, 32f);
+                paste.transform.AsRT().sizeDelta = new Vector2(70f, 32f);
 
                 EditorThemeManager.AddGraphic(copyStorage.button.image, ThemeGroup.Copy, true);
                 EditorThemeManager.AddGraphic(copyStorage.text, ThemeGroup.Copy_Text);
 
                 EditorThemeManager.AddGraphic(pasteStorage.button.image, ThemeGroup.Paste, true);
                 EditorThemeManager.AddGraphic(pasteStorage.text, ThemeGroup.Paste_Text);
+
+                copy.SetActive(RTEditor.NotSimple);
+                EditorConfig.UpdateEditorComplexity += () => { copy?.SetActive(RTEditor.NotSimple); };
+                paste.SetActive(RTEditor.NotSimple);
+                EditorConfig.UpdateEditorComplexity += () => { paste?.SetActive(RTEditor.NotSimple); };
             }
         }
 
@@ -2188,6 +2180,7 @@ namespace BetterLegacy.Editor.Managers
                         // Shake Intensity X / Y
 
                         RTEditor.SetActive(dialogTmp.Find("direction").gameObject, RTEditor.ShowModdedUI);
+                        RTEditor.SetActive(dialogTmp.Find("notice-label").gameObject, RTEditor.ShowModdedUI);
                         RTEditor.SetActive(dialogTmp.Find("interpolation").gameObject, RTEditor.ShowModdedUI);
                         RTEditor.SetActive(dialogTmp.Find("speed").gameObject, RTEditor.ShowModdedUI);
 
@@ -2224,6 +2217,7 @@ namespace BetterLegacy.Editor.Managers
                         RTEditor.SetActive(dialogTmp.Find("threshold").gameObject, RTEditor.ShowModdedUI);
                         RTEditor.SetActive(dialogTmp.Find("anamorphic ratio").gameObject, RTEditor.ShowModdedUI);
                         RTEditor.SetActive(dialogTmp.Find("colors").gameObject, RTEditor.ShowModdedUI);
+                        RTEditor.SetActive(dialogTmp.Find("colorshift").gameObject, RTEditor.ShowModdedUI);
 
                         if (!RTEditor.ShowModdedUI)
                             break;

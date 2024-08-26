@@ -150,6 +150,7 @@ namespace BetterLegacy.Editor.Managers
                 defaultIF = defaultInputField.gameObject;
                 defaultIF.SetActive(true);
                 defaultInputField.SetParent(transform);
+                defaultInputField.localScale = Vector3.one;
                 EditorManager.inst.speedText.transform.parent.SetParent(transform);
 
                 if (defaultIF.TryGetComponent(out InputField frick))
@@ -207,7 +208,6 @@ namespace BetterLegacy.Editor.Managers
             CreateObjectSearch();
             CreateWarningPopup();
             CreateMultiObjectEditor();
-            CreatePropertiesWindow();
             CreateDocumentation();
             CreateDebug();
             CreateAutosavePopup();
@@ -442,6 +442,12 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        void OnDestroy()
+        {
+            CoreHelper.LogError($"RTEditor was destroyed!");
+            EditorConfig.UpdateEditorComplexity = null;
+        }
+
         #region Variables
 
         public GridRenderer previewGrid;
@@ -455,6 +461,7 @@ namespace BetterLegacy.Editor.Managers
         public EditorThemeManager.Element PreviewCover { get; set; }
 
         public static bool ShowModdedUI { get; set; }
+        public static bool NotSimple => EditorConfig.Instance.EditorComplexity.Value != Complexity.Simple;
 
         public bool ienumRunning;
 
@@ -463,10 +470,6 @@ namespace BetterLegacy.Editor.Managers
         public string objectSearchTerm = "";
 
         public Transform titleBar;
-
-        public string propertiesSearch;
-
-        public static EditorProperty.EditorPropCategory currentCategory = EditorProperty.EditorPropCategory.General;
 
         public static List<Dropdown> EasingDropdowns { get; set; } = new List<Dropdown>();
 
@@ -2289,9 +2292,9 @@ namespace BetterLegacy.Editor.Managers
 
             timeField = timeObj.GetComponent<InputField>();
 
-            TooltipHelper.AssignTooltip(timeObj, "Time Input", 3f);
+            TooltipHelper.AssignTooltip(timeObj, timeObj.name, 3f);
 
-            timeObj.SetActive(true);
+            timeObj.SetActive(NotSimple);
             timeField.PlaceholderText().text = "Set time...";
             timeField.PlaceholderText().alignment = TextAnchor.MiddleCenter;
             timeField.PlaceholderText().fontSize = 16;
@@ -2306,7 +2309,10 @@ namespace BetterLegacy.Editor.Managers
 
             TriggerHelper.AddEventTriggers(timeObj, TriggerHelper.ScrollDelta(timeField));
 
+            EditorConfig.UpdateEditorComplexity += () => { timeField?.gameObject?.SetActive(NotSimple); };
+
             var layersObj = timeObj.Duplicate(timelineBar.transform, "layers", 7);
+            layersObj.SetActive(true);
             layersObj.transform.localScale = Vector3.one;
 
             TooltipHelper.AssignTooltip(layersObj, "Editor Layer", 3f);
@@ -2343,6 +2349,7 @@ namespace BetterLegacy.Editor.Managers
                 }));
 
             var pitchObj = timeObj.Duplicate(timelineBar.transform, "pitch", 5);
+            pitchObj.SetActive(true);
             pitchObj.transform.localScale = Vector3.one;
             TooltipHelper.AssignTooltip(pitchObj, "Pitch", 3f);
 
@@ -2810,7 +2817,7 @@ namespace BetterLegacy.Editor.Managers
                 });
             }, 4);
 
-            EditorHelper.AddEditorDropdown("Add File to Level Folder", "", "File", SearchSprite, () =>
+            var addFileToLevelFolder = EditorHelper.AddEditorDropdown("Add File to Level Folder", "", "File", SearchSprite, () =>
             {
                 EditorManager.inst.ShowDialog("Browser Popup");
                 RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".ogg", ".wav", ".png", ".jpg", ".mp4", ".mov" }, onSelectFile: _val =>
@@ -2833,6 +2840,14 @@ namespace BetterLegacy.Editor.Managers
                     File.Copy(_val, destination, RTFile.FileExists(destination));
                 });
             }, 5);
+            addFileToLevelFolder.gameObject.SetActive(NotSimple);
+            EditorConfig.UpdateEditorComplexity += () => { addFileToLevelFolder?.gameObject?.SetActive(NotSimple); };
+
+            EditorHelper.AddEditorDropdown("Editor Preferences", "", "Edit", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_preferences-white.png"), () =>
+            {
+                ConfigManager.inst.Show();
+                ConfigManager.inst.SetTab(2);
+            });
 
             EditorHelper.AddEditorDropdown("Clear Sprite Data", "", "Edit", titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
             {
@@ -2850,7 +2865,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.DisplayNotification("Event Offsets have been reset.", 1.4f, EditorManager.NotificationType.Success);
             });
             
-            EditorHelper.AddEditorDropdown("Deactivate Modifiers", "", "Edit", CloseSprite, () =>
+            var deactivateModifiers = EditorHelper.AddEditorDropdown("Deactivate Modifiers", "", "Edit", CloseSprite, () =>
             {
                 if (!GameData.IsValid)
                     return;
@@ -2876,8 +2891,10 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorManager.inst.DisplayNotification("Modifiers have been deactivated.", 1.4f, EditorManager.NotificationType.Success);
             });
-            
-            EditorHelper.AddEditorDropdown("Reset object variables", "", "Edit", CloseSprite, () =>
+            deactivateModifiers.gameObject.SetActive(ShowModdedUI);
+            EditorConfig.UpdateEditorComplexity += () => { deactivateModifiers?.gameObject?.SetActive(ShowModdedUI); };
+
+            var resetObjectVariables = EditorHelper.AddEditorDropdown("Reset object variables", "", "Edit", CloseSprite, () =>
             {
                 if (!GameData.IsValid)
                     return;
@@ -2898,10 +2915,12 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorManager.inst.DisplayNotification("Reset all integer variables to 0.", 1.4f, EditorManager.NotificationType.Success);
             });
+            resetObjectVariables.gameObject.SetActive(ShowModdedUI);
+            EditorConfig.UpdateEditorComplexity += () => { resetObjectVariables?.gameObject?.SetActive(ShowModdedUI); };
 
             EditorHelper.AddEditorDropdown("Get Example", "", "View", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_example-white.png"), ExampleManager.Init);
             
-            EditorHelper.AddEditorDropdown("Show Config Manager", "", "View", null, ConfigManager.inst.Show);
+            EditorHelper.AddEditorDropdown("Show Config Manager", "", "View", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_preferences-white.png"), ConfigManager.inst.Show);
 
             titleBar.Find("Steam/Text").GetComponent<Text>().text = "Upload";
             var steamLayoutElement = titleBar.Find("Steam").GetComponent<LayoutElement>();
@@ -3007,8 +3026,7 @@ namespace BetterLegacy.Editor.Managers
 
             #region Level Path
 
-            var levelPathGameObject = GameObject.Find("TimelineBar/GameObject/Time Input")
-                    .Duplicate(EditorManager.inst.GetDialog("Open File Popup").Dialog, "editor path");
+            var levelPathGameObject = defaultIF.Duplicate(EditorManager.inst.GetDialog("Open File Popup").Dialog, "editor path");
             ((RectTransform)levelPathGameObject.transform).anchoredPosition = config.OpenLevelEditorPathPos.Value;
             ((RectTransform)levelPathGameObject.transform).sizeDelta = new Vector2(config.OpenLevelEditorPathLength.Value, 32f);
 
@@ -3080,7 +3098,7 @@ namespace BetterLegacy.Editor.Managers
             var themePathBase = EditorManager.inst.GetDialog("Event Editor").Dialog.Find("data/right/theme").GetChild(2).gameObject
                 .Duplicate(EditorManager.inst.GetDialog("Event Editor").Dialog.Find("data/right/theme"), "themepathers", 8);
 
-            var themePathGameObject = timeField.gameObject.Duplicate(themePathBase.transform, "themes path");
+            var themePathGameObject = defaultIF.Duplicate(themePathBase.transform, "themes path");
             themePathGameObject.transform.AsRT().anchoredPosition = new Vector2(80f, 0f);
             themePathGameObject.transform.AsRT().sizeDelta = new Vector2(160f, 34f);
 
@@ -3198,7 +3216,7 @@ namespace BetterLegacy.Editor.Managers
 
             #region Prefab Path
 
-            var prefabPathGameObject = timeField.gameObject.Duplicate(EditorManager.inst.GetDialog("Prefab Popup").Dialog.Find("external prefabs"), "prefabs path");
+            var prefabPathGameObject = defaultIF.Duplicate(EditorManager.inst.GetDialog("Prefab Popup").Dialog.Find("external prefabs"), "prefabs path");
 
             prefabPathGameObject.transform.AsRT().anchoredPosition = config.PrefabExternalPrefabPathPos.Value;
             prefabPathGameObject.transform.AsRT().sizeDelta = new Vector2(config.PrefabExternalPrefabPathLength.Value, 32f);
@@ -4269,8 +4287,8 @@ namespace BetterLegacy.Editor.Managers
 
             // Optimization
             {
-                GenerateLabels(parent, 20f, "Auto optimize objects");
-                GenerateButtons(parent, 32f, 0f, new ButtonFunction("Optimize", () =>
+                var labels = GenerateLabels(parent, 20f, "Auto optimize objects");
+                var buttons = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Optimize", () =>
                 {
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                     {
@@ -4280,6 +4298,13 @@ namespace BetterLegacy.Editor.Managers
                         ObjectEditor.inst.RenderTimelineObjectPosition(timelineObject);
                     }
                 }));
+                labels.SetActive(NotSimple);
+                buttons.SetActive(NotSimple);
+                EditorConfig.UpdateEditorComplexity += () =>
+                    {
+                        labels?.SetActive(NotSimple);
+                        buttons?.SetActive(NotSimple);
+                    };
             }
 
             // Song Time Autokill
@@ -4605,9 +4630,9 @@ namespace BetterLegacy.Editor.Managers
 
             // Render Type
             {
-                GenerateLabels(parent, 20f, "Modify Object Render Type");
+                var labels = GenerateLabels(parent, 20f, "Modify Object Render Type");
 
-                GenerateButtons(parent, 32f, 8f,
+                var buttons1 = GenerateButtons(parent, 32f, 8f,
                     new ButtonFunction("On", () =>
                     {
                         foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
@@ -4626,7 +4651,7 @@ namespace BetterLegacy.Editor.Managers
                                 levelObject.visualObject.GameObject.layer = beatmapObject.background ? 9 : 8;
                         }
                     }));
-                GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
+                var buttons2 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
                 {
                     foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                     {
@@ -4635,13 +4660,22 @@ namespace BetterLegacy.Editor.Managers
                             levelObject.visualObject.GameObject.layer = beatmapObject.background ? 9 : 8;
                     }
                 }));
+                labels.SetActive(ShowModdedUI);
+                buttons1.SetActive(ShowModdedUI);
+                buttons2.SetActive(ShowModdedUI);
+                EditorConfig.UpdateEditorComplexity += () =>
+                {
+                    labels?.SetActive(ShowModdedUI);
+                    buttons1?.SetActive(ShowModdedUI);
+                    buttons2?.SetActive(ShowModdedUI);
+                };
             }
 
             // LDM
             {
-                GenerateLabels(parent, 20f, "Modify Low Detail Mode");
+                var labels = GenerateLabels(parent, 20f, "Modify Low Detail Mode");
 
-                GenerateButtons(parent, 32f, 8f,
+                var buttons1 = GenerateButtons(parent, 32f, 8f,
                     new ButtonFunction("On", () =>
                     {
                         foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
@@ -4658,7 +4692,7 @@ namespace BetterLegacy.Editor.Managers
                             Updater.UpdateObject(beatmapObject);
                         }
                     }));
-                GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
+                var buttons2 = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
                 {
                     foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                     {
@@ -4666,6 +4700,15 @@ namespace BetterLegacy.Editor.Managers
                         Updater.UpdateObject(beatmapObject);
                     }
                 }));
+                labels.SetActive(ShowModdedUI);
+                buttons1.SetActive(ShowModdedUI);
+                buttons2.SetActive(ShowModdedUI);
+                EditorConfig.UpdateEditorComplexity += () =>
+                {
+                    labels?.SetActive(ShowModdedUI);
+                    buttons1?.SetActive(ShowModdedUI);
+                    buttons2?.SetActive(ShowModdedUI);
+                };
             }
 
             // Sync object selection
@@ -6198,7 +6241,7 @@ namespace BetterLegacy.Editor.Managers
             multiObjectEditorDialog.Find("data/left").AsRT().sizeDelta = new Vector2(355f, 730f);
         }
 
-        public void GenerateLabels(Transform parent, float sizeY, params string[] labels)
+        public GameObject GenerateLabels(Transform parent, float sizeY, params string[] labels)
         {
             var labelBase = Creator.NewUIObject("label", parent);
             labelBase.transform.AsRT().sizeDelta = new Vector2(0f, sizeY);
@@ -6212,6 +6255,8 @@ namespace BetterLegacy.Editor.Managers
                 labelText.text = labels[i];
                 EditorThemeManager.AddLightText(labelText);
             }
+
+            return labelBase;
         }
 
         public InputFieldStorage GenerateInputField(Transform parent, string name, string defaultValue, string placeholder, bool doMiddle = false, bool doLeftGreater = false, bool doRightGreater = false)
@@ -6258,7 +6303,7 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="sizeY">The Y size of the base. Default is 32 or 48.</param>
         /// <param name="spacing">Spacing for the layout group. Default is 8.</param>
         /// <param name="buttons">Array of buttons to generate.</param>
-        public void GenerateButtons(Transform parent, float sizeY, float spacing, params ButtonFunction[] buttons)
+        public GameObject GenerateButtons(Transform parent, float sizeY, float spacing, params ButtonFunction[] buttons)
         {
             var p = Creator.NewUIObject("buttons", parent);
             p.transform.AsRT().sizeDelta = new Vector2(0f, sizeY);
@@ -6269,9 +6314,11 @@ namespace BetterLegacy.Editor.Managers
             {
                 GenerateButton(p.transform, buttons[i]);
             }
+
+            return p;
         }
 
-        public void GenerateButton(Transform parent, ButtonFunction buttonFunction)
+        public GameObject GenerateButton(Transform parent, ButtonFunction buttonFunction)
         {
             var button = EditorPrefabHolder.Instance.Function1Button.Duplicate(parent, buttonFunction.Name);
             var buttonStorage = button.GetComponent<FunctionButtonStorage>();
@@ -6282,6 +6329,8 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.AddGraphic(buttonStorage.button.image, ThemeGroup.Function_1, true);
             EditorThemeManager.AddGraphic(buttonStorage.text, ThemeGroup.Function_1_Text);
+
+            return button;
         }
 
         InputField CreateInputField(string name, string value, string placeholder, Transform parent, float length = 340f, bool isInteger = true, float minValue = 0f, float maxValue = 0f)
@@ -6326,126 +6375,6 @@ namespace BetterLegacy.Editor.Managers
                 var multiColorButton = multiColorButtons[i];
                 multiColorButton.Selected.SetActive(currentMultiColorSelection == i);
             }
-        }
-
-        void CreatePropertiesWindow()
-        {
-            var editorProperties = Instantiate(EditorManager.inst.GetDialog("Object Selector").Dialog.gameObject);
-            editorProperties.name = "Editor Properties Popup";
-            editorProperties.layer = 5;
-            editorProperties.transform.SetParent(popups);
-            editorProperties.transform.localScale = Vector3.one;
-            editorProperties.transform.localPosition = Vector3.zero;
-
-            var eSelect = editorProperties.AddComponent<SelectGUI>();
-            eSelect.target = editorProperties.transform;
-            eSelect.ogPos = editorProperties.transform.position;
-
-            var editorPropertiesPanel = editorProperties.transform.Find("Panel");
-
-            var prefabTMP = GameObject.Find("Editor Systems/Editor GUI/sizer/main/TimelineBar/GameObject/prefab");
-
-            var searchField = editorProperties.transform.Find("search-box").GetChild(0).GetComponent<InputField>();
-            searchField.onValueChanged.RemoveAllListeners();
-            searchField.onValueChanged.AddListener(_val =>
-            {
-                propertiesSearch = _val;
-                RenderPropertiesWindow();
-            });
-            searchField.placeholder.GetComponent<Text>().text = "Search for property...";
-
-            var title = editorPropertiesPanel.Find("Text").GetComponent<Text>();
-            title.text = "Editor Properties";
-
-            var content = editorProperties.transform.Find("mask/content");
-            var crumbs = editorProperties.transform.Find("crumbs");
-            // Sort Layout
-            {
-                content.GetComponent<GridLayoutGroup>().cellSize = new Vector2(737f, 32f);
-                content.AsRT().anchorMin = new Vector2(0.01f, 1f);
-                content.AsRT().anchorMax = new Vector2(0.01f, 1f);
-                editorProperties.transform.AsRT().sizeDelta = new Vector2(750f, 450f);
-                editorProperties.transform.Find("Panel").AsRT().sizeDelta = new Vector2(782f, 32f);
-                editorProperties.transform.Find("search-box").AsRT().sizeDelta = new Vector2(750f, 32f);
-                editorProperties.transform.Find("search-box").localPosition = new Vector3(0f, 195f, 0f);
-                crumbs.AsRT().sizeDelta = new Vector2(750f, 32f);
-                crumbs.localPosition = new Vector3(0f, 225f, 0f);
-                crumbs.GetComponent<HorizontalLayoutGroup>().spacing = 5.5f;
-
-                EditorThemeManager.AddGraphic(crumbs.GetComponent<Image>(), ThemeGroup.Background_1);
-            }
-
-            // Categories
-            {
-                Action<string, EditorProperty.EditorPropCategory> categoryTabGenerator = (string name, EditorProperty.EditorPropCategory editorPropCategory) =>
-                {
-                    var gameObject = prefabTMP.Duplicate(editorProperties.transform.Find("crumbs"), name);
-                    gameObject.transform.AsRT().sizeDelta = new Vector2(100f, 32f);
-                    gameObject.transform.AsRT().anchorMin = new Vector2(-0.1f, -0.1f);
-
-                    var button = gameObject.GetComponent<Button>();
-
-                    var hoverUI = gameObject.AddComponent<HoverUI>();
-                    hoverUI.ogPos = gameObject.transform.localPosition;
-                    hoverUI.animPos = new Vector3(0f, 6f, 0f);
-                    hoverUI.size = 1f;
-                    hoverUI.animatePos = true;
-                    hoverUI.animateSca = false;
-
-                    var hoverTooltip = gameObject.GetComponent<HoverTooltip>();
-
-                    hoverTooltip.tooltipLangauges.Clear();
-                    hoverTooltip.tooltipLangauges.Add(TooltipHelper.NewTooltip("Click on this to switch category.", ""));
-
-                    button.onClick.ClearAll();
-                    button.onClick.AddListener(() =>
-                    {
-                        currentCategory = editorPropCategory;
-                        RenderPropertiesWindow();
-                    });
-
-                    var textGameObject = gameObject.transform.GetChild(0).gameObject;
-                    textGameObject.transform.SetParent(gameObject.transform);
-                    var textText = textGameObject.GetComponent<Text>();
-
-                    textGameObject.transform.AsRT().anchoredPosition = Vector2.zero;
-                    textText.text = name;
-                    textText.alignment = TextAnchor.MiddleCenter;
-                    textText.font = FontManager.inst.DefaultFont;
-                    textText.fontSize = 20;
-
-                    gameObject.AddComponent<ContrastColors>().Init(textText, gameObject.GetComponent<Image>());
-
-                    EditorThemeManager.AddSelectable(button, EditorThemeManager.EditorTheme.GetGroup($"Tab Color {(int)editorPropCategory + 1}"));
-                };
-
-                categoryTabGenerator("General", EditorProperty.EditorPropCategory.General);
-                categoryTabGenerator("Timeline", EditorProperty.EditorPropCategory.Timeline);
-                categoryTabGenerator("Data", EditorProperty.EditorPropCategory.Data);
-                categoryTabGenerator("Editor GUI", EditorProperty.EditorPropCategory.EditorGUI);
-                categoryTabGenerator("Animations", EditorProperty.EditorPropCategory.Animations);
-                categoryTabGenerator("Fields", EditorProperty.EditorPropCategory.Fields);
-                categoryTabGenerator("Preview", EditorProperty.EditorPropCategory.Preview);
-            }
-
-            EditorHelper.AddEditorDropdown("Preferences", "", "Edit", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_preferences-white.png"), () =>
-            {
-                OpenPropertiesWindow();
-            });
-
-            var x = editorPropertiesPanel.Find("x").GetComponent<Button>();
-            x.onClick.RemoveAllListeners();
-            x.onClick.AddListener(() => { ClosePropertiesWindow(); });
-
-            EditorHelper.AddEditorPopup("Editor Properties Popup", editorProperties);
-
-            EditorThemeManager.AddGraphic(editorProperties.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteManager.RoundedSide.Bottom_Left_I);
-            EditorThemeManager.AddGraphic(editorPropertiesPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteManager.RoundedSide.Top);
-            EditorThemeManager.AddSelectable(x, ThemeGroup.Close);
-            EditorThemeManager.AddGraphic(x.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
-            EditorThemeManager.AddLightText(title);
-            EditorThemeManager.AddScrollbar(editorProperties.transform.Find("Scrollbar").GetComponent<Scrollbar>(), scrollbarRoundedSide: SpriteManager.RoundedSide.Bottom_Right_I);
-            EditorThemeManager.AddInputField(editorProperties.transform.Find("search-box/search").GetComponent<InputField>(), ThemeGroup.Search_Field_1, roundedSide: SpriteManager.RoundedSide.Bottom);
         }
 
         Document GenerateDocument(string name, string description, List<Document.Element> elements)
@@ -9330,24 +9259,6 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public void OpenPropertiesWindow(bool _toggle = false)
-        {
-            if (!EditorManager.inst.GetDialog("Editor Properties Popup").Dialog.gameObject.activeSelf)
-            {
-                EditorManager.inst.ShowDialog("Editor Properties Popup");
-                RenderPropertiesWindow();
-            }
-            else if (_toggle)
-                EditorManager.inst.HideDialog("Editor Properties Popup");
-        }
-
-        public void ClosePropertiesWindow() => EditorManager.inst.HideDialog("Editor Properties Popup");
-        
-        bool generatedPropertiesPrefabs = false;
-        List<GameObject> editorPropertiesPrefabs = new List<GameObject>();
-
-        public void RenderPropertiesWindow() => StartCoroutine(IRenderPropertiesWindow());
-
         void DeleteChildren(Transform transform)
         {
             var listToDelete = new List<GameObject>();
@@ -9357,1021 +9268,6 @@ namespace BetterLegacy.Editor.Managers
                 DestroyImmediate(listToDelete[i]);
             listToDelete.Clear();
             listToDelete = null;
-        }
-
-        IEnumerator IRenderPropertiesWindow()
-        {
-            var editorDialog = EditorManager.inst.GetDialog("Editor Properties Popup").Dialog;
-
-            if (!generatedPropertiesPrefabs)
-            {
-                generatedPropertiesPrefabs = true;
-
-                var labelToCopy = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View/Viewport/Content").transform.GetChild(3).gameObject;
-                var singleInput = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/right/move/position/x");
-                var vector2Input = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/right/move/position");
-                var boolInput = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/SettingsDialog/snap/toggle/toggle");
-                var dropdownInputToCopy = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View/Viewport/Content/autokill/tod-dropdown");
-                var sliderFullInput = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/SettingsDialog/snap/bpm");
-                var stringInput = defaultIF;
-
-                var parentObject = new GameObject("Editor Properties Prefabs");
-                var parent = parentObject.transform;
-                parent.SetParent(transform);
-
-                // Bool
-                {
-                    var bar = singleInput.Duplicate(parent, "input [BOOL]");
-                    DestroyImmediate(bar.GetComponent<InputField>());
-                    DestroyImmediate(bar.GetComponent<EventInfo>());
-                    DestroyImmediate(bar.GetComponent<EventTrigger>());
-
-                    DeleteChildren(bar.transform);
-
-                    var label = labelToCopy.Duplicate(bar.transform, "label");
-                    label.transform.SetParent(bar.transform);
-                    label.transform.localScale = Vector3.one;
-                    label.SetActive(true);
-                    var text = label.transform.GetChild(0).GetComponent<Text>();
-                    text.alignment = TextAnchor.MiddleLeft;
-
-                    label.transform.AsRT().sizeDelta = new Vector2(688f, 32f);
-                    label.transform.GetChild(0).AsRT().anchoredPosition = new Vector2(10f, -5f);
-                    label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(688f, 32f);
-
-                    var image = bar.GetComponent<Image>();
-                    image.enabled = true;
-                    image.fillCenter = true;
-                    image.color = new Color(1f, 1f, 1f, 0.03f);
-
-                    boolInput.Duplicate(bar.transform, "toggle");
-
-                    editorPropertiesPrefabs.Add(bar);
-                }
-
-                // Int
-                {
-                    var bar = singleInput.Duplicate(parent, "input [INT]");
-
-                    DestroyImmediate(bar.GetComponent<EventInfo>());
-                    DestroyImmediate(bar.GetComponent<EventTrigger>());
-                    DestroyImmediate(bar.GetComponent<InputField>());
-
-                    bar.transform.localScale = Vector3.one;
-                    bar.transform.GetChild(0).localScale = Vector3.one;
-
-                    var label = labelToCopy.Duplicate(bar.transform, "label", 0);
-                    label.transform.localScale = Vector3.one;
-                    label.SetActive(true);
-                    var text = label.transform.GetChild(0).GetComponent<Text>();
-                    text.alignment = TextAnchor.MiddleLeft;
-
-                    label.transform.AsRT().sizeDelta = new Vector2(541f, 32f);
-                    label.transform.GetChild(0).AsRT().anchoredPosition = new Vector2(10f, -5f);
-                    label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(434.4f, 32f);
-
-                    var image = bar.GetComponent<Image>();
-                    image.enabled = true;
-                    image.fillCenter = true;
-                    image.color = new Color(1f, 1f, 1f, 0.03f);
-
-                    var input = bar.transform.Find("input");
-
-                    var inputField = input.gameObject.AddComponent<InputField>();
-                    inputField.onValueChanged.ClearAll();
-                    inputField.textComponent = input.Find("Text").GetComponent<Text>();
-                    inputField.placeholder = input.Find("Placeholder").GetComponent<Text>();
-                    inputField.characterValidation = InputField.CharacterValidation.None;
-
-                    editorPropertiesPrefabs.Add(bar);
-                }
-
-                // Float
-                {
-                    var bar = singleInput.Duplicate(parent, "input [FLOAT]");
-
-                    DestroyImmediate(bar.GetComponent<EventInfo>());
-                    DestroyImmediate(bar.GetComponent<EventTrigger>());
-                    DestroyImmediate(bar.GetComponent<InputField>());
-
-                    bar.transform.localScale = Vector3.one;
-                    bar.transform.GetChild(0).localScale = Vector3.one;
-
-                    var label = labelToCopy.Duplicate(bar.transform, "label", 0);
-                    label.transform.localScale = Vector3.one;
-                    label.SetActive(true);
-                    var text = label.transform.GetChild(0).GetComponent<Text>();
-                    text.alignment = TextAnchor.MiddleLeft;
-
-                    label.transform.AsRT().sizeDelta = new Vector2(541f, 32f);
-                    label.transform.GetChild(0).AsRT().anchoredPosition = new Vector2(10f, -5f);
-                    label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(434.4f, 32f);
-
-                    var image = bar.GetComponent<Image>();
-                    image.enabled = true;
-                    image.fillCenter = true;
-                    image.color = new Color(1f, 1f, 1f, 0.03f);
-
-                    var input = bar.transform.Find("input");
-
-                    var inputField = input.gameObject.AddComponent<InputField>();
-                    inputField.onValueChanged.ClearAll();
-                    inputField.textComponent = input.Find("Text").GetComponent<Text>();
-                    inputField.placeholder = input.Find("Placeholder").GetComponent<Text>();
-                    inputField.characterValidation = InputField.CharacterValidation.None;
-
-                    editorPropertiesPrefabs.Add(bar);
-                }
-
-                // Int Slider
-                {
-                    var bar = sliderFullInput.Duplicate(parent, "input [INTSLIDER]");
-
-                    DestroyImmediate(bar.transform.Find("title").gameObject);
-
-                    var label = labelToCopy.Duplicate(bar.transform, "label", 0);
-                    label.transform.SetParent(bar.transform);
-                    label.transform.localScale = Vector3.one;
-                    label.SetActive(true);
-                    var text = label.transform.GetChild(0).GetComponent<Text>();
-                    text.alignment = TextAnchor.MiddleLeft;
-
-                    var labelLayoutElement = label.AddComponent<LayoutElement>();
-                    labelLayoutElement.ignoreLayout = true;
-
-                    label.transform.AsRT().anchoredPosition = Vector2.zero;
-                    label.transform.AsRT().anchorMax = Vector2.zero;
-                    label.transform.AsRT().anchorMin = Vector2.zero;
-                    label.transform.AsRT().pivot = Vector2.zero;
-                    label.transform.AsRT().sizeDelta = new Vector2(688f, 32f);
-                    label.transform.GetChild(0).AsRT().anchoredPosition = new Vector2(10f, -5f);
-                    label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(688f, 32f);
-
-                    var image = bar.AddComponent<Image>();
-                    image.color = new Color(1f, 1f, 1f, 0.03f);
-
-                    bar.transform.Find("slider").GetComponent<RectTransform>().sizeDelta = new Vector2(295f, 32f);
-                    var slider = bar.transform.Find("slider").GetComponent<Slider>();
-                    slider.onValueChanged.RemoveAllListeners();
-                    slider.wholeNumbers = true;
-
-                    var sliderLayoutElement = slider.GetComponent<LayoutElement>();
-                    sliderLayoutElement.ignoreLayout = true;
-
-                    slider.transform.AsRT().anchoredPosition = new Vector2(348f, 0f);
-
-                    var input = bar.transform.Find("input");
-                    var inputLayoutElement = input.GetComponent<LayoutElement>();
-                    inputLayoutElement.ignoreLayout = true;
-
-                    input.AsRT().anchoredPosition = new Vector2(686f, -16f);
-
-                    if (bar.transform.Find("<"))
-                        DestroyImmediate(bar.transform.Find("<").gameObject);
-                    if (bar.transform.Find(">"))
-                        DestroyImmediate(bar.transform.Find(">").gameObject);
-
-                    editorPropertiesPrefabs.Add(bar);
-                }
-
-                // Float Slider
-                {
-                    var bar = sliderFullInput.Duplicate(parent, "input [FLOATSLIDER]");
-
-                    DestroyImmediate(bar.transform.Find("title").gameObject);
-
-                    var label = labelToCopy.Duplicate(bar.transform, "label", 0);
-                    label.transform.SetParent(bar.transform);
-                    label.transform.localScale = Vector3.one;
-                    label.SetActive(true);
-                    var text = label.transform.GetChild(0).GetComponent<Text>();
-                    text.alignment = TextAnchor.MiddleLeft;
-
-                    var labelLayoutElement = label.AddComponent<LayoutElement>();
-                    labelLayoutElement.ignoreLayout = true;
-
-                    label.transform.AsRT().anchoredPosition = Vector2.zero;
-                    label.transform.AsRT().anchorMax = Vector2.zero;
-                    label.transform.AsRT().anchorMin = Vector2.zero;
-                    label.transform.AsRT().pivot = Vector2.zero;
-                    label.transform.AsRT().sizeDelta = new Vector2(688f, 32f);
-                    label.transform.GetChild(0).AsRT().anchoredPosition = new Vector2(10f, -5f);
-                    label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(688f, 32f);
-
-                    var image = bar.AddComponent<Image>();
-                    image.color = new Color(1f, 1f, 1f, 0.03f);
-
-                    bar.transform.Find("slider").GetComponent<RectTransform>().sizeDelta = new Vector2(295f, 32f);
-                    var slider = bar.transform.Find("slider").GetComponent<Slider>();
-                    slider.onValueChanged.RemoveAllListeners();
-
-                    var sliderLayoutElement = slider.GetComponent<LayoutElement>();
-                    sliderLayoutElement.ignoreLayout = true;
-
-                    slider.transform.AsRT().anchoredPosition = new Vector2(348f, 0f);
-
-                    var input = bar.transform.Find("input");
-                    var inputLayoutElement = input.GetComponent<LayoutElement>();
-                    inputLayoutElement.ignoreLayout = true;
-
-                    input.AsRT().anchoredPosition = new Vector2(686f, -16f);
-
-                    if (bar.transform.Find("<"))
-                        DestroyImmediate(bar.transform.Find("<").gameObject);
-                    if (bar.transform.Find(">"))
-                        DestroyImmediate(bar.transform.Find(">").gameObject);
-
-                    editorPropertiesPrefabs.Add(bar);
-                }
-
-                // String
-                {
-                    var bar = singleInput.Duplicate(parent, "input [STRING]");
-
-                    DestroyImmediate(bar.GetComponent<EventInfo>());
-                    DestroyImmediate(bar.GetComponent<EventTrigger>());
-                    DestroyImmediate(bar.GetComponent<InputField>());
-                    DestroyImmediate(bar.GetComponent<InputFieldSwapper>());
-
-                    DeleteChildren(bar.transform);
-
-                    var label = labelToCopy.Duplicate(bar.transform, "label");
-                    label.transform.localScale = Vector3.one;
-                    label.SetActive(true);
-                    var text = label.transform.GetChild(0).GetComponent<Text>();
-                    text.alignment = TextAnchor.MiddleLeft;
-
-                    label.transform.AsRT().sizeDelta = new Vector2(354f, 32f);
-                    label.transform.GetChild(0).AsRT().anchoredPosition = new Vector2(10f, -5f);
-                    label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(434.4f, 32f);
-
-                    var image = bar.GetComponent<Image>();
-                    image.enabled = true;
-                    image.fillCenter = true;
-                    image.color = new Color(1f, 1f, 1f, 0.03f);
-
-                    var input = stringInput.Duplicate(bar.transform, "input");
-                    input.transform.localScale = Vector3.one;
-                    DestroyImmediate(input.GetComponent<HoverTooltip>());
-
-                    input.transform.AsRT().sizeDelta = new Vector2(366f, 32f);
-
-                    var inputField = input.GetComponent<InputField>();
-                    inputField.onValueChanged.RemoveAllListeners();
-                    inputField.characterValidation = InputField.CharacterValidation.None;
-                    inputField.characterLimit = 0;
-                    inputField.textComponent.fontSize = 18;
-
-                    editorPropertiesPrefabs.Add(bar);
-                }
-
-                // Vector2
-                for (int i = 0; i < 2; i++)
-                {
-                    var bar = singleInput.Duplicate(parent, "input [VECTOR2]");
-
-                    DestroyImmediate(bar.GetComponent<EventInfo>());
-                    DestroyImmediate(bar.GetComponent<EventTrigger>());
-                    DestroyImmediate(bar.GetComponent<InputField>());
-                    DestroyImmediate(bar.GetComponent<InputFieldSwapper>());
-
-                    DeleteChildren(bar.transform);
-
-                    var label = labelToCopy.Duplicate(bar.transform, "label");
-                    label.transform.localScale = Vector3.one;
-                    label.SetActive(true);
-                    var text = label.transform.GetChild(0).GetComponent<Text>();
-                    text.alignment = TextAnchor.MiddleLeft;
-
-                    label.transform.AsRT().sizeDelta = new Vector2(354f, 32f);
-                    label.transform.GetChild(0).AsRT().anchoredPosition = new Vector2(10f, -5f);
-                    label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(434.4f, 32f);
-
-                    var image = bar.GetComponent<Image>();
-                    image.enabled = true;
-                    image.fillCenter = true;
-                    image.color = new Color(1f, 1f, 1f, 0.03f);
-
-                    var vector2 = vector2Input.Duplicate(bar.transform, "input");
-                    vector2.transform.localScale = Vector3.one;
-
-                    var x = vector2.transform.Find("x");
-                    DestroyImmediate(x.GetComponent<EventInfo>());
-                    x.localScale = Vector3.one;
-                    x.GetChild(0).localScale = Vector3.one;
-                    var inputFieldX = x.GetComponent<InputField>();
-                    inputFieldX.onValueChanged.RemoveAllListeners();
-
-                    var y = vector2.transform.Find("y");
-                    DestroyImmediate(y.GetComponent<EventInfo>());
-                    y.localScale = Vector3.one;
-                    y.GetChild(0).localScale = Vector3.one;
-                    var inputFieldY = y.GetComponent<InputField>();
-                    inputFieldY.onValueChanged.RemoveAllListeners();
-
-                    editorPropertiesPrefabs.Add(bar);
-                }
-
-                // Vector3
-                {
-                    editorPropertiesPrefabs.Add(null);
-                    editorPropertiesPrefabs.Add(null);
-                }
-
-                // Enum
-                {
-                    var bar = singleInput.Duplicate(parent, "input [ENUM]");
-
-                    DestroyImmediate(bar.GetComponent<EventInfo>());
-                    DestroyImmediate(bar.GetComponent<EventTrigger>());
-                    DestroyImmediate(bar.GetComponent<InputField>());
-                    DestroyImmediate(bar.GetComponent<InputFieldSwapper>());
-
-                    DeleteChildren(bar.transform);
-
-                    var label = labelToCopy.Duplicate(bar.transform, "label");
-                    label.transform.localScale = Vector3.one;
-                    label.SetActive(true);
-                    var text = label.transform.GetChild(0).GetComponent<Text>();
-                    text.alignment = TextAnchor.MiddleLeft;
-
-                    label.transform.AsRT().sizeDelta = new Vector2(522f, 32f);
-                    label.transform.GetChild(0).AsRT().anchoredPosition = new Vector2(10f, -5f);
-                    label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(434.4f, 32f);
-
-                    var image = bar.GetComponent<Image>();
-                    image.enabled = true;
-                    image.fillCenter = true;
-                    image.color = new Color(1f, 1f, 1f, 0.03f);
-
-                    var selector = new GameObject("selector");
-                    selector.transform.SetParent(bar.transform);
-                    selector.transform.localScale = Vector3.one;
-                    var rectTransform = selector.AddComponent<RectTransform>();
-
-                    rectTransform.sizeDelta = new Vector2(90f, 32f);
-
-                    var selectorImage = selector.AddComponent<Image>();
-
-                    var button = selector.AddComponent<Button>();
-
-                    selector.SetActive(false);
-
-                    var buttonLabel = text.gameObject.Duplicate(rectTransform, "text");
-                    buttonLabel.transform.AsRT().anchoredPosition = Vector2.zero;
-                    buttonLabel.transform.AsRT().anchorMax = Vector2.one;
-                    buttonLabel.transform.AsRT().anchorMin = Vector2.zero;
-                    buttonLabel.transform.AsRT().pivot = new Vector2(0.5f, 0.5f);
-                    buttonLabel.transform.AsRT().sizeDelta = new Vector2(90f, 32f);
-                    var buttonLabelText = buttonLabel.GetComponent<Text>();
-                    buttonLabelText.text = "Set Key";
-                    buttonLabelText.alignment = TextAnchor.MiddleCenter;
-
-                    var x = dropdownInputToCopy.Duplicate(bar.transform, "dropdown");
-                    x.transform.localScale = Vector3.one;
-
-                    DestroyImmediate(x.GetComponent<HoverTooltip>());
-
-                    var hide = x.GetComponent<HideDropdownOptions>();
-                    hide.DisabledOptions.Clear();
-
-                    var dropdown = x.GetComponent<Dropdown>();
-                    dropdown.onValueChanged.ClearAll();
-                    dropdown.options.Clear();
-
-                    editorPropertiesPrefabs.Add(bar);
-                }
-
-                // Color
-                {
-                    var bar = singleInput.Duplicate(parent, "input [COLOR]");
-
-                    DestroyImmediate(bar.GetComponent<EventInfo>());
-                    DestroyImmediate(bar.GetComponent<EventTrigger>());
-                    DestroyImmediate(bar.GetComponent<InputField>());
-                    DestroyImmediate(bar.GetComponent<InputFieldSwapper>());
-
-                    DeleteChildren(bar.transform);
-
-                    var label = labelToCopy.Duplicate(bar.transform, "label");
-                    label.transform.localScale = Vector3.one;
-                    label.SetActive(true);
-                    var text = label.transform.GetChild(0).GetComponent<Text>();
-                    text.alignment = TextAnchor.MiddleLeft;
-
-                    label.transform.AsRT().sizeDelta = new Vector2(314f, 32f);
-                    label.transform.GetChild(0).AsRT().anchoredPosition = new Vector2(10f, -5f);
-                    label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(434.4f, 32f);
-
-                    var image = bar.GetComponent<Image>();
-                    image.enabled = true;
-                    image.fillCenter = true;
-                    image.color = new Color(1f, 1f, 1f, 0.03f);
-
-                    var bar2 = singleInput.Duplicate(bar.transform, "color");
-                    DestroyImmediate(bar2.GetComponent<InputField>());
-                    DestroyImmediate(bar2.GetComponent<EventInfo>());
-                    DeleteChildren(bar2.transform);
-                    bar2.transform.localScale = Vector3.one;
-                    bar2.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
-
-                    var bar2Color = bar2.GetComponent<Image>();
-                    bar2Color.enabled = true;
-                    bar2Color.fillCenter = true;
-
-                    var dropper = EventEditor.inst.dialogLeft.Find("theme/theme/viewport/content/gui/preview/dropper").gameObject.Duplicate(bar2.transform, "dropper");
-                    dropper.transform.localScale = Vector3.one;
-                    dropper.name = "dropper";
-
-                    dropper.transform.AsRT().sizeDelta = new Vector2(32f, 32f);
-                    dropper.transform.AsRT().anchoredPosition = Vector2.zero;
-
-                    var hex = stringInput.Duplicate(bar.transform, "input");
-                    hex.transform.localScale = Vector3.one;
-                    DestroyImmediate(hex.GetComponent<HoverTooltip>());
-
-                    hex.transform.AsRT().sizeDelta = new Vector2(366f, 32f);
-
-                    var hexInput = hex.GetComponent<InputField>();
-                    hexInput.onValueChanged.ClearAll();
-                    hexInput.characterValidation = InputField.CharacterValidation.None;
-                    hexInput.characterLimit = 8;
-                    hexInput.textComponent.fontSize = 18;
-
-                    editorPropertiesPrefabs.Add(bar);
-                }
-
-                // Function
-                {
-                    var bar = singleInput.Duplicate(parent, "input [FUNCTION]");
-
-                    DestroyImmediate(bar.GetComponent<EventInfo>());
-                    DestroyImmediate(bar.GetComponent<EventTrigger>());
-                    DestroyImmediate(bar.GetComponent<InputField>());
-
-                    bar.transform.localScale = Vector3.one;
-                    bar.transform.GetChild(0).localScale = Vector3.one;
-
-                    var label = labelToCopy.Duplicate(bar.transform, "label", 0);
-                    label.transform.localScale = Vector3.one;
-                    var text = label.transform.GetChild(0).GetComponent<Text>();
-                    text.alignment = TextAnchor.MiddleLeft;
-
-                    label.transform.AsRT().sizeDelta = new Vector2(541f, 32f);
-                    label.transform.GetChild(0).AsRT().anchoredPosition = new Vector2(10f, -5f);
-                    label.transform.GetChild(0).AsRT().sizeDelta = new Vector2(541, 32f);
-
-                    var image = bar.GetComponent<Image>();
-                    image.enabled = true;
-                    image.fillCenter = true;
-                    image.color = new Color(1f, 1f, 1f, 0.03f);
-
-                    DestroyImmediate(bar.transform.Find("input").gameObject);
-                    DestroyImmediate(bar.transform.Find("<").gameObject);
-                    DestroyImmediate(bar.transform.Find(">").gameObject);
-
-                    var button = bar.AddComponent<Button>();
-
-                    editorPropertiesPrefabs.Add(bar);
-                }
-            }
-
-            var content = editorDialog.Find("mask/content");
-            LSHelpers.DeleteChildren(content);
-
-            var list = EditorProperties.Union(otherProperties).ToList();
-
-            for (int i = 0; i < list.Count; i++)
-            {
-                var prop = list[i];
-
-                if (currentCategory == prop.propCategory && (string.IsNullOrEmpty(propertiesSearch) || prop.name.ToLower().Contains(propertiesSearch.ToLower())))
-                {
-                    var prefab = editorPropertiesPrefabs[(int)prop.valueType];
-                    if (prefab == null)
-                        continue;
-
-                    var gameObject = prefab.Duplicate(content, prefab.name);
-
-                    var text = gameObject.transform.Find("label").GetChild(0).GetComponent<Text>();
-                    text.text = prop.name;
-
-                    if (prop.valueType != EditorProperty.ValueType.Function)
-                    {
-                        TooltipHelper.AddHoverTooltip(gameObject, prop.name, prop.description, new List<string> { prop.configEntry.BoxedValue.GetType().ToString() });
-
-                        EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.List_Button_1_Normal, true);
-                    }
-
-                    EditorThemeManager.ApplyLightText(text);
-
-                    switch (prop.valueType)
-                    {
-                        case EditorProperty.ValueType.Bool:
-                            {
-                                if (prop.configEntry.BoxedValue.GetType() != typeof(bool))
-                                {
-                                    Destroy(gameObject);
-                                    continue;
-                                }
-
-                                var toggle = gameObject.transform.Find("toggle").GetComponent<Toggle>();
-                                toggle.onValueChanged.RemoveAllListeners();
-                                toggle.isOn = (bool)prop.configEntry.BoxedValue;
-                                toggle.onValueChanged.AddListener(_val => { prop.configEntry.BoxedValue = _val; });
-
-                                EditorThemeManager.ApplyToggle(toggle);
-
-                                break;
-                            }
-                        case EditorProperty.ValueType.Int:
-                            {
-                                if (prop.configEntry.BoxedValue.GetType() != typeof(int))
-                                {
-                                    Destroy(gameObject);
-                                    continue;
-                                }
-
-                                var config = (Setting<int>)prop.configEntry;
-
-                                var inputField = gameObject.transform.Find("input").GetComponent<InputField>();
-
-                                inputField.onValueChanged.RemoveAllListeners();
-                                inputField.text = prop.configEntry.BoxedValue.ToString();
-                                inputField.onValueChanged.AddListener(_val =>
-                                {
-                                    if (int.TryParse(_val, out int result))
-                                        prop.configEntry.BoxedValue = result;
-                                });
-
-                                if (config.MinValue != 0 && config.MaxValue != 0)
-                                {
-                                    int min = config.MinValue;
-                                    int max = config.MaxValue;
-
-                                    TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputField, 1, min, max));
-
-                                    TriggerHelper.IncreaseDecreaseButtonsInt(inputField, 1, min, max, gameObject.transform);
-                                }
-                                else
-                                {
-                                    TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputField));
-
-                                    TriggerHelper.IncreaseDecreaseButtonsInt(inputField, t: gameObject.transform);
-                                }
-
-                                EditorThemeManager.ApplyInputField(inputField);
-
-                                var left = gameObject.transform.Find("<").GetComponent<Button>();
-                                Destroy(left.GetComponent<Animator>());
-                                left.transition = Selectable.Transition.ColorTint;
-                                EditorThemeManager.ApplySelectable(left, ThemeGroup.Function_2, false);
-
-                                var right = gameObject.transform.Find(">").GetComponent<Button>();
-                                Destroy(right.GetComponent<Animator>());
-                                right.transition = Selectable.Transition.ColorTint;
-                                EditorThemeManager.ApplySelectable(right, ThemeGroup.Function_2, false);
-
-                                break;
-                            }
-                        case EditorProperty.ValueType.Float:
-                            {
-                                if (prop.configEntry.BoxedValue.GetType() != typeof(float))
-                                {
-                                    Destroy(gameObject);
-                                    continue;
-                                }
-
-                                var config = (Setting<float>)prop.configEntry;
-
-                                var inputField = gameObject.transform.Find("input").GetComponent<InputField>();
-
-                                inputField.onValueChanged.RemoveAllListeners();
-                                inputField.text = prop.configEntry.BoxedValue.ToString();
-                                inputField.onValueChanged.AddListener(_val =>
-                                {
-                                    if (float.TryParse(_val, out float result))
-                                        prop.configEntry.BoxedValue = result;
-                                });
-
-                                if (config.MinValue != 0f && config.MaxValue != 0f)
-                                {
-                                    float min = config.MinValue;
-                                    float max = config.MaxValue;
-
-                                    TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDelta(inputField, 0.1f, 10f, min, max));
-
-                                    TriggerHelper.IncreaseDecreaseButtons(inputField, 0.1f, 10f, min, max, gameObject.transform);
-                                }
-                                else
-                                {
-                                    TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDelta(inputField));
-
-                                    TriggerHelper.IncreaseDecreaseButtons(inputField, t: gameObject.transform);
-                                }
-
-                                EditorThemeManager.ApplyInputField(inputField);
-
-                                var left = gameObject.transform.Find("<").GetComponent<Button>();
-                                Destroy(left.GetComponent<Animator>());
-                                left.transition = Selectable.Transition.ColorTint;
-                                EditorThemeManager.ApplySelectable(left, ThemeGroup.Function_2, false);
-
-                                var right = gameObject.transform.Find(">").GetComponent<Button>();
-                                Destroy(right.GetComponent<Animator>());
-                                right.transition = Selectable.Transition.ColorTint;
-                                EditorThemeManager.ApplySelectable(right, ThemeGroup.Function_2, false);
-
-                                break;
-                            }
-                        case EditorProperty.ValueType.IntSlider:
-                            {
-                                if (prop.configEntry.BoxedValue.GetType() != typeof(int))
-                                {
-                                    Destroy(gameObject);
-                                    continue;
-                                }
-
-                                var config = (Setting<int>)prop.configEntry;
-
-                                gameObject.transform.Find("label").AsRT().anchoredPosition = Vector2.zero;
-                                gameObject.transform.Find("label").AsRT().sizeDelta = new Vector2(312f, 32f);
-
-                                var slider = gameObject.transform.Find("slider").GetComponent<Slider>();
-                                var inputField = gameObject.transform.Find("input").GetComponent<InputField>();
-
-                                Action<int> setSlider = null;
-                                Action<int> setInputField = null;
-
-                                setSlider = value =>
-                                {
-                                    prop.configEntry.BoxedValue = value;
-                                    slider.onValueChanged.ClearAll();
-                                    slider.value = (int)prop.configEntry.BoxedValue;
-                                    slider.onValueChanged.AddListener(_val => { setInputField?.Invoke((int)_val); });
-                                };
-
-                                setInputField = value =>
-                                {
-                                    prop.configEntry.BoxedValue = value;
-                                    inputField.onValueChanged.ClearAll();
-                                    inputField.text = prop.configEntry.BoxedValue.ToString();
-                                    inputField.onValueChanged.AddListener(_val =>
-                                    {
-                                        if (int.TryParse(_val, out int result))
-                                            setSlider?.Invoke(result);
-                                    });
-                                };
-
-                                slider.onValueChanged.ClearAll();
-                                slider.value = (int)prop.configEntry.BoxedValue;
-                                slider.onValueChanged.AddListener(_val => { setInputField?.Invoke((int)_val); });
-
-                                inputField.onValueChanged.ClearAll();
-                                inputField.text = prop.configEntry.BoxedValue.ToString();
-                                inputField.onValueChanged.AddListener(_val =>
-                                {
-                                    if (int.TryParse(_val, out int result))
-                                        setSlider?.Invoke(result);
-                                });
-
-                                EditorThemeManager.ApplyInputField(inputField);
-
-                                if (config.MinValue != 0 && config.MaxValue != 0)
-                                {
-                                    int min = config.MinValue;
-                                    int max = config.MaxValue;
-
-                                    slider.minValue = min;
-                                    slider.maxValue = max;
-
-                                    TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputField, 1, min, max, false));
-                                }
-                                else
-                                {
-                                    TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputField));
-                                }
-
-                                EditorThemeManager.ApplySlider(slider, slider.transform.Find("Background").GetComponent<Image>());
-
-                                break;
-                            }
-                        case EditorProperty.ValueType.FloatSlider:
-                            {
-                                if (prop.configEntry.BoxedValue.GetType() != typeof(float))
-                                {
-                                    Destroy(gameObject);
-                                    continue;
-                                }
-
-                                var config = (Setting<float>)prop.configEntry;
-
-                                var slider = gameObject.transform.Find("slider").GetComponent<Slider>();
-                                var inputField = gameObject.transform.Find("input").GetComponent<InputField>();
-
-                                Action<float> setSlider = null;
-                                Action<float> setInputField = null;
-
-                                setSlider = value =>
-                                {
-                                    prop.configEntry.BoxedValue = value;
-                                    slider.onValueChanged.ClearAll();
-                                    slider.value = (float)prop.configEntry.BoxedValue * 10f;
-                                    slider.onValueChanged.AddListener(_val => { setInputField?.Invoke(_val / 10f); });
-                                };
-
-                                setInputField = value =>
-                                {
-                                    prop.configEntry.BoxedValue = value / 10f;
-                                    inputField.onValueChanged.ClearAll();
-                                    inputField.text = prop.configEntry.BoxedValue.ToString();
-                                    inputField.onValueChanged.AddListener(_val =>
-                                    {
-                                        if (float.TryParse(_val, out float result))
-                                            setSlider?.Invoke(result);
-                                    });
-                                };
-
-                                slider.onValueChanged.ClearAll();
-                                slider.value = (float)prop.configEntry.BoxedValue * 10f;
-                                slider.onValueChanged.AddListener(_val => { setInputField?.Invoke(_val / 10f); });
-
-                                inputField.onValueChanged.ClearAll();
-                                inputField.text = prop.configEntry.BoxedValue.ToString();
-                                inputField.onValueChanged.AddListener(_val =>
-                                {
-                                    if (float.TryParse(_val, out float result))
-                                        setSlider?.Invoke(result);
-                                });
-
-                                EditorThemeManager.ApplyInputField(inputField);
-
-                                slider.onValueChanged.AddListener(_val =>
-                                {
-                                    if (CoreHelper.IsUsingInputField)
-                                        return;
-
-                                    prop.configEntry.BoxedValue = _val / 10f;
-                                    inputField.text = _val.ToString();
-                                });
-
-                                if (config.MinValue != 0f && config.MaxValue != 0f)
-                                {
-                                    float min = config.MinValue;
-                                    float max = config.MaxValue;
-
-                                    slider.minValue = min * 10f;
-                                    slider.maxValue = max * 10f;
-
-                                    TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDelta(inputField, 0.1f, 10f, min, max, false));
-                                }
-                                else
-                                {
-                                    TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDelta(inputField));
-                                }
-
-                                EditorThemeManager.ApplyElement(new EditorThemeManager.Element(ThemeGroup.Slider_2, slider.gameObject, new List<Component>
-                                {
-                                    slider.transform.Find("Background").GetComponent<Image>(),
-                                    slider
-                                }, true, 1, SpriteManager.RoundedSide.W, true));
-
-                                EditorThemeManager.ApplyGraphic(slider.image, ThemeGroup.Slider_2_Handle, true);
-
-                                break;
-                            }
-                        case EditorProperty.ValueType.String:
-                            {
-                                if (prop.configEntry.BoxedValue.GetType() != typeof(string))
-                                {
-                                    Destroy(gameObject);
-                                    continue;
-                                }
-
-                                var inputField = gameObject.transform.Find("input").GetComponent<InputField>();
-
-                                inputField.onValueChanged.RemoveAllListeners();
-                                inputField.text = prop.configEntry.BoxedValue.ToString();
-                                inputField.onValueChanged.AddListener(_val => { prop.configEntry.BoxedValue = _val; });
-
-                                EditorThemeManager.ApplyInputField(inputField);
-
-                                break;
-                            }
-                        case EditorProperty.ValueType.Vector2:
-                        case EditorProperty.ValueType.Vector2Int:
-                            {
-                                var type = prop.configEntry.BoxedValue.GetType();
-                                if (type != typeof(Vector2) && type != typeof(Vector2Int))
-                                {
-                                    Destroy(gameObject);
-                                    continue;
-                                }
-
-                                var isInteger = type == typeof(Vector2Int);
-
-                                var vector2 = gameObject.transform.Find("input");
-
-                                var vxif = vector2.transform.Find("x").GetComponent<InputField>();
-                                vxif.onValueChanged.ClearAll();
-                                vxif.text = (prop.configEntry.BoxedValue is Vector2 vector2Val ? vector2Val.x : ((Vector2Int)prop.configEntry.BoxedValue).x).ToString();
-                                vxif.onValueChanged.AddListener(_val =>
-                                {
-                                    if (prop.configEntry.BoxedValue is Vector2Int vector2Int && int.TryParse(_val, out int intResult))
-                                    {
-                                        prop.configEntry.BoxedValue = new Vector2Int(intResult, vector2Int.y);
-                                        return;
-                                    }
-
-                                    if (float.TryParse(_val, out float result))
-                                    {
-                                        var vector2Value = (Vector2)prop.configEntry.BoxedValue;
-                                        prop.configEntry.BoxedValue = new Vector2(result, vector2Value.y);
-                                    }
-                                });
-
-                                EditorThemeManager.ApplyInputField(vxif);
-
-                                var leftX = vxif.transform.Find("<").GetComponent<Button>();
-                                var rightX = vxif.transform.Find(">").GetComponent<Button>();
-                                Destroy(leftX.GetComponent<Animator>());
-                                Destroy(rightX.GetComponent<Animator>());
-                                leftX.transition = Selectable.Transition.ColorTint;
-                                rightX.transition = Selectable.Transition.ColorTint;
-                                EditorThemeManager.ApplySelectable(leftX, ThemeGroup.Function_2, false);
-                                EditorThemeManager.ApplySelectable(rightX, ThemeGroup.Function_2, false);
-
-                                var vyif = vector2.transform.Find("y").GetComponent<InputField>();
-                                vyif.onValueChanged.ClearAll();
-                                vyif.text = (prop.configEntry.BoxedValue is Vector2 vector2Val1 ? vector2Val1.y : ((Vector2Int)prop.configEntry.BoxedValue).y).ToString();
-                                vyif.onValueChanged.AddListener(_val =>
-                                {
-                                    if (prop.configEntry.BoxedValue is Vector2Int vector2Int && int.TryParse(_val, out int intResult))
-                                    {
-                                        prop.configEntry.BoxedValue = new Vector2Int(vector2Int.x, intResult);
-                                        return;
-                                    }
-
-                                    if (float.TryParse(_val, out float result))
-                                    {
-                                        var vector2Value = (Vector2)prop.configEntry.BoxedValue;
-                                        prop.configEntry.BoxedValue = new Vector2(vector2Value.x, result);
-                                    }
-                                });
-
-                                EditorThemeManager.ApplyInputField(vyif);
-
-                                var leftY = vyif.transform.Find("<").GetComponent<Button>();
-                                var rightY = vyif.transform.Find(">").GetComponent<Button>();
-                                Destroy(rightY.GetComponent<Animator>());
-                                Destroy(leftY.GetComponent<Animator>());
-                                leftY.transition = Selectable.Transition.ColorTint;
-                                rightY.transition = Selectable.Transition.ColorTint;
-                                EditorThemeManager.ApplySelectable(leftY, ThemeGroup.Function_2, false);
-                                EditorThemeManager.ApplySelectable(rightY, ThemeGroup.Function_2, false);
-
-                                if (isInteger)
-                                {
-                                    TriggerHelper.AddEventTriggers(vxif.gameObject, TriggerHelper.ScrollDeltaInt(vxif));
-                                    TriggerHelper.AddEventTriggers(vyif.gameObject, TriggerHelper.ScrollDeltaInt(vyif));
-
-                                    TriggerHelper.IncreaseDecreaseButtonsInt(vxif);
-                                    TriggerHelper.IncreaseDecreaseButtonsInt(vyif);
-                                }
-                                else
-                                {
-                                    TriggerHelper.AddEventTriggers(vxif.gameObject, TriggerHelper.ScrollDelta(vxif));
-                                    TriggerHelper.AddEventTriggers(vyif.gameObject, TriggerHelper.ScrollDelta(vyif));
-
-                                    TriggerHelper.IncreaseDecreaseButtons(vxif);
-                                    TriggerHelper.IncreaseDecreaseButtons(vyif);
-                                }
-
-                                break;
-                            }
-                        case EditorProperty.ValueType.Vector3:
-                        case EditorProperty.ValueType.Vector3Int:
-                            {
-                                Debug.Log("lol");
-                                break;
-                            }
-                        case EditorProperty.ValueType.Enum:
-                            {
-                                bool isKeyCode = prop.configEntry.GetType() == typeof(Setting<KeyCode>);
-
-                                var l = gameObject.transform.Find("label");
-
-                                l.transform.AsRT().sizeDelta = new Vector2(isKeyCode ? 424f : 522f, 32f);
-                                text.rectTransform.anchoredPosition = new Vector2(10f, -5f);
-                                text.rectTransform.AsRT().sizeDelta = new Vector2(434.4f, 32f);
-
-                                if (isKeyCode)
-                                {
-                                    var selector = gameObject.transform.Find("selector");
-                                    selector.gameObject.SetActive(true);
-                                    var selectorText = selector.Find("text").GetComponent<Text>();
-                                    var button = selector.GetComponent<Button>();
-                                    button.onClick.ClearAll();
-                                    button.onClick.AddListener(() =>
-                                    {
-                                        selectingKey = true;
-                                        selectorText.text = "Press...";
-                                        setKey = key => { prop.configEntry.BoxedValue = key; };
-
-                                        onKeySet = RenderPropertiesWindow;
-                                    });
-
-                                    EditorThemeManager.ApplyGraphic(button.image, ThemeGroup.Function_1, true);
-                                    EditorThemeManager.ApplyGraphic(selectorText, ThemeGroup.Function_1_Text);
-                                }
-
-                                var hide = gameObject.transform.Find("dropdown").GetComponent<HideDropdownOptions>();
-                                var dropdown = gameObject.transform.Find("dropdown").GetComponent<Dropdown>();
-
-                                dropdown.onValueChanged.ClearAll();
-                                dropdown.options.Clear();
-                                hide.DisabledOptions.Clear();
-
-                                var type = prop.configEntry.BoxedValue.GetType();
-                                var enums = Enum.GetValues(prop.configEntry.BoxedValue.GetType());
-
-                                for (int j = 0; j < enums.Length; j++)
-                                {
-                                    var str = "Invalid Value";
-                                    if (Enum.GetName(prop.configEntry.BoxedValue.GetType(), j) != null)
-                                    {
-                                        hide.DisabledOptions.Add(false);
-                                        str = Enum.GetName(prop.configEntry.BoxedValue.GetType(), j);
-                                    }
-                                    else
-                                        hide.DisabledOptions.Add(true);
-
-                                    dropdown.options.Add(new Dropdown.OptionData(str));
-                                }
-
-                                dropdown.value = (int)prop.configEntry.BoxedValue;
-                                dropdown.onValueChanged.AddListener(_val => { prop.configEntry.BoxedValue = _val; });
-
-                                EditorThemeManager.ApplyDropdown(dropdown);
-
-                                break;
-                            }
-                        case EditorProperty.ValueType.Color:
-                            {
-                                if (prop.configEntry.BoxedValue.GetType() != typeof(Color))
-                                {
-                                    Destroy(gameObject);
-                                    continue;
-                                }
-
-                                var configColor = gameObject.transform.Find("color").gameObject;
-                                var configColorImage = configColor.GetComponent<Image>();
-                                configColorImage.color = (Color)prop.configEntry.BoxedValue;
-
-                                EditorThemeManager.ApplyGraphic(configColorImage, ThemeGroup.Null, true);
-
-                                var dropperImage = configColor.transform.Find("dropper").GetComponent<Image>();
-                                dropperImage.color = CoreHelper.InvertColorHue(CoreHelper.InvertColorValue((Color)prop.configEntry.BoxedValue));
-
-                                var hexField = gameObject.transform.Find("input").GetComponent<InputField>();
-                                hexField.onValueChanged.RemoveAllListeners();
-                                hexField.text = CoreHelper.ColorToHex((Color)prop.configEntry.BoxedValue);
-                                hexField.onValueChanged.AddListener(_val =>
-                                {
-                                    string hex = _val;
-                                    if (hex.Length == 6)
-                                        hex += "FF";
-                                    if (hex.Length != 8)
-                                        return;
-                                    prop.configEntry.BoxedValue = LSColors.HexToColorAlpha(hex);
-                                    configColorImage.color = (Color)prop.configEntry.BoxedValue;
-                                    dropperImage.color = CoreHelper.InvertColorHue(CoreHelper.InvertColorValue((Color)prop.configEntry.BoxedValue));
-
-                                    TriggerHelper.AddEventTriggers(configColor, TriggerHelper.CreatePreviewClickTrigger(configColorImage, dropperImage, hexField, (Color)prop.configEntry.BoxedValue, "Editor Properties Popup"));
-                                });
-
-                                TriggerHelper.AddEventTriggers(configColor, TriggerHelper.CreatePreviewClickTrigger(configColorImage, dropperImage, hexField, (Color)prop.configEntry.BoxedValue, "Editor Properties Popup"));
-
-                                EditorThemeManager.ApplyInputField(hexField);
-
-                                break;
-                            }
-                        case EditorProperty.ValueType.Function:
-                            {
-                                TooltipHelper.AddHoverTooltip(gameObject, prop.name, prop.description, new List<string> { "Function" });
-
-                                var button = gameObject.GetComponent<Button>();
-                                button.onClick.AddListener(() => { prop.action?.Invoke(); });
-
-                                EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
-
-                                break;
-                            }
-                    }
-                }
-            }
-
-            yield break;
         }
 
         public void RefreshFileBrowserLevels() => RTFileBrowser.inst?.UpdateBrowser(RTFile.ApplicationDirectory, ".lsb", "level", x => StartCoroutine(LoadLevel(x.Replace("\\", "/").Replace("/level.lsb", ""))));
@@ -10934,1166 +9830,6 @@ namespace BetterLegacy.Editor.Managers
             gameObject.SetActive(active);
             gameObject.transform.parent.GetChild(gameObject.transform.GetSiblingIndex() - 1).gameObject.SetActive(active);
         }
-
-        #endregion
-
-        #region Editor Properties
-
-        public static List<EditorProperty> EditorProperties => new List<EditorProperty>()
-        {
-            #region General
-            
-            new EditorProperty("Reset to Defaults", EditorProperty.ValueType.Function, EditorProperty.EditorPropCategory.General, () =>
-                {
-                    inst.ShowWarningPopup("Are you sure you want to revert every config? THIS CANNOT BE UNDONE!", () =>
-                        {
-                            var list = EditorProperties.Where(x => x.configEntry != null).ToList();
-
-                            for (int i = 0; i < list.Count; i++)
-                            {
-                                list[i].configEntry.BoxedValue = list[i].configEntry.DefaultValue;
-                            }
-
-                            inst.HideWarningPopup();
-                        }, inst.HideWarningPopup);
-
-                }, "Reverts every config to their default value."),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.Debug),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.EditorZenMode),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ResetHealthInEditor),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.BPMSnapsKeyframes),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.BPMSnapDivisions),
-            new EditorProperty(EditorProperty.ValueType.Bool, CoreConfig.Instance.IncreasedClipPlanes),
-            new EditorProperty(EditorProperty.ValueType.Bool, CoreConfig.Instance.DiscordShowLevel),
-            new EditorProperty(EditorProperty.ValueType.Bool, CoreConfig.Instance.EnableVideoBackground),
-            new EditorProperty(EditorProperty.ValueType.Bool, CoreConfig.Instance.RunInBackground),
-            new EditorProperty(EditorProperty.ValueType.Bool, CoreConfig.Instance.Fullscreen),
-            new EditorProperty(EditorProperty.ValueType.Enum, CoreConfig.Instance.Resolution),
-            new EditorProperty(EditorProperty.ValueType.IntSlider, CoreConfig.Instance.MasterVol),
-            new EditorProperty(EditorProperty.ValueType.IntSlider, CoreConfig.Instance.MusicVol),
-            new EditorProperty(EditorProperty.ValueType.IntSlider, CoreConfig.Instance.SFXVol),
-            new EditorProperty(EditorProperty.ValueType.Enum, CoreConfig.Instance.Language),
-            new EditorProperty(EditorProperty.ValueType.Bool, CoreConfig.Instance.ControllerRumble),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.DraggingPlaysSound),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.DraggingPlaysSoundOnlyWithBPM),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ShowCollapsePrefabWarning),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.RoundToNearest),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ScrollOnEasing),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.PrefabExampleTemplate),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.PasteOffset),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.BringToSelection),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.SelectPasted),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.CreateObjectsatCameraCenter),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.CreateObjectsScaleParentDefault),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.AllowEditorKeybindsWithEditorCam),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.RotationEventKeyframeResets),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.RememberLastKeyframeType),
-
-            #endregion
-
-            #region Timeline
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.DraggingMainCursorPausesLevel),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.DraggingMainCursorFix),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.UseMouseAsZoomPoint),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.TimelineCursorColor),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.KeyframeCursorColor),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ObjectSelectionColor),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.MainZoomBounds),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.KeyframeZoomBounds),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.MainZoomAmount),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.KeyframeZoomAmount),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.KeyframeEndLengthOffset),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.TimelineObjectPrefabTypeIcon),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.EventLabelsRenderLeft),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.EventKeyframesRenderBinColor),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ObjectKeyframesRenderBinColor),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.WaveformGenerate),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.WaveformSaves),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.WaveformRerender),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.WaveformMode),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.WaveformBGColor),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.WaveformTopColor),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.WaveformBottomColor),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.WaveformTextureFormat),
-            new EditorProperty("Render Waveform", EditorProperty.ValueType.Function, EditorProperty.EditorPropCategory.Timeline,
-                () => { inst.StartCoroutine(inst.AssignTimelineTexture()); }, "Renders the timeline waveform."),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.TimelineGridEnabled),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.TimelineGridColor),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.TimelineGridThickness),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.MarkerLineColor),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.MarkerLineWidth),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.MarkerTextWidth),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.MarkerLoopActive),
-            new EditorProperty(EditorProperty.ValueType.Int, EditorConfig.Instance.MarkerLoopBegin),
-            new EditorProperty(EditorProperty.ValueType.Int, EditorConfig.Instance.MarkerLoopEnd),
-            new EditorProperty(EditorProperty.ValueType.Int, EditorConfig.Instance.MarkerDefaultColor),
-
-            #endregion
-
-            #region Data
-
-            new EditorProperty(EditorProperty.ValueType.Int, EditorConfig.Instance.AutosaveLimit),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.AutosaveLoopTime),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.LevelLoadsLastTime),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.LevelPausesOnStart),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.BackupPreviousLoadedLevel),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.SettingPathReloads),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.CopyPasteGlobal),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.SavingSavesThemeOpacity),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.UpdatePrefabListOnFilesChanged),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.UpdateThemeListOnFilesChanged),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ShowLevelsWithoutCoverNotification),
-            new EditorProperty(EditorProperty.ValueType.String, EditorConfig.Instance.ZIPLevelExportPath),
-            new EditorProperty(EditorProperty.ValueType.String, EditorConfig.Instance.ConvertLevelLSToVGExportPath),
-            new EditorProperty(EditorProperty.ValueType.String, EditorConfig.Instance.ConvertPrefabLSToVGExportPath),
-            new EditorProperty(EditorProperty.ValueType.String, EditorConfig.Instance.ConvertThemeLSToVGExportPath),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ThemeSavesIndents),
-
-            #endregion
-
-            #region Editor GUI
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.DragUI),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.EditorTheme),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.EditorFont),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.RoundedUI),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ShowModdedFeaturesInEditor),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.HoverUIPlaySound),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ImportPrefabsDirectly),
-            new EditorProperty(EditorProperty.ValueType.Int, EditorConfig.Instance.ThemesPerPage),
-            new EditorProperty(EditorProperty.ValueType.Int, EditorConfig.Instance.ThemesEventKeyframePerPage),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.MouseTooltipDisplay),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ShowHelpOnStartup),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.NotificationWidth),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.NotificationSize),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.NotificationDirection),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.NotificationsDisplay),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.AdjustPositionInputs),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ShowDropdownOnHover),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.HideVisualElementsWhenObjectIsEmpty),
-            new EditorProperty(EditorProperty.ValueType.Vector2Int, EditorConfig.Instance.RenderDepthRange),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.OpenLevelPosition),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.OpenLevelScale),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.OpenLevelEditorPathPos),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.OpenLevelEditorPathLength),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.OpenLevelListRefreshPosition),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.OpenLevelTogglePosition),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.OpenLevelDropdownPosition),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.OpenLevelCellSize),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.OpenLevelCellConstraintType),
-            new EditorProperty(EditorProperty.ValueType.Int, EditorConfig.Instance.OpenLevelCellConstraintCount),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.OpenLevelCellSpacing),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.OpenLevelTextHorizontalWrap),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.OpenLevelTextVerticalWrap),
-            new EditorProperty(EditorProperty.ValueType.IntSlider, EditorConfig.Instance.OpenLevelTextFontSize),
-
-            new EditorProperty(EditorProperty.ValueType.Int, EditorConfig.Instance.OpenLevelFolderNameMax),
-            new EditorProperty(EditorProperty.ValueType.Int, EditorConfig.Instance.OpenLevelSongNameMax),
-            new EditorProperty(EditorProperty.ValueType.Int, EditorConfig.Instance.OpenLevelArtistNameMax),
-            new EditorProperty(EditorProperty.ValueType.Int, EditorConfig.Instance.OpenLevelCreatorNameMax),
-            new EditorProperty(EditorProperty.ValueType.Int, EditorConfig.Instance.OpenLevelDescriptionMax),
-            new EditorProperty(EditorProperty.ValueType.Int, EditorConfig.Instance.OpenLevelDateMax),
-            new EditorProperty(EditorProperty.ValueType.String, EditorConfig.Instance.OpenLevelTextFormatting),
-
-            new EditorProperty(EditorProperty.ValueType.FloatSlider, EditorConfig.Instance.OpenLevelButtonHoverSize),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.OpenLevelCoverPosition),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.OpenLevelCoverScale),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ChangesRefreshLevelList),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.OpenLevelShowDeleteButton),
-
-            new EditorProperty(EditorProperty.ValueType.FloatSlider, EditorConfig.Instance.TimelineObjectHoverSize),
-            new EditorProperty(EditorProperty.ValueType.FloatSlider, EditorConfig.Instance.KeyframeHoverSize),
-            new EditorProperty(EditorProperty.ValueType.FloatSlider, EditorConfig.Instance.TimelineBarButtonsHoverSize),
-            new EditorProperty(EditorProperty.ValueType.FloatSlider, EditorConfig.Instance.PrefabButtonHoverSize),
-
-            // Prefab Internal
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabInternalPopupPos),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabInternalPopupSize),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.PrefabInternalHorizontalScroll),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabInternalCellSize),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabInternalConstraintMode),
-            new EditorProperty(EditorProperty.ValueType.Int, EditorConfig.Instance.PrefabInternalConstraint),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabInternalSpacing),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabInternalStartAxis),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabInternalDeleteButtonPos),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabInternalDeleteButtonSca),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabInternalNameHorizontalWrap),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabInternalNameVerticalWrap),
-            new EditorProperty(EditorProperty.ValueType.IntSlider, EditorConfig.Instance.PrefabInternalNameFontSize),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabInternalTypeHorizontalWrap),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabInternalTypeVerticalWrap),
-            new EditorProperty(EditorProperty.ValueType.IntSlider, EditorConfig.Instance.PrefabInternalTypeFontSize),
-
-            // Prefab External
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabExternalPopupPos),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabExternalPopupSize),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabExternalPrefabPathPos),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.PrefabExternalPrefabPathLength),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabExternalPrefabRefreshPos),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.PrefabExternalHorizontalScroll),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabExternalCellSize),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabExternalConstraintMode),
-            new EditorProperty(EditorProperty.ValueType.Int, EditorConfig.Instance.PrefabExternalConstraint),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabExternalSpacing),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabExternalStartAxis),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabExternalDeleteButtonPos),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabExternalDeleteButtonSca),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabExternalNameHorizontalWrap),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabExternalNameVerticalWrap),
-            new EditorProperty(EditorProperty.ValueType.IntSlider, EditorConfig.Instance.PrefabExternalNameFontSize),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabExternalTypeHorizontalWrap),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabExternalTypeVerticalWrap),
-            new EditorProperty(EditorProperty.ValueType.IntSlider, EditorConfig.Instance.PrefabExternalTypeFontSize),
-
-            #endregion
-
-            #region Fields
-            
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ScrollwheelLargeAmountKey),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ScrollwheelSmallAmountKey),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ScrollwheelRegularAmountKey),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ScrollwheelVector2LargeAmountKey),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ScrollwheelVector2SmallAmountKey),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ScrollwheelVector2RegularAmountKey),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ShowModifiedColors),
-            new EditorProperty(EditorProperty.ValueType.String, EditorConfig.Instance.ThemeTemplateName),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateGUI),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateTail),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateBG),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplatePlayer1),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplatePlayer2),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplatePlayer3),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplatePlayer4),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateOBJ1),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateOBJ2),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateOBJ3),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateOBJ4),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateOBJ5),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateOBJ6),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateOBJ7),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateOBJ8),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateOBJ9),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateOBJ10),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateOBJ11),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateOBJ12),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateOBJ13),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateOBJ14),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateOBJ15),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateOBJ16),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateOBJ17),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateOBJ18),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateBG1),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateBG2),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateBG3),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateBG4),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateBG5),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateBG6),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateBG7),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateBG8),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateBG9),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateFX1),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateFX2),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateFX3),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateFX4),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateFX5),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateFX6),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateFX7),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateFX8),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateFX9),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateFX10),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateFX11),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateFX12),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateFX13),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateFX14),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateFX15),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateFX16),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateFX17),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ThemeTemplateFX18),
-
-            #endregion
-
-            #region Animations
-            
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.PlayEditorAnimations),
-
-            #region OpenFilePopup
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.OpenFilePopupActive),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.OpenFilePopupPosActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.OpenFilePopupPosOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.OpenFilePopupPosClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.OpenFilePopupPosOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.OpenFilePopupPosCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.OpenFilePopupPosXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.OpenFilePopupPosXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.OpenFilePopupPosYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.OpenFilePopupPosYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.OpenFilePopupScaActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.OpenFilePopupScaOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.OpenFilePopupScaClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.OpenFilePopupScaOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.OpenFilePopupScaCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.OpenFilePopupScaXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.OpenFilePopupScaXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.OpenFilePopupScaYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.OpenFilePopupScaYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.OpenFilePopupRotActive),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.OpenFilePopupRotOpen),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.OpenFilePopupRotClose),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.OpenFilePopupRotOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.OpenFilePopupRotCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.OpenFilePopupRotOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.OpenFilePopupRotCloseEase),
-
-            #endregion
-            
-            #region NewFilePopup
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.NewFilePopupActive),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.NewFilePopupPosActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.NewFilePopupPosOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.NewFilePopupPosClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.NewFilePopupPosOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.NewFilePopupPosCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.NewFilePopupPosXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.NewFilePopupPosXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.NewFilePopupPosYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.NewFilePopupPosYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.NewFilePopupScaActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.NewFilePopupScaOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.NewFilePopupScaClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.NewFilePopupScaOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.NewFilePopupScaCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.NewFilePopupScaXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.NewFilePopupScaXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.NewFilePopupScaYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.NewFilePopupScaYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.NewFilePopupRotActive),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.NewFilePopupRotOpen),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.NewFilePopupRotClose),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.NewFilePopupRotOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.NewFilePopupRotCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.NewFilePopupRotOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.NewFilePopupRotCloseEase),
-
-            #endregion
-            
-            #region SaveAsPopup
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.SaveAsPopupActive),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.SaveAsPopupPosActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.SaveAsPopupPosOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.SaveAsPopupPosClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.SaveAsPopupPosOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.SaveAsPopupPosCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.SaveAsPopupPosXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.SaveAsPopupPosXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.SaveAsPopupPosYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.SaveAsPopupPosYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.SaveAsPopupScaActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.SaveAsPopupScaOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.SaveAsPopupScaClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.SaveAsPopupScaOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.SaveAsPopupScaCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.SaveAsPopupScaXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.SaveAsPopupScaXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.SaveAsPopupScaYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.SaveAsPopupScaYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.SaveAsPopupRotActive),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.SaveAsPopupRotOpen),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.SaveAsPopupRotClose),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.SaveAsPopupRotOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.SaveAsPopupRotCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.SaveAsPopupRotOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.SaveAsPopupRotCloseEase),
-
-            #endregion
-            
-            #region QuickActionsPopup
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.QuickActionsPopupActive),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.QuickActionsPopupPosActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.QuickActionsPopupPosOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.QuickActionsPopupPosClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.QuickActionsPopupPosOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.QuickActionsPopupPosCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.QuickActionsPopupPosXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.QuickActionsPopupPosXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.QuickActionsPopupPosYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.QuickActionsPopupPosYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.QuickActionsPopupScaActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.QuickActionsPopupScaOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.QuickActionsPopupScaClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.QuickActionsPopupScaOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.QuickActionsPopupScaCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.QuickActionsPopupScaXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.QuickActionsPopupScaXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.QuickActionsPopupScaYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.QuickActionsPopupScaYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.QuickActionsPopupRotActive),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.QuickActionsPopupRotOpen),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.QuickActionsPopupRotClose),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.QuickActionsPopupRotOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.QuickActionsPopupRotCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.QuickActionsPopupRotOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.QuickActionsPopupRotCloseEase),
-
-            #endregion
-            
-            #region ParentSelectorPopup
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ParentSelectorPopupActive),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ParentSelectorPopupPosActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ParentSelectorPopupPosOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ParentSelectorPopupPosClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ParentSelectorPopupPosOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ParentSelectorPopupPosCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ParentSelectorPopupPosXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ParentSelectorPopupPosXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ParentSelectorPopupPosYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ParentSelectorPopupPosYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ParentSelectorPopupScaActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ParentSelectorPopupScaOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ParentSelectorPopupScaClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ParentSelectorPopupScaOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ParentSelectorPopupScaCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ParentSelectorPopupScaXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ParentSelectorPopupScaXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ParentSelectorPopupScaYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ParentSelectorPopupScaYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ParentSelectorPopupRotActive),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.ParentSelectorPopupRotOpen),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.ParentSelectorPopupRotClose),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.ParentSelectorPopupRotOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.ParentSelectorPopupRotCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ParentSelectorPopupRotOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ParentSelectorPopupRotCloseEase),
-
-            #endregion
-            
-            #region PrefabPopup
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.PrefabPopupActive),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.PrefabPopupPosActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabPopupPosOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabPopupPosClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabPopupPosOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabPopupPosCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabPopupPosXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabPopupPosXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabPopupPosYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabPopupPosYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.PrefabPopupScaActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabPopupScaOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabPopupScaClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabPopupScaOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabPopupScaCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabPopupScaXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabPopupScaXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabPopupScaYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabPopupScaYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.PrefabPopupRotActive),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.PrefabPopupRotOpen),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.PrefabPopupRotClose),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.PrefabPopupRotOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.PrefabPopupRotCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabPopupRotOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabPopupRotCloseEase),
-
-            #endregion
-            
-            #region ObjectOptionsPopup
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ObjectOptionsPopupActive),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ObjectOptionsPopupPosActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ObjectOptionsPopupPosOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ObjectOptionsPopupPosClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ObjectOptionsPopupPosOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ObjectOptionsPopupPosCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ObjectOptionsPopupPosXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ObjectOptionsPopupPosXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ObjectOptionsPopupPosYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ObjectOptionsPopupPosYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ObjectOptionsPopupScaActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ObjectOptionsPopupScaOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ObjectOptionsPopupScaClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ObjectOptionsPopupScaOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ObjectOptionsPopupScaCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ObjectOptionsPopupScaXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ObjectOptionsPopupScaXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ObjectOptionsPopupScaYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ObjectOptionsPopupScaYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ObjectOptionsPopupRotActive),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.ObjectOptionsPopupRotOpen),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.ObjectOptionsPopupRotClose),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.ObjectOptionsPopupRotOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.ObjectOptionsPopupRotCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ObjectOptionsPopupRotOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ObjectOptionsPopupRotCloseEase),
-
-            #endregion
-            
-            #region BGOptionsPopup
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.BGOptionsPopupActive),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.BGOptionsPopupPosActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.BGOptionsPopupPosOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.BGOptionsPopupPosClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.BGOptionsPopupPosOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.BGOptionsPopupPosCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.BGOptionsPopupPosXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.BGOptionsPopupPosXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.BGOptionsPopupPosYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.BGOptionsPopupPosYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.BGOptionsPopupScaActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.BGOptionsPopupScaOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.BGOptionsPopupScaClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.BGOptionsPopupScaOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.BGOptionsPopupScaCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.BGOptionsPopupScaXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.BGOptionsPopupScaXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.BGOptionsPopupScaYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.BGOptionsPopupScaYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.BGOptionsPopupRotActive),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.BGOptionsPopupRotOpen),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.BGOptionsPopupRotClose),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.BGOptionsPopupRotOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.BGOptionsPopupRotCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.BGOptionsPopupRotOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.BGOptionsPopupRotCloseEase),
-
-            #endregion
-            
-            #region BrowserPopup
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.BrowserPopupActive),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.BrowserPopupPosActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.BrowserPopupPosOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.BrowserPopupPosClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.BrowserPopupPosOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.BrowserPopupPosCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.BrowserPopupPosXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.BrowserPopupPosXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.BrowserPopupPosYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.BrowserPopupPosYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.BrowserPopupScaActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.BrowserPopupScaOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.BrowserPopupScaClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.BrowserPopupScaOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.BrowserPopupScaCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.BrowserPopupScaXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.BrowserPopupScaXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.BrowserPopupScaYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.BrowserPopupScaYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.BrowserPopupRotActive),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.BrowserPopupRotOpen),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.BrowserPopupRotClose),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.BrowserPopupRotOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.BrowserPopupRotCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.BrowserPopupRotOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.BrowserPopupRotCloseEase),
-
-            #endregion
-            
-            #region ObjectSearchPopup
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ObjectSearchPopupActive),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ObjectSearchPopupPosActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ObjectSearchPopupPosOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ObjectSearchPopupPosClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ObjectSearchPopupPosOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ObjectSearchPopupPosCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ObjectSearchPopupPosXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ObjectSearchPopupPosXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ObjectSearchPopupPosYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ObjectSearchPopupPosYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ObjectSearchPopupScaActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ObjectSearchPopupScaOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ObjectSearchPopupScaClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ObjectSearchPopupScaOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ObjectSearchPopupScaCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ObjectSearchPopupScaXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ObjectSearchPopupScaXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ObjectSearchPopupScaYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ObjectSearchPopupScaYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ObjectSearchPopupRotActive),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.ObjectSearchPopupRotOpen),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.ObjectSearchPopupRotClose),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.ObjectSearchPopupRotOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.ObjectSearchPopupRotCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ObjectSearchPopupRotOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ObjectSearchPopupRotCloseEase),
-
-            #endregion
-            
-            #region WarningPopup
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.WarningPopupActive),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.WarningPopupPosActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.WarningPopupPosOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.WarningPopupPosClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.WarningPopupPosOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.WarningPopupPosCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.WarningPopupPosXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.WarningPopupPosXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.WarningPopupPosYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.WarningPopupPosYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.WarningPopupScaActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.WarningPopupScaOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.WarningPopupScaClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.WarningPopupScaOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.WarningPopupScaCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.WarningPopupScaXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.WarningPopupScaXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.WarningPopupScaYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.WarningPopupScaYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.WarningPopupRotActive),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.WarningPopupRotOpen),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.WarningPopupRotClose),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.WarningPopupRotOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.WarningPopupRotCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.WarningPopupRotOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.WarningPopupRotCloseEase),
-
-            #endregion
-            
-            #region REPLEditorPopup
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.REPLEditorPopupActive),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.REPLEditorPopupPosActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.REPLEditorPopupPosOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.REPLEditorPopupPosClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.REPLEditorPopupPosOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.REPLEditorPopupPosCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.REPLEditorPopupPosXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.REPLEditorPopupPosXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.REPLEditorPopupPosYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.REPLEditorPopupPosYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.REPLEditorPopupScaActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.REPLEditorPopupScaOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.REPLEditorPopupScaClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.REPLEditorPopupScaOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.REPLEditorPopupScaCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.REPLEditorPopupScaXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.REPLEditorPopupScaXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.REPLEditorPopupScaYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.REPLEditorPopupScaYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.REPLEditorPopupRotActive),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.REPLEditorPopupRotOpen),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.REPLEditorPopupRotClose),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.REPLEditorPopupRotOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.REPLEditorPopupRotCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.REPLEditorPopupRotOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.REPLEditorPopupRotCloseEase),
-
-            #endregion
-            
-            #region EditorPropertiesPopup
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.EditorPropertiesPopupActive),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.EditorPropertiesPopupPosActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.EditorPropertiesPopupPosOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.EditorPropertiesPopupPosClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.EditorPropertiesPopupPosOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.EditorPropertiesPopupPosCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.EditorPropertiesPopupPosXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.EditorPropertiesPopupPosXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.EditorPropertiesPopupPosYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.EditorPropertiesPopupPosYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.EditorPropertiesPopupScaActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.EditorPropertiesPopupScaOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.EditorPropertiesPopupScaClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.EditorPropertiesPopupScaOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.EditorPropertiesPopupScaCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.EditorPropertiesPopupScaXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.EditorPropertiesPopupScaXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.EditorPropertiesPopupScaYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.EditorPropertiesPopupScaYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.EditorPropertiesPopupRotActive),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.EditorPropertiesPopupRotOpen),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.EditorPropertiesPopupRotClose),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.EditorPropertiesPopupRotOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.EditorPropertiesPopupRotCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.EditorPropertiesPopupRotOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.EditorPropertiesPopupRotCloseEase),
-
-            #endregion
-            
-            #region DocumentationPopup
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.DocumentationPopupActive),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.DocumentationPopupPosActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.DocumentationPopupPosOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.DocumentationPopupPosClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.DocumentationPopupPosOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.DocumentationPopupPosCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DocumentationPopupPosXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DocumentationPopupPosXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DocumentationPopupPosYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DocumentationPopupPosYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.DocumentationPopupScaActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.DocumentationPopupScaOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.DocumentationPopupScaClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.DocumentationPopupScaOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.DocumentationPopupScaCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DocumentationPopupScaXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DocumentationPopupScaXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DocumentationPopupScaYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DocumentationPopupScaYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.DocumentationPopupRotActive),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.DocumentationPopupRotOpen),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.DocumentationPopupRotClose),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.DocumentationPopupRotOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.DocumentationPopupRotCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DocumentationPopupRotOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DocumentationPopupRotCloseEase),
-
-            #endregion
-            
-            #region DebuggerPopup
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.DebuggerPopupActive),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.DebuggerPopupPosActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.DebuggerPopupPosOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.DebuggerPopupPosClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.DebuggerPopupPosOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.DebuggerPopupPosCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DebuggerPopupPosXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DebuggerPopupPosXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DebuggerPopupPosYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DebuggerPopupPosYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.DebuggerPopupScaActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.DebuggerPopupScaOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.DebuggerPopupScaClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.DebuggerPopupScaOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.DebuggerPopupScaCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DebuggerPopupScaXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DebuggerPopupScaXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DebuggerPopupScaYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DebuggerPopupScaYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.DebuggerPopupRotActive),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.DebuggerPopupRotOpen),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.DebuggerPopupRotClose),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.DebuggerPopupRotOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.DebuggerPopupRotCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DebuggerPopupRotOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DebuggerPopupRotCloseEase),
-
-            #endregion
-            
-            #region AutosavesPopup
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.AutosavesPopupActive),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.AutosavesPopupPosActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.AutosavesPopupPosOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.AutosavesPopupPosClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.AutosavesPopupPosOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.AutosavesPopupPosCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.AutosavesPopupPosXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.AutosavesPopupPosXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.AutosavesPopupPosYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.AutosavesPopupPosYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.AutosavesPopupScaActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.AutosavesPopupScaOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.AutosavesPopupScaClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.AutosavesPopupScaOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.AutosavesPopupScaCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.AutosavesPopupScaXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.AutosavesPopupScaXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.AutosavesPopupScaYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.AutosavesPopupScaYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.AutosavesPopupRotActive),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.AutosavesPopupRotOpen),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.AutosavesPopupRotClose),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.AutosavesPopupRotOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.AutosavesPopupRotCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.AutosavesPopupRotOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.AutosavesPopupRotCloseEase),
-
-            #endregion
-            
-            #region DefaultModifiersPopup
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.DefaultModifiersPopupActive),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.DefaultModifiersPopupPosActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.DefaultModifiersPopupPosOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.DefaultModifiersPopupPosClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.DefaultModifiersPopupPosOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.DefaultModifiersPopupPosCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DefaultModifiersPopupPosXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DefaultModifiersPopupPosXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DefaultModifiersPopupPosYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DefaultModifiersPopupPosYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.DefaultModifiersPopupScaActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.DefaultModifiersPopupScaOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.DefaultModifiersPopupScaClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.DefaultModifiersPopupScaOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.DefaultModifiersPopupScaCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DefaultModifiersPopupScaXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DefaultModifiersPopupScaXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DefaultModifiersPopupScaYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DefaultModifiersPopupScaYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.DefaultModifiersPopupRotActive),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.DefaultModifiersPopupRotOpen),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.DefaultModifiersPopupRotClose),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.DefaultModifiersPopupRotOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.DefaultModifiersPopupRotCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DefaultModifiersPopupRotOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.DefaultModifiersPopupRotCloseEase),
-
-            #endregion
-            
-            #region KeybindListPopup
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.KeybindListPopupActive),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.KeybindListPopupPosActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.KeybindListPopupPosOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.KeybindListPopupPosClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.KeybindListPopupPosOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.KeybindListPopupPosCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.KeybindListPopupPosXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.KeybindListPopupPosXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.KeybindListPopupPosYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.KeybindListPopupPosYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.KeybindListPopupScaActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.KeybindListPopupScaOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.KeybindListPopupScaClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.KeybindListPopupScaOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.KeybindListPopupScaCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.KeybindListPopupScaXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.KeybindListPopupScaXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.KeybindListPopupScaYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.KeybindListPopupScaYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.KeybindListPopupRotActive),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.KeybindListPopupRotOpen),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.KeybindListPopupRotClose),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.KeybindListPopupRotOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.KeybindListPopupRotCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.KeybindListPopupRotOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.KeybindListPopupRotCloseEase),
-
-            #endregion
-            
-            #region ThemePopup
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ThemePopupActive),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ThemePopupPosActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ThemePopupPosOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ThemePopupPosClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ThemePopupPosOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ThemePopupPosCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ThemePopupPosXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ThemePopupPosXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ThemePopupPosYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ThemePopupPosYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ThemePopupScaActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ThemePopupScaOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ThemePopupScaClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ThemePopupScaOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ThemePopupScaCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ThemePopupScaXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ThemePopupScaXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ThemePopupScaYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ThemePopupScaYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ThemePopupRotActive),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.ThemePopupRotOpen),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.ThemePopupRotClose),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.ThemePopupRotOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.ThemePopupRotCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ThemePopupRotOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ThemePopupRotCloseEase),
-
-            #endregion
-            
-            #region PrefabTypesPopup
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.PrefabTypesPopupActive),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.PrefabTypesPopupPosActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabTypesPopupPosOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabTypesPopupPosClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabTypesPopupPosOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabTypesPopupPosCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabTypesPopupPosXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabTypesPopupPosXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabTypesPopupPosYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabTypesPopupPosYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.PrefabTypesPopupScaActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabTypesPopupScaOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabTypesPopupScaClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabTypesPopupScaOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.PrefabTypesPopupScaCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabTypesPopupScaXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabTypesPopupScaXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabTypesPopupScaYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabTypesPopupScaYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.PrefabTypesPopupRotActive),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.PrefabTypesPopupRotOpen),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.PrefabTypesPopupRotClose),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.PrefabTypesPopupRotOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.PrefabTypesPopupRotCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabTypesPopupRotOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.PrefabTypesPopupRotCloseEase),
-
-            #endregion
-            
-            #region FileDropdown
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.FileDropdownActive),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.FileDropdownPosActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.FileDropdownPosOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.FileDropdownPosClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.FileDropdownPosOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.FileDropdownPosCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.FileDropdownPosXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.FileDropdownPosXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.FileDropdownPosYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.FileDropdownPosYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.FileDropdownScaActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.FileDropdownScaOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.FileDropdownScaClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.FileDropdownScaOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.FileDropdownScaCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.FileDropdownScaXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.FileDropdownScaXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.FileDropdownScaYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.FileDropdownScaYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.FileDropdownRotActive),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.FileDropdownRotOpen),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.FileDropdownRotClose),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.FileDropdownRotOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.FileDropdownRotCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.FileDropdownRotOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.FileDropdownRotCloseEase),
-
-            #endregion
-            
-            #region EditDropdown
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.EditDropdownActive),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.EditDropdownPosActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.EditDropdownPosOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.EditDropdownPosClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.EditDropdownPosOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.EditDropdownPosCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.EditDropdownPosXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.EditDropdownPosXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.EditDropdownPosYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.EditDropdownPosYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.EditDropdownScaActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.EditDropdownScaOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.EditDropdownScaClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.EditDropdownScaOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.EditDropdownScaCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.EditDropdownScaXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.EditDropdownScaXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.EditDropdownScaYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.EditDropdownScaYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.EditDropdownRotActive),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.EditDropdownRotOpen),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.EditDropdownRotClose),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.EditDropdownRotOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.EditDropdownRotCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.EditDropdownRotOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.EditDropdownRotCloseEase),
-
-            #endregion
-            
-            #region ViewDropdown
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ViewDropdownActive),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ViewDropdownPosActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ViewDropdownPosOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ViewDropdownPosClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ViewDropdownPosOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ViewDropdownPosCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ViewDropdownPosXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ViewDropdownPosXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ViewDropdownPosYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ViewDropdownPosYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ViewDropdownScaActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ViewDropdownScaOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ViewDropdownScaClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ViewDropdownScaOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.ViewDropdownScaCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ViewDropdownScaXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ViewDropdownScaXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ViewDropdownScaYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ViewDropdownScaYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ViewDropdownRotActive),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.ViewDropdownRotOpen),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.ViewDropdownRotClose),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.ViewDropdownRotOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.ViewDropdownRotCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ViewDropdownRotOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.ViewDropdownRotCloseEase),
-
-            #endregion
-            
-            #region SteamDropdown
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.SteamDropdownActive),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.SteamDropdownPosActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.SteamDropdownPosOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.SteamDropdownPosClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.SteamDropdownPosOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.SteamDropdownPosCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.SteamDropdownPosXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.SteamDropdownPosXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.SteamDropdownPosYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.SteamDropdownPosYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.SteamDropdownScaActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.SteamDropdownScaOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.SteamDropdownScaClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.SteamDropdownScaOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.SteamDropdownScaCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.SteamDropdownScaXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.SteamDropdownScaXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.SteamDropdownScaYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.SteamDropdownScaYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.SteamDropdownRotActive),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.SteamDropdownRotOpen),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.SteamDropdownRotClose),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.SteamDropdownRotOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.SteamDropdownRotCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.SteamDropdownRotOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.SteamDropdownRotCloseEase),
-
-            #endregion
-            
-            #region HelpDropdown
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.HelpDropdownActive),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.HelpDropdownPosActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.HelpDropdownPosOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.HelpDropdownPosClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.HelpDropdownPosOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.HelpDropdownPosCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.HelpDropdownPosXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.HelpDropdownPosXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.HelpDropdownPosYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.HelpDropdownPosYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.HelpDropdownScaActive),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.HelpDropdownScaOpen),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.HelpDropdownScaClose),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.HelpDropdownScaOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Vector2, EditorConfig.Instance.HelpDropdownScaCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.HelpDropdownScaXOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.HelpDropdownScaXCloseEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.HelpDropdownScaYOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.HelpDropdownScaYCloseEase),
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.HelpDropdownRotActive),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.HelpDropdownRotOpen),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.HelpDropdownRotClose),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.HelpDropdownRotOpenDuration),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.HelpDropdownRotCloseDuration),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.HelpDropdownRotOpenEase),
-            new EditorProperty(EditorProperty.ValueType.Enum, EditorConfig.Instance.HelpDropdownRotCloseEase),
-
-            #endregion
-
-            #endregion
-
-            #region Preview
-
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.OnlyObjectsOnCurrentLayerVisible),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.VisibleObjectOpacity),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ShowEmpties),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.OnlyShowDamagable),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.HighlightObjects),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ObjectHighlightAmount),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.ObjectHighlightDoubleAmount),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ObjectDraggerEnabled),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.ObjectDraggerCreatesKeyframe),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.ObjectDraggerRotatorRadius),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.ObjectDraggerScalerOffset),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.ObjectDraggerScalerScale),
-            new EditorProperty(EditorProperty.ValueType.Bool, EditorConfig.Instance.PreviewGridEnabled),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.PreviewGridSize),
-            new EditorProperty(EditorProperty.ValueType.Float, EditorConfig.Instance.PreviewGridThickness),
-            new EditorProperty(EditorProperty.ValueType.Color, EditorConfig.Instance.PreviewGridColor),
-
-            #endregion
-        };
-
-        public List<EditorProperty> otherProperties = new List<EditorProperty>();
 
         #endregion
 
@@ -13013,113 +10749,6 @@ namespace BetterLegacy.Editor.Managers
             public float RotEndDuration => RotCloseDurationConfig.Value;
             public string RotStartEase => RotOpenEaseConfig.Value.ToString();
             public string RotEndEase => RotCloseEaseConfig.Value.ToString();
-        }
-
-        public class EditorProperty : Exists
-        {
-            public EditorProperty()
-            {
-            }
-
-            public EditorProperty(ValueType valueType, BaseSetting configEntry)
-            {
-                name = configEntry.Key;
-                this.valueType = valueType;
-
-                var p = PropCategories.FindIndex(x => x.ToString() == configEntry.Section.Replace("Editor - ", "").Replace(" ", ""));
-
-                propCategory = p >= 0 ? PropCategories[p] : EditorPropCategory.General;
-                this.configEntry = configEntry;
-                description = configEntry.Description;
-            }
-            
-            public EditorProperty(BaseSetting configEntry)
-            {
-                name = configEntry.Key;
-                valueType = ConvertType(configEntry.BoxedValue.GetType());
-
-                var p = PropCategories.FindIndex(x => x.ToString() == configEntry.Section.Replace("Editor - ", "").Replace(" ", ""));
-
-                propCategory = p >= 0 ? PropCategories[p] : EditorPropCategory.General;
-                this.configEntry = configEntry;
-                description = configEntry.Description;
-            }
-
-            public EditorProperty(string name, ValueType valueType, EditorPropCategory editorProp, Action action, string description)
-            {
-                this.name = name;
-                this.valueType = valueType;
-                propCategory = editorProp;
-                this.description = description;
-                this.action = action;
-            }
-
-            ValueType ConvertType(Type type)
-            {
-                if (type == typeof(bool))
-                    return ValueType.Bool;
-                if (type == typeof(int))
-                    return ValueType.Int;
-                if (type == typeof(float))
-                    return ValueType.Float;
-                if (type == typeof(string))
-                    return ValueType.String;
-                if (type == typeof(Vector2))
-                    return ValueType.Vector2;
-                if (type == typeof(Vector3))
-                    return ValueType.Vector3;
-                if (type == typeof(Vector3))
-                    return ValueType.Vector3;
-                if (type == typeof(Color))
-                    return ValueType.Color;
-                return ValueType.Function;
-            }
-
-            public string name;
-            public ValueType valueType;
-            public EditorPropCategory propCategory;
-            public BaseSetting configEntry;
-            public string description;
-            public Action action;
-
-            public List<EditorPropCategory> PropCategories => new List<EditorPropCategory>()
-            {
-                EditorPropCategory.General,
-                EditorPropCategory.Timeline,
-                EditorPropCategory.Data,
-                EditorPropCategory.EditorGUI,
-                EditorPropCategory.Animations,
-                EditorPropCategory.Fields,
-                EditorPropCategory.Preview,
-            };
-
-            public enum ValueType
-            {
-                Bool,
-                Int,
-                Float,
-                IntSlider,
-                FloatSlider,
-                String,
-                Vector2,
-                Vector2Int,
-                Vector3,
-                Vector3Int,
-                Enum,
-                Color,
-                Function
-            }
-
-            public enum EditorPropCategory
-            {
-                General,
-                Timeline,
-                Data,
-                EditorGUI,
-                Animations,
-                Fields,
-                Preview
-            }
         }
 
         #endregion

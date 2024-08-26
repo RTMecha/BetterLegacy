@@ -142,11 +142,13 @@ namespace BetterLegacy.Editor.Managers
             PlayerSprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_player.png");
 
             EditorHelper.AddEditorDialog("Player Editor", dialog);
-            EditorHelper.AddEditorDropdown("Player Editor", "", "Edit", PlayerSprite, () =>
+            var playerEditor = EditorHelper.AddEditorDropdown("Player Editor", "", "Edit", PlayerSprite, () =>
             {
                 EditorManager.inst.ShowDialog("Player Editor");
                 StartCoroutine(RefreshEditor());
             });
+            playerEditor.gameObject.SetActive(RTEditor.ShowModdedUI);
+            EditorConfig.UpdateEditorComplexity += () => { playerEditor?.gameObject?.SetActive(RTEditor.ShowModdedUI); };
 
             content = scrollView.transform.Find("Viewport/Content");
 
@@ -200,7 +202,7 @@ namespace BetterLegacy.Editor.Managers
                         Name = name,
                         GameObject = gameObject,
                         Tab = Tab.Global,
-                        ValueType = RTEditor.EditorProperty.ValueType.Float,
+                        ValueType = ValueType.Float,
                         Index = -1,
                     });
                 }
@@ -228,7 +230,7 @@ namespace BetterLegacy.Editor.Managers
                         Name = name,
                         GameObject = gameObject,
                         Tab = Tab.Global,
-                        ValueType = RTEditor.EditorProperty.ValueType.Bool,
+                        ValueType = ValueType.Bool,
                         Index = -1,
                     });
                 }
@@ -248,14 +250,8 @@ namespace BetterLegacy.Editor.Managers
 
                     var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(gameObject.transform, "dropdown").GetComponent<Dropdown>();
                     dropdown.transform.AsRT().anchoredPosition = new Vector2(566f, -16f);
-                    dropdown.options.Clear();
-                    dropdown.onValueChanged.RemoveAllListeners();
-
-                    dropdown.options = new List<Dropdown.OptionData>
-                    {
-                        new Dropdown.OptionData("Regular"),
-                        new Dropdown.OptionData("Platformer"),
-                    };
+                    dropdown.onValueChanged.ClearAll();
+                    dropdown.options = CoreHelper.StringToOptionData("Regular", "Platformer");
 
                     EditorThemeManager.AddDropdown(dropdown);
 
@@ -264,7 +260,7 @@ namespace BetterLegacy.Editor.Managers
                         Name = name,
                         GameObject = gameObject,
                         Tab = Tab.Global,
-                        ValueType = RTEditor.EditorProperty.ValueType.Enum,
+                        ValueType = ValueType.Enum,
                         Index = -1,
                     });
                 }
@@ -299,7 +295,7 @@ namespace BetterLegacy.Editor.Managers
                         Name = name,
                         GameObject = gameObject,
                         Tab = Tab.Global,
-                        ValueType = RTEditor.EditorProperty.ValueType.Int,
+                        ValueType = ValueType.Int,
                         Index = -1,
                     });
                 }
@@ -334,7 +330,7 @@ namespace BetterLegacy.Editor.Managers
                         Name = name,
                         GameObject = gameObject,
                         Tab = Tab.Global,
-                        ValueType = RTEditor.EditorProperty.ValueType.Int,
+                        ValueType = ValueType.Int,
                         Index = -1,
                     });
                 }
@@ -369,7 +365,7 @@ namespace BetterLegacy.Editor.Managers
                         Name = name,
                         GameObject = gameObject,
                         Tab = Tab.Global,
-                        ValueType = RTEditor.EditorProperty.ValueType.Int,
+                        ValueType = ValueType.Int,
                         Index = -1,
                     });
                 }
@@ -404,7 +400,7 @@ namespace BetterLegacy.Editor.Managers
                         Name = name,
                         GameObject = gameObject,
                         Tab = Tab.Global,
-                        ValueType = RTEditor.EditorProperty.ValueType.Float,
+                        ValueType = ValueType.Float,
                         Index = -1,
                     });
                 }
@@ -439,7 +435,7 @@ namespace BetterLegacy.Editor.Managers
                         Name = name,
                         GameObject = gameObject,
                         Tab = Tab.Global,
-                        ValueType = RTEditor.EditorProperty.ValueType.Float,
+                        ValueType = ValueType.Float,
                         Index = -1,
                     });
                 }
@@ -470,7 +466,7 @@ namespace BetterLegacy.Editor.Managers
                         Name = name,
                         GameObject = gameObject,
                         Tab = Tab.Global,
-                        ValueType = RTEditor.EditorProperty.ValueType.Function,
+                        ValueType = ValueType.Function,
                         Index = -1,
                     });
                 }
@@ -488,10 +484,10 @@ namespace BetterLegacy.Editor.Managers
                 UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
                 EditorThemeManager.AddLightText(labelText);
 
-                RTEditor.EditorProperty.ValueType valueType = RTEditor.EditorProperty.ValueType.Function;
+                ValueType valueType = ValueType.Function;
                 if (name == "Base ID")
                 {
-                    valueType = RTEditor.EditorProperty.ValueType.Function;
+                    valueType = ValueType.Function;
 
                     var id = labelPrefab.Duplicate(gameObject.transform, "id");
                     UIManager.SetRectTransform(id.transform.AsRT(), new Vector2(-32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(750f, 32f));
@@ -500,7 +496,7 @@ namespace BetterLegacy.Editor.Managers
 
                 if (name == "Base Name" || name.Contains("Color") && name.Contains("Custom"))
                 {
-                    valueType = RTEditor.EditorProperty.ValueType.String;
+                    valueType = ValueType.String;
 
                     var input = EditorPrefabHolder.Instance.NumberInputField.transform.Find("input").gameObject.Duplicate(gameObject.transform, "input");
                     UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(260f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(200f, 32f));
@@ -524,7 +520,7 @@ namespace BetterLegacy.Editor.Managers
                     name == "Tail Base Time" || name == "Base Jump Gravity" || name == "Base Jump Count" || name == "Base Jump Boost Count" || name == "Base Jump Intensity" || name == "Base Bounciness")
                 {
                     if (name == "Base Health" || name == "Boost Particles Amount" || name == "Base Jump Count" || name == "Base Jump Boost Count")
-                        valueType = RTEditor.EditorProperty.ValueType.Int;
+                        valueType = ValueType.Int;
                     if (name.Contains("Scale") && (name.Contains("Start") || name.Contains("End")) && !name.Contains("Pulse") && !name.Contains("Bullet") ||
                         name.Contains("Rotation") && !name.Contains("Easing") ||
                         name == "Tail Base Distance" ||
@@ -538,7 +534,7 @@ namespace BetterLegacy.Editor.Managers
                         name.Contains("Speed") || name.Contains("Depth") || name == "Pulse Duration" ||
                         name.Contains("Cooldown") || name.Contains("Boost Time") || name == "Bullet Lifetime" || name.Contains("Duration") ||
                         name == "Tail Base Time" || name == "Base Jump Gravity" || name == "Base Jump Intensity" || name == "Base Bounciness")
-                        valueType = RTEditor.EditorProperty.ValueType.Float;
+                        valueType = ValueType.Float;
 
                     var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
                     UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
@@ -557,7 +553,7 @@ namespace BetterLegacy.Editor.Managers
                     name.Contains("Scale") && !name.Contains("Particles") && !name.Contains("Easing") && !name.Contains("Duration") ||
                     name.Contains("Force") || name.Contains("Origin"))
                 {
-                    valueType = RTEditor.EditorProperty.ValueType.Vector2;
+                    valueType = ValueType.Vector2;
 
                     var inputX = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "x");
                     UIManager.SetRectTransform(inputX.transform.AsRT(), new Vector2(-52f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
@@ -588,7 +584,7 @@ namespace BetterLegacy.Editor.Managers
 
                 if (name == "Tail Base Mode")
                 {
-                    valueType = RTEditor.EditorProperty.ValueType.Enum;
+                    valueType = ValueType.Enum;
 
                     var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(gameObject.transform, "dropdown").GetComponent<Dropdown>();
                     dropdown.transform.AsRT().anchoredPosition = new Vector2(566f, -16f);
@@ -600,7 +596,7 @@ namespace BetterLegacy.Editor.Managers
                 
                 if (name == "Base Rotate Mode")
                 {
-                    valueType = RTEditor.EditorProperty.ValueType.Enum;
+                    valueType = ValueType.Enum;
 
                     var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(gameObject.transform, "dropdown").GetComponent<Dropdown>();
                     dropdown.transform.AsRT().anchoredPosition = new Vector2(566f, -16f);
@@ -612,7 +608,7 @@ namespace BetterLegacy.Editor.Managers
                 
                 if (name == "GUI Health Mode")
                 {
-                    valueType = RTEditor.EditorProperty.ValueType.Enum;
+                    valueType = ValueType.Enum;
 
                     var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(gameObject.transform, "dropdown").GetComponent<Dropdown>();
                     dropdown.transform.AsRT().anchoredPosition = new Vector2(566f, -16f);
@@ -624,7 +620,7 @@ namespace BetterLegacy.Editor.Managers
                 
                 if (name.Contains("Easing"))
                 {
-                    valueType = RTEditor.EditorProperty.ValueType.Enum;
+                    valueType = ValueType.Enum;
 
                     var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(gameObject.transform, "dropdown").GetComponent<Dropdown>();
                     dropdown.transform.AsRT().anchoredPosition = new Vector2(566f, -16f);
@@ -638,7 +634,7 @@ namespace BetterLegacy.Editor.Managers
 
                 if (name.Contains("Color") && !name.Contains("Easing") && !name.Contains("Custom") && !name.Contains("Duration"))
                 {
-                    valueType = RTEditor.EditorProperty.ValueType.Color;
+                    valueType = ValueType.Color;
 
                     var layout = Creator.NewUIObject("colors", gameObject.transform);
                     layout.transform.AsRT().anchoredPosition = new Vector2(170f, -16f);
@@ -661,7 +657,7 @@ namespace BetterLegacy.Editor.Managers
                     name == "Tail Base Grows" || name == "Base Collision Accurate" || name == "Bullet Constant" ||
                     name == "Bullet Hurt Players" || name == "Bullet AutoKill" || name == "Base Can Boost")
                 {
-                    valueType = RTEditor.EditorProperty.ValueType.Bool;
+                    valueType = ValueType.Bool;
 
                     var toggle = boolInput.Duplicate(gameObject.transform, "toggle").GetComponent<Toggle>();
                     toggle.transform.AsRT().anchoredPosition = new Vector2(725f, -21f);
@@ -681,7 +677,7 @@ namespace BetterLegacy.Editor.Managers
 
                 if (name == "Custom Objects")
                 {
-                    valueType = RTEditor.EditorProperty.ValueType.Function;
+                    valueType = ValueType.Function;
 
                     labelText.text = "Select a custom object.";
                     var button = gameObject.AddComponent<Button>();
@@ -704,7 +700,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 // ID
                 {
-                    var gameObject = GenerateUIPart("ID", Tab.Custom, RTEditor.EditorProperty.ValueType.Function);
+                    var gameObject = GenerateUIPart("ID", Tab.Custom, ValueType.Function);
 
                     var id = labelPrefab.Duplicate(gameObject.transform, "id");
                     UIManager.SetRectTransform(id.transform.AsRT(), new Vector2(-32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(750f, 32f));
@@ -713,7 +709,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // Name
                 {
-                    var gameObject = GenerateUIPart("Name", Tab.Custom, RTEditor.EditorProperty.ValueType.String);
+                    var gameObject = GenerateUIPart("Name", Tab.Custom, ValueType.String);
 
                     var input = EditorPrefabHolder.Instance.NumberInputField.transform.Find("input").gameObject.Duplicate(gameObject.transform, "input");
                     UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(260f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(200f, 32f));
@@ -723,7 +719,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // Position
                 {
-                    var gameObject = GenerateUIPart("Position", Tab.Custom, RTEditor.EditorProperty.ValueType.Vector2);
+                    var gameObject = GenerateUIPart("Position", Tab.Custom, ValueType.Vector2);
 
                     var inputX = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "x");
                     UIManager.SetRectTransform(inputX.transform.AsRT(), new Vector2(-52f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
@@ -754,7 +750,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // Scale
                 {
-                    var gameObject = GenerateUIPart("Scale", Tab.Custom, RTEditor.EditorProperty.ValueType.Vector2);
+                    var gameObject = GenerateUIPart("Scale", Tab.Custom, ValueType.Vector2);
 
                     var inputX = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "x");
                     UIManager.SetRectTransform(inputX.transform.AsRT(), new Vector2(-52f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
@@ -785,7 +781,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // Rotation
                 {
-                    var gameObject = GenerateUIPart("Rotation", Tab.Custom, RTEditor.EditorProperty.ValueType.Float);
+                    var gameObject = GenerateUIPart("Rotation", Tab.Custom, ValueType.Float);
 
                     var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
                     UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
@@ -802,7 +798,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // Depth
                 {
-                    var gameObject = GenerateUIPart("Depth", Tab.Custom, RTEditor.EditorProperty.ValueType.Float);
+                    var gameObject = GenerateUIPart("Depth", Tab.Custom, ValueType.Float);
 
                     var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
                     UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
@@ -819,7 +815,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // Color
                 {
-                    var gameObject = GenerateUIPart("Color", Tab.Custom, RTEditor.EditorProperty.ValueType.Color);
+                    var gameObject = GenerateUIPart("Color", Tab.Custom, ValueType.Color);
 
                     var layout = Creator.NewUIObject("colors", gameObject.transform);
                     layout.transform.AsRT().anchoredPosition = new Vector2(170f, -16f);
@@ -840,7 +836,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // Custom Color
                 {
-                    var gameObject = GenerateUIPart("Custom Color", Tab.Custom, RTEditor.EditorProperty.ValueType.String);
+                    var gameObject = GenerateUIPart("Custom Color", Tab.Custom, ValueType.String);
 
                     var input = EditorPrefabHolder.Instance.NumberInputField.transform.Find("input").gameObject.Duplicate(gameObject.transform, "input");
                     UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(260f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(200f, 32f));
@@ -850,7 +846,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // Opacity
                 {
-                    var gameObject = GenerateUIPart("Opacity", Tab.Custom, RTEditor.EditorProperty.ValueType.Float);
+                    var gameObject = GenerateUIPart("Opacity", Tab.Custom, ValueType.Float);
 
                     var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
                     UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
@@ -867,7 +863,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // Parent
                 {
-                    var gameObject = GenerateUIPart("Parent", Tab.Custom, RTEditor.EditorProperty.ValueType.Enum);
+                    var gameObject = GenerateUIPart("Parent", Tab.Custom, ValueType.Enum);
 
                     var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(gameObject.transform, "dropdown").GetComponent<Dropdown>();
                     dropdown.transform.AsRT().anchoredPosition = new Vector2(566f, -16f);
@@ -880,7 +876,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // Position Offset
                 {
-                    var gameObject = GenerateUIPart("Position Offset", Tab.Custom, RTEditor.EditorProperty.ValueType.Float);
+                    var gameObject = GenerateUIPart("Position Offset", Tab.Custom, ValueType.Float);
 
                     var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
                     UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
@@ -897,7 +893,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // Scale Offset
                 {
-                    var gameObject = GenerateUIPart("Scale Offset", Tab.Custom, RTEditor.EditorProperty.ValueType.Float);
+                    var gameObject = GenerateUIPart("Scale Offset", Tab.Custom, ValueType.Float);
 
                     var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
                     UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
@@ -914,7 +910,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // Rotation Offset
                 {
-                    var gameObject = GenerateUIPart("Rotation Offset", Tab.Custom, RTEditor.EditorProperty.ValueType.Float);
+                    var gameObject = GenerateUIPart("Rotation Offset", Tab.Custom, ValueType.Float);
 
                     var input = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "input");
                     UIManager.SetRectTransform(input.transform.AsRT(), new Vector2(84f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
@@ -931,7 +927,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // Scale Parent
                 {
-                    var gameObject = GenerateUIPart("Scale Parent", Tab.Custom, RTEditor.EditorProperty.ValueType.Bool);
+                    var gameObject = GenerateUIPart("Scale Parent", Tab.Custom, ValueType.Bool);
 
                     var toggle = boolInput.Duplicate(gameObject.transform, "toggle").GetComponent<Toggle>();
                     toggle.transform.AsRT().anchoredPosition = new Vector2(725f, -21f);
@@ -941,7 +937,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // Rotation Parent
                 {
-                    var gameObject = GenerateUIPart("Rotation Parent", Tab.Custom, RTEditor.EditorProperty.ValueType.Bool);
+                    var gameObject = GenerateUIPart("Rotation Parent", Tab.Custom, ValueType.Bool);
 
                     var toggle = boolInput.Duplicate(gameObject.transform, "toggle").GetComponent<Toggle>();
                     toggle.transform.AsRT().anchoredPosition = new Vector2(725f, -21f);
@@ -951,7 +947,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // Shape
                 {
-                    var gameObject = GenerateUIPart("Shape", Tab.Custom, RTEditor.EditorProperty.ValueType.Enum);
+                    var gameObject = GenerateUIPart("Shape", Tab.Custom, ValueType.Enum);
                     gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 92f);
 
                     var shape = ObjEditor.inst.ObjectView.transform.Find("shape").gameObject.Duplicate(gameObject.transform, "shape");
@@ -968,7 +964,7 @@ namespace BetterLegacy.Editor.Managers
                 // Text
                 // Require All
                 {
-                    var gameObject = GenerateUIPart("Require All", Tab.Custom, RTEditor.EditorProperty.ValueType.Bool);
+                    var gameObject = GenerateUIPart("Require All", Tab.Custom, ValueType.Bool);
 
                     var toggle = boolInput.Duplicate(gameObject.transform, "toggle").GetComponent<Toggle>();
                     toggle.transform.AsRT().anchoredPosition = new Vector2(725f, -21f);
@@ -978,7 +974,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // Visibility
                 {
-                    var gameObject = GenerateUIPart("Visibility", Tab.Custom, RTEditor.EditorProperty.ValueType.Bool);
+                    var gameObject = GenerateUIPart("Visibility", Tab.Custom, ValueType.Bool);
 
                     var visibilityScrollRect = Creator.NewUIObject("ScrollRect", gameObject.transform);
                     visibilityScrollRect.transform.localScale = Vector3.one;
@@ -1123,7 +1119,7 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
-        public GameObject GenerateUIPart(string name, Tab tab, RTEditor.EditorProperty.ValueType valueType, int index = -1)
+        public GameObject GenerateUIPart(string name, Tab tab, ValueType valueType, int index = -1)
         {
             var gameObject = Creator.NewUIObject(name, content);
             gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 42f);
@@ -1728,7 +1724,7 @@ namespace BetterLegacy.Editor.Managers
                     
                     switch (ui.ValueType)
                     {
-                        case RTEditor.EditorProperty.ValueType.Bool:
+                        case ValueType.Bool:
                             {
                                 var toggle = ui.GameObject.transform.Find("toggle").GetComponent<Toggle>();
                                 toggle.onValueChanged.ClearAll();
@@ -1741,7 +1737,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 break;
                             }
-                        case RTEditor.EditorProperty.ValueType.String:
+                        case ValueType.String:
                             {
                                 var inputField = ui.GameObject.transform.Find("input").GetComponent<InputField>();
                                 inputField.onValueChanged.ClearAll();
@@ -1758,7 +1754,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 break;
                             }
-                        case RTEditor.EditorProperty.ValueType.Int:
+                        case ValueType.Int:
                             {
                                 var inputFieldStorage = ui.GameObject.transform.Find("input").GetComponent<InputFieldStorage>();
                                 inputFieldStorage.inputField.onValueChanged.ClearAll();
@@ -1777,7 +1773,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 break;
                             }
-                        case RTEditor.EditorProperty.ValueType.Float:
+                        case ValueType.Float:
                             {
                                 var inputFieldStorage = ui.GameObject.transform.Find("input").GetComponent<InputFieldStorage>();
                                 inputFieldStorage.inputField.onValueChanged.ClearAll();
@@ -1796,7 +1792,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 break;
                             }
-                        case RTEditor.EditorProperty.ValueType.Vector2:
+                        case ValueType.Vector2:
                             {
                                 var inputXStorage = ui.GameObject.transform.Find("x").GetComponent<InputFieldStorage>();
                                 var inputYStorage = ui.GameObject.transform.Find("y").GetComponent<InputFieldStorage>();
@@ -1832,7 +1828,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 break;
                             }
-                        case RTEditor.EditorProperty.ValueType.Color:
+                        case ValueType.Color:
                             {
                                 var colors = ui.GameObject.transform.Find("colors");
 
@@ -1854,7 +1850,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 break;
                             }
-                        case RTEditor.EditorProperty.ValueType.Enum:
+                        case ValueType.Enum:
                             {
                                 var dropdown = ui.GameObject.transform.Find("dropdown").GetComponent<Dropdown>();
                                 dropdown.onValueChanged.ClearAll();
@@ -2420,7 +2416,7 @@ namespace BetterLegacy.Editor.Managers
             public string Name { get; set; }
             public GameObject GameObject { get; set; }
             public Tab Tab { get; set; }
-            public RTEditor.EditorProperty.ValueType ValueType { get; set; }
+            public ValueType ValueType { get; set; }
             public int Index { get; set; }
 
             public object Reference { get; set; }

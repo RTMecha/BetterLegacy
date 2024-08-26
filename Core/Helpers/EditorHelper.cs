@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Core.Data;
+﻿using BetterLegacy.Configs;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Editor.Managers;
 using System.Collections;
@@ -10,6 +11,19 @@ namespace BetterLegacy.Core.Helpers
 {
     public static class EditorHelper
     {
+        public static void SetComplexity(GameObject gameObject, Complexity complexity, bool onlySpecificComplexity = false)
+        {
+            if (complexity == Complexity.Simple || onlySpecificComplexity)
+            {
+                gameObject?.SetActive(complexity == EditorConfig.Instance.EditorComplexity.Value);
+                EditorConfig.UpdateEditorComplexity += () => { gameObject?.SetActive(complexity == EditorConfig.Instance.EditorComplexity.Value); };
+                return;
+            }
+
+            gameObject?.SetActive(complexity <= EditorConfig.Instance.EditorComplexity.Value);
+            EditorConfig.UpdateEditorComplexity += () => { gameObject?.SetActive(complexity <= EditorConfig.Instance.EditorComplexity.Value); };
+        }
+
         public static void AddEditorPopup(string _name, GameObject _go)
         {
             var editorPropertiesDialog = new EditorManager.EditorDialog
@@ -36,10 +50,10 @@ namespace BetterLegacy.Core.Helpers
             EditorManager.inst.EditorDialogsDictionary.Add(_name, editorPropertiesDialog);
         }
 
-        public static void AddEditorDropdown(string name, string key, string dropdown, Sprite sprite, UnityEngine.Events.UnityAction unityAction, int siblingIndex = -1)
+        public static GameObject AddEditorDropdown(string name, string key, string dropdown, Sprite sprite, UnityEngine.Events.UnityAction unityAction, int siblingIndex = -1)
         {
             if (!RTEditor.inst.titleBar.Find($"{dropdown}"))
-                return;
+                return null;
 
             var parent = RTEditor.inst.titleBar.Find($"{dropdown}/{dropdown} Dropdown");
 
@@ -60,6 +74,8 @@ namespace BetterLegacy.Core.Helpers
             EditorThemeManager.AddSelectable(propWinButton, ThemeGroup.Title_Bar_Dropdown, false);
             EditorThemeManager.AddGraphic(gameObject.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Title_Bar_Text);
             EditorThemeManager.AddGraphic(image, ThemeGroup.Title_Bar_Text);
+
+            return gameObject;
         }
 
         public static void LogAvailableInstances<T>()

@@ -1797,11 +1797,11 @@ namespace BetterLegacy.Editor.Managers
                     objectUIElements.Add("Shape Settings", tfv.Find("shapesettings"));
 
                     objectUIElements.Add("Depth", tfv.Find("depth"));
-                    objectUIElements.Add("Depth T", tfv.Find("spacer"));
+                    objectUIElements.Add("Depth T", tfv.Find("depth input"));
                     objectUIElements.Add("Depth Slider", tfv.Find("depth/depth").GetComponent<Slider>());
-                    objectUIElements.Add("Depth IF", tfv.Find("spacer/depth")?.GetComponent<InputField>());
-                    objectUIElements.Add("Depth <", tfv.Find("spacer/depth/<")?.GetComponent<Button>());
-                    objectUIElements.Add("Depth >", tfv.Find("spacer/depth/>")?.GetComponent<Button>());
+                    objectUIElements.Add("Depth IF", tfv.Find("depth input/depth")?.GetComponent<InputField>());
+                    objectUIElements.Add("Depth <", tfv.Find("depth input/depth/<")?.GetComponent<Button>());
+                    objectUIElements.Add("Depth >", tfv.Find("depth input/depth/>")?.GetComponent<Button>());
                     objectUIElements.Add("Render Type T", tfv.Find("rendertype"));
                     objectUIElements.Add("Render Type", tfv.Find("rendertype")?.GetComponent<Dropdown>());
 
@@ -1921,7 +1921,8 @@ namespace BetterLegacy.Editor.Managers
             ((Transform)ObjectUIElements["Depth"]).gameObject.SetActive(active);
             var depthTf = (Transform)ObjectUIElements["Depth T"];
             depthTf.parent.GetChild(depthTf.GetSiblingIndex() - 1).gameObject.SetActive(active);
-            depthTf.gameObject.SetActive(active);
+            depthTf.gameObject.SetActive(RTEditor.NotSimple && active);
+            ((Slider)ObjectUIElements["Depth Slider"]).transform.AsRT().sizeDelta = new Vector2(RTEditor.NotSimple ? 352f : 292f, 32f);
 
             var renderTypeTF = (Transform)ObjectUIElements["Render Type T"];
             renderTypeTF.parent.GetChild(renderTypeTF.GetSiblingIndex() - 1).gameObject.SetActive(active && RTEditor.ShowModdedUI);
@@ -2537,6 +2538,87 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="beatmapObject">The Beatmap Object to set.</param>
         public void RenderOrigin(BeatmapObject beatmapObject)
         {
+            // Reimplemented origin toggles for Simple Editor Complexity.
+            float[] originDefaultPositions = new float[] { 0f, -0.5f, 0f, 0.5f };
+            for (int i = 1; i <= 3; i++)
+            {
+                int index = i;
+                var toggle = ObjEditor.inst.ObjectView.transform.Find("origin/origin-x/" + i).GetComponent<Toggle>();
+                toggle.onValueChanged.ClearAll();
+                toggle.isOn = beatmapObject.origin.x == originDefaultPositions[i];
+                toggle.onValueChanged.AddListener(_val =>
+                {
+                    if (!_val)
+                        return;
+
+                    switch (index)
+                    {
+                        case 1:
+                            beatmapObject.origin.x = -0.5f;
+
+                            // Since origin has no affect on the timeline object, we will only need to update the physical object.
+                            if (UpdateObjects)
+                                Updater.UpdateObject(beatmapObject, "Origin");
+                            return;
+                        case 2:
+                            beatmapObject.origin.x = 0f;
+
+                            // Since origin has no affect on the timeline object, we will only need to update the physical object.
+                            if (UpdateObjects)
+                                Updater.UpdateObject(beatmapObject, "Origin");
+                            return;
+                        case 3:
+                            beatmapObject.origin.x = 0.5f;
+
+                            // Since origin has no affect on the timeline object, we will only need to update the physical object.
+                            if (UpdateObjects)
+                                Updater.UpdateObject(beatmapObject, "Origin");
+                            break;
+                        default:
+                            return;
+                    }
+                });
+            }
+            for (int i = 1; i <= 3; i++)
+            {
+                int index = i;
+                var toggle = ObjEditor.inst.ObjectView.transform.Find("origin/origin-y/" + i).GetComponent<Toggle>();
+                toggle.onValueChanged.ClearAll();
+                toggle.isOn = beatmapObject.origin.y == originDefaultPositions[i];
+                toggle.onValueChanged.AddListener(_val =>
+                {
+                    if (!_val)
+                        return;
+
+                    switch (index)
+                    {
+                        case 1:
+                            beatmapObject.origin.y = -0.5f;
+
+                            // Since origin has no affect on the timeline object, we will only need to update the physical object.
+                            if (UpdateObjects)
+                                Updater.UpdateObject(beatmapObject, "Origin");
+                            return;
+                        case 2:
+                            beatmapObject.origin.y = 0f;
+
+                            // Since origin has no affect on the timeline object, we will only need to update the physical object.
+                            if (UpdateObjects)
+                                Updater.UpdateObject(beatmapObject, "Origin");
+                            return;
+                        case 3:
+                            beatmapObject.origin.y = 0.5f;
+
+                            // Since origin has no affect on the timeline object, we will only need to update the physical object.
+                            if (UpdateObjects)
+                                Updater.UpdateObject(beatmapObject, "Origin");
+                            break;
+                        default:
+                            return;
+                    }
+                });
+            }
+
             var oxIF = (InputField)ObjectUIElements["Origin X IF"];
 
             if (!oxIF.gameObject.GetComponent<InputFieldSwapper>())
@@ -3068,6 +3150,8 @@ namespace BetterLegacy.Editor.Managers
             TriggerHelper.IncreaseDecreaseButtonsInt(depthText, -1);
             TriggerHelper.AddEventTriggers(depthText.gameObject, TriggerHelper.ScrollDeltaInt(depthText, 1));
 
+            TriggerHelper.IncreaseDecreaseButtonsInt(depthText, -1, t: ObjEditor.inst.ObjectView.transform.Find("depth"));
+
             var renderType = (Dropdown)ObjectUIElements["Render Type"];
             renderType.onValueChanged.ClearAll();
             renderType.value = beatmapObject.background ? 1 : 0;
@@ -3095,7 +3179,7 @@ namespace BetterLegacy.Editor.Managers
 
             if (inspector != null && !tfv.Find("inspect"))
             {
-                var label = tfv.ChildList().First(x => x.name == "label").gameObject.Duplicate(tfv);
+                var label = tfv.ChildList().First(x => x.name == "label").gameObject.Duplicate(tfv, "unity explorer label");
                 var index = tfv.Find("editor").GetSiblingIndex() + 1;
                 label.transform.SetSiblingIndex(index);
 
@@ -3134,21 +3218,26 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddGraphic(inspectGameObjectText, ThemeGroup.Function_2_Text);
             }
 
+            if (tfv.TryFind("unity explorer label", out Transform unityExplorerLabel))
+                unityExplorerLabel.gameObject.SetActive(RTEditor.ShowModdedUI);
+
             if (tfv.Find("inspect"))
             {
-                bool active = Updater.TryGetObject(beatmapObject, out LevelObject levelObject);
+                bool active = Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && RTEditor.ShowModdedUI;
                 tfv.Find("inspect").gameObject.SetActive(active);
-                var deleteButton = tfv.Find("inspect").GetComponent<Button>();
-                deleteButton.onClick.ClearAll();
+                var inspectButton = tfv.Find("inspect").GetComponent<Button>();
+                inspectButton.onClick.ClearAll();
                 if (active)
-                    deleteButton.onClick.AddListener(() => { ModCompatibility.Inspect(levelObject); });
+                    inspectButton.onClick.AddListener(() => { ModCompatibility.Inspect(levelObject); });
             }
 
             if (tfv.Find("inspectbeatmapobject"))
             {
-                var deleteButton = tfv.Find("inspectbeatmapobject").GetComponent<Button>();
-                deleteButton.onClick.ClearAll();
-                deleteButton.onClick.AddListener(() => { ModCompatibility.Inspect(beatmapObject); });
+                var inspectButton = tfv.Find("inspectbeatmapobject").GetComponent<Button>();
+                inspectButton.gameObject.SetActive(RTEditor.ShowModdedUI);
+                inspectButton.onClick.ClearAll();
+                if (RTEditor.ShowModdedUI)
+                    inspectButton.onClick.AddListener(() => { ModCompatibility.Inspect(beatmapObject); });
             }
         }
 

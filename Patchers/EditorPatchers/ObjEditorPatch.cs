@@ -84,21 +84,8 @@ namespace BetterLegacy.Patchers
             }
 
             var objectView = ObjEditor.inst.ObjectView.transform;
-            var dialog = ObjEditor.inst.ObjectView.transform.parent.parent.parent.parent.parent;
+            var dialog = ObjEditor.inst.ObjectView.transform.parent.parent.parent.parent.parent; // lol wtf
             var right = dialog.Find("data/right");
-
-            // Add spacer
-            var spacer = new GameObject("spacer");
-            spacer.transform.SetParent(objectView);
-            spacer.transform.SetSiblingIndex(15);
-
-            var spRT = spacer.AddComponent<RectTransform>();
-            var spHLG = spacer.AddComponent<HorizontalLayoutGroup>();
-
-            spRT.sizeDelta = new Vector2(30f, 30f);
-            spHLG.spacing = 8;
-
-            var singleInput = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/right/move/position/x");
 
             var todDropdown = objectView.Find("autokill/tod-dropdown");
             var hide = todDropdown.GetComponent<HideDropdownOptions>();
@@ -148,8 +135,17 @@ namespace BetterLegacy.Patchers
 
             var labelToCopy = objectView.ChildList().First(x => x.name == "label").gameObject;
 
+            var singleInput = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/right/move/position/x");
+
             // Depth
             {
+                var spacer = Creator.NewUIObject("depth input", objectView, 15);
+
+                var spHLG = spacer.AddComponent<HorizontalLayoutGroup>();
+
+                spacer.transform.AsRT().sizeDelta = new Vector2(30f, 30f);
+                spHLG.spacing = 8;
+
                 var depth = singleInput.Duplicate(spacer.transform, "depth");
                 depth.transform.localScale = Vector3.one;
                 depth.transform.Find("input").AsRT().sizeDelta = new Vector2(110f, 32f);
@@ -161,10 +157,16 @@ namespace BetterLegacy.Patchers
 
                 var sliderObject = objectView.Find("depth/depth").gameObject;
 
-                Destroy(objectView.Find("depth/<").gameObject);
-                Destroy(objectView.Find("depth/>").gameObject);
+                var depthLeft = objectView.Find("depth/<").gameObject;
+                var depthRight = objectView.Find("depth/>").gameObject;
+                depthLeft.SetActive(!RTEditor.NotSimple);
+                depthRight.SetActive(!RTEditor.NotSimple);
+                EditorConfig.UpdateEditorComplexity += () => { depthLeft?.SetActive(!RTEditor.NotSimple); };
+                EditorConfig.UpdateEditorComplexity += () => { depthRight?.SetActive(!RTEditor.NotSimple); };
+                EditorThemeManager.AddSelectable(depthLeft.GetComponent<Button>(), ThemeGroup.Function_2, false);
+                EditorThemeManager.AddSelectable(depthRight.GetComponent<Button>(), ThemeGroup.Function_2, false);
 
-                sliderObject.transform.AsRT().sizeDelta = new Vector2(352f, 32f);
+                sliderObject.transform.AsRT().sizeDelta = new Vector2(RTEditor.NotSimple ? 352f : 292f, 32f);
                 objectView.Find("depth").AsRT().sizeDelta = new Vector2(261f, 32f);
 
                 EditorThemeManager.AddInputField(depthif);
@@ -258,8 +260,30 @@ namespace BetterLegacy.Patchers
             {
                 var contentOriginTF = objectView.transform.Find("origin").transform;
 
-                contentOriginTF.Find("origin-x").gameObject.SetActive(false);
-                contentOriginTF.Find("origin-y").gameObject.SetActive(false);
+                contentOriginTF.Find("origin-x").gameObject.SetActive(!RTEditor.NotSimple);
+                contentOriginTF.Find("origin-y").gameObject.SetActive(!RTEditor.NotSimple);
+                EditorConfig.UpdateEditorComplexity += () => { contentOriginTF?.Find("origin-x")?.gameObject?.SetActive(!RTEditor.NotSimple); };
+                EditorConfig.UpdateEditorComplexity += () => { contentOriginTF?.Find("origin-y")?.gameObject?.SetActive(!RTEditor.NotSimple); };
+
+                try
+                {
+                    for (int i = 1; i <= 3; i++)
+                    {
+                        var origin = contentOriginTF.Find("origin-x/" + i);
+                        EditorThemeManager.AddToggle(origin.GetComponent<Toggle>(), ThemeGroup.Background_1);
+                        EditorThemeManager.AddGraphic(origin.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
+                    }
+                    for (int i = 1; i <= 3; i++)
+                    {
+                        var origin = contentOriginTF.Find("origin-y/" + i);
+                        EditorThemeManager.AddToggle(origin.GetComponent<Toggle>(), ThemeGroup.Background_1);
+                        EditorThemeManager.AddGraphic(origin.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
 
                 var xo = singleInput.Duplicate(contentOriginTF.transform, "x");
                 xo.transform.localScale = Vector3.one;
@@ -300,6 +324,11 @@ namespace BetterLegacy.Patchers
 
                 EditorThemeManager.AddSelectable(yLeftButton, ThemeGroup.Function_2, false);
                 EditorThemeManager.AddSelectable(yRightButton, ThemeGroup.Function_2, false);
+
+                xo.SetActive(RTEditor.NotSimple);
+                EditorConfig.UpdateEditorComplexity += () => { xo?.SetActive(RTEditor.NotSimple); };
+                yo.SetActive(RTEditor.NotSimple);
+                EditorConfig.UpdateEditorComplexity += () => { yo?.SetActive(RTEditor.NotSimple); };
             }
 
             // Opacity
@@ -528,9 +557,11 @@ namespace BetterLegacy.Patchers
             {
                 var id = objectView.GetChild(0).gameObject.Duplicate(objectView, "id", 0);
                 Destroy(id.transform.GetChild(1).gameObject);
+                id.gameObject.SetActive(RTEditor.NotSimple);
+                EditorConfig.UpdateEditorComplexity += () => { id?.SetActive(RTEditor.NotSimple); };
 
-                ((RectTransform)id.transform).sizeDelta = new Vector2(515, 32f);
-                ((RectTransform)id.transform.GetChild(0)).sizeDelta = new Vector2(226f, 32f);
+                id.transform.AsRT().sizeDelta = new Vector2(515, 32f);
+                id.transform.GetChild(0).AsRT().sizeDelta = new Vector2(226f, 32f);
 
                 var text = id.transform.GetChild(0).GetComponent<Text>();
                 text.fontSize = 18;
@@ -597,6 +628,9 @@ namespace BetterLegacy.Patchers
                         EditorThemeManager.AddGraphic(flipXButton.image, ThemeGroup.Function_1, true);
                         EditorThemeManager.AddGraphic(flipXText, ThemeGroup.Function_1_Text);
 
+                        flipX.SetActive(RTEditor.NotSimple);
+                        EditorConfig.UpdateEditorComplexity += () => { flipX?.SetActive(RTEditor.NotSimple); };
+
                         if (i != 2)
                         {
                             var flipY = button.Duplicate(parent, "flipy");
@@ -621,27 +655,36 @@ namespace BetterLegacy.Patchers
 
                             EditorThemeManager.AddGraphic(flipYButton.image, ThemeGroup.Function_1, true);
                             EditorThemeManager.AddGraphic(flipYText, ThemeGroup.Function_1_Text);
+
+                            flipY.SetActive(RTEditor.NotSimple);
+                            EditorConfig.UpdateEditorComplexity += () => { flipY?.SetActive(RTEditor.NotSimple); };
                         }
                     }
 
                     var edit = parent.Find("edit");
-                    DestroyImmediate(edit.Find("spacer").gameObject);
+                    edit.Find("spacer").gameObject.SetActive(!RTEditor.NotSimple);
+                    EditorConfig.UpdateEditorComplexity += () => { edit?.Find("spacer")?.gameObject?.SetActive(!RTEditor.NotSimple); };
 
                     var copy = button.Duplicate(edit, "copy", 5);
                     var copyText = copy.transform.GetChild(0).GetComponent<Text>();
                     copyText.text = "Copy";
-                    ((RectTransform)copy.transform).sizeDelta = new Vector2(70f, 32f);
+                    copy.transform.AsRT().sizeDelta = new Vector2(70f, 32f);
 
                     var paste = button.Duplicate(edit, "paste", 6);
                     var pasteText = paste.transform.GetChild(0).GetComponent<Text>();
                     pasteText.text = "Paste";
-                    ((RectTransform)paste.transform).sizeDelta = new Vector2(70f, 32f);
+                    paste.transform.AsRT().sizeDelta = new Vector2(70f, 32f);
 
                     EditorThemeManager.AddGraphic(copy.GetComponent<Image>(), ThemeGroup.Copy, true);
                     EditorThemeManager.AddGraphic(copyText, ThemeGroup.Copy_Text);
 
                     EditorThemeManager.AddGraphic(paste.GetComponent<Image>(), ThemeGroup.Paste, true);
                     EditorThemeManager.AddGraphic(pasteText, ThemeGroup.Paste_Text);
+
+                    copy.SetActive(RTEditor.NotSimple);
+                    EditorConfig.UpdateEditorComplexity += () => { copy?.SetActive(RTEditor.NotSimple); };
+                    paste.SetActive(RTEditor.NotSimple);
+                    EditorConfig.UpdateEditorComplexity += () => { paste?.SetActive(RTEditor.NotSimple); };
                 }
             }
 
@@ -1037,7 +1080,7 @@ namespace BetterLegacy.Patchers
                 var assignPrefabLabelText = assignPrefabLabel.transform.GetChild(0).GetComponent<Text>();
                 assignPrefabLabelText.text = "Assign Object to a Prefab";
                 EditorThemeManager.AddLightText(assignPrefabLabelText);
-                var assignPrefab = applyPrefab.gameObject.Duplicate(__instance.ObjectView.transform, "assign", siblingIndex + 2);
+                var assignPrefab = applyPrefab.gameObject.Duplicate(__instance.ObjectView.transform, "assign prefab", siblingIndex + 2);
                 var assignPrefabText = assignPrefab.transform.GetChild(0).GetComponent<Text>();
                 assignPrefabText.text = "Assign";
                 var assignPrefabButton = assignPrefab.GetComponent<Button>();
@@ -1053,7 +1096,7 @@ namespace BetterLegacy.Patchers
                     RTEditor.inst.prefabPickerEnabled = true;
                 });
 
-                var removePrefab = applyPrefab.gameObject.Duplicate(__instance.ObjectView.transform, "remove", siblingIndex + 3);
+                var removePrefab = applyPrefab.gameObject.Duplicate(__instance.ObjectView.transform, "remove prefab", siblingIndex + 3);
                 var removePrefabText = removePrefab.transform.GetChild(0).GetComponent<Text>();
                 removePrefabText.text = "Remove";
                 var removePrefabButton = removePrefab.GetComponent<Button>();
@@ -1071,6 +1114,13 @@ namespace BetterLegacy.Patchers
                     ObjectEditor.inst.RenderTimelineObject(ObjectEditor.inst.CurrentSelection);
                     ObjectEditor.inst.OpenDialog(beatmapObject);
                 });
+
+                assignPrefabLabel.SetActive(RTEditor.NotSimple);
+                assignPrefab.SetActive(RTEditor.NotSimple);
+                removePrefab.SetActive(RTEditor.NotSimple);
+                EditorConfig.UpdateEditorComplexity += () => { assignPrefabLabel?.SetActive(RTEditor.NotSimple); };
+                EditorConfig.UpdateEditorComplexity += () => { assignPrefab?.SetActive(RTEditor.NotSimple); };
+                EditorConfig.UpdateEditorComplexity += () => { removePrefab?.SetActive(RTEditor.NotSimple); };
             }
 
             // Markers

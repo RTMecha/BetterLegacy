@@ -305,6 +305,8 @@ namespace BetterLegacy.Editor.Managers
                 var positionY = position.transform.Find("y").gameObject.AddComponent<InputFieldSwapper>();
                 positionY.Init(position.transform.Find("y").GetComponent<InputField>());
                 EditorThemeManager.AddInputFields(position, true, "");
+                EditorHelper.SetComplexity(prefabSelectorLeft.Find($"pos label").gameObject, Complexity.Normal);
+                EditorHelper.SetComplexity(position, Complexity.Normal);
 
                 // Scale
                 labelGenerator2(prefabSelectorLeft, "sca", "Scale X Offset", "Scale Y Offset");
@@ -315,6 +317,8 @@ namespace BetterLegacy.Editor.Managers
                 var scaleY = scale.transform.Find("y").gameObject.AddComponent<InputFieldSwapper>();
                 scaleY.Init(scale.transform.Find("y").GetComponent<InputField>());
                 EditorThemeManager.AddInputFields(scale, true, "");
+                EditorHelper.SetComplexity(prefabSelectorLeft.Find($"sca label").gameObject, Complexity.Normal);
+                EditorHelper.SetComplexity(scale, Complexity.Normal);
 
                 // Rotation
                 labelGenerator(prefabSelectorLeft, "rot", "Rotation Offset");
@@ -324,6 +328,8 @@ namespace BetterLegacy.Editor.Managers
                 var rotX = rot.transform.Find("x").gameObject.AddComponent<InputFieldSwapper>();
                 rotX.Init(rot.transform.Find("x").GetComponent<InputField>());
                 EditorThemeManager.AddInputFields(rot, true, "");
+                EditorHelper.SetComplexity(prefabSelectorLeft.Find($"rot label").gameObject, Complexity.Normal);
+                EditorHelper.SetComplexity(rot, Complexity.Normal);
 
                 // Repeat
                 labelGenerator2(prefabSelectorLeft, "repeat", "Repeat Count", "Repeat Offset Time");
@@ -348,6 +354,14 @@ namespace BetterLegacy.Editor.Managers
 
                 // Name
                 labelGenerator(prefabSelectorRight, "name", "Name");
+                try
+                {
+                    EditorHelper.SetComplexity(prefabSelectorRight.Find("name label").gameObject, Complexity.Normal);
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogError($"Why name label {ex}");
+                }
 
                 var prefabName = RTEditor.inst.defaultIF.Duplicate(prefabSelectorRight, "name");
                 prefabName.transform.localScale = Vector3.one;
@@ -359,9 +373,25 @@ namespace BetterLegacy.Editor.Managers
                 prefabNameInputField.characterLimit = 0;
                 nameIF = prefabNameInputField;
                 EditorThemeManager.AddInputField(prefabNameInputField);
+                try
+                {
+                    EditorHelper.SetComplexity(prefabName, Complexity.Normal);
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogError($"Why name {ex}");
+                }
 
                 // Type
                 labelGenerator(prefabSelectorRight, "type", "Type");
+                try
+                {
+                    EditorHelper.SetComplexity(prefabSelectorRight.Find("type label").gameObject, Complexity.Normal);
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogError($"Why type label {ex}");
+                }
 
                 var type = EditorPrefabHolder.Instance.Function1Button.Duplicate(prefabSelectorRight, "type");
 
@@ -371,6 +401,14 @@ namespace BetterLegacy.Editor.Managers
 
                 typeSelector = typeButton;
                 type.gameObject.AddComponent<ContrastColors>().Init(typeButton.text, typeButton.button.image);
+                try
+                {
+                    EditorHelper.SetComplexity(type, Complexity.Normal);
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogError($"Why type {ex}");
+                }
 
                 var expandPrefabLabel = prefabSelectorLeft.GetChild(0).gameObject;
                 var expandPrefabLabelText = expandPrefabLabel.transform.GetChild(0).GetComponent<Text>();
@@ -401,6 +439,8 @@ namespace BetterLegacy.Editor.Managers
                 savePrefabButton.transition = Selectable.Transition.ColorTint;
                 EditorThemeManager.AddSelectable(savePrefabButton, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(savePrefabText, ThemeGroup.Function_2_Text);
+                EditorHelper.SetComplexity(label, Complexity.Normal);
+                EditorHelper.SetComplexity(savePrefab, Complexity.Normal);
 
                 Action<string, string, Action<Text, string>> countGenerator = (string name, string count, Action<Text, string> text) =>
                 {
@@ -409,6 +449,7 @@ namespace BetterLegacy.Editor.Managers
                     Destroy(rotLabel.transform.GetChild(1).gameObject);
 
                     text(rotLabel.transform.GetChild(0).GetComponent<Text>(), count);
+                    EditorHelper.SetComplexity(rotLabel, Complexity.Normal);
                 };
 
                 // Object Count
@@ -510,7 +551,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddInputField(descriptionInputField);
 
                 var selection = prefabEditorData.Find("selection");
-                selection.gameObject.SetActive(true);
+                EditorHelper.SetComplexity(selection.gameObject, Complexity.Advanced);
                 selection.AsRT().sizeDelta = new Vector2(749f, 300f);
                 var search = selection.Find("search-box/search").GetComponent<InputField>();
                 search.onValueChanged.ClearAll();
