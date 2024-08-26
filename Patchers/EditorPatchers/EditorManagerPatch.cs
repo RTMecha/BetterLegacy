@@ -393,16 +393,6 @@ namespace BetterLegacy.Patchers
 
             }
 
-            var multi = Instance.GetDialog("Multi Object Editor").Dialog;
-            if (multi.gameObject.activeSelf && ((RectTransform)multi.Find("data")).sizeDelta != new Vector2(810f, 730.11f))
-            {
-                ((RectTransform)multi.Find("data")).sizeDelta = new Vector2(810f, 730.11f);
-            }
-            if (multi.gameObject.activeSelf && ((RectTransform)multi.Find("data/left")).sizeDelta != new Vector2(355f, 730f))
-            {
-                ((RectTransform)multi.Find("data/left")).sizeDelta = new Vector2(355f, 730f);
-            }
-
             Instance.prevAudioTime = AudioManager.inst.CurrentAudioSource.time;
             return false;
         }
