@@ -116,7 +116,7 @@ namespace BetterLegacy.Configs
 
             ShowFX = Bind(this, "General", "Show Effects", true, "If disabled, effects like chroma, bloom, etc will be disabled.");
             ShakeAffectsController = Bind(this, "General", "Shake Affects Controller", true, "If the shake event affects the controller rumble.");
-            ShakeEventMode = BindEnum(this, "General", "Shake Mode", ShakeType.Original, "Original is for the original shake method, while Catalyst is for the new shake method.");
+            ShakeEventMode = BindEnum(this, "General", "Shake Mode", ShakeType.Catalyst, "Catalyst shake supports shake smoothness and speed. If you don't like how Catalyst shake looks, you can use the original shake type, just know these features will not be present with it.");
 
             #endregion
 
