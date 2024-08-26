@@ -195,6 +195,23 @@
         Catalyst
     }
 
+    public enum ValueType
+    {
+        Bool,
+        Int,
+        Float,
+        IntSlider,
+        FloatSlider,
+        String,
+        Vector2,
+        Vector2Int,
+        Vector3,
+        Vector3Int,
+        Enum,
+        Color,
+        Function
+    }
+
     /// <summary>
     /// Theem group used for applying Editor Themes.
     /// </summary>
