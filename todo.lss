@@ -18,6 +18,7 @@
 - Documentation & tooltips
 - Example customization
 - Fully implement Background Object tags
-- loadLevel modifiers custom end function
+- Custom end level function [end level screen, return to hub, return to previous, return to arcade, return to main menu]
+- loadLevel modifiers custom end function (same as above)
 - Possible multi object editor rework???
 - Find a way to implement Re-rendering waveform.
