@@ -5,7 +5,9 @@
 - Story mode
 - Example tutorials
 ### Minor feature
-- Animation editor
+- Animation editor (for player animations)
+- Player modifiers
+- Level modifiers (supports VG triggers)
 - Color picker rework
 - Timeline object index order
 - Unclamped timeline
