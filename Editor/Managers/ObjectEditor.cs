@@ -2072,7 +2072,6 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text, true);
         }
 
-        bool setTypes;
         /// <summary>
         /// Renders the ObjectType Dropdown.
         /// </summary>
@@ -2081,15 +2080,12 @@ namespace BetterLegacy.Editor.Managers
         {
             var objType = (Dropdown)ObjectUIElements["Object Type DD"];
 
-            // if the new ObjectTypes hasn't been set yet.
-            if (!setTypes)
-            {
-                setTypes = true;
-                objType.options = CoreHelper.StringToOptionData("Normal", "Helper", "Decoration", "Empty", "Solid");
-            }
-
-            objType.onValueChanged.RemoveAllListeners();
-            objType.value = (int)beatmapObject.objectType;
+            objType.options =
+                EditorConfig.Instance.EditorComplexity.Value == Complexity.Advanced ?
+                    CoreHelper.StringToOptionData("Normal", "Helper", "Decoration", "Empty", "Solid") :
+                    CoreHelper.StringToOptionData("Normal", "Helper", "Decoration", "Empty"); // don't show solid object type 
+            objType.onValueChanged.ClearAll();
+            objType.value = Mathf.Clamp((int)beatmapObject.objectType, 0, objType.options.Count - 1);
             objType.onValueChanged.AddListener(_val =>
             {
                 beatmapObject.objectType = (ObjectType)_val;

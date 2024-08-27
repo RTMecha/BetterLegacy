@@ -1804,8 +1804,7 @@ namespace BetterLegacy.Editor.Managers
                 var dialog = EventEditor.inst.dialogRight.GetChild(i);
 
                 var edit = dialog.Find("edit");
-                edit.Find("spacer").gameObject.SetActive(!RTEditor.NotSimple);
-                EditorConfig.UpdateEditorComplexity += () => { edit?.Find("spacer")?.gameObject?.SetActive(!RTEditor.NotSimple); };
+                EditorHelper.SetComplexity(edit.Find("spacer").gameObject, Complexity.Simple);
 
                 var copy = EditorPrefabHolder.Instance.Function1Button.Duplicate(edit, "copy", 5);
                 var copyStorage = copy.GetComponent<FunctionButtonStorage>();
@@ -1825,10 +1824,8 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddGraphic(pasteStorage.button.image, ThemeGroup.Paste, true);
                 EditorThemeManager.AddGraphic(pasteStorage.text, ThemeGroup.Paste_Text);
 
-                copy.SetActive(RTEditor.NotSimple);
-                EditorConfig.UpdateEditorComplexity += () => { copy?.SetActive(RTEditor.NotSimple); };
-                paste.SetActive(RTEditor.NotSimple);
-                EditorConfig.UpdateEditorComplexity += () => { paste?.SetActive(RTEditor.NotSimple); };
+                EditorHelper.SetComplexity(copy, Complexity.Normal);
+                EditorHelper.SetComplexity(paste, Complexity.Normal);
             }
         }
 

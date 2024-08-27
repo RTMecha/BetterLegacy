@@ -159,10 +159,8 @@ namespace BetterLegacy.Patchers
 
                 var depthLeft = objectView.Find("depth/<").gameObject;
                 var depthRight = objectView.Find("depth/>").gameObject;
-                depthLeft.SetActive(!RTEditor.NotSimple);
-                depthRight.SetActive(!RTEditor.NotSimple);
-                EditorConfig.UpdateEditorComplexity += () => { depthLeft?.SetActive(!RTEditor.NotSimple); };
-                EditorConfig.UpdateEditorComplexity += () => { depthRight?.SetActive(!RTEditor.NotSimple); };
+                EditorHelper.SetComplexity(depthLeft, Complexity.Simple);
+                EditorHelper.SetComplexity(depthRight, Complexity.Simple);
                 EditorThemeManager.AddSelectable(depthLeft.GetComponent<Button>(), ThemeGroup.Function_2, false);
                 EditorThemeManager.AddSelectable(depthRight.GetComponent<Button>(), ThemeGroup.Function_2, false);
 
@@ -260,10 +258,8 @@ namespace BetterLegacy.Patchers
             {
                 var contentOriginTF = objectView.transform.Find("origin").transform;
 
-                contentOriginTF.Find("origin-x").gameObject.SetActive(!RTEditor.NotSimple);
-                contentOriginTF.Find("origin-y").gameObject.SetActive(!RTEditor.NotSimple);
-                EditorConfig.UpdateEditorComplexity += () => { contentOriginTF?.Find("origin-x")?.gameObject?.SetActive(!RTEditor.NotSimple); };
-                EditorConfig.UpdateEditorComplexity += () => { contentOriginTF?.Find("origin-y")?.gameObject?.SetActive(!RTEditor.NotSimple); };
+                EditorHelper.SetComplexity(contentOriginTF.Find("origin-x").gameObject, Complexity.Simple);
+                EditorHelper.SetComplexity(contentOriginTF.Find("origin-y").gameObject, Complexity.Simple);
 
                 try
                 {
@@ -325,10 +321,8 @@ namespace BetterLegacy.Patchers
                 EditorThemeManager.AddSelectable(yLeftButton, ThemeGroup.Function_2, false);
                 EditorThemeManager.AddSelectable(yRightButton, ThemeGroup.Function_2, false);
 
-                xo.SetActive(RTEditor.NotSimple);
-                EditorConfig.UpdateEditorComplexity += () => { xo?.SetActive(RTEditor.NotSimple); };
-                yo.SetActive(RTEditor.NotSimple);
-                EditorConfig.UpdateEditorComplexity += () => { yo?.SetActive(RTEditor.NotSimple); };
+                EditorHelper.SetComplexity(xo, Complexity.Normal);
+                EditorHelper.SetComplexity(yo, Complexity.Normal);
             }
 
             // Opacity
@@ -557,8 +551,7 @@ namespace BetterLegacy.Patchers
             {
                 var id = objectView.GetChild(0).gameObject.Duplicate(objectView, "id", 0);
                 Destroy(id.transform.GetChild(1).gameObject);
-                id.gameObject.SetActive(RTEditor.NotSimple);
-                EditorConfig.UpdateEditorComplexity += () => { id?.SetActive(RTEditor.NotSimple); };
+                EditorHelper.SetComplexity(id, Complexity.Normal);
 
                 id.transform.AsRT().sizeDelta = new Vector2(515, 32f);
                 id.transform.GetChild(0).AsRT().sizeDelta = new Vector2(226f, 32f);
@@ -628,8 +621,7 @@ namespace BetterLegacy.Patchers
                         EditorThemeManager.AddGraphic(flipXButton.image, ThemeGroup.Function_1, true);
                         EditorThemeManager.AddGraphic(flipXText, ThemeGroup.Function_1_Text);
 
-                        flipX.SetActive(RTEditor.NotSimple);
-                        EditorConfig.UpdateEditorComplexity += () => { flipX?.SetActive(RTEditor.NotSimple); };
+                        EditorHelper.SetComplexity(flipX, Complexity.Normal);
 
                         if (i != 2)
                         {
@@ -656,14 +648,12 @@ namespace BetterLegacy.Patchers
                             EditorThemeManager.AddGraphic(flipYButton.image, ThemeGroup.Function_1, true);
                             EditorThemeManager.AddGraphic(flipYText, ThemeGroup.Function_1_Text);
 
-                            flipY.SetActive(RTEditor.NotSimple);
-                            EditorConfig.UpdateEditorComplexity += () => { flipY?.SetActive(RTEditor.NotSimple); };
+                            EditorHelper.SetComplexity(flipY, Complexity.Normal);
                         }
                     }
 
                     var edit = parent.Find("edit");
-                    edit.Find("spacer").gameObject.SetActive(!RTEditor.NotSimple);
-                    EditorConfig.UpdateEditorComplexity += () => { edit?.Find("spacer")?.gameObject?.SetActive(!RTEditor.NotSimple); };
+                    EditorHelper.SetComplexity(edit.Find("spacer").gameObject, Complexity.Simple);
 
                     var copy = button.Duplicate(edit, "copy", 5);
                     var copyText = copy.transform.GetChild(0).GetComponent<Text>();
@@ -681,10 +671,8 @@ namespace BetterLegacy.Patchers
                     EditorThemeManager.AddGraphic(paste.GetComponent<Image>(), ThemeGroup.Paste, true);
                     EditorThemeManager.AddGraphic(pasteText, ThemeGroup.Paste_Text);
 
-                    copy.SetActive(RTEditor.NotSimple);
-                    EditorConfig.UpdateEditorComplexity += () => { copy?.SetActive(RTEditor.NotSimple); };
-                    paste.SetActive(RTEditor.NotSimple);
-                    EditorConfig.UpdateEditorComplexity += () => { paste?.SetActive(RTEditor.NotSimple); };
+                    EditorHelper.SetComplexity(copy, Complexity.Normal);
+                    EditorHelper.SetComplexity(paste, Complexity.Normal);
                 }
             }
 
@@ -1115,12 +1103,9 @@ namespace BetterLegacy.Patchers
                     ObjectEditor.inst.OpenDialog(beatmapObject);
                 });
 
-                assignPrefabLabel.SetActive(RTEditor.NotSimple);
-                assignPrefab.SetActive(RTEditor.NotSimple);
-                removePrefab.SetActive(RTEditor.NotSimple);
-                EditorConfig.UpdateEditorComplexity += () => { assignPrefabLabel?.SetActive(RTEditor.NotSimple); };
-                EditorConfig.UpdateEditorComplexity += () => { assignPrefab?.SetActive(RTEditor.NotSimple); };
-                EditorConfig.UpdateEditorComplexity += () => { removePrefab?.SetActive(RTEditor.NotSimple); };
+                EditorHelper.SetComplexity(assignPrefabLabel, Complexity.Normal);
+                EditorHelper.SetComplexity(assignPrefab, Complexity.Normal);
+                EditorHelper.SetComplexity(removePrefab, Complexity.Normal);
             }
 
             // Markers

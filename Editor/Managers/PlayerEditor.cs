@@ -147,8 +147,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.ShowDialog("Player Editor");
                 StartCoroutine(RefreshEditor());
             });
-            playerEditor.gameObject.SetActive(RTEditor.ShowModdedUI);
-            EditorConfig.UpdateEditorComplexity += () => { playerEditor?.gameObject?.SetActive(RTEditor.ShowModdedUI); };
+            EditorHelper.SetComplexity(playerEditor, Complexity.Advanced);
 
             content = scrollView.transform.Find("Viewport/Content");
 

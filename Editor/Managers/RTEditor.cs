@@ -2294,7 +2294,7 @@ namespace BetterLegacy.Editor.Managers
 
             TooltipHelper.AssignTooltip(timeObj, timeObj.name, 3f);
 
-            timeObj.SetActive(NotSimple);
+            timeObj.SetActive(true);
             timeField.PlaceholderText().text = "Set time...";
             timeField.PlaceholderText().alignment = TextAnchor.MiddleCenter;
             timeField.PlaceholderText().fontSize = 16;
@@ -2309,7 +2309,7 @@ namespace BetterLegacy.Editor.Managers
 
             TriggerHelper.AddEventTriggers(timeObj, TriggerHelper.ScrollDelta(timeField));
 
-            EditorConfig.UpdateEditorComplexity += () => { timeField?.gameObject?.SetActive(NotSimple); };
+            EditorHelper.SetComplexity(timeField.gameObject, Complexity.Normal);
 
             var layersObj = timeObj.Duplicate(timelineBar.transform, "layers", 7);
             layersObj.SetActive(true);
@@ -2840,8 +2840,7 @@ namespace BetterLegacy.Editor.Managers
                     File.Copy(_val, destination, RTFile.FileExists(destination));
                 });
             }, 5);
-            addFileToLevelFolder.gameObject.SetActive(NotSimple);
-            EditorConfig.UpdateEditorComplexity += () => { addFileToLevelFolder?.gameObject?.SetActive(NotSimple); };
+            EditorHelper.SetComplexity(addFileToLevelFolder, Complexity.Normal);
 
             EditorHelper.AddEditorDropdown("Editor Preferences", "", "Edit", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_preferences-white.png"), () =>
             {
@@ -2891,8 +2890,7 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorManager.inst.DisplayNotification("Modifiers have been deactivated.", 1.4f, EditorManager.NotificationType.Success);
             });
-            deactivateModifiers.gameObject.SetActive(ShowModdedUI);
-            EditorConfig.UpdateEditorComplexity += () => { deactivateModifiers?.gameObject?.SetActive(ShowModdedUI); };
+            EditorHelper.SetComplexity(deactivateModifiers, Complexity.Advanced);
 
             var resetObjectVariables = EditorHelper.AddEditorDropdown("Reset object variables", "", "Edit", CloseSprite, () =>
             {
@@ -2915,8 +2913,7 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorManager.inst.DisplayNotification("Reset all integer variables to 0.", 1.4f, EditorManager.NotificationType.Success);
             });
-            resetObjectVariables.gameObject.SetActive(ShowModdedUI);
-            EditorConfig.UpdateEditorComplexity += () => { resetObjectVariables?.gameObject?.SetActive(ShowModdedUI); };
+            EditorHelper.SetComplexity(resetObjectVariables, Complexity.Advanced);
 
             EditorHelper.AddEditorDropdown("Get Example", "", "View", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_example-white.png"), ExampleManager.Init);
             
@@ -4298,13 +4295,8 @@ namespace BetterLegacy.Editor.Managers
                         ObjectEditor.inst.RenderTimelineObjectPosition(timelineObject);
                     }
                 }));
-                labels.SetActive(NotSimple);
-                buttons.SetActive(NotSimple);
-                EditorConfig.UpdateEditorComplexity += () =>
-                    {
-                        labels?.SetActive(NotSimple);
-                        buttons?.SetActive(NotSimple);
-                    };
+                EditorHelper.SetComplexity(labels, Complexity.Normal);
+                EditorHelper.SetComplexity(buttons, Complexity.Normal);
             }
 
             // Song Time Autokill
@@ -4660,15 +4652,9 @@ namespace BetterLegacy.Editor.Managers
                             levelObject.visualObject.GameObject.layer = beatmapObject.background ? 9 : 8;
                     }
                 }));
-                labels.SetActive(ShowModdedUI);
-                buttons1.SetActive(ShowModdedUI);
-                buttons2.SetActive(ShowModdedUI);
-                EditorConfig.UpdateEditorComplexity += () =>
-                {
-                    labels?.SetActive(ShowModdedUI);
-                    buttons1?.SetActive(ShowModdedUI);
-                    buttons2?.SetActive(ShowModdedUI);
-                };
+                EditorHelper.SetComplexity(labels, Complexity.Advanced);
+                EditorHelper.SetComplexity(buttons1, Complexity.Advanced);
+                EditorHelper.SetComplexity(buttons2, Complexity.Advanced);
             }
 
             // LDM
@@ -4700,15 +4686,9 @@ namespace BetterLegacy.Editor.Managers
                         Updater.UpdateObject(beatmapObject);
                     }
                 }));
-                labels.SetActive(ShowModdedUI);
-                buttons1.SetActive(ShowModdedUI);
-                buttons2.SetActive(ShowModdedUI);
-                EditorConfig.UpdateEditorComplexity += () =>
-                {
-                    labels?.SetActive(ShowModdedUI);
-                    buttons1?.SetActive(ShowModdedUI);
-                    buttons2?.SetActive(ShowModdedUI);
-                };
+                EditorHelper.SetComplexity(labels, Complexity.Advanced);
+                EditorHelper.SetComplexity(buttons1, Complexity.Advanced);
+                EditorHelper.SetComplexity(buttons2, Complexity.Advanced);
             }
 
             // Sync object selection
