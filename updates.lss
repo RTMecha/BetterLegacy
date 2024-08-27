@@ -1,3 +1,10 @@
+1.3.7 > [Aug 27, 2024]
+- Fixed timeline zoom not zooming in on the correct area. (I have no idea why it wouldn't before but ok)
+- Removed Editor Preferences as the Config Manager serves the same purpose, but better.
+- Implemented Editor Complexity.
+-- Render depth slider and origin offset returns to their original forms in the Simple Complexity setting.
+-- Any feature that only shows with the now removed "Show Modded Features in Editor" toggle now only show in Advanced complexity.
+-- Solid object type only now show in Advanced complexity.
 1.3.6 > [Aug 26, 2024]
 - Fixed multi object editor color slots being incorrect.
 - Multi object color editing now has Add and Sub buttons.
