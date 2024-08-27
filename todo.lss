@@ -12,7 +12,7 @@
 - Timeline object index order
 - Unclamped timeline
 - Text editor
-- New modifiers [prizeObject, setParent]
+- New modifiers [prizeObject, setParent, playerAction (PlayerActionSet) trigger]
 ### Misc
 - Make sure Window Event keyframes are consistent across monitors + add a fake Desktop thing like Rhythm Doctor
 - Follow Player keyframe needs to have a setting for not resetting
