@@ -10,10 +10,8 @@
 - Timeline object index order
 - Unclamped timeline
 - Text editor
-- Editor Complexity
-- New modifiers [prizeObject]
+- New modifiers [prizeObject, setParent]
 ### Misc
-- Catalyst Shake fix
 - Make sure Window Event keyframes are consistent across monitors + add a fake Desktop thing like Rhythm Doctor
 - Follow Player keyframe needs to have a setting for not resetting
 - Follow Player keyframe modifier
