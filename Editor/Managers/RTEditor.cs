@@ -986,9 +986,7 @@ namespace BetterLegacy.Editor.Managers
                 if (render)
                     EditorManager.inst.RenderTimeline();
 
-                if (AudioManager.inst.CurrentAudioSource.clip != null)
-                    EditorManager.inst.timelineScrollRectBar.value =
-                        position >= 0f ? position : (EditorConfig.Instance.UseMouseAsZoomPoint.Value ? timelineTime : AudioManager.inst.CurrentAudioSource.time) / AudioManager.inst.CurrentAudioSource.clip.length;
+                CoreHelper.StartCoroutine(SetTimelinePosition(timelineTime, position));
 
                 EditorManager.inst.zoomSlider.onValueChanged.ClearAll();
                 EditorManager.inst.zoomSlider.value = EditorManager.inst.zoomFloat;
@@ -1001,12 +999,21 @@ namespace BetterLegacy.Editor.Managers
                         $"ZoomBounds: {EditorManager.inst.zoomBounds}\n" +
                         $"Timeline Position: {EditorManager.inst.timelineScrollRectBar.value}\n" +
                         $"Timeline Time: {timelineTime}\n" +
-                        $"Timeline Position Calculation: {(AudioManager.inst.CurrentAudioSource.clip == null ? -1f : timelineTime / AudioManager.inst.CurrentAudioSource.clip.length)}");
+                        $"Timeline Position Calculation: {(AudioManager.inst.CurrentAudioSource.clip == null ? -1f : position >= 0f ? position : (EditorConfig.Instance.UseMouseAsZoomPoint.Value ? timelineTime : AudioManager.inst.CurrentAudioSource.time) / AudioManager.inst.CurrentAudioSource.clip.length)}");
             }
             catch (Exception ex)
             {
                 CoreHelper.LogError($"Had an error with setting zoom. Exception: {ex}");
             }
+        }
+
+        // i have no idea why the timeline scrollbar doesn't like to be set in the frame the zoom is also set in.
+        IEnumerator SetTimelinePosition(float timelineTime, float position = 0f)
+        {
+            yield return new WaitForFixedUpdate();
+            var pos = position >= 0f ? position : AudioManager.inst.CurrentAudioSource.clip == null ? 0f : (EditorConfig.Instance.UseMouseAsZoomPoint.Value ? timelineTime : AudioManager.inst.CurrentAudioSource.time) / AudioManager.inst.CurrentAudioSource.clip.length;
+            EditorManager.inst.timelineScrollRectBar.value = pos;
+            CoreHelper.Log($"Pos: {pos} - Scrollbar: {EditorManager.inst.timelineScrollRectBar.value}");
         }
 
         public float GetTimelineTime(float _offset = 0f)
@@ -2791,7 +2798,7 @@ namespace BetterLegacy.Editor.Managers
                                     levelVGJSON = null;
                                     levelVGJN = null;
                                     level = null;
-                                }));
+                                }, true));
                             }
                             else
                             {
@@ -4981,7 +4988,7 @@ namespace BetterLegacy.Editor.Managers
                 multiSyncGLG.spacing = new Vector2(8f, 8f);
                 multiSyncGLG.cellSize = new Vector2(124f, 32f);
 
-                var oldName = GameObject.Find("TimelineBar/GameObject/Time Input").Duplicate(multiSyncRT, "old name");
+                var oldName = defaultIF.Duplicate(multiSyncRT, "old name");
 
                 Destroy(oldName.GetComponent<EventTrigger>());
                 var oldNameIF = oldName.GetComponent<InputField>();
@@ -5001,7 +5008,7 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorThemeManager.AddInputField(oldNameIF);
 
-                var newName = GameObject.Find("TimelineBar/GameObject/Time Input").Duplicate(multiSyncRT, "new name");
+                var newName = defaultIF.Duplicate(multiSyncRT, "new name");
 
                 Destroy(newName.GetComponent<EventTrigger>());
                 var newNameIF = newName.GetComponent<InputField>();
@@ -5060,7 +5067,7 @@ namespace BetterLegacy.Editor.Managers
                 multiSyncGLG.spacing = new Vector2(8f, 8f);
                 multiSyncGLG.cellSize = new Vector2(124f, 32f);
 
-                var oldName = GameObject.Find("TimelineBar/GameObject/Time Input").Duplicate(multiSyncRT, "old tag");
+                var oldName = defaultIF.Duplicate(multiSyncRT, "old tag");
 
                 Destroy(oldName.GetComponent<EventTrigger>());
                 var oldNameIF = oldName.GetComponent<InputField>();
@@ -5080,7 +5087,7 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorThemeManager.AddInputField(oldNameIF);
 
-                var newName = GameObject.Find("TimelineBar/GameObject/Time Input").Duplicate(multiSyncRT, "new tag");
+                var newName = defaultIF.Duplicate(multiSyncRT, "new tag");
 
                 Destroy(newName.GetComponent<EventTrigger>());
                 var newNameIF = newName.GetComponent<InputField>();
@@ -5141,7 +5148,7 @@ namespace BetterLegacy.Editor.Managers
                 multiSyncGLG.spacing = new Vector2(8f, 8f);
                 multiSyncGLG.cellSize = new Vector2(124f, 32f);
 
-                var oldName = GameObject.Find("TimelineBar/GameObject/Time Input").Duplicate(multiSyncRT, "old text");
+                var oldName = defaultIF.Duplicate(multiSyncRT, "old text");
 
                 Destroy(oldName.GetComponent<EventTrigger>());
                 var oldNameIF = oldName.GetComponent<InputField>();
@@ -5161,7 +5168,7 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorThemeManager.AddInputField(oldNameIF);
 
-                var newName = GameObject.Find("TimelineBar/GameObject/Time Input").Duplicate(multiSyncRT, "new text");
+                var newName = defaultIF.Duplicate(multiSyncRT, "new text");
 
                 Destroy(newName.GetComponent<EventTrigger>());
                 var newNameIF = newName.GetComponent<InputField>();
@@ -5220,7 +5227,7 @@ namespace BetterLegacy.Editor.Managers
                 multiSyncGLG.spacing = new Vector2(8f, 8f);
                 multiSyncGLG.cellSize = new Vector2(124f, 32f);
 
-                var oldName = GameObject.Find("TimelineBar/GameObject/Time Input").Duplicate(multiSyncRT, "old modifier");
+                var oldName = defaultIF.Duplicate(multiSyncRT, "old modifier");
 
                 Destroy(oldName.GetComponent<EventTrigger>());
                 var oldNameIF = oldName.GetComponent<InputField>();
@@ -5240,7 +5247,7 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorThemeManager.AddInputField(oldNameIF);
 
-                var newName = GameObject.Find("TimelineBar/GameObject/Time Input").Duplicate(multiSyncRT, "new modifier");
+                var newName = defaultIF.Duplicate(multiSyncRT, "new modifier");
 
                 Destroy(newName.GetComponent<EventTrigger>());
                 var newNameIF = newName.GetComponent<InputField>();

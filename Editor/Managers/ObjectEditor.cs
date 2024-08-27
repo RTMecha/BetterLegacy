@@ -176,17 +176,7 @@ namespace BetterLegacy.Editor.Managers
                 RenderKeyframes(beatmapObject);
             }
 
-            float timelineCalc = ObjEditor.inst.objTimelineSlider.value;
-            if (AudioManager.inst.CurrentAudioSource.clip != null)
-            {
-                float time = -beatmapObject.StartTime + AudioManager.inst.CurrentAudioSource.time;
-                float objectLifeLength = beatmapObject.GetObjectLifeLength(ObjEditor.inst.ObjectLengthOffset);
-
-                timelineCalc = time / objectLifeLength;
-            }
-
-            timelinePosScrollbar.value =
-                position >= 0f ? position : timelineCalc;
+            CoreHelper.StartCoroutine(SetTimelinePosition(beatmapObject, position));
 
             ObjEditor.inst.zoomSlider.onValueChanged.ClearAll();
             ObjEditor.inst.zoomSlider.value = ObjEditor.inst.zoomFloat;
@@ -202,6 +192,22 @@ namespace BetterLegacy.Editor.Managers
                     $"ZoomVal: {ObjEditor.inst.zoomVal}\n" +
                     $"ZoomBounds: {ObjEditor.inst.zoomBounds}\n" +
                     $"Timeline Position: {timelinePosScrollbar.value}");
+        }
+
+        IEnumerator SetTimelinePosition(BeatmapObject beatmapObject, float position = 0f)
+        {
+            yield return new WaitForFixedUpdate();
+            float timelineCalc = ObjEditor.inst.objTimelineSlider.value;
+            if (AudioManager.inst.CurrentAudioSource.clip != null)
+            {
+                float time = -beatmapObject.StartTime + AudioManager.inst.CurrentAudioSource.time;
+                float objectLifeLength = beatmapObject.GetObjectLifeLength(ObjEditor.inst.ObjectLengthOffset);
+
+                timelineCalc = time / objectLifeLength;
+            }
+
+            timelinePosScrollbar.value =
+                position >= 0f ? position : timelineCalc;
         }
 
         public static float TimeTimelineCalc(float _time) => _time * 14f * ObjEditor.inst.zoomVal + 5f;
