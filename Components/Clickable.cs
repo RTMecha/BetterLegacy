@@ -5,8 +5,14 @@ using UnityEngine.EventSystems;
 
 namespace BetterLegacy.Components
 {
+    /// <summary>
+    /// Interaction component.
+    /// </summary>
     public class Clickable : MonoBehaviour, IPointerClickHandler, IPointerDownHandler, IPointerEnterHandler, IPointerExitHandler, IPointerUpHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
+        /// <summary>
+        /// Action invoked when object becomes enabled or disabled. Passed boolean value is if the object is true when the object is enabled, otherwise false.
+        /// </summary>
         public Action<bool> onEnable;
 
         public Action<PointerEventData> onClick;

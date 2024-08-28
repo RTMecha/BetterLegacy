@@ -11,7 +11,13 @@ namespace BetterLegacy.Components.Editor
     /// </summary>
     public class RTScaler : MonoBehaviour
     {
+        /// <summary>
+        /// The offset position of the scaler.
+        /// </summary>
         public static float ScalerOffset { get; set; } = 6f;
+        /// <summary>
+        /// The total scale of the scaler.
+        /// </summary>
         public static float ScalerScale { get; set; } = 1.6f;
 
         bool dragging;

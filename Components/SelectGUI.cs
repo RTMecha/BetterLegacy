@@ -4,6 +4,9 @@ using UnityEngine.EventSystems;
 
 namespace BetterLegacy.Components
 {
+    /// <summary>
+    /// Component for dragging UI elements around.
+    /// </summary>
     public class SelectGUI : MonoBehaviour, IEventSystemHandler, IPointerDownHandler, IPointerUpHandler
     {
         public bool dragging;

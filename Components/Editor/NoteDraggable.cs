@@ -6,6 +6,9 @@ using UnityEngine.EventSystems;
 
 namespace BetterLegacy.Components.Editor
 {
+    /// <summary>
+    /// Allows a note to be draggable in different ways, including position, size and scale.
+    /// </summary>
     class NoteDraggable : MonoBehaviour, IEventSystemHandler, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler
     {
         public enum DragPart
@@ -17,8 +20,14 @@ namespace BetterLegacy.Components.Editor
             Down
         }
 
+        /// <summary>
+        /// Which part of the note is being dragged.
+        /// </summary>
         public DragPart part = DragPart.Base;
 
+        /// <summary>
+        /// The note reference.
+        /// </summary>
         public ProjectPlannerManager.NoteItem note;
 
         bool dragging;

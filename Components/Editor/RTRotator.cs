@@ -11,6 +11,9 @@ namespace BetterLegacy.Components.Editor
     /// </summary>
     public class RTRotator : MonoBehaviour
     {
+        /// <summary>
+        /// How large the ring radius should be.
+        /// </summary>
         public static float RotatorRadius { get; set; } = 22f;
 
         EventKeyframe selectedKeyframe;
@@ -19,10 +22,7 @@ namespace BetterLegacy.Components.Editor
         float dragKeyframeValues;
         bool setKeyframeValues;
 
-        void Update()
-        {
-            transform.localScale = new Vector3(RotatorRadius, RotatorRadius, 1f);
-        }
+        void Update() => transform.localScale = new Vector3(RotatorRadius, RotatorRadius, 1f);
 
         void FixedUpdate()
         {

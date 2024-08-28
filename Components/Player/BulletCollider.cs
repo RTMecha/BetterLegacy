@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace BetterLegacy.Components.Player
 {
+    /// <summary>
+    /// Detects when the bullet hits something and when it does, kill the bullet.
+    /// </summary>
     public class BulletCollider : MonoBehaviour
     {
         public RTPlayer.PlayerObject playerObject;
@@ -14,14 +17,26 @@ namespace BetterLegacy.Components.Player
 
         void OnTriggerEnter2D(Collider2D other)
         {
-            if (other.transform.parent.parent.name != player.name && kill)
-            {
-                tweener.Kill();
+            if (other.transform.parent.parent.name == player.name || !kill)
+                return;
 
-                player.boosts.Remove(playerObject);
-                playerObject = null;
-                Destroy(transform.parent.gameObject);
-            }
+            tweener.Kill();
+
+            player.boosts.Remove(playerObject);
+            playerObject = null;
+            Destroy(transform.parent.gameObject);
+        }
+
+        void OnCollisionEnter2D()
+        {
+            if (!kill)
+                return;
+
+            tweener.Kill();
+
+            player.boosts.Remove(playerObject);
+            playerObject = null;
+            Destroy(transform.parent.gameObject);
         }
     }
 }

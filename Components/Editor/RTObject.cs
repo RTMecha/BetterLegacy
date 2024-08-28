@@ -15,28 +15,64 @@ using UnityEngine.EventSystems;
 namespace BetterLegacy.Components.Editor
 {
     /// <summary>
-    /// Component for selecting and dragging objects. Still needs a ton of work though.
+    /// Component for selecting and dragging objects.
     /// </summary>
     public class RTObject : MonoBehaviour
     {
+        /// <summary>
+        /// If user is only looking at one object, then allow drag.
+        /// </summary>
         public bool CanDrag => ObjectEditor.inst.SelectedObjectCount < 2;
+
+        /// <summary>
+        /// If dragging is enabled via <see cref="Configs.EditorConfig.ObjectDraggerEnabled"/>.
+        /// </summary>
         public static bool Enabled { get; set; }
+
+        /// <summary>
+        /// If dragging prioritizes creating keyframes.
+        /// </summary>
         public static bool CreateKeyframe { get; set; }
 
+        /// <summary>
+        /// If a tooltip should display when the mouse is hovered over the object.
+        /// </summary>
         public static bool TipEnabled { get; set; }
 
+        /// <summary>
+        /// The BeatmapObject reference.
+        /// </summary>
         public BeatmapObject beatmapObject;
 
         Renderer renderer;
 
         #region Highlighting
 
-        public bool hovered;
+        bool hovered;
 
+        /// <summary>
+        /// Color to add when object is hovered if <see cref="HighlightObjects"/> is true.
+        /// </summary>
         public static Color HighlightColor { get; set; }
+
+        /// <summary>
+        /// Color to add when object is hovered if <see cref="HighlightObjects"/> is true AND when shift is being held.
+        /// </summary>
         public static Color HighlightDoubleColor { get; set; }
+
+        /// <summary>
+        /// If object should highlight when hovered.
+        /// </summary>
         public static bool HighlightObjects { get; set; }
+
+        /// <summary>
+        /// Amount of opacity to use when the object is not on the current editor layer.
+        /// </summary>
         public static float LayerOpacity { get; set; }
+
+        /// <summary>
+        /// If the object should set <see cref="LayerOpacity"/> as the current objects' opacity if the object is not on the current editor layer.
+        /// </summary>
         public static bool ShowObjectsOnlyOnLayer { get; set; }
 
         #endregion
@@ -52,6 +88,9 @@ namespace BetterLegacy.Components.Editor
         Vector2 dragOffset;
         Axis firstDirection = Axis.Static;
 
+        /// <summary>
+        /// The axis dragging starts from.
+        /// </summary>
         public enum Axis
         {
             Static,
@@ -70,6 +109,10 @@ namespace BetterLegacy.Components.Editor
                 this.renderer = renderer;
         }
 
+        /// <summary>
+        /// Assigns a BeatmapObjects' RTObject references.
+        /// </summary>
+        /// <param name="beatmapObject"></param>
         public void SetObject(BeatmapObject beatmapObject)
         {
             beatmapObject.RTObject = this;
@@ -90,6 +133,8 @@ namespace BetterLegacy.Components.Editor
                 return;
 
             startDragTime = Time.time;
+
+            // select object if picker is not currently active.
             if (!RTEditor.inst.parentPickerEnabled && !RTEditor.inst.prefabPickerEnabled)
             {
                 TimelineObject timelineObject = ObjectEditor.inst.GetTimelineObject(beatmapObject);
@@ -108,6 +153,7 @@ namespace BetterLegacy.Components.Editor
             var currentSelection = ObjectEditor.inst.CurrentSelection;
             var selectedObjects = ObjectEditor.inst.SelectedObjects;
 
+            // prefab assign picker
             if (RTEditor.inst.prefabPickerEnabled)
             {
                 if (string.IsNullOrEmpty(beatmapObject.prefabInstanceID))
@@ -144,9 +190,10 @@ namespace BetterLegacy.Components.Editor
                 return;
             }
 
-            if (!RTEditor.inst.parentPickerEnabled)
+            if (beatmapObject.fromPrefab || !RTEditor.inst.parentPickerEnabled)
                 return;
 
+            // parent picker multiple
             if (RTEditor.inst.selectingMultiple)
             {
                 bool success = false;
@@ -172,6 +219,7 @@ namespace BetterLegacy.Components.Editor
                 return;
             }
 
+            // assign parent to prefab
             if (currentSelection.IsPrefabObject)
             {
                 var prefabObject = currentSelection.GetData<PrefabObject>();
@@ -183,6 +231,7 @@ namespace BetterLegacy.Components.Editor
                 return;
             }
 
+            // set single parent
             var tryParent = SetParent(currentSelection, beatmapObject);
 
             if (!tryParent)
@@ -191,6 +240,12 @@ namespace BetterLegacy.Components.Editor
                 RTEditor.inst.parentPickerEnabled = false;
         }
 
+        /// <summary>
+        /// Tries to set an objects' parent. If the parent the user is trying to assign an object to a child of the object, then don't set parent.
+        /// </summary>
+        /// <param name="currentSelection"></param>
+        /// <param name="beatmapObjectToParentTo"></param>
+        /// <returns></returns>
         public static bool SetParent(TimelineObject currentSelection, BeatmapObject beatmapObjectToParentTo)
         {
             var dictionary = new Dictionary<string, bool>();
@@ -339,6 +394,13 @@ namespace BetterLegacy.Components.Editor
         float startDragTime;
         float dragTime;
 
+        /// <summary>
+        /// Sets the current keyframe to be dragging.
+        /// </summary>
+        /// <param name="type">Type to drag.</param>
+        /// <param name="beatmapObject">Beatmap Object to affect.</param>
+        /// <param name="prefabObject">Prefab Object to affect.</param>
+        /// <returns></returns>
         public static EventKeyframe SetCurrentKeyframe(int type, BeatmapObject beatmapObject = null, PrefabObject prefabObject = null)
         {
             if (prefabObject != null)
@@ -495,63 +557,33 @@ namespace BetterLegacy.Components.Editor
             TipEnabled = true;
 
             if (tooltipLanguages.Count == 0)
-            {
                 tooltipLanguages.Add(TooltipHelper.NewTooltip(beatmapObject.name + " [ " + beatmapObject.StartTime + " ]", "", new List<string>()));
-            }
 
-            string parent = "";
-            if (!string.IsNullOrEmpty(beatmapObject.parent))
-            {
-                parent = "<br>P: " + beatmapObject.parent + " (" + beatmapObject.GetParentType() + ")";
-            }
-            else
-            {
-                parent = "<br>P: No Parent" + " (" + beatmapObject.GetParentType() + ")";
-            }
+            string parent = !string.IsNullOrEmpty(beatmapObject.parent) ?
+                 "<br>P: " + beatmapObject.parent + " (" + beatmapObject.GetParentType() + ")" :
+                 "<br>P: No Parent" + " (" + beatmapObject.GetParentType() + ")";
 
-            string text = "";
-            if (beatmapObject.shape != 4 || beatmapObject.shape != 6)
+            string text = beatmapObject.shape switch
             {
-                text = "<br>S: " + CoreHelper.GetShape(beatmapObject.shape, beatmapObject.shapeOption).Replace("eight_circle", "eighth_circle").Replace("eigth_circle_outline", "eighth_circle_outline");
+                4 => "<br>S: Text",
+                6 => "<br>S: Image",
+                _ => "<br>S: " + CoreHelper.GetShape(beatmapObject.shape, beatmapObject.shapeOption).Replace("eight_circle", "eighth_circle").Replace("eigth_circle_outline", "eighth_circle_outline"),
+            };
+            if (!string.IsNullOrEmpty(beatmapObject.text))
+                text += "<br>T: " + beatmapObject.text;
 
-                if (!string.IsNullOrEmpty(beatmapObject.text))
-                {
-                    text += "<br>T: " + beatmapObject.text;
-                }
-            }
-            if (beatmapObject.shape == 4)
-            {
-                text = "<br>S: Text" +
-                    "<br>T: " + beatmapObject.text;
-            }
-            if (beatmapObject.shape == 6)
-            {
-                text = "<br>S: Image" +
-                    "<br>T: " + beatmapObject.text;
-            }
-
-            string ptr = "";
-            if (beatmapObject.fromPrefab && !string.IsNullOrEmpty(beatmapObject.prefabID) && !string.IsNullOrEmpty(beatmapObject.prefabInstanceID))
-            {
-                ptr = "<br>PID: " + beatmapObject.prefabID + " | " + beatmapObject.prefabInstanceID;
-            }
-            else
-            {
-                ptr = "<br>Not from prefab";
-            }
+            string ptr =
+                beatmapObject.fromPrefab && !string.IsNullOrEmpty(beatmapObject.prefabID) && !string.IsNullOrEmpty(beatmapObject.prefabInstanceID) ?
+                "<br>PID: " + beatmapObject.prefabID + " | " + beatmapObject.prefabInstanceID : "<br>Not from prefab";
 
             Color col = LSColors.transparent;
             if (renderer.material.HasProperty("_Color"))
-            {
                 col = renderer.material.color;
-            }
 
             if (tooltipLanguages[0].desc != "N/ST: " + beatmapObject.name + " [ " + beatmapObject.StartTime + " ]")
-            {
                 tooltipLanguages[0].desc = "N/ST: " + beatmapObject.name + " [ " + beatmapObject.StartTime + " ]";
-            }
 
-            if (tooltipLanguages[0].hint != "ID: {" + beatmapObject.id + "}" +
+            var result = "ID: {" + beatmapObject.id + "}" +
                 parent +
                 "<br>O: {X: " + beatmapObject.origin.x + ", Y: " + beatmapObject.origin.y + "}" +
                 text +
@@ -561,20 +593,9 @@ namespace BetterLegacy.Components.Editor
                 "<br>SCA: {X: " + transform.localScale.x + ", Y: " + transform.localScale.y + "}" +
                 "<br>ROT: " + transform.eulerAngles.z +
                 "<br>COL: " + CoreHelper.ColorToHex(col) +
-                ptr)
-            {
-                tooltipLanguages[0].hint = "ID: {" + beatmapObject.id + "}" +
-                    parent +
-                    "<br>O: {X: " + beatmapObject.origin.x + ", Y: " + beatmapObject.origin.y + "}" +
-                    text +
-                    "<br>D: " + beatmapObject.Depth +
-                    "<br>ED: {L: " + beatmapObject.editorData.layer + ", B: " + beatmapObject.editorData.Bin + "}" +
-                    "<br>POS: {X: " + transform.position.x + ", Y: " + transform.position.y + ", Z: " + transform.position.z + "}" +
-                    "<br>SCA: {X: " + transform.localScale.x + ", Y: " + transform.localScale.y + "}" +
-                    "<br>ROT: " + transform.eulerAngles.z +
-                    "<br>COL: " + CoreHelper.ColorToHex(col) +
-                    ptr;
-            }
+                ptr;
+            if (tooltipLanguages[0].hint != result)
+                tooltipLanguages[0].hint = result;
         }
 
         public List<HoverTooltip.Tooltip> tooltipLanguages = new List<HoverTooltip.Tooltip>();

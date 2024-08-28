@@ -41,30 +41,74 @@ namespace BetterLegacy.Components.Player
         //player-complete/trail/2
         //player-complete/trail/3
 
+        /// <summary>
+        /// If player does not take damage in editor.
+        /// </summary>
+        /// 
         public static bool ZenModeInEditor { get; set; }
+        /// <summary>
+        /// If zen mode in editor should also consider solid.
+        /// </summary>
         public static bool ZenEditorIncludesSolid { get; set; }
+
+        /// <summary>
+        /// If multiplayer nametags should display when there are more than one player on-screen.
+        /// </summary>
         public static bool ShowNameTags { get; set; }
 
+        /// <summary>
+        /// If the boost sound should play when the player boosts.
+        /// </summary>
         public static bool PlayBoostSound { get; set; }
+
+        /// <summary>
+        /// If the boost recover sound should play when the player can boost again.
+        /// </summary>
         public static bool PlayBoostRecoverSound { get; set; }
 
+        /// <summary>
+        /// If the shoot sound should play when the player shoots.
+        /// </summary>
         public static bool PlayShootSound { get; set; }
 
+        /// <summary>
+        /// How the player tail should update.
+        /// </summary>
         public static TailUpdateMode UpdateMode { get; set; } = TailUpdateMode.FixedUpdate;
 
+        /// <summary>
+        /// If custom assets should be loaded from a global source.
+        /// </summary>
         public static bool AssetsGlobal { get; set; }
 
-        public static bool EvaluateCode { get; set; }
-
+        /// <summary>
+        /// If players can take damage from another players' bullet.
+        /// </summary>
         public static bool AllowPlayersToTakeBulletDamage { get; set; }
 
+        /// <summary>
+        /// If players are allowed out of bounds.
+        /// </summary>
         public static bool OutOfBounds { get; set; } = false;
 
+        /// <summary>
+        /// If all players' boosts should be locked.
+        /// </summary>
         public static bool LockBoost { get; set; } = false;
+
+        /// <summary>
+        /// How fast all players are.
+        /// </summary>
         public static float SpeedMultiplier { get; set; } = 1f;
 
+        /// <summary>
+        /// The current force to apply to players.
+        /// </summary>
         public static Vector2 PlayerForce { get; set; }
 
+        /// <summary>
+        /// Updates player properties based on <see cref="LevelData"/>.
+        /// </summary>
         public static void SetGameDataProperties()
         {
             try
@@ -72,7 +116,7 @@ namespace BetterLegacy.Components.Player
                 var levelData = GameData.Current.LevelBeatmapData.ModLevelData;
                 LockBoost = levelData.lockBoost;
                 SpeedMultiplier = levelData.speedMultiplier;
-                JumpMode = levelData.gameMode == 1;
+                GameMode = (GameMode)levelData.gameMode;
                 JumpGravity = levelData.jumpGravity;
                 JumpIntensity = levelData.jumpIntensity;
                 MaxJumpCount = levelData.maxJumpCount;
@@ -95,14 +139,34 @@ namespace BetterLegacy.Components.Player
 
         #region Base
 
+        /// <summary>
+        /// The current gamemode the player is in.
+        /// </summary>
+        public static GameMode GameMode { get; set; }
+
+        /// <summary>
+        /// Base player actions.
+        /// </summary>
         public MyGameActions Actions { get; set; }
 
+        /// <summary>
+        /// Secondary player actions.
+        /// </summary>
         public FaceController faceController;
 
+        /// <summary>
+        /// Current index of the player in the players list.
+        /// </summary>
         public int playerIndex;
 
+        /// <summary>
+        /// How much health the player has when they spawn.
+        /// </summary>
         public int initialHealthCount;
 
+        /// <summary>
+        /// Coroutine generated from when the player boosts.
+        /// </summary>
         public Coroutine boostCoroutine;
 
         public GameObject canvas;
@@ -120,8 +184,14 @@ namespace BetterLegacy.Components.Player
         public ParticleSystem death;
         public ParticleSystem spawn;
 
+        /// <summary>
+        /// Custom player data reference.
+        /// </summary>
         public CustomPlayer CustomPlayer { get; set; }
-
+        
+        /// <summary>
+        /// Player model reference.
+        /// </summary>
         public PlayerModel PlayerModel { get; set; }
 
         public Animator anim;
@@ -148,17 +218,47 @@ namespace BetterLegacy.Components.Player
 
         #region Jumping
 
+        /// <summary>
+        /// The total gravity all players have when in platformer mode.
+        /// </summary>
         public static float JumpGravity { get; set; } = 1f;
+        /// <summary>
+        /// The total amount of force all players have when they jump using platformer mode.
+        /// </summary>
         public static float JumpIntensity { get; set; } = 1f;
-        public static bool JumpMode { get; set; }
+        /// <summary>
+        /// If players are in platformer mode.
+        /// </summary>
+        public static bool JumpMode => GameMode == GameMode.Platformer;
+        /// <summary>
+        /// Max amount of jumps the players have until they can no longer jump.
+        /// </summary>
         public static int MaxJumpCount { get; set; } = 10;
+        /// <summary>
+        /// Max amount of boosts the players have after their jumps run out.
+        /// </summary>
         public static int MaxJumpBoostCount { get; set; } = 1;
 
+        /// <summary>
+        /// Local jump gravity.
+        /// </summary>
         public float jumpGravity = 10f;
+        /// <summary>
+        /// Local jump intensity.
+        /// </summary>
         public float jumpIntensity = 40f;
+        /// <summary>
+        /// Player bounciness.
+        /// </summary>
         public float bounciness = 0.1f;
-        public int jumpCount = 1; // -1 should be treated as infinity
-        public int jumpBoostCount = 1; // -1 should be treated as infinity
+        /// <summary>
+        /// Local max amount of times the player can jump until they can no longer do so. -1 is treated as infinity.
+        /// </summary>
+        public int jumpCount = 1;
+        /// <summary>
+        /// Local max amount of times the player can boost after their jumps run out until they can no longer do so. -1 is treated as infinity.
+        /// </summary>
+        public int jumpBoostCount = 1;
         int currentJumpCount = 0;
         int currentJumpBoostCount = 0;
         public float jumpBoostMultiplier = 0.5f; // to make sure the jump goes about the same distance as left and right boost
@@ -182,9 +282,18 @@ namespace BetterLegacy.Components.Player
         public float idleSpeed = 20f;
         public float boostSpeed = 85f;
 
+        /// <summary>
+        /// If negative zoom should be included with calculating player bounds.
+        /// </summary>
         public bool includeNegativeZoom = false;
-        public MovementMode movementMode = 0;
+        /// <summary>
+        /// The kind of movement used for the player. Will move mouse mode to GameModes.
+        /// </summary>
+        public MovementMode movementMode = MovementMode.KeyboardController;
 
+        /// <summary>
+        /// Current rotation method assigned by the player model.
+        /// </summary>
         public RotateMode rotateMode = RotateMode.RotateToDirection;
 
         public Vector2 lastMousePos;
@@ -198,17 +307,44 @@ namespace BetterLegacy.Components.Player
 
         #region Enums
 
+        /// <summary>
+        /// How the player should rotate.
+        /// </summary>
         public enum RotateMode
         {
+            /// <summary>
+            /// The regular method of rotation. Rotates the player head to the direction the player is moving in.
+            /// </summary>
             RotateToDirection,
+            /// <summary>
+            /// Does not rotate.
+            /// </summary>
             None,
+            /// <summary>
+            /// Mirrors  the player model depending on whether they're moving left or right.
+            /// </summary>
             FlipX,
+            /// <summary>
+            /// Flips the player model depending on whether they're moving up or down.
+            /// </summary>
             FlipY,
+            /// <summary>
+            /// Rotates the player like <see cref="RotateMode.RotateToDirection"/>, except rotation is reset when the player is not moving.
+            /// </summary>
             RotateReset,
+            /// <summary>
+            /// Rotates the player like <see cref="RotateToDirection"/> but also mirrors them like <see cref="FlipX"/>.
+            /// </summary>
             RotateFlipX,
+            /// <summary>
+            /// Rotates the player like <see cref="RotateToDirection"/> but also flips them like <see cref="FlipY"/>.
+            /// </summary>
             RotateFlipY
         }
 
+        /// <summary>
+        /// Unused. Will move mouse to <see cref="GameMode"/>.
+        /// </summary>
         public enum MovementMode
         {
             KeyboardController,
@@ -236,7 +372,7 @@ namespace BetterLegacy.Components.Player
 
         public bool CanTakeDamage
         {
-            get => (EditorManager.inst || !PlayerManager.IsZenMode) && !CoreHelper.Paused && (EditorManager.inst == null || !EditorManager.inst.isEditing) && canTakeDamage;
+            get => (EditorManager.inst || !PlayerManager.IsZenMode) && !CoreHelper.Paused && !CoreHelper.IsEditing && canTakeDamage;
             set => canTakeDamage = value;
         }
 
@@ -618,8 +754,6 @@ namespace BetterLegacy.Components.Player
             isBoosting = false;
             anim.SetTrigger("spawn");
             PlaySpawnParticles();
-
-            EvaluateSpawnCode();
 
             CoreHelper.Log($"Spawned Player {playerIndex}");
         }
@@ -1469,20 +1603,20 @@ namespace BetterLegacy.Components.Player
         void HandleCollision(Collider2D other, bool stay = true)
         {
             if (CanTakeDamage && (!CoreHelper.InEditor || !ZenModeInEditor) && (!stay || !isBoosting) && CollisionCheck(other))
-                PlayerHit();
+                Hit();
         }
         
         void HandleCollision(Collider other, bool stay = true)
         {
             if (CanTakeDamage && (!CoreHelper.InEditor || !ZenModeInEditor) && (!stay || !isBoosting) && CollisionCheck(other))
-                PlayerHit();
+                Hit();
         }
 
         #endregion
 
         #region Init
 
-        public void PlayerHit()
+        public void Hit()
         {
             var player = playerObjects["RB Parent"].gameObject;
 
@@ -1494,14 +1628,12 @@ namespace BetterLegacy.Components.Player
             InitBeforeHit();
             if (PlayerAlive)
                 anim.SetTrigger("hurt");
-            if (CustomPlayer)
-            {
-                if (!PlayerManager.IsPractice)
-                    CustomPlayer.Health--;
-                playerHitEvent?.Invoke(CustomPlayer.Health, rb.position);
-            }
+            if (CustomPlayer == null)
+                return;
 
-            EvaluateHitCode();
+            if (!PlayerManager.IsPractice)
+                CustomPlayer.Health--;
+            playerHitEvent?.Invoke(CustomPlayer.Health, rb.position);
         }
 
         IEnumerator BoostCooldownLoop()
@@ -1545,7 +1677,6 @@ namespace BetterLegacy.Components.Player
             CustomPlayer.health = 0;
             anim.SetTrigger("kill");
             InputDataManager.inst.SetControllerRumble(playerIndex, 1f);
-            EvaluateDeathCode();
             yield return new WaitForSecondsRealtime(0.2f);
             Destroy(health);
             Destroy(gameObject);
@@ -1602,8 +1733,6 @@ namespace BetterLegacy.Components.Player
             }
 
             LevelManager.BoostCount++;
-
-            EvaluateBoostCode();
         }
 
         public void InitBeforeBoost()
@@ -1680,11 +1809,8 @@ namespace BetterLegacy.Components.Player
             AudioManager.inst.PlaySound(CoreConfig.Instance.Language.Value == Language.Pirate ? "pirate_KillPlayer" : "HurtPlayer");
         }
 
-        // Empty method for animation controller
-        public void InitAfterHit()
-        {
-
-        }
+        // Empty method for animation controller (todo: see if animation controller can live without this or am I misunderstanding how this works?)
+        public void InitAfterHit() { }
 
         public void ResetMovement()
         {
@@ -2789,35 +2915,6 @@ namespace BetterLegacy.Components.Player
             canShoot = true;
 
             yield break;
-        }
-
-        #endregion
-
-        #region Code
-
-        public string SpawnCodePath => "player/spawn.cs";
-        public string BoostCodePath => "player/boost.cs";
-        public string HitCodePath => "player/hit.cs";
-        public string DeathCodePath => "player/death.cs";
-
-        void EvaluateSpawnCode() => EvaluatePlayerCode(RTFile.BasePath + SpawnCodePath);
-
-        void EvaluateBoostCode() => EvaluatePlayerCode(RTFile.BasePath + BoostCodePath);
-
-        void EvaluateHitCode() => EvaluatePlayerCode(RTFile.BasePath + HitCodePath);
-
-        void EvaluateDeathCode() => EvaluatePlayerCode(RTFile.BasePath + DeathCodePath);
-
-        void EvaluatePlayerCode(string path)
-        {
-            if (!EvaluateCode || !RTFile.FileExists(path))
-                return;
-
-            var defaultCode = $"var playerIndex = {playerIndex};{Environment.NewLine}";
-            var cs = RTFile.ReadFromFile(path);
-
-            if (RTCode.Validate(cs))
-                RTCode.Evaluate($"{defaultCode}{cs}");
         }
 
         #endregion

@@ -9,6 +9,9 @@ using UnityEngine.UI;
 
 namespace BetterLegacy.Components.Editor
 {
+    /// <summary>
+    /// Component for displaying mouse tooltips.
+    /// </summary>
     public class ShowTooltip : MonoBehaviour, IPointerEnterHandler
     {
         public void OnPointerEnter(PointerEventData eventData)
@@ -36,6 +39,9 @@ namespace BetterLegacy.Components.Editor
                 LayoutRebuilder.ForceRebuildLayoutImmediate(RTEditor.inst.mouseTooltipRT);
         }
 
+        /// <summary>
+        /// Amount of time to display the mouse tooltip for.
+        /// </summary>
         public float time = 2f;
         [NonSerialized]
         public List<HoverTooltip.Tooltip> tooltips = new List<HoverTooltip.Tooltip>();

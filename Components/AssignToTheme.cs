@@ -4,10 +4,22 @@ using UnityEngine.UI;
 
 namespace BetterLegacy.Components
 {
+    /// <summary>
+    /// Assigns a theme color slot to a graphic.
+    /// </summary>
     public class AssignToTheme : MonoBehaviour
     {
+        /// <summary>
+        /// Graphic to assign a color to.
+        /// </summary>
         public Graphic Graphic { get; set; }
+        /// <summary>
+        /// Index of the theme color slot.
+        /// </summary>
         public int Index { get; set; }
+        /// <summary>
+        /// What to use from a theme.
+        /// </summary>
         public Type ThemeType { get; set; } = Type.Objects;
         public enum Type
         {

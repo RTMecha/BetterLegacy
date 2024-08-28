@@ -5,6 +5,9 @@ using UnityEngine.UI;
 
 namespace BetterLegacy.Components
 {
+    /// <summary>
+    /// Component used for swapping InputField values when scrollwheel is clicked on the InputField. Supports swapping left/right and positive/negative strings.
+    /// </summary>
     public class InputFieldSwapper : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         public InputField inputField;

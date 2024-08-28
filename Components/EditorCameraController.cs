@@ -2,6 +2,9 @@
 
 namespace BetterLegacy.Components
 {
+    /// <summary>
+    /// Controls for the editor freecam.
+    /// </summary>
     public class EditorCameraController : PlayerActionSet
     {
         public EditorCameraController()

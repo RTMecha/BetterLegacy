@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace BetterLegacy.Components
 {
+    /// <summary>
+    /// Component used for audioSource modifier.
+    /// </summary>
     public class AudioModifier : MonoBehaviour
     {
         void Awake()
@@ -13,6 +16,9 @@ namespace BetterLegacy.Components
             AudioSource.loop = true;
         }
 
+        /// <summary>
+        /// Assigns audio, a BeatmapObject and modifier.
+        /// </summary>
         public void Init(AudioClip audioClip, BeatmapObject beatmapObject, Modifier<BeatmapObject> modifier)
         {
             AudioClip = audioClip;
@@ -20,8 +26,7 @@ namespace BetterLegacy.Components
             Modifier = modifier;
             AudioSource.clip = AudioClip;
 
-            var onDestroy = gameObject.AddComponent<DestroyModifierResult>();
-            onDestroy.Modifier = modifier;
+            gameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
         }
 
         void Update()
@@ -50,8 +55,17 @@ namespace BetterLegacy.Components
                 AudioSource.time = Mathf.Clamp(time * pitch % length, 0f, length);
         }
 
+        /// <summary>
+        /// The main audio source to base the time off of.
+        /// </summary>
         public AudioSource CurrentAudioSource => AudioManager.inst.CurrentAudioSource;
+        /// <summary>
+        /// The current audio source.
+        /// </summary>
         public AudioSource AudioSource { get; set; }
+        /// <summary>
+        /// The current audio clip.
+        /// </summary>
         public AudioClip AudioClip { get; set; }
 
         public BeatmapObject BeatmapObject { get; set; }

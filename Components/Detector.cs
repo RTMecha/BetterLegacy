@@ -6,6 +6,9 @@ using BeatmapObject = DataManager.GameData.BeatmapObject;
 
 namespace BetterLegacy.Components
 {
+    /// <summary>
+    /// Object collision component used for modifiers. Detects both mouse and player bullets.
+    /// </summary>
     public class Detector : MonoBehaviour
     {
         public BeatmapObject beatmapObject;
@@ -27,12 +30,12 @@ namespace BetterLegacy.Components
 
         void OnTriggerEnter2D(Collider2D other)
         {
-            if (CheckCollider(other))
-            {
-                bulletOver = true;
-                if (!colliders.Contains(other))
-                    colliders.Add(other);
-            }
+            if (!CheckCollider(other))
+                return;
+
+            bulletOver = true;
+            if (!colliders.Contains(other))
+                colliders.Add(other);
         }
 
         void OnTriggerEnter(Collider other)
@@ -43,12 +46,12 @@ namespace BetterLegacy.Components
 
         void OnTriggerExit2D(Collider2D other)
         {
-            if (CheckCollider(other))
-            {
-                bulletOver = false;
-                if (colliders.Contains(other))
-                    colliders.Remove(other);
-            }
+            if (!CheckCollider(other))
+                return;
+
+            bulletOver = false;
+            if (colliders.Contains(other))
+                colliders.Remove(other);
         }
 
         void OnTriggerExit(Collider other)

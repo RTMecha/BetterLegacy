@@ -4,14 +4,25 @@ using UnityEngine;
 namespace BetterLegacy.Components.Editor
 {
     /// <summary>
-    /// Fallback component in case the current method is too slow.
+    /// Component used for cases where an elemnent needs to be removed from the Editor Theme element dictionary when the object is destroyed.
     /// </summary>
     public class EditorThemeElement : MonoBehaviour
     {
+        /// <summary>
+        /// ID reference.
+        /// </summary>
         public string id;
 
+        /// <summary>
+        /// Element reference.
+        /// </summary>
         public EditorThemeManager.Element Element { get; set; }
 
+        /// <summary>
+        /// Sets the components' element and applies a theme.
+        /// </summary>
+        /// <param name="element">Element to assign.</param>
+        /// <param name="id">ID reference.</param>
         public void Init(EditorThemeManager.Element element, string id)
         {
             Element = element;
@@ -21,7 +32,7 @@ namespace BetterLegacy.Components.Editor
 
         void OnDestroy()
         {
-            if (!string.IsNullOrEmpty(id) && EditorThemeManager.TemporaryEditorGUIElements.ContainsKey(id))
+            if (!string.IsNullOrEmpty(id) && EditorThemeManager.TemporaryEditorGUIElements.ContainsKey(id)) // remove from temporary editor gui elements.
                 EditorThemeManager.TemporaryEditorGUIElements.Remove(id);
         }
     }
