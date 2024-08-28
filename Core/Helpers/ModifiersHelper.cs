@@ -2209,7 +2209,7 @@ namespace BetterLegacy.Core.Helpers
                                     {
                                         var closest = orderedList[0];
 
-                                        closest?.Player?.PlayerHit();
+                                        closest?.Player?.Hit();
 
                                         if (hit > 1 && closest)
                                             closest.Health -= hit;
@@ -2224,7 +2224,7 @@ namespace BetterLegacy.Core.Helpers
                             if ((EditorManager.inst == null && DataManager.inst.GetSettingEnum("ArcadeDifficulty", 1) != 0 || !EditorManager.inst.isEditing) && !modifier.constant && int.TryParse(modifier.value, out int hit))
                                 foreach (var player in PlayerManager.Players.Where(x => x.Player))
                                 {
-                                    player.Player.PlayerHit();
+                                    player.Player.Hit();
 
                                     if (hit > 1)
                                         player.Health -= hit;
@@ -2577,9 +2577,7 @@ namespace BetterLegacy.Core.Helpers
                     case "gameMode":
                         {
                             if (int.TryParse(modifier.value, out int value))
-                            {
-                                RTPlayer.JumpMode = value == 1;
-                            }
+                                RTPlayer.GameMode = (GameMode)value;
 
                             break;
                         }
@@ -5880,7 +5878,7 @@ namespace BetterLegacy.Core.Helpers
                 case "hit":
                     {
                         if (modifier.reference.Player)
-                            modifier.reference.Player.PlayerHit();
+                            modifier.reference.Player.Hit();
                         break;
                     }
                 case "signalModifier":
