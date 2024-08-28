@@ -605,7 +605,7 @@ namespace BetterLegacy.Example
             if (spawning)
                 return;
 
-            if (canDance && !dragging && !draggingLeftHand && !draggingRightHand && !talking && MusicPlaying && !dancing && UnityEngine.Random.Range(0, 501) > 499)
+            if (canDance && !dragging && !draggingLeftHand && !draggingRightHand && !talking && MusicPlaying && !dancing && RandomHelper.PercentChanceSingle(0.7f))
                 StartDancing();
             if (!MusicPlaying && dancing)
                 StopDancing();
