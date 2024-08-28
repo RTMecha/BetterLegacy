@@ -503,6 +503,12 @@
         Practice
     }
 
+    public enum GameMode
+    {
+        Regular,
+        Platformer
+    }
+
     public enum Resolutions
     {
         p270,

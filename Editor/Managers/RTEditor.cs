@@ -8123,7 +8123,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorManager.inst.loading = true;
 
-            RTPlayer.JumpMode = false;
+            RTPlayer.GameMode = GameMode.Regular;
 
             string code = $"{fullPath}/EditorLoad.cs";
             if (RTFile.FileExists(code))

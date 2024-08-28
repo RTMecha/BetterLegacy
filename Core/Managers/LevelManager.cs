@@ -269,7 +269,7 @@ namespace BetterLegacy.Core.Managers
 
             PlayerManager.AssignPlayerModels();
 
-            RTPlayer.JumpMode = false;
+            RTPlayer.GameMode = GameMode.Regular;
 
             GameManager.inst.introAnimator.SetTrigger("play");
             GameManager.inst.SpawnPlayers(DataManager.inst.gameData.beatmapData.checkpoints[0].pos);
