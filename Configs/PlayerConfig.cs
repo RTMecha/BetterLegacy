@@ -67,11 +67,6 @@ namespace BetterLegacy.Configs
         public Setting<bool> AllowPlayersToTakeBulletDamage { get; set; }
 
         /// <summary>
-        /// .cs files from the player folder in the level path will run. E.G. boost.cs will run when the player boosts. Each code includes a stored \"playerIndex\" variable in case you want to check which player is performing the action.
-        /// </summary>
-        public Setting<bool> EvaluateCode { get; set; }
-
-        /// <summary>
         /// If enabled and there's more than one person playing, nametags will show which player is which.
         /// </summary>
         public Setting<bool> PlayerNameTags { get; set; }
@@ -114,7 +109,6 @@ namespace BetterLegacy.Configs
             PlayerShootKey = BindEnum(this, "General", "Shoot Key", Key.Z, "Keyboard key to press to shoot. Requires restart if changed.");
             PlayerShootSound = Bind(this, "General", "Play Shoot Sound", true, "Plays a little sound when you shoot.");
             AllowPlayersToTakeBulletDamage = Bind(this, "General", "Shots hurt other players", false, "Disable this if you don't want players to kill each other.");
-            EvaluateCode = Bind(this, "General", "Evaluate Code", false, ".cs files from the player folder in the level path will run. E.G. boost.cs will run when the player boosts. Each code includes a stored \"playerIndex\" variable in case you want to check which player is performing the action.");
 
             PlayerNameTags = Bind(this, "General", "Multiplayer NameTags", true, "If enabled and there's more than one person playing, nametags will show which player is which.");
 
@@ -162,7 +156,6 @@ namespace BetterLegacy.Configs
 
             RTPlayer.PlayShootSound = PlayerShootSound.Value;
             RTPlayer.AllowPlayersToTakeBulletDamage = AllowPlayersToTakeBulletDamage.Value;
-            RTPlayer.EvaluateCode = EvaluateCode.Value;
         }
 
         #endregion
