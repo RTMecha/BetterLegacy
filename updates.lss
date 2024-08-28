@@ -1,3 +1,7 @@
+1.3.8 > [Aug 28, 2024]
+- Removed player custom code. (Been meaning to for a while since there's a security concern with such a feature.)
+- Fixed upload and delete buttons being usable while the arcade server isn't up yet.
+- Decreased Example dance chance to 0.7% per frame.
 1.3.7 > [Aug 27, 2024]
 - Fixed timeline zoom not zooming in on the correct area. (I have no idea why it wouldn't before but ok)
 - Removed Editor Preferences as the Config Manager serves the same purpose, but better.
