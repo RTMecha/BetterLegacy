@@ -205,6 +205,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 canvas.Canvas.renderMode = RenderMode.ScreenSpaceCamera;
                 yield return null;
                 canvas.Canvas.renderMode = RenderMode.WorldSpace;
+
+                MenuEffectsManager.inst.MoveCamera(Vector2.zero);
+                MenuEffectsManager.inst.ZoomCamera(5f);
+                MenuEffectsManager.inst.RotateCamera(0f);
             }
 
             if (loopingEvents != null)
