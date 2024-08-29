@@ -281,7 +281,7 @@ namespace BetterLegacy.Example
             said = true;
 
             SayDialogue("OccasionalDialogue");
-            repeat = UnityEngine.Random.Range(60f, 60000f);
+            repeat = UnityEngine.Random.Range(60f, 600f);
         }
 
         public DialogueFunction[] dialogueFunctions = new DialogueFunction[]
