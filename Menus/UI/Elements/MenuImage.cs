@@ -642,6 +642,7 @@ namespace BetterLegacy.Menus.UI.Elements
                 case "Reload":
                     {
                         ChangeLogMenu.Seen = false;
+                        InterfaceManager.inst.randomIndex = -1;
                         InterfaceManager.inst.StartupInterface();
 
                         break;
