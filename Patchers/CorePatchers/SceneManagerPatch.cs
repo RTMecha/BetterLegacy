@@ -184,7 +184,14 @@ namespace BetterLegacy.Patchers
             SetActive(_showLoading);
 
             if (_showLoading)
-                Instance.background.GetComponent<Image>().color = LSColors.HexToColor(DataManager.inst.GetSettingEnumValues("UITheme", 0)["bg"]);
+                try
+                {
+                    Instance.background.GetComponent<Image>().color = LSColors.HexToColor(DataManager.inst.GetSettingEnumValues("UITheme", 0)["bg"]);
+                }
+                catch (System.Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
 
             var async = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(_level);
             async.allowSceneActivation = false;
