@@ -261,6 +261,8 @@ namespace BetterLegacy.Editor.Managers
                 var name = modifier.commands.Count > 0 ? modifier.commands[0] : "Invalid Modifier";
                 var gameObject = modifierCardPrefab.Duplicate(content, name);
 
+                TooltipHelper.AssignTooltip(gameObject, $"Object Modifier - {(modifier.commands[0] + " (" + modifier.type.ToString() + ")")}", 1.5f);
+
                 EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.List_Button_1_Normal, true);
 
                 gameObject.transform.localScale = Vector3.one;
@@ -2142,6 +2144,7 @@ namespace BetterLegacy.Editor.Managers
             // Add Modifier
             {
                 var gameObject = modifierAddPrefab.Duplicate(content, "add modifier");
+                TooltipHelper.AssignTooltip(gameObject, "Add Modifier");
 
                 var button = gameObject.GetComponent<Button>();
                 button.onClick.ClearAll();
@@ -2227,6 +2230,8 @@ namespace BetterLegacy.Editor.Managers
                     var name = defaultModifiers[i].commands[0] + " (" + defaultModifiers[i].type.ToString() + ")";
 
                     var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(contentM, name);
+
+                    TooltipHelper.AssignTooltip(gameObject, $"Object Modifier - {name}", 4f);
 
                     var modifierName = gameObject.transform.GetChild(0).GetComponent<Text>();
                     modifierName.text = name;
