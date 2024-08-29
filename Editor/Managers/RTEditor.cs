@@ -842,7 +842,7 @@ namespace BetterLegacy.Editor.Managers
             if (!notifications.Contains(name) && notifications.Count < 20 && config.NotificationsDisplay.Value)
             {
                 var notif = Instantiate(EditorManager.inst.notificationPrefabs[(int)type], Vector3.zero, Quaternion.identity);
-                Destroy(notif, time);
+                Destroy(notif, time * EditorConfig.Instance.NotificationDisplayTime.Value);
 
                 Graphic textComponent = type == EditorManager.NotificationType.Info ? notif.transform.Find("text").GetComponent<TextMeshProUGUI>() : notif.transform.Find("text").GetComponent<Text>();
 
@@ -866,7 +866,7 @@ namespace BetterLegacy.Editor.Managers
 
                 notifications.Add(name);
 
-                yield return new WaitForSeconds(time);
+                yield return new WaitForSeconds(time * EditorConfig.Instance.NotificationDisplayTime.Value);
                 notifications.Remove(name);
             }
             yield break;
@@ -880,7 +880,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 notifications.Add(name);
                 var gameObject = Instantiate(EditorManager.inst.notificationPrefabs[0], Vector3.zero, Quaternion.identity);
-                Destroy(gameObject, time);
+                Destroy(gameObject, time * EditorConfig.Instance.NotificationDisplayTime.Value);
                 gameObject.transform.Find("text").GetComponent<TextMeshProUGUI>().text = text;
                 gameObject.transform.SetParent(EditorManager.inst.notification.transform);
                 if (config.NotificationDirection.Value == VerticalDirection.Down)
@@ -901,14 +901,14 @@ namespace BetterLegacy.Editor.Managers
                 LayoutRebuilder.ForceRebuildLayoutImmediate(EditorManager.inst.notification.transform.Find("info").AsRT());
                 LayoutRebuilder.ForceRebuildLayoutImmediate(EditorManager.inst.notification.transform.AsRT());
 
-                yield return new WaitForSeconds(time);
+                yield return new WaitForSeconds(time * EditorConfig.Instance.NotificationDisplayTime.Value);
                 notifications.Remove(name);
             }
 
             yield break;
         }
 
-        public void SetupNotificationValues()
+        void SetupNotificationValues()
         {
             var config = EditorConfig.Instance;
 

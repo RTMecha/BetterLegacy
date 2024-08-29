@@ -44,7 +44,7 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void AssignTooltip(GameObject gameObject, string group, float time)
+        public static void AssignTooltip(GameObject gameObject, string group, float time = 2f)
         {
             if (!Tooltips.ContainsKey(group))
                 return;

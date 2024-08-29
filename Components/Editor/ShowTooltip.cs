@@ -25,7 +25,7 @@ namespace BetterLegacy.Components.Editor
                 return;
 
             RTEditor.inst.tooltipTimeOffset = Time.time;
-            RTEditor.inst.maxTooltipTime = time;
+            RTEditor.inst.maxTooltipTime = time * EditorConfig.Instance.MouseTooltipDisplayTime.Value * (tooltips[index].hint.Length / 70f);
             RTEditor.inst.tooltipActive = true;
 
             RTEditor.inst.mouseTooltip?.SetActive(true);
