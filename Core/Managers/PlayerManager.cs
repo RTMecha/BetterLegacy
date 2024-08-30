@@ -105,7 +105,7 @@ namespace BetterLegacy.Core.Managers
 
         public static void LoadLocalModels()
         {
-            if (PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
+            if (!CoreHelper.InStory && PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
                 inst.StartCoroutine(ILoadGlobalModels());
             else
                 inst.StartCoroutine(ILoadLocalModels());
@@ -113,54 +113,72 @@ namespace BetterLegacy.Core.Managers
 
         public static IEnumerator ILoadLocalModels()
         {
-            string location = RTFile.BasePath + "players.lsb";
-            if (RTFile.FileExists(location))
+            if (CoreHelper.InStory && LevelManager.CurrentLevel is Story.StoryLevel storyLevel && !string.IsNullOrEmpty(storyLevel.jsonPlayers))
             {
-                var list = new List<string>();
-                for (int i = 0; i < PlayerModels.Count; i++)
-                {
-                    if (!PlayerModel.DefaultModels.Any(x => x.basePart.id == PlayerModels.ElementAt(i).Key))
-                    {
-                        list.Add(PlayerModels.ElementAt(i).Key);
-                    }
-                }
+                LoadPlayerJSON(storyLevel.jsonPlayers);
 
-                foreach (var str in list)
-                {
-                    PlayerModels.Remove(str);
-                }
-
-                for (int i = 0; i < GameManager.inst.PlayerPrefabs.Length; i++)
-                {
-                    if (GameManager.inst.PlayerPrefabs[i].name.Contains("Clone"))
-                    {
-                        Destroy(GameManager.inst.PlayerPrefabs[i]);
-                    }
-                }
-
-                var json = FileManager.inst.LoadJSONFileRaw(location);
-                var jn = JSON.Parse(json);
-
-                for (int i = 0; i < jn["indexes"].Count; i++)
-                {
-                    PlayerModelsIndex[i] = jn["indexes"][i];
-                }
-
-                for (int i = 0; i < jn["models"].Count; i++)
-                {
-                    var model = PlayerModel.Parse(jn["models"][i]);
-                    string name = model.basePart.id;
-                    PlayerModels.Add(name, model);
-                }
+                yield break;
             }
-            else
+
+            string location = RTFile.BasePath + "players.lsb";
+            if (!RTFile.FileExists(location))
             {
                 for (int i = 0; i < PlayerModelsIndex.Count; i++)
                 {
                     PlayerModelsIndex[i] = "0";
                 }
+                yield break;
             }
+
+            var json = FileManager.inst.LoadJSONFileRaw(location);
+            LoadPlayerJSON(json);
             yield break;
+        }
+
+        public static void ClearModels()
+        {
+            var list = new List<string>();
+            for (int i = 0; i < PlayerModels.Count; i++)
+            {
+                if (!PlayerModel.DefaultModels.Any(x => x.basePart.id == PlayerModels.ElementAt(i).Key))
+                {
+                    list.Add(PlayerModels.ElementAt(i).Key);
+                }
+            }
+
+            foreach (var str in list)
+            {
+                PlayerModels.Remove(str);
+            }
+
+            for (int i = 0; i < GameManager.inst.PlayerPrefabs.Length; i++)
+            {
+                if (GameManager.inst.PlayerPrefabs[i].name.Contains("Clone"))
+                {
+                    Destroy(GameManager.inst.PlayerPrefabs[i]);
+                }
+            }
+        }
+
+        static void LoadPlayerJSON(string json)
+        {
+            ClearModels();
+
+            var jn = JSON.Parse(json);
+
+            for (int i = 0; i < jn["indexes"].Count; i++)
+            {
+                PlayerModelsIndex[i] = jn["indexes"][i];
+            }
+
+            for (int i = 0; i < jn["models"].Count; i++)
+            {
+                var model = PlayerModel.Parse(jn["models"][i]);
+                string id = model.basePart.id;
+
+                if (!PlayerModels.ContainsKey(id))
+                    PlayerModels.Add(id, model);
+            }
         }
 
         public static void CreateNewPlayerModel()

@@ -115,6 +115,15 @@ namespace BetterLegacy.Patchers
 
                 return false;
             }
+            
+            if (__instance.gameObject.scene.name == "Interface")
+            {
+                InterfaceManager.inst.StartupStoryInterface();
+
+                Destroy(__instance.gameObject);
+
+                return false;
+            }
 
             CoreHelper.Log($"Load On Start: {__instance.loadOnStart}");
             if (__instance.loadOnStart)

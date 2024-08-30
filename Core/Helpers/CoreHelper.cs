@@ -119,7 +119,7 @@ namespace BetterLegacy.Core.Helpers
         /// <summary>
         /// The current pitch setting.
         /// </summary>
-        public static float Pitch => InEditor ? 1f : new List<float>
+        public static float Pitch => InEditor || InStory ? 1f : new List<float>
             { 0.1f, 0.5f, 0.8f, 1f, 1.2f, 1.5f, 2f, 3f, }[Mathf.Clamp(PlayerManager.ArcadeGameSpeed, 0, 7)];
 
         /// <summary>

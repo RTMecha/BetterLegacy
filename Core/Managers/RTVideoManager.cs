@@ -122,6 +122,38 @@ namespace BetterLegacy.Core.Managers
 
         }
 
+        public void Play(VideoClip videoClip)
+        {
+            if (videoPlayer == null)
+            {
+                Debug.LogError($"{className}VideoPlayer does not exist so the set video cannot play.");
+                return;
+            }
+
+            if (!CoreConfig.Instance.EnableVideoBackground.Value)
+            {
+                videoPlayer.enabled = false;
+                videoTexture?.SetActive(false);
+                didntPlay = true;
+                return;
+            }
+
+            if (!videoTexture && GameObject.Find("ExtraBG") && GameObject.Find("ExtraBG").transform.childCount > 0)
+            {
+                videoTexture = GameObject.Find("ExtraBG").transform.GetChild(0).gameObject;
+                videoPlayer.targetMaterialRenderer = videoTexture.GetComponent<MeshRenderer>();
+            }
+
+            Debug.Log($"{className}Playing Video from VideoClip");
+            videoTexture?.SetActive(renderType == RenderType.Background);
+            videoPlayer.enabled = true;
+            videoPlayer.targetCameraAlpha = 1f;
+            videoPlayer.source = VideoSource.VideoClip;
+            videoPlayer.clip = videoClip;
+            videoPlayer.Prepare();
+            didntPlay = false;
+        }
+
         public void Play(string url, float alpha)
         {
             if (videoPlayer == null)

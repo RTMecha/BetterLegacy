@@ -217,6 +217,30 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     num++;
                 }
 
+                if (i == 3 && CoreHelper.InStory)
+                {
+                    elements.Add(new MenuButton
+                    {
+                        id = num.ToString(),
+                        name = "Return Button",
+                        text = "<b> [ RETURN TO INTERFACE ]",
+                        parentLayout = "buttons",
+                        selectionPosition = new Vector2Int(0, num),
+                        //rectJSON = SimpleJSON.JSON.Parse("{\"size\": { \"x\": \"200\",\"y\": \"64\" } }"),
+                        rect = RectValues.Default.SizeDelta(200f, 64f),
+                        opacity = 0.1f,
+                        val = -40f,
+                        textVal = 40f,
+                        selectedOpacity = 1f,
+                        selectedVal = 40f,
+                        selectedTextVal = -40f,
+                        length = 1f,
+                        playBlipSound = true,
+                        func = InterfaceManager.inst.StartupStoryInterface,
+                    });
+                    num++;
+                }
+
                 elements.Add(new MenuButton
                 {
                     id = num.ToString(),

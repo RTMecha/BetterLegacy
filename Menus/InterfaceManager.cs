@@ -279,6 +279,39 @@ namespace BetterLegacy.Menus
             }
         }
 
+        public void StartupStoryInterface()
+        {
+            if (CurrentMenu != null)
+            {
+                CurrentMenu.Clear();
+                CurrentMenu = null;
+            }
+
+            for (int i = 0; i < interfaces.Count; i++)
+            {
+                try
+                {
+                    interfaces[i].Clear();
+                }
+                catch
+                {
+
+                }
+            }
+            interfaces.Clear();
+            CoreHelper.InStory = true;
+
+            var path = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Story/Interfaces/doc{(Story.StoryManager.inst.Chapter + 1).ToString("00")}/base_interface.lsi";
+            var jn = JSON.Parse(RTFile.ReadFromFile(path));
+
+            var menu = CustomMenu.Parse(jn);
+            menu.filePath = path;
+            interfaces.Add(menu);
+
+            SetCurrentInterface(menu.id);
+            PlayMusic();
+        }
+
         public void StartupInterface()
         {
             if (CurrentMenu != null)
@@ -299,6 +332,7 @@ namespace BetterLegacy.Menus
                 }
             }
             interfaces.Clear();
+            CoreHelper.InStory = false;
 
             var path = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Interfaces/main_menu.lsi";
             var jn = JSON.Parse(RTFile.ReadFromFile(path));

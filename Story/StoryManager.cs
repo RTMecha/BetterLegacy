@@ -23,15 +23,26 @@ namespace BetterLegacy.Story
         public static string StoryAssetsPath => $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Story/";
         public static string StoryAssetsURL => $"{AlephNetworkManager.ArcadeServerURL}api/story/download";
 
-        public static AssetBundle covers = null;
-        public static AssetBundle levels = null;
-        public static AssetBundle songs = null;
+        public AssetBundle assets;
 
-        public static bool Loaded { get; set; }
+        public bool Loaded { get; set; }
 
-        public static bool HasFiles => RTFile.FileExists($"{StoryAssetsPath}covers.asset") && RTFile.FileExists($"{StoryAssetsPath}levels.asset") && RTFile.FileExists($"{StoryAssetsPath}ost.asset");
+        public bool HasFiles => RTFile.FileExists($"{StoryAssetsPath}doc_{(Chapter + 1).ToString("00")}.asset");
 
-        public bool AssetBundlesLoaded => covers != null && levels != null && songs != null;
+        public bool AssetBundlesLoaded => assets != null;
+
+        public int Chapter { get; set; }
+        public int Level { get; set; }
+        public bool ContinueStory { get; set; } = true;
+
+        public Dictionary<int, int> ChapterCounts => new Dictionary<int, int>
+        {
+            { 0, 6 },
+            { 1, 6 },
+            { 2, 6 },
+            { 3, 6 },
+            { 4, 6 },
+        };
 
         public JSONNode storySavesJSON;
 
@@ -42,6 +53,8 @@ namespace BetterLegacy.Story
             inst = this;
             var storySavesPath = RTFile.ApplicationDirectory + "profile/story_saves.lss";
             storySavesJSON = JSON.Parse(RTFile.FileExists(storySavesPath) ? RTFile.ReadFromFile(storySavesPath) : "{}");
+            Chapter = GetChapter();
+            Level = GetLevel();
         }
 
         public void Save()
@@ -56,24 +69,40 @@ namespace BetterLegacy.Story
             }
         }
 
+        public void SetChapter(int chapter)
+        {
+            CoreHelper.Log($"Updating chapter {Chapter} > {chapter}");
+            Chapter = chapter;
+            storySavesJSON["doc"] = chapter;
+            Save();
+        }
+
+        public void SetLevel(int level)
+        {
+            CoreHelper.Log($"Updating level {Level} > {level}");
+            Level = Mathf.Clamp(level, 0, ChapterCounts[Chapter] - 1);
+            storySavesJSON["level"] = level;
+            Save();
+        }
+
         public void SaveBool(string name, bool value)
         {
             CoreHelper.Log($"Saving {name} > {value}");
-            storySavesJSON[name]["bool"] = value;
+            storySavesJSON["saves"][name]["bool"] = value;
             Save();
         }
         
         public void SaveInt(string name, int value)
         {
             CoreHelper.Log($"Saving {name} > {value}");
-            storySavesJSON[name]["int"] = value;
+            storySavesJSON["saves"][name]["int"] = value;
             Save();
         }
         
         public void SaveFloat(string name, float value)
         {
             CoreHelper.Log($"Saving {name} > {value}");
-            storySavesJSON[name]["float"] = value;
+            storySavesJSON["saves"][name]["float"] = value;
             Save();
         }
 
@@ -82,7 +111,7 @@ namespace BetterLegacy.Story
             CoreHelper.Log($"Saving {name} > {value}");
             if (string.IsNullOrEmpty(value))
                 return;
-            storySavesJSON[name]["string"] = value;
+            storySavesJSON["saves"][name]["string"] = value;
             Save();
         }
 
@@ -91,27 +120,23 @@ namespace BetterLegacy.Story
             CoreHelper.Log($"Saving {name} > {value}");
             if (value == null)
                 return;
-            storySavesJSON[name][value.IsArray ? "array" : "object"] = value;
+            storySavesJSON["saves"][name][value.IsArray ? "array" : "object"] = value;
             Save();
         }
 
-        public bool LoadBool(string name, bool defaultValue) => storySavesJSON[name] == null || storySavesJSON[name]["bool"] == null ? defaultValue : storySavesJSON[name]["bool"].AsBool;
-        public int LoadInt(string name, int defaultValue) => storySavesJSON[name] == null || storySavesJSON[name]["int"] == null ? defaultValue : storySavesJSON[name]["int"].AsInt;
-        public float LoadFloat(string name, float defaultValue) => storySavesJSON[name] == null || storySavesJSON[name]["float"] == null ? defaultValue : storySavesJSON[name]["float"].AsFloat;
-        public string LoadString(string name, string defaultValue) => storySavesJSON[name] == null || storySavesJSON[name]["string"] == null ? defaultValue : storySavesJSON[name]["string"].Value;
-        public JSONNode LoadJSON(string name) => storySavesJSON[name] == null ? null : storySavesJSON[name]["array"] != null ? storySavesJSON[name]["array"] : storySavesJSON[name]["object"] != null ? storySavesJSON[name]["object"] : null;
+        public int GetChapter() => storySavesJSON["doc"].AsInt;
+        public int GetLevel() => storySavesJSON["level"].AsInt;
+        public bool LoadBool(string name, bool defaultValue) => storySavesJSON["saves"][name] == null || storySavesJSON["saves"][name]["bool"] == null ? defaultValue : storySavesJSON["saves"][name]["bool"].AsBool;
+        public int LoadInt(string name, int defaultValue) => storySavesJSON["saves"][name] == null || storySavesJSON["saves"][name]["int"] == null ? defaultValue : storySavesJSON["saves"][name]["int"].AsInt;
+        public float LoadFloat(string name, float defaultValue) => storySavesJSON["saves"][name] == null || storySavesJSON["saves"][name]["float"] == null ? defaultValue : storySavesJSON["saves"][name]["float"].AsFloat;
+        public string LoadString(string name, string defaultValue) => storySavesJSON["saves"][name] == null || storySavesJSON["saves"][name]["string"] == null ? defaultValue : storySavesJSON["saves"][name]["string"].Value;
+        public JSONNode LoadJSON(string name) => storySavesJSON["saves"][name] == null ? null : storySavesJSON["saves"][name]["array"] != null ? storySavesJSON["saves"][name]["array"] : storySavesJSON["saves"][name]["object"] != null ? storySavesJSON["saves"][name]["object"] : null;
 
         public void Clear(bool unloadAllLoadedObjects = true)
         {
-            if (covers)
-                covers.Unload(unloadAllLoadedObjects);
-            covers = null;
-            if (levels)
-                levels.Unload(unloadAllLoadedObjects);
-            levels = null;
-            if (songs)
-                songs.Unload(unloadAllLoadedObjects);
-            songs = null;
+            if (assets)
+                assets.Unload(unloadAllLoadedObjects);
+            assets = null;
 
             Loaded = false;
         }
@@ -150,125 +175,127 @@ namespace BetterLegacy.Story
                 InputDataManager.inst.players.Add(new CustomPlayer(true, 0, null));
             }
 
-            yield return StartCoroutine(ILoad());
-            Play("granite");
+            Play();
+            yield break;
         }
 
-        public void Play(string name) => StartCoroutine(IPlay(name));
+        public void Play() => StartCoroutine(IPlay());
 
-        public IEnumerator IPlay(string name)
+        public IEnumerator IPlay()
         {
-            CoreHelper.InStory = true;
-            StoryLevel storyLevel = LoadLevel(name);
+            CoreHelper.Log($"Playing story: doc{(Chapter + 1).ToString("00")}_{(Level + 1).ToString("00")}");
+            yield return StartCoroutine(ILoad(Chapter, Level));
 
-            var level = new Level(MetaData.Parse(JSON.Parse(storyLevel.jsonMetadata)), storyLevel.icon, storyLevel.song);
-            var levelPath = level.path + "level.lsb";
-            var playersPath = level.path + "players.lsb";
-            RTFile.WriteToFile(levelPath, storyLevel.json);
-            RTFile.WriteToFile(playersPath, storyLevel.jsonPlayers);
+            if (!Loaded)
+            {
+                CoreHelper.InStory = false;
+                LevelManager.OnLevelEnd = null;
+                SceneManager.inst.LoadScene("Main Menu");
+                yield break;
+            }
+
+            CoreHelper.InStory = true;
+            StoryLevel storyLevel = LoadLevel(Chapter, Level);
+
+            if (storyLevel == null)
+            {
+                CoreHelper.InStory = true;
+                LevelManager.OnLevelEnd = null;
+                SceneManager.inst.LoadScene("Interface");
+                yield break;
+            }
 
             LevelManager.OnLevelEnd = () =>
             {
                 LevelManager.Clear();
                 Updater.OnLevelEnd();
-                SceneManager.inst.LoadScene("Main Menu"); // temp
 
-                if (RTFile.FileExists(levelPath))
-                    File.Delete(levelPath);
-                if (RTFile.FileExists(playersPath))
-                    File.Delete(playersPath);
+                if (!ContinueStory)
+                {
+                    CoreHelper.InStory = true;
+                    LevelManager.OnLevelEnd = null;
+                    ContinueStory = true;
+                    SceneManager.inst.LoadScene("Interface"); // todo: return to chapter select
+                    return;
+                }
 
-                CoreHelper.InStory = false;
+                if (ChapterCounts.ContainsKey(Chapter) && Level + 1 >= ChapterCounts[Chapter])
+                {
+                    SetChapter(Chapter + 1);
+                    SetLevel(0);
+                }
+                else if (!ChapterCounts.ContainsKey(Chapter))
+                {
+                    SetChapter(0);
+                    SetLevel(0);
+                }
+                else
+                {
+                    SetLevel(Level + 1);
+                }
+
+                CoreHelper.InStory = true;
+                LevelManager.OnLevelEnd = null;
+                SceneManager.inst.LoadScene("Interface"); // todo: return to chapter select
             };
 
-            StartCoroutine(LevelManager.Play(level));
+            if (!storyLevel.music)
+            {
+                CoreHelper.LogError($"Music is null for some reason wtf");
+                yield break;
+            }
+
+            StartCoroutine(LevelManager.Play(storyLevel));
 
             yield break;
         }
 
-        public StoryLevel LoadLevel(string name)
+        public StoryLevel LoadLevel(int chapter, int levelIndex)
         {
-            if (storyLevels.Has(x => x.name == name))
-                return storyLevels.Find(x => x.name == name);
+            var name = $"doc{(chapter + 1).ToString("00")}_{(levelIndex + 1).ToString("00")}";
+            var icon = assets.LoadAsset<Sprite>($"{name}_cover.jpg");
+            var song = assets.LoadAsset<AudioClip>($"{name}_song.ogg");
+            var level = assets.LoadAsset<TextAsset>($"{name}_level.json");
+            var metadata = assets.LoadAsset<TextAsset>($"{name}_metadata.json");
+            var players = assets.LoadAsset<TextAsset>($"{name}_players.json");
 
-            var icon = covers.LoadAsset<Sprite>($"{name}.jpg");
-            var song = songs.LoadAsset<AudioClip>($"{name}.ogg");
-            var level = levels.LoadAsset<TextAsset>($"{name}level.json");
-            var metadata = levels.LoadAsset<TextAsset>($"{name}metadata.json");
-            var players = levels.LoadAsset<TextAsset>($"{name}players.json");
+            if (!song)
+                return null;
 
             var storyLevel = new StoryLevel
             {
                 name = name,
                 icon = icon,
-                song = song,
+                music = song,
                 json = level.text,
-                jsonMetadata = metadata.text,
+                metadata = MetaData.Parse(JSON.Parse(metadata.text), false),
                 jsonPlayers = players.text,
             };
-
-            storyLevels.Add(storyLevel);
-
+            storyLevel.id = storyLevel.metadata?.arcadeID;
+            
             return storyLevel;
         }
 
-        public void Load()
+        public void Load(int chapter, int level)
         {
-            StartCoroutine(ILoad());
+            StartCoroutine(ILoad(chapter, level));
         }
 
-        public IEnumerator ILoad()
+        public IEnumerator ILoad(int chapter, int level)
         {
+            if (AssetBundlesLoaded)
+                Clear();
+
             if (!HasFiles)
             {
-                if (AssetBundlesLoaded)
-                    Clear();
-
                 Loaded = false;
                 yield break;
             }
 
-            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{StoryAssetsPath}covers.asset", assetBundle =>
+            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{StoryAssetsPath}doc{(chapter + 1).ToString("00")}_{(level + 1).ToString("00")}.asset", assetBundle =>
             {
-                covers = assetBundle;
+                assets = assetBundle;
             }));
-
-            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{StoryAssetsPath}levels.asset", assetBundle =>
-            {
-                levels = assetBundle;
-            }));
-
-            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{StoryAssetsPath}ost.asset", assetBundle =>
-            {
-                songs = assetBundle;
-            }));
-
-            //var allAssetNames = covers.GetAllAssetNames();
-
-            //for (int i = 0; i < allAssetNames.Length; i++)
-            //{
-            //    var fileName = Path.GetFileName(allAssetNames[i]);
-
-            //    var name = fileName.Replace(".jpg", "");
-
-            //    var icon = covers.LoadAsset<Sprite>(fileName);
-            //    var song = songs.LoadAsset<AudioClip>($"{name}.ogg");
-            //    var level = levels.LoadAsset<TextAsset>($"{name}level.json");
-            //    var metadata = levels.LoadAsset<TextAsset>($"{name}metadata.json");
-            //    var players = levels.LoadAsset<TextAsset>($"{name}players.json");
-
-            //    var storyLevel = new StoryLevel
-            //    {
-            //        name = name,
-            //        icon = icon,
-            //        song = song,
-            //        json = level.text,
-            //        jsonMetadata = metadata.text,
-            //        jsonPlayers = players.text,
-            //    };
-
-            //    storyLevels.Add(storyLevel);
-            //}
 
             Loaded = true;
         }

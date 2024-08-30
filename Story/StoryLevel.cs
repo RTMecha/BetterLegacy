@@ -1,25 +1,27 @@
-﻿using System;
+﻿using BetterLegacy.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 using UnityEngine;
+using UnityEngine.Video;
 
 namespace BetterLegacy.Story
 {
-    public class StoryLevel
+    public class StoryLevel : Level
     {
+        public StoryLevel() : base()
+        {
+            isStory = true;
+        }
+
         public string name;
 
         public string json;
 
-        public string jsonMetadata;
-
         public string jsonPlayers;
-
-        public AudioClip song;
-
-        public Sprite icon;
+        public VideoClip videoClip;
     }
 }

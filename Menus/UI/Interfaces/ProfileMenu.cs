@@ -31,6 +31,29 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 rect = RectValues.Default.SizeDelta(800f, 100f),
             });
 
+            var elementA = new MenuButton
+            {
+                id = id,
+                name = "Element Base",
+                parentLayout = "buttons",
+                //rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(400f, 64f)),
+                rect = RectValues.Default.SizeDelta(400f, 64f),
+                text = $" <b>RESET STORY",
+                selectionPosition = new Vector2Int(0, 0),
+                opacity = 0.1f,
+                selectedOpacity = 1f,
+                color = 6,
+                selectedColor = 6,
+                textColor = 6,
+                allowOriginalHoverMethods = true,
+                func = () =>
+                {
+                    Story.StoryManager.inst.SetChapter(0);
+                    Story.StoryManager.inst.SetLevel(0);
+                }
+            };
+            elementA.enterFunc = () => { MenuEffectsManager.inst.MoveCameraY(elementA.gameObject.transform.position.y); };
+
             for (int i = 0; i < LevelManager.Saves.Count; i++)
             {
                 var save = LevelManager.Saves[i];
@@ -47,7 +70,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     //rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(400f, 64f)),
                     rect = RectValues.Default.SizeDelta(400f, 64f),
                     text = $" <b><#{LSColors.ColorToHex(levelRank.color)}>{levelRank.name}</color></b>  {save.LevelName} - ID: {save.ID}",
-                    selectionPosition = new Vector2Int(0, index),
+                    selectionPosition = new Vector2Int(0, index + 1),
                     opacity = 0.1f,
                     selectedOpacity = 1f,
                     color = 6,
@@ -65,7 +88,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(450f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(126f, 64f)),
                     rect = RectValues.Default.AnchoredPosition(450f, 0f).SizeDelta(126f, 64f),
                     text = "[ DELETE ]",
-                    selectionPosition = new Vector2Int(1, index),
+                    selectionPosition = new Vector2Int(1, index + 1),
                     opacity = 1f,
                     selectedOpacity = 1f,
                     color = 0,

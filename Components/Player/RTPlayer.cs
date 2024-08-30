@@ -372,7 +372,7 @@ namespace BetterLegacy.Components.Player
 
         public bool CanTakeDamage
         {
-            get => (EditorManager.inst || !PlayerManager.IsZenMode) && !CoreHelper.Paused && !CoreHelper.IsEditing && canTakeDamage;
+            get => (CoreHelper.InEditor || CoreHelper.InStory || !PlayerManager.IsZenMode) && !CoreHelper.Paused && !CoreHelper.IsEditing && canTakeDamage;
             set => canTakeDamage = value;
         }
 

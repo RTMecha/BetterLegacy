@@ -16,6 +16,11 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool InterfaceLoaderPrefix(InterfaceLoader __instance)
         {
+            if (__instance.gameObject.scene.name == "Main Menu" || __instance.gameObject.scene.name == "Interface")
+            {
+                return false;
+            }
+
             string text = "";
             string fileName = "";
             if (string.IsNullOrEmpty(__instance.file))

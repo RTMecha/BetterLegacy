@@ -316,6 +316,86 @@ namespace BetterLegacy.Menus.UI.Elements
                         var value = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == (parameters.IsArray ? parameters[0] : parameters["scene"]);
                         return !not ? value : !value;
                     }
+                case "StoryChapterEquals":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["chapter"] == null)
+                            break;
+
+                        var value = StoryManager.inst.GetChapter() == (parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt);
+                        return !not ? value : !value;
+                    }
+                case "StoryChapterLesserEquals":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["chapter"] == null)
+                            break;
+
+                        var value = StoryManager.inst.GetChapter() <= (parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt);
+                        return !not ? value : !value;
+                    }
+                case "StoryChapterGreaterEquals":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["chapter"] == null)
+                            break;
+
+                        var value = StoryManager.inst.GetChapter() >= (parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt);
+                        return !not ? value : !value;
+                    }
+                case "StoryChapterLesser":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["chapter"] == null)
+                            break;
+
+                        var value = StoryManager.inst.GetChapter() < (parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt);
+                        return !not ? value : !value;
+                    }
+                case "StoryChapterGreater":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["chapter"] == null)
+                            break;
+
+                        var value = StoryManager.inst.GetChapter() > (parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt);
+                        return !not ? value : !value;
+                    }
+                case "StoryLevelEquals":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["level"] == null)
+                            break;
+
+                        var value = StoryManager.inst.GetLevel() == (parameters.IsArray ? parameters[0].AsInt : parameters["level"].AsInt);
+                        return !not ? value : !value;
+                    }
+                case "StoryLevelLesserEquals":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["level"] == null)
+                            break;
+
+                        var value = StoryManager.inst.GetLevel() <= (parameters.IsArray ? parameters[0].AsInt : parameters["level"].AsInt);
+                        return !not ? value : !value;
+                    }
+                case "StoryLevelGreaterEquals":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["level"] == null)
+                            break;
+
+                        var value = StoryManager.inst.GetLevel() >= (parameters.IsArray ? parameters[0].AsInt : parameters["level"].AsInt);
+                        return !not ? value : !value;
+                    }
+                case "StoryLevelLesser":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["level"] == null)
+                            break;
+
+                        var value = StoryManager.inst.GetLevel() < (parameters.IsArray ? parameters[0].AsInt : parameters["level"].AsInt);
+                        return !not ? value : !value;
+                    }
+                case "StoryLevelGreater":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["level"] == null)
+                            break;
+
+                        var value = StoryManager.inst.GetLevel() > (parameters.IsArray ? parameters[0].AsInt : parameters["level"].AsInt);
+                        return !not ? value : !value;
+                    }
             }
 
             return false;
@@ -1641,13 +1721,47 @@ namespace BetterLegacy.Menus.UI.Elements
                     {
                         LevelManager.IsArcade = false;
                         SceneManager.inst.LoadScene("Input Select");
-                        LevelManager.OnInputsSelected = () => { CoreHelper.StartCoroutine(StoryManager.inst.Demo(true)); };
+                        LevelManager.OnInputsSelected = () => { SceneManager.inst.LoadScene("Interface"); };
 
                         break;
                     }
 
                 case "LoadStoryLevel":
                     {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && (parameters["chapter"] == null || parameters["level"] == null))
+                            return;
+
+                        var isArray = parameters.IsArray;
+                        var chapter = isArray ? parameters[0].AsInt : parameters["chapter"].AsInt;
+                        var level = isArray ? parameters[1].AsInt : parameters["level"].AsInt;
+
+                        StoryManager.inst.ContinueStory = isArray && parameters.Count > 2 && parameters[2].AsBool || parameters.IsObject && parameters["continue"].AsBool;
+
+                        if (StoryManager.inst.ContinueStory)
+                        {
+                            StoryManager.inst.SetChapter(chapter);
+                            StoryManager.inst.SetLevel(level);
+                        }
+                        else
+                        {
+                            StoryManager.inst.Chapter = chapter;
+                            StoryManager.inst.Level = level;
+                        }
+
+                        StoryManager.inst.Play();
+
+                        break;
+                    }
+                    
+                case "LoadNextStoryLevel":
+                    {
+                        var isArray = parameters.IsArray;
+
+                        StoryManager.inst.ContinueStory =
+                            parameters == null || (parameters.IsArray && parameters.Count >= 1 && parameters[0].AsBool || parameters.IsObject && parameters["continue"] != null && parameters["continue"].AsBool);
+
+                        StoryManager.inst.Play();
+
                         break;
                     }
 

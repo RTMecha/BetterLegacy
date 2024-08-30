@@ -160,7 +160,7 @@ namespace BetterLegacy.Core.Managers
         /// <returns></returns>
         public static IEnumerator Play(Level level)
         {
-            CoreHelper.Log($"{level} is null: {level == null}");
+            Debug.Log($"{className}Start playing level:\n{level}\nIs Story: {level is Story.StoryLevel}");
 
             LoadingFromHere = true;
             LevelEnded = false;
@@ -177,17 +177,23 @@ namespace BetterLegacy.Core.Managers
             Debug.Log($"{className}Switching to Game scene");
 
             bool inGame = CoreHelper.InGame;
-            if (!inGame || EditorManager.inst)
+            if (!inGame || CoreHelper.InEditor)
                 SceneManager.inst.LoadScene("Game");
 
-            Debug.Log($"{className}Loading music...");
+            Debug.Log($"{className}Loading music...\nMusic is null: {!level.music}");
 
             if (!level.music)
                 level.LoadAudioClip();
 
-            while (CoreHelper.InEditor || !CoreHelper.InGame || !ShapeManager.inst.loadedShapes)
-                yield return null;
+            Debug.Log($"{className}Waiting...\n" +
+                $"In Editor: {CoreHelper.InEditor}\n" +
+                $"In Game: {CoreHelper.InGame}\n" +
+                $"Loaded Shapes: {ShapeManager.inst.loadedShapes}");
+            if (CoreHelper.InEditor || !CoreHelper.InGame || !ShapeManager.inst.loadedShapes)
+                while (CoreHelper.InEditor || !CoreHelper.InGame || !ShapeManager.inst.loadedShapes)
+                    yield return null;
 
+            Debug.Log($"{className}Resetting Window resolution.");
             WindowController.ResetResolution();
             WindowController.ResetTitle();
 
@@ -199,14 +205,29 @@ namespace BetterLegacy.Core.Managers
             Debug.Log($"{className}Parsing level...");
 
             GameManager.inst.gameState = GameManager.State.Parsing;
-            var levelMode = level.LevelModes[Mathf.Clamp(CurrentLevelMode, 0, level.LevelModes.Length - 1)];
-            Debug.Log($"{className}Level Mode: {levelMode}...");
 
-            var rawJSON = RTFile.ReadFromFile(level.path + levelMode);
-            if (level.metadata.beatmap.game_version != "4.1.16" && level.metadata.beatmap.game_version != "20.4.4")
-                rawJSON = UpdateBeatmap(rawJSON, level.metadata.beatmap.game_version);
+            Story.StoryLevel storyLevel = null;
+            if (level is Story.StoryLevel a)
+            {
+                storyLevel = a;
+            }
 
-            DataManager.inst.gameData = levelMode.Contains(".vgd") ? GameData.ParseVG(JSON.Parse(rawJSON)) : GameData.Parse(JSONNode.Parse(rawJSON));
+            if (level.isStory && storyLevel)
+            {
+                CoreHelper.InStory = true;
+                GameData.Current = GameData.Parse(JSON.Parse(UpdateBeatmap(storyLevel.json, level.metadata.beatmap.game_version)));
+            }
+            else
+            {
+                var levelMode = level.LevelModes[Mathf.Clamp(CurrentLevelMode, 0, level.LevelModes.Length - 1)];
+                Debug.Log($"{className}Level Mode: {levelMode}...");
+
+                var rawJSON = RTFile.ReadFromFile(level.path + levelMode);
+                if (level.metadata.beatmap.game_version != "4.1.16" && level.metadata.beatmap.game_version != "20.4.4")
+                    rawJSON = UpdateBeatmap(rawJSON, level.metadata.beatmap.game_version);
+
+                GameData.Current = levelMode.Contains(".vgd") ? GameData.ParseVG(JSON.Parse(rawJSON)) : GameData.Parse(JSONNode.Parse(rawJSON));
+            }
 
             Debug.Log($"{className}Setting paths...");
 
@@ -229,14 +250,17 @@ namespace BetterLegacy.Core.Managers
 
             Debug.Log($"{className}Playing music...");
 
-            while (level.music == null)
+            while (!level.music)
                 yield return null;
 
             AudioManager.inst.PlayMusic(null, level.music, true, 0.5f, false);
-            AudioManager.inst.SetPitch(GameManager.inst.getPitch());
+            AudioManager.inst.SetPitch(CoreHelper.Pitch);
             GameManager.inst.songLength = level.music.length;
 
-            yield return RTVideoManager.inst.Setup(level.path);
+            if (!CurrentLevel.isStory)
+                yield return RTVideoManager.inst.Setup(level.path);
+            else if (storyLevel && storyLevel.videoClip)
+                RTVideoManager.inst.Play(storyLevel.videoClip);
 
             Debug.Log($"{className}Setting Camera sizes...");
 
@@ -258,9 +282,7 @@ namespace BetterLegacy.Core.Managers
             else
             {
                 for (int i = 0; i < PlayerManager.Players.Count; i++)
-                {
                     DestroyImmediate(PlayerManager.Players[i].GameObject);
-                }
             }
 
             PlayerManager.allowController = InputDataManager.inst.players.Count == 0;
