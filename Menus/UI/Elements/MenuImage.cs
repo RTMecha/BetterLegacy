@@ -254,7 +254,7 @@ namespace BetterLegacy.Menus.UI.Elements
         {
             var parameters = jn["params"];
             string name = jn["name"];
-            var not = jn["not"].AsBool; // If true,then check if the function is not true.
+            var not = jn["not"].AsBool; // If true, then check if the function is not true.
 
             switch (name)
             {
@@ -404,6 +404,103 @@ namespace BetterLegacy.Menus.UI.Elements
                         var value = CoreConfig.Instance.DisplayName.Value == (parameters.IsArray ? parameters[0].Value : parameters["user"].Value);
                         return !not ? value : !value;
                     }
+                #region LevelRanks
+                case "LevelRankEquals":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["rank"] == null)
+                            break;
+
+                        var value = LevelManager.CurrentLevel.playerData != null && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(LevelManager.CurrentLevel).name] == (parameters.IsArray ? parameters[0].AsInt : parameters["rank"].AsInt);
+                        return !not ? value : !value;
+                    }
+                case "LevelRankLesserEquals":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["rank"] == null)
+                            break;
+
+                        var value = LevelManager.CurrentLevel.playerData != null && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(LevelManager.CurrentLevel).name] <= (parameters.IsArray ? parameters[0].AsInt : parameters["rank"].AsInt);
+                        return !not ? value : !value;
+                    }
+                case "LevelRankGreaterEquals":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["rank"] == null)
+                            break;
+
+                        var value = LevelManager.CurrentLevel.playerData != null && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(LevelManager.CurrentLevel).name] >= (parameters.IsArray ? parameters[0].AsInt : parameters["rank"].AsInt);
+                        return !not ? value : !value;
+                    }
+                case "LevelRankLesser":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["rank"] == null)
+                            break;
+
+                        var value = LevelManager.CurrentLevel.playerData != null && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(LevelManager.CurrentLevel).name] < (parameters.IsArray ? parameters[0].AsInt : parameters["rank"].AsInt);
+                        return !not ? value : !value;
+                    }
+                case "LevelRankGreater":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["rank"] == null)
+                            break;
+
+                        var value = LevelManager.CurrentLevel.playerData != null && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(LevelManager.CurrentLevel).name] > (parameters.IsArray ? parameters[0].AsInt : parameters["rank"].AsInt);
+                        return !not ? value : !value;
+                    }
+                case "StoryLevelRankEquals":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["id"] == null || parameters["rank"] == null))
+                            break;
+
+                        var isArray = parameters.IsArray;
+                        var id = isArray ? parameters[0].Value : parameters["id"].Value;
+                        
+                        var value = StoryManager.inst.Saves.TryFind(x => x.ID == id, out LevelManager.PlayerData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] == (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
+                        return !not ? value : !value;
+                    }
+                case "StoryLevelRankLesserEquals":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["id"] == null || parameters["rank"] == null))
+                            break;
+
+                        var isArray = parameters.IsArray;
+                        var id = isArray ? parameters[0].Value : parameters["id"].Value;
+                        
+                        var value = StoryManager.inst.Saves.TryFind(x => x.ID == id, out LevelManager.PlayerData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] <= (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
+                        return !not ? value : !value;
+                    }
+                case "StoryLevelRankGreaterEquals":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["id"] == null || parameters["rank"] == null))
+                            break;
+
+                        var isArray = parameters.IsArray;
+                        var id = isArray ? parameters[0].Value : parameters["id"].Value;
+                        
+                        var value = StoryManager.inst.Saves.TryFind(x => x.ID == id, out LevelManager.PlayerData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] >= (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
+                        return !not ? value : !value;
+                    }
+                case "StoryLevelRankLesser":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["id"] == null || parameters["rank"] == null))
+                            break;
+
+                        var isArray = parameters.IsArray;
+                        var id = isArray ? parameters[0].Value : parameters["id"].Value;
+                        
+                        var value = StoryManager.inst.Saves.TryFind(x => x.ID == id, out LevelManager.PlayerData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] < (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
+                        return !not ? value : !value;
+                    }
+                case "StoryLevelRankGreater":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["id"] == null || parameters["rank"] == null))
+                            break;
+
+                        var isArray = parameters.IsArray;
+                        var id = isArray ? parameters[0].Value : parameters["id"].Value;
+                        
+                        var value = StoryManager.inst.Saves.TryFind(x => x.ID == id, out LevelManager.PlayerData playerData) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] > (parameters.IsArray ? parameters[1].AsInt : parameters["rank"].AsInt);
+                        return !not ? value : !value;
+                    }
+                    #endregion
             }
 
             return false;

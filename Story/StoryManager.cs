@@ -44,24 +44,89 @@ namespace BetterLegacy.Story
             { 4, 6 },
         };
 
+        public string StorySavesPath => $"{RTFile.ApplicationDirectory}profile/story_saves_{(SaveSlot + 1).ToString("00")}.lss";
         public JSONNode storySavesJSON;
+        int saveSlot;
+        public int SaveSlot
+        {
+            get => saveSlot;
+            set
+            {
+                saveSlot = value;
+                storySavesJSON = JSON.Parse(RTFile.FileExists(StorySavesPath) ? RTFile.ReadFromFile(StorySavesPath) : "{}");
+                Chapter = GetChapter();
+                Level = GetLevel();
+            }
+        }
 
         public static void Init() => new GameObject(nameof(StoryManager), typeof(StoryManager)).transform.SetParent(SystemManager.inst.transform);
 
         void Awake()
         {
             inst = this;
-            var storySavesPath = RTFile.ApplicationDirectory + "profile/story_saves.lss";
-            storySavesJSON = JSON.Parse(RTFile.FileExists(storySavesPath) ? RTFile.ReadFromFile(storySavesPath) : "{}");
+            storySavesJSON = JSON.Parse(RTFile.FileExists(StorySavesPath) ? RTFile.ReadFromFile(StorySavesPath) : "{}");
             Chapter = GetChapter();
             Level = GetLevel();
+
+            if (storySavesJSON["lvl"] != null)
+                for (int i = 0; i < storySavesJSON["lvl"].Count; i++)
+                {
+                    Saves.Add(LevelManager.PlayerData.Parse(storySavesJSON["lvl"][i]));
+                }
+        }
+
+        public void UpdateCurrentLevelProgress()
+        {
+            if (LevelManager.CurrentLevel is not StoryLevel storyLevel)
+                return;
+
+            CoreHelper.Log($"Setting Player Data");
+
+            // TODO: Implement achievement system (not the Steam one, the custom one)
+            //if (Saves.Where(x => x.Completed).Count() >= 100)
+            //{
+            //    SteamWrapper.inst.achievements.SetAchievement("GREAT_TESTER");
+            //}
+
+            if (PlayerManager.IsZenMode || PlayerManager.IsPractice)
+                return;
+
+            var makeNewPlayerData = storyLevel.playerData == null;
+            if (makeNewPlayerData)
+                storyLevel.playerData = new LevelManager.PlayerData { ID = storyLevel.id, LevelName = storyLevel.metadata?.LevelBeatmap?.name, };
+
+            CoreHelper.Log($"Updating save data\n" +
+                $"New Player Data = {makeNewPlayerData}\n" +
+                $"Deaths [OLD = {storyLevel.playerData.Deaths} > NEW = {GameManager.inst.deaths.Count}]\n" +
+                $"Hits: [OLD = {storyLevel.playerData.Hits} > NEW = {GameManager.inst.hits.Count}]\n" +
+                $"Boosts: [OLD = {storyLevel.playerData.Boosts} > NEW = {LevelManager.BoostCount}]");
+
+            storyLevel.playerData.Update(GameManager.inst.deaths.Count, GameManager.inst.hits.Count, LevelManager.BoostCount, true);
+
+            if (Saves.Has(x => x.ID == storyLevel.id))
+                Saves[Saves.FindIndex(x => x.ID == storyLevel.id)] = storyLevel.playerData;
+            else
+                Saves.Add(storyLevel.playerData);
+
+            SaveProgress();
+        }
+
+        public void SaveProgress()
+        {
+            storySavesJSON["lvl"] = new JSONArray();
+            for (int i = 0; i < Saves.Count; i++)
+            {
+                storySavesJSON["lvl"][i] = Saves[i].ToJSON();
+            }
+
+            Save();
         }
 
         public void Save()
         {
             try
             {
-                RTFile.WriteToFile(RTFile.ApplicationDirectory + "profile/story_saves.lss", storySavesJSON.ToString());
+                RTFile.WriteToFile(StorySavesPath, storySavesJSON.ToString());
             }
             catch (System.Exception ex)
             {
@@ -141,9 +206,7 @@ namespace BetterLegacy.Story
             Loaded = false;
         }
 
-        public List<StoryLevel> storyLevels = new List<StoryLevel>();
-
-        public static StoryLevel CurrentStoryLevel { get; set; }
+        public List<LevelManager.PlayerData> Saves { get; set; } = new List<LevelManager.PlayerData>();
 
         public IEnumerator Download(System.Action onComplete = null)
         {
@@ -209,6 +272,7 @@ namespace BetterLegacy.Story
             {
                 LevelManager.Clear();
                 Updater.OnLevelEnd();
+                UpdateCurrentLevelProgress(); // allow players to get a better rank
 
                 if (!ContinueStory)
                 {
