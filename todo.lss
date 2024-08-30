@@ -10,7 +10,8 @@
 - Level modifiers (supports VG triggers)
 - Color picker rework
 - Timeline object index order
-- Unclamped timeline
+- Figure out custom timeline bin system. (Shows a custom amount of rows in the timeline and allows for the timeline to be navigated up and down)
+- Unclamped timeline (timeline can be navigated outside the regular range and objects can be placed before start time 0)
 - Text editor
 - New modifiers [prizeObject, setParent, playerAction (PlayerActionSet) trigger]
 ### Misc
