@@ -312,12 +312,7 @@ namespace BetterLegacy.Core.Managers
 
                         if (beatmapObject.text.Contains("<playerDeathsAll>"))
                         {
-                            var pd = 0;
-
-                            for (int i = 0; i < InputDataManager.inst.players.Count; i++)
-                            {
-                                pd += InputDataManager.inst.players[i].PlayerDeaths.Count;
-                            }
+                            var pd = GameManager.inst.deaths.Count;
 
                             str = str.Replace("<playerDeathsAll>", pd.ToString());
                         }
@@ -339,12 +334,7 @@ namespace BetterLegacy.Core.Managers
 
                         if (beatmapObject.text.Contains("<playerHitsAll>"))
                         {
-                            var pd = 0;
-
-                            for (int i = 0; i < InputDataManager.inst.players.Count; i++)
-                            {
-                                pd += InputDataManager.inst.players[i].PlayerHits.Count;
-                            }
+                            var pd = GameManager.inst.hits.Count;
 
                             str = str.Replace("<playerHitsAll>", pd.ToString());
                         }
