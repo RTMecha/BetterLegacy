@@ -1,3 +1,11 @@
+1.3.11 > [Aug 30, 2024]
+- Added tooltips for modifiers so what they do is finally explained in-editor.
+- Added mouse tooltip and notification display multiplier settings. They can be found under Config > Editor > Editor GUI.
+- Mouse tooltips now display longer based on how long the text is. If the text is really short, then it will disappear really quickly, otherwise it will stay longer.
+- Decreased the max wait time Example could potentially have to speak from 16:40:00 (wtf) to 0:10:00.
+- Fixed death and hit count not using the correct counter in some cases.
+- Added onPlayerDeath modifier.
+- Tried cleaning up / optimizing modifier code. Please let me know if there's a decrease in performance!
 1.3.10 > [Aug 29, 2024]
 - Scene loading error hot fix.
 1.3.9 > [Aug 29, 2024]
