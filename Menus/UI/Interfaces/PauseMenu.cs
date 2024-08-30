@@ -193,7 +193,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     num++;
                 }
 
-                if (i == 3 && LevelManager.Hub != null)
+                if (i == 4 && LevelManager.Hub != null)
                 {
                     elements.Add(new MenuButton
                     {
@@ -217,7 +217,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     num++;
                 }
 
-                if (i == 3 && CoreHelper.InStory)
+                if (i == 4 && CoreHelper.InStory)
                 {
                     elements.Add(new MenuButton
                     {
@@ -236,7 +236,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         selectedTextVal = -40f,
                         length = 1f,
                         playBlipSound = true,
-                        func = InterfaceManager.inst.StartupStoryInterface,
+                        func = () => { SceneManager.inst.LoadScene("Interface", true); },
                     });
                     num++;
                 }
