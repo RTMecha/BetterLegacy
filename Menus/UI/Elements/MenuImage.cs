@@ -1723,9 +1723,9 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 #region DemoStoryMode
 
-                // Demos the BetterLegacy story mode. Temporary until the story mode is implemented.
+                // Begins the BetterLegacy story mode.
                 // Function has no parameters.
-                case "DemoStoryMode":
+                case "BeginStoryMode":
                     {
                         LevelManager.IsArcade = false;
                         SceneManager.inst.LoadScene("Input Select");
