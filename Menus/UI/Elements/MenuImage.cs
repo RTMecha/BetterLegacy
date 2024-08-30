@@ -396,6 +396,14 @@ namespace BetterLegacy.Menus.UI.Elements
                         var value = StoryManager.inst.GetLevel() > (parameters.IsArray ? parameters[0].AsInt : parameters["level"].AsInt);
                         return !not ? value : !value;
                     }
+                case "DisplayNameEquals":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["user"] == null)
+                            break;
+
+                        var value = CoreConfig.Instance.DisplayName.Value == (parameters.IsArray ? parameters[0].Value : parameters["user"].Value);
+                        return !not ? value : !value;
+                    }
             }
 
             return false;
@@ -1761,6 +1769,13 @@ namespace BetterLegacy.Menus.UI.Elements
                             parameters == null || (parameters.IsArray && parameters.Count >= 1 && parameters[0].AsBool || parameters.IsObject && parameters["continue"] != null && parameters["continue"].AsBool);
 
                         StoryManager.inst.Play();
+
+                        break;
+                    }
+                    
+                case "LoadCurrentStoryInterface":
+                    {
+                        InterfaceManager.inst.StartupStoryInterface();
 
                         break;
                     }
