@@ -52,6 +52,11 @@ namespace BetterLegacy.Core
 
         public static void ResetResolution(bool setPosition = true)
         {
+            if (!Managers.RTEventManager.windowPositionResolutionChanged)
+                return;
+
+            Managers.RTEventManager.windowPositionResolutionChanged = false;
+
             if (setPosition)
                 SetPosition(WindowCenter.x, WindowCenter.y);
 

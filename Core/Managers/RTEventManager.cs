@@ -31,6 +31,8 @@ namespace BetterLegacy.Core.Managers
         public AnalogGlitch analogGlitch;
         public DigitalGlitch digitalGlitch;
 
+        public static bool windowPositionResolutionChanged = false;
+
         void Awake()
         {
             if (inst == null)
@@ -561,6 +563,7 @@ namespace BetterLegacy.Core.Managers
                         WindowController.WindowHandle, 0, (int)(inst.windowPosition.x * screenScale) + WindowController.WindowCenter.x, -(int)(inst.windowPosition.y * screenScale) + WindowController.WindowCenter.y,
                         inst.forceWindow ? (int)(inst.windowResolution.x * screenScale) : 0, inst.forceWindow ? (int)(inst.windowResolution.y * screenScale) : 0, inst.forceWindow ? 0 : 1);
                     inst.windowHasChanged = true;
+                    windowPositionResolutionChanged = true;
                 }
 
                 if (inst.forceWindow && !inst.allowWindowPositioning && (!EditorManager.inst || !EditorManager.inst.isEditing))
@@ -568,6 +571,7 @@ namespace BetterLegacy.Core.Managers
                     inst.setWindow = true;
                     WindowController.SetResolution((int)(inst.windowResolution.x * screenScale), (int)(inst.windowResolution.y * screenScale), false);
                     inst.windowHasChanged = true;
+                    windowPositionResolutionChanged = true;
                 }
 
                 if (!inst.forceWindow && inst.setWindow)
