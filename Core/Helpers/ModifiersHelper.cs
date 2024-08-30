@@ -147,7 +147,8 @@ namespace BetterLegacy.Core.Helpers
                             if (GameManager.inst.players.transform.Find(string.Format("Player {0}", i + 1)) && modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject && float.TryParse(modifier.value, out float num))
                             {
                                 var player = GameManager.inst.players.transform.Find(string.Format("Player {0}/Player", i + 1));
-                                return Vector2.Distance(player.transform.position, levelObject.visualObject.GameObject.transform.position) > num;
+                                if (Vector2.Distance(player.transform.position, levelObject.visualObject.GameObject.transform.position) > num)
+                                    return true;
                             }
                         }
 
@@ -160,7 +161,8 @@ namespace BetterLegacy.Core.Helpers
                             if (GameManager.inst.players.transform.Find(string.Format("Player {0}", i + 1)) && modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject && float.TryParse(modifier.value, out float num))
                             {
                                 var player = GameManager.inst.players.transform.Find(string.Format("Player {0}/Player", i + 1));
-                                return Vector2.Distance(player.transform.position, levelObject.visualObject.GameObject.transform.position) < num;
+                                if (Vector2.Distance(player.transform.position, levelObject.visualObject.GameObject.transform.position) < num)
+                                    return true;
                             }
                         }
 
