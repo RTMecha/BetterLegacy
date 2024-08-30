@@ -25,3 +25,4 @@
 - loadLevel modifiers custom end function (same as above)
 - Possible multi object editor rework???
 - Find a way to implement Re-rendering waveform.
+- See if gradient is possible to implement to objects. (if it is, then replace color homing)
