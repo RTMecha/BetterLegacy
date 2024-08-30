@@ -474,35 +474,21 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "onPlayerHit":
                     {
-                        if (modifier.Result == null)
+                        if (modifier.Result == null || modifier.Result is int count && count != GameManager.inst.hits.Count)
                         {
-                            modifier.Result = PlayerManager.Players.Select(x => x.Health).ToList();
+                            modifier.Result = GameManager.inst.hits.Count;
+                            return true;
                         }
 
-                        if (modifier.Result is List<int>)
-                            if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
-                            {
-                                var result = modifier.Result as List<int>;
-
-                                var orderedList = PlayerManager.Players
-                                    .Where(x => x.Player)
-                                    .OrderBy(x => Vector2.Distance(x.Player.playerObjects["RB Parent"].gameObject.transform.position, levelObject.visualObject.GameObject.transform.position)).ToList();
-
-                                if (orderedList.Count > 0)
-                                {
-                                    var closest = orderedList[0];
-
-                                    var a = result.Count > closest.index && result[closest.index] > closest.Health;
-
-                                    if (a)
-                                    {
-                                        result[closest.index] = closest.Health;
-                                        modifier.Result = result;
-                                    }
-
-                                    return a;
-                                }
-                            }
+                        break;
+                    }
+                case "onPlayerDeath":
+                    {
+                        if (modifier.Result == null || modifier.Result is int count && count != GameManager.inst.deaths.Count)
+                        {
+                            modifier.Result = GameManager.inst.deaths.Count;
+                            return true;
+                        }
 
                         break;
                     }
@@ -3138,8 +3124,7 @@ namespace BetterLegacy.Core.Helpers
                                         var vector = new Vector3(pl.position.x, pl.position.y, 0f);
                                         var target = new Vector3(gm.transform.position.x, gm.transform.position.y, 0f);
 
-                                        if (AudioManager.inst.CurrentAudioSource.isPlaying)
-                                            pl.position += (target - vector) * moveDelay;
+                                        pl.position += (target - vector) * moveDelay;
                                     }
                                 }
                             }
