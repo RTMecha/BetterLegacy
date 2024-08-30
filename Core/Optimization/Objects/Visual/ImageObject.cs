@@ -53,15 +53,18 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
 
             path = match.Success ? RTFile.BasePath + match.Groups[1].ToString() : RTFile.BasePath + text;
 
+            var position = gameObject.transform.localPosition;
             if (!RTFile.FileExists(path))
             {
                 ((SpriteRenderer)Renderer).sprite = ArcadeManager.inst.defaultImage;
+                gameObject.transform.localPosition = position;
                 return;
             }
 
             CoreHelper.StartCoroutine(AlephNetworkManager.DownloadImageTexture("file://" + path, x =>
             {
                 ((SpriteRenderer)Renderer).sprite = SpriteManager.CreateSprite(x);
+                gameObject.transform.localPosition = position;
             }, onError =>  { ((SpriteRenderer)Renderer).sprite = ArcadeManager.inst.defaultImage; }));
         }
 
