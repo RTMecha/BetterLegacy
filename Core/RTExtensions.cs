@@ -171,43 +171,7 @@ namespace BetterLegacy.Core
         /// </summary>
         /// <param name="beatmapObject"></param>
         /// <returns>List of parents ordered by the current beatmap object to the base parent with no other parents.</returns>
-        public static List<BaseBeatmapObject> GetParentChain(this BaseBeatmapObject beatmapObject)
-        {
-            var beatmapObjects = new List<BaseBeatmapObject>();
-
-            if (beatmapObject != null)
-            {
-                var orig = beatmapObject;
-                beatmapObjects.Add(orig);
-
-                while (!string.IsNullOrEmpty(orig.parent))
-                {
-                    if (orig == null || DataManager.inst.gameData.beatmapObjects.Find(x => x.id == orig.parent) == null)
-                        break;
-                    var select = DataManager.inst.gameData.beatmapObjects.Find(x => x.id == orig.parent);
-                    beatmapObjects.Add(select);
-                    orig = select;
-                }
-            }
-
-            return beatmapObjects;
-        }
-
-        public static List<BaseBeatmapObject> GetParentChainSimple(this BaseBeatmapObject beatmapObject)
-        {
-            var beatmapObjects = new List<BaseBeatmapObject>();
-
-            var orig = beatmapObject;
-            beatmapObjects.Add(orig);
-
-            while (!string.IsNullOrEmpty(orig.parent))
-            {
-                orig = DataManager.inst.gameData.beatmapObjects.Find(x => x.id == orig.parent);
-                beatmapObjects.Add(orig);
-            }
-
-            return beatmapObjects;
-        }
+        public static List<BaseBeatmapObject> GetParentChain(this BaseBeatmapObject beatmapObject) => Helpers.CoreHelper.GetParentChain(beatmapObject);
 
         /// <summary>
         /// Gets the every child connected to the beatmap object.

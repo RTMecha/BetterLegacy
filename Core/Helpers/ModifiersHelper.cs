@@ -44,6 +44,7 @@ namespace BetterLegacy.Core.Helpers
                     {
                         return false;
                     }
+                #region Player
                 case "playerCollide":
                     {
                         return modifier.reference.IsTouchingPlayer();
@@ -188,6 +189,48 @@ namespace BetterLegacy.Core.Helpers
                     {
                         return int.TryParse(modifier.value, out int num) && InputDataManager.inst.players.Count > num;
                     }
+                case "onPlayerHit":
+                    {
+                        if (modifier.Result == null || modifier.Result is int count && count != GameManager.inst.hits.Count)
+                        {
+                            modifier.Result = GameManager.inst.hits.Count;
+                            return true;
+                        }
+
+                        break;
+                    }
+                case "onPlayerDeath":
+                    {
+                        if (modifier.Result == null || modifier.Result is int count && count != GameManager.inst.deaths.Count)
+                        {
+                            modifier.Result = GameManager.inst.deaths.Count;
+                            return true;
+                        }
+
+                        break;
+                    }
+                case "playerBoostEquals":
+                    {
+                        return int.TryParse(modifier.value, out int num) && LevelManager.BoostCount == num;
+                    }
+                case "playerBoostLesserEquals":
+                    {
+                        return int.TryParse(modifier.value, out int num) && LevelManager.BoostCount <= num;
+                    }
+                case "playerBoostGreaterEquals":
+                    {
+                        return int.TryParse(modifier.value, out int num) && LevelManager.BoostCount >= num;
+                    }
+                case "playerBoostLesser":
+                    {
+                        return int.TryParse(modifier.value, out int num) && LevelManager.BoostCount < num;
+                    }
+                case "playerBoostGreater":
+                    {
+                        return int.TryParse(modifier.value, out int num) && LevelManager.BoostCount > num;
+                    }
+                #endregion
+                #region Controls
                 case "keyPressDown":
                     {
                         return int.TryParse(modifier.value, out int num) && Input.GetKeyDown((KeyCode)num);
@@ -258,6 +301,8 @@ namespace BetterLegacy.Core.Helpers
                         }
                         break;
                     }
+                #endregion
+                #region Collide
                 case "bulletCollide":
                     {
                         if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
@@ -278,12 +323,14 @@ namespace BetterLegacy.Core.Helpers
                     {
                         if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.Collider)
                         {
-                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => ((BeatmapObject)x).tags.Contains(modifier.value) && ((BeatmapObject)x).levelObject && ((BeatmapObject)x).levelObject.visualObject != null && ((BeatmapObject)x).levelObject.visualObject.Collider);
-                            return list.Count() > 0 && list.Any(x => ((BeatmapObject)x).levelObject.visualObject.Collider.IsTouching(levelObject.visualObject.Collider));
+                            var list = CoreHelper.FindObjectsWithTag(modifier.value).FindAll(x => Updater.TryGetObject(x, out LevelObject levelObject1) && levelObject1.visualObject != null && levelObject1.visualObject.Collider);
+                            return list.Count > 0 && list.Any(x => x.levelObject.visualObject.Collider.IsTouching(levelObject.visualObject.Collider));
                         }
 
                         break;
                     }
+                #endregion
+                #region JSON
                 case "loadEquals":
                     {
                         if (RTFile.FileExists(RTFile.ApplicationDirectory + "profile/" + modifier.commands[1] + ".ses"))
@@ -392,6 +439,8 @@ namespace BetterLegacy.Core.Helpers
                         }
                         break;
                     }
+                #endregion
+                #region Variable
                 case "variableEquals":
                     {
                         return int.TryParse(modifier.value, out int num) && modifier.reference && modifier.reference.integerVariable == num;
@@ -452,6 +501,8 @@ namespace BetterLegacy.Core.Helpers
                             !string.IsNullOrEmpty(modifier.commands[1]) &&
                             DataManager.inst.gameData.beatmapObjects.Any(x => ((BeatmapObject)x).tags.Contains(modifier.commands[1]) && ((BeatmapObject)x).integerVariable > num);
                     }
+                #endregion
+                #region Audio
                 case "pitchEquals":
                     {
                         return float.TryParse(modifier.value, out float num) && AudioManager.inst.pitch == num;
@@ -472,26 +523,20 @@ namespace BetterLegacy.Core.Helpers
                     {
                         return float.TryParse(modifier.value, out float num) && AudioManager.inst.pitch > num;
                     }
-                case "onPlayerHit":
+                case "musicTimeGreater":
                     {
-                        if (modifier.Result == null || modifier.Result is int count && count != GameManager.inst.hits.Count)
-                        {
-                            modifier.Result = GameManager.inst.hits.Count;
-                            return true;
-                        }
-
-                        break;
+                        return float.TryParse(modifier.value, out float x) && AudioManager.inst.CurrentAudioSource.time > x;
                     }
-                case "onPlayerDeath":
+                case "musicTimeLesser":
                     {
-                        if (modifier.Result == null || modifier.Result is int count && count != GameManager.inst.deaths.Count)
-                        {
-                            modifier.Result = GameManager.inst.deaths.Count;
-                            return true;
-                        }
-
-                        break;
+                        return float.TryParse(modifier.value, out float x) && AudioManager.inst.CurrentAudioSource.time < x;
                     }
+                case "musicPlaying":
+                    {
+                        return AudioManager.inst.CurrentAudioSource.isPlaying;
+                    }
+                #endregion
+                #region Challenge Mode
                 case "inZenMode":
                     {
                         return PlayerManager.IsZenMode && (EditorManager.inst == null || RTPlayer.ZenModeInEditor);
@@ -512,10 +557,8 @@ namespace BetterLegacy.Core.Helpers
                     {
                         return PlayerManager.IsPractice;
                     }
-                case "inEditor":
-                    {
-                        return CoreHelper.InEditor;
-                    }
+                #endregion
+                #region Random
                 case "randomGreater":
                     {
                         if (modifier.Result == null)
@@ -537,22 +580,8 @@ namespace BetterLegacy.Core.Helpers
 
                         return modifier.Result != null && (bool)modifier.Result;
                     }
-                case "requireSignal":
-                    {
-                        return modifier.Result != null;
-                    }
-                case "musicTimeGreater":
-                    {
-                        return float.TryParse(modifier.value, out float x) && AudioManager.inst.CurrentAudioSource.time > x;
-                    }
-                case "musicTimeLesser":
-                    {
-                        return float.TryParse(modifier.value, out float x) && AudioManager.inst.CurrentAudioSource.time < x;
-                    }
-                case "musicPlaying":
-                    {
-                        return AudioManager.inst.CurrentAudioSource.isPlaying;
-                    }
+                #endregion
+                #region Axis
                 case "axisEquals":
                     {
                         if (modifier.commands.Count < 11)
@@ -920,26 +949,8 @@ namespace BetterLegacy.Core.Helpers
 
                         break;
                     }
-                case "playerBoostEquals":
-                    {
-                        return int.TryParse(modifier.value, out int num) && LevelManager.BoostCount == num;
-                    }
-                case "playerBoostLesserEquals":
-                    {
-                        return int.TryParse(modifier.value, out int num) && LevelManager.BoostCount <= num;
-                    }
-                case "playerBoostGreaterEquals":
-                    {
-                        return int.TryParse(modifier.value, out int num) && LevelManager.BoostCount >= num;
-                    }
-                case "playerBoostLesser":
-                    {
-                        return int.TryParse(modifier.value, out int num) && LevelManager.BoostCount < num;
-                    }
-                case "playerBoostGreater":
-                    {
-                        return int.TryParse(modifier.value, out int num) && LevelManager.BoostCount > num;
-                    }
+                #endregion
+                #region Level Rank
                 case "levelRankEquals":
                     {
                         return !CoreHelper.InEditor && LevelManager.CurrentLevel != null && LevelManager.CurrentLevel.playerData != null && int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(LevelManager.CurrentLevel).name] == num;
@@ -1000,10 +1011,8 @@ namespace BetterLegacy.Core.Helpers
                     {
                         return int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(GameManager.inst.hits).name] > num;
                     }
-                case "isFullscreen":
-                    {
-                        return Screen.fullScreen;
-                    }
+                #endregion
+                #region Real Time
                 case "realTimeSecondEquals":
                     {
                         if (int.TryParse(modifier.value, out int num))
@@ -1218,6 +1227,8 @@ namespace BetterLegacy.Core.Helpers
                             return Parser.TryParse(DateTime.Now.ToString("yyyy"), 0) > num;
                         break;
                     }
+                #endregion
+                #region Level
                 case "levelUnlocked":
                     {
                         return LevelManager.Levels.TryFind(x => x.id == modifier.value, out Level level) && !level.Locked;
@@ -1229,6 +1240,19 @@ namespace BetterLegacy.Core.Helpers
                 case "levelCompletedOther":
                     {
                         return CoreHelper.InEditor || LevelManager.Levels.TryFind(x => x.id == modifier.value, out Level level) && level.playerData != null && level.playerData.Completed;
+                    }
+                #endregion
+                case "inEditor":
+                    {
+                        return CoreHelper.InEditor;
+                    }
+                case "requireSignal":
+                    {
+                        return modifier.Result != null;
+                    }
+                case "isFullscreen":
+                    {
+                        return Screen.fullScreen;
                     }
             }
 
@@ -1248,25 +1272,23 @@ namespace BetterLegacy.Core.Helpers
 
             if (!modifier.IsValid(ModifiersManager.defaultBeatmapObjectModifiers))
                 return;
+
             try
             {
                 switch (modifier.commands[0])
                 {
+                    #region Audio
                     case "setPitch":
                         {
                             if (float.TryParse(modifier.value, out float num))
-                            {
                                 RTEventManager.inst.pitchOffset = num;
-                            }
 
                             break;
                         }
                     case "addPitch":
                         {
                             if (float.TryParse(modifier.value, out float num))
-                            {
                                 RTEventManager.inst.pitchOffset += num;
-                            }
 
                             break;
                         }
@@ -1302,101 +1324,103 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playDefaultSound":
                         {
-                            if (float.TryParse(modifier.commands[1], out float pitch) && float.TryParse(modifier.commands[2], out float vol) && bool.TryParse(modifier.commands[3], out bool loop) && AudioManager.inst.library.soundClips.TryGetValue(modifier.value, out AudioClip[] audioClips))
-                            {
-                                var clip = audioClips[UnityEngine.Random.Range(0, audioClips.Length)];
-                                var audioSource = Camera.main.gameObject.AddComponent<AudioSource>();
-                                audioSource.clip = clip;
-                                audioSource.playOnAwake = true;
-                                audioSource.loop = loop;
-                                audioSource.pitch = pitch * AudioManager.inst.CurrentAudioSource.pitch;
-                                audioSource.volume = vol * AudioManager.inst.sfxVol;
-                                audioSource.Play();
+                            if (!float.TryParse(modifier.commands[1], out float pitch) || !float.TryParse(modifier.commands[2], out float vol) || !bool.TryParse(modifier.commands[3], out bool loop) || !AudioManager.inst.library.soundClips.TryGetValue(modifier.value, out AudioClip[] audioClips))
+                                break;
 
-                                float x = pitch * AudioManager.inst.CurrentAudioSource.pitch;
-                                if (x == 0f)
-                                    x = 1f;
-                                if (x < 0f)
-                                    x = -x;
+                            var clip = audioClips[UnityEngine.Random.Range(0, audioClips.Length)];
+                            var audioSource = Camera.main.gameObject.AddComponent<AudioSource>();
+                            audioSource.clip = clip;
+                            audioSource.playOnAwake = true;
+                            audioSource.loop = loop;
+                            audioSource.pitch = pitch * AudioManager.inst.CurrentAudioSource.pitch;
+                            audioSource.volume = vol * AudioManager.inst.sfxVol;
+                            audioSource.Play();
 
-                                if (!loop)
-                                    CoreHelper.StartCoroutine(AudioManager.inst.DestroyWithDelay(audioSource, clip.length / x));
-                                else if (!ModifiersManager.audioSources.ContainsKey(modifier.reference.id))
-                                    ModifiersManager.audioSources.Add(modifier.reference.id, audioSource);
-                            }
+                            float x = pitch * AudioManager.inst.CurrentAudioSource.pitch;
+                            if (x == 0f)
+                                x = 1f;
+                            if (x < 0f)
+                                x = -x;
+
+                            if (!loop)
+                                CoreHelper.StartCoroutine(AudioManager.inst.DestroyWithDelay(audioSource, clip.length / x));
+                            else if (!ModifiersManager.audioSources.ContainsKey(modifier.reference.id))
+                                ModifiersManager.audioSources.Add(modifier.reference.id, audioSource);
 
                             break;
                         }
                     case "audioSource":
                         {
-                            if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null &&
-                                levelObject.visualObject.GameObject != null && bool.TryParse(modifier.commands[1], out bool global))
+                            if (modifier.Result == null || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null ||
+                                levelObject.visualObject.GameObject == null || !bool.TryParse(modifier.commands[1], out bool global))
+                                break;
+
+                            string text = RTFile.ApplicationDirectory + "beatmaps/soundlibrary/" + modifier.value;
+
+                            if (!global)
+                                text = RTFile.BasePath + modifier.value;
+
+                            if (!modifier.value.Contains(".ogg") && RTFile.FileExists(text + ".ogg"))
+                                text += ".ogg";
+
+                            if (!modifier.value.Contains(".wav") && RTFile.FileExists(text + ".wav"))
+                                text += ".wav";
+
+                            if (!modifier.value.Contains(".mp3") && RTFile.FileExists(text + ".mp3"))
+                                text += ".mp3";
+
+                            if (!RTFile.FileExists(text))
+                                break;
+
+                            if (text.Contains(".mp3"))
                             {
-                                if (modifier.Result != null)
-                                    break;
-
-                                string text = RTFile.ApplicationDirectory + "beatmaps/soundlibrary/" + modifier.value;
-
-                                if (!global)
-                                    text = RTFile.BasePath + modifier.value;
-
-                                if (!modifier.value.Contains(".ogg") && RTFile.FileExists(text + ".ogg"))
-                                    text += ".ogg";
-
-                                if (!modifier.value.Contains(".wav") && RTFile.FileExists(text + ".wav"))
-                                    text += ".wav";
-
-                                if (!modifier.value.Contains(".mp3") && RTFile.FileExists(text + ".mp3"))
-                                    text += ".mp3";
-
-                                if (!RTFile.FileExists(text))
-                                    break;
-
-                                if (text.Contains(".mp3"))
-                                {
-                                    modifier.Result = levelObject.visualObject.GameObject.AddComponent<AudioModifier>();
-                                    ((AudioModifier)modifier.Result).Init(LSAudio.CreateAudioClipUsingMP3File(text), modifier.reference, modifier);
-                                    break;
-                                }
-
-                                CoreHelper.StartCoroutine(ModifiersManager.LoadMusicFileRaw(text, delegate (AudioClip audioClip)
-                                {
-                                    audioClip.name = modifier.value;
-                                    modifier.Result = levelObject.visualObject.GameObject.AddComponent<AudioModifier>();
-                                    ((AudioModifier)modifier.Result).Init(audioClip, modifier.reference, modifier);
-                                }));
+                                modifier.Result = levelObject.visualObject.GameObject.AddComponent<AudioModifier>();
+                                ((AudioModifier)modifier.Result).Init(LSAudio.CreateAudioClipUsingMP3File(text), modifier.reference, modifier);
+                                break;
                             }
+
+                            CoreHelper.StartCoroutine(ModifiersManager.LoadMusicFileRaw(text, audioClip =>
+                            {
+                                audioClip.name = modifier.value;
+                                modifier.Result = levelObject.visualObject.GameObject.AddComponent<AudioModifier>();
+                                ((AudioModifier)modifier.Result).Init(audioClip, modifier.reference, modifier);
+                            }));
 
                             break;
                         }
+                    #endregion
+                    #region Level
                     case "loadLevel":
                         {
-                            if (EditorManager.inst && EditorManager.inst.isEditing)
+                            if (CoreHelper.IsEditing)
                             {
-                                if (ModifiersConfig.Instance.EditorLoadLevel.Value)
-                                {
-                                    RTEditor.inst.ShowWarningPopup($"You are about to enter the level {modifier.value}, are you sure you want to continue? Any unsaved progress will be lost!", () =>
-                                    {
-                                        string str = RTFile.BasePath;
-                                        if (ModifiersConfig.Instance.EditorSavesBeforeLoad.Value)
-                                        {
-                                            CoreHelper.StartCoroutine(ProjectData.Writer.SaveData(str + "level-modifier-backup.lsb", GameData.Current, () =>
-                                            {
-                                                EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(str))}", 2f, EditorManager.NotificationType.Success);
-                                            }));
-                                        }
+                                if (!ModifiersConfig.Instance.EditorLoadLevel.Value)
+                                    break;
 
-                                        EditorManager.inst.StartCoroutine(EditorManager.inst.LoadLevel(modifier.value));
-                                    }, RTEditor.inst.HideWarningPopup);
-                                }
+                                RTEditor.inst.ShowWarningPopup($"You are about to enter the level {modifier.value}, are you sure you want to continue? Any unsaved progress will be lost!", () =>
+                                {
+                                    string str = RTFile.BasePath;
+                                    if (ModifiersConfig.Instance.EditorSavesBeforeLoad.Value)
+                                    {
+                                        CoreHelper.StartCoroutine(ProjectData.Writer.SaveData(str + "level-modifier-backup.lsb", GameData.Current, () =>
+                                        {
+                                            EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(str))}", 2f, EditorManager.NotificationType.Success);
+                                        }));
+                                    }
+
+                                    EditorManager.inst.StartCoroutine(EditorManager.inst.LoadLevel(modifier.value));
+                                }, RTEditor.inst.HideWarningPopup);
+
+                                break;
                             }
-                            else if (!EditorManager.inst)
-                            {
-                                if (RTFile.FileExists($"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{modifier.value}/level.lsb"))
-                                    LevelManager.Load($"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{modifier.value}/level.lsb");
-                                if (RTFile.FileExists($"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{modifier.value}/level.vgd"))
-                                    LevelManager.Load($"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{modifier.value}/level.vgd");
-                            }
+
+                            if (CoreHelper.InEditor)
+                                break;
+
+                            if (RTFile.FileExists($"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{modifier.value}/level.lsb"))
+                                LevelManager.Load($"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{modifier.value}/level.lsb");
+                            if (RTFile.FileExists($"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{modifier.value}/level.vgd"))
+                                LevelManager.Load($"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{modifier.value}/level.vgd");
                             break;
                         }
                     case "loadLevelID":
@@ -1404,28 +1428,29 @@ namespace BetterLegacy.Core.Helpers
                             if (modifier.value == "0" || modifier.value == "-1")
                                 break;
 
-                            if (EditorManager.inst && EditorManager.inst.isEditing && EditorManager.inst.loadedLevels.Has(x => x.metadata is MetaData metaData && metaData.ID == modifier.value))
+                            if (CoreHelper.IsEditing && EditorManager.inst.loadedLevels.TryFind(x => x.metadata is MetaData metaData && metaData.ID == modifier.value, out EditorManager.MetadataWrapper metadataWrapper))
                             {
-                                if (ModifiersConfig.Instance.EditorLoadLevel.Value)
+                                if (!ModifiersConfig.Instance.EditorLoadLevel.Value)
+                                    break;
+
+                                var path = System.IO.Path.GetFileName(metadataWrapper.folder);
+
+                                RTEditor.inst.ShowWarningPopup($"You are about to enter the level {path}, are you sure you want to continue? Any unsaved progress will be lost!", () =>
                                 {
-                                    var path = System.IO.Path.GetFileName(EditorManager.inst.loadedLevels.Find(x => x.metadata is MetaData metaData && metaData.ID == modifier.value).folder);
-
-                                    RTEditor.inst.ShowWarningPopup($"You are about to enter the level {path}, are you sure you want to continue? Any unsaved progress will be lost!", () =>
+                                    string str = RTFile.BasePath;
+                                    if (ModifiersConfig.Instance.EditorSavesBeforeLoad.Value)
                                     {
-                                        string str = RTFile.BasePath;
-                                        if (ModifiersConfig.Instance.EditorSavesBeforeLoad.Value)
+                                        CoreHelper.StartCoroutine(ProjectData.Writer.SaveData(str + "level-modifier-backup.lsb", GameData.Current, () =>
                                         {
-                                            CoreHelper.StartCoroutine(ProjectData.Writer.SaveData(str + "level-modifier-backup.lsb", GameData.Current, () =>
-                                            {
-                                                EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(str))}", 2f, EditorManager.NotificationType.Success);
-                                            }));
-                                        }
+                                            EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(str))}", 2f, EditorManager.NotificationType.Success);
+                                        }));
+                                    }
 
-                                        EditorManager.inst.StartCoroutine(EditorManager.inst.LoadLevel(path));
-                                    }, RTEditor.inst.HideWarningPopup);
-                                }
+                                    EditorManager.inst.StartCoroutine(EditorManager.inst.LoadLevel(path));
+                                }, RTEditor.inst.HideWarningPopup);
                             }
-                            else if (!EditorManager.inst && LevelManager.Levels.Has(x => x.id == modifier.value))
+
+                            if (!CoreHelper.InEditor && LevelManager.Levels.Has(x => x.id == modifier.value))
                             {
                                 var level = LevelManager.Levels.Find(x => x.id == modifier.value);
 
@@ -1435,29 +1460,28 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "loadLevelInternal":
                         {
-                            if (EditorManager.inst && EditorManager.inst.isEditing && RTFile.FileExists($"{RTFile.BasePath}{EditorManager.inst.currentLoadedLevel}/{modifier.value}/level.lsb"))
+                            if (CoreHelper.InEditor && RTFile.FileExists($"{RTFile.BasePath}{EditorManager.inst.currentLoadedLevel}/{modifier.value}/level.lsb"))
                             {
-                                if (ModifiersConfig.Instance.EditorLoadLevel.Value)
-                                {
-                                    RTEditor.inst.ShowWarningPopup($"You are about to enter the level {EditorManager.inst.currentLoadedLevel}/{modifier.value}, are you sure you want to continue? Any unsaved progress will be lost!", () =>
-                                        {
-                                            string str = RTFile.BasePath;
-                                            if (ModifiersConfig.Instance.EditorSavesBeforeLoad.Value)
-                                            {
-                                                CoreHelper.StartCoroutine(ProjectData.Writer.SaveData(str + "level-modifier-backup.lsb", GameData.Current, () =>
-                                                {
-                                                    EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(str))}", 2f, EditorManager.NotificationType.Success);
-                                                }));
-                                            }
+                                if (!ModifiersConfig.Instance.EditorLoadLevel.Value)
+                                    break;
 
-                                            EditorManager.inst.StartCoroutine(EditorManager.inst.LoadLevel($"{EditorManager.inst.currentLoadedLevel}/{modifier.value}"));
-                                        }, RTEditor.inst.HideWarningPopup);
-                                }
+                                RTEditor.inst.ShowWarningPopup($"You are about to enter the level {EditorManager.inst.currentLoadedLevel}/{modifier.value}, are you sure you want to continue? Any unsaved progress will be lost!", () =>
+                                {
+                                    string str = RTFile.BasePath;
+                                    if (ModifiersConfig.Instance.EditorSavesBeforeLoad.Value)
+                                    {
+                                        CoreHelper.StartCoroutine(ProjectData.Writer.SaveData(str + "level-modifier-backup.lsb", GameData.Current, () =>
+                                        {
+                                            EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(str))}", 2f, EditorManager.NotificationType.Success);
+                                        }));
+                                    }
+
+                                    EditorManager.inst.StartCoroutine(EditorManager.inst.LoadLevel($"{EditorManager.inst.currentLoadedLevel}/{modifier.value}"));
+                                }, RTEditor.inst.HideWarningPopup);
                             }
-                            else if (!EditorManager.inst && RTFile.FileExists($"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{System.IO.Path.GetFileName(GameManager.inst.basePath.Substring(0, GameManager.inst.basePath.Length - 1))}/{modifier.value}/level.lsb"))
-                            {
+
+                            if (!CoreHelper.InEditor && RTFile.FileExists($"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{System.IO.Path.GetFileName(GameManager.inst.basePath.Substring(0, GameManager.inst.basePath.Length - 1))}/{modifier.value}/level.lsb"))
                                 LevelManager.Load($"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{System.IO.Path.GetFileName(GameManager.inst.basePath.Substring(0, GameManager.inst.basePath.Length - 1))}/{modifier.value}/level.lsb");
-                            }
                             break;
                         }
                     case "loadLevelPrevious":
@@ -1492,62 +1516,8 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
-                    case "quitToMenu":
-                        {
-                            if (EditorManager.inst != null && !EditorManager.inst.isEditing)
-                            {
-                                if (ModifiersConfig.Instance.EditorLoadLevel.Value)
-                                {
-                                    string str = RTFile.BasePath;
-                                    if (ModifiersConfig.Instance.EditorSavesBeforeLoad.Value)
-                                    {
-                                        CoreHelper.StartCoroutine(ProjectData.Writer.SaveData(str + "level-modifier-backup.lsb", GameData.Current, () =>
-                                        {
-                                            EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(str))}", 2f, EditorManager.NotificationType.Success);
-                                        }));
-                                    }
-
-                                    EditorManager.inst.QuitToMenu();
-                                }
-                            }
-                            else if (EditorManager.inst == null)
-                            {
-                                DOTween.KillAll();
-                                DOTween.Clear(true);
-                                DataManager.inst.gameData = null;
-                                DataManager.inst.gameData = new GameData();
-                                DiscordController.inst.OnIconChange("");
-                                DiscordController.inst.OnStateChange("");
-                                CoreHelper.Log($"Quit to Main Menu");
-                                InputDataManager.inst.players.Clear();
-                                SceneManager.inst.LoadScene("Main Menu");
-                            }
-                            break;
-                        }
-                    case "quitToArcade":
-                        {
-                            if (EditorManager.inst != null && !EditorManager.inst.isEditing)
-                            {
-                                if (ModifiersConfig.Instance.EditorLoadLevel.Value)
-                                {
-                                    string str = RTFile.BasePath;
-                                    if (ModifiersConfig.Instance.EditorSavesBeforeLoad.Value)
-                                    {
-                                        CoreHelper.StartCoroutine(ProjectData.Writer.SaveData(str + "level-modifier-backup.lsb", GameData.Current, () =>
-                                        {
-                                            EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(str))}", 2f, EditorManager.NotificationType.Success);
-                                        }));
-                                    }
-
-                                    GameManager.inst.QuitToArcade();
-                                }
-                            }
-                            else if (EditorManager.inst == null)
-                            {
-                                GameManager.inst.QuitToArcade();
-                            }
-                            break;
-                        }
+                    #endregion
+                    #region Component
                     case "blur":
                         {
                             if (modifier.reference &&
@@ -1577,31 +1547,31 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "blurOther":
                         {
-                            var list = GameData.Current.BeatmapObjects.Where(x => x.tags.Contains(modifier.commands[1]));
+                            var list = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
 
-                            if (list.Count() > 0 && float.TryParse(modifier.value, out float num))
+                            if (list.Count <= 0 || !float.TryParse(modifier.value, out float num))
+                                break;
+
+                            foreach (var beatmapObject in list)
                             {
-                                foreach (var beatmapObject in list)
-                                {
-                                    if (beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
-                                        Updater.TryGetObject(beatmapObject, out LevelObject levelObject) &&
-                                        levelObject.visualObject.Renderer)
-                                    {
-                                        var rend = levelObject.visualObject.Renderer;
-                                        if (modifier.Result == null)
-                                        {
-                                            if (!levelObject.visualObject.GameObject.GetComponent<DestroyModifierResult>())
-                                            {
-                                                var onDestroy = levelObject.visualObject.GameObject.AddComponent<DestroyModifierResult>();
-                                                onDestroy.Modifier = modifier;
-                                            }
+                                if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty ||
+                                    !Updater.TryGetObject(beatmapObject, out LevelObject levelObject) ||
+                                    !levelObject.visualObject.Renderer)
+                                    continue;
 
-                                            modifier.Result = levelObject.visualObject.GameObject;
-                                            rend.material = LegacyPlugin.blur;
-                                        }
-                                        rend.material.SetFloat("_blurSizeXY", -(beatmapObject.Interpolate(3, 1) - 1f) * num);
+                                var rend = levelObject.visualObject.Renderer;
+                                if (modifier.Result == null)
+                                {
+                                    if (!levelObject.visualObject.GameObject.GetComponent<DestroyModifierResult>())
+                                    {
+                                        var onDestroy = levelObject.visualObject.GameObject.AddComponent<DestroyModifierResult>();
+                                        onDestroy.Modifier = modifier;
                                     }
+
+                                    modifier.Result = levelObject.visualObject.GameObject;
+                                    rend.material = LegacyPlugin.blur;
                                 }
+                                rend.material.SetFloat("_blurSizeXY", -(beatmapObject.Interpolate(3, 1) - 1f) * num);
                             }
 
                             break;
@@ -1632,32 +1602,33 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "blurVariableOther":
                         {
-                            var list = GameData.Current.BeatmapObjects.Where(x => x.tags.Contains(modifier.commands[1]));
+                            var list = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
 
-                            if (list.Count() > 0 && float.TryParse(modifier.value, out float num))
+                            if (list.Count <= 0 || !float.TryParse(modifier.value, out float num))
+                                break;
+
+                            foreach (var beatmapObject in list)
                             {
-                                foreach (var beatmapObject in list)
-                                {
-                                    if (beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
-                                        Updater.TryGetObject(beatmapObject, out LevelObject levelObject) &&
-                                        levelObject.visualObject.Renderer)
-                                    {
-                                        var rend = levelObject.visualObject.Renderer;
-                                        if (modifier.Result == null)
-                                        {
-                                            if (!levelObject.visualObject.GameObject.GetComponent<DestroyModifierResult>())
-                                            {
-                                                var onDestroy = levelObject.visualObject.GameObject.AddComponent<DestroyModifierResult>();
-                                                onDestroy.Modifier = modifier;
-                                            }
+                                if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty ||
+                                    !Updater.TryGetObject(beatmapObject, out LevelObject levelObject) ||
+                                    !levelObject.visualObject.Renderer)
+                                    continue;
 
-                                            modifier.Result = levelObject.visualObject.GameObject;
-                                            rend.material = LegacyPlugin.blur;
-                                        }
-                                        rend.material.SetFloat("_blurSizeXY", beatmapObject.integerVariable * num);
+                                var rend = levelObject.visualObject.Renderer;
+                                if (modifier.Result == null)
+                                {
+                                    if (!levelObject.visualObject.GameObject.GetComponent<DestroyModifierResult>())
+                                    {
+                                        var onDestroy = levelObject.visualObject.GameObject.AddComponent<DestroyModifierResult>();
+                                        onDestroy.Modifier = modifier;
                                     }
+
+                                    modifier.Result = levelObject.visualObject.GameObject;
+                                    rend.material = LegacyPlugin.blur;
                                 }
+                                rend.material.SetFloat("_blurSizeXY", beatmapObject.integerVariable * num);
                             }
+
                             break;
                         }
                     case "blurColored":
@@ -1690,241 +1661,326 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "blurColoredOther":
                         {
-                            var list = GameData.Current.BeatmapObjects.Where(x => x.tags.Contains(modifier.commands[1]));
+                            var list = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
 
-                            if (list.Count() > 0 && float.TryParse(modifier.value, out float num))
+                            if (list.Count <= 0 || !float.TryParse(modifier.value, out float num))
+                                break;
+
+                            foreach (var beatmapObject in list)
                             {
-                                foreach (var beatmapObject in list)
-                                {
-                                    if (beatmapObject.objectType != BeatmapObject.ObjectType.Empty &&
-                                        Updater.TryGetObject(beatmapObject, out LevelObject levelObject) &&
-                                        levelObject.visualObject.Renderer)
-                                    {
-                                        var rend = levelObject.visualObject.Renderer;
-                                        if (modifier.Result == null)
-                                        {
-                                            if (!levelObject.visualObject.GameObject.GetComponent<DestroyModifierResult>())
-                                            {
-                                                var onDestroy = levelObject.visualObject.GameObject.AddComponent<DestroyModifierResult>();
-                                                onDestroy.Modifier = modifier;
-                                            }
+                                if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty ||
+                                    !Updater.TryGetObject(beatmapObject, out LevelObject levelObject) ||
+                                    !levelObject.visualObject.Renderer)
+                                    continue;
 
-                                            modifier.Result = levelObject.visualObject.GameObject;
-                                            rend.material.shader = LegacyPlugin.blurColored;
-                                        }
-                                        rend.material.SetFloat("_Size", -(beatmapObject.Interpolate(3, 1) - 1f) * num);
+                                var rend = levelObject.visualObject.Renderer;
+                                if (modifier.Result == null)
+                                {
+                                    if (!levelObject.visualObject.GameObject.GetComponent<DestroyModifierResult>())
+                                    {
+                                        var onDestroy = levelObject.visualObject.GameObject.AddComponent<DestroyModifierResult>();
+                                        onDestroy.Modifier = modifier;
                                     }
+
+                                    modifier.Result = levelObject.visualObject.GameObject;
+                                    rend.material.shader = LegacyPlugin.blurColored;
                                 }
+                                rend.material.SetFloat("_Size", -(beatmapObject.Interpolate(3, 1) - 1f) * num);
                             }
 
                             break;
                         }
                     case "particleSystem":
                         {
-                            if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
+                            if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
+                                break;
+
+                            var mod = levelObject.visualObject.GameObject;
+
+                            if (!modifier.reference.particleSystem)
                             {
-                                var mod = levelObject.visualObject.GameObject;
+                                modifier.reference.particleSystem = mod.GetComponent<ParticleSystem>() ?? mod.AddComponent<ParticleSystem>();
+                                var ps = modifier.reference.particleSystem;
 
-                                if (!modifier.reference.particleSystem)
+                                var mat = mod.GetComponent<ParticleSystemRenderer>();
+                                mat.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
+                                mat.material.color = Color.white;
+                                mat.trailMaterial = mat.material;
+                                mat.renderMode = ParticleSystemRenderMode.Mesh;
+
+                                var s = Parser.TryParse(modifier.commands[1], 0);
+                                var so = Parser.TryParse(modifier.commands[2], 0);
+
+                                s = Mathf.Clamp(s, 0, ObjectManager.inst.objectPrefabs.Count - 1);
+                                so = Mathf.Clamp(so, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
+
+                                mat.mesh = ObjectManager.inst.objectPrefabs[s == 4 ? 0 : s == 6 ? 0 : s].options[so].GetComponentInChildren<MeshFilter>().mesh;
+
+                                var psMain = ps.main;
+                                var psEmission = ps.emission;
+
+                                psMain.simulationSpace = ParticleSystemSimulationSpace.World;
+
+                                psMain.startSpeed = Parser.TryParse(modifier.commands[9], 5f);
+
+                                if (modifier.constant)
+                                    ps.emissionRate = Parser.TryParse(modifier.commands[10], 1f);
+                                else
                                 {
-                                    modifier.reference.particleSystem = mod.GetComponent<ParticleSystem>() ?? mod.AddComponent<ParticleSystem>();
-                                    var ps = modifier.reference.particleSystem;
-
-                                    var mat = mod.GetComponent<ParticleSystemRenderer>();
-                                    mat.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
-                                    mat.material.color = Color.white;
-                                    mat.trailMaterial = mat.material;
-                                    mat.renderMode = ParticleSystemRenderMode.Mesh;
-
-                                    var s = Parser.TryParse(modifier.commands[1], 0);
-                                    var so = Parser.TryParse(modifier.commands[2], 0);
-
-                                    s = Mathf.Clamp(s, 0, ObjectManager.inst.objectPrefabs.Count - 1);
-                                    so = Mathf.Clamp(so, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
-
-                                    mat.mesh = ObjectManager.inst.objectPrefabs[s == 4 ? 0 : s == 6 ? 0 : s].options[so].GetComponentInChildren<MeshFilter>().mesh;
-
-                                    var psMain = ps.main;
-                                    var psEmission = ps.emission;
-
-                                    psMain.simulationSpace = ParticleSystemSimulationSpace.World;
-
-                                    psMain.startSpeed = Parser.TryParse(modifier.commands[9], 5f);
-
-                                    if (modifier.constant)
-                                        ps.emissionRate = Parser.TryParse(modifier.commands[10], 1f);
-                                    else
-                                    {
-                                        ps.emissionRate = 0f;
-                                        psMain.loop = false;
-                                        psEmission.burstCount = (int)Parser.TryParse(modifier.commands[10], 1);
-                                        psMain.duration = Parser.TryParse(modifier.commands[11], 1f);
-                                    }
-
-                                    var rotationOverLifetime = ps.rotationOverLifetime;
-                                    rotationOverLifetime.enabled = true;
-                                    rotationOverLifetime.separateAxes = true;
-                                    rotationOverLifetime.xMultiplier = 0f;
-                                    rotationOverLifetime.yMultiplier = 0f;
-                                    rotationOverLifetime.zMultiplier = Parser.TryParse(modifier.commands[8], 0f);
-
-                                    var forceOverLifetime = ps.forceOverLifetime;
-                                    forceOverLifetime.enabled = true;
-                                    forceOverLifetime.space = ParticleSystemSimulationSpace.World;
-                                    forceOverLifetime.xMultiplier = Parser.TryParse(modifier.commands[12], 0f);
-                                    forceOverLifetime.yMultiplier = Parser.TryParse(modifier.commands[13], 0f);
-
-                                    var particlesTrail = ps.trails;
-                                    particlesTrail.enabled = Parser.TryParse(modifier.commands[14], true);
-
-                                    var colorOverLifetime = ps.colorOverLifetime;
-                                    colorOverLifetime.enabled = true;
-                                    var psCol = colorOverLifetime.color;
-
-                                    float alphaStart = Parser.TryParse(modifier.commands[4], 1f);
-                                    float alphaEnd = Parser.TryParse(modifier.commands[5], 0f);
-
-                                    var gradient = new Gradient();
-                                    gradient.alphaKeys = new GradientAlphaKey[2] { new GradientAlphaKey(alphaStart, 0f), new GradientAlphaKey(alphaEnd, 1f) };
-                                    gradient.colorKeys = new GradientColorKey[2] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) };
-
-                                    psCol.gradient = gradient;
-
-                                    colorOverLifetime.color = psCol;
-
-                                    var sizeOverLifetime = ps.sizeOverLifetime;
-                                    sizeOverLifetime.enabled = true;
-
-                                    var ssss = sizeOverLifetime.size;
-
-                                    var sizeStart = Parser.TryParse(modifier.commands[6], 0f);
-                                    var sizeEnd = Parser.TryParse(modifier.commands[7], 0f);
-
-                                    var curve = new AnimationCurve(new Keyframe[2] { new Keyframe(0f, sizeStart), new Keyframe(1f, sizeEnd) });
-
-                                    ssss.curve = curve;
-
-                                    sizeOverLifetime.size = ssss;
+                                    ps.emissionRate = 0f;
+                                    psMain.loop = false;
+                                    psEmission.burstCount = (int)Parser.TryParse(modifier.commands[10], 1);
+                                    psMain.duration = Parser.TryParse(modifier.commands[11], 1f);
                                 }
 
-                                if (modifier.reference.particleSystem)
+                                var rotationOverLifetime = ps.rotationOverLifetime;
+                                rotationOverLifetime.enabled = true;
+                                rotationOverLifetime.separateAxes = true;
+                                rotationOverLifetime.xMultiplier = 0f;
+                                rotationOverLifetime.yMultiplier = 0f;
+                                rotationOverLifetime.zMultiplier = Parser.TryParse(modifier.commands[8], 0f);
+
+                                var forceOverLifetime = ps.forceOverLifetime;
+                                forceOverLifetime.enabled = true;
+                                forceOverLifetime.space = ParticleSystemSimulationSpace.World;
+                                forceOverLifetime.xMultiplier = Parser.TryParse(modifier.commands[12], 0f);
+                                forceOverLifetime.yMultiplier = Parser.TryParse(modifier.commands[13], 0f);
+
+                                var particlesTrail = ps.trails;
+                                particlesTrail.enabled = Parser.TryParse(modifier.commands[14], true);
+
+                                var colorOverLifetime = ps.colorOverLifetime;
+                                colorOverLifetime.enabled = true;
+                                var psCol = colorOverLifetime.color;
+
+                                float alphaStart = Parser.TryParse(modifier.commands[4], 1f);
+                                float alphaEnd = Parser.TryParse(modifier.commands[5], 0f);
+
+                                var gradient = new Gradient();
+                                gradient.alphaKeys = new GradientAlphaKey[2] { new GradientAlphaKey(alphaStart, 0f), new GradientAlphaKey(alphaEnd, 1f) };
+                                gradient.colorKeys = new GradientColorKey[2] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) };
+
+                                psCol.gradient = gradient;
+
+                                colorOverLifetime.color = psCol;
+
+                                var sizeOverLifetime = ps.sizeOverLifetime;
+                                sizeOverLifetime.enabled = true;
+
+                                var ssss = sizeOverLifetime.size;
+
+                                var sizeStart = Parser.TryParse(modifier.commands[6], 0f);
+                                var sizeEnd = Parser.TryParse(modifier.commands[7], 0f);
+
+                                var curve = new AnimationCurve(new Keyframe[2] { new Keyframe(0f, sizeStart), new Keyframe(1f, sizeEnd) });
+
+                                ssss.curve = curve;
+
+                                sizeOverLifetime.size = ssss;
+                            }
+
+                            if (modifier.reference.particleSystem)
+                            {
+                                var ps = modifier.reference.particleSystem;
+                                var psMain = ps.main;
+                                var psEmission = ps.emission;
+
+                                psMain.startLifetime = float.Parse(modifier.value);
+                                psEmission.enabled = !(mod.transform.lossyScale.x < 0.001f && mod.transform.lossyScale.x > -0.001f || mod.transform.lossyScale.y < 0.001f && mod.transform.lossyScale.y > -0.001f) && mod.activeSelf && mod.activeInHierarchy;
+
+                                psMain.startColor = CoreHelper.CurrentBeatmapTheme.GetObjColor(Parser.TryParse(modifier.commands[3], 0));
+
+                                if (!modifier.constant && !psMain.loop)
                                 {
-                                    var ps = modifier.reference.particleSystem;
-                                    var psMain = ps.main;
-                                    var psEmission = ps.emission;
-
-                                    psMain.startLifetime = float.Parse(modifier.value);
-                                    psEmission.enabled = !(mod.transform.lossyScale.x < 0.001f && mod.transform.lossyScale.x > -0.001f || mod.transform.lossyScale.y < 0.001f && mod.transform.lossyScale.y > -0.001f) && mod.activeSelf && mod.activeInHierarchy;
-
-                                    psMain.startColor = CoreHelper.CurrentBeatmapTheme.GetObjColor(Parser.TryParse(modifier.commands[3], 0));
-
-                                    if (!modifier.constant && !psMain.loop)
-                                    {
-                                        ps.Play();
-                                    }
-
-                                    var shape = ps.shape;
-                                    shape.angle = Parser.TryParse(modifier.commands[15], 90f);
+                                    ps.Play();
                                 }
+
+                                var shape = ps.shape;
+                                shape.angle = Parser.TryParse(modifier.commands[15], 90f);
                             }
 
                             break;
                         }
                     case "trailRenderer":
                         {
-                            if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
+                            if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
+                                break;
+
+                            var mod = levelObject.visualObject.GameObject;
+
+                            if (!modifier.reference.trailRenderer && !mod.GetComponent<TrailRenderer>())
                             {
-                                var mod = levelObject.visualObject.GameObject;
+                                modifier.reference.trailRenderer = mod.AddComponent<TrailRenderer>();
 
-                                if (!modifier.reference.trailRenderer && !mod.GetComponent<TrailRenderer>())
-                                {
-                                    modifier.reference.trailRenderer = mod.AddComponent<TrailRenderer>();
-
-                                    modifier.reference.trailRenderer.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
-                                    modifier.reference.trailRenderer.material.color = Color.white;
-                                }
-                                else if (!modifier.reference.trailRenderer)
-                                {
-                                    modifier.reference.trailRenderer = mod.GetComponent<TrailRenderer>();
-
-                                    modifier.reference.trailRenderer.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
-                                    modifier.reference.trailRenderer.material.color = Color.white;
-                                }
-                                else
-                                {
-                                    var tr = modifier.reference.trailRenderer;
-
-                                    if (float.TryParse(modifier.value, out float time))
-                                    {
-                                        tr.time = time;
-                                    }
-
-                                    tr.emitting = !(mod.transform.lossyScale.x < 0.001f && mod.transform.lossyScale.x > -0.001f || mod.transform.lossyScale.y < 0.001f && mod.transform.lossyScale.y > -0.001f) && mod.activeSelf && mod.activeInHierarchy;
-
-                                    if (float.TryParse(modifier.commands[1], out float startWidth) && float.TryParse(modifier.commands[2], out float endWidth))
-                                    {
-                                        var t = mod.transform.lossyScale.magnitude * 0.576635f;
-                                        tr.startWidth = startWidth * t;
-                                        tr.endWidth = endWidth * t;
-                                    }
-
-                                    var beatmapTheme = CoreHelper.CurrentBeatmapTheme;
-
-                                    if (int.TryParse(modifier.commands[3], out int startColor) && float.TryParse(modifier.commands[4], out float startOpacity))
-                                        tr.startColor = LSColors.fadeColor(beatmapTheme.GetObjColor(startColor), startOpacity);
-                                    if (int.TryParse(modifier.commands[5], out int endColor) && float.TryParse(modifier.commands[6], out float endOpacity))
-                                        tr.endColor = LSColors.fadeColor(beatmapTheme.GetObjColor(endColor), endOpacity);
-                                }
+                                modifier.reference.trailRenderer.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
+                                modifier.reference.trailRenderer.material.color = Color.white;
                             }
+                            else if (!modifier.reference.trailRenderer)
+                            {
+                                modifier.reference.trailRenderer = mod.GetComponent<TrailRenderer>();
+
+                                modifier.reference.trailRenderer.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
+                                modifier.reference.trailRenderer.material.color = Color.white;
+                            }
+                            else
+                            {
+                                var tr = modifier.reference.trailRenderer;
+
+                                if (float.TryParse(modifier.value, out float time))
+                                {
+                                    tr.time = time;
+                                }
+
+                                tr.emitting = !(mod.transform.lossyScale.x < 0.001f && mod.transform.lossyScale.x > -0.001f || mod.transform.lossyScale.y < 0.001f && mod.transform.lossyScale.y > -0.001f) && mod.activeSelf && mod.activeInHierarchy;
+
+                                if (float.TryParse(modifier.commands[1], out float startWidth) && float.TryParse(modifier.commands[2], out float endWidth))
+                                {
+                                    var t = mod.transform.lossyScale.magnitude * 0.576635f;
+                                    tr.startWidth = startWidth * t;
+                                    tr.endWidth = endWidth * t;
+                                }
+
+                                var beatmapTheme = CoreHelper.CurrentBeatmapTheme;
+
+                                if (int.TryParse(modifier.commands[3], out int startColor) && float.TryParse(modifier.commands[4], out float startOpacity))
+                                    tr.startColor = LSColors.fadeColor(beatmapTheme.GetObjColor(startColor), startOpacity);
+                                if (int.TryParse(modifier.commands[5], out int endColor) && float.TryParse(modifier.commands[6], out float endOpacity))
+                                    tr.endColor = LSColors.fadeColor(beatmapTheme.GetObjColor(endColor), endOpacity);
+                            }
+
                             break;
                         }
-                    case "spawnPrefab":
+                    case "rigidbody":
                         {
-                            if (!modifier.constant && int.TryParse(modifier.value, out int num) && DataManager.inst.gameData.prefabs.Count > num
-                                && float.TryParse(modifier.commands[1], out float posX) && float.TryParse(modifier.commands[2], out float posY)
-                                && float.TryParse(modifier.commands[3], out float scaX) && float.TryParse(modifier.commands[4], out float scaY) && float.TryParse(modifier.commands[5], out float rot)
-                                && int.TryParse(modifier.commands[6], out int repeatCount) && float.TryParse(modifier.commands[7], out float repeatOffsetTime) && float.TryParse(modifier.commands[8], out float speed))
+                            if (modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null
+                                && float.TryParse(modifier.commands[1], out float gravity)
+                                && int.TryParse(modifier.commands[2], out int collisionMode)
+                                && float.TryParse(modifier.commands[3], out float drag)
+                                && float.TryParse(modifier.commands[4], out float velocityX)
+                                && float.TryParse(modifier.commands[5], out float velocityY))
                             {
-                                modifier.Result = ModifiersManager.AddPrefabObjectToLevel(DataManager.inst.gameData.prefabs[num],
-                                    AudioManager.inst.CurrentAudioSource.time,
-                                    new Vector2(posX, posY),
-                                    new Vector2(scaX, scaY),
-                                    rot, repeatCount, repeatOffsetTime, speed);
+                                modifier.reference.components.RemoveAll(x => x == null);
 
-                                DataManager.inst.gameData.prefabObjects.Add((PrefabObject)modifier.Result);
+                                if (!modifier.reference.components.Has(x => x is Rigidbody2D))
+                                {
+                                    var rigidbody = modifier.reference.levelObject.visualObject.GameObject.GetComponent<Rigidbody2D>();
 
-                                CoreHelper.StartCoroutine(Updater.IAddPrefabToLevel((PrefabObject)modifier.Result));
+                                    if (!rigidbody)
+                                        rigidbody = modifier.reference.levelObject.visualObject.GameObject.AddComponent<Rigidbody2D>();
+
+                                    modifier.reference.components.Add(rigidbody);
+
+                                    rigidbody.gravityScale = gravity;
+                                    rigidbody.collisionDetectionMode = (CollisionDetectionMode2D)Mathf.Clamp(collisionMode, 0, 1);
+                                    rigidbody.drag = drag;
+
+                                    rigidbody.bodyType = (RigidbodyType2D)Parser.TryParse(modifier.commands[6], 0);
+
+                                    var velocity = rigidbody.velocity;
+                                    velocity.x += velocityX;
+                                    velocity.y += velocityY;
+                                    rigidbody.velocity = velocity;
+                                }
+
+                                if (!modifier.constant && modifier.reference.components.Has(x => x is Rigidbody2D))
+                                {
+                                    var rigidbody = (Rigidbody2D)modifier.reference.components.Find(x => x is Rigidbody2D);
+
+                                    rigidbody.gravityScale = gravity;
+                                    rigidbody.collisionDetectionMode = (CollisionDetectionMode2D)Mathf.Clamp(collisionMode, 0, 1);
+                                    rigidbody.drag = drag;
+
+                                    rigidbody.bodyType = (RigidbodyType2D)Parser.TryParse(modifier.commands[6], 0);
+
+                                    rigidbody.velocity += new Vector2(velocityX, velocityY);
+                                }
                             }
 
                             break;
                         }
+                    case "rigidbodyOther":
+                        {
+                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.value));
+
+                            if (list.Count() > 0
+                                        && float.TryParse(modifier.commands[1], out float gravity)
+                                        && int.TryParse(modifier.commands[2], out int collisionMode)
+                                        && float.TryParse(modifier.commands[3], out float drag)
+                                        && float.TryParse(modifier.commands[4], out float velocityX)
+                                        && float.TryParse(modifier.commands[5], out float velocityY))
+                            {
+                                foreach (var bm in list.Select(x => x as BeatmapObject))
+                                {
+                                    if (bm.levelObject && bm.levelObject.visualObject != null)
+                                    {
+                                        bm.components.RemoveAll(x => x == null);
+
+                                        if (!bm.components.Has(x => x is Rigidbody2D))
+                                        {
+                                            var rigidbody = bm.levelObject.visualObject.GameObject.GetComponent<Rigidbody2D>();
+
+                                            if (!rigidbody)
+                                                rigidbody = bm.levelObject.visualObject.GameObject.AddComponent<Rigidbody2D>();
+
+                                            bm.components.Add(rigidbody);
+
+                                            rigidbody.gravityScale = gravity;
+                                            rigidbody.collisionDetectionMode = (CollisionDetectionMode2D)Mathf.Clamp(collisionMode, 0, 1);
+                                            rigidbody.drag = drag;
+
+                                            rigidbody.bodyType = (RigidbodyType2D)Parser.TryParse(modifier.commands[6], 0);
+
+                                            var velocity = rigidbody.velocity;
+                                            velocity.x += velocityX;
+                                            velocity.y += velocityY;
+                                            rigidbody.velocity = velocity;
+                                        }
+
+                                        if (bm.components.Has(x => x is Rigidbody2D))
+                                        {
+                                            var rigidbody = (Rigidbody2D)bm.components.Find(x => x is Rigidbody2D);
+
+                                            rigidbody.gravityScale = gravity;
+                                            rigidbody.collisionDetectionMode = (CollisionDetectionMode2D)Mathf.Clamp(collisionMode, 0, 1);
+                                            rigidbody.drag = drag;
+
+                                            rigidbody.bodyType = (RigidbodyType2D)Parser.TryParse(modifier.commands[6], 0);
+
+                                            rigidbody.velocity += new Vector2(velocityX, velocityY);
+                                        }
+                                    }
+                                }
+                            }
+
+                            break;
+                        }
+                    #endregion
+                    #region Player
                     case "playerHit":
                         {
-                            if ((EditorManager.inst == null && DataManager.inst.GetSettingEnum("ArcadeDifficulty", 1) != 0 || !EditorManager.inst.isEditing) && !modifier.constant)
-                            {
-                                if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject && int.TryParse(modifier.value, out int hit))
-                                {
-                                    var orderedList = PlayerManager.Players
-                                        .Where(x => x.Player)
-                                        .OrderBy(x => Vector2.Distance(x.Player.playerObjects["RB Parent"].gameObject.transform.position, levelObject.visualObject.GameObject.transform.position)).ToList();
+                            if (!((!CoreHelper.InEditor && !PlayerManager.IsZenMode || !CoreHelper.IsEditing) && !modifier.constant) ||
+                                !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject || !int.TryParse(modifier.value, out int hit))
+                                break;
 
-                                    if (orderedList.Count > 0)
-                                    {
-                                        var closest = orderedList[0];
+                            var orderedList = PlayerManager.Players
+                                .Where(x => x.Player)
+                                .OrderBy(x => Vector2.Distance(x.Player.playerObjects["RB Parent"].gameObject.transform.position, levelObject.visualObject.GameObject.transform.position)).ToList();
 
-                                        closest?.Player?.Hit();
+                            if (orderedList.Count <= 0)
+                                break;
 
-                                        if (hit > 1 && closest)
-                                            closest.Health -= hit;
-                                    }
-                                }
-                            }
+                            var closest = orderedList[0];
+
+                            closest?.Player?.Hit();
+
+                            if (hit > 1 && closest)
+                                closest.Health -= hit;
 
                             break;
                         }
                     case "playerHitAll":
                         {
-                            if ((EditorManager.inst == null && DataManager.inst.GetSettingEnum("ArcadeDifficulty", 1) != 0 || !EditorManager.inst.isEditing) && !modifier.constant && int.TryParse(modifier.value, out int hit))
+                            if ((!CoreHelper.InEditor && !PlayerManager.IsZenMode || !EditorManager.inst.isEditing) && !modifier.constant && int.TryParse(modifier.value, out int hit))
                                 foreach (var player in PlayerManager.Players.Where(x => x.Player))
                                 {
                                     player.Player.Hit();
@@ -1937,7 +1993,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playerHeal":
                         {
-                            if ((EditorManager.inst == null && DataManager.inst.GetSettingEnum("ArcadeDifficulty", 1) != 0 || !EditorManager.inst.isEditing) && !modifier.constant)
+                            if ((!CoreHelper.InEditor && !PlayerManager.IsZenMode || !EditorManager.inst.isEditing) && !modifier.constant)
                                 if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject && int.TryParse(modifier.value, out int hit))
                                 {
                                     var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
@@ -1949,7 +2005,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playerHealAll":
                         {
-                            if ((EditorManager.inst == null && DataManager.inst.GetSettingEnum("ArcadeDifficulty", 1) != 0 || !EditorManager.inst.isEditing) && !modifier.constant && int.TryParse(modifier.value, out int hit))
+                            if ((!CoreHelper.InEditor && !PlayerManager.IsZenMode || !EditorManager.inst.isEditing) && !modifier.constant && int.TryParse(modifier.value, out int hit))
                                 foreach (var player in PlayerManager.Players.Where(x => x.Player))
                                 {
                                     player.Health += hit;
@@ -1958,7 +2014,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playerKill":
                         {
-                            if ((EditorManager.inst == null || !EditorManager.inst.isEditing) && DataManager.inst.GetSettingEnum("ArcadeDifficulty", 1) != 0 && !modifier.constant)
+                            if ((!CoreHelper.InEditor || !EditorManager.inst.isEditing) && !PlayerManager.IsZenMode && !modifier.constant)
                                 if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                                 {
                                     var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
@@ -1971,7 +2027,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playerKillAll":
                         {
-                            if ((EditorManager.inst == null || !EditorManager.inst.isEditing) && DataManager.inst.GetSettingEnum("ArcadeDifficulty", 1) != 0 && !modifier.constant)
+                            if ((!CoreHelper.InEditor || !EditorManager.inst.isEditing) && !PlayerManager.IsZenMode && !modifier.constant)
                             {
                                 foreach (var player in PlayerManager.Players.Where(x => x.Player))
                                 {
@@ -1982,24 +2038,24 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playerMove":
                         {
-                            if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
-                            {
-                                var vector = modifier.value.Split(new char[] { ',' });
+                            if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
+                                break;
 
-                                var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
+                            var vector = modifier.value.Split(new char[] { ',' });
 
-                                bool relative = Parser.TryParse(modifier.commands[3], false);
-                                if (player)
-                                {
-                                    var tf = player.Player.playerObjects["RB Parent"].gameObject.transform;
-                                    if (modifier.constant)
-                                        tf.localPosition = new Vector3(Parser.TryParse(vector[0], 0f), Parser.TryParse(vector[1], 0f), 0f);
-                                    else
-                                        tf
-                                            .DOLocalMove(new Vector3(Parser.TryParse(vector[0], 0f) + (relative ? tf.position.x : 0f), Parser.TryParse(vector[1], 0f) + (relative ? tf.position.y : 0f), 0f), Parser.TryParse(modifier.commands[1], 1f))
-                                            .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
-                                }
-                            }
+                            var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
+
+                            bool relative = Parser.TryParse(modifier.commands[3], false);
+                            if (!player)
+                                break;
+
+                            var tf = player.Player.playerObjects["RB Parent"].gameObject.transform;
+                            if (modifier.constant)
+                                tf.localPosition = new Vector3(Parser.TryParse(vector[0], 0f), Parser.TryParse(vector[1], 0f), 0f);
+                            else
+                                tf
+                                    .DOLocalMove(new Vector3(Parser.TryParse(vector[0], 0f) + (relative ? tf.position.x : 0f), Parser.TryParse(vector[1], 0f) + (relative ? tf.position.y : 0f), 0f), Parser.TryParse(modifier.commands[1], 1f))
+                                    .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
 
                             break;
                         }
@@ -2023,26 +2079,26 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playerMoveX":
                         {
-                            if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
-                            {
-                                var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
+                            if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
+                                break;
 
-                                bool relative = Parser.TryParse(modifier.commands[3], false);
-                                if (player)
-                                {
-                                    var tf = player.Player.playerObjects["RB Parent"].gameObject.transform;
-                                    if (modifier.constant)
-                                    {
-                                        var v = tf.localPosition;
-                                        v.x += Parser.TryParse(modifier.value, 1f);
-                                        tf.localPosition = v;
-                                    }
-                                    else
-                                        tf
-                                            .DOLocalMoveX(Parser.TryParse(modifier.value, 0f) + (relative ? tf.position.x : 0f), Parser.TryParse(modifier.commands[1], 1f))
-                                            .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
-                                }
+                            var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
+
+                            bool relative = Parser.TryParse(modifier.commands[3], false);
+                            if (!player)
+                                break;
+
+                            var tf = player.Player.playerObjects["RB Parent"].gameObject.transform;
+                            if (modifier.constant)
+                            {
+                                var v = tf.localPosition;
+                                v.x += Parser.TryParse(modifier.value, 1f);
+                                tf.localPosition = v;
                             }
+                            else
+                                tf
+                                    .DOLocalMoveX(Parser.TryParse(modifier.value, 0f) + (relative ? tf.position.x : 0f), Parser.TryParse(modifier.commands[1], 1f))
+                                    .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
 
                             break;
                         }
@@ -2068,26 +2124,26 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playerMoveY":
                         {
-                            if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
-                            {
-                                var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
+                            if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
+                                break;
 
-                                bool relative = Parser.TryParse(modifier.commands[3], false);
-                                if (player)
-                                {
-                                    var tf = player.Player.playerObjects["RB Parent"].gameObject.transform;
-                                    if (modifier.constant)
-                                    {
-                                        var v = tf.localPosition;
-                                        v.y += Parser.TryParse(modifier.value, 1f);
-                                        tf.localPosition = v;
-                                    }
-                                    else
-                                        tf
-                                            .DOLocalMoveY(Parser.TryParse(modifier.value, 0f) + (relative ? tf.position.y : 0f), Parser.TryParse(modifier.commands[1], 1f))
-                                            .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
-                                }
+                            var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
+
+                            bool relative = Parser.TryParse(modifier.commands[3], false);
+                            if (!player)
+                                break;
+
+                            var tf = player.Player.playerObjects["RB Parent"].gameObject.transform;
+                            if (modifier.constant)
+                            {
+                                var v = tf.localPosition;
+                                v.y += Parser.TryParse(modifier.value, 1f);
+                                tf.localPosition = v;
                             }
+                            else
+                                tf
+                                    .DOLocalMoveY(Parser.TryParse(modifier.value, 0f) + (relative ? tf.position.y : 0f), Parser.TryParse(modifier.commands[1], 1f))
+                                    .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
 
                             break;
                         }
@@ -2113,25 +2169,25 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playerRotate":
                         {
-                            if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
-                            {
-                                var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
+                            if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
+                                break;
 
-                                bool relative = Parser.TryParse(modifier.commands[3], false);
-                                if (player)
-                                {
-                                    if (modifier.constant)
-                                    {
-                                        var v = player.Player.playerObjects["RB Parent"].gameObject.transform.localRotation.eulerAngles;
-                                        v.z += Parser.TryParse(modifier.value, 1f);
-                                        player.Player.playerObjects["RB Parent"].gameObject.transform.localRotation = Quaternion.Euler(v);
-                                    }
-                                    else
-                                        player.Player.playerObjects["RB Parent"].gameObject.transform
-                                            .DORotate(new Vector3(0f, 0f, Parser.TryParse(modifier.value, 0f)), Parser.TryParse(modifier.commands[1], 1f))
-                                            .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
-                                }
+                            var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
+
+                            bool relative = Parser.TryParse(modifier.commands[3], false);
+                            if (!player)
+                                break;
+
+                            if (modifier.constant)
+                            {
+                                var v = player.Player.playerObjects["RB Parent"].gameObject.transform.localRotation.eulerAngles;
+                                v.z += Parser.TryParse(modifier.value, 1f);
+                                player.Player.playerObjects["RB Parent"].gameObject.transform.localRotation = Quaternion.Euler(v);
                             }
+                            else
+                                player.Player.playerObjects["RB Parent"].gameObject.transform
+                                    .DORotate(new Vector3(0f, 0f, Parser.TryParse(modifier.value, 0f)), Parser.TryParse(modifier.commands[1], 1f))
+                                    .SetEase(DataManager.inst.AnimationList[Parser.TryParse(modifier.commands[2], 0)].Animation);
 
                             break;
                         }
@@ -2157,20 +2213,14 @@ namespace BetterLegacy.Core.Helpers
                     case "playerBoost":
                         {
                             if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject && !modifier.constant)
-                            {
-                                var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
-
-                                player?.Player?.StartBoost();
-                            }
+                                PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position)?.Player?.StartBoost();
 
                             break;
                         }
                     case "playerBoostAll":
                         {
                             foreach (var player in PlayerManager.Players.Where(x => x.Player))
-                            {
                                 player.Player.StartBoost();
-                            }
 
                             break;
                         }
@@ -2180,7 +2230,7 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
 
-                                if (player)
+                                if (player && player.Player)
                                     player.Player.canBoost = false;
                             }
 
@@ -2189,9 +2239,7 @@ namespace BetterLegacy.Core.Helpers
                     case "playerDisableBoostAll":
                         {
                             foreach (var player in PlayerManager.Players.Where(x => x.Player))
-                            {
                                 player.Player.canBoost = false;
-                            }
 
                             break;
                         }
@@ -2201,7 +2249,7 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
 
-                                if (player)
+                                if (player && player.Player)
                                     player.Player.canBoost = true;
                             }
 
@@ -2210,70 +2258,80 @@ namespace BetterLegacy.Core.Helpers
                     case "playerEnableBoostAll":
                         {
                             foreach (var player in PlayerManager.Players.Where(x => x.Player))
-                            {
                                 player.Player.canBoost = true;
-                            }
 
                             break;
                         }
                     case "playerSpeed":
                         {
                             if (float.TryParse(modifier.value, out float speed))
-                            {
                                 RTPlayer.SpeedMultiplier = speed;
-                            }
 
                             break;
                         }
                     case "playerVelocityAll":
                         {
-                            if (float.TryParse(modifier.commands[1], out float x) && float.TryParse(modifier.commands[2], out float y))
+                            if (!float.TryParse(modifier.commands[1], out float x) || !float.TryParse(modifier.commands[2], out float y))
+                                break;
+
+                            for (int i = 0; i < PlayerManager.Players.Count; i++)
                             {
-                                for (int i = 0; i < PlayerManager.Players.Count; i++)
-                                {
-                                    var player = PlayerManager.Players[i];
-                                    if (player.Player && player.Player.rb)
-                                    {
-                                        player.Player.rb.velocity = new Vector2(x, y);
-                                    }
-                                }
+                                var player = PlayerManager.Players[i];
+                                if (player.Player && player.Player.rb)
+                                    player.Player.rb.velocity = new Vector2(x, y);
                             }
 
                             break;
                         }
                     case "playerVelocityXAll":
                         {
-                            if (float.TryParse(modifier.value, out float x))
+                            if (!float.TryParse(modifier.value, out float x))
+                                break;
+
+                            for (int i = 0; i < PlayerManager.Players.Count; i++)
                             {
-                                for (int i = 0; i < PlayerManager.Players.Count; i++)
-                                {
-                                    var player = PlayerManager.Players[i];
-                                    if (player.Player && player.Player.rb)
-                                    {
-                                        var velocity = player.Player.rb.velocity;
-                                        velocity.x = x;
-                                        player.Player.rb.velocity = velocity;
-                                    }
-                                }
+                                var player = PlayerManager.Players[i];
+                                if (!player.Player || !player.Player.rb)
+                                    continue;
+
+                                var velocity = player.Player.rb.velocity;
+                                velocity.x = x;
+                                player.Player.rb.velocity = velocity;
                             }
 
                             break;
                         }
                     case "playerVelocityYAll":
                         {
-                            if (float.TryParse(modifier.value, out float x))
+                            if (!float.TryParse(modifier.value, out float x))
+                                break;
+
+                            for (int i = 0; i < PlayerManager.Players.Count; i++)
                             {
-                                for (int i = 0; i < PlayerManager.Players.Count; i++)
-                                {
-                                    var player = PlayerManager.Players[i];
-                                    if (player.Player && player.Player.rb)
-                                    {
-                                        var velocity = player.Player.rb.velocity;
-                                        velocity.y = x;
-                                        player.Player.rb.velocity = velocity;
-                                    }
-                                }
+                                var player = PlayerManager.Players[i];
+                                if (!player.Player || !player.Player.rb)
+                                    continue;
+
+                                var velocity = player.Player.rb.velocity;
+                                velocity.y = x;
+                                player.Player.rb.velocity = velocity;
                             }
+
+                            break;
+                        }
+                    case "setPlayerModel":
+                        {
+                            if (modifier.constant || !int.TryParse(modifier.commands[1], out int index) || !PlayerManager.PlayerModels.ContainsKey(modifier.value))
+                                break;
+
+                            PlayerManager.SetPlayerModel(index, modifier.value);
+                            PlayerManager.AssignPlayerModels();
+
+                            if (PlayerManager.Players.Count <= index || !PlayerManager.Players[index].Player)
+                                break;
+
+                            PlayerManager.Players[index].Player.playerNeedsUpdating = true;
+                            PlayerManager.Players[index].Player.UpdatePlayer();
 
                             break;
                         }
@@ -2284,6 +2342,8 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+                    #endregion
+                    #region Mouse Cursor
                     case "showMouse":
                         {
                             LSHelpers.ShowCursor();
@@ -2297,7 +2357,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "setMousePosition":
                         {
-                            if (EditorManager.inst && EditorManager.inst.isEditing)
+                            if (CoreHelper.IsEditing)
                                 break;
 
                             var screenScale = Display.main.systemWidth / 1920f;
@@ -2340,184 +2400,133 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+                    #endregion
+                    #region Variable
                     case "addVariable":
                         {
-                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
+                            var list = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
 
-                            if (list.Count() > 0 && int.TryParse(modifier.value, out int num))
-                            {
-                                foreach (var bm in list)
-                                {
-                                    var beatmapObject = (BeatmapObject)bm;
-                                    beatmapObject.integerVariable += num;
-                                }
-                            }
+                            if (list.Count <= 0 || !int.TryParse(modifier.value, out int num))
+                                break;
+
+                            foreach (var beatmapObject in list)
+                                beatmapObject.integerVariable += num;
+
                             break;
                         }
                     case "subVariable":
                         {
-                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
+                            var list = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
 
-                            if (list.Count() > 0 && int.TryParse(modifier.value, out int num))
-                            {
-                                foreach (var bm in list)
-                                {
-                                    var beatmapObject = (BeatmapObject)bm;
-                                    beatmapObject.integerVariable -= num;
-                                }
-                            }
+                            if (list.Count <= 0 || !int.TryParse(modifier.value, out int num))
+                                break;
+
+                            foreach (var beatmapObject in list)
+                                beatmapObject.integerVariable -= num;
+
                             break;
                         }
                     case "setVariable":
                         {
-                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
+                            var list = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
 
-                            if (list.Count() > 0 && int.TryParse(modifier.value, out int num))
-                            {
-                                foreach (var bm in list)
-                                {
-                                    var beatmapObject = (BeatmapObject)bm;
-                                    beatmapObject.integerVariable = num;
-                                }
-                            }
+                            if (list.Count <= 0 || !int.TryParse(modifier.value, out int num))
+                                break;
+
+                            foreach (var beatmapObject in list)
+                                beatmapObject.integerVariable = num;
+
                             break;
                         }
                     case "setVariableRandom":
                         {
-                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.value));
+                            var list = CoreHelper.FindObjectsWithTag(modifier.value);
 
-                            if (list.Count() > 0 && int.TryParse(modifier.commands[1], out int min) && int.TryParse(modifier.commands[2], out int max))
-                            {
-                                foreach (var bm in list)
-                                {
-                                    var beatmapObject = (BeatmapObject)bm;
-                                    beatmapObject.integerVariable = UnityEngine.Random.Range(min, max < 0 ? max - 1 : max + 1);
-                                }
-                            }
-                            break;
-                        }
-                    case "loadVariable":
-                        {
-                            if (RTFile.FileExists(RTFile.ApplicationDirectory + "profile/" + modifier.commands[1] + ".ses"))
-                            {
-                                string json = FileManager.inst.LoadJSONFile("profile/" + modifier.commands[1] + ".ses");
+                            if (list.Count <= 0 || !int.TryParse(modifier.commands[1], out int min) || !int.TryParse(modifier.commands[2], out int max))
+                                break;
 
-                                if (!string.IsNullOrEmpty(json))
-                                {
-                                    var jn = JSON.Parse(json);
+                            foreach (var beatmapObject in list)
+                                beatmapObject.integerVariable = UnityEngine.Random.Range(min, max < 0 ? max - 1 : max + 1);
 
-                                    if (!string.IsNullOrEmpty(jn[modifier.commands[2]][modifier.commands[3]]["float"]) &&
-                                        float.TryParse(jn[modifier.commands[2]][modifier.commands[3]]["float"], out float eq))
-                                    {
-                                        modifier.reference.integerVariable = (int)eq;
-                                    }
-                                }
-                            }
-                            break;
-                        }
-                    case "loadVariableOther":
-                        {
-                            if (RTFile.FileExists(RTFile.ApplicationDirectory + "profile/" + modifier.commands[1] + ".ses"))
-                            {
-                                string json = FileManager.inst.LoadJSONFile("profile/" + modifier.commands[1] + ".ses");
-
-                                if (!string.IsNullOrEmpty(json))
-                                {
-                                    var jn = JSON.Parse(json);
-
-                                    if (!string.IsNullOrEmpty(jn[modifier.commands[2]][modifier.commands[3]]["float"]) &&
-                                        float.TryParse(jn[modifier.commands[2]][modifier.commands[3]]["float"], out float eq))
-                                    {
-                                        var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.value));
-
-                                        if (list.Count() > 0)
-                                        {
-                                            foreach (var bm in list)
-                                                ((BeatmapObject)bm).integerVariable = (int)eq;
-                                        }
-                                    }
-                                }
-                            }
                             break;
                         }
                     case "animateVariableOther":
                         {
-                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.value));
+                            var list = CoreHelper.FindObjectsWithTag(modifier.value);
 
-                            if (list.Count() > 0 && int.TryParse(modifier.commands[1], out int fromType) && int.TryParse(modifier.commands[2], out int fromAxis)
-                                && float.TryParse(modifier.commands[3], out float delay) && float.TryParse(modifier.commands[4], out float multiply)
-                                && float.TryParse(modifier.commands[5], out float offset) && float.TryParse(modifier.commands[6], out float min) && float.TryParse(modifier.commands[7], out float max)
-                                && float.TryParse(modifier.commands[8], out float loop))
+                            if (list.Count <= 0 || !int.TryParse(modifier.commands[1], out int fromType) || !int.TryParse(modifier.commands[2], out int fromAxis) ||
+                                !float.TryParse(modifier.commands[3], out float delay) || !float.TryParse(modifier.commands[4], out float multiply) ||
+                                !float.TryParse(modifier.commands[5], out float offset) || !float.TryParse(modifier.commands[6], out float min) ||
+                                !float.TryParse(modifier.commands[7], out float max) || !float.TryParse(modifier.commands[8], out float loop))
+                                break;
+
+                            for (int i = 0; i < list.Count; i++)
                             {
-                                foreach (var beatmapObject in list)
+                                var beatmapObject = list[i];
+                                var time = AudioManager.inst.CurrentAudioSource.time;
+
+                                fromType = Mathf.Clamp(fromType, 0, beatmapObject.events.Count);
+                                fromAxis = Mathf.Clamp(fromAxis, 0, beatmapObject.events[fromType][0].eventValues.Length);
+
+                                if (!Updater.levelProcessor.converter.cachedSequences.ContainsKey(beatmapObject.id))
+                                    continue;
+
+                                var cachedSequence = Updater.levelProcessor.converter.cachedSequences[beatmapObject.id];
+
+                                switch (fromType)
                                 {
-                                    var bm = (BeatmapObject)beatmapObject;
-
-                                    var time = AudioManager.inst.CurrentAudioSource.time;
-
-                                    fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
-                                    fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].eventValues.Length);
-
-                                    if (Updater.levelProcessor.converter.cachedSequences.ContainsKey(bm.id))
-                                    {
-                                        // To Type Position
-                                        // To Axis X
-                                        // From Type Position
-                                        if (fromType == 0)
+                                    // To Type Position
+                                    // To Axis X
+                                    // From Type Position
+                                    case 0:
                                         {
-                                            var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].Position3DSequence.Interpolate(time - bm.StartTime - delay);
+                                            var sequence = cachedSequence.Position3DSequence.Interpolate(time - beatmapObject.StartTime - delay);
 
-                                            bm.integerVariable = (int)Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : fromAxis == 1 ? sequence.y % loop : sequence.z % loop) * multiply - offset, min, max);
+                                            beatmapObject.integerVariable = (int)Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : fromAxis == 1 ? sequence.y % loop : sequence.z % loop) * multiply - offset, min, max);
+                                            break;
                                         }
-
-                                        // To Type Position
-                                        // To Axis X
-                                        // From Type Scale
-                                        if (fromType == 1)
+                                    // To Type Position
+                                    // To Axis X
+                                    // From Type Scale
+                                    case 1:
                                         {
-                                            var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].ScaleSequence.Interpolate(time - bm.StartTime - delay);
+                                            var sequence = cachedSequence.ScaleSequence.Interpolate(time - beatmapObject.StartTime - delay);
 
-                                            bm.integerVariable = (int)Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : sequence.y % loop) * multiply - offset, min, max);
+                                            beatmapObject.integerVariable = (int)Mathf.Clamp((fromAxis == 0 ? sequence.x % loop : sequence.y % loop) * multiply - offset, min, max);
+                                            break;
                                         }
-
-                                        // To Type Position
-                                        // To Axis X
-                                        // From Type Rotation
-                                        if (fromType == 2)
+                                    // To Type Position
+                                    // To Axis X
+                                    // From Type Rotation
+                                    case 2:
                                         {
-                                            var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].RotationSequence.Interpolate(time - bm.StartTime - delay) * multiply;
+                                            var sequence = cachedSequence.RotationSequence.Interpolate(time - beatmapObject.StartTime - delay) * multiply;
 
-                                            bm.integerVariable = (int)Mathf.Clamp((sequence % loop) - offset, min, max);
+                                            beatmapObject.integerVariable = (int)Mathf.Clamp((sequence % loop) - offset, min, max);
+                                            break;
                                         }
-                                    }
-                                }
-                            }
-
-
-                            break;
-                        }
-                    case "setCollision":
-                        {
-                            if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.Collider)
-                                levelObject.visualObject.Collider.enabled = Parser.TryParse(modifier.value, false);
-
-                            break;
-                        }
-                    case "setCollisionOther":
-                        {
-                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
-
-                            if (list.Count() > 0)
-                            {
-                                foreach (var beatmapObject in list)
-                                {
-                                    if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.Collider)
-                                        levelObject.visualObject.Collider.enabled = Parser.TryParse(modifier.value, false);
                                 }
                             }
 
                             break;
                         }
+                    case "clampVariable":
+                        {
+                            modifier.reference.integerVariable = Mathf.Clamp(modifier.reference.integerVariable, Parser.TryParse(modifier.commands.Count > 1 ? modifier.commands[1] : "1", 0), Parser.TryParse(modifier.commands.Count > 2 ? modifier.commands[2] : "1", 1));
+                            break;
+                        }
+                    case "clampVariableOther":
+                        {
+                            var list = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
+
+                            if (list.Count > 0)
+                                foreach (var bm in list)
+                                    bm.integerVariable = Mathf.Clamp(bm.integerVariable, Parser.TryParse(modifier.commands.Count > 1 ? modifier.commands[1] : "1", 0), Parser.TryParse(modifier.commands.Count > 2 ? modifier.commands[2] : "1", 1));
+
+                            break;
+                        }
+                    #endregion
+                    #region Enable / Disable
                     case "enableObject":
                         {
                             if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.top)
@@ -2553,16 +2562,12 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "enableObjectOther":
                         {
-                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.value));
+                            var list = CoreHelper.FindObjectsWithTag(modifier.value);
 
-                            if (list.Count() > 0)
-                            {
+                            if (list.Count > 0)
                                 foreach (var beatmapObject in list)
-                                {
                                     if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
                                         levelObject.top.gameObject.SetActive(true);
-                                }
-                            }
 
                             break;
                         }
@@ -2570,7 +2575,7 @@ namespace BetterLegacy.Core.Helpers
                         {
                             if (modifier.Result == null)
                             {
-                                var beatmapObjects = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
+                                var beatmapObjects = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
 
                                 var resultList = new List<List<DataManager.GameData.BeatmapObject>>();
                                 foreach (var bm in beatmapObjects)
@@ -2631,16 +2636,12 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "disableObjectOther":
                         {
-                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.value));
+                            var list = CoreHelper.FindObjectsWithTag(modifier.value);
 
-                            if (list.Count() > 0)
-                            {
+                            if (list.Count > 0)
                                 foreach (var beatmapObject in list)
-                                {
                                     if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
                                         levelObject.top.gameObject.SetActive(false);
-                                }
-                            }
 
                             break;
                         }
@@ -2648,7 +2649,7 @@ namespace BetterLegacy.Core.Helpers
                         {
                             if (modifier.Result == null)
                             {
-                                var beatmapObjects = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
+                                var beatmapObjects = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
 
                                 var resultList = new List<List<DataManager.GameData.BeatmapObject>>();
                                 foreach (var bm in beatmapObjects)
@@ -2674,6 +2675,8 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+                    #endregion
+                    #region JSON
                     case "saveFloat":
                         {
                             if ((EditorManager.inst == null || !EditorManager.inst.isEditing) && float.TryParse(modifier.value, out float num))
@@ -2692,7 +2695,7 @@ namespace BetterLegacy.Core.Helpers
                         {
                             if ((EditorManager.inst == null || !EditorManager.inst.isEditing) && modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject)
                                 && levelObject.visualObject is TextObject textObject)
-                                ModifiersManager.SaveProgress(modifier.commands[1], modifier.commands[2], modifier.commands[3], textObject.text);
+                                ModifiersManager.SaveProgress(modifier.commands[1], modifier.commands[2], modifier.commands[3], textObject.textMeshPro.text);
 
                             break;
                         }
@@ -2703,6 +2706,49 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+                    case "loadVariable":
+                        {
+                            if (!RTFile.FileExists(RTFile.ApplicationDirectory + "profile/" + modifier.commands[1] + ".ses"))
+                                break;
+
+                            string json = RTFile.ReadFromFile(RTFile.ApplicationDirectory + "profile/" + modifier.commands[1] + ".ses");
+
+                            if (string.IsNullOrEmpty(json))
+                                break;
+
+                            var jn = JSON.Parse(json);
+
+                            if (!string.IsNullOrEmpty(jn[modifier.commands[2]][modifier.commands[3]]["float"]) &&
+                                float.TryParse(jn[modifier.commands[2]][modifier.commands[3]]["float"], out float eq))
+                                modifier.reference.integerVariable = (int)eq;
+
+                            break;
+                        }
+                    case "loadVariableOther":
+                        {
+                            if (!RTFile.FileExists(RTFile.ApplicationDirectory + "profile/" + modifier.commands[1] + ".ses"))
+                                break;
+
+                            string json = RTFile.ReadFromFile(RTFile.ApplicationDirectory + "profile/" + modifier.commands[1] + ".ses");
+
+                            if (string.IsNullOrEmpty(json))
+                                break;
+
+                            var jn = JSON.Parse(json);
+
+                            var list = CoreHelper.FindObjectsWithTag(modifier.value);
+
+                            if (list.Count > 0 && !string.IsNullOrEmpty(jn[modifier.commands[2]][modifier.commands[3]]["float"]) &&
+                                float.TryParse(jn[modifier.commands[2]][modifier.commands[3]]["float"], out float eq))
+                            {
+                                foreach (var bm in list)
+                                    bm.integerVariable = (int)eq;
+                            }
+
+                            break;
+                        }
+                    #endregion
+                    #region Reactive
                     case "reactivePos":
                         {
                             if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject
@@ -2829,21 +2875,8 @@ namespace BetterLegacy.Core.Helpers
                             }
                             break;
                         }
-                    case "setPlayerModel":
-                        {
-                            if (!modifier.constant && int.TryParse(modifier.commands[1], out int result) && PlayerManager.PlayerModels.ContainsKey(modifier.value))
-                            {
-                                PlayerManager.SetPlayerModel(result, modifier.value);
-                                PlayerManager.AssignPlayerModels();
-
-                                if (PlayerManager.Players.Count > result && PlayerManager.Players[result].Player)
-                                {
-                                    PlayerManager.Players[result].Player.playerNeedsUpdating = true;
-                                    PlayerManager.Players[result].Player.UpdatePlayer();
-                                }
-                            }
-                            break;
-                        }
+                    #endregion
+                    #region Event Offset
                     case "eventOffset":
                         {
                             if (RTEventManager.inst && RTEventManager.inst.offsets != null)
@@ -3027,109 +3060,8 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
-                    case "legacyTail":
-                        {
-                            if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject &&
-                                modifier.commands.Count > 1 && DataManager.inst.gameData is GameData gameData)
-                            {
-                                var totalTime = Parser.TryParse(modifier.value, 200f);
-
-                                var list = modifier.Result is List<LegacyTracker> ? (List<LegacyTracker>)modifier.Result : new List<LegacyTracker>();
-
-                                if (modifier.Result == null)
-                                {
-                                    list.Add(new LegacyTracker(modifier.reference, Vector3.zero, Vector3.zero, Quaternion.identity, 0f, 0f));
-
-                                    for (int i = 1; i < modifier.commands.Count; i += 3)
-                                    {
-                                        var group = gameData.BeatmapObjects.Where(x => x.tags.Contains(modifier.commands[i]));
-
-                                        if (modifier.commands.Count <= i + 2 || group.Count() < 1)
-                                            break;
-
-                                        var distance = Parser.TryParse(modifier.commands[i + 1], 2f);
-                                        var time = Parser.TryParse(modifier.commands[i + 2], 12f);
-
-                                        for (int j = 0; j < group.Count(); j++)
-                                        {
-                                            var beatmapObject = group.ElementAt(j);
-                                            list.Add(new LegacyTracker(beatmapObject, beatmapObject.positionOffset, beatmapObject.positionOffset, Quaternion.Euler(beatmapObject.rotationOffset), distance, time));
-                                        }
-                                    }
-
-                                    var onDestroy = levelObject.visualObject.GameObject.AddComponent<DestroyModifierResult>();
-
-                                    onDestroy.Modifier = modifier;
-
-                                    modifier.Result = list;
-                                }
-
-                                list[0].pos = levelObject.visualObject.GameObject.transform.position;
-                                list[0].rot = levelObject.visualObject.GameObject.transform.rotation;
-
-                                float num = Time.deltaTime * totalTime;
-
-                                for (int i = 1; i < list.Count; i++)
-                                {
-                                    var tracker = list[i];
-                                    var prevTracker = list[i - 1];
-                                    if (Vector3.Distance(tracker.pos, prevTracker.pos) > tracker.distance)
-                                    {
-                                        var vector = Vector3.Lerp(tracker.pos, prevTracker.pos, Time.deltaTime * tracker.time);
-                                        var quaternion = Quaternion.Lerp(tracker.rot, prevTracker.rot, Time.deltaTime * tracker.time);
-                                        list[i].pos = vector;
-                                        list[i].rot = quaternion;
-                                    }
-
-                                    num *= Vector3.Distance(prevTracker.lastPos, tracker.pos);
-                                    tracker.beatmapObject.positionOffset = Vector3.MoveTowards(prevTracker.lastPos, tracker.pos, num);
-                                    prevTracker.lastPos = tracker.pos;
-                                    tracker.beatmapObject.rotationOffset = tracker.rot.eulerAngles;
-                                }
-                            }
-
-                            break;
-                        }
-                    case "blackHole":
-                        {
-                            if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
-                            {
-                                var gm = levelObject.visualObject.GameObject;
-
-                                for (int i = 0; i < InputDataManager.inst.players.Count; i++)
-                                {
-                                    if (GameManager.inst.players.transform.Find("Player " + (i + 1).ToString()))
-                                    {
-                                        var pl = GameManager.inst.players.transform.Find("Player " + (i + 1).ToString() + "/Player");
-
-                                        float pitch = AudioManager.inst.CurrentAudioSource.pitch;
-
-                                        if (pitch < 0f)
-                                            pitch = -pitch;
-                                        if (pitch == 0f)
-                                            pitch = 0.001f;
-
-                                        float p = Time.deltaTime * 60f * pitch;
-
-                                        if (modifier.commands.Count < 2)
-                                            modifier.commands.Add("false");
-
-                                        float num = Parser.TryParse(modifier.value, 0.01f);
-
-                                        if (modifier.commands.Count > 1 && bool.TryParse(modifier.commands[1], out bool r) && r)
-                                            num = -(modifier.reference.Interpolate(3, 1) - 1f) * num;
-
-                                        float moveDelay = 1f - Mathf.Pow(1f - Mathf.Clamp(num, 0.001f, 1f), p);
-
-                                        var vector = new Vector3(pl.position.x, pl.position.y, 0f);
-                                        var target = new Vector3(gm.transform.position.x, gm.transform.position.y, 0f);
-
-                                        pl.position += (target - vector) * moveDelay;
-                                    }
-                                }
-                            }
-                            break;
-                        }
+                    #endregion
+                    #region Color
                     case "addColor":
                         {
                             if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer &&
@@ -3146,19 +3078,19 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "addColorOther":
                         {
-                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
+                            var list = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
 
-                            if (list.Count() > 0 &&
+                            if (list.Count > 0 &&
                                 int.TryParse(modifier.commands[2], out int index) && float.TryParse(modifier.value, out float multiply) &&
                                 float.TryParse(modifier.commands[3], out float hue) && float.TryParse(modifier.commands[4], out float sat) && float.TryParse(modifier.commands[5], out float val))
                                 foreach (var bm in list)
                                 {
-                                    if (Updater.TryGetObject(bm, out LevelObject levelObject) && levelObject.visualObject.Renderer)
-                                    {
-                                        index = Mathf.Clamp(index, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
+                                    if (!Updater.TryGetObject(bm, out LevelObject levelObject) || !levelObject.visualObject.Renderer)
+                                        continue;
 
-                                        levelObject.visualObject.Renderer.material.color += CoreHelper.ChangeColorHSV(GameManager.inst.LiveTheme.objectColors[index], hue, sat, val) * multiply;
-                                    }
+                                    index = Mathf.Clamp(index, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
+
+                                    levelObject.visualObject.Renderer.material.color += CoreHelper.ChangeColorHSV(GameManager.inst.LiveTheme.objectColors[index], hue, sat, val) * multiply;
                                 }
 
                             break;
@@ -3180,21 +3112,21 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "lerpColorOther":
                         {
-                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
+                            var list = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
 
-                            if (list.Count() > 0 &&
+                            if (list.Count > 0 &&
                                         int.TryParse(modifier.commands[2], out int index) && float.TryParse(modifier.value, out float multiply) &&
                                         float.TryParse(modifier.commands[3], out float hue) && float.TryParse(modifier.commands[4], out float sat) && float.TryParse(modifier.commands[5], out float val))
                                 foreach (var bm in list)
                                 {
-                                    if (bm != null && Updater.TryGetObject(bm, out LevelObject levelObject))
-                                    {
-                                        index = Mathf.Clamp(index, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
+                                    if (!Updater.TryGetObject(bm, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.Renderer)
+                                        continue;
 
-                                        if (levelObject.visualObject != null && levelObject.visualObject.Renderer)
-                                            levelObject.visualObject.Renderer.material.color =
-                                                RTMath.Lerp(levelObject.visualObject.Renderer.material.color, CoreHelper.ChangeColorHSV(GameManager.inst.LiveTheme.objectColors[index], hue, sat, val), multiply);
-                                    }
+                                    index = Mathf.Clamp(index, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
+
+                                    if (levelObject.visualObject != null && levelObject.visualObject.Renderer)
+                                        levelObject.visualObject.Renderer.material.color =
+                                            RTMath.Lerp(levelObject.visualObject.Renderer.material.color, CoreHelper.ChangeColorHSV(GameManager.inst.LiveTheme.objectColors[index], hue, sat, val), multiply);
                                 }
 
                             break;
@@ -3205,11 +3137,12 @@ namespace BetterLegacy.Core.Helpers
                                 levelObject.visualObject.GameObject && levelObject.visualObject.Renderer &&
                                 int.TryParse(modifier.commands[1], out int index) && float.TryParse(modifier.value, out float offset) && float.TryParse(modifier.commands[2], out float multiply))
                             {
-                                var i = RTExtensions.ClosestPlayer(levelObject.visualObject.GameObject);
+                                var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
 
-                                var player = GameManager.inst.players.transform.Find(string.Format("Player {0}/Player", i + 1));
+                                if (!player.Player || !player.Player.rb)
+                                    break;
 
-                                var distance = Vector2.Distance(player.transform.position, levelObject.visualObject.GameObject.transform.position);
+                                var distance = Vector2.Distance(player.Player.rb.transform.position, levelObject.visualObject.GameObject.transform.position);
 
                                 index = Mathf.Clamp(index, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
 
@@ -3226,11 +3159,12 @@ namespace BetterLegacy.Core.Helpers
                                 float.TryParse(modifier.commands[3], out float opacity) &&
                                 float.TryParse(modifier.commands[4], out float hue) && float.TryParse(modifier.commands[5], out float sat) && float.TryParse(modifier.commands[6], out float val))
                             {
-                                var i = RTExtensions.ClosestPlayer(levelObject.visualObject.GameObject);
+                                var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
 
-                                var player = GameManager.inst.players.transform.Find(string.Format("Player {0}/Player", i + 1));
+                                if (!player.Player || !player.Player.rb)
+                                    break;
 
-                                var distance = Vector2.Distance(player.transform.position, levelObject.visualObject.GameObject.transform.position);
+                                var distance = Vector2.Distance(player.Player.rb.transform.position, levelObject.visualObject.GameObject.transform.position);
 
                                 index = Mathf.Clamp(index, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
 
@@ -3243,6 +3177,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "setAlpha":
+                    case "setOpacity":
                         {
                             if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer && float.TryParse(modifier.value, out float num))
                             {
@@ -3255,10 +3190,11 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "setAlphaOther":
+                    case "setOpacityOther":
                         {
-                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
+                            var list = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
 
-                            if (list.Count() > 0 && float.TryParse(modifier.value, out float num))
+                            if (list.Count > 0 && float.TryParse(modifier.value, out float num))
                                 foreach (var bm in list)
                                 {
                                     if (Updater.TryGetObject(bm, out LevelObject levelObject) && levelObject.visualObject.Renderer)
@@ -3274,131 +3210,94 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "copyColor":
                         {
-                            Predicate<DataManager.GameData.BeatmapObject> predicate = x => (x as BeatmapObject).tags.Contains(modifier.value);
-
-                            if (!DataManager.inst.gameData.beatmapObjects.Has(predicate))
+                            if (!GameData.Current.BeatmapObjects.TryFind(x => x.tags.Contains(modifier.value), out BeatmapObject beatmapObject))
                                 break;
-
-                            var beatmapObject = DataManager.inst.gameData.beatmapObjects.Find(predicate);
 
                             if (Updater.TryGetObject(beatmapObject, out LevelObject otherLevelObject) &&
                                 otherLevelObject.visualObject.Renderer &&
                                 Updater.TryGetObject(modifier.reference, out LevelObject levelObject) &&
                                 levelObject.visualObject.Renderer)
-                            {
                                 levelObject.visualObject.Renderer.material.color = otherLevelObject.visualObject.Renderer.material.color;
-                            }
 
                             break;
                         }
                     case "copyColorOther":
                         {
-                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.value));
+                            var list = CoreHelper.FindObjectsWithTag(modifier.value);
 
-                            if (list.Count() > 0)
+                            if (list.Count > 0)
                                 foreach (var bm in list)
                                 {
                                     if (Updater.TryGetObject(bm, out LevelObject otherLevelObject) &&
                                         otherLevelObject.visualObject.Renderer &&
                                         Updater.TryGetObject(modifier.reference, out LevelObject levelObject) &&
                                         levelObject.visualObject.Renderer)
-                                    {
                                         otherLevelObject.visualObject.Renderer.material.color = levelObject.visualObject.Renderer.material.color;
-                                    }
                                 }
 
                             break;
                         }
-                    case "updateObjects":
-                        {
-                            if (!modifier.constant)
-                                ObjectManager.inst.updateObjects();
-                            break;
-                        }
-                    case "updateObject":
-                        {
-                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.value));
-
-                            if (!modifier.constant && list.Count() > 0)
-                            {
-                                foreach (var bm in list)
-                                {
-                                    Updater.UpdateObject(bm);
-                                }
-                            }
-                            break;
-                        }
-                    case "signalModifier":
-                        {
-                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
-
-                            foreach (var bm in list)
-                            {
-                                CoreHelper.StartCoroutine(ModifiersManager.ActivateModifier((BeatmapObject)bm, Parser.TryParse(modifier.value, 0f)));
-                            }
-
-                            break;
-                        }
-                    case "editorNotify":
-                        {
-                            EditorManager.inst?.DisplayNotification(modifier.value, Parser.TryParse(modifier.commands[1], 0.5f), (EditorManager.NotificationType)Parser.TryParse(modifier.commands[2], 0));
-                            break;
-                        }
+                    #endregion
+                    #region Shape
                     case "setImage":
                         {
                             if (modifier.reference.shape == 6 && modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null &&
                                 modifier.reference.levelObject.visualObject is ImageObject imageObject)
                             {
-                                if (!modifier.constant)
+                                if (modifier.constant)
+                                    break;
+
+                                var path = RTFile.BasePath + modifier.value;
+
+                                var local = imageObject.GameObject.transform.localPosition;
+
+                                if (!RTFile.FileExists(path))
                                 {
-                                    var path = RTFile.BasePath + modifier.value;
-
-                                    var local = imageObject.GameObject.transform.localPosition;
-
-                                    if (RTFile.FileExists(path))
-                                        CoreHelper.StartCoroutine(AlephNetworkManager.DownloadImageTexture("file://" + path, delegate (Texture2D x)
-                                        {
-                                            ((SpriteRenderer)imageObject.Renderer).sprite = SpriteManager.CreateSprite(x);
-                                            imageObject.GameObject.transform.localPosition = local;
-                                            imageObject.GameObject.transform.localPosition = local;
-                                            imageObject.GameObject.transform.localPosition = local;
-                                        }, delegate (string onError)
-                                        {
-                                            //((SpriteRenderer)imageObject.Renderer).sprite = ArcadeManager.inst.defaultImage;
-                                        }));
-                                    //else ((SpriteRenderer)imageObject.Renderer).sprite = ArcadeManager.inst.defaultImage;
+                                    ((SpriteRenderer)imageObject.Renderer).sprite = ArcadeManager.inst.defaultImage;
+                                    imageObject.GameObject.transform.localPosition = local;
+                                    break;
                                 }
+
+                                CoreHelper.StartCoroutine(AlephNetworkManager.DownloadImageTexture("file://" + path, x =>
+                                {
+                                    ((SpriteRenderer)imageObject.Renderer).sprite = SpriteManager.CreateSprite(x);
+                                    imageObject.GameObject.transform.localPosition = local;
+                                    imageObject.GameObject.transform.localPosition = local;
+                                    imageObject.GameObject.transform.localPosition = local;
+                                }, onError => { ((SpriteRenderer)imageObject.Renderer).sprite = ArcadeManager.inst.defaultImage; }));
                             }
                             break;
                         }
                     case "setImageOther":
                         {
-                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
+                            var list = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
 
-                            if (list.Count() > 0 && !modifier.constant)
+                            if (list.Count <= 0 || modifier.constant)
+                                break;
+
+                            foreach (var bm in list)
                             {
-                                foreach (var bm in list.Select(x => x as BeatmapObject))
+                                if (bm.shape == 6 && bm.levelObject && bm.levelObject.visualObject != null &&
+                                    bm.levelObject.visualObject is ImageObject imageObject)
                                 {
-                                    if (bm.shape == 6 && bm.levelObject && bm.levelObject.visualObject != null &&
-                                        bm.levelObject.visualObject is ImageObject imageObject)
+                                    var path = RTFile.BasePath + modifier.value;
+
+                                    var local = imageObject.GameObject.transform.localPosition;
+
+                                    if (!RTFile.FileExists(path))
                                     {
-                                        var path = RTFile.BasePath + modifier.value;
-
-                                        var local = imageObject.GameObject.transform.localPosition;
-
-                                        if (RTFile.FileExists(path))
-                                            CoreHelper.StartCoroutine(AlephNetworkManager.DownloadImageTexture("file://" + path, delegate (Texture2D x)
-                                            {
-                                                ((SpriteRenderer)imageObject.Renderer).sprite = SpriteManager.CreateSprite(x);
-                                                imageObject.GameObject.transform.localPosition = local;
-                                                imageObject.GameObject.transform.localPosition = local;
-                                                imageObject.GameObject.transform.localPosition = local;
-                                            }, delegate (string onError)
-                                            {
-                                                //((SpriteRenderer)imageObject.Renderer).sprite = ArcadeManager.inst.defaultImage;
-                                            }));
-                                        //else ((SpriteRenderer)imageObject.Renderer).sprite = ArcadeManager.inst.defaultImage;
+                                        ((SpriteRenderer)imageObject.Renderer).sprite = ArcadeManager.inst.defaultImage;
+                                        imageObject.GameObject.transform.localPosition = local;
+                                        break;
                                     }
+
+                                    CoreHelper.StartCoroutine(AlephNetworkManager.DownloadImageTexture("file://" + path, x =>
+                                    {
+                                        ((SpriteRenderer)imageObject.Renderer).sprite = SpriteManager.CreateSprite(x);
+                                        imageObject.GameObject.transform.localPosition = local;
+                                        imageObject.GameObject.transform.localPosition = local;
+                                        imageObject.GameObject.transform.localPosition = local;
+                                    }, onError => { ((SpriteRenderer)imageObject.Renderer).sprite = ArcadeManager.inst.defaultImage; }));
                                 }
                             }
 
@@ -3418,20 +3317,20 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "setTextOther":
                         {
-                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
+                            var list = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
 
-                            if (list.Count() > 0)
+                            if (list.Count <= 0)
+                                break;
+
+                            foreach (var bm in list)
                             {
-                                foreach (var bm in list.Select(x => x as BeatmapObject))
+                                if (bm.shape == 4 && bm.levelObject && bm.levelObject.visualObject != null &&
+                                    bm.levelObject.visualObject is TextObject textObject)
                                 {
-                                    if (bm.shape == 4 && bm.levelObject && bm.levelObject.visualObject != null &&
-                                        bm.levelObject.visualObject is TextObject textObject)
-                                    {
-                                        if (modifier.constant)
-                                            textObject.SetText(modifier.value);
-                                        else
-                                            textObject.text = modifier.value;
-                                    }
+                                    if (modifier.constant)
+                                        textObject.SetText(modifier.value);
+                                    else
+                                        textObject.text = modifier.value;
                                 }
                             }
 
@@ -3448,18 +3347,16 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "addTextOther":
                         {
-                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
+                            var list = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
 
-                            if (list.Count() > 0)
+                            if (list.Count <= 0)
+                                break;
+
+                            foreach (var bm in list)
                             {
-                                foreach (var bm in list.Select(x => x as BeatmapObject))
-                                {
-                                    if (bm.shape == 4 && bm.levelObject && bm.levelObject.visualObject != null &&
-                                        bm.levelObject.visualObject is TextObject textObject)
-                                    {
-                                        textObject.text += modifier.value;
-                                    }
-                                }
+                                if (bm.shape == 4 && bm.levelObject && bm.levelObject.visualObject != null &&
+                                    bm.levelObject.visualObject is TextObject textObject)
+                                    textObject.text += modifier.value;
                             }
 
                             break;
@@ -3482,25 +3379,26 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "removeTextOther":
                         {
-                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
+                            var list = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
 
-                            if (list.Count() > 0 && int.TryParse(modifier.value, out int remove))
+                            if (list.Count <= 0 || !int.TryParse(modifier.value, out int remove))
+                                break;
+
+                            foreach (var bm in list)
                             {
-                                foreach (var bm in list.Select(x => x as BeatmapObject))
+                                if (bm.shape == 4 && bm.levelObject && bm.levelObject.visualObject != null &&
+                                    bm.levelObject.visualObject is TextObject textObject)
                                 {
-                                    if (bm.shape == 4 && bm.levelObject && bm.levelObject.visualObject != null &&
-                                        bm.levelObject.visualObject is TextObject textObject)
-                                    {
-                                        string text = string.IsNullOrEmpty(textObject.textMeshPro.text) ? "" :
-                                            textObject.textMeshPro.text.Substring(0, textObject.textMeshPro.text.Length - Mathf.Clamp(remove, 0, textObject.textMeshPro.text.Length - 1));
+                                    string text = string.IsNullOrEmpty(textObject.textMeshPro.text) ? "" :
+                                        textObject.textMeshPro.text.Substring(0, textObject.textMeshPro.text.Length - Mathf.Clamp(remove, 0, textObject.textMeshPro.text.Length - 1));
 
-                                        if (modifier.constant)
-                                            textObject.SetText(text);
-                                        else
-                                            textObject.text = text;
-                                    }
+                                    if (modifier.constant)
+                                        textObject.SetText(text);
+                                    else
+                                        textObject.text = text;
                                 }
                             }
+
                             break;
                         }
                     case "removeTextAt":
@@ -3521,25 +3419,26 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "removeTextOtherAt":
                         {
-                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
+                            var list = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
 
-                            if (list.Count() > 0 && int.TryParse(modifier.value, out int remove))
+                            if (list.Count <= 0 || !int.TryParse(modifier.value, out int remove))
+                                break;
+
+                            foreach (var bm in list)
                             {
-                                foreach (var bm in list.Select(x => x as BeatmapObject))
+                                if (bm.shape == 4 && bm.levelObject && bm.levelObject.visualObject != null &&
+                                    bm.levelObject.visualObject is TextObject textObject)
                                 {
-                                    if (bm.shape == 4 && bm.levelObject && bm.levelObject.visualObject != null &&
-                                        bm.levelObject.visualObject is TextObject textObject)
-                                    {
-                                        string text = string.IsNullOrEmpty(textObject.textMeshPro.text) ? "" : textObject.textMeshPro.text.Length > remove ?
-                                            textObject.textMeshPro.text.Remove(remove, 1) : "";
+                                    string text = string.IsNullOrEmpty(textObject.textMeshPro.text) ? "" : textObject.textMeshPro.text.Length > remove ?
+                                        textObject.textMeshPro.text.Remove(remove, 1) : "";
 
-                                        if (modifier.constant)
-                                            textObject.SetText(text);
-                                        else
-                                            textObject.text = text;
-                                    }
+                                    if (modifier.constant)
+                                        textObject.SetText(text);
+                                    else
+                                        textObject.text = text;
                                 }
                             }
+
                             break;
                         }
                     case "textSequence":
@@ -3709,25 +3608,40 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
-                    case "clampVariable":
+                    case "backgroundShape":
                         {
-                            modifier.reference.integerVariable = Mathf.Clamp(modifier.reference.integerVariable, Parser.TryParse(modifier.commands.Count > 1 ? modifier.commands[1] : "1", 0), Parser.TryParse(modifier.commands.Count > 2 ? modifier.commands[2] : "1", 1));
-                            break;
-                        }
-                    case "clampVariableOther":
-                        {
-                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
+                            if (modifier.reference.shape == 4 || modifier.reference.shape == 6 || modifier.reference.shape == 9 || modifier.Result != null)
+                                break;
 
-                            if (list.Count() > 0)
+                            if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
                             {
-                                foreach (var bm in list.Select(x => x as BeatmapObject))
+                                var shape = new Vector2Int(modifier.reference.shape, modifier.reference.shapeOption);
+                                if (ShapeManager.inst.StoredShapes3D.ContainsKey(shape))
                                 {
-                                    bm.integerVariable = Mathf.Clamp(bm.integerVariable, Parser.TryParse(modifier.commands.Count > 1 ? modifier.commands[1] : "1", 0), Parser.TryParse(modifier.commands.Count > 2 ? modifier.commands[2] : "1", 1));
+                                    levelObject.visualObject.GameObject.GetComponent<MeshFilter>().mesh = ShapeManager.inst.StoredShapes3D[shape].mesh;
+                                    modifier.Result = "frick";
+                                    levelObject.visualObject.GameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
                                 }
                             }
 
                             break;
                         }
+                    case "sphereShape":
+                        {
+                            if (modifier.reference.shape == 4 || modifier.reference.shape == 6 || modifier.reference.shape == 9 || modifier.Result != null)
+                                break;
+
+                            if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
+                            {
+                                levelObject.visualObject.GameObject.GetComponent<MeshFilter>().mesh = GameManager.inst.PlayerPrefabs[1].GetComponentInChildren<MeshFilter>().mesh;
+                                modifier.Result = "frick";
+                                levelObject.visualObject.GameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
+                            }
+
+                            break;
+                        }
+                    #endregion
+                    #region Animation
                     case "animateObject":
                         {
                             if (int.TryParse(modifier.commands[1], out int type)
@@ -3791,9 +3705,9 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "animateObjectOther":
                         {
-                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[7]));
+                            var list = CoreHelper.FindObjectsWithTag(modifier.commands[7]);
 
-                            if (list.Count() > 0 && int.TryParse(modifier.commands[1], out int type)
+                            if (list.Count > 0 && int.TryParse(modifier.commands[1], out int type)
                                 && float.TryParse(modifier.commands[2], out float x) && float.TryParse(modifier.commands[3], out float y) && float.TryParse(modifier.commands[4], out float z)
                                 && bool.TryParse(modifier.commands[5], out bool relative) && float.TryParse(modifier.value, out float time))
                             {
@@ -3801,7 +3715,7 @@ namespace BetterLegacy.Core.Helpers
                                 if (int.TryParse(modifier.commands[6], out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
                                     easing = DataManager.inst.AnimationList[e].Name;
 
-                                foreach (var bm in list.Select(x => x as BeatmapObject))
+                                foreach (var bm in list)
                                 {
                                     Vector3 vector;
                                     if (type == 0)
@@ -3939,20 +3853,20 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "animateSignalOther":
                         {
-                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[7]));
+                            var list = CoreHelper.FindObjectsWithTag(modifier.commands[7]);
 
-                            if (list.Count() > 0 && int.TryParse(modifier.commands[1], out int type)
+                            if (list.Count > 0 && int.TryParse(modifier.commands[1], out int type)
                                 && float.TryParse(modifier.commands[2], out float x) && float.TryParse(modifier.commands[3], out float y) && float.TryParse(modifier.commands[4], out float z)
                                 && bool.TryParse(modifier.commands[5], out bool relative) && float.TryParse(modifier.value, out float time))
                             {
                                 if (!Parser.TryParse(modifier.commands[10], true))
                                 {
-                                    var list2 = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[8]));
+                                    var list2 = CoreHelper.FindObjectsWithTag(modifier.commands[8]);
 
                                     foreach (var bm in list2)
                                     {
-                                        if ((bm as BeatmapObject).modifiers.Count > 0 && (bm as BeatmapObject).modifiers.Where(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger).Count() > 0 &&
-                                            (bm as BeatmapObject).modifiers.TryFind(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> m))
+                                        if (bm.modifiers.Count > 0 && bm.modifiers.FindAll(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger).Count > 0 &&
+                                            bm.modifiers.TryFind(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> m))
                                         {
                                             m.Result = null;
                                         }
@@ -3963,7 +3877,7 @@ namespace BetterLegacy.Core.Helpers
                                 if (int.TryParse(modifier.commands[6], out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
                                     easing = DataManager.inst.AnimationList[e].Name;
 
-                                foreach (var bm in list.Select(x => x as BeatmapObject))
+                                foreach (var bm in list)
                                 {
                                     Vector3 vector;
                                     if (type == 0)
@@ -4001,12 +3915,10 @@ namespace BetterLegacy.Core.Helpers
                                         {
                                             AnimationManager.inst.RemoveID(animation.id);
 
-                                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[8]));
+                                            var list = CoreHelper.FindObjectsWithTag(modifier.commands[8]);
 
                                             foreach (var bm in list)
-                                            {
                                                 CoreHelper.StartCoroutine(ModifiersManager.ActivateModifier((BeatmapObject)bm, Parser.TryParse(modifier.commands[9], 0f)));
-                                            }
                                         };
                                         AnimationManager.inst.Play(animation);
                                     }
@@ -4018,110 +3930,6 @@ namespace BetterLegacy.Core.Helpers
                                             bm.scaleOffset = setVector;
                                         else
                                             bm.rotationOffset = setVector;
-                                    }
-                                }
-                            }
-
-                            break;
-                        }
-                    case "rigidbody":
-                        {
-                            if (modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null
-                                && float.TryParse(modifier.commands[1], out float gravity)
-                                && int.TryParse(modifier.commands[2], out int collisionMode)
-                                && float.TryParse(modifier.commands[3], out float drag)
-                                && float.TryParse(modifier.commands[4], out float velocityX)
-                                && float.TryParse(modifier.commands[5], out float velocityY))
-                            {
-                                modifier.reference.components.RemoveAll(x => x == null);
-
-                                if (!modifier.reference.components.Has(x => x is Rigidbody2D))
-                                {
-                                    var rigidbody = modifier.reference.levelObject.visualObject.GameObject.GetComponent<Rigidbody2D>();
-
-                                    if (!rigidbody)
-                                        rigidbody = modifier.reference.levelObject.visualObject.GameObject.AddComponent<Rigidbody2D>();
-
-                                    modifier.reference.components.Add(rigidbody);
-
-                                    rigidbody.gravityScale = gravity;
-                                    rigidbody.collisionDetectionMode = (CollisionDetectionMode2D)Mathf.Clamp(collisionMode, 0, 1);
-                                    rigidbody.drag = drag;
-
-                                    rigidbody.bodyType = (RigidbodyType2D)Parser.TryParse(modifier.commands[6], 0);
-
-                                    var velocity = rigidbody.velocity;
-                                    velocity.x += velocityX;
-                                    velocity.y += velocityY;
-                                    rigidbody.velocity = velocity;
-                                }
-
-                                if (!modifier.constant && modifier.reference.components.Has(x => x is Rigidbody2D))
-                                {
-                                    var rigidbody = (Rigidbody2D)modifier.reference.components.Find(x => x is Rigidbody2D);
-
-                                    rigidbody.gravityScale = gravity;
-                                    rigidbody.collisionDetectionMode = (CollisionDetectionMode2D)Mathf.Clamp(collisionMode, 0, 1);
-                                    rigidbody.drag = drag;
-
-                                    rigidbody.bodyType = (RigidbodyType2D)Parser.TryParse(modifier.commands[6], 0);
-
-                                    rigidbody.velocity += new Vector2(velocityX, velocityY);
-                                }
-                            }
-
-                            break;
-                        }
-                    case "rigidbodyOther":
-                        {
-                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.value));
-
-                            if (list.Count() > 0
-                                        && float.TryParse(modifier.commands[1], out float gravity)
-                                        && int.TryParse(modifier.commands[2], out int collisionMode)
-                                        && float.TryParse(modifier.commands[3], out float drag)
-                                        && float.TryParse(modifier.commands[4], out float velocityX)
-                                        && float.TryParse(modifier.commands[5], out float velocityY))
-                            {
-                                foreach (var bm in list.Select(x => x as BeatmapObject))
-                                {
-                                    if (bm.levelObject && bm.levelObject.visualObject != null)
-                                    {
-                                        bm.components.RemoveAll(x => x == null);
-
-                                        if (!bm.components.Has(x => x is Rigidbody2D))
-                                        {
-                                            var rigidbody = bm.levelObject.visualObject.GameObject.GetComponent<Rigidbody2D>();
-
-                                            if (!rigidbody)
-                                                rigidbody = bm.levelObject.visualObject.GameObject.AddComponent<Rigidbody2D>();
-
-                                            bm.components.Add(rigidbody);
-
-                                            rigidbody.gravityScale = gravity;
-                                            rigidbody.collisionDetectionMode = (CollisionDetectionMode2D)Mathf.Clamp(collisionMode, 0, 1);
-                                            rigidbody.drag = drag;
-
-                                            rigidbody.bodyType = (RigidbodyType2D)Parser.TryParse(modifier.commands[6], 0);
-
-                                            var velocity = rigidbody.velocity;
-                                            velocity.x += velocityX;
-                                            velocity.y += velocityY;
-                                            rigidbody.velocity = velocity;
-                                        }
-
-                                        if (bm.components.Has(x => x is Rigidbody2D))
-                                        {
-                                            var rigidbody = (Rigidbody2D)bm.components.Find(x => x is Rigidbody2D);
-
-                                            rigidbody.gravityScale = gravity;
-                                            rigidbody.collisionDetectionMode = (CollisionDetectionMode2D)Mathf.Clamp(collisionMode, 0, 1);
-                                            rigidbody.drag = drag;
-
-                                            rigidbody.bodyType = (RigidbodyType2D)Parser.TryParse(modifier.commands[6], 0);
-
-                                            rigidbody.velocity += new Vector2(velocityX, velocityY);
-                                        }
                                     }
                                 }
                             }
@@ -4159,37 +3967,34 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "gravityOther":
                         {
-                            var beatmapObjects = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.value));
+                            var beatmapObjects = CoreHelper.FindObjectsWithTag(modifier.value);
 
-                            if (beatmapObjects.Count() > 0 && float.TryParse(modifier.commands[1], out float gravityX) && float.TryParse(modifier.commands[2], out float gravityY))
+                            if (beatmapObjects.Count <= 0 || !float.TryParse(modifier.commands[1], out float gravityX) || !float.TryParse(modifier.commands[2], out float gravityY))
+                                break;
+
+                            foreach (var bm in beatmapObjects)
                             {
-                                foreach (var bm in beatmapObjects.Select(x => x as BeatmapObject))
+                                if (!Updater.TryGetObject(bm, out LevelObject levelObject))
+                                    continue;
+
+                                var list = levelObject.parentObjects;
+                                float rotation = 0f;
+
+                                for (int i = 1; i < list.Count; i++)
+                                    rotation += list[i].Transform.localRotation.eulerAngles.z;
+
+                                if (modifier.Result == null)
+                                    modifier.Result = new Vector2(gravityX / 1000f, gravityY / 1000f);
+                                else
                                 {
-                                    if (Updater.TryGetObject(bm, out LevelObject levelObject))
-                                    {
-                                        var list = levelObject.parentObjects;
-                                        float rotation = 0f;
+                                    var f = (Vector2)modifier.Result;
 
-                                        for (int i = 1; i < list.Count; i++)
-                                            rotation += list[i].Transform.localRotation.eulerAngles.z;
+                                    f *= new Vector2(gravityX, gravityY);
 
-                                        if (modifier.Result == null)
-                                        {
-                                            modifier.Result = new Vector2(gravityX / 1000f, gravityY / 1000f);
-                                        }
-                                        else
-                                        {
-                                            var f = (Vector2)modifier.Result;
-
-                                            f *= new Vector2(gravityX, gravityY);
-
-                                            modifier.Result = f;
-                                        }
-
-                                        bm.positionOffset = RTMath.Rotate((Vector2)modifier.Result, (list[0].Transform.localRotation.eulerAngles.z - rotation));
-                                    }
-
+                                    modifier.Result = f;
                                 }
+
+                                bm.positionOffset = RTMath.Rotate((Vector2)modifier.Result, (list[0].Transform.localRotation.eulerAngles.z - rotation));
                             }
 
                             break;
@@ -4221,9 +4026,10 @@ namespace BetterLegacy.Core.Helpers
 
                                 if (!useVisual && Updater.levelProcessor.converter.cachedSequences.ContainsKey(bm.id))
                                 {
+                                    var cachedSequence = Updater.levelProcessor.converter.cachedSequences[bm.id];
                                     if (toType >= 0 && toType < 3 && fromType == 0)
                                     {
-                                        var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].Position3DSequence.Interpolate(time - bm.StartTime - delay);
+                                        var sequence = cachedSequence.Position3DSequence.Interpolate(time - bm.StartTime - delay);
                                         float value = ((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) - offset) * multiply % loop;
 
                                         modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
@@ -4231,7 +4037,7 @@ namespace BetterLegacy.Core.Helpers
 
                                     if (toType >= 0 && toType < 3 && fromType == 1)
                                     {
-                                        var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].ScaleSequence.Interpolate(time - bm.StartTime - delay);
+                                        var sequence = cachedSequence.ScaleSequence.Interpolate(time - bm.StartTime - delay);
                                         float value = ((fromAxis == 0 ? sequence.x : sequence.y) - offset) * multiply % loop;
 
                                         modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
@@ -4239,16 +4045,16 @@ namespace BetterLegacy.Core.Helpers
 
                                     if (toType >= 0 && toType < 3 && fromType == 2)
                                     {
-                                        var sequence = (Updater.levelProcessor.converter.cachedSequences[bm.id].RotationSequence.Interpolate(time - bm.StartTime - delay) - offset) * multiply % loop;
+                                        var sequence = (cachedSequence.RotationSequence.Interpolate(time - bm.StartTime - delay) - offset) * multiply % loop;
 
                                         modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(sequence, min, max));
                                     }
 
-                                    if (toType == 3 && toAxis == 0 && fromType == 3 && Updater.levelProcessor.converter.cachedSequences[bm.id].ColorSequence != null &&
+                                    if (toType == 3 && toAxis == 0 && fromType == 3 && cachedSequence.ColorSequence != null &&
                                         modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null &&
                                         modifier.reference.levelObject.visualObject.Renderer)
                                     {
-                                        var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].ColorSequence.Interpolate(time - bm.StartTime - delay);
+                                        var sequence = cachedSequence.ColorSequence.Interpolate(time - bm.StartTime - delay);
 
                                         var renderer = modifier.reference.levelObject.visualObject.Renderer;
 
@@ -4315,9 +4121,11 @@ namespace BetterLegacy.Core.Helpers
 
                                     if (!useVisual && Updater.levelProcessor.converter.cachedSequences.ContainsKey(bm.id))
                                     {
+                                        var cachedSequence = Updater.levelProcessor.converter.cachedSequences[bm.id];
+
                                         if (toType >= 0 && toType < 3 && fromType == 0)
                                         {
-                                            var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].Position3DSequence.Interpolate(time - bm.StartTime - delay);
+                                            var sequence = cachedSequence.Position3DSequence.Interpolate(time - bm.StartTime - delay);
                                             var axis = fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z;
                                             float value = (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[8].Replace("axis", axis.ToString()).Replace("var", modifier.reference.integerVariable.ToString())));
 
@@ -4326,7 +4134,7 @@ namespace BetterLegacy.Core.Helpers
 
                                         if (toType >= 0 && toType < 3 && fromType == 1)
                                         {
-                                            var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].ScaleSequence.Interpolate(time - bm.StartTime - delay);
+                                            var sequence = cachedSequence.ScaleSequence.Interpolate(time - bm.StartTime - delay);
                                             var axis = fromAxis == 0 ? sequence.x : sequence.y;
                                             float value = (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[8].Replace("axis", axis.ToString()).Replace("var", modifier.reference.integerVariable.ToString())));
 
@@ -4335,16 +4143,16 @@ namespace BetterLegacy.Core.Helpers
 
                                         if (toType >= 0 && toType < 3 && fromType == 2)
                                         {
-                                            float sequence = (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[8].Replace("axis", Updater.levelProcessor.converter.cachedSequences[bm.id].RotationSequence.Interpolate(time - bm.StartTime - delay).ToString()).Replace("var", modifier.reference.integerVariable.ToString())));
+                                            float sequence = (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[8].Replace("axis", cachedSequence.RotationSequence.Interpolate(time - bm.StartTime - delay).ToString()).Replace("var", modifier.reference.integerVariable.ToString())));
 
                                             modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(sequence, min, max));
                                         }
 
-                                        if (toType == 3 && toAxis == 0 && fromType == 3 && Updater.levelProcessor.converter.cachedSequences[bm.id].ColorSequence != null &&
+                                        if (toType == 3 && toAxis == 0 && fromType == 3 && cachedSequence.ColorSequence != null &&
                                             modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null &&
                                             modifier.reference.levelObject.visualObject.Renderer)
                                         {
-                                            var sequence = Updater.levelProcessor.converter.cachedSequences[bm.id].ColorSequence.Interpolate(time - bm.StartTime - delay);
+                                            var sequence = cachedSequence.ColorSequence.Interpolate(time - bm.StartTime - delay);
 
                                             var renderer = modifier.reference.levelObject.visualObject.Renderer;
 
@@ -4417,11 +4225,8 @@ namespace BetterLegacy.Core.Helpers
 
                                     var beatmapObject = GameData.Current.BeatmapObjects.Find(x => x.tags.Contains(group));
 
-                                    if (!beatmapObject)
+                                    if (!beatmapObject || !Updater.TryGetObject(beatmapObject, out LevelObject levelObject))
                                         continue;
-
-                                    LevelObject levelObject = null;
-                                    Updater.TryGetObject(beatmapObject, out levelObject);
 
                                     var containsKey = cachedSequences.ContainsKey(beatmapObject.id);
 
@@ -4519,6 +4324,235 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+                    case "legacyTail":
+                        {
+                            if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject &&
+                                modifier.commands.Count > 1 && GameData.IsValid)
+                            {
+                                var totalTime = Parser.TryParse(modifier.value, 200f);
+
+                                var list = modifier.Result is List<LegacyTracker> ? (List<LegacyTracker>)modifier.Result : new List<LegacyTracker>();
+
+                                if (modifier.Result == null)
+                                {
+                                    list.Add(new LegacyTracker(modifier.reference, Vector3.zero, Vector3.zero, Quaternion.identity, 0f, 0f));
+
+                                    for (int i = 1; i < modifier.commands.Count; i += 3)
+                                    {
+                                        var group = CoreHelper.FindObjectsWithTag(modifier.commands[i]);
+
+                                        if (modifier.commands.Count <= i + 2 || group.Count() < 1)
+                                            break;
+
+                                        var distance = Parser.TryParse(modifier.commands[i + 1], 2f);
+                                        var time = Parser.TryParse(modifier.commands[i + 2], 12f);
+
+                                        for (int j = 0; j < group.Count; j++)
+                                        {
+                                            var beatmapObject = group[j];
+                                            list.Add(new LegacyTracker(beatmapObject, beatmapObject.positionOffset, beatmapObject.positionOffset, Quaternion.Euler(beatmapObject.rotationOffset), distance, time));
+                                        }
+                                    }
+
+                                    var onDestroy = levelObject.visualObject.GameObject.AddComponent<DestroyModifierResult>();
+
+                                    onDestroy.Modifier = modifier;
+
+                                    modifier.Result = list;
+                                }
+
+                                list[0].pos = levelObject.visualObject.GameObject.transform.position;
+                                list[0].rot = levelObject.visualObject.GameObject.transform.rotation;
+
+                                float num = Time.deltaTime * totalTime;
+
+                                for (int i = 1; i < list.Count; i++)
+                                {
+                                    var tracker = list[i];
+                                    var prevTracker = list[i - 1];
+                                    if (Vector3.Distance(tracker.pos, prevTracker.pos) > tracker.distance)
+                                    {
+                                        var vector = Vector3.Lerp(tracker.pos, prevTracker.pos, Time.deltaTime * tracker.time);
+                                        var quaternion = Quaternion.Lerp(tracker.rot, prevTracker.rot, Time.deltaTime * tracker.time);
+                                        list[i].pos = vector;
+                                        list[i].rot = quaternion;
+                                    }
+
+                                    num *= Vector3.Distance(prevTracker.lastPos, tracker.pos);
+                                    tracker.beatmapObject.positionOffset = Vector3.MoveTowards(prevTracker.lastPos, tracker.pos, num);
+                                    prevTracker.lastPos = tracker.pos;
+                                    tracker.beatmapObject.rotationOffset = tracker.rot.eulerAngles;
+                                }
+                            }
+
+                            break;
+                        }
+                    #endregion
+                    case "quitToMenu":
+                        {
+                            if (CoreHelper.InEditor && !EditorManager.inst.isEditing && ModifiersConfig.Instance.EditorLoadLevel.Value)
+                            {
+                                string str = RTFile.BasePath;
+                                if (ModifiersConfig.Instance.EditorSavesBeforeLoad.Value)
+                                {
+                                    CoreHelper.StartCoroutine(ProjectData.Writer.SaveData(str + "level-modifier-backup.lsb", GameData.Current, () =>
+                                    {
+                                        EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(str))}", 2f, EditorManager.NotificationType.Success);
+                                    }));
+                                }
+
+                                EditorManager.inst.QuitToMenu();
+                            }
+
+                            if (!CoreHelper.InEditor)
+                            {
+                                DOTween.KillAll();
+                                DOTween.Clear(true);
+                                DataManager.inst.gameData = null;
+                                DataManager.inst.gameData = new GameData();
+                                DiscordController.inst.OnIconChange("");
+                                DiscordController.inst.OnStateChange("");
+                                CoreHelper.Log($"Quit to Main Menu");
+                                InputDataManager.inst.players.Clear();
+                                SceneManager.inst.LoadScene("Main Menu");
+                            }
+
+                            break;
+                        }
+                    case "quitToArcade":
+                        {
+                            if (CoreHelper.InEditor && !EditorManager.inst.isEditing && ModifiersConfig.Instance.EditorLoadLevel.Value)
+                            {
+                                string str = RTFile.BasePath;
+                                if (ModifiersConfig.Instance.EditorSavesBeforeLoad.Value)
+                                {
+                                    CoreHelper.StartCoroutine(ProjectData.Writer.SaveData(str + "level-modifier-backup.lsb", GameData.Current, () =>
+                                    {
+                                        EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(str))}", 2f, EditorManager.NotificationType.Success);
+                                    }));
+                                }
+
+                                GameManager.inst.QuitToArcade();
+
+                                break;
+                            }
+
+                            if (!CoreHelper.InEditor)
+                                GameManager.inst.QuitToArcade();
+
+                            break;
+                        }
+                    case "spawnPrefab":
+                        {
+                            if (!modifier.constant && int.TryParse(modifier.value, out int num) && DataManager.inst.gameData.prefabs.Count > num
+                                && float.TryParse(modifier.commands[1], out float posX) && float.TryParse(modifier.commands[2], out float posY)
+                                && float.TryParse(modifier.commands[3], out float scaX) && float.TryParse(modifier.commands[4], out float scaY) && float.TryParse(modifier.commands[5], out float rot)
+                                && int.TryParse(modifier.commands[6], out int repeatCount) && float.TryParse(modifier.commands[7], out float repeatOffsetTime) && float.TryParse(modifier.commands[8], out float speed))
+                            {
+                                modifier.Result = ModifiersManager.AddPrefabObjectToLevel(DataManager.inst.gameData.prefabs[num],
+                                    AudioManager.inst.CurrentAudioSource.time,
+                                    new Vector2(posX, posY),
+                                    new Vector2(scaX, scaY),
+                                    rot, repeatCount, repeatOffsetTime, speed);
+
+                                DataManager.inst.gameData.prefabObjects.Add((PrefabObject)modifier.Result);
+
+                                CoreHelper.StartCoroutine(Updater.IAddPrefabToLevel((PrefabObject)modifier.Result));
+                            }
+
+                            break;
+                        }
+                    case "blackHole":
+                        {
+                            if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || !levelObject.visualObject.GameObject)
+                                break;
+
+                            var gm = levelObject.visualObject.GameObject;
+
+                            for (int i = 0; i < InputDataManager.inst.players.Count; i++)
+                            {
+                                if (!GameManager.inst.players.transform.Find("Player " + (i + 1).ToString()))
+                                    continue;
+
+                                var pl = GameManager.inst.players.transform.Find("Player " + (i + 1).ToString() + "/Player");
+
+                                float pitch = AudioManager.inst.CurrentAudioSource.pitch;
+
+                                if (pitch < 0f)
+                                    pitch = -pitch;
+                                if (pitch == 0f)
+                                    pitch = 0.001f;
+
+                                float p = Time.deltaTime * 60f * pitch;
+
+                                if (modifier.commands.Count < 2)
+                                    modifier.commands.Add("false");
+
+                                float num = Parser.TryParse(modifier.value, 0.01f);
+
+                                if (modifier.commands.Count > 1 && bool.TryParse(modifier.commands[1], out bool r) && r)
+                                    num = -(modifier.reference.Interpolate(3, 1) - 1f) * num;
+
+                                float moveDelay = 1f - Mathf.Pow(1f - Mathf.Clamp(num, 0.001f, 1f), p);
+
+                                var vector = new Vector3(pl.position.x, pl.position.y, 0f);
+                                var target = new Vector3(gm.transform.position.x, gm.transform.position.y, 0f);
+
+                                pl.position += (target - vector) * moveDelay;
+                            }
+
+                            break;
+                        }
+                    case "setCollision":
+                        {
+                            if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.Collider)
+                                levelObject.visualObject.Collider.enabled = Parser.TryParse(modifier.value, false);
+
+                            break;
+                        }
+                    case "setCollisionOther":
+                        {
+                            var list = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
+
+                            foreach (var beatmapObject in list)
+                            {
+                                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.Collider)
+                                    levelObject.visualObject.Collider.enabled = Parser.TryParse(modifier.value, false);
+                            }
+
+                            break;
+                        }
+                    case "updateObjects":
+                        {
+                            if (!modifier.constant)
+                                CoreHelper.StartCoroutine(Updater.IUpdateObjects(true));
+
+                            break;
+                        }
+                    case "updateObject":
+                        {
+                            var list = CoreHelper.FindObjectsWithTag(modifier.value);
+
+                            if (!modifier.constant && list.Count > 0)
+                                foreach (var bm in list)
+                                    Updater.UpdateObject(bm);
+
+                            break;
+                        }
+                    case "signalModifier":
+                        {
+                            var list = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
+
+                            foreach (var bm in list)
+                                CoreHelper.StartCoroutine(ModifiersManager.ActivateModifier((BeatmapObject)bm, Parser.TryParse(modifier.value, 0f)));
+
+                            break;
+                        }
+                    case "editorNotify":
+                        {
+                            EditorManager.inst?.DisplayNotification(modifier.value, Parser.TryParse(modifier.commands[1], 0.5f), (EditorManager.NotificationType)Parser.TryParse(modifier.commands[2], 0));
+                            break;
+                        }
                     case "setWindowTitle":
                         {
                             WindowController.SetTitle(modifier.value);
@@ -4563,38 +4597,6 @@ namespace BetterLegacy.Core.Helpers
                             AchievementManager.inst.SetAchievement(modifier.value);
                             break;
                         }
-                    case "backgroundShape":
-                        {
-                            if (modifier.reference.shape == 4 || modifier.reference.shape == 6 || modifier.reference.shape == 9 || modifier.Result != null)
-                                break;
-
-                            if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
-                            {
-                                var shape = new Vector2Int(modifier.reference.shape, modifier.reference.shapeOption);
-                                if (ShapeManager.inst.StoredShapes3D.ContainsKey(shape))
-                                {
-                                    levelObject.visualObject.GameObject.GetComponent<MeshFilter>().mesh = ShapeManager.inst.StoredShapes3D[shape].mesh;
-                                    modifier.Result = "frick";
-                                    levelObject.visualObject.GameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
-                                }
-                            }
-
-                            break;
-                        }
-                    case "sphereShape":
-                        {
-                            if (modifier.reference.shape == 4 || modifier.reference.shape == 6 || modifier.reference.shape == 9 || modifier.Result != null)
-                                break;
-
-                            if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
-                            {
-                                levelObject.visualObject.GameObject.GetComponent<MeshFilter>().mesh = GameManager.inst.PlayerPrefabs[1].GetComponentInChildren<MeshFilter>().mesh;
-                                modifier.Result = "frick";
-                                levelObject.visualObject.GameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
-                            }
-
-                            break;
-                        }
                     case "videoPlayer":
                         {
                             if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
@@ -4633,7 +4635,7 @@ namespace BetterLegacy.Core.Helpers
                         {
                             if (CoreHelper.InEditor) // don't want interfaces to load in editor
                             {
-                                CoreHelper.LogError($"Cannot load interface in the editor!");
+                                EditorManager.inst.DisplayNotification($"Cannot load interface in the editor!", 1f, EditorManager.NotificationType.Warning);
                                 return;
                             }
 
@@ -4674,7 +4676,7 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
-                    case "customCode":
+                    case "customCode": // unused for now... how could this be implemented? I want it to be like a C# evaluator but very limited to avoid possible security concerns.
                         {
                             //string code = "void Action() { Log(0f); Pause(); }";
                             var code = modifier.value;

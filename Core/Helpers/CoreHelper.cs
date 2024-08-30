@@ -603,6 +603,56 @@ namespace BetterLegacy.Core.Helpers
 
         #region Misc
 
+        public static List<BeatmapObject> FindObjectsWithTag(string tag) => GameData.Current.BeatmapObjects.FindAll(x => x.tags.Contains(tag));
+
+        /// <summary>
+        /// Iterates through the object parent chain (including the object itself).
+        /// </summary>
+        /// <param name="beatmapObject">Beatmap Object to get the parent chain of.</param>
+        /// <returns>List of parents ordered by the current beatmap object to the base parent with no other parents.</returns>
+        public static List<DataManager.GameData.BeatmapObject> GetParentChain(DataManager.GameData.BeatmapObject beatmapObject)
+        {
+            var list = new List<DataManager.GameData.BeatmapObject>();
+            if (beatmapObject == null)
+                return list;
+
+            var beatmapObjects = GameData.Current.beatmapObjects;
+            string parent = beatmapObject.parent;
+            int index = beatmapObjects.FindIndex(x => x.id == parent);
+
+            list.Add(beatmapObject);
+            while (index >= 0)
+            {
+                list.Add(beatmapObjects[index]);
+                parent = beatmapObjects[index].parent;
+                index = beatmapObjects.FindIndex(x => x.id == parent);
+            }
+            return list;
+        }
+        
+        /// <summary>
+        /// Iterates through the object parent chain (including the object itself).
+        /// </summary>
+        /// <param name="beatmapObject">Beatmap Object to get the parent chain of.</param>
+        /// <returns>List of parents ordered by the current beatmap object to the base parent with no other parents.</returns>
+        public static IEnumerable<DataManager.GameData.BeatmapObject> IGetParentChain(DataManager.GameData.BeatmapObject beatmapObject)
+        {
+            if (beatmapObject == null)
+                yield break;
+
+            var beatmapObjects = GameData.Current.beatmapObjects;
+            string parent = beatmapObject.parent;
+            int index = beatmapObjects.FindIndex(x => x.id == parent);
+
+            yield return beatmapObject;
+            while (index >= 0)
+            {
+                yield return beatmapObjects[index];
+                parent = beatmapObjects[index].parent;
+                index = beatmapObjects.FindIndex(x => x.id == parent);
+            }
+        }
+
         public static System.Diagnostics.Stopwatch StartNewStopwatch() => System.Diagnostics.Stopwatch.StartNew();
         public static void StopAndLogStopwatch(System.Diagnostics.Stopwatch sw, string message = "")
         {
