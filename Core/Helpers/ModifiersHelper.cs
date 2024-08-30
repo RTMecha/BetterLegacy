@@ -122,23 +122,23 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "playerDeathsEquals":
                     {
-                        return InputDataManager.inst.players.Count > 0 && int.TryParse(modifier.value, out int num) && InputDataManager.inst.players.Any(x => x.PlayerDeaths.Count == num);
+                        return int.TryParse(modifier.value, out int num) && GameManager.inst.deaths.Count == num;
                     }
                 case "playerDeathsLesserEquals":
                     {
-                        return InputDataManager.inst.players.Count > 0 && int.TryParse(modifier.value, out int num) && InputDataManager.inst.players.Any(x => x.PlayerDeaths.Count <= num);
+                        return int.TryParse(modifier.value, out int num) && GameManager.inst.deaths.Count <= num;
                     }
                 case "playerDeathsGreaterEquals":
                     {
-                        return InputDataManager.inst.players.Count > 0 && int.TryParse(modifier.value, out int num) && InputDataManager.inst.players.Any(x => x.PlayerDeaths.Count >= num);
+                        return int.TryParse(modifier.value, out int num) && GameManager.inst.deaths.Count >= num;
                     }
                 case "playerDeathsLesser":
                     {
-                        return InputDataManager.inst.players.Count > 0 && int.TryParse(modifier.value, out int num) && InputDataManager.inst.players.Any(x => x.PlayerDeaths.Count < num);
+                        return int.TryParse(modifier.value, out int num) && GameManager.inst.deaths.Count < num;
                     }
                 case "playerDeathsGreater":
                     {
-                        return InputDataManager.inst.players.Count > 0 && int.TryParse(modifier.value, out int num) && InputDataManager.inst.players.Any(x => x.PlayerDeaths.Count > num);
+                        return int.TryParse(modifier.value, out int num) && GameManager.inst.deaths.Count > num;
                     }
                 case "playerDistanceGreater":
                     {
@@ -954,348 +954,63 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "levelRankEquals":
                     {
-                        if (LevelManager.CurrentLevel != null && LevelManager.CurrentLevel.playerData != null && int.TryParse(modifier.value, out int num))
-                        {
-                            var levelRank = LevelManager.GetLevelRank(LevelManager.CurrentLevel);
-
-                            var levelRankIndexes = new Dictionary<string, int>
-                            {
-                                { "-", 0 },
-                                { "SS", 1 },
-                                { "S", 2 },
-                                { "A", 3 },
-                                { "B", 4 },
-                                { "C", 5 },
-                                { "D", 6 },
-                                { "F", 7 },
-                            };
-
-                            return levelRankIndexes[levelRank.name] == num;
-                        }
-
-                        break;
+                        return !CoreHelper.InEditor && LevelManager.CurrentLevel != null && LevelManager.CurrentLevel.playerData != null && int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(LevelManager.CurrentLevel).name] == num;
                     }
                 case "levelRankLesserEquals":
                     {
-                        if (LevelManager.CurrentLevel != null && LevelManager.CurrentLevel.playerData != null && int.TryParse(modifier.value, out int num))
-                        {
-                            var levelRank = LevelManager.GetLevelRank(LevelManager.CurrentLevel);
-
-                            var levelRankIndexes = new Dictionary<string, int>
-                            {
-                                { "-", 0 },
-                                { "SS", 1 },
-                                { "S", 2 },
-                                { "A", 3 },
-                                { "B", 4 },
-                                { "C", 5 },
-                                { "D", 6 },
-                                { "F", 7 },
-                            };
-
-                            return levelRankIndexes[levelRank.name] <= num;
-                        }
-
-                        break;
+                        return !CoreHelper.InEditor && LevelManager.CurrentLevel != null && LevelManager.CurrentLevel.playerData != null && int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(LevelManager.CurrentLevel).name] <= num;
                     }
                 case "levelRankGreaterEquals":
                     {
-                        if (LevelManager.CurrentLevel != null && LevelManager.CurrentLevel.playerData != null && int.TryParse(modifier.value, out int num))
-                        {
-                            var levelRank = LevelManager.GetLevelRank(LevelManager.CurrentLevel);
-
-                            var levelRankIndexes = new Dictionary<string, int>
-                            {
-                                { "-", 0 },
-                                { "SS", 1 },
-                                { "S", 2 },
-                                { "A", 3 },
-                                { "B", 4 },
-                                { "C", 5 },
-                                { "D", 6 },
-                                { "F", 7 },
-                            };
-
-                            return levelRankIndexes[levelRank.name] >= num;
-                        }
-
-                        break;
+                        return !CoreHelper.InEditor && LevelManager.CurrentLevel != null && LevelManager.CurrentLevel.playerData != null && int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(LevelManager.CurrentLevel).name] >= num;
                     }
                 case "levelRankLesser":
                     {
-                        if (LevelManager.CurrentLevel != null && LevelManager.CurrentLevel.playerData != null && int.TryParse(modifier.value, out int num))
-                        {
-                            var levelRank = LevelManager.GetLevelRank(LevelManager.CurrentLevel);
-
-                            var levelRankIndexes = new Dictionary<string, int>
-                            {
-                                { "-", 0 },
-                                { "SS", 1 },
-                                { "S", 2 },
-                                { "A", 3 },
-                                { "B", 4 },
-                                { "C", 5 },
-                                { "D", 6 },
-                                { "F", 7 },
-                            };
-
-                            return levelRankIndexes[levelRank.name] < num;
-                        }
-
-                        break;
+                        return !CoreHelper.InEditor && LevelManager.CurrentLevel != null && LevelManager.CurrentLevel.playerData != null && int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(LevelManager.CurrentLevel).name] < num;
                     }
                 case "levelRankGreater":
                     {
-                        if (LevelManager.CurrentLevel != null && LevelManager.CurrentLevel.playerData != null && int.TryParse(modifier.value, out int num))
-                        {
-                            var levelRank = LevelManager.GetLevelRank(LevelManager.CurrentLevel);
-
-                            var levelRankIndexes = new Dictionary<string, int>
-                            {
-                                { "-", 0 },
-                                { "SS", 1 },
-                                { "S", 2 },
-                                { "A", 3 },
-                                { "B", 4 },
-                                { "C", 5 },
-                                { "D", 6 },
-                                { "F", 7 },
-                            };
-
-                            return levelRankIndexes[levelRank.name] > num;
-                        }
-
-                        break;
+                        return !CoreHelper.InEditor && LevelManager.CurrentLevel != null && LevelManager.CurrentLevel.playerData != null && int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(LevelManager.CurrentLevel).name] > num;
                     }
                 case "levelRankOtherEquals":
                     {
-                        if (LevelManager.Levels.TryFind(x => x.id == modifier.commands[1], out Level level) && level.playerData != null && int.TryParse(modifier.value, out int num))
-                        {
-                            var levelRank = LevelManager.GetLevelRank(level);
-
-                            var levelRankIndexes = new Dictionary<string, int>
-                            {
-                                { "-", 0 },
-                                { "SS", 1 },
-                                { "S", 2 },
-                                { "A", 3 },
-                                { "B", 4 },
-                                { "C", 5 },
-                                { "D", 6 },
-                                { "F", 7 },
-                            };
-
-                            return levelRankIndexes[levelRank.name] == num;
-                        }
-
-                        break;
+                        return LevelManager.Levels.TryFind(x => x.id == modifier.commands[1], out Level level) && level.playerData != null && int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(level).name] == num;
                     }
                 case "levelRankOtherLesserEquals":
                     {
-                        if (LevelManager.Levels.TryFind(x => x.id == modifier.commands[1], out Level level) && level.playerData != null && int.TryParse(modifier.value, out int num))
-                        {
-                            var levelRank = LevelManager.GetLevelRank(level);
-
-                            var levelRankIndexes = new Dictionary<string, int>
-                            {
-                                { "-", 0 },
-                                { "SS", 1 },
-                                { "S", 2 },
-                                { "A", 3 },
-                                { "B", 4 },
-                                { "C", 5 },
-                                { "D", 6 },
-                                { "F", 7 },
-                            };
-
-                            return levelRankIndexes[levelRank.name] <= num;
-                        }
-
-                        break;
+                        return LevelManager.Levels.TryFind(x => x.id == modifier.commands[1], out Level level) && level.playerData != null && int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(level).name] <= num;
                     }
                 case "levelRankOtherGreaterEquals":
                     {
-                        if (LevelManager.Levels.TryFind(x => x.id == modifier.commands[1], out Level level) && level.playerData != null && int.TryParse(modifier.value, out int num))
-                        {
-                            var levelRank = LevelManager.GetLevelRank(level);
-
-                            var levelRankIndexes = new Dictionary<string, int>
-                            {
-                                { "-", 0 },
-                                { "SS", 1 },
-                                { "S", 2 },
-                                { "A", 3 },
-                                { "B", 4 },
-                                { "C", 5 },
-                                { "D", 6 },
-                                { "F", 7 },
-                            };
-
-                            return levelRankIndexes[levelRank.name] >= num;
-                        }
-
-                        break;
+                        return LevelManager.Levels.TryFind(x => x.id == modifier.commands[1], out Level level) && level.playerData != null && int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(level).name] >= num;
                     }
                 case "levelRankOtherLesser":
                     {
-                        if (LevelManager.Levels.TryFind(x => x.id == modifier.commands[1], out Level level) && level.playerData != null && int.TryParse(modifier.value, out int num))
-                        {
-                            var levelRank = LevelManager.GetLevelRank(level);
-
-                            var levelRankIndexes = new Dictionary<string, int>
-                            {
-                                { "-", 0 },
-                                { "SS", 1 },
-                                { "S", 2 },
-                                { "A", 3 },
-                                { "B", 4 },
-                                { "C", 5 },
-                                { "D", 6 },
-                                { "F", 7 },
-                            };
-
-                            return levelRankIndexes[levelRank.name] < num;
-                        }
-
-                        break;
+                        return LevelManager.Levels.TryFind(x => x.id == modifier.commands[1], out Level level) && level.playerData != null && int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(level).name] < num;
                     }
                 case "levelRankOtherGreater":
                     {
-                        if (LevelManager.Levels.TryFind(x => x.id == modifier.commands[1], out Level level) && level.playerData != null && int.TryParse(modifier.value, out int num))
-                        {
-                            var levelRank = LevelManager.GetLevelRank(level);
-
-                            var levelRankIndexes = new Dictionary<string, int>
-                            {
-                                { "-", 0 },
-                                { "SS", 1 },
-                                { "S", 2 },
-                                { "A", 3 },
-                                { "B", 4 },
-                                { "C", 5 },
-                                { "D", 6 },
-                                { "F", 7 },
-                            };
-
-                            return levelRankIndexes[levelRank.name] > num;
-                        }
-
-                        break;
+                        return LevelManager.Levels.TryFind(x => x.id == modifier.commands[1], out Level level) && level.playerData != null && int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(level).name] > num;
                     }
                 case "levelRankCurrentEquals":
                     {
-                        if (int.TryParse(modifier.value, out int num))
-                        {
-                            var levelRank = LevelManager.GetLevelRank(GameManager.inst.hits);
-
-                            var levelRankIndexes = new Dictionary<string, int>
-                            {
-                                { "-", 0 },
-                                { "SS", 1 },
-                                { "S", 2 },
-                                { "A", 3 },
-                                { "B", 4 },
-                                { "C", 5 },
-                                { "D", 6 },
-                                { "F", 7 },
-                            };
-
-                            return levelRankIndexes[levelRank.name] == num;
-                        }
-
-                        break;
+                        return int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(GameManager.inst.hits).name] == num;
                     }
                 case "levelRankCurrentLesserEquals":
                     {
-                        if (int.TryParse(modifier.value, out int num))
-                        {
-                            var levelRank = LevelManager.GetLevelRank(GameManager.inst.hits);
-
-                            var levelRankIndexes = new Dictionary<string, int>
-                            {
-                                { "-", 0 },
-                                { "SS", 1 },
-                                { "S", 2 },
-                                { "A", 3 },
-                                { "B", 4 },
-                                { "C", 5 },
-                                { "D", 6 },
-                                { "F", 7 },
-                            };
-
-                            return levelRankIndexes[levelRank.name] <= num;
-                        }
-
-                        break;
+                        return int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(GameManager.inst.hits).name] <= num;
                     }
                 case "levelRankCurrentGreaterEquals":
                     {
-                        if (int.TryParse(modifier.value, out int num))
-                        {
-                            var levelRank = LevelManager.GetLevelRank(GameManager.inst.hits);
-
-                            var levelRankIndexes = new Dictionary<string, int>
-                            {
-                                { "-", 0 },
-                                { "SS", 1 },
-                                { "S", 2 },
-                                { "A", 3 },
-                                { "B", 4 },
-                                { "C", 5 },
-                                { "D", 6 },
-                                { "F", 7 },
-                            };
-
-                            return levelRankIndexes[levelRank.name] >= num;
-                        }
-
-                        break;
+                        return int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(GameManager.inst.hits).name] >= num;
                     }
                 case "levelRankCurrentLesser":
                     {
-                        if (int.TryParse(modifier.value, out int num))
-                        {
-                            var levelRank = LevelManager.GetLevelRank(GameManager.inst.hits);
-
-                            var levelRankIndexes = new Dictionary<string, int>
-                            {
-                                { "-", 0 },
-                                { "SS", 1 },
-                                { "S", 2 },
-                                { "A", 3 },
-                                { "B", 4 },
-                                { "C", 5 },
-                                { "D", 6 },
-                                { "F", 7 },
-                            };
-
-                            return levelRankIndexes[levelRank.name] < num;
-                        }
-
-                        break;
+                        return int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(GameManager.inst.hits).name] < num;
                     }
                 case "levelRankCurrentGreater":
                     {
-                        if (int.TryParse(modifier.value, out int num))
-                        {
-                            var levelRank = LevelManager.GetLevelRank(GameManager.inst.hits);
-
-                            var levelRankIndexes = new Dictionary<string, int>
-                            {
-                                { "-", 0 },
-                                { "SS", 1 },
-                                { "S", 2 },
-                                { "A", 3 },
-                                { "B", 4 },
-                                { "C", 5 },
-                                { "D", 6 },
-                                { "F", 7 },
-                            };
-
-                            return levelRankIndexes[levelRank.name] > num;
-                        }
-
-                        break;
+                        return int.TryParse(modifier.value, out int num) && LevelManager.levelRankIndexes[LevelManager.GetLevelRank(GameManager.inst.hits).name] > num;
                     }
                 case "isFullscreen":
                     {
@@ -4385,6 +4100,29 @@ namespace BetterLegacy.Core.Helpers
                                 {
                                     if (bm.levelObject && bm.levelObject.visualObject != null)
                                     {
+                                        bm.components.RemoveAll(x => x == null);
+
+                                        if (!bm.components.Has(x => x is Rigidbody2D))
+                                        {
+                                            var rigidbody = bm.levelObject.visualObject.GameObject.GetComponent<Rigidbody2D>();
+
+                                            if (!rigidbody)
+                                                rigidbody = bm.levelObject.visualObject.GameObject.AddComponent<Rigidbody2D>();
+
+                                            bm.components.Add(rigidbody);
+
+                                            rigidbody.gravityScale = gravity;
+                                            rigidbody.collisionDetectionMode = (CollisionDetectionMode2D)Mathf.Clamp(collisionMode, 0, 1);
+                                            rigidbody.drag = drag;
+
+                                            rigidbody.bodyType = (RigidbodyType2D)Parser.TryParse(modifier.commands[6], 0);
+
+                                            var velocity = rigidbody.velocity;
+                                            velocity.x += velocityX;
+                                            velocity.y += velocityY;
+                                            rigidbody.velocity = velocity;
+                                        }
+
                                         if (bm.components.Has(x => x is Rigidbody2D))
                                         {
                                             var rigidbody = (Rigidbody2D)bm.components.Find(x => x is Rigidbody2D);

@@ -630,6 +630,18 @@ namespace BetterLegacy.Core.Managers
         public static DataManager.LevelRank GetLevelRank(Level level)
             => CoreHelper.InEditor ? EditorRank : level.playerData != null && DataManager.inst.levelRanks.Has(LevelRankPredicate(level)) ? DataManager.inst.levelRanks.Find(LevelRankPredicate(level)) : DataManager.inst.levelRanks[0];
 
+        public static Dictionary<string, int> levelRankIndexes = new Dictionary<string, int>
+        {
+            { "-", 0 },
+            { "SS", 1 },
+            { "S", 2 },
+            { "A", 3 },
+            { "B", 4 },
+            { "C", 5 },
+            { "D", 6 },
+            { "F", 7 },
+        };
+
         public static DataManager.LevelRank EditorRank => DataManager.inst.levelRanks[(int)EditorConfig.Instance.EditorRank.Value];
 
         public static float CalculateAccuracy(int hits, float length)
