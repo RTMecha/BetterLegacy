@@ -16,7 +16,9 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         public void TriggerEvent()
         {
-            ParseFunction(funcJSON);
+            func?.Invoke();
+            if (funcJSON != null)
+                ParseFunction(funcJSON);
             Spawn();
         }
 
