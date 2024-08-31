@@ -12,7 +12,7 @@ using UnityEngine;
 namespace BetterLegacy.Core
 {
     /// <summary>
-    /// The class for handling a level. Make sure the path ends in a "/"
+    /// Stores data to be used for playing levels in the arcade. Make sure the path ends in a "/"
     /// </summary>
     public class Level : Exists
     {
