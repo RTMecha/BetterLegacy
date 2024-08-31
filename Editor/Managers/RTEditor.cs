@@ -7512,7 +7512,7 @@ namespace BetterLegacy.Editor.Managers
                         Exception exception = null;
                         RTCode.Evaluate(RTFile.ReadFromFile(file), x => { hadError = true; exception = x; } );
 
-                        if (!hadError)
+                        if (hadError)
                             EditorManager.inst.DisplayNotification($"Couldn't evaluate {Path.GetFileName(file)}. Please verify your code and try again. Exception: {exception}", 2f, EditorManager.NotificationType.Error);
                         else
                             EditorManager.inst.DisplayNotification($"Evaluated {Path.GetFileName(file)}!", 2f, EditorManager.NotificationType.Success);
