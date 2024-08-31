@@ -242,8 +242,12 @@ namespace BetterLegacy.Menus.UI.Elements
             {
                 for (int i = 0; i < jn.Count; i++)
                 {
-                    if (!ParseIfFunctionSingle(jn[i]))
+                    var value = ParseIfFunctionSingle(jn[i]);
+                    if (!value)
                         canProceed = false;
+
+                    if (jn[i]["otherwise"].AsBool && value)
+                        canProceed = true;
                 }
             }
 
@@ -361,7 +365,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["level"] == null)
                             break;
 
-                        var value = StoryManager.inst.GetLevel() == (parameters.IsArray ? parameters[0].AsInt : parameters["level"].AsInt);
+                        var value = StoryManager.inst.chaptersProgression[StoryManager.inst.Chapter] == (parameters.IsArray ? parameters[0].AsInt : parameters["level"].AsInt);
                         return !not ? value : !value;
                     }
                 case "StoryLevelLesserEquals":
@@ -369,7 +373,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["level"] == null)
                             break;
 
-                        var value = StoryManager.inst.GetLevel() <= (parameters.IsArray ? parameters[0].AsInt : parameters["level"].AsInt);
+                        var value = StoryManager.inst.chaptersProgression[StoryManager.inst.Chapter] <= (parameters.IsArray ? parameters[0].AsInt : parameters["level"].AsInt);
                         return !not ? value : !value;
                     }
                 case "StoryLevelGreaterEquals":
@@ -377,7 +381,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["level"] == null)
                             break;
 
-                        var value = StoryManager.inst.GetLevel() >= (parameters.IsArray ? parameters[0].AsInt : parameters["level"].AsInt);
+                        var value = StoryManager.inst.chaptersProgression[StoryManager.inst.Chapter] >= (parameters.IsArray ? parameters[0].AsInt : parameters["level"].AsInt);
                         return !not ? value : !value;
                     }
                 case "StoryLevelLesser":
@@ -385,7 +389,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["level"] == null)
                             break;
 
-                        var value = StoryManager.inst.GetLevel() < (parameters.IsArray ? parameters[0].AsInt : parameters["level"].AsInt);
+                        var value = StoryManager.inst.chaptersProgression[StoryManager.inst.Chapter] < (parameters.IsArray ? parameters[0].AsInt : parameters["level"].AsInt);
                         return !not ? value : !value;
                     }
                 case "StoryLevelGreater":
@@ -393,7 +397,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["level"] == null)
                             break;
 
-                        var value = StoryManager.inst.GetLevel() > (parameters.IsArray ? parameters[0].AsInt : parameters["level"].AsInt);
+                        var value = StoryManager.inst.chaptersProgression[StoryManager.inst.Chapter] > (parameters.IsArray ? parameters[0].AsInt : parameters["level"].AsInt);
                         return !not ? value : !value;
                     }
                 case "DisplayNameEquals":
@@ -406,10 +410,25 @@ namespace BetterLegacy.Menus.UI.Elements
                     }
                 case "StoryInstalled":
                     {
-                        var value = StoryManager.inst && StoryManager.inst.HasFiles;
+                        var value = StoryManager.inst && RTFile.DirectoryExists(StoryManager.StoryAssetsPath);
                         return !not ? value : !value;
                     }
                 #region LevelRanks
+                case "ChapterFullyRanked":
+                    {
+                        var chapter = StoryManager.inst.Chapter;
+                        var level = StoryManager.inst.Level;
+                        var levelIDs = StoryManager.inst.levelIDs;
+
+                        var value =
+                            chapter < levelIDs.Count &&
+                            levelIDs[chapter].All(x => StoryManager.inst.IsBonus(x) ||
+                                            StoryManager.inst.Saves.TryFind(y => y.ID == x, out LevelManager.PlayerData playerData) &&
+                                            LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] > 0 &&
+                                            LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] <= StoryManager.CHAPTER_RANK_REQUIREMENT);
+
+                        return !not ? value : !value;
+                    }
                 case "LevelRankEquals":
                     {
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["rank"] == null)
@@ -2353,6 +2372,9 @@ namespace BetterLegacy.Menus.UI.Elements
 
                         StoryManager.inst.ContinueStory =
                             parameters == null || (parameters.IsArray && parameters.Count >= 1 && parameters[0].AsBool || parameters.IsObject && parameters["continue"] != null && parameters["continue"].AsBool);
+
+                        if (StoryManager.inst.chaptersProgression != null && StoryManager.inst.Chapter < StoryManager.inst.chaptersProgression.Length)
+                            StoryManager.inst.Level = StoryManager.inst.chaptersProgression[StoryManager.inst.Chapter];
 
                         StoryManager.inst.Play();
 
