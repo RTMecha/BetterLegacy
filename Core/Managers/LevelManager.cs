@@ -240,7 +240,7 @@ namespace BetterLegacy.Core.Managers
             if (IsArcade)
                 CoreHelper.UpdateDiscordStatus($"Level: {level.metadata.LevelBeatmap.name}", "In Arcade", "arcade");
             else
-                CoreHelper.UpdateDiscordStatus($"Story: {level.metadata.LevelBeatmap.name}", "In Story", "arcade");
+                CoreHelper.UpdateDiscordStatus($"DOC{(Story.StoryManager.inst.Chapter + 1).ToString("00")}-{(Story.StoryManager.inst.Level + 1).ToString("00")}: {level.metadata.LevelBeatmap.name}", "In Story", "arcade");
 
             while (!GameManager.inst.introTitle && !GameManager.inst.introArtist)
                 yield return null;
