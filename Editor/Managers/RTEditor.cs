@@ -7494,7 +7494,7 @@ namespace BetterLegacy.Editor.Managers
             if (!RTFile.DirectoryExists(functions))
                 return;
 
-            customFunctions.ForEach(x => Destroy(gameObject));
+            customFunctions.ForEach(x => Destroy(x));
             customFunctions.Clear();
             debugs.RemoveAll(x => x.Contains("Custom Code Function"));
 
@@ -7506,7 +7506,17 @@ namespace BetterLegacy.Editor.Managers
                 customFunctions.Add(GenerateDebugButton(
                     $"Custom Code Function: {Path.GetFileName(file)}",
                     "A custom code file. Make sure you know what you're doing before using this.",
-                    () => { RTCode.Evaluate(RTFile.ReadFromFile(file)); }));
+                    () =>
+                    {
+                        var hadError = false;
+                        Exception exception = null;
+                        RTCode.Evaluate(RTFile.ReadFromFile(file), x => { hadError = true; exception = x; } );
+
+                        if (!hadError)
+                            EditorManager.inst.DisplayNotification($"Couldn't evaluate {Path.GetFileName(file)}. Please verify your code and try again. Exception: {exception}", 2f, EditorManager.NotificationType.Error);
+                        else
+                            EditorManager.inst.DisplayNotification($"Evaluated {Path.GetFileName(file)}!", 2f, EditorManager.NotificationType.Success);
+                    }));
             }
 
             RefreshDebugger();

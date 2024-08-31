@@ -65,7 +65,7 @@ namespace BetterLegacy.Core
                 AddUsing(use);
         }
 
-        public static void Evaluate(string input)
+        public static void Evaluate(string input, Action<Exception> onError = null)
         {
             if (Evaluator == null)
                 Init();
@@ -89,11 +89,13 @@ namespace BetterLegacy.Core
                 }
                 catch (Exception ex)
                 {
+                    onError?.Invoke(ex);
                     LogREPL($"{className}Exception invoking REPL: {ex}", EditorManager.NotificationType.Warning);
                 }
             }
             catch (Exception ex)
             {
+                onError?.Invoke(ex);
                 LogREPL($"{className}Exception invoking REPL: {ex}", EditorManager.NotificationType.Warning);
             }
         }
