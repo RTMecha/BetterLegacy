@@ -14,12 +14,22 @@ namespace BetterLegacy.Patchers
         [HarmonyPatch(nameof(DiscordController.Awake))]
         [HarmonyPostfix]
         static void AwakePostfix(DiscordController __instance) => __instance.OnArtChange("pa_logo_white"); // fixes the logo being incorrect
-    
+
+        [HarmonyPatch(nameof(DiscordController.Start))]
+        [HarmonyPostfix]
+        static void StartPostfix(DiscordController __instance)
+        {
+            __instance.presence.largeImageText = "Using the BetterLegacy mod";
+            __instance.presence.startTimestamp = 1;
+            DiscordRpc.UpdatePresence(__instance.presence);
+        }
+
         [HarmonyPatch(nameof(DiscordController.OnArtChange))]
         [HarmonyPrefix]
         static bool OnArtChangePrefix(DiscordController __instance, string _art)
         {
             __instance.presence.largeImageKey = _art;
+            DiscordRpc.UpdatePresence(__instance.presence);
             return false;
         }
 
@@ -28,6 +38,7 @@ namespace BetterLegacy.Patchers
         static bool OnIconChangePrefix(DiscordController __instance, string _icon)
         {
             __instance.presence.smallImageKey = _icon;
+            DiscordRpc.UpdatePresence(__instance.presence);
             return false;
         }
 

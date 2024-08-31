@@ -247,16 +247,6 @@ namespace BetterLegacy.Configs
         /// </summary>
         public Setting<bool> EvaluateCode { get; set; }
 
-        /// <summary>
-        /// The size of the in-game interface blur.
-        /// </summary>
-        public Setting<float> InterfaceBlurSize { get; set; }
-
-        /// <summary>
-        /// The color of the in-game interface blur.
-        /// </summary>
-        public Setting<Color> InterfaceBlurColor { get; set; }
-
         #endregion
 
         #region User
@@ -380,6 +370,7 @@ namespace BetterLegacy.Configs
 
             #region Settings
 
+            OpenConfigKey = BindEnum(this, "Settings", "Open Config Key", KeyCode.F12, "The key to press to open the Config Manager.");
             FullscreenKey = BindEnum(this, "Settings", "Fullscreen Key", KeyCode.F11, "The key to toggle fullscreen.");
             Fullscreen = Bind(this, "Settings", "Fullscreen", false, "If game window should cover the entire screen or not.");
             Resolution = BindEnum(this, "Settings", "Resolution", Resolutions.p720, "The size of the game window in pixels.");
@@ -397,14 +388,10 @@ namespace BetterLegacy.Configs
             #region Game
 
             AllowControlsInputField = Bind(this, "Game", "Allow Controls While Using InputField", true, "The player will not move while an InputField is being used with this off.");
-            OpenConfigKey = BindEnum(this, "Game", "Open Config Key", KeyCode.F12, "The key to press to open the Config Manager.");
             AntiAliasing = Bind(this, "Game", "Anti-Aliasing", true, "If anti-aliasing is on or not.");
             RunInBackground = Bind(this, "Game", "Run In Background", true, "If you want the game to continue playing when minimized.");
             IncreasedClipPlanes = Bind(this, "Game", "Increase Camera Clip Planes", true, "Increases the clip panes to a very high amount, allowing for object render depth to go really high or really low. Off is the unmodded setting.");
             EvaluateCode = Bind(this, "Game", "Evaluate Custom Code", false, "If custom written code should evaluate. Turn this on if you're sure the level you're using isn't going to mess anything up with a code Modifier or custom player code.");
-
-            InterfaceBlurSize = Bind(this, "Game", "Interface Blur Size", 3f, "The size of the in-game interface blur. (Unused for now.)");
-            InterfaceBlurColor = Bind(this, "Game", "Interface Blur Color", new Color(0.4f, 0.4f, 0.4f), "The color of the in-game interface blur. (Unused for now.)");
 
             #endregion
 
@@ -462,8 +449,6 @@ namespace BetterLegacy.Configs
         {
             SettingChanged += UpdateSettings;
             UseNewUpdateMethod.SettingChanged += UseNewUpdateMethodChanged;
-            InterfaceBlurSize.SettingChanged += InterfaceBlurChanged;
-            InterfaceBlurColor.SettingChanged += InterfaceBlurChanged;
             DisplayName.SettingChanged += DisplayNameChanged;
             Fullscreen.SettingChanged += DefaultSettingsChanged;
             Resolution.SettingChanged += DefaultSettingsChanged;
@@ -474,6 +459,7 @@ namespace BetterLegacy.Configs
             ControllerRumble.SettingChanged += DefaultSettingsChanged;
             LDM.SettingChanged += LDMChanged;
             DiscordShowLevel.SettingChanged += DiscordChanged;
+            DiscordRichPresenceID.SettingChanged += DiscordChanged;
             DebugInfoStartup.SettingChanged += DebugInfoChanged;
 
             VSync.SettingChanged += FPSChanged;
@@ -487,20 +473,15 @@ namespace BetterLegacy.Configs
 
         void DebugInfoChanged() => RTDebugger.Init();
 
-        /// <summary>
-        /// Unused for now.
-        /// </summary>
-        void InterfaceBlurChanged()
-        {
-            //if (GameStorageManager.inst && GameStorageManager.inst.guiBlur)
-            //{
-            //    GameStorageManager.inst.guiBlur.material.SetFloat("_Size", InterfaceBlurSize.Value);
-            //    GameStorageManager.inst.guiBlur.material.color = InterfaceBlurColor.Value;
-            //}
-        }
-
         void DiscordChanged()
         {
+            CoreHelper.UpdateValue(DiscordController.inst.applicationId, DiscordRichPresenceID.Value, x =>
+            {
+                DiscordController.inst.OnDisableDiscord();
+                DiscordController.inst.applicationId = x;
+                DiscordController.inst.enabled = false;
+                DiscordController.inst.enabled = true;
+            });
             CoreHelper.UpdateDiscordStatus(CoreHelper.discordLevel, CoreHelper.discordDetails, CoreHelper.discordIcon, CoreHelper.discordArt);
         }
 

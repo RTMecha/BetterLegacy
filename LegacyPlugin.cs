@@ -66,6 +66,7 @@ namespace BetterLegacy
             digitalGlitchShader = assetBundle.LoadAsset<Shader>("digitalglitch.shader"); // Load asset
         }
 
+        System.Timers.Timer timer;
 
         public static Prefab ExamplePrefab { get; set; }
 
@@ -199,6 +200,17 @@ namespace BetterLegacy
 
             try
             {
+                timer = new System.Timers.Timer(1000);
+                timer.Elapsed += TimerElapsed;
+                timer.Start();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Failed to set timer. {ex}");
+            }
+
+            try
+            {
                 Application.quitting += () =>
                 {
                     if (EditorManager.inst && EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading && DataManager.inst.gameData is GameData)
@@ -218,6 +230,16 @@ namespace BetterLegacy
             } // Quit saves backup
 
             Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_NAME} is loaded!");
+        }
+
+        void TimerElapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            if (!DiscordController.inst || DiscordController.inst.presence == null)
+                return;
+
+            DiscordController.inst.presence.endTimestamp++;
+
+            DiscordRpc.UpdatePresence(DiscordController.inst.presence);
         }
 
         void Update()
