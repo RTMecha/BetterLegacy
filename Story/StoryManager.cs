@@ -259,7 +259,7 @@ namespace BetterLegacy.Story
             }
 
             CoreHelper.InStory = true;
-            StoryLevel storyLevel = LoadLevel(Chapter, Level);
+            StoryLevel storyLevel = LoadCurrentLevel();
 
             if (storyLevel == null)
             {
@@ -317,29 +317,30 @@ namespace BetterLegacy.Story
             yield break;
         }
 
-        public StoryLevel LoadLevel(int chapter, int levelIndex)
+        public StoryLevel LoadCurrentLevel()
         {
-            var name = $"doc{(chapter + 1).ToString("00")}_{(levelIndex + 1).ToString("00")}";
-            var icon = assets.LoadAsset<Sprite>($"{name}_cover.jpg");
-            var song = assets.LoadAsset<AudioClip>($"{name}_song.ogg");
-            var level = assets.LoadAsset<TextAsset>($"{name}_level.json");
-            var metadata = assets.LoadAsset<TextAsset>($"{name}_metadata.json");
-            var players = assets.LoadAsset<TextAsset>($"{name}_players.json");
+            //var name = $"doc{(chapter + 1).ToString("00")}_{(levelIndex + 1).ToString("00")}";
+            var icon = assets.LoadAsset<Sprite>($"cover.jpg");
+            var song = assets.LoadAsset<AudioClip>($"song.ogg");
+            var levelJSON = assets.LoadAsset<TextAsset>($"level.json");
+            var metadataJSON = assets.LoadAsset<TextAsset>($"metadata.json");
+            var players = assets.LoadAsset<TextAsset>($"players.json");
 
             if (!song)
                 return null;
 
+            var metadata = MetaData.Parse(JSON.Parse(metadataJSON.text), false);
             var storyLevel = new StoryLevel
             {
-                name = name,
+                id = metadata?.arcadeID,
+                name = metadata?.LevelBeatmap?.name,
                 icon = icon,
                 music = song,
-                json = level.text,
-                metadata = MetaData.Parse(JSON.Parse(metadata.text), false),
+                json = levelJSON.text,
+                metadata = metadata,
                 jsonPlayers = players.text,
-                videoClip = assets.Contains($"{name}_bg.mp4") ? assets.LoadAsset<VideoClip>($"{name}_bg.mp4") : null,
+                videoClip = assets.Contains($"bg.mp4") ? assets.LoadAsset<VideoClip>($"bg.mp4") : null,
             };
-            storyLevel.id = storyLevel.metadata?.arcadeID;
             
             return storyLevel;
         }
