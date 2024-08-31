@@ -88,8 +88,8 @@ namespace BetterLegacy.Story
             //    SteamWrapper.inst.achievements.SetAchievement("GREAT_TESTER");
             //}
 
-            if (PlayerManager.IsZenMode || PlayerManager.IsPractice)
-                return;
+            //if (PlayerManager.IsZenMode || PlayerManager.IsPractice)
+            //    return;
 
             var makeNewPlayerData = storyLevel.playerData == null;
             if (makeNewPlayerData)
