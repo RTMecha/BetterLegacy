@@ -279,6 +279,8 @@ namespace BetterLegacy.Story
                     CoreHelper.InStory = true;
                     LevelManager.OnLevelEnd = null;
                     ContinueStory = true;
+                    Chapter = GetChapter();
+                    Level = GetLevel();
                     SceneManager.inst.LoadScene("Interface"); // todo: return to chapter select
                     return;
                 }
