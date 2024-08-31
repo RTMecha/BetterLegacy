@@ -4209,6 +4209,7 @@ namespace BetterLegacy.Core.Helpers
                             try
                             {
                                 var cachedSequences = Updater.levelProcessor.converter.cachedSequences;
+                                var beatmapObjects = GameData.Current.BeatmapObjects;
 
                                 var time = AudioManager.inst.CurrentAudioSource.time;
 
@@ -4223,10 +4224,12 @@ namespace BetterLegacy.Core.Helpers
                                     var max = Parser.TryParse(modifier.commands[i + 6], 0);
                                     var useVisual = Parser.TryParse(modifier.commands[i + 7], false);
 
-                                    var beatmapObject = GameData.Current.BeatmapObjects.Find(x => x.tags.Contains(group));
+                                    var beatmapObject = beatmapObjects.Find(x => x.tags.Contains(group));
 
-                                    if (!beatmapObject || !Updater.TryGetObject(beatmapObject, out LevelObject levelObject))
+                                    if (!beatmapObject)
                                         continue;
+
+                                    Updater.TryGetObject(beatmapObject, out LevelObject levelObject);
 
                                     var containsKey = cachedSequences.ContainsKey(beatmapObject.id);
 
@@ -4269,9 +4272,9 @@ namespace BetterLegacy.Core.Helpers
 
                                 modifier.reference.SetTransform(toType, toAxis, (float)RTMath.Evaluate(RTMath.Replace(evaluation)));
                             }
-                            catch
+                            catch (Exception ex)
                             {
-
+                                CoreHelper.LogException(ex);
                             }
 
                             break;
