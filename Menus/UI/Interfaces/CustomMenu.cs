@@ -91,6 +91,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
             if (CoreHelper.InGame)
                 customMenu.exitFunc = InterfaceManager.inst.CloseMenus;
 
+            customMenu.exitFuncJSON = jn["exit_func"];
+
             return customMenu;
         }
 

@@ -143,6 +143,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         public Action exitFunc;
 
+        public JSONNode exitFuncJSON;
+
         public bool allowEffects = true;
         public int layer = 900;
 
@@ -200,6 +202,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             if (!CoreHelper.InGame && allowEffects)
             {
+                canvas.GameObject.layer = 5;
                 canvas.GameObject.AddComponent<MenuEffectsManager>();
                 canvas.Canvas.worldCamera = Camera.main;
                 canvas.Canvas.renderMode = RenderMode.ScreenSpaceCamera;
@@ -502,6 +505,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
             if (actions.Cancel.WasPressed)
             {
                 exitFunc?.Invoke();
+
+                if (exitFuncJSON != null)
+                {
+                    new MenuEvent().ParseFunction(exitFuncJSON);
+                }
             }
         }
 
@@ -674,6 +682,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 UnityEngine.Object.Destroy(menuImage.gameObject);
 
             menuImage.gameObject = Creator.NewUIObject(menuImage.name, parent);
+            menuImage.gameObject.layer = 5;
             menuImage.image = menuImage.gameObject.AddComponent<Image>();
 
             menuImage.rect.AssignToRectTransform(menuImage.image.rectTransform);
@@ -710,6 +719,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 UnityEngine.Object.Destroy(menuText.gameObject);
 
             menuText.gameObject = Creator.NewUIObject(menuText.name, parent);
+            menuText.gameObject.layer = 5;
             menuText.image = menuText.gameObject.AddComponent<Image>();
 
             menuText.rect.AssignToRectTransform(menuText.image.rectTransform);
@@ -724,6 +734,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             ((RectTransform)t["RectTransform"]).anchoredPosition = Vector2.zero;
             ((RectTransform)t["RectTransform"]).localRotation = Quaternion.identity;
             menuText.textUI = (TextMeshProUGUI)t["Text"];
+            menuText.textUI.gameObject.layer = 5;
             menuText.textUI.text = menuText.text;
             menuText.textUI.maxVisibleCharacters = 0;
             menuText.textUI.enableWordWrapping = menuText.enableWordWrapping;
@@ -734,6 +745,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             if (menuText.icon)
             {
                 var icon = Creator.NewUIObject("Icon", menuText.gameObject.transform);
+                icon.layer = 5;
                 menuText.iconUI = icon.AddComponent<Image>();
                 menuText.iconUI.sprite = menuText.icon;
                 menuText.iconRect.AssignToRectTransform(menuText.iconUI.rectTransform);
@@ -764,6 +776,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 UnityEngine.Object.Destroy(menuButton.gameObject);
 
             menuButton.gameObject = Creator.NewUIObject(menuButton.name, parent);
+            menuButton.gameObject.layer = 5;
             menuButton.image = menuButton.gameObject.AddComponent<Image>();
 
             menuButton.rect.AssignToRectTransform(menuButton.image.rectTransform);
@@ -786,6 +799,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             ((RectTransform)t["RectTransform"]).anchoredPosition = Vector2.zero;
             ((RectTransform)t["RectTransform"]).localRotation = Quaternion.identity;
             menuButton.textUI = (TextMeshProUGUI)t["Text"];
+            menuButton.textUI.gameObject.layer = 5;
             menuButton.textUI.text = menuButton.text;
             menuButton.textUI.maxVisibleCharacters = 0;
             menuButton.textUI.enableWordWrapping = menuButton.enableWordWrapping;
@@ -796,6 +810,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             if (menuButton.icon)
             {
                 var icon = Creator.NewUIObject("Icon", menuButton.gameObject.transform);
+                icon.layer = 5;
                 menuButton.iconUI = icon.AddComponent<Image>();
                 menuButton.iconUI.sprite = menuButton.icon;
                 menuButton.iconRect.AssignToRectTransform(menuButton.iconUI.rectTransform);
