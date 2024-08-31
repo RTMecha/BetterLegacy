@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Configs;
+﻿using BetterLegacy.Components;
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
@@ -170,7 +171,16 @@ namespace BetterLegacy.Editor.Managers
             themeKeyframe = dialog.Find("data/right/theme");
             themeKeyframeContent = themeKeyframe.Find("themes/viewport/content");
 
+            dialog.gameObject.AddComponent<Clickable>().onEnable = OnDialog;
+            dialog.Find("data/left/theme").gameObject.AddComponent<Clickable>().onEnable = OnDialog;
+
             StartCoroutine(RTEditor.inst.LoadThemes());
+        }
+
+        void OnDialog(bool enabled)
+        {
+            if (!enabled && EventEditor.inst)
+                EventEditor.inst.showTheme = false;
         }
 
         public Transform themeKeyframe;
