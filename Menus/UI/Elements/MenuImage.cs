@@ -404,6 +404,11 @@ namespace BetterLegacy.Menus.UI.Elements
                         var value = CoreConfig.Instance.DisplayName.Value == (parameters.IsArray ? parameters[0].Value : parameters["user"].Value);
                         return !not ? value : !value;
                     }
+                case "StoryInstalled":
+                    {
+                        var value = StoryManager.inst && StoryManager.inst.HasFiles;
+                        return !not ? value : !value;
+                    }
                 #region LevelRanks
                 case "LevelRankEquals":
                     {
@@ -1689,10 +1694,494 @@ namespace BetterLegacy.Menus.UI.Elements
 
                                     break;
                                 }
+                            case "Chroma":
+                            case "Chromatic":
+                                {
+                                    JSONNode lastX = null;
+                                    float x = 0f;
+                                    if (events["x"] != null)
+                                    {
+                                        List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                        for (int i = 0; i < events["x"].Count; i++)
+                                        {
+                                            var kf = events["x"][i];
+                                            var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
+                                            x = kf["rel"].AsBool ? x + val : val;
+                                            keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                            lastX = kf["val"];
+                                        }
+                                        animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateChroma));
+                                    }
+
+                                    animation.onComplete = () =>
+                                    {
+                                        if (animation.loop)
+                                        {
+                                            if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
+                                                ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
+
+                                            return;
+                                        }
+
+                                        AnimationManager.inst.RemoveID(animation.id);
+                                        animations.RemoveAll(x => x.id == animation.id);
+
+                                        if (lastX != null)
+                                            MenuEffectsManager.inst.UpdateChroma(x);
+
+                                        if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
+                                            ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
+                                    };
+
+                                    break;
+                                }
+                            case "Bloom":
+                                {
+                                    JSONNode lastX = null;
+                                    float x = 0f;
+                                    if (events["x"] != null)
+                                    {
+                                        List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                        for (int i = 0; i < events["x"].Count; i++)
+                                        {
+                                            var kf = events["x"][i];
+                                            var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
+                                            x = kf["rel"].AsBool ? x + val : val;
+                                            keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                            lastX = kf["val"];
+                                        }
+                                        animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateBloomIntensity));
+                                    }
+                                    
+                                    JSONNode lastY = null;
+                                    float y = 0f;
+                                    if (events["y"] != null)
+                                    {
+                                        List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                        for (int i = 0; i < events["y"].Count; i++)
+                                        {
+                                            var kf = events["y"][i];
+                                            var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
+                                            y = kf["rel"].AsBool ? y + val : val;
+                                            keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, y, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                            lastY = kf["val"];
+                                        }
+                                        animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateBloomDiffusion));
+                                    }
+                                    
+                                    JSONNode lastZ = null;
+                                    float z = 0f;
+                                    if (events["z"] != null)
+                                    {
+                                        List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                        for (int i = 0; i < events["z"].Count; i++)
+                                        {
+                                            var kf = events["z"][i];
+                                            var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
+                                            z = kf["rel"].AsBool ? z + val : val;
+                                            keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, z, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                            lastZ = kf["val"];
+                                        }
+                                        animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateBloomThreshold));
+                                    }
+                                    
+                                    JSONNode lastX2 = null;
+                                    float x2 = 0f;
+                                    if (events["x2"] != null)
+                                    {
+                                        List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                        for (int i = 0; i < events["x2"].Count; i++)
+                                        {
+                                            var kf = events["x2"][i];
+                                            var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
+                                            x2 = kf["rel"].AsBool ? x2 + val : val;
+                                            keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x2, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                            lastX2 = kf["val"];
+                                        }
+                                        animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateBloomAnamorphicRatio));
+                                    }
+
+                                    animation.onComplete = () =>
+                                    {
+                                        if (animation.loop)
+                                        {
+                                            if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
+                                                ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
+
+                                            return;
+                                        }
+
+                                        AnimationManager.inst.RemoveID(animation.id);
+                                        animations.RemoveAll(x => x.id == animation.id);
+
+                                        if (lastX != null)
+                                            MenuEffectsManager.inst.UpdateBloomIntensity(x);
+                                        if (lastY != null)
+                                            MenuEffectsManager.inst.UpdateBloomIntensity(y);
+                                        if (lastZ != null)
+                                            MenuEffectsManager.inst.UpdateBloomThreshold(z);
+                                        if (lastX2 != null)
+                                            MenuEffectsManager.inst.UpdateBloomAnamorphicRatio(x2);
+
+                                        if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
+                                            ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
+                                    };
+
+                                    break;
+                                }
+                            case "Lens":
+                            case "LensDistort":
+                                {
+                                    JSONNode lastX = null;
+                                    float x = 0f;
+                                    if (events["x"] != null)
+                                    {
+                                        List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                        for (int i = 0; i < events["x"].Count; i++)
+                                        {
+                                            var kf = events["x"][i];
+                                            var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
+                                            x = kf["rel"].AsBool ? x + val : val;
+                                            keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                            lastX = kf["val"];
+                                        }
+                                        animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateLensDistortIntensity));
+                                    }
+
+                                    JSONNode lastY = null;
+                                    float y = 0f;
+                                    if (events["y"] != null)
+                                    {
+                                        List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                        for (int i = 0; i < events["y"].Count; i++)
+                                        {
+                                            var kf = events["y"][i];
+                                            var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
+                                            y = kf["rel"].AsBool ? y + val : val;
+                                            keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, y, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                            lastY = kf["val"];
+                                        }
+                                        animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateLensDistortCenterX));
+                                    }
+
+                                    JSONNode lastZ = null;
+                                    float z = 0f;
+                                    if (events["z"] != null)
+                                    {
+                                        List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                        for (int i = 0; i < events["z"].Count; i++)
+                                        {
+                                            var kf = events["z"][i];
+                                            var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
+                                            z = kf["rel"].AsBool ? z + val : val;
+                                            keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, z, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                            lastZ = kf["val"];
+                                        }
+                                        animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateLensDistortCenterY));
+                                    }
+
+                                    JSONNode lastX2 = null;
+                                    float x2 = 0f;
+                                    if (events["x2"] != null)
+                                    {
+                                        List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                        for (int i = 0; i < events["x2"].Count; i++)
+                                        {
+                                            var kf = events["x2"][i];
+                                            var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
+                                            x2 = kf["rel"].AsBool ? x2 + val : val;
+                                            keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, x2, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                            lastX2 = kf["val"];
+                                        }
+                                        animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateLensDistortIntensityX));
+                                    }
+
+                                    JSONNode lastY2 = null;
+                                    float y2 = 0f;
+                                    if (events["y2"] != null)
+                                    {
+                                        List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                        for (int i = 0; i < events["y2"].Count; i++)
+                                        {
+                                            var kf = events["y2"][i];
+                                            var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
+                                            y2 = kf["rel"].AsBool ? y2 + val : val;
+                                            keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, y2, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                            lastY2 = kf["val"];
+                                        }
+                                        animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateLensDistortIntensityY));
+                                    }
+
+                                    JSONNode lastZ2 = null;
+                                    float z2 = 0f;
+                                    if (events["z2"] != null)
+                                    {
+                                        List<IKeyframe<float>> keyframes = new List<IKeyframe<float>>();
+                                        for (int i = 0; i < events["z2"].Count; i++)
+                                        {
+                                            var kf = events["z2"][i];
+                                            var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? Camera.main.transform.localEulerAngles.z : 0f);
+                                            z2 = kf["rel"].AsBool ? z2 + val : val;
+                                            keyframes.Add(new FloatKeyframe(kf["t"].AsFloat, z2, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+
+                                            lastZ2 = kf["val"];
+                                        }
+                                        animation.animationHandlers.Add(new AnimationHandler<float>(keyframes, MenuEffectsManager.inst.UpdateLensDistortScale));
+                                    }
+
+                                    animation.onComplete = () =>
+                                    {
+                                        if (animation.loop)
+                                        {
+                                            if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
+                                                ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
+
+                                            return;
+                                        }
+
+                                        AnimationManager.inst.RemoveID(animation.id);
+                                        animations.RemoveAll(x => x.id == animation.id);
+
+                                        if (lastX != null)
+                                            MenuEffectsManager.inst.UpdateLensDistortIntensity(x);
+                                        if (lastY != null)
+                                            MenuEffectsManager.inst.UpdateLensDistortCenterX(y);
+                                        if (lastZ != null)
+                                            MenuEffectsManager.inst.UpdateLensDistortCenterY(z);
+                                        if (lastX2 != null)
+                                            MenuEffectsManager.inst.UpdateLensDistortIntensityX(x2);
+                                        if (lastY2 != null)
+                                            MenuEffectsManager.inst.UpdateLensDistortIntensityY(y2);
+                                        if (lastZ2 != null)
+                                            MenuEffectsManager.inst.UpdateLensDistortScale(z2);
+
+                                        if (isArray && parameters.Count > 3 && parameters[3] != null || parameters["done_func"] != null)
+                                            ParseFunction(isArray ? parameters[3] : parameters["done_func"]);
+                                    };
+
+                                    break;
+                                }
                         }
 
                         animations.Add(animation);
                         AnimationManager.inst.Play(animation);
+
+                        break;
+                    }
+
+                #endregion
+
+                #region SetEvent
+
+                case "SetEvent":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["type"] == null)
+                            return;
+
+                        var isArray = parameters.IsArray;
+                        var type = isArray ? parameters[0] : parameters["type"];
+
+                        if (type.IsNumber)
+                            return;
+
+                        var values = isArray ? parameters[1] : parameters["values"];
+
+                        switch (type.Value)
+                        {
+                            case "MoveCamera":
+                                {
+                                    if (values["x"] != null)
+                                    {
+                                        MenuEffectsManager.inst.MoveCameraX(values["x"].AsFloat);
+                                    }
+                                    
+                                    if (values["y"] != null)
+                                    {
+                                        MenuEffectsManager.inst.MoveCameraX(values["y"].AsFloat);
+                                    }
+
+                                    break;
+                                }
+                            case "ZoomCamera":
+                                {
+                                    if (values["amount"] != null)
+                                    {
+                                        MenuEffectsManager.inst.ZoomCamera(values["amount"].AsFloat);
+                                    }
+
+                                    break;
+                                }
+                            case "RotateCamera":
+                                {
+                                    if (values["amount"] != null)
+                                    {
+                                        MenuEffectsManager.inst.RotateCamera(values["amount"].AsFloat);
+                                    }
+
+                                    break;
+                                }
+                            case "Chroma":
+                            case "Chromatic":
+                                {
+                                    if (values["intensity"] != null)
+                                    {
+                                        MenuEffectsManager.inst.UpdateChroma(values["intensity"].AsFloat);
+                                    }
+
+                                    break;
+                                }
+                            case "Bloom":
+                                {
+                                    if (values["intensity"] != null)
+                                    {
+                                        MenuEffectsManager.inst.UpdateBloomIntensity(values["intensity"].AsFloat);
+                                    }
+
+                                    if (values["diffusion"] != null)
+                                    {
+                                        MenuEffectsManager.inst.UpdateBloomDiffusion(values["diffusion"].AsFloat);
+                                    }
+
+                                    if (values["threshold"] != null)
+                                    {
+                                        MenuEffectsManager.inst.UpdateBloomThreshold(values["threshold"].AsFloat);
+                                    }
+
+                                    if (values["anamorphic_ratio"] != null)
+                                    {
+                                        MenuEffectsManager.inst.UpdateBloomAnamorphicRatio(values["anamorphic_ratio"].AsFloat);
+                                    }
+                                    
+                                    if (values["col"] != null)
+                                    {
+                                        MenuEffectsManager.inst.UpdateBloomColor(InterfaceManager.inst.CurrentMenu.Theme.GetFXColor(values["col"].AsInt));
+                                    }
+
+                                    break;
+                                }
+                            case "Lens":
+                            case "LensDistort":
+                                {
+                                    if (values["intensity"] != null)
+                                    {
+                                        MenuEffectsManager.inst.UpdateLensDistortIntensity(values["intensity"].AsFloat);
+                                    }
+
+                                    if (values["center_x"] != null)
+                                    {
+                                        MenuEffectsManager.inst.UpdateLensDistortCenterX(values["center_x"].AsFloat);
+                                    }
+                                    
+                                    if (values["center_y"] != null)
+                                    {
+                                        MenuEffectsManager.inst.UpdateLensDistortCenterY(values["center_y"].AsFloat);
+                                    }
+                                    
+                                    if (values["intensity_x"] != null)
+                                    {
+                                        MenuEffectsManager.inst.UpdateLensDistortIntensityX(values["intensity_x"].AsFloat);
+                                    }
+                                    
+                                    if (values["intensity_y"] != null)
+                                    {
+                                        MenuEffectsManager.inst.UpdateLensDistortIntensityY(values["intensity_y"].AsFloat);
+                                    }
+                                    
+                                    if (values["scale"] != null)
+                                    {
+                                        MenuEffectsManager.inst.UpdateLensDistortScale(values["scale"].AsFloat);
+                                    }
+
+                                    break;
+                                }
+                            case "Vignette":
+                                {
+                                    if (values["intensity"] != null)
+                                    {
+                                        MenuEffectsManager.inst.UpdateVignetteIntensity(values["intensity"].AsFloat);
+                                    }
+
+                                    if (values["center_x"] != null)
+                                    {
+                                        MenuEffectsManager.inst.UpdateVignetteCenterX(values["center_x"].AsFloat);
+                                    }
+
+                                    if (values["center_y"] != null)
+                                    {
+                                        MenuEffectsManager.inst.UpdateVignetteCenterY(values["center_y"].AsFloat);
+                                    }
+
+                                    if (values["smoothness"] != null)
+                                    {
+                                        MenuEffectsManager.inst.UpdateVignetteSmoothness(values["smoothness"].AsFloat);
+                                    }
+
+                                    if (values["roundness"] != null)
+                                    {
+                                        MenuEffectsManager.inst.UpdateVignetteRoundness(values["roundness"].AsFloat);
+                                    }
+
+                                    if (values["rounded"] != null)
+                                    {
+                                        MenuEffectsManager.inst.UpdateVignetteRounded(values["rounded"].AsBool);
+                                    }
+                                    
+                                    if (values["col"] != null)
+                                    {
+                                        MenuEffectsManager.inst.UpdateVignetteColor(InterfaceManager.inst.CurrentMenu.Theme.GetFXColor(values["col"].AsInt));
+                                    }
+
+                                    break;
+                                }
+                            case "AnalogGlitch":
+                                {
+                                    if (values["enabled"] != null)
+                                    {
+                                        MenuEffectsManager.inst.UpdateAnalogGlitchEnabled(values["enabled"].AsBool);
+                                    }
+
+                                    if (values["scan_line_jitter"] != null)
+                                    {
+                                        MenuEffectsManager.inst.UpdateAnalogGlitchScanLineJitter(values["scan_line_jitter"].AsFloat);
+                                    }
+
+                                    if (values["vertical_jump"] != null)
+                                    {
+                                        MenuEffectsManager.inst.UpdateAnalogGlitchVerticalJump(values["vertical_jump"].AsFloat);
+                                    }
+
+                                    if (values["horizontal_shake"] != null)
+                                    {
+                                        MenuEffectsManager.inst.UpdateAnalogGlitchHorizontalShake(values["horizontal_shake"].AsFloat);
+                                    }
+
+                                    if (values["color_drift"] != null)
+                                    {
+                                        MenuEffectsManager.inst.UpdateAnalogGlitchColorDrift(values["color_drift"].AsFloat);
+                                    }
+
+                                    break;
+                                }
+                            case "DigitalGlitch":
+                                {
+                                    if (values["intensity"] != null)
+                                    {
+                                        MenuEffectsManager.inst.UpdateDigitalGlitch(values["intensity"].AsFloat);
+                                    }
+
+                                    break;
+                                }
+                        }
 
                         break;
                     }
@@ -1818,7 +2307,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 #endregion
 
-                #region DemoStoryMode
+                #region BeginStoryMode
 
                 // Begins the BetterLegacy story mode.
                 // Function has no parameters.

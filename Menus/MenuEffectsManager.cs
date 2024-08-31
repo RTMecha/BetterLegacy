@@ -7,6 +7,8 @@ using UnityEngine.Rendering.PostProcessing;
 using SCPE;
 
 using BetterLegacy.Core;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Configs;
 
 namespace BetterLegacy.Menus
 {
@@ -14,12 +16,18 @@ namespace BetterLegacy.Menus
     {
         public static MenuEffectsManager inst;
 
+        public static bool ShowEffects => EventsConfig.Instance.ShowFX.Value;
+
         void Awake()
         {
             if (!inst)
                 inst = this;
             else if (inst != this)
-                Destroy(this);
+            {
+                Destroy(inst);
+                inst = this;
+            }
+            prevShowEffects = ShowEffects;
         }
 
 		void Start()
@@ -30,6 +38,20 @@ namespace BetterLegacy.Menus
 			digitalGlitch = camera.gameObject.GetComponent<DigitalGlitch>() ?? camera.gameObject.AddComponent<DigitalGlitch>();
 			digitalGlitch._shader = LegacyPlugin.digitalGlitchShader;
             analogGlitch.enabled = false; // disabled by default due to there still being a slight effect when it is enabled.
+
+            try
+            {
+                if (!postProcessResourcesAssetBundle)
+                    postProcessResourcesAssetBundle = CoreHelper.LoadAssetBundle("effectresources.asset");
+                var postProcessLayer = camera.gameObject.GetComponent<PostProcessLayer>() ?? camera.gameObject.AddComponent<PostProcessLayer>();
+                postProcessResources = postProcessResourcesAssetBundle.LoadAsset<PostProcessResources>("postprocessresources.asset");
+                HarmonyLib.AccessTools.Field(typeof(PostProcessLayer), "m_Resources").SetValue(postProcessLayer, postProcessResources);
+                postProcessLayer.volumeLayer = 1824;
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
 
             // Chroma
 			chroma = ScriptableObject.CreateInstance<ChromaticAberration>();
@@ -167,6 +189,28 @@ namespace BetterLegacy.Menus
 			ppvolume.isGlobal = true;
 		}
 
+        bool prevShowEffects;
+        void Update()
+        {
+            CoreHelper.UpdateValue(prevShowEffects, ShowEffects, x =>
+            {
+                prevShowEffects = ShowEffects;
+
+                if (!ShowEffects)
+                {
+                    analogGlitch.enabled = false;
+                    digitalGlitch.enabled = false;
+                    ppvolume.enabled = false;
+                }
+            });
+        }
+
+        void OnDestroy()
+        {
+            //postProcessResourcesAssetBundle?.Unload(true);
+            //postProcessResourcesAssetBundle = null;
+        }
+
         public void MoveCameraX(float x)
         {
             var cam = Camera.main.transform;
@@ -187,6 +231,12 @@ namespace BetterLegacy.Menus
 
 		public void RotateCamera(float rotate) => Camera.main.transform.SetLocalRotationEulerZ(rotate);
 
+        public void UpdateAnalogGlitchEnabled(bool enabled) => analogGlitch.enabled = enabled;
+        public void UpdateAnalogGlitchScanLineJitter(float scanLineJitter) => analogGlitch.scanLineJitter = scanLineJitter;
+        public void UpdateAnalogGlitchVerticalJump(float verticalJump) => analogGlitch.verticalJump = verticalJump;
+        public void UpdateAnalogGlitchHorizontalShake(float horizontalShake) => analogGlitch.horizontalShake = horizontalShake;
+        public void UpdateAnalogGlitchColorDrift(float colorDrift) => analogGlitch.colorDrift = colorDrift;
+
 		public void UpdateAnalogGlitch(bool enabled, float scanLineJitter, float verticalJump, float horizontalShake, float colorDrift)
         {
 			analogGlitch.enabled = enabled;
@@ -200,6 +250,12 @@ namespace BetterLegacy.Menus
 
 		public void UpdateChroma(float intensity) => chroma?.intensity?.Override(intensity);
 
+        public void UpdateBloomIntensity(float intensity) => bloom?.intensity?.Override(intensity);
+        public void UpdateBloomDiffusion(float diffusion) => bloom?.diffusion?.Override(diffusion);
+        public void UpdateBloomThreshold(float threshold) => bloom?.threshold?.Override(threshold);
+        public void UpdateBloomAnamorphicRatio(float anamorphicRatio) => bloom?.anamorphicRatio?.Override(anamorphicRatio);
+        public void UpdateBloomColor(Color color) => bloom?.color?.Override(color);
+
 		public void UpdateBloom(float intensity, float diffusion, float threshold, float anamorphicRatio, Color color)
         {
 			bloom?.intensity?.Override(intensity);
@@ -208,6 +264,14 @@ namespace BetterLegacy.Menus
 			bloom?.anamorphicRatio?.Override(anamorphicRatio);
 			bloom?.color?.Override(color);
         }
+
+        public void UpdateVignetteIntensity(float intensity) => vignette?.intensity?.Override(intensity);
+        public void UpdateVignetteSmoothness(float smoothness) => vignette?.smoothness?.Override(smoothness);
+        public void UpdateVignetteRounded(bool rounded) => vignette?.rounded?.Override(rounded);
+        public void UpdateVignetteRoundness(float roundness) => vignette?.roundness?.Override(roundness);
+        public void UpdateVignetteCenterX(float x) => vignette?.center?.Override(new Vector2(x, vignette?.center?.value.y ?? 0f));
+        public void UpdateVignetteCenterY(float y) => vignette?.center?.Override(new Vector2(vignette?.center?.value.x ?? 0f, y));
+        public void UpdateVignetteColor(Color color) => vignette?.color?.Override(color);
 
         public void UpdateVignette(float intensity, float smoothness, bool rounded, float roundness, Vector2 center, Color color)
         {
@@ -219,9 +283,19 @@ namespace BetterLegacy.Menus
             vignette?.color?.Override(color);
         }
 
+        public void UpdateLensDistortIntensity(float intensity) => lensDistort?.intensity?.Override(intensity);
+        public void UpdateLensDistortCenterX(float x) => lensDistort?.centerX?.Override(x);
+        public void UpdateLensDistortCenterY(float y) => lensDistort?.centerY?.Override(y);
+        public void UpdateLensDistortIntensityX(float x) => lensDistort?.intensityX?.Override(x);
+        public void UpdateLensDistortIntensityY(float y) => lensDistort?.intensityY?.Override(y);
+        public void UpdateLensDistortScale(float scale) => lensDistort?.scale?.Override(scale);
+
         PostProcessVolume ppvolume;
 
-		public AnalogGlitch analogGlitch;
+        static AssetBundle postProcessResourcesAssetBundle;
+        static PostProcessResources postProcessResources;
+
+        public AnalogGlitch analogGlitch;
 		public DigitalGlitch digitalGlitch;
 
         public ChromaticAberration chroma;
