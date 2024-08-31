@@ -341,12 +341,7 @@ namespace BetterLegacy.Menus
             menu.filePath = path;
             interfaces.Add(menu);
 
-            path = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Interfaces/story_mode.lsi";
-            jn = JSON.Parse(RTFile.ReadFromFile(path));
-
-            menu = CustomMenu.Parse(jn);
-            menu.filePath = path;
-            interfaces.Add(menu);
+            interfaces.Add(new Story.StoryMenu());
 
             if (!MenuConfig.Instance.ShowChangelog.Value || ChangeLogMenu.Seen)
             {
