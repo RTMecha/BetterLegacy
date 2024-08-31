@@ -3937,7 +3937,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Layers
             {
-                GenerateLabels(parent, 20f, "Set Group Layer");
+                GenerateLabels(parent, 32f, "Set Group Layer");
 
                 var inputFieldStorage = GenerateInputField(parent, "layer", "1", "Enter layer...", true, true);
                 inputFieldStorage.GetComponent<HorizontalLayoutGroup>().spacing = 0f;
@@ -3972,7 +3972,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Depth
             {
-                GenerateLabels(parent, 20f, "Set Group Depth");
+                GenerateLabels(parent, 32f, "Set Group Depth");
 
                 var inputFieldStorage = GenerateInputField(parent, "depth", "1", "Enter depth...", true);
                 inputFieldStorage.leftButton.onClick.NewListener(() =>
@@ -4013,7 +4013,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Song Time
             {
-                GenerateLabels(parent, 20f, "Set Song Time");
+                GenerateLabels(parent, 32f, "Set Song Time");
 
                 var inputFieldStorage = GenerateInputField(parent, "time", "1", "Enter time...", true);
                 inputFieldStorage.leftButton.onClick.NewListener(() =>
@@ -4073,7 +4073,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Autokill Offset
             {
-                GenerateLabels(parent, 20f, "Set Autokill Offset");
+                GenerateLabels(parent, 32f, "Set Autokill Offset");
 
                 var inputFieldStorage = GenerateInputField(parent, "autokill offset", "0", "Enter autokill...", true);
                 inputFieldStorage.leftButton.onClick.NewListener(() =>
@@ -4117,7 +4117,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Name
             {
-                GenerateLabels(parent, 20f, "Set Name");
+                GenerateLabels(parent, 32f, "Set Name");
 
                 var multiNameSet = EditorPrefabHolder.Instance.NumberInputField.Duplicate(parent, "name");
                 multiNameSet.transform.localScale = Vector3.one;
@@ -4178,7 +4178,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Tags
             {
-                GenerateLabels(parent, 20f, "Add a Tag");
+                GenerateLabels(parent, 32f, "Add a Tag");
 
                 var multiNameSet = EditorPrefabHolder.Instance.NumberInputField.Duplicate(parent, "name");
                 multiNameSet.transform.localScale = Vector3.one;
@@ -4227,7 +4227,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Clear data
             {
-                GenerateLabels(parent, 20f, "Clear data from objects");
+                GenerateLabels(parent, 32f, "Clear data from objects");
 
                 GenerateButtons(parent, 32f, 8f,
                      new ButtonFunction("Clear tags", () =>
@@ -4291,7 +4291,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Optimization
             {
-                var labels = GenerateLabels(parent, 20f, "Auto optimize objects");
+                var labels = GenerateLabels(parent, 32f, "Auto optimize objects");
                 var buttons = GenerateButtons(parent, 32f, 0f, new ButtonFunction("Optimize", () =>
                 {
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
@@ -4308,7 +4308,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Song Time Autokill
             {
-                GenerateLabels(parent, 20f, "Set autokill to current time");
+                GenerateLabels(parent, 32f, "Set autokill to current time");
                 GenerateButtons(parent, 32f, 0f, new ButtonFunction("Set", () =>
                 {
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
@@ -4334,7 +4334,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Set Autokill Type
             {
-                GenerateLabels(parent, 20f, "Set Autokill Type");
+                GenerateLabels(parent, 32f, "Set Autokill Type");
 
                 GenerateButtons(parent, 48f, 8f,
                     new ButtonFunction("No Autokill", () =>
@@ -4396,7 +4396,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Set Parent
             {
-                GenerateLabels(parent, 20f, "Set Parent");
+                GenerateLabels(parent, 32f, "Set Parent");
                 GenerateButtons(parent, 32f, 8f,
                     new ButtonFunction("Search list", EditorManager.inst.OpenParentPopup),
                     new ButtonFunction("Picker", () =>
@@ -4421,7 +4421,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Force Snap BPM
             {
-                GenerateLabels(parent, 20f, "Force Snap Start Time to BPM");
+                GenerateLabels(parent, 32f, "Force Snap Start Time to BPM");
                 GenerateButtons(parent, 32f, 8f, new ButtonFunction("Snap", () =>
                 {
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
@@ -4439,7 +4439,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Cycle Object Type
             {
-                GenerateLabels(parent, 20f, "Set Object Type");
+                GenerateLabels(parent, 32f, "Set Object Type");
 
                 GenerateButtons(parent, 32f, 8f,
                     new ButtonFunction("Sub", () =>
@@ -4540,7 +4540,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Assign Objects to Prefab
             {
-                GenerateLabels(parent, 20f, "Assign Objects to Prefab");
+                GenerateLabels(parent, 32f, "Assign Objects to Prefab");
                 GenerateButtons(parent, 32f, 8f,
                     new ButtonFunction("Assign", () =>
                     {
@@ -4561,7 +4561,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Lock
             {
-                GenerateLabels(parent, 20f, "Modify time lock state");
+                GenerateLabels(parent, 32f, "Modify time lock state");
 
                 GenerateButtons(parent, 32f, 8f,
                     new ButtonFunction("On", () =>
@@ -4595,7 +4595,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Collapse
             {
-                GenerateLabels(parent, 20f, "Modify timeline collapse state");
+                GenerateLabels(parent, 32f, "Modify timeline collapse state");
 
                 GenerateButtons(parent, 32f, 8f,
                     new ButtonFunction("On", () =>
@@ -4629,7 +4629,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Render Type
             {
-                var labels = GenerateLabels(parent, 20f, "Modify Object Render Type");
+                var labels = GenerateLabels(parent, 32f, "Modify Object Render Type");
 
                 var buttons1 = GenerateButtons(parent, 32f, 8f,
                     new ButtonFunction("On", () =>
@@ -4666,7 +4666,7 @@ namespace BetterLegacy.Editor.Managers
 
             // LDM
             {
-                var labels = GenerateLabels(parent, 20f, "Modify Low Detail Mode");
+                var labels = GenerateLabels(parent, 32f, "Modify Low Detail Mode");
 
                 var buttons1 = GenerateButtons(parent, 32f, 8f,
                     new ButtonFunction("On", () =>
@@ -4700,14 +4700,10 @@ namespace BetterLegacy.Editor.Managers
 
             // Sync object selection
             {
-                GenerateLabels(parent, 20f, "Sync to specific object");
+                GenerateLabels(parent, 32f, "Sync to specific object");
 
-                var syncLayout = new GameObject("sync layout");
-                syncLayout.transform.SetParent(parent);
-                syncLayout.transform.localScale = Vector3.one;
-
-                var multiSyncRT = syncLayout.AddComponent<RectTransform>();
-                multiSyncRT.sizeDelta = new Vector2(390f, 210f);
+                var syncLayout = Creator.NewUIObject("sync layout", parent);
+                syncLayout.transform.AsRT().sizeDelta = new Vector2(390f, 210f);
                 var multiSyncGLG = syncLayout.AddComponent<GridLayoutGroup>();
                 multiSyncGLG.spacing = new Vector2(4f, 4f);
                 multiSyncGLG.cellSize = new Vector2(61.6f, 49f);
@@ -4976,19 +4972,15 @@ namespace BetterLegacy.Editor.Managers
 
             // Replace Name
             {
-                GenerateLabels(parent, 20f, "Replace Name");
+                GenerateLabels(parent, 32f, "Replace Name");
 
-                var replaceName = new GameObject("replace name");
-                replaceName.transform.SetParent(parent);
-                replaceName.transform.localScale = Vector3.one;
-
-                var multiSyncRT = replaceName.AddComponent<RectTransform>();
-                multiSyncRT.sizeDelta = new Vector2(390f, 32f);
+                var replaceName = Creator.NewUIObject("replace name", parent);
+                replaceName.transform.AsRT().sizeDelta = new Vector2(390f, 32f);
                 var multiSyncGLG = replaceName.AddComponent<GridLayoutGroup>();
                 multiSyncGLG.spacing = new Vector2(8f, 8f);
                 multiSyncGLG.cellSize = new Vector2(124f, 32f);
 
-                var oldName = defaultIF.Duplicate(multiSyncRT, "old name");
+                var oldName = defaultIF.Duplicate(replaceName.transform, "old name");
 
                 Destroy(oldName.GetComponent<EventTrigger>());
                 var oldNameIF = oldName.GetComponent<InputField>();
@@ -5008,7 +5000,7 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorThemeManager.AddInputField(oldNameIF);
 
-                var newName = defaultIF.Duplicate(multiSyncRT, "new name");
+                var newName = defaultIF.Duplicate(replaceName.transform, "new name");
 
                 Destroy(newName.GetComponent<EventTrigger>());
                 var newNameIF = newName.GetComponent<InputField>();
@@ -5055,19 +5047,15 @@ namespace BetterLegacy.Editor.Managers
 
             // Replace Tags
             {
-                GenerateLabels(parent, 20f, "Replace Tags");
+                GenerateLabels(parent, 32f, "Replace Tags");
 
-                var replaceName = new GameObject("replace tags");
-                replaceName.transform.SetParent(parent);
-                replaceName.transform.localScale = Vector3.one;
-
-                var multiSyncRT = replaceName.AddComponent<RectTransform>();
-                multiSyncRT.sizeDelta = new Vector2(390f, 32f);
+                var replaceName = Creator.NewUIObject("replace tags", parent);
+                replaceName.transform.AsRT().sizeDelta = new Vector2(390f, 32f);
                 var multiSyncGLG = replaceName.AddComponent<GridLayoutGroup>();
                 multiSyncGLG.spacing = new Vector2(8f, 8f);
                 multiSyncGLG.cellSize = new Vector2(124f, 32f);
 
-                var oldName = defaultIF.Duplicate(multiSyncRT, "old tag");
+                var oldName = defaultIF.Duplicate(replaceName.transform, "old tag");
 
                 Destroy(oldName.GetComponent<EventTrigger>());
                 var oldNameIF = oldName.GetComponent<InputField>();
@@ -5087,7 +5075,7 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorThemeManager.AddInputField(oldNameIF);
 
-                var newName = defaultIF.Duplicate(multiSyncRT, "new tag");
+                var newName = defaultIF.Duplicate(replaceName.transform, "new tag");
 
                 Destroy(newName.GetComponent<EventTrigger>());
                 var newNameIF = newName.GetComponent<InputField>();
@@ -5136,19 +5124,15 @@ namespace BetterLegacy.Editor.Managers
 
             // Replace Text
             {
-                GenerateLabels(parent, 20f, "Replace Text");
-
-                var replaceName = new GameObject("replace text");
-                replaceName.transform.SetParent(parent);
-                replaceName.transform.localScale = Vector3.one;
-
-                var multiSyncRT = replaceName.AddComponent<RectTransform>();
-                multiSyncRT.sizeDelta = new Vector2(390f, 32f);
+                GenerateLabels(parent, 32f, "Replace Text");
+                
+                var replaceName = Creator.NewUIObject("replace text", parent);
+                replaceName.transform.AsRT().sizeDelta = new Vector2(390f, 32f);
                 var multiSyncGLG = replaceName.AddComponent<GridLayoutGroup>();
                 multiSyncGLG.spacing = new Vector2(8f, 8f);
                 multiSyncGLG.cellSize = new Vector2(124f, 32f);
 
-                var oldName = defaultIF.Duplicate(multiSyncRT, "old text");
+                var oldName = defaultIF.Duplicate(replaceName.transform, "old text");
 
                 Destroy(oldName.GetComponent<EventTrigger>());
                 var oldNameIF = oldName.GetComponent<InputField>();
@@ -5168,7 +5152,7 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorThemeManager.AddInputField(oldNameIF);
 
-                var newName = defaultIF.Duplicate(multiSyncRT, "new text");
+                var newName = defaultIF.Duplicate(replaceName.transform, "new text");
 
                 Destroy(newName.GetComponent<EventTrigger>());
                 var newNameIF = newName.GetComponent<InputField>();
@@ -5215,19 +5199,15 @@ namespace BetterLegacy.Editor.Managers
 
             // Replace Modifier
             {
-                GenerateLabels(parent, 20f, "Replace Modifier values");
+                GenerateLabels(parent, 32f, "Replace Modifier values");
 
-                var replaceName = new GameObject("replace modifier");
-                replaceName.transform.SetParent(parent);
-                replaceName.transform.localScale = Vector3.one;
-
-                var multiSyncRT = replaceName.AddComponent<RectTransform>();
-                multiSyncRT.sizeDelta = new Vector2(390f, 32f);
+                var replaceName = Creator.NewUIObject("replace modifier", parent);
+                replaceName.transform.AsRT().sizeDelta = new Vector2(390f, 32f);
                 var multiSyncGLG = replaceName.AddComponent<GridLayoutGroup>();
                 multiSyncGLG.spacing = new Vector2(8f, 8f);
                 multiSyncGLG.cellSize = new Vector2(124f, 32f);
 
-                var oldName = defaultIF.Duplicate(multiSyncRT, "old modifier");
+                var oldName = defaultIF.Duplicate(replaceName.transform, "old modifier");
 
                 Destroy(oldName.GetComponent<EventTrigger>());
                 var oldNameIF = oldName.GetComponent<InputField>();
@@ -5247,7 +5227,7 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorThemeManager.AddInputField(oldNameIF);
 
-                var newName = defaultIF.Duplicate(multiSyncRT, "new modifier");
+                var newName = defaultIF.Duplicate(replaceName.transform, "new modifier");
 
                 Destroy(newName.GetComponent<EventTrigger>());
                 var newNameIF = newName.GetComponent<InputField>();
@@ -5302,7 +5282,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Assign Colors
             {
-                GenerateLabels(parent, 20f, "Assign colors");
+                GenerateLabels(parent, 32f, "Assign colors");
 
                 var disable = EditorPrefabHolder.Instance.Function2Button.Duplicate(parent, "disable color");
                 var disableX = EditorManager.inst.colorGUI.transform.Find("Image").gameObject.Duplicate(disable.transform, "x");
@@ -5322,12 +5302,8 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddGraphic(disableButtonStorage.text, ThemeGroup.Function_2_Text);
                 EditorThemeManager.AddSelectable(disableButtonStorage.button, ThemeGroup.Function_2);
 
-                var colorLayout = new GameObject("color layout");
-                colorLayout.transform.SetParent(parent);
-                colorLayout.transform.localScale = Vector3.one;
-
-                var colorLayoutRT = colorLayout.AddComponent<RectTransform>();
-                colorLayoutRT.sizeDelta = new Vector2(390f, 76f);
+                var colorLayout = Creator.NewUIObject("color layout", parent);
+                colorLayout.transform.AsRT().sizeDelta = new Vector2(390f, 76f);
                 var colorLayoutGLG = colorLayout.AddComponent<GridLayoutGroup>();
                 colorLayoutGLG.spacing = new Vector2(4f, 4f);
                 colorLayoutGLG.cellSize = new Vector2(36f, 36f);
@@ -5335,7 +5311,7 @@ namespace BetterLegacy.Editor.Managers
                 for (int i = 0; i < 18; i++)
                 {
                     var index = i;
-                    var colorGUI = EditorManager.inst.colorGUI.Duplicate(colorLayoutRT, (i + 1).ToString());
+                    var colorGUI = EditorManager.inst.colorGUI.Duplicate(colorLayout.transform, (i + 1).ToString());
                     var assigner = colorGUI.AddComponent<AssignToTheme>();
                     assigner.Index = i;
                     var image = colorGUI.GetComponent<Image>();
@@ -5361,27 +5337,27 @@ namespace BetterLegacy.Editor.Managers
                     });
                 }
 
-                GenerateLabels(parent, 20f, "Opacity");
+                GenerateLabels(parent, 32f, "Opacity");
 
                 var opacityIF = CreateInputField("opacity", "", "Enter value... (Keep empty to not set)", parent, isInteger: false);
                 ((Text)opacityIF.placeholder).fontSize = 13;
 
-                GenerateLabels(parent, 20f, "Hue");
+                GenerateLabels(parent, 32f, "Hue");
 
                 var hueIF = CreateInputField("hue", "", "Enter value... (Keep empty to not set)", parent, isInteger: false);
                 ((Text)hueIF.placeholder).fontSize = 13;
 
-                GenerateLabels(parent, 20f, "Saturation");
+                GenerateLabels(parent, 32f, "Saturation");
 
                 var satIF = CreateInputField("sat", "", "Enter value... (Keep empty to not set)", parent, isInteger: false);
                 ((Text)satIF.placeholder).fontSize = 13;
 
-                GenerateLabels(parent, 20f, "Value (Brightness)");
+                GenerateLabels(parent, 32f, "Value (Brightness)");
 
                 var valIF = CreateInputField("val", "", "Enter value... (Keep empty to not set)", parent, isInteger: false);
                 ((Text)valIF.placeholder).fontSize = 13;
 
-                GenerateLabels(parent, 20f, "Ease Type");
+                GenerateLabels(parent, 32f, "Ease Type");
 
                 var curvesObject = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/right/position/curves").Duplicate(parent, "curves");
                 var curves = curvesObject.GetComponent<Dropdown>();
@@ -5404,7 +5380,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // Assign to All
                 {
-                    GenerateLabels(parent, 20f, "Assign to all Color Keyframes");
+                    GenerateLabels(parent, 32f, "Assign to all Color Keyframes");
                     GenerateButtons(parent, 32f, 8f,
                         new ButtonFunction("Set", () =>
                         {
@@ -5488,7 +5464,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // Assign to Index
                 {
-                    GenerateLabels(parent, 20f, "Assign to Index");
+                    GenerateLabels(parent, 32f, "Assign to Index");
 
                     var assignIndex = CreateInputField("index", "0", "Enter index...", parent, maxValue: int.MaxValue);
                     GenerateButtons(parent, 32f, 8f,
@@ -5571,7 +5547,7 @@ namespace BetterLegacy.Editor.Managers
 
                 // Create Color Keyframe
                 {
-                    GenerateLabels(parent, 20f, "Create Color Keyframe");
+                    GenerateLabels(parent, 32f, "Create Color Keyframe");
                     GenerateButtons(parent, 32f, 0f, new ButtonFunction("Create", () =>
                     {
                         foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
@@ -5614,7 +5590,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Paste
             {
-                GenerateLabels(parent, 20f, "Paste Keyframe data (All types)");
+                GenerateLabels(parent, 32f, "Paste Keyframe data (All types)");
 
                 // All Types
                 {
@@ -5815,7 +5791,7 @@ namespace BetterLegacy.Editor.Managers
                     });
                 }
 
-                GenerateLabels(parent, 20f, "Paste Keyframe data (Position)");
+                GenerateLabels(parent, 32f, "Paste Keyframe data (Position)");
 
                 // Position
                 {
@@ -5917,7 +5893,7 @@ namespace BetterLegacy.Editor.Managers
                     });
                 }
 
-                GenerateLabels(parent, 20f, "Paste Keyframe data (Scale)");
+                GenerateLabels(parent, 32f, "Paste Keyframe data (Scale)");
 
                 // Scale
                 {
@@ -6019,7 +5995,7 @@ namespace BetterLegacy.Editor.Managers
                     });
                 }
 
-                GenerateLabels(parent, 20f, "Paste Keyframe data (Rotation)");
+                GenerateLabels(parent, 32f, "Paste Keyframe data (Rotation)");
 
                 // Rotation
                 {
@@ -6121,7 +6097,7 @@ namespace BetterLegacy.Editor.Managers
                     });
                 }
 
-                GenerateLabels(parent, 20f, "Paste Keyframe data (Color)");
+                GenerateLabels(parent, 32f, "Paste Keyframe data (Color)");
 
                 // Color
                 {
