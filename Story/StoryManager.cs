@@ -28,8 +28,6 @@ namespace BetterLegacy.Story
 
         public bool Loaded { get; set; }
 
-        public bool HasFiles => RTFile.FileExists($"{StoryAssetsPath}doc_{(Chapter + 1).ToString("00")}.asset");
-
         public bool AssetBundlesLoaded => assets != null;
 
         public int Chapter { get; set; }
@@ -43,6 +41,26 @@ namespace BetterLegacy.Story
             { 2, 6 },
             { 3, 6 },
             { 4, 6 },
+        };
+
+        public int[] chaptersProgression;
+        public static int CHAPTER_RANK_REQUIREMENT = 1; // test
+
+        public List<List<string>> levelIDs = new List<List<string>>
+        {
+            new List<string>
+            {
+                "0603661088835365", // Granite
+                "7376679616786413", // Ahead of the Curve
+                "9784345755418661", // Super Gamer Girl 3D
+                "9454675971710439", // Slime Boy Color
+                "6698982684586290", // Node (Para)
+                "4462948827770399", // ???
+            },
+            new List<string>
+            {
+                "3434489214197233", // RPM
+            },
         };
 
         public string StorySavesPath => $"{RTFile.ApplicationDirectory}profile/story_saves_{(SaveSlot + 1).ToString("00")}.lss";
@@ -68,6 +86,15 @@ namespace BetterLegacy.Story
             storySavesJSON = JSON.Parse(RTFile.FileExists(StorySavesPath) ? RTFile.ReadFromFile(StorySavesPath) : "{}");
             Chapter = GetChapter();
             Level = GetLevel();
+
+            if (storySavesJSON["chapters"] != null)
+            {
+                chaptersProgression = new int[storySavesJSON["chapters"].Count];
+                for (int i = 0; i < storySavesJSON["chapters"].Count; i++)
+                    chaptersProgression[i] = storySavesJSON["chapters"][i].AsInt;
+            }
+            else
+                chaptersProgression = new int[ChapterCounts.Count];
 
             if (storySavesJSON["lvl"] != null)
                 for (int i = 0; i < storySavesJSON["lvl"].Count; i++)
@@ -123,6 +150,13 @@ namespace BetterLegacy.Story
             Save();
         }
 
+        public void SaveChapterProgress()
+        {
+            storySavesJSON["chapters"] = new JSONArray();
+            for (int i = 0; i < chaptersProgression.Length; i++)
+                storySavesJSON["chapters"][i] = chaptersProgression[i];
+        }
+
         public void Save()
         {
             try
@@ -135,11 +169,18 @@ namespace BetterLegacy.Story
             }
         }
 
+        public bool IsBonus(string id) => id switch
+        {
+            "4462948827770399" => true,
+            _ => false,
+        };
+
         public void SetChapter(int chapter)
         {
             CoreHelper.Log($"Updating chapter {Chapter} > {chapter}");
             Chapter = chapter;
             storySavesJSON["doc"] = chapter;
+            SaveChapterProgress();
             Save();
         }
 
@@ -147,7 +188,12 @@ namespace BetterLegacy.Story
         {
             CoreHelper.Log($"Updating level {Level} > {level}");
             Level = Mathf.Clamp(level, 0, ChapterCounts[Chapter] - 1);
+
+            if (Chapter < chaptersProgression.Length && chaptersProgression[Chapter] < level)
+                chaptersProgression[Chapter] = level;
+
             storySavesJSON["level"] = level;
+            SaveChapterProgress();
             Save();
         }
 
@@ -280,21 +326,19 @@ namespace BetterLegacy.Story
                     CoreHelper.InStory = true;
                     LevelManager.OnLevelEnd = null;
                     ContinueStory = true;
-                    Chapter = GetChapter();
-                    Level = GetLevel();
-                    SceneManager.inst.LoadScene("Interface"); // todo: return to chapter select
+                    SceneManager.inst.LoadScene("Interface");
                     return;
                 }
 
-                if (ChapterCounts.ContainsKey(Chapter) && Level + 1 >= ChapterCounts[Chapter])
+                var chapter = GetChapter();
+                if (Level != 5 && ChapterCounts.ContainsKey(chapter) && Level + 1 >= ChapterCounts[chapter])
                 {
-                    SetChapter(Chapter + 1);
+                    SetChapter(chapter + 1);
                     SetLevel(0);
                 }
-                else if (!ChapterCounts.ContainsKey(Chapter))
+                else if (!ChapterCounts.ContainsKey(chapter))
                 {
-                    SetChapter(0);
-                    SetLevel(0);
+                    CoreHelper.Log("You reached the end.");
                 }
                 else
                 {
@@ -303,7 +347,7 @@ namespace BetterLegacy.Story
 
                 CoreHelper.InStory = true;
                 LevelManager.OnLevelEnd = null;
-                SceneManager.inst.LoadScene("Interface"); // todo: return to chapter select
+                SceneManager.inst.LoadScene("Interface");
             };
 
             if (!storyLevel.music)
@@ -355,13 +399,14 @@ namespace BetterLegacy.Story
             if (AssetBundlesLoaded)
                 Clear();
 
-            if (!HasFiles)
+            var path = $"{StoryAssetsPath}doc{(chapter + 1).ToString("00")}_{(level + 1).ToString("00")}.asset";
+            if (!RTFile.FileExists(path))
             {
                 Loaded = false;
                 yield break;
             }
 
-            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{StoryAssetsPath}doc{(chapter + 1).ToString("00")}_{(level + 1).ToString("00")}.asset", assetBundle =>
+            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{path}", assetBundle =>
             {
                 assets = assetBundle;
             }));

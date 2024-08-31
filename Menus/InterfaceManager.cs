@@ -24,6 +24,7 @@ using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Layouts;
 using BetterLegacy.Arcade;
 using BetterLegacy.Patchers;
+using BetterLegacy.Story;
 
 namespace BetterLegacy.Menus
 {
@@ -307,6 +308,7 @@ namespace BetterLegacy.Menus
             var menu = CustomMenu.Parse(jn);
             menu.filePath = path;
             interfaces.Add(menu);
+            interfaces.Add(new ChapterSelectMenu());
 
             SetCurrentInterface(menu.id);
             PlayMusic();
