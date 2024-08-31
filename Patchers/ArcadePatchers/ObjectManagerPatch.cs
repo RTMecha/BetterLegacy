@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Core;
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
 using HarmonyLib;
@@ -55,7 +56,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdatePrefix()
         {
-            LevelTick?.Invoke();
+            if (!CoreHelper.Paused)
+                LevelTick?.Invoke();
 
             return false;
         }
