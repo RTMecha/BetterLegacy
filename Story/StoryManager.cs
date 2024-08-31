@@ -13,6 +13,7 @@ using BetterLegacy.Core.Managers;
 using SimpleJSON;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Data.Player;
+using UnityEngine.Video;
 
 namespace BetterLegacy.Story
 {
@@ -336,6 +337,7 @@ namespace BetterLegacy.Story
                 json = level.text,
                 metadata = MetaData.Parse(JSON.Parse(metadata.text), false),
                 jsonPlayers = players.text,
+                videoClip = assets.Contains($"{name}_bg.mp4") ? assets.LoadAsset<VideoClip>($"{name}_bg.mp4") : null,
             };
             storyLevel.id = storyLevel.metadata?.arcadeID;
             
