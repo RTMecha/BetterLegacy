@@ -290,9 +290,8 @@ namespace BetterLegacy.Editor.Managers
 
             #endregion
 
-            var authPath = Path.Combine(Application.persistentDataPath, "auth.json");
-            if (RTFile.FileExists(authPath))
-                authData = JSON.Parse(RTFile.ReadFromFile(authPath)).AsObject;
+            if (LegacyPlugin.authData != null)
+                authData = LegacyPlugin.authData;
 
             yield break;
         }

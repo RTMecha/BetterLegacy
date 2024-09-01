@@ -40,6 +40,8 @@ namespace BetterLegacy
         public static Sprite EmptyObjectSprite { get; set; }
         public static Sprite AtanPlaceholder { get; set; }
 
+        public static JSONObject authData;
+
         public static Material blur;
         public static Material GetBlur()
         {
@@ -196,6 +198,19 @@ namespace BetterLegacy
                 ObjectManagerPatch.LevelTick += RTEventManager.OnLevelTick; // events need to update first
                 ObjectManagerPatch.LevelTick += Updater.OnLevelTick; // objects update second
                 ObjectManagerPatch.LevelTick += ModifiersManager.OnLevelTick; // modifiers update third
+            }
+
+            try
+            {
+
+                var authPath = Path.Combine(Application.persistentDataPath, "auth.json");
+                if (RTFile.FileExists(authPath))
+                    authData = JSON.Parse(RTFile.ReadFromFile(authPath)).AsObject;
+
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Failed to load auth. {ex}");
             }
 
             try
