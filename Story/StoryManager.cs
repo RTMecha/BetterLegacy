@@ -72,9 +72,7 @@ namespace BetterLegacy.Story
             set
             {
                 saveSlot = value;
-                storySavesJSON = JSON.Parse(RTFile.FileExists(StorySavesPath) ? RTFile.ReadFromFile(StorySavesPath) : "{}");
-                Chapter = GetChapter();
-                Level = GetLevel();
+                Load();
             }
         }
 
@@ -83,6 +81,11 @@ namespace BetterLegacy.Story
         void Awake()
         {
             inst = this;
+            Load();
+        }
+
+        public void Load()
+        {
             storySavesJSON = JSON.Parse(RTFile.FileExists(StorySavesPath) ? RTFile.ReadFromFile(StorySavesPath) : "{}");
             Chapter = GetChapter();
             Level = GetLevel();
@@ -96,6 +99,7 @@ namespace BetterLegacy.Story
             else
                 chaptersProgression = new int[ChapterCounts.Count];
 
+            Saves.Clear();
             if (storySavesJSON["lvl"] != null)
                 for (int i = 0; i < storySavesJSON["lvl"].Count; i++)
                 {
