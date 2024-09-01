@@ -187,27 +187,30 @@ namespace BetterLegacy.Editor.Managers
             GenerateToggle(content, creatorLinkTitle, "is hub level", "Is Hub Level", 4);
             GenerateToggle(content, creatorLinkTitle, "unlock required", "Unlock Required", 5);
 
-            // Preferred Player Count
-            {
-                var preferredPlayerCount = Creator.NewUIObject("preferred player count", content, 6);
-                var preferredPlayerCountLayout = preferredPlayerCount.AddComponent<HorizontalLayoutGroup>();
-                preferredPlayerCountLayout.childControlHeight = true;
-                preferredPlayerCountLayout.childControlWidth = false;
-                preferredPlayerCountLayout.childForceExpandHeight = true;
-                preferredPlayerCountLayout.childForceExpandWidth = false;
-                preferredPlayerCount.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+            //// Preferred Player Count
+            //{
+            //    var preferredPlayerCount = Creator.NewUIObject("preferred player count", content, 6);
+            //    var preferredPlayerCountLayout = preferredPlayerCount.AddComponent<HorizontalLayoutGroup>();
+            //    preferredPlayerCountLayout.childControlHeight = true;
+            //    preferredPlayerCountLayout.childControlWidth = false;
+            //    preferredPlayerCountLayout.childForceExpandHeight = true;
+            //    preferredPlayerCountLayout.childForceExpandWidth = false;
+            //    preferredPlayerCount.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
 
-                var preferredPlayerCountLabel = creatorLinkTitle.gameObject.Duplicate(preferredPlayerCount.transform, "label");
-                var preferredPlayerCountLabelText = preferredPlayerCountLabel.GetComponent<Text>();
-                preferredPlayerCountLabelText.text = "Preferred Player count";
-                preferredPlayerCountLabelText.rectTransform.sizeDelta = new Vector2(260f, 32f);
+            //    var preferredPlayerCountLabel = creatorLinkTitle.gameObject.Duplicate(preferredPlayerCount.transform, "label");
+            //    var preferredPlayerCountLabelText = preferredPlayerCountLabel.GetComponent<Text>();
+            //    preferredPlayerCountLabelText.text = "Preferred Player count";
+            //    preferredPlayerCountLabelText.rectTransform.sizeDelta = new Vector2(260f, 32f);
 
-                var preferredPlayerCountDropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(preferredPlayerCount.transform, "dropdown");
-                var preferredPlayerCountLE = preferredPlayerCountDropdown.GetComponent<LayoutElement>() ?? preferredPlayerCountDropdown.AddComponent<LayoutElement>();
-                preferredPlayerCountLE.preferredWidth = 126f;
-                preferredPlayerCountLE.minWidth = 126f;
-                preferredPlayerCountDropdown.transform.AsRT().sizeDelta = new Vector2(256f, 32f);
-            }
+            //    var preferredPlayerCountDropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(preferredPlayerCount.transform, "dropdown");
+            //    var preferredPlayerCountLE = preferredPlayerCountDropdown.GetComponent<LayoutElement>() ?? preferredPlayerCountDropdown.AddComponent<LayoutElement>();
+            //    preferredPlayerCountLE.preferredWidth = 126f;
+            //    preferredPlayerCountLE.minWidth = 126f;
+            //    preferredPlayerCountDropdown.transform.AsRT().sizeDelta = new Vector2(256f, 32f);
+            //}
+
+            GenerateDropdown(content, creatorLinkTitle, "preferred player count", "Preferred Player count", 6);
+            GenerateDropdown(content, creatorLinkTitle, "server visibility", "Visibility", 7);
 
             #region Editor Theme Setup
 
@@ -292,6 +295,29 @@ namespace BetterLegacy.Editor.Managers
                 authData = JSON.Parse(RTFile.ReadFromFile(authPath)).AsObject;
 
             yield break;
+        }
+
+        void GenerateDropdown(Transform content, Text creatorLinkTitle, string name, string text, int siblingIndex)
+        {
+
+            var preferredPlayerCount = Creator.NewUIObject(name, content, siblingIndex);
+            var preferredPlayerCountLayout = preferredPlayerCount.AddComponent<HorizontalLayoutGroup>();
+            preferredPlayerCountLayout.childControlHeight = true;
+            preferredPlayerCountLayout.childControlWidth = false;
+            preferredPlayerCountLayout.childForceExpandHeight = true;
+            preferredPlayerCountLayout.childForceExpandWidth = false;
+            preferredPlayerCount.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+
+            var preferredPlayerCountLabel = creatorLinkTitle.gameObject.Duplicate(preferredPlayerCount.transform, "label");
+            var preferredPlayerCountLabelText = preferredPlayerCountLabel.GetComponent<Text>();
+            preferredPlayerCountLabelText.text = text;
+            preferredPlayerCountLabelText.rectTransform.sizeDelta = new Vector2(260f, 32f);
+
+            var preferredPlayerCountDropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(preferredPlayerCount.transform, "dropdown");
+            var preferredPlayerCountLE = preferredPlayerCountDropdown.GetComponent<LayoutElement>() ?? preferredPlayerCountDropdown.AddComponent<LayoutElement>();
+            preferredPlayerCountLE.preferredWidth = 126f;
+            preferredPlayerCountLE.minWidth = 126f;
+            preferredPlayerCountDropdown.transform.AsRT().sizeDelta = new Vector2(256f, 32f);
         }
 
         void GenerateToggle(Transform content, Text creatorLinkTitle, string name, string text, int siblingIndex)
@@ -656,6 +682,14 @@ namespace BetterLegacy.Editor.Managers
             preferredPlayerCount.onValueChanged.AddListener(x =>
             {
                 metadata.LevelBeatmap.preferredPlayerCount = (LevelBeatmap.PreferredPlayerCount)x;
+            });
+
+            var serverVisibility = content.Find("server visibility/dropdown").GetComponent<Dropdown>();
+            serverVisibility.options = CoreHelper.StringToOptionData("Public", "Unlisted", "Private");
+            serverVisibility.value = (int)metadata.visibility;
+            serverVisibility.onValueChanged.AddListener(x =>
+            {
+                metadata.visibility = (ServerVisibility)x;
             });
 
             content.Find("agreement/text").GetComponent<Text>().text = "If you want to upload to the Steam Workshop, you can convert the level to the current level format for vanilla PA and upload it to the workshop. Beware any modded features not in current PA will not be saved. " +

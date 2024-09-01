@@ -117,6 +117,13 @@
         GlobalFolder
     }
 
+    public enum ServerVisibility
+    {
+        Public,
+        Unlisted,
+        Private
+    }
+
     /// <summary>
     /// How <i>complex</i> something is.<br></br><br></br>Can be used for <i>Examples</i>' tutorials or for displaying editor features. If used for editor features, Normal is vanilla and Advanced is fully modded.
     /// </summary>

@@ -45,6 +45,7 @@ namespace BetterLegacy.Core.Data
         public string nextID;
         public bool isHubLevel;
         public bool requireUnlock;
+        public ServerVisibility visibility;
 
         /// <summary>
         /// Gets the game version of the metadata.
@@ -112,6 +113,11 @@ namespace BetterLegacy.Core.Data
             index = orig.index,
             collectionID = orig.collectionID,
             isHubLevel = orig.isHubLevel,
+            requireUnlock = orig.requireUnlock,
+            arcadeID = orig.arcadeID,
+            nextID = orig.nextID,
+            prevID = orig.prevID,
+            visibility = orig.visibility
         };
 
         public static MetaData ParseVG(JSONNode jn)
@@ -394,6 +400,9 @@ namespace BetterLegacy.Core.Data
 
                 if (!string.IsNullOrEmpty(jn["require_unlock"]))
                     result.requireUnlock = jn["require_unlock"].AsBool;
+
+                if (!string.IsNullOrEmpty(jn["visibility"]))
+                    result.visibility = (ServerVisibility)jn["visibility"].AsInt;
             }
             catch
             {
@@ -502,6 +511,9 @@ namespace BetterLegacy.Core.Data
 
             if (requireUnlock)
                 jn["require_unlock"] = requireUnlock.ToString();
+
+            if (visibility != ServerVisibility.Public)
+                jn["visibility"] = ((int)visibility).ToString();
 
             return jn;
         }
