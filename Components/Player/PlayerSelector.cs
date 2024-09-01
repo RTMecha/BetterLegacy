@@ -19,7 +19,7 @@ namespace BetterLegacy.Components.Player
 
         void OnMouseDown()
         {
-            EditorManager.inst.ShowDialog("Player Editor New");
+            EditorManager.inst.ShowDialog("Player Editor");
             StartCoroutine(PlayerEditor.inst.RefreshEditor());
         }
     }
