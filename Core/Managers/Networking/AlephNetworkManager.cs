@@ -28,7 +28,7 @@ namespace BetterLegacy.Core.Managers.Networking
 
         void Awake() => inst = this;
 
-        public static bool ServerFinished => false;
+        public static bool ServerFinished => true;
 
         public static string ArcadeServerURL => "https://localhost:7206/";
 
@@ -251,10 +251,15 @@ namespace BetterLegacy.Core.Managers.Networking
 
         }
 
-        public static IEnumerator DownloadJSONFile(string path, Action<string> callback)
+        public static IEnumerator DownloadJSONFile(string path, Action<string> callback, Dictionary<string, string> headers = null)
         {
             using var www = UnityWebRequest.Get(path);
             www.certificateHandler = new ForceAcceptAll();
+
+            if (headers != null)
+                foreach (var header in headers)
+                    www.SetRequestHeader(header.Key, header.Value);
+
             yield return www.SendWebRequest();
             if (www.isNetworkError || www.isHttpError)
                 Debug.LogError($"{className}Error: {www.error}\nMessage: {www.downloadHandler.text}");
