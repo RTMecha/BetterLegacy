@@ -43,7 +43,6 @@ namespace BetterLegacy.Arcade
             {
                 id = "626274",
                 name = "Close Button",
-                //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(-560f, 440f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(250f, 64f)),
                 rect = RectValues.Default.AnchoredPosition(-560f, 440f).SizeDelta(250f, 64f),
                 selectionPosition = Vector2Int.zero,
                 text = "<b><align=center><size=40>[ RETURN ]",
@@ -62,7 +61,6 @@ namespace BetterLegacy.Arcade
             {
                 id = "4857529985",
                 name = "Copy ID",
-                //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(550f, 440f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(250f, 64f)),
                 rect = RectValues.Default.AnchoredPosition(550f, 440f).SizeDelta(250f, 64f),
                 selectionPosition = new Vector2Int(2, 0),
                 text = $"<b><align=center><size=40>[ COPY ID ]",
@@ -81,7 +79,6 @@ namespace BetterLegacy.Arcade
             {
                 id = "5356325",
                 name = "Backer",
-                //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(250f, 100f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(844f, 512f)),
                 rect = RectValues.Default.AnchoredPosition(250f, 100f).SizeDelta(844f, 512f),
                 opacity = 0.1f,
                 color = 6,
@@ -92,7 +89,6 @@ namespace BetterLegacy.Arcade
             {
                 id = "84682758635",
                 name = "Cover",
-                //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(-430f, 100f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(512f, 512f)),
                 rect = RectValues.Default.AnchoredPosition(-430f, 100f).SizeDelta(512f, 512f),
                 icon = CurrentLevel.icon,
                 opacity = 1f,
@@ -109,7 +105,6 @@ namespace BetterLegacy.Arcade
             {
                 id = "4624859539",
                 name = "Title",
-                // rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(-80f, 280f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(100f, 100f)),
                 rect = RectValues.Default.AnchoredPosition(-80f, 280f),
                 text = $"<size={size}><b>{name}",
                 hideBG = true,
@@ -120,7 +115,6 @@ namespace BetterLegacy.Arcade
             {
                 id = "4624859539",
                 name = "Song",
-                //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(-100f, 200f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(100f, 100f)),
                 rect = RectValues.Default.AnchoredPosition(-100f, 200f),
                 text = $"<size=40>Song:",
                 hideBG = true,
@@ -131,7 +125,6 @@ namespace BetterLegacy.Arcade
             {
                 id = "638553",
                 name = "Song Button",
-                //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(340f, 200f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(500f, 48f)),
                 rect = RectValues.Default.AnchoredPosition(340f, 200f).SizeDelta(500f, 48f),
                 selectionPosition = new Vector2Int(0, 1),
                 text = $" [ {CurrentLevel.metadata.LevelSong.title} ]",
@@ -154,7 +147,6 @@ namespace BetterLegacy.Arcade
             {
                 id = "4624859539",
                 name = "Artist",
-                //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(-100f, 150f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(100f, 100f)),
                 rect = RectValues.Default.AnchoredPosition(-100f, 150f),
                 text = $"<size=40>Artist:",
                 hideBG = true,
@@ -165,7 +157,6 @@ namespace BetterLegacy.Arcade
             {
                 id = "638553",
                 name = "Artist Button",
-                //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(340f, 150f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(500f, 48f)),
                 rect = RectValues.Default.AnchoredPosition(340f, 150f).SizeDelta(500f, 48f),
                 selectionPosition = new Vector2Int(0, 2),
                 text = $" [ {CurrentLevel.metadata.LevelArtist.Name} ]",
@@ -188,7 +179,6 @@ namespace BetterLegacy.Arcade
             {
                 id = "4624859539",
                 name = "Creator",
-                //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(-100f, 100f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(100f, 100f)),
                 rect = RectValues.Default.AnchoredPosition(-100f, 100f),
                 text = $"<size=40>Creator:",
                 hideBG = true,
@@ -199,7 +189,6 @@ namespace BetterLegacy.Arcade
             {
                 id = "638553",
                 name = "Creator Button",
-                //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(340f, 100f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(500f, 48f)),
                 rect = RectValues.Default.AnchoredPosition(340f, 100f).SizeDelta(500f, 48f),
                 selectionPosition = new Vector2Int(0, 3),
                 text = $" [ {CurrentLevel.metadata.LevelCreator.steam_name} ]",
@@ -223,7 +212,6 @@ namespace BetterLegacy.Arcade
             {
                 id = "4624859539",
                 name = "Difficulty",
-                //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(-100f, 50f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(100f, 100f)),
                 rect = RectValues.Default.AnchoredPosition(-100f, 50f),
                 text = $"<size=40>Difficulty: <b><#{LSColors.ColorToHex(difficulty.color)}><voffset=-13><size=64>■</voffset><size=40>{difficulty.name}",
                 hideBG = true,
@@ -234,7 +222,6 @@ namespace BetterLegacy.Arcade
             {
                 id = "4624859539",
                 name = "Description Label",
-                //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(250f, -20f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(800f, 100f)),
                 rect = RectValues.Default.AnchoredPosition(250f, -20f).SizeDelta(800f, 100f),
                 text = "<size=40><b>Description:",
                 hideBG = true,
@@ -247,7 +234,6 @@ namespace BetterLegacy.Arcade
             {
                 id = "4624859539",
                 name = "Description",
-                //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(250f, -60f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(800f, 100f)),
                 rect = RectValues.Default.AnchoredPosition(250f, -60f).SizeDelta(800f, 100f),
                 text = "<size=22>" + CurrentLevel.metadata.LevelSong.description,
                 hideBG = true,
@@ -261,7 +247,6 @@ namespace BetterLegacy.Arcade
             {
                 id = "92595",
                 name = "Rank",
-                //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(-250f, -90f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(100f, 100f), -10f),
                 rect = RectValues.Default.AnchoredPosition(-250f, -90f).Rotation(-10f),
                 text = $"<size=140><b><align=center><#{LSColors.ColorToHex(levelRank.color)}>{levelRank.name}",
                 hideBG = true,
@@ -272,7 +257,6 @@ namespace BetterLegacy.Arcade
             {
                 id = "3525734",
                 name = "Play Button",
-                //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(-430f, -220f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(512f, 64f)),
                 rect = RectValues.Default.AnchoredPosition(-430f, -220f).SizeDelta(512f, 64f),
                 selectionPosition = new Vector2Int(0, 4),
                 text = "<size=40><b><align=center>[ PLAY ]",
@@ -316,7 +300,6 @@ namespace BetterLegacy.Arcade
                     id = "3525734",
                     name = "Queue Button",
                     text = $"<size=40><b><align=center>[ {(LevelManager.ArcadeQueue.Has(x => x.id == CurrentLevel.id) ? "REMOVE FROM" : "ADD TO")} QUEUE ]",
-                    //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(-430f, -320f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(512f, 64f)),
                     rect = RectValues.Default.AnchoredPosition(-430f, -320f).SizeDelta(512f, 64f),
                     selectionPosition = new Vector2Int(0, 5),
                     opacity = 0.1f,
@@ -354,7 +337,6 @@ namespace BetterLegacy.Arcade
                 id = "0",
                 name = "LDM Setting",
                 text = $"<size=40><b><align=center>[ LOW DETAIL: {(CoreConfig.Instance.LDM.Value ? "ON" : "OFF")} ]",
-                //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(60f, -220f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(400f, 64f)),
                 rect = RectValues.Default.AnchoredPosition(60f, -220f).SizeDelta(400f, 64f),
                 selectionPosition = new Vector2Int(1, 4),
                 opacity = 0.1f,
@@ -380,7 +362,6 @@ namespace BetterLegacy.Arcade
                 id = "0",
                 name = "Speed Text",
                 text = $"<align=center>{CoreHelper.Pitch.ToString("0.0")}x SPEED",
-                //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(490f, -220f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(64f, 64f)),
                 rect = RectValues.Default.AnchoredPosition(490f, -220f).SizeDelta(64f, 64f),
                 hideBG = true,
                 color = 6,
@@ -393,7 +374,6 @@ namespace BetterLegacy.Arcade
                 id = "0",
                 name = "Decrease Speed",
                 text = "<size=40><b><align=center><",
-                //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(340f, -220f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(64f, 64f)),
                 rect = RectValues.Default.AnchoredPosition(340f, -220f).SizeDelta(64f, 64f),
                 selectionPosition = new Vector2Int(2, 4),
                 opacity = 0.1f,
@@ -429,7 +409,6 @@ namespace BetterLegacy.Arcade
                 id = "0",
                 name = "Increase Speed",
                 text = "<size=40><b><align=center>>",
-                //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(640f, -220f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(64f, 64f)),
                 rect = RectValues.Default.AnchoredPosition(640f, -220f).SizeDelta(64f, 64f),
                 selectionPosition = new Vector2Int(3, 4),
                 opacity = 0.1f,
@@ -463,7 +442,6 @@ namespace BetterLegacy.Arcade
                 id = "0",
                 name = "Challenge Label",
                 text = $"<size=40>CHALLENGE MODE:",
-                //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(0f, -320f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(64f, 64f)),
                 rect = RectValues.Default.AnchoredPosition(0f, -320f).SizeDelta(64f, 64f),
                 hideBG = true,
                 color = 6,
@@ -476,7 +454,6 @@ namespace BetterLegacy.Arcade
                 id = "0",
                 name = "Challenge Text",
                 text = $"<align=center>{PlayerManager.ChallengeModeNames[(int)PlayerManager.DifficultyMode]}",
-                //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(490f, -320f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(64f, 64f)),
                 rect = RectValues.Default.AnchoredPosition(490f, -320f).SizeDelta(64f, 64f),
                 hideBG = true,
                 color = 6,
@@ -489,7 +466,6 @@ namespace BetterLegacy.Arcade
                 id = "0",
                 name = "Decrease Challenge",
                 text = "<size=40><b><align=center><",
-                //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(340f, -320f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(64f, 64f)),
                 rect = RectValues.Default.AnchoredPosition(340f, -320f).SizeDelta(64f, 64f),
                 selectionPosition = new Vector2Int(2, 5),
                 opacity = 0.1f,
@@ -524,7 +500,6 @@ namespace BetterLegacy.Arcade
                 id = "0",
                 name = "Increase Challenge",
                 text = "<size=40><b><align=center>>",
-                //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(640f, -320f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(64f, 64f)),
                 rect = RectValues.Default.AnchoredPosition(640f, -320f).SizeDelta(64f, 64f),
                 selectionPosition = new Vector2Int(3, 5),
                 opacity = 0.1f,
@@ -550,18 +525,6 @@ namespace BetterLegacy.Arcade
                     challengeText.textUI.maxVisibleCharacters = challengeText.text.Length;
                     challengeText.textUI.text = challengeText.text;
                 },
-            });
-
-            elements.Add(new MenuText
-            {
-                id = "0",
-                name = "Credits",
-                text = "<alpha=#45>UI design by catix",
-                //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(640f, -480f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(100f, 100f)),
-                rect = RectValues.Default.AnchoredPosition(640f, -480f),
-                hideBG = true,
-                textColor = 6,
-                length = 0.1f,
             });
 
             exitFunc = Close;
