@@ -3084,6 +3084,10 @@ namespace BetterLegacy.Arcade
             var count = SelectionLimit.Count;
             SelectionLimit.RemoveRange(3, count - 3);
 
+            var headers = new Dictionary<string, string>();
+            if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
+                headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
+
             yield return StartCoroutine(AlephNetworkManager.DownloadJSONFile(query, j =>
             {
                 try
@@ -3104,132 +3108,128 @@ namespace BetterLegacy.Arcade
                             string description = item["description"];
                             var difficulty = item["difficulty"].AsInt;
 
-                            if (id != null && id != "0")
+                            if (id == null || id == "0")
+                                continue;
+
+                            var gameObject = levelPrefab.Duplicate(RegularContents[1]);
+
+                            int column = (i % MaxLevelsPerPage) % 5;
+                            int row = (int)((i % MaxLevelsPerPage) / 5);
+
+                            if (currentRow != row)
                             {
-                                var gameObject = levelPrefab.Duplicate(RegularContents[1]);
+                                currentRow = row;
+                                SelectionLimit.Add(1);
+                            }
+                            else
+                            {
+                                SelectionLimit[row + 3]++;
+                            }
 
-                                int column = (i % MaxLevelsPerPage) % 5;
-                                int row = (int)((i % MaxLevelsPerPage) / 5);
+                            float x = left + (column * 320f);
+                            float y = top - (row * 190f);
 
-                                if (currentRow != row)
+                            gameObject.transform.AsRT().anchoredPosition = new Vector2(x, y);
+
+                            var clickable = gameObject.GetComponent<Clickable>();
+
+                            var image = gameObject.GetComponent<Image>();
+                            image.color = buttonBGColor;
+
+                            var difficultyImage = gameObject.transform.Find("Difficulty").GetComponent<Image>();
+                            UIManager.SetRectTransform(difficultyImage.rectTransform, Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(8f, 0f));
+                            difficultyImage.color = CoreHelper.GetDifficulty(difficulty).color;
+
+                            if (ArcadeConfig.Instance.LocalLevelsRoundness.Value != 0)
+                                SpriteManager.SetRoundedSprite(image, ArcadeConfig.Instance.LocalLevelsRoundness.Value, SpriteManager.RoundedSide.W);
+                            else
+                                image.sprite = null;
+
+                            var titleText = gameObject.transform.Find("Title").GetComponent<TextMeshProUGUI>();
+                            UIManager.SetRectTransform(titleText.rectTransform, new Vector2(0f, -60f), ZeroFive, ZeroFive, ZeroFive, new Vector2(280f, 60f));
+
+                            titleText.fontSize = 20;
+                            titleText.fontStyle = FontStyles.Bold;
+                            titleText.enableWordWrapping = true;
+                            titleText.overflowMode = TextOverflowModes.Truncate;
+                            titleText.color = textColor;
+                            titleText.text = $"{title}";
+
+                            var iconBase = gameObject.transform.Find("Icon Base").GetComponent<Image>();
+                            iconBase.rectTransform.anchoredPosition = new Vector2(-90f, 30f);
+
+                            if (ArcadeConfig.Instance.LocalLevelsIconRoundness.Value != 0)
+                                SpriteManager.SetRoundedSprite(iconBase, ArcadeConfig.Instance.LocalLevelsIconRoundness.Value, SpriteManager.RoundedSide.W);
+                            else
+                                iconBase.sprite = null;
+
+                            var icon = gameObject.transform.Find("Icon Base/Icon").GetComponent<Image>();
+                            icon.rectTransform.anchoredPosition = Vector2.zero;
+
+                            icon.sprite = SteamWorkshop.inst.defaultSteamImageSprite;
+
+                            Destroy(gameObject.transform.Find("Rank").gameObject);
+                            Destroy(gameObject.transform.Find("Rank Shadow").gameObject);
+                            Destroy(gameObject.transform.Find("Shine").gameObject);
+
+                            if (!OnlineLevelIcons.ContainsKey(id))
+                            {
+                                StartCoroutine(AlephNetworkManager.DownloadBytes($"{CoverURL}{id}", bytes =>
                                 {
-                                    currentRow = row;
-                                    SelectionLimit.Add(1);
-                                }
-                                else
-                                {
-                                    SelectionLimit[row + 3]++;
-                                }
-
-                                float x = left + (column * 320f);
-                                float y = top - (row * 190f);
-
-                                gameObject.transform.AsRT().anchoredPosition = new Vector2(x, y);
-
-                                var clickable = gameObject.GetComponent<Clickable>();
-
-                                var image = gameObject.GetComponent<Image>();
-                                image.color = buttonBGColor;
-
-                                var difficultyImage = gameObject.transform.Find("Difficulty").GetComponent<Image>();
-                                UIManager.SetRectTransform(difficultyImage.rectTransform, Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(8f, 0f));
-                                difficultyImage.color = CoreHelper.GetDifficulty(difficulty).color;
-
-                                if (ArcadeConfig.Instance.LocalLevelsRoundness.Value != 0)
-                                    SpriteManager.SetRoundedSprite(image, ArcadeConfig.Instance.LocalLevelsRoundness.Value, SpriteManager.RoundedSide.W);
-                                else
-                                    image.sprite = null;
-
-                                var titleText = gameObject.transform.Find("Title").GetComponent<TextMeshProUGUI>();
-                                UIManager.SetRectTransform(titleText.rectTransform, new Vector2(0f, -60f), ZeroFive, ZeroFive, ZeroFive, new Vector2(280f, 60f));
-
-                                titleText.fontSize = 20;
-                                titleText.fontStyle = FontStyles.Bold;
-                                titleText.enableWordWrapping = true;
-                                titleText.overflowMode = TextOverflowModes.Truncate;
-                                titleText.color = textColor;
-                                titleText.text = $"{title}";
-
-                                var iconBase = gameObject.transform.Find("Icon Base").GetComponent<Image>();
-                                iconBase.rectTransform.anchoredPosition = new Vector2(-90f, 30f);
-
-                                if (ArcadeConfig.Instance.LocalLevelsIconRoundness.Value != 0)
-                                    SpriteManager.SetRoundedSprite(iconBase, ArcadeConfig.Instance.LocalLevelsIconRoundness.Value, SpriteManager.RoundedSide.W);
-                                else
-                                    iconBase.sprite = null;
-
-                                var icon = gameObject.transform.Find("Icon Base/Icon").GetComponent<Image>();
-                                icon.rectTransform.anchoredPosition = Vector2.zero;
-
-                                icon.sprite = SteamWorkshop.inst.defaultSteamImageSprite;
-
-                                Destroy(gameObject.transform.Find("Rank").gameObject);
-                                Destroy(gameObject.transform.Find("Rank Shadow").gameObject);
-                                Destroy(gameObject.transform.Find("Shine").gameObject);
-
-                                int num = -1;
-
-                                int.TryParse(id, out num);
-
-                                if (!OnlineLevelIcons.ContainsKey(id) && num >= 0)
-                                {
-                                    StartCoroutine(AlephNetworkManager.DownloadBytes($"{CoverURL}{num}", bytes =>
-                                    {
-                                        var sprite = SpriteManager.LoadSprite(bytes);
-                                        OnlineLevelIcons.Add(id, sprite);
-                                        icon.sprite = sprite;
-                                    }, onError =>
-                                    {
-                                        OnlineLevelIcons.Add(id, SteamWorkshop.inst.defaultSteamImageSprite);
-                                        icon.sprite = SteamWorkshop.inst.defaultSteamImageSprite;
-                                    }));
-                                }
-                                else if (OnlineLevelIcons.ContainsKey(id))
-                                {
-                                    icon.sprite = OnlineLevelIcons[id];
-                                }
-                                else
+                                    var sprite = SpriteManager.LoadSprite(bytes);
+                                    OnlineLevelIcons.Add(id, sprite);
+                                    icon.sprite = sprite;
+                                }, onError =>
                                 {
                                     OnlineLevelIcons.Add(id, SteamWorkshop.inst.defaultSteamImageSprite);
                                     icon.sprite = SteamWorkshop.inst.defaultSteamImageSprite;
-                                }
-
-                                var level = new OnlineLevelButton
-                                {
-                                    ID = id,
-                                    Artist = artist,
-                                    Creator = creator,
-                                    Description = description,
-                                    Difficulty = difficulty,
-                                    Title = title,
-                                    Position = new Vector2Int(column, row),
-                                    GameObject = gameObject,
-                                    Clickable = clickable,
-                                    RectTransform = gameObject.transform.AsRT(),
-                                    BaseImage = image,
-                                    DifficultyImage = difficultyImage,
-                                    TitleText = titleText,
-                                    BaseIcon = iconBase,
-                                    Icon = icon,
-                                };
-
-                                clickable.onEnter = pointerEventData =>
-                                {
-                                    if (!CanSelect)
-                                        return;
-
-                                    AudioManager.inst.PlaySound("LeftRight");
-                                    selected.x = column;
-                                    selected.y = row + 3;
-                                };
-                                clickable.onClick = pointerEventData =>
-                                {
-                                    AudioManager.inst.PlaySound("blip");
-                                    SelectOnlineLevel(level);
-                                };
-
-                                OnlineLevels.Add(level);
+                                }));
                             }
+                            else if (OnlineLevelIcons.ContainsKey(id))
+                            {
+                                icon.sprite = OnlineLevelIcons[id];
+                            }
+                            else
+                            {
+                                OnlineLevelIcons.Add(id, SteamWorkshop.inst.defaultSteamImageSprite);
+                                icon.sprite = SteamWorkshop.inst.defaultSteamImageSprite;
+                            }
+
+                            var level = new OnlineLevelButton
+                            {
+                                ID = id,
+                                Artist = artist,
+                                Creator = creator,
+                                Description = description,
+                                Difficulty = difficulty,
+                                Title = title,
+                                Position = new Vector2Int(column, row),
+                                GameObject = gameObject,
+                                Clickable = clickable,
+                                RectTransform = gameObject.transform.AsRT(),
+                                BaseImage = image,
+                                DifficultyImage = difficultyImage,
+                                TitleText = titleText,
+                                BaseIcon = iconBase,
+                                Icon = icon,
+                            };
+
+                            clickable.onEnter = pointerEventData =>
+                            {
+                                if (!CanSelect)
+                                    return;
+
+                                AudioManager.inst.PlaySound("LeftRight");
+                                selected.x = column;
+                                selected.y = row + 3;
+                            };
+                            clickable.onClick = pointerEventData =>
+                            {
+                                AudioManager.inst.PlaySound("blip");
+                                SelectOnlineLevel(level);
+                            };
+
+                            OnlineLevels.Add(level);
                         }
                     }
 
@@ -3242,7 +3242,7 @@ namespace BetterLegacy.Arcade
                 {
                     CoreHelper.LogError($"{ex}");
                 }
-            }));
+            }, headers));
 
             if (OnlineLevels.Count > 0)
             {
@@ -3264,6 +3264,12 @@ namespace BetterLegacy.Arcade
 
         public void SelectOnlineLevel(OnlineLevelButton onlineLevel)
         {
+            if (LevelManager.Levels.TryFind(x => x.metadata != null && x.metadata.serverID == onlineLevel.ID, out Level level))
+            {
+                CoreHelper.StartCoroutine(SelectLocalLevel(level));
+                return;
+            }
+
             DownloadLevelMenuManager.inst?.OpenLevel(onlineLevel);
         }
 
