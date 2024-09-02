@@ -842,7 +842,8 @@ namespace BetterLegacy.Core.Managers
                 .Replace("{{ModVersion}}", LegacyPlugin.ModVersion.ToString())
                 .Replace("{{AppDirectory}}", RTFile.ApplicationDirectory)
                 .Replace("{{BepInExAssetsDirectory}}", RTFile.BepInExAssetsPath)
-                .Replace("{{LevelPath}}", GameManager.inst ? GameManager.inst.basePath : RTFile.ApplicationDirectory);
+                .Replace("{{LevelPath}}", GameManager.inst ? GameManager.inst.basePath : RTFile.ApplicationDirectory)
+                .Replace("{{SplashText}}", LegacyPlugin.SplashText);
 
             public static string PreciseToMilliSeconds(float seconds, string format = "{0:000}") => string.Format(format, TimeSpan.FromSeconds(seconds).Milliseconds);
 

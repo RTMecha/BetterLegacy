@@ -41,6 +41,7 @@ namespace BetterLegacy
         public static Sprite AtanPlaceholder { get; set; }
 
         public static JSONObject authData;
+        public static string SplashText { get; set; } = "";
 
         public static Material blur;
         public static Material GetBlur()
@@ -202,7 +203,6 @@ namespace BetterLegacy
 
             try
             {
-
                 var authPath = Path.Combine(Application.persistentDataPath, "auth.json");
                 if (RTFile.FileExists(authPath))
                     authData = JSON.Parse(RTFile.ReadFromFile(authPath)).AsObject;
@@ -211,6 +211,21 @@ namespace BetterLegacy
             catch (Exception ex)
             {
                 CoreHelper.LogError($"Failed to load auth. {ex}");
+            }
+            
+            try
+            {
+                var splashTextPath = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}splashes.txt";
+                if (RTFile.FileExists(splashTextPath))
+                {
+                    var splashes = CoreHelper.GetLines(RTFile.ReadFromFile(splashTextPath));
+                    var splashIndex = UnityEngine.Random.Range(0, splashes.Length);
+                    SplashText = splashes[splashIndex];
+                }
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Failed to load splash text. {ex}");
             }
 
             try

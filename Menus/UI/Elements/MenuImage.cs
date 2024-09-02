@@ -850,6 +850,13 @@ namespace BetterLegacy.Menus.UI.Elements
                 // Function has no parameters.
                 case "Reload":
                     {
+                        var splashTextPath = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}splashes.txt";
+                        if (RTFile.FileExists(splashTextPath))
+                        {
+                            var splashes = CoreHelper.GetLines(RTFile.ReadFromFile(splashTextPath));
+                            var splashIndex = UnityEngine.Random.Range(0, splashes.Length);
+                            LegacyPlugin.SplashText = splashes[splashIndex];
+                        }
                         ChangeLogMenu.Seen = false;
                         InterfaceManager.inst.randomIndex = -1;
                         InterfaceManager.inst.StartupInterface();
