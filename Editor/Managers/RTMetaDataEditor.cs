@@ -595,7 +595,7 @@ namespace BetterLegacy.Editor.Managers
 
             var creatorLinkTypes = content.Find("creator/link/inputs/dropdown").GetComponent<Dropdown>();
             creatorLinkTypes.onValueChanged.ClearAll();
-            creatorLinkTypes.options = CoreHelper.ArtistLinks.Select(x => new Dropdown.OptionData(x.name)).ToList();
+            creatorLinkTypes.options = CoreHelper.CreatorLinks.Select(x => new Dropdown.OptionData(x.name)).ToList();
             creatorLinkTypes.value = metadata.LevelCreator.linkType;
             creatorLinkTypes.onValueChanged.AddListener(_val =>
             {
