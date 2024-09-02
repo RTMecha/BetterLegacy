@@ -37,7 +37,17 @@ namespace BetterLegacy.Components.Editor
                 LayoutRebuilder.ForceRebuildLayoutImmediate(RTEditor.inst.mouseTooltipRT);
         }
 
-        public void OnPointerExit(PointerEventData eventData) => RTEditor.inst.showTootip = false;
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            RTEditor.inst.showTootip = false;
+
+            if (!EditorConfig.Instance.HideMouseTooltipOnExit.Value)
+                return;
+
+            RTEditor.inst.tooltipActive = false;
+
+            RTEditor.inst.mouseTooltip?.SetActive(false);
+        }
 
         /// <summary>
         /// Amount of time to display the mouse tooltip for.
