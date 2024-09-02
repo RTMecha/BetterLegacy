@@ -823,6 +823,10 @@ namespace BetterLegacy.Editor.Managers
             try
             {
                 MetaData.Current.LevelBeatmap.date_published = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+                MetaData.Current.beatmap.version_number++;
+
+                var jn = MetaData.Current.ToJSON();
+                RTFile.WriteToFile(GameManager.inst.basePath + "metadata.lsb", jn.ToString());
 
                 if (RTFile.FileExists(path))
                     File.Delete(path);
@@ -836,7 +840,6 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.StartCoroutine(AlephNetworkManager.UploadBytes($"{AlephNetworkManager.ArcadeServerURL}api/level", File.ReadAllBytes(path), id =>
                 {
                     MetaData.Current.serverID = id;
-                    MetaData.Current.beatmap.version_number++;
 
                     var jn = MetaData.Current.ToJSON();
                     RTFile.WriteToFile(GameManager.inst.basePath + "metadata.lsb", jn.ToString());
@@ -848,9 +851,14 @@ namespace BetterLegacy.Editor.Managers
                     RenderEditor();
                 }, (string onError, long responseCode, string errorMsg) =>
                 {
-                    MetaData.Current.LevelBeatmap.date_published = "";
-                    var jn = MetaData.Current.ToJSON();
-                    RTFile.WriteToFile(GameManager.inst.basePath + "metadata.lsb", jn.ToString());
+                    // Only downgrade if server ID wasn't already assigned.
+                    if (string.IsNullOrEmpty(MetaData.Current.serverID))
+                    {
+                        MetaData.Current.LevelBeatmap.date_published = "";
+                        MetaData.Current.beatmap.version_number--;
+                        var jn = MetaData.Current.ToJSON();
+                        RTFile.WriteToFile(GameManager.inst.basePath + "metadata.lsb", jn.ToString());
+                    }
 
                     if (RTFile.FileExists(path))
                         File.Delete(path);
