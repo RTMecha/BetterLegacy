@@ -1046,6 +1046,7 @@ namespace BetterLegacy.Editor.Managers
                 ["refresh_token"] = refreshToken,
                 ["access_token_expiry_time"] = accessTokenExpiryTime
             };
+            LegacyPlugin.authData = authData;
 
             RTFile.WriteToFile(Path.Combine(Application.persistentDataPath, "auth.json"), authData.ToString());
             EditorManager.inst.DisplayNotification($"Successfully logged in as {username}!", 8f, EditorManager.NotificationType.Success);
