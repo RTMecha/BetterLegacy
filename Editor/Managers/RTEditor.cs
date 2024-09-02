@@ -403,9 +403,19 @@ namespace BetterLegacy.Editor.Managers
             //}
         }
 
+        public bool showTootip;
+
         void UpdateTooltip()
         {
             tooltipTime = Time.time - tooltipTimeOffset;
+
+            if (showTootip && tooltipTime >= EditorConfig.Instance.MouseTooltipHoverTime.Value)
+            {
+                showTootip = false;
+                tooltipActive = true;
+
+                mouseTooltip?.SetActive(true);
+            }
 
             if (tooltipActive)
             {
@@ -430,7 +440,7 @@ namespace BetterLegacy.Editor.Managers
                 mouseTooltipRT.anchoredPosition = position;
             }
 
-            if (tooltipTime > maxTooltipTime && tooltipActive)
+            if (tooltipTime - EditorConfig.Instance.MouseTooltipHoverTime.Value > maxTooltipTime && tooltipActive)
             {
                 tooltipActive = false;
                 mouseTooltip?.SetActive(false);

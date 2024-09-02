@@ -154,6 +154,7 @@ namespace BetterLegacy.Configs
         public Setting<int> ThemesEventKeyframePerPage { get; set; }
         public Setting<bool> MouseTooltipDisplay { get; set; }
         public Setting<bool> ShowHelpOnStartup { get; set; }
+        public Setting<float> MouseTooltipHoverTime { get; set; }
         public Setting<float> MouseTooltipDisplayTime { get; set; }
         public Setting<float> NotificationDisplayTime { get; set; }
         public Setting<float> NotificationWidth { get; set; }
@@ -1310,6 +1311,7 @@ namespace BetterLegacy.Configs
             ThemesEventKeyframePerPage = Bind(this, "Editor GUI", "Themes (Event Keyframe) Per Page", 30, "How many themes are shown per page in the theme event keyframe.");
             MouseTooltipDisplay = Bind(this, "Editor GUI", "Mouse Tooltip Display", true, "If the mouse tooltip should display.");
             ShowHelpOnStartup = Bind(this, "Editor GUI", "Show Help on Startup", true, "If the help info box should appear on startup.");
+            MouseTooltipHoverTime = Bind(this, "Editor GUI", "Mouse Tooltip Hover Time", 0.45f, "How long you have to hover your cursor over an element to show the mouse tooltip.", 0f, 20f);
             MouseTooltipDisplayTime = Bind(this, "Editor GUI", "Mouse Tooltip Display Time", 1f, "The multiplied length of time mouse tooltips stay on screen for.", 0f, 20f);
             NotificationDisplayTime = Bind(this, "Editor GUI", "Notification Display Time", 1f, "The multiplied length of time notifications stay on screen for.", 0f, 10f);
             NotificationWidth = Bind(this, "Editor GUI", "Notification Width", 221f, "Width of the notifications.");

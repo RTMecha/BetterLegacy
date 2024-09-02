@@ -12,7 +12,7 @@ namespace BetterLegacy.Components.Editor
     /// <summary>
     /// Component for displaying mouse tooltips.
     /// </summary>
-    public class ShowTooltip : MonoBehaviour, IPointerEnterHandler
+    public class ShowTooltip : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         public void OnPointerEnter(PointerEventData eventData)
         {
@@ -26,9 +26,7 @@ namespace BetterLegacy.Components.Editor
 
             RTEditor.inst.tooltipTimeOffset = Time.time;
             RTEditor.inst.maxTooltipTime = time * EditorConfig.Instance.MouseTooltipDisplayTime.Value * (tooltips[index].hint.Length / 70f);
-            RTEditor.inst.tooltipActive = true;
-
-            RTEditor.inst.mouseTooltip?.SetActive(true);
+            RTEditor.inst.showTootip = true;
 
             if (RTEditor.inst.mouseTooltipText)
                 RTEditor.inst.mouseTooltipText.text = EditorManager.inst.TooltipConverter(tooltips[index].keys, tooltips[index].desc, tooltips[index].hint);
@@ -38,6 +36,8 @@ namespace BetterLegacy.Components.Editor
             if (RTEditor.inst.mouseTooltipRT)
                 LayoutRebuilder.ForceRebuildLayoutImmediate(RTEditor.inst.mouseTooltipRT);
         }
+
+        public void OnPointerExit(PointerEventData eventData) => RTEditor.inst.showTootip = false;
 
         /// <summary>
         /// Amount of time to display the mouse tooltip for.
