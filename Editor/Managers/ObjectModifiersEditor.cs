@@ -259,6 +259,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 int index = num;
                 var name = modifier.commands.Count > 0 ? modifier.commands[0] : "Invalid Modifier";
+
                 var gameObject = modifierCardPrefab.Duplicate(content, name);
 
                 TooltipHelper.AssignTooltip(gameObject, $"Object Modifier - {(modifier.commands[0] + " (" + modifier.type.ToString() + ")")}", 1.5f);
@@ -565,10 +566,11 @@ namespace BetterLegacy.Editor.Managers
                 if (!modifier.verified)
                 {
                     modifier.verified = true;
-                    modifier.VerifyModifier(ModifiersManager.defaultBeatmapObjectModifiers);
+                    if (!name.Contains("DEVONLY"))
+                        modifier.VerifyModifier(ModifiersManager.defaultBeatmapObjectModifiers);
                 }
 
-                if (!modifier.IsValid(ModifiersManager.defaultBeatmapObjectModifiers))
+                if (!name.Contains("DEVONLY") && !modifier.IsValid(ModifiersManager.defaultBeatmapObjectModifiers))
                 {
                     EditorManager.inst.DisplayNotification("Modifier does not have a command name and is lacking values.", 2f, EditorManager.NotificationType.Error);
                     continue;
@@ -2110,6 +2112,14 @@ namespace BetterLegacy.Editor.Managers
                             singleGenerator("Rotation Delay", 1, 1f);
                             break;
                         }
+                    case "loadSceneDEVONLY":
+                        {
+                            stringGenerator("Scene", 0);
+                            if (modifier.commands.Count > 1)
+                                boolGenerator("Show Loading", 1, true);
+
+                            break;
+                        }
                 }
 
                 /* List of modifiers that have no values:
@@ -2228,6 +2238,10 @@ namespace BetterLegacy.Editor.Managers
                     int tmpIndex = i;
 
                     var name = defaultModifiers[i].commands[0] + " (" + defaultModifiers[i].type.ToString() + ")";
+                    if (name.Contains("DEVONLY"))
+                    {
+                        continue;
+                    }
 
                     var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(contentM, name);
 

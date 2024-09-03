@@ -1267,10 +1267,12 @@ namespace BetterLegacy.Core.Helpers
             if (!modifier.verified)
             {
                 modifier.verified = true;
-                modifier.VerifyModifier(ModifiersManager.defaultBeatmapObjectModifiers);
+
+                if (modifier.commands.Count > 0 && !modifier.commands[0].Contains("DEVONLY"))
+                    modifier.VerifyModifier(ModifiersManager.defaultBeatmapObjectModifiers);
             }
 
-            if (!modifier.IsValid(ModifiersManager.defaultBeatmapObjectModifiers))
+            if (modifier.commands.Count > 0 && !modifier.commands[0].Contains("DEVONLY") && !modifier.IsValid(ModifiersManager.defaultBeatmapObjectModifiers))
                 return;
 
             try
@@ -4708,6 +4710,13 @@ namespace BetterLegacy.Core.Helpers
                                         }
                                 }
                             }
+
+                            break;
+                        }
+
+                    case "loadSceneDEVONLY":
+                        {
+                            SceneManager.inst.LoadScene(modifier.value, modifier.commands.Count > 1 ? Parser.TryParse(modifier.commands[1], true) : false);
 
                             break;
                         }
