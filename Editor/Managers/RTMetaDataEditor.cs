@@ -32,6 +32,8 @@ namespace BetterLegacy.Editor.Managers
 
         #region Variables
 
+        bool uploading;
+
         GameObject difficultyToggle;
 
         JSONObject authData;
@@ -800,6 +802,14 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
+            if (uploading)
+            {
+                EditorManager.inst.DisplayNotification("Please wait until upload / delete process is finished!", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
+            uploading = true;
+
             var exportPath = EditorConfig.Instance.ZIPLevelExportPath.Value;
 
             if (string.IsNullOrEmpty(exportPath))
@@ -839,6 +849,7 @@ namespace BetterLegacy.Editor.Managers
 
                 CoreHelper.StartCoroutine(AlephNetworkManager.UploadBytes($"{AlephNetworkManager.ArcadeServerURL}api/level", File.ReadAllBytes(path), id =>
                 {
+                    uploading = false;
                     MetaData.Current.serverID = id;
 
                     var jn = MetaData.Current.ToJSON();
@@ -851,6 +862,7 @@ namespace BetterLegacy.Editor.Managers
                     RenderEditor();
                 }, (string onError, long responseCode, string errorMsg) =>
                 {
+                    uploading = false;
                     // Only downgrade if server ID wasn't already assigned.
                     if (string.IsNullOrEmpty(MetaData.Current.serverID))
                     {
@@ -875,7 +887,7 @@ namespace BetterLegacy.Editor.Managers
                                     CoreHelper.StartCoroutine(RefreshTokens(UploadLevel));
                                     return;
                                 }
-                                ShowLoginPopup();
+                                ShowLoginPopup(UploadLevel);
                                 break;
                             }
                         default:
@@ -902,6 +914,14 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
+            if (uploading)
+            {
+                EditorManager.inst.DisplayNotification("Please wait until upload / delete process is finished!", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
+            uploading = true;
+
             RTEditor.inst.ShowWarningPopup("Are you sure you want to remove this level from the Arcade server? This cannot be undone!", () =>
             {
                 try
@@ -914,6 +934,7 @@ namespace BetterLegacy.Editor.Managers
 
                     CoreHelper.StartCoroutine(AlephNetworkManager.Delete($"{AlephNetworkManager.ArcadeServerURL}api/level/{id}", () =>
                     {
+                        uploading = false;
                         MetaData.Current.LevelBeatmap.date_published = "";
                         MetaData.Current.serverID = null;
                         var jn = MetaData.Current.ToJSON();
@@ -924,6 +945,7 @@ namespace BetterLegacy.Editor.Managers
                         RTEditor.inst.HideWarningPopup();
                     }, (string onError, long responseCode) =>
                     {
+                        uploading = false;
                         switch (responseCode)
                         {
                             case 404:
@@ -937,7 +959,7 @@ namespace BetterLegacy.Editor.Managers
                                         CoreHelper.StartCoroutine(RefreshTokens(DeleteLevel));
                                         return;
                                     }
-                                    ShowLoginPopup();
+                                    ShowLoginPopup(DeleteLevel);
                                     break;
                                 }
                             default:
@@ -954,12 +976,12 @@ namespace BetterLegacy.Editor.Managers
             }, RTEditor.inst.HideWarningPopup);
         }
 
-        public void ShowLoginPopup()
+        public void ShowLoginPopup(Action onLogin)
         {
             RTEditor.inst.ShowWarningPopup("You are not logged in.", () =>
             {
                 Application.OpenURL($"{AlephNetworkManager.ArcadeServerURL}api/auth/login");
-                CreateLoginListener();
+                CreateLoginListener(onLogin);
                 RTEditor.inst.HideWarningPopup();
             }, RTEditor.inst.HideWarningPopup, "Login", "Cancel");
         }
@@ -985,7 +1007,7 @@ namespace BetterLegacy.Editor.Managers
             if (www.isHttpError)
             {
                 EditorManager.inst.DisplayNotification(www.downloadHandler.text, 5f, EditorManager.NotificationType.Error);
-                ShowLoginPopup();
+                ShowLoginPopup(onRefreshed);
                 yield break;
             }
 
@@ -996,11 +1018,11 @@ namespace BetterLegacy.Editor.Managers
 
             RTFile.WriteToFile(Path.Combine(Application.persistentDataPath, "auth.json"), authData.ToString());
             EditorManager.inst.DisplayNotification("Refreshed tokens! Uploading...", 5f, EditorManager.NotificationType.Success);
-            //UploadLevel();
-            onRefreshed?.Invoke();
+            if (EditorConfig.Instance.UploadDeleteOnLogin.Value)
+                onRefreshed?.Invoke();
         }
 
-        void CreateLoginListener()
+        void CreateLoginListener(Action onLogin)
         {
             if (_listener == null)
             {
@@ -1010,20 +1032,20 @@ namespace BetterLegacy.Editor.Managers
                 _listener.Start();
             }
 
-            CoreHelper.StartCoroutine(StartListenerCoroutine());
+            CoreHelper.StartCoroutine(StartListenerCoroutine(onLogin));
         }
 
-        IEnumerator StartListenerCoroutine()
+        IEnumerator StartListenerCoroutine(Action onLogin)
         {
             while (_listener.IsListening)
             {
                 var task = _listener.GetContextAsync();
                 yield return new WaitUntil(() => task.IsCompleted);
-                ProcessRequest(task.Result);
+                ProcessRequest(task.Result, onLogin);
             }
         }
 
-        void ProcessRequest(HttpListenerContext context)
+        void ProcessRequest(HttpListenerContext context, Action onLogin)
         {
             var query = context.Request.QueryString;
             if (query["success"] != "true")
@@ -1059,6 +1081,9 @@ namespace BetterLegacy.Editor.Managers
             RTFile.WriteToFile(Path.Combine(Application.persistentDataPath, "auth.json"), authData.ToString());
             EditorManager.inst.DisplayNotification($"Successfully logged in as {username}!", 8f, EditorManager.NotificationType.Success);
             SendResponse(context.Response, HttpStatusCode.OK, "Success! You can close this page and go back to the game now.");
+
+            if (EditorConfig.Instance.UploadDeleteOnLogin.Value)
+                onLogin?.Invoke();
         }
 
         void SendResponse(HttpListenerResponse response, HttpStatusCode code, string message = null)

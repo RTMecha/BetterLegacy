@@ -116,6 +116,7 @@ namespace BetterLegacy.Configs
 
         public Setting<int> AutosaveLimit { get; set; }
         public Setting<float> AutosaveLoopTime { get; set; }
+        public Setting<bool> UploadDeleteOnLogin { get; set; }
         public Setting<bool> SaveAsync { get; set; }
         public Setting<bool> LevelLoadsLastTime { get; set; }
         public Setting<bool> LevelPausesOnStart { get; set; }
@@ -1273,6 +1274,7 @@ namespace BetterLegacy.Configs
 
             AutosaveLimit = Bind(this, "Data", "Autosave Limit", 7, "If autosave count reaches this number, delete the first autosave.");
             AutosaveLoopTime = Bind(this, "Data", "Autosave Loop Time", 600f, "The repeat time of autosave.");
+            UploadDeleteOnLogin = Bind(this, "Data", "Retry Upload or Delete on Login", false, "If the game should try uploading / deleting again after you have logged in.");
             SaveAsync = Bind(this, "Data", "Save Async", true, "If saving levels should run asynchronously. Having this on will not show logs in the BepInEx log console.");
             LevelLoadsLastTime = Bind(this, "Data", "Level Loads Last Time", true, "Sets the editor position (audio time, layer, etc) to the last saved editor position on level load.");
             LevelPausesOnStart = Bind(this, "Data", "Level Pauses on Start", false, "Editor pauses on level load.");
