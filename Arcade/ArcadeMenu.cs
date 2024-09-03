@@ -15,6 +15,8 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
+using LSFunctions;
+using System.Collections;
 
 namespace BetterLegacy.Arcade
 {
@@ -23,9 +25,37 @@ namespace BetterLegacy.Arcade
     {
         public static ArcadeMenu Current { get; set; }
 
-        public ArcadeMenu() : base(false)
+        public ArcadeMenu() : base()
         {
-            //InterfaceManager.inst.CurrentMenu = this;
+            InterfaceManager.inst.CurrentMenu = this;
+
+            elements.Add(new MenuInputField
+            {
+                id = "842848",
+                name = "Search Bar",
+                valueChangedFunc = SearchLocalLevels,
+            });
+
+            for (int i = 0; i < LevelManager.Levels.Count; i++)
+            {
+                int index = i;
+                var level = LevelManager.Levels[index];
+                var button = new MenuButton
+                {
+                    id = level.id,
+                    name = "Level Button",
+                    func = () => { CoreHelper.StartCoroutine(SelectLocalLevel(level)); },
+                    icon = level.icon,
+                    text = $"{level.metadata?.LevelBeatmap?.name}<b>By {level.metadata?.creator?.steam_name}",
+                    color = 6,
+                    opacity = 0.1f,
+                    textColor = 6,
+                    selectedColor = 6,
+                    selectedOpacity = 1f,
+                    selectedTextColor = 7,
+                };
+                elements.Add(button);
+            }
 
             //layouts.Add("tabs", new MenuHorizontalLayout
             //{
@@ -91,7 +121,35 @@ namespace BetterLegacy.Arcade
             //        num++;
             //}
 
-            //CoreHelper.StartCoroutine(GenerateUI());
+            CoreHelper.StartCoroutine(GenerateUI());
+        }
+
+        public void SearchLocalLevels(string search)
+        {
+            var levels = LevelManager.Levels.Where(x => x.id == search).ToList();
+            var levelButtons = elements.Where(x => x.name == "Level Button").ToList();
+
+            for (int i = 0; i < levelButtons.Count; i++)
+            {
+                var levelButton = levelButtons[i];
+                levelButton?.gameObject.SetActive(levels.Has(x => x.id == levelButton.id));
+            }
+        }
+
+        public IEnumerator SelectLocalLevel(Level level)
+        {
+            if (!level.music)
+                yield return CoreHelper.StartCoroutine(level.LoadAudioClipRoutine(() => { OpenPlayLevelMenu(level); }));
+            else
+                OpenPlayLevelMenu(level);
+        }
+
+        void OpenPlayLevelMenu(Level level)
+        {
+            AudioManager.inst.StopMusic();
+            PlayLevelMenu.Init(level);
+            AudioManager.inst.PlayMusic(level.metadata.song.title, level.music);
+            AudioManager.inst.SetPitch(CoreHelper.Pitch);
         }
 
         public override void UpdateTheme()
@@ -107,8 +165,14 @@ namespace BetterLegacy.Arcade
         public static void Init()
         {
             InterfaceManager.inst.CloseMenus();
+            // testing
+            if (ArcadeMenuManager.inst)
+            {
+                CoreHelper.Destroy(ArcadeMenuManager.inst);
+                CoreHelper.Destroy(ArcadeMenuManager.inst.menuUI);
+            }
 
-            //Current = new ArcadeMenu();
+            Current = new ArcadeMenu();
         }
     }
 }
