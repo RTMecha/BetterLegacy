@@ -484,14 +484,14 @@ namespace BetterLegacy.Core.Helpers
                         if (site < 0 || site >= userLinks.Count)
                             return null;
 
-                        return userLinks[site].linkFormat;
+                        return string.Format(userLinks[site].linkFormat, link);
                     }
                 case LinkType.Creator:
                     {
                         if (site < 0 || site >= creatorLinks.Count)
                             return null;
 
-                        return creatorLinks[site].linkFormat;
+                        return string.Format(creatorLinks[site].linkFormat, link);
                     }
             }
 
