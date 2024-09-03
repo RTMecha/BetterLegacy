@@ -24,7 +24,7 @@ namespace BetterLegacy.Arcade
         public static PlayLevelMenu Current { get; set; }
         public static Level CurrentLevel { get; set; }
 
-        public PlayLevelMenu() : base(false)
+        public PlayLevelMenu() : base()
         {
             InterfaceManager.inst.CurrentMenu = this;
 

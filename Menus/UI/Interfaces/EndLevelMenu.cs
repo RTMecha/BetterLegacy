@@ -19,7 +19,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
     {
         public static EndLevelMenu Current { get; set; }
 
-        public EndLevelMenu() : base(false)
+        public EndLevelMenu() : base()
         {
             if (!CoreHelper.InGame || CoreHelper.InEditor)
             {

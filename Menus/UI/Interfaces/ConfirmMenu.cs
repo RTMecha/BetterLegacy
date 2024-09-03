@@ -14,7 +14,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 {
     public class ConfirmMenu : MenuBase
     {
-        public ConfirmMenu(string currentMessage, Action confirm, Action cancel) : base(false)
+        public ConfirmMenu(string currentMessage, Action confirm, Action cancel) : base()
         {
             InterfaceManager.inst.CloseMenus();
             InterfaceManager.inst.CurrentMenu = this;

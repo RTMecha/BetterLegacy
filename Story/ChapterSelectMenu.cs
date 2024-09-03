@@ -21,7 +21,7 @@ namespace BetterLegacy.Story
 {
     public class ChapterSelectMenu : MenuBase
     {
-        public ChapterSelectMenu() : base(false)
+        public ChapterSelectMenu() : base()
         {
             id = "2";
 

@@ -21,7 +21,7 @@ namespace BetterLegacy.Story
 {
     public class StoryMenu : MenuBase
     {
-        public StoryMenu() : base(false)
+        public StoryMenu() : base()
         {
             id = "1";
 

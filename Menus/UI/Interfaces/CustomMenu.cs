@@ -22,7 +22,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 {
     public class CustomMenu : MenuBase
     {
-        public CustomMenu() : base(false) { }
+        public CustomMenu() : base() { }
         
         public override void UpdateTheme()
         {

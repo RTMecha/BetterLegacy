@@ -19,7 +19,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 {
     public class ProfileMenu : MenuBase
     {
-        public ProfileMenu() : base(false)
+        public ProfileMenu() : base()
         {
             layouts.Add("buttons", new MenuVerticalLayout
             {

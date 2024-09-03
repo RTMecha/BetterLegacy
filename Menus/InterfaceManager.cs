@@ -452,7 +452,7 @@ namespace BetterLegacy.Menus
 
     public class ChangeLogMenu : MenuBase
     {
-        public ChangeLogMenu() : base(false)
+        public ChangeLogMenu() : base()
         {
             exitFunc = () => { InterfaceManager.inst.SetCurrentInterface("0"); };
         }

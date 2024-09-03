@@ -31,7 +31,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         static bool currentCursorVisibility;
 
-        public PauseMenu() : base(false)
+        public PauseMenu() : base()
         {
             if (!CoreHelper.InGame || CoreHelper.InEditor)
             {
