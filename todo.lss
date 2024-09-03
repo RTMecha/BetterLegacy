@@ -27,3 +27,6 @@
 - Possible multi object editor rework???
 - Find a way to implement Re-rendering waveform.
 - See if gradient is possible to implement to objects. (if it is, then replace color homing)
+# Internal
+- Clean up UIManager
+- Summary and note as much as I can (or need to)
