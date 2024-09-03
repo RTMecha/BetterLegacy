@@ -81,6 +81,13 @@ namespace BetterLegacy.Story
                 playBlipSound = true,
                 func = () => { InterfaceManager.inst.SetCurrentInterface("0"); },
             });
+
+            if (!StoryManager.inst || !RTFile.DirectoryExists(StoryManager.StoryAssetsPath) || !RTFile.FileExists($"{StoryManager.StoryAssetsPath}doc01_01.asset"))
+            {
+                elements.AddRange(GenerateBottomBar(6, 0f));
+                return;
+            }
+
             for (int i = 0; i < 3; i++)
             {
                 int index = i;
