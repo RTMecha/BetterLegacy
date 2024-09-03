@@ -88,12 +88,12 @@ namespace BetterLegacy.Menus
             // ColorGrading
             colorGrading = ScriptableObject.CreateInstance<ColorGrading>();
             colorGrading.enabled.Override(true);
-            colorGrading.hueShift.Override(0.1f);
-            colorGrading.contrast.Override(0.1f);
-            colorGrading.gamma.Override(new Vector4(1f, 1f, 1f, 0f));
-            colorGrading.saturation.Override(0.1f);
-            colorGrading.temperature.Override(0.1f);
-            colorGrading.tint.Override(0.1f);
+            colorGrading.hueShift.Override(0f);
+            colorGrading.contrast.Override(0f);
+            colorGrading.gamma.Override(Vector4.zero);
+            colorGrading.saturation.Override(0f);
+            colorGrading.temperature.Override(0f);
+            colorGrading.tint.Override(0f);
 
             // Gradient
             gradient = ScriptableObject.CreateInstance<SCPE.Gradient>();
@@ -141,7 +141,7 @@ namespace BetterLegacy.Menus
             blur = ScriptableObject.CreateInstance<Blur>();
             blur.enabled.Override(true);
             blur.amount.Override(0f);
-            blur.iterations.Override(0);
+            blur.iterations.Override(6);
 
             // Color Split
             colorSplit = ScriptableObject.CreateInstance<ColorSplit>();
@@ -183,6 +183,8 @@ namespace BetterLegacy.Menus
             tubeDistortion.amount.Override(0f);
             tubeDistortion.mode.Override(TubeDistortion.DistortionMode.Buldged);
 
+            ResetEffects();
+
             ppvolume = PostProcessManager.instance.QuickVolume(gameObject.layer, 100f,
 				chroma, bloom, vignette, lensDistort, grain, blur, pixelize, ripples);
 
@@ -209,6 +211,60 @@ namespace BetterLegacy.Menus
         {
             //postProcessResourcesAssetBundle?.Unload(true);
             //postProcessResourcesAssetBundle = null;
+        }
+
+        public void ResetEffects()
+        {
+            chroma.intensity.Override(0f);
+            bloom.intensity.Override(0f);
+            vignette.intensity.Override(0f);
+            lensDistort.intensity.Override(0f);
+            grain.intensity.Override(0f);
+            pixelize.amount.Override(0f);
+
+            colorGrading.hueShift.Override(0f);
+            colorGrading.contrast.Override(0f);
+            colorGrading.gamma.Override(Vector4.zero);
+            colorGrading.saturation.Override(0f);
+            colorGrading.temperature.Override(0f);
+            colorGrading.tint.Override(0f);
+
+            gradient.intensity.Override(0f);
+            gradient.color1.Override(new Color(0f, 0.8f, 0.56f, 0.5f));
+            gradient.color2.Override(new Color(0.81f, 0.37f, 1f, 0.5f));
+            gradient.rotation.Override(0f);
+            gradient.blendMode.Override(SCPE.Gradient.BlendMode.Linear);
+
+            doubleVision.intensity.Override(0f);
+            doubleVision.mode.Override(DoubleVision.Mode.FullScreen);
+            radialBlur.amount.Override(0f);
+            radialBlur.iterations.Override(6);
+            scanlines.intensity.Override(0f);
+            scanlines.amountHorizontal.Override(10f);
+            scanlines.speed.Override(1f);
+            sharpen.amount.Override(0f);
+
+            ripples.strength.Override(0f);
+            ripples.speed.Override(3f);
+            ripples.distance.Override(5f);
+            ripples.height.Override(1f);
+            ripples.width.Override(1.5f);
+
+            blur.amount.Override(0f);
+            blur.iterations.Override(6);
+
+            colorSplit.offset.Override(0f);
+            colorSplit.mode.Override(ColorSplit.SplitMode.Single);
+            blackBars.size.Override(0f);
+            blackBars.mode.Override(BlackBars.Direction.Horizontal);
+            danger.intensity.Override(0f);
+            danger.color.Override(new Color(0.66f, 0f, 0f));
+            invert.amount.Override(0f);
+            mosaic.size.Override(0f);
+            mosaic.mode.Override(Mosaic.MosaicMode.Hexagons);
+            tiltShift.amount.Override(0f);
+            tubeDistortion.amount.Override(0f);
+            tubeDistortion.mode.Override(TubeDistortion.DistortionMode.Buldged);
         }
 
         public void MoveCameraX(float x)
