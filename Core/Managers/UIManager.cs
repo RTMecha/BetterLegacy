@@ -178,6 +178,22 @@ namespace BetterLegacy.Core.Managers
             return dictionary;
         }
 
+        public static InputField GenerateInputField(string name, Transform parent)
+        {
+            var image = GenerateUIImage(name, parent);
+            var text = GenerateUIText("text", ((GameObject)image["GameObject"]).transform);
+            var placeholder = GenerateUIText("placeholder", ((GameObject)image["GameObject"]).transform);
+
+            SetRectTransform((RectTransform)text["RectTransform"], new Vector2(2f, 0f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-12f, -8f));
+            SetRectTransform((RectTransform)placeholder["RectTransform"], new Vector2(2f, 0f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-12f, -8f));
+
+            var inputField = ((GameObject)image["GameObject"]).AddComponent<InputField>();
+            inputField.textComponent = (Text)text["Text"];
+            inputField.placeholder = (Text)placeholder["Text"];
+            inputField.image = (Image)image["Image"];
+            return inputField;
+        }
+
         public static Dictionary<string, object> GenerateUIButton(string _name, Transform _parent)
         {
             var gameObject = GenerateUIImage(_name, _parent);

@@ -29,19 +29,14 @@ namespace BetterLegacy.Menus.UI.Interfaces
     /// </summary>
     public abstract class MenuBase
     {
-        public UICanvas canvas;
+        public MenuBase() { }
 
-        public MenuBase(bool setupUI = true) { }
+        #region Variables
 
         /// <summary>
-        /// For cases where the UI only needs to be set active / inactive instead of destroyed.
+        /// Base canvas of the interface.
         /// </summary>
-        /// <param name="active"></param>
-        public void SetActive(bool active)
-        {
-            canvas?.GameObject.SetActive(active);
-            isOpen = active;
-        }
+        public UICanvas canvas;
 
         /// <summary>
         /// The music to play when the user enters the interface.
@@ -73,11 +68,16 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// </summary>
         public bool isOpen;
 
+        #region Elements
+
         /// <summary>
         /// Where the user is selecting. To be compared with <see cref="MenuButton.selectionPosition"/>.
         /// </summary>
         public Vector2Int selected;
 
+        /// <summary>
+        /// The first item that is selected when the interface is generated.
+        /// </summary>
         public Vector2Int defaultSelection;
 
         /// <summary>
@@ -90,7 +90,63 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// </summary>
         public Dictionary<string, MenuLayoutBase> layouts = new Dictionary<string, MenuLayoutBase>();
 
+        /// <summary>
+        /// All the prefabs to be applied to the interface when it is generated.
+        /// </summary>
         public List<MenuPrefab> prefabs = new List<MenuPrefab>();
+
+        #endregion
+
+        /// <summary>
+        /// The file location of the menu. This isn't necessary for cases where the menu does not have a file origin.
+        /// </summary>
+        public string filePath;
+
+        /// <summary>
+        /// Looping animation to be used for all events.
+        /// </summary>
+        public RTAnimation loopingEvents;
+
+        /// <summary>
+        /// Animation to be used for all events when the menu spawns.
+        /// </summary>
+        public RTAnimation spawnEvents;
+
+        /// <summary>
+        /// Function to run when the user wants to exit the interface.
+        /// </summary>
+        public Action exitFunc;
+
+        /// <summary>
+        /// Function to run when the user wants to exit the interface (JSON).
+        /// </summary>
+        public JSONNode exitFuncJSON;
+
+        /// <summary>
+        /// If <see cref="MenuEffectsManager"/> should be added to the interface.
+        /// </summary>
+        public bool allowEffects = true;
+
+        /// <summary>
+        /// The canvas layer of the interface.
+        /// </summary>
+        public int layer = 900;
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// For cases where the UI only needs to be set active / inactive instead of destroyed.
+        /// </summary>
+        /// <param name="active"></param>
+        public void SetActive(bool active)
+        {
+            canvas?.GameObject.SetActive(active);
+            isOpen = active;
+        }
+
+        #region Autos / Prefabs
 
         public void ApplyPrefab(MenuPrefab prefab)
         {
@@ -126,27 +182,96 @@ namespace BetterLegacy.Menus.UI.Interfaces
             }
         }
 
-        /// <summary>
-        /// The file location of the menu. This isn't necessary for cases where the menu does not have a file origin.
-        /// </summary>
-        public string filePath;
+        public static MenuPrefab GenerateTopBarPrefab(string title)
+        {
+            var menuPrefab = new MenuPrefab();
+
+            menuPrefab.elements.AddRange(GenerateTopBar(title));
+
+            return menuPrefab;
+        }
+
+        public static MenuPrefab GenerateBottomBarPrefab()
+        {
+            var menuPrefab = new MenuPrefab();
+
+            menuPrefab.elements.AddRange(GenerateBottomBar());
+
+            return menuPrefab;
+        }
 
         /// <summary>
-        /// Looping animation to be used for all events.
+        /// Automatically generates the top section of an interface (the interface title and the "----------" line)
         /// </summary>
-        public RTAnimation loopingEvents;
+        /// <param name="title">The name of the interface to be shown.</param>
+        /// <param name="textColor"></param>
+        /// <param name="textVal"></param>
+        /// <returns>Returns a generated top bar.</returns>
+        public static IEnumerable<MenuImage> GenerateTopBar(string title, int textColor = 0, float textVal = 40f)
+        {
+            yield return new MenuText
+            {
+                id = "264726346",
+                name = "Top Title",
+                text = $"{title} | BetterLegacy {LegacyPlugin.ModVersion}",
+                rect = RectValues.HorizontalAnchored.AnchoredPosition(0f, 460f).SizeDelta(100f, 100f),
+                textRect = RectValues.FullAnchored.AnchoredPosition(100f, 0f),
+                hideBG = true,
+                textColor = textColor,
+                textVal = textVal,
+                length = 0.6f,
+            };
+
+            yield return new MenuText
+            {
+                id = "800",
+                name = "Top Bar",
+                text = "<size=56>----------------------------------------------------------------",
+                rect = RectValues.HorizontalAnchored.AnchoredPosition(0f, 400f).SizeDelta(100f, 100f),
+                textRect = RectValues.FullAnchored.AnchoredPosition(80f, 0f),
+                hideBG = true,
+                textColor = textColor,
+                textVal = textVal,
+                length = 0.6f,
+            };
+        }
 
         /// <summary>
-        /// Animation to be used for all events when the menu spawns.
+        /// Automatically generates the bottom section of an interface (the "----------" line and the PA version)
         /// </summary>
-        public RTAnimation spawnEvents;
+        /// <param name="textColor"></param>
+        /// <param name="textVal"></param>
+        /// <returns>Returns a generated bottom bar.</returns>
+        public static IEnumerable<MenuImage> GenerateBottomBar(int textColor = 0, float textVal = 40f)
+        {
+            yield return new MenuText
+            {
+                id = "801",
+                name = "Bottom Bar",
+                text = "<size=56>----------------------------------------------------------------",
+                rect = RectValues.HorizontalAnchored.AnchoredPosition(0f, -400f).SizeDelta(100f, 100f),
+                textRect = RectValues.FullAnchored.AnchoredPosition(80f, 0f),
+                hideBG = true,
+                textColor = textColor,
+                textVal = textVal,
+                length = 0.6f,
+            };
 
-        public Action exitFunc;
+            yield return new MenuText
+            {
+                id = "264726346",
+                name = "Bottom Title",
+                text = $"<align=right><#F05355><b>Project Arrhythmia</b></color> Unified Operating System | Version {ProjectArrhythmia.GameVersion}",
+                rect = RectValues.HorizontalAnchored.AnchoredPosition(0f, -460f).SizeDelta(100f, 100f),
+                textRect = RectValues.FullAnchored.AnchoredPosition(-100f, 0f),
+                hideBG = true,
+                textColor = textColor,
+                textVal = textVal,
+                length = 0.6f,
+            };
+        }
 
-        public JSONNode exitFuncJSON;
-
-        public bool allowEffects = true;
-        public int layer = 900;
+        #endregion
 
         /// <summary>
         /// Plays the menus' default music.
@@ -161,7 +286,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             if (string.IsNullOrEmpty(musicName))
                 return;
-            
+
             if (AudioManager.inst.library.musicClips.ContainsKey(musicName))
             {
                 var group = AudioManager.inst.library.musicClips[musicName];
@@ -182,6 +307,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 }));
             }
         }
+
+        #region Generate UI
 
         /// <summary>
         /// IEnumerator Coroutine used to Generate all the menus' elements. Can be overridden if needed.
@@ -219,7 +346,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 loopingEvents.loop = true;
                 AnimationManager.inst.Play(loopingEvents);
             }
-            
+
             if (spawnEvents != null)
             {
                 spawnEvents.loop = false;
@@ -337,6 +464,17 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     continue;
                 }
 
+                if (element is MenuInputField menuInputField)
+                {
+                    SetupInputField(menuInputField, parent);
+                    if (menuInputField.siblingIndex >= 0 && menuInputField.siblingIndex < menuInputField.gameObject.transform.parent.childCount)
+                        menuInputField.gameObject.transform.SetSiblingIndex(menuInputField.siblingIndex);
+                    while (menuInputField.isSpawning)
+                        yield return null;
+
+                    continue;
+                }
+
                 if (element is MenuText menuText)
                 {
                     SetupText(menuText, parent);
@@ -354,14 +492,15 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         yield return null;
                 }
 
-                element.clickable.onClick = p =>
-                {
-                    if (element.playBlipSound)
-                        AudioManager.inst.PlaySound("blip");
-                    if (element.funcJSON != null)
-                        element.ParseFunction(element.funcJSON);
-                    element.func?.Invoke();
-                };
+                if (element.clickable != null)
+                    element.clickable.onClick = p =>
+                    {
+                        if (element.playBlipSound)
+                            AudioManager.inst.PlaySound("blip");
+                        if (element.funcJSON != null)
+                            element.ParseFunction(element.funcJSON);
+                        element.func?.Invoke();
+                    };
             }
 
             if (elements.TryFind(x => x is MenuButton, out MenuImage menuImage) && menuImage is MenuButton button)
@@ -373,224 +512,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             yield break;
         }
-
-        /// <summary>
-        /// Clears the menu.
-        /// </summary>
-        public virtual void Clear()
-        {
-            isOpen = false;
-            selected = Vector2Int.zero;
-
-            for (int i = 0; i < elements.Count; i++)
-                elements[i]?.Clear();
-
-            UnityEngine.Object.Destroy(canvas?.GameObject);
-            if (loopingEvents != null)
-                AnimationManager.inst.RemoveID(loopingEvents.id);
-            if (spawnEvents != null)
-                AnimationManager.inst.RemoveID(spawnEvents.id);
-        }
-
-        /// <summary>
-        /// Control system.
-        /// </summary>
-        public void UpdateControls()
-        {
-            var actions = InputDataManager.inst.menuActions;
-
-            if (!isOpen)
-            {
-                for (int i = 0; i < elements.Count; i++)
-                {
-                    var element = elements[i];
-
-                    if (element.isSpawning)
-                        element.UpdateSpawnCondition();
-
-                    if (element is MenuButton menuButton)
-                        menuButton.isHovered = false;
-                }
-                return;
-            }
-
-            if (CoreHelper.IsUsingInputField)
-                return;
-
-            if (actions.Left.WasPressed)
-            {
-                if (selected.x > elements.Where(x => x is MenuButton menuButton && menuButton.selectionPosition.y == selected.y).Select(x => x as MenuButton).Min(x => x.selectionPosition.x))
-                {
-                    AudioManager.inst.PlaySound("LeftRight");
-
-                    int num = 1;
-                    while (!elements.Has(x => x is MenuButton menuButton && menuButton.selectionPosition.y == selected.y && menuButton.selectionPosition.x == selected.x - num))
-                    {
-                        num++;
-                    }
-                    selected.x -= num;
-                }
-                else
-                    AudioManager.inst.PlaySound("Block");
-            }
-
-            if (actions.Right.WasPressed)
-            {
-                if (selected.x < elements.FindAll(x => x is MenuButton menuButton && menuButton.selectionPosition.y == selected.y).Select(x => x as MenuButton).Max(x => x.selectionPosition.x))
-                {
-                    AudioManager.inst.PlaySound("LeftRight");
-
-                    int num = 1;
-                    while (!elements.Has(x => x is MenuButton menuButton && menuButton.selectionPosition.y == selected.y && menuButton.selectionPosition.x == selected.x + num))
-                    {
-                        num++;
-                    }
-                    selected.x += num;
-                }
-                else
-                    AudioManager.inst.PlaySound("Block");
-            }
-
-            if (actions.Up.WasPressed)
-            {
-                if (selected.y > 0)
-                {
-                    AudioManager.inst.PlaySound("LeftRight");
-                    selected.y--;
-                    selected.x = Mathf.Clamp(selected.x, 0, elements.FindAll(x => x is MenuButton menuButton && menuButton.selectionPosition.y == selected.y).Select(x => x as MenuButton).Max(x => x.selectionPosition.x));
-                }
-                else
-                    AudioManager.inst.PlaySound("Block");
-            }
-
-            if (actions.Down.WasPressed)
-            {
-                if (selected.y < elements.FindAll(x => x is MenuButton).Select(x => x as MenuButton).Max(x => x.selectionPosition.y))
-                {
-                    AudioManager.inst.PlaySound("LeftRight");
-                    selected.y++;
-                    selected.x = Mathf.Clamp(selected.x, 0, elements.FindAll(x => x is MenuButton menuButton && menuButton.selectionPosition.y == selected.y).Select(x => x as MenuButton).Max(x => x.selectionPosition.x));
-                }
-                else
-                    AudioManager.inst.PlaySound("Block");
-            }
-
-            for (int i = 0; i < elements.Count; i++)
-            {
-                var element = elements[i];
-                if (element is not MenuButton button)
-                    continue;
-
-                if (button.selectionPosition == selected)
-                {
-                    if (actions.Submit.WasPressed)
-                        button.clickable?.onClick?.Invoke(null);
-
-                    if (!button.isHovered)
-                    {
-                        button.isHovered = true;
-                        button.OnEnter();
-                    }
-                }
-                else
-                {
-                    if (button.isHovered)
-                    {
-                        button.isHovered = false;
-                        button.OnExit();
-                    }
-                }
-            }
-
-            if (actions.Cancel.WasPressed)
-            {
-                exitFunc?.Invoke();
-
-                if (exitFuncJSON != null)
-                {
-                    new MenuEvent().ParseFunction(exitFuncJSON);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Updates the colors.
-        /// </summary>
-        public virtual void UpdateTheme()
-        {
-            if (!CoreHelper.InGame)
-                Camera.main.backgroundColor = Theme.backgroundColor;
-
-            if (canvas != null)
-                canvas.Canvas.scaleFactor = CoreHelper.ScreenScale;
-
-            if (elements == null)
-                return;
-
-            for (int i = 0; i < elements.Count; i++)
-            {
-                var element = elements[i];
-                if (!element.image)
-                    continue;
-
-                if (element is MenuButton button)
-                {
-                    var isSelected = button.selectionPosition == selected;
-                    button.image.color = isSelected ?
-                        LSColors.fadeColor(
-                            CoreHelper.ChangeColorHSV(
-                                button.useOverrideSelectedColor ? button.overrideSelectedColor : Theme.GetObjColor(button.selectedColor),
-                                button.selectedHue,
-                                button.selectedSat,
-                                button.selectedVal),
-                            button.selectedOpacity) :
-                        LSColors.fadeColor(
-                            CoreHelper.ChangeColorHSV(
-                                button.useOverrideColor ? button.overrideColor : Theme.GetObjColor(button.color),
-                                button.hue,
-                                button.sat,
-                                button.val),
-                            button.opacity); ;
-                    button.textUI.color = isSelected ?
-                        CoreHelper.ChangeColorHSV(
-                            button.useOverrideSelectedTextColor ? button.overrideSelectedTextColor : Theme.GetObjColor(button.selectedTextColor),
-                            button.selectedTextHue,
-                            button.selectedTextSat,
-                            button.selectedTextVal) :
-                        CoreHelper.ChangeColorHSV(
-                            button.useOverrideTextColor ? button.overrideTextColor : Theme.GetObjColor(button.textColor),
-                            button.textHue,
-                            button.textSat,
-                            button.textVal);
-                    continue;
-                }
-
-                if (element is MenuText text)
-                {
-                    text.textUI.color =
-                        CoreHelper.ChangeColorHSV(
-                            text.useOverrideTextColor ? text.overrideTextColor : Theme.GetObjColor(text.textColor),
-                            text.textHue,
-                            text.textSat,
-                            text.textVal);
-                    text.UpdateText();
-                }
-
-                element.image.color =
-                    LSColors.fadeColor(
-                        CoreHelper.ChangeColorHSV(
-                            element.useOverrideColor ? element.overrideColor : Theme.GetObjColor(element.color),
-                            element.hue,
-                            element.sat,
-                            element.val),
-                        element.opacity);
-            }
-        }
-
-        /// <summary>
-        /// The current theme to use for the menu colors.
-        /// </summary>
-        public BeatmapTheme Theme { get; set; }
 
         /// <summary>
         /// Gets an elements' parent, whether it be a layout or another element.
@@ -830,80 +751,268 @@ namespace BetterLegacy.Menus.UI.Interfaces
             menuButton.Spawn();
         }
 
-        public static MenuPrefab GenerateTopBarPrefab(string title)
+        public void SetupInputField(MenuInputField menuInputField, Transform parent)
         {
-            var menuPrefab = new MenuPrefab();
+            if (menuInputField.gameObject)
+                UnityEngine.Object.Destroy(menuInputField.gameObject);
 
-            menuPrefab.elements.AddRange(GenerateTopBar(title));
+            menuInputField.inputField = UIManager.GenerateInputField(menuInputField.name, parent);
 
-            return menuPrefab;
-        }
-        
-        public static MenuPrefab GenerateBottomBarPrefab()
-        {
-            var menuPrefab = new MenuPrefab();
+            menuInputField.gameObject = menuInputField.inputField.gameObject;
+            menuInputField.gameObject.layer = 5;
+            menuInputField.image = menuInputField.inputField.image;
 
-            menuPrefab.elements.AddRange(GenerateBottomBar());
+            menuInputField.rect.AssignToRectTransform(menuInputField.image.rectTransform);
 
-            return menuPrefab;
-        }
+            if (menuInputField.icon)
+                menuInputField.image.sprite = menuInputField.icon;
+            else if (MenuConfig.Instance.RoundedUI.Value)
+                SpriteManager.SetRoundedSprite(menuInputField.image, menuInputField.rounded, menuInputField.roundedSide);
 
-        public static IEnumerable<MenuImage> GenerateTopBar(string title, int textColor = 0, float textVal = 40f)
-        {
-            yield return new MenuText
+            if (menuInputField.reactiveSetting.init)
             {
-                id = "264726346",
-                name = "Top Title",
-                text = $"{title} | BetterLegacy {LegacyPlugin.ModVersion}",
-                rect = RectValues.HorizontalAnchored.AnchoredPosition(0f, 460f).SizeDelta(100f, 100f),
-                textRect = RectValues.FullAnchored.AnchoredPosition(100f, 0f),
-                hideBG = true,
-                textColor = textColor,
-                textVal = textVal,
-                length = 0.6f,
-            };
+                var reactiveAudio = menuInputField.gameObject.AddComponent<MenuReactiveAudio>();
+                reactiveAudio.reactiveSetting = menuInputField.reactiveSetting;
+                reactiveAudio.ogPosition = menuInputField.rect.anchoredPosition;
+            }
 
-            yield return new MenuText
-            {
-                id = "800",
-                name = "Top Bar",
-                text = "<size=56>----------------------------------------------------------------",
-                rect = RectValues.HorizontalAnchored.AnchoredPosition(0f, 400f).SizeDelta(100f, 100f),
-                textRect = RectValues.FullAnchored.AnchoredPosition(80f, 0f),
-                hideBG = true,
-                textColor = textColor,
-                textVal = textVal,
-                length = 0.6f,
-            };
+            menuInputField.inputField.onValueChanged.ClearAll();
+            menuInputField.inputField.onEndEdit.ClearAll();
+            menuInputField.inputField.text = menuInputField.defaultText;
+            menuInputField.inputField.onValueChanged.AddListener(menuInputField.Write);
+            menuInputField.inputField.onEndEdit.AddListener(menuInputField.Finish);
+
+            if (menuInputField.spawnFuncJSON != null)
+                menuInputField.ParseFunction(menuInputField.spawnFuncJSON);
+            menuInputField.spawnFunc?.Invoke();
+
+            menuInputField.Spawn();
         }
 
-        public static IEnumerable<MenuImage> GenerateBottomBar(int textColor = 0, float textVal = 40f)
-        {
-            yield return new MenuText
-            {
-                id = "801",
-                name = "Bottom Bar",
-                text = "<size=56>----------------------------------------------------------------",
-                rect = RectValues.HorizontalAnchored.AnchoredPosition(0f, -400f).SizeDelta(100f, 100f),
-                textRect = RectValues.FullAnchored.AnchoredPosition(80f, 0f),
-                hideBG = true,
-                textColor = textColor,
-                textVal = textVal,
-                length = 0.6f,
-            };
+        #endregion
 
-            yield return new MenuText
-            {
-                id = "264726346",
-                name = "Bottom Title",
-                text = $"<align=right><#F05355><b>Project Arrhythmia</b></color> Unified Operating System | Version {ProjectArrhythmia.GameVersion}",
-                rect = RectValues.HorizontalAnchored.AnchoredPosition(0f, -460f).SizeDelta(100f, 100f),
-                textRect = RectValues.FullAnchored.AnchoredPosition(-100f, 0f),
-                hideBG = true,
-                textColor = textColor,
-                textVal = textVal,
-                length = 0.6f,
-            };
+        /// <summary>
+        /// Clears the menu.
+        /// </summary>
+        public virtual void Clear()
+        {
+            isOpen = false;
+            selected = Vector2Int.zero;
+
+            for (int i = 0; i < elements.Count; i++)
+                elements[i]?.Clear();
+
+            UnityEngine.Object.Destroy(canvas?.GameObject);
+            if (loopingEvents != null)
+                AnimationManager.inst.RemoveID(loopingEvents.id);
+            if (spawnEvents != null)
+                AnimationManager.inst.RemoveID(spawnEvents.id);
         }
+
+        /// <summary>
+        /// Control system.
+        /// </summary>
+        public void UpdateControls()
+        {
+            var actions = InputDataManager.inst.menuActions;
+
+            if (!isOpen)
+            {
+                for (int i = 0; i < elements.Count; i++)
+                {
+                    var element = elements[i];
+
+                    if (element.isSpawning)
+                        element.UpdateSpawnCondition();
+
+                    if (element is MenuButton menuButton)
+                        menuButton.isHovered = false;
+                }
+                return;
+            }
+
+            if (CoreHelper.IsUsingInputField)
+                return;
+
+            if (actions.Left.WasPressed)
+            {
+                if (selected.x > elements.Where(x => x is MenuButton menuButton && menuButton.selectionPosition.y == selected.y).Select(x => x as MenuButton).Min(x => x.selectionPosition.x))
+                {
+                    AudioManager.inst.PlaySound("LeftRight");
+
+                    int num = 1;
+                    while (!elements.Has(x => x is MenuButton menuButton && menuButton.selectionPosition.y == selected.y && menuButton.selectionPosition.x == selected.x - num))
+                    {
+                        num++;
+                    }
+                    selected.x -= num;
+                }
+                else
+                    AudioManager.inst.PlaySound("Block");
+            }
+
+            if (actions.Right.WasPressed)
+            {
+                if (selected.x < elements.FindAll(x => x is MenuButton menuButton && menuButton.selectionPosition.y == selected.y).Select(x => x as MenuButton).Max(x => x.selectionPosition.x))
+                {
+                    AudioManager.inst.PlaySound("LeftRight");
+
+                    int num = 1;
+                    while (!elements.Has(x => x is MenuButton menuButton && menuButton.selectionPosition.y == selected.y && menuButton.selectionPosition.x == selected.x + num))
+                    {
+                        num++;
+                    }
+                    selected.x += num;
+                }
+                else
+                    AudioManager.inst.PlaySound("Block");
+            }
+
+            if (actions.Up.WasPressed)
+            {
+                if (selected.y > 0)
+                {
+                    AudioManager.inst.PlaySound("LeftRight");
+                    selected.y--;
+                    selected.x = Mathf.Clamp(selected.x, 0, elements.FindAll(x => x is MenuButton menuButton && menuButton.selectionPosition.y == selected.y).Select(x => x as MenuButton).Max(x => x.selectionPosition.x));
+                }
+                else
+                    AudioManager.inst.PlaySound("Block");
+            }
+
+            if (actions.Down.WasPressed)
+            {
+                if (selected.y < elements.FindAll(x => x is MenuButton).Select(x => x as MenuButton).Max(x => x.selectionPosition.y))
+                {
+                    AudioManager.inst.PlaySound("LeftRight");
+                    selected.y++;
+                    selected.x = Mathf.Clamp(selected.x, 0, elements.FindAll(x => x is MenuButton menuButton && menuButton.selectionPosition.y == selected.y).Select(x => x as MenuButton).Max(x => x.selectionPosition.x));
+                }
+                else
+                    AudioManager.inst.PlaySound("Block");
+            }
+
+            for (int i = 0; i < elements.Count; i++)
+            {
+                var element = elements[i];
+                if (element is not MenuButton button)
+                    continue;
+
+                if (button.selectionPosition == selected)
+                {
+                    if (button.gameObject.activeInHierarchy && actions.Submit.WasPressed)
+                        button.clickable?.onClick?.Invoke(null);
+
+                    if (!button.isHovered)
+                    {
+                        button.isHovered = true;
+                        button.OnEnter();
+                    }
+                }
+                else
+                {
+                    if (button.isHovered)
+                    {
+                        button.isHovered = false;
+                        button.OnExit();
+                    }
+                }
+            }
+
+            if (actions.Cancel.WasPressed)
+            {
+                exitFunc?.Invoke();
+
+                if (exitFuncJSON != null)
+                {
+                    new MenuEvent().ParseFunction(exitFuncJSON);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Updates the colors.
+        /// </summary>
+        public virtual void UpdateTheme()
+        {
+            if (!CoreHelper.InGame)
+                Camera.main.backgroundColor = Theme.backgroundColor;
+
+            if (canvas != null)
+                canvas.Canvas.scaleFactor = CoreHelper.ScreenScale;
+
+            if (elements == null)
+                return;
+
+            for (int i = 0; i < elements.Count; i++)
+            {
+                var element = elements[i];
+                if (!element.image)
+                    continue;
+
+                if (element is MenuButton button)
+                {
+                    var isSelected = button.selectionPosition == selected;
+                    button.image.color = isSelected ?
+                        LSColors.fadeColor(
+                            CoreHelper.ChangeColorHSV(
+                                button.useOverrideSelectedColor ? button.overrideSelectedColor : Theme.GetObjColor(button.selectedColor),
+                                button.selectedHue,
+                                button.selectedSat,
+                                button.selectedVal),
+                            button.selectedOpacity) :
+                        LSColors.fadeColor(
+                            CoreHelper.ChangeColorHSV(
+                                button.useOverrideColor ? button.overrideColor : Theme.GetObjColor(button.color),
+                                button.hue,
+                                button.sat,
+                                button.val),
+                            button.opacity); ;
+                    button.textUI.color = isSelected ?
+                        CoreHelper.ChangeColorHSV(
+                            button.useOverrideSelectedTextColor ? button.overrideSelectedTextColor : Theme.GetObjColor(button.selectedTextColor),
+                            button.selectedTextHue,
+                            button.selectedTextSat,
+                            button.selectedTextVal) :
+                        CoreHelper.ChangeColorHSV(
+                            button.useOverrideTextColor ? button.overrideTextColor : Theme.GetObjColor(button.textColor),
+                            button.textHue,
+                            button.textSat,
+                            button.textVal);
+                    continue;
+                }
+
+                if (element is MenuText text)
+                {
+                    text.textUI.color =
+                        CoreHelper.ChangeColorHSV(
+                            text.useOverrideTextColor ? text.overrideTextColor : Theme.GetObjColor(text.textColor),
+                            text.textHue,
+                            text.textSat,
+                            text.textVal);
+                    text.UpdateText();
+                }
+
+                element.image.color =
+                    LSColors.fadeColor(
+                        CoreHelper.ChangeColorHSV(
+                            element.useOverrideColor ? element.overrideColor : Theme.GetObjColor(element.color),
+                            element.hue,
+                            element.sat,
+                            element.val),
+                        element.opacity);
+            }
+        }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// The current theme to use for the menu colors.
+        /// </summary>
+        public BeatmapTheme Theme { get; set; }
+
+        #endregion
     }
 }
