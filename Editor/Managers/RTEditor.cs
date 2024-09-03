@@ -3583,9 +3583,24 @@ namespace BetterLegacy.Editor.Managers
 
             pather.gameObject.AddComponent<HorizontalLayoutGroup>();
 
-            EditorThemeManager.AddLightText(newFilePopup.Find("Level Name").GetComponent<Text>());
+            var levelNameLabel = newFilePopup.Find("Level Name");
+            var levelName = newFilePopup.Find("level-name");
+            var songTitleLabel = levelNameLabel.gameObject.Duplicate(newFilePopup, "Song Name", 4);
+            var songTitle = levelName.gameObject.Duplicate(newFilePopup, "song-title", 5);
+            var songTitleLabelText = songTitleLabel.GetComponent<Text>();
+            songTitleLabelText.text = "Song Title";
+            var songTitleInputField = songTitle.GetComponent<InputField>();
+            songTitleInputField.onValueChanged.ClearAll();
+            songTitleInputField.onEndEdit.ClearAll();
+            songTitleInputField.text = newLevelSongTitle;
+            songTitleInputField.onValueChanged.AddListener(x => { newLevelSongTitle = x; });
 
+            EditorThemeManager.AddLightText(newFilePopup.Find("Level Name").GetComponent<Text>());
             EditorThemeManager.AddInputField(newFilePopup.Find("level-name").GetComponent<InputField>());
+
+            EditorThemeManager.AddLightText(songTitleLabelText);
+            EditorThemeManager.AddInputField(songTitleInputField);
+
             EditorThemeManager.AddInputField(path);
 
             EditorThemeManager.AddGraphic(browseLocalButton.image, ThemeGroup.Function_2_Normal, true);
@@ -8726,7 +8741,7 @@ namespace BetterLegacy.Editor.Managers
             var metaData = new MetaData();
             metaData.beatmap.game_version = "4.1.16";
             metaData.arcadeID = LSText.randomNumString(16);
-            metaData.song.title = EditorManager.inst.newLevelName;
+            metaData.song.title = newLevelSongTitle;
             metaData.uploaderName = SteamWrapper.inst.user.displayName;
             metaData.creator.steam_name = SteamWrapper.inst.user.displayName;
             metaData.creator.steam_id = SteamWrapper.inst.user.id;
@@ -8739,6 +8754,8 @@ namespace BetterLegacy.Editor.Managers
             StartCoroutine(LoadLevel(path));
             EditorManager.inst.HideDialog("New File Popup");
         }
+
+        public string newLevelSongTitle = "Inertia";
 
         public GameData CreateBaseBeatmap()
         {

@@ -563,60 +563,74 @@ namespace BetterLegacy.Core
 
         public static Text PlaceholderText(this InputField inputField) => (Text)inputField.placeholder;
 
-        public static void ClearAll(this Button.ButtonClickedEvent b)
+        public static void ClearAll(this Button.ButtonClickedEvent uiEvent)
         {
-            b.m_Calls.m_ExecutingCalls.Clear();
-            b.m_Calls.m_PersistentCalls.Clear();
-            b.m_PersistentCalls.m_Calls.Clear();
-            b.RemoveAllListeners();
+            uiEvent.m_Calls.m_ExecutingCalls.Clear();
+            uiEvent.m_Calls.m_PersistentCalls.Clear();
+            uiEvent.m_Calls.Clear();
+            uiEvent.m_PersistentCalls.m_Calls.Clear();
+            uiEvent.m_PersistentCalls.Clear();
+            uiEvent.RemoveAllListeners();
         }
 
-        public static void ClearAll(this InputField.OnChangeEvent i)
+        public static void ClearAll(this InputField.OnChangeEvent uiEvent)
         {
-            i.m_Calls.m_ExecutingCalls.Clear();
-            i.m_Calls.m_PersistentCalls.Clear();
-            i.m_PersistentCalls.m_Calls.Clear();
-            i.RemoveAllListeners();
+            uiEvent.m_Calls.m_ExecutingCalls.Clear();
+            uiEvent.m_Calls.m_PersistentCalls.Clear();
+            uiEvent.m_Calls.Clear();
+            uiEvent.m_PersistentCalls.m_Calls.Clear();
+            uiEvent.m_PersistentCalls.Clear();
+            uiEvent.RemoveAllListeners();
         }
 
-        public static void ClearAll(this InputField.SubmitEvent s)
+        public static void ClearAll(this InputField.SubmitEvent uiEvent)
         {
-            s.m_Calls.m_ExecutingCalls.Clear();
-            s.m_Calls.m_PersistentCalls.Clear();
-            s.m_PersistentCalls.m_Calls.Clear();
-            s.RemoveAllListeners();
+            uiEvent.m_Calls.m_ExecutingCalls.Clear();
+            uiEvent.m_Calls.m_PersistentCalls.Clear();
+            uiEvent.m_Calls.Clear();
+            uiEvent.m_PersistentCalls.m_Calls.Clear();
+            uiEvent.m_PersistentCalls.Clear();
+            uiEvent.RemoveAllListeners();
         }
 
-        public static void ClearAll(this Toggle.ToggleEvent i)
+        public static void ClearAll(this Toggle.ToggleEvent uiEvent)
         {
-            i.m_Calls.m_ExecutingCalls.Clear();
-            i.m_Calls.m_PersistentCalls.Clear();
-            i.m_PersistentCalls.m_Calls.Clear();
-            i.RemoveAllListeners();
+            uiEvent.m_Calls.m_ExecutingCalls.Clear();
+            uiEvent.m_Calls.m_PersistentCalls.Clear();
+            uiEvent.m_Calls.Clear();
+            uiEvent.m_PersistentCalls.m_Calls.Clear();
+            uiEvent.m_PersistentCalls.Clear();
+            uiEvent.RemoveAllListeners();
         }
 
-        public static void ClearAll(this Dropdown.DropdownEvent d)
+        public static void ClearAll(this Dropdown.DropdownEvent uiEvent)
         {
-            d.m_Calls.m_ExecutingCalls.Clear();
-            d.m_Calls.m_PersistentCalls.Clear();
-            d.m_PersistentCalls.m_Calls.Clear();
-            d.RemoveAllListeners();
+            uiEvent.m_Calls.m_ExecutingCalls.Clear();
+            uiEvent.m_Calls.m_PersistentCalls.Clear();
+            uiEvent.m_Calls.Clear();
+            uiEvent.m_PersistentCalls.m_Calls.Clear();
+            uiEvent.m_PersistentCalls.Clear();
+            uiEvent.RemoveAllListeners();
         }
 
-        public static void ClearAll(this Slider.SliderEvent s)
+        public static void ClearAll(this Slider.SliderEvent uiEvent)
         {
-            s.m_Calls.m_ExecutingCalls.Clear();
-            s.m_Calls.m_PersistentCalls.Clear();
-            s.m_PersistentCalls.m_Calls.Clear();
-            s.RemoveAllListeners();
+            uiEvent.m_Calls.m_ExecutingCalls.Clear();
+            uiEvent.m_Calls.m_PersistentCalls.Clear();
+            uiEvent.m_Calls.Clear();
+            uiEvent.m_PersistentCalls.m_Calls.Clear();
+            uiEvent.m_PersistentCalls.Clear();
+            uiEvent.RemoveAllListeners();
         }
 
-        public static void ClearAll(this Scrollbar.ScrollEvent s)
+        public static void ClearAll(this Scrollbar.ScrollEvent uiEvent)
         {
-            s.m_Calls.m_ExecutingCalls.Clear();
-            s.m_Calls.m_PersistentCalls.Clear();
-            s.m_PersistentCalls.m_Calls.Clear();
-            s.RemoveAllListeners();
+            uiEvent.m_Calls.m_ExecutingCalls.Clear();
+            uiEvent.m_Calls.m_PersistentCalls.Clear();
+            uiEvent.m_Calls.Clear();
+            uiEvent.m_PersistentCalls.m_Calls.Clear();
+            uiEvent.m_PersistentCalls.Clear();
+            uiEvent.RemoveAllListeners();
         }
 
         public static void NewOnClickListener(this Button b, UnityAction unityAction)
