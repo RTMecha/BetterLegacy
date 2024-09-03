@@ -1158,12 +1158,13 @@ namespace BetterLegacy.Patchers
                 return false;
             }
 
-            inst.ClearDialogs(new EditorManager.EditorDialog.DialogType[1]);
-            inst.StartCoroutine(inst.GetAlbumSprite(inst.currentLoadedLevel, (Sprite cover) =>
+            inst.ClearDialogs();
+            CoreHelper.StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{RTFile.BasePath}level.jpg", x =>
             {
+                var cover = SpriteManager.CreateSprite(x);
                 inst.GetDialog("Metadata Editor").Dialog.Find("Scroll View/Viewport/Content/creator/cover_art/image").GetComponent<Image>().sprite = cover;
                 MetadataEditor.inst.currentLevelCover = cover;
-            }, (string err) =>
+            }, onError =>
             {
                 inst.GetDialog("Metadata Editor").Dialog.Find("Scroll View/Viewport/Content/creator/cover_art/image").GetComponent<Image>().sprite = LegacyPlugin.AtanPlaceholder;
                 MetadataEditor.inst.currentLevelCover = LegacyPlugin.AtanPlaceholder;
