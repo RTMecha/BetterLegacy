@@ -35,6 +35,8 @@ namespace BetterLegacy.Menus
 
         public float[] samples = new float[256];
 
+        public const string RANDOM_MUSIC_NAME = "menu";
+
         public MenuBase CurrentMenu { get; set; }
         public Coroutine CurrentGenerateUICoroutine { get; set; }
 
@@ -111,9 +113,16 @@ namespace BetterLegacy.Menus
         {
             var directory = RTFile.ApplicationDirectory + "settings/menus/";
 
-            if (!MenuConfig.Instance.PlayCustomMusic.Value || CurrentMenu != null && !CurrentMenu.allowCustomMusic)
+            if (!MenuConfig.Instance.PlayCustomMusic.Value)
             {
                 CoreHelper.LogWarning("PlayCustomMusic setting is off, so play default music.");
+                CurrentMenu?.PlayDefaultMusic();
+                return;
+            }
+
+            if (CurrentMenu != null && !CurrentMenu.allowCustomMusic)
+            {
+                CoreHelper.LogWarning("CurrentMenu does not allow custom music.");
                 CurrentMenu?.PlayDefaultMusic();
                 return;
             }
@@ -343,7 +352,7 @@ namespace BetterLegacy.Menus
             menu.filePath = path;
             interfaces.Add(menu);
 
-            interfaces.Add(new Story.StoryMenu());
+            interfaces.Add(new StoryMenu());
 
             if (!MenuConfig.Instance.ShowChangelog.Value || ChangeLogMenu.Seen)
             {
@@ -454,6 +463,7 @@ namespace BetterLegacy.Menus
     {
         public ChangeLogMenu() : base()
         {
+            musicName = InterfaceManager.RANDOM_MUSIC_NAME;
             exitFunc = () => { InterfaceManager.inst.SetCurrentInterface("0"); };
         }
 

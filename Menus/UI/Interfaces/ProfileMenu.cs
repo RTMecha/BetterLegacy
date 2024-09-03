@@ -21,6 +21,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
     {
         public ProfileMenu() : base()
         {
+            musicName = InterfaceManager.RANDOM_MUSIC_NAME;
+
             layouts.Add("buttons", new MenuVerticalLayout
             {
                 name = "buttons",

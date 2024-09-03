@@ -16,6 +16,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
     {
         public ConfirmMenu(string currentMessage, Action confirm, Action cancel) : base()
         {
+            musicName = InterfaceManager.RANDOM_MUSIC_NAME;
             InterfaceManager.inst.CloseMenus();
             InterfaceManager.inst.CurrentMenu = this;
 

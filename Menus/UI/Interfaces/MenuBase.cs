@@ -280,15 +280,20 @@ namespace BetterLegacy.Menus.UI.Interfaces
         {
             if (music)
             {
+                CoreHelper.Log($"Playing AudioClip");
                 InterfaceManager.inst.PlayMusic(music);
                 return;
             }
 
             if (string.IsNullOrEmpty(musicName))
+            {
+                CoreHelper.LogWarning($"Music name is null or empty.\nMusic Name: {musicName}\nMusic is null: {musicName == null}\nMusic is empty: {musicName == ""}");
                 return;
+            }
 
             if (AudioManager.inst.library.musicClips.ContainsKey(musicName))
             {
+                CoreHelper.Log($"Playing from music clip groups {musicName}");
                 var group = AudioManager.inst.library.musicClips[musicName];
 
                 int index = UnityEngine.Random.Range(0, group.Length);
@@ -299,12 +304,17 @@ namespace BetterLegacy.Menus.UI.Interfaces
             }
             else if (RTFile.FileExists($"{Path.GetDirectoryName(filePath)}/{musicName}.ogg"))
             {
+                CoreHelper.Log($"Playing from music ogg file");
                 CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{Path.GetDirectoryName(filePath)}/{musicName}.ogg", AudioType.OGGVORBIS, audioClip =>
                 {
                     CoreHelper.Log($"Attempting to play music: {musicName}");
                     music = audioClip;
                     InterfaceManager.inst.PlayMusic(audioClip);
                 }));
+            }
+            else
+            {
+                CoreHelper.Log($"No audio found with name {musicName}");
             }
         }
 
