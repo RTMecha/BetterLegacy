@@ -208,6 +208,15 @@ namespace BetterLegacy.Menus.UI.Elements
                 isSpawning = false;
         }
 
+        public virtual void Clear()
+        {
+            for (int i = 0; i < animations.Count; i++)
+                AnimationManager.inst.RemoveID(animations[i].id);
+            animations.Clear();
+        }
+
+        #region Functions
+
         public void ParseFunction(JSONNode jn)
         {
             if (jn.IsArray)
@@ -219,13 +228,6 @@ namespace BetterLegacy.Menus.UI.Elements
             }
 
             ParseFunctionSingle(jn);
-        }
-
-        public virtual void Clear()
-        {
-            for (int i = 0; i < animations.Count; i++)
-                AnimationManager.inst.RemoveID(animations[i].id);
-            animations.Clear();
         }
 
         public bool ParseIfFunction(JSONNode jn)
@@ -2478,6 +2480,8 @@ namespace BetterLegacy.Menus.UI.Elements
             }
         }
 
+        #endregion
+
         public void SetTransform(int type, int axis, float value)
         {
             if (!gameObject)
@@ -2541,43 +2545,6 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         /// <returns>A string containing the objects' ID and name.</returns>
         public override string ToString() => $"{id} - {name}";
-
-        /// <summary>
-        /// Generates a JSON based on a direct RectTransforms' values.
-        /// </summary>
-        /// <param name="rectTransform">RectTransform to convert to JSON.</param>
-        /// <returns></returns>
-        //public static JSONNode GenerateRectTransformJSON(RectTransform rectTransform) => GenerateRectTransformJSON(rectTransform.anchoredPosition, rectTransform.anchorMax, rectTransform.anchorMin, rectTransform.pivot, rectTransform.sizeDelta);
-
-        /// <summary>
-        /// Generates JSON based on a RectTransforms' values.
-        /// </summary>
-        /// <param name="anc_pos">From anchoredPosition.</param>
-        /// <param name="anc_max">From anchorMax.</param>
-        /// <param name="anc_min">From anchorMin.</param>
-        /// <param name="pivot">From pivot.</param>
-        /// <param name="size">From size.</param>
-        /// <returns></returns>
-        //public static JSONNode GenerateRectTransformJSON(Vector2 anc_pos, Vector2 anc_max, Vector2 anc_min, Vector2 pivot, Vector2 size, float rot = 0f)
-        //{
-        //    var jn = JSON.Parse("{}");
-
-        //    if (anc_pos != Vector2.zero)
-        //        jn["anc_pos"] = anc_pos.ToJSON();
-        //    if (anc_max != new Vector2(0.5f, 0.5f))
-        //        jn["anc_max"] = anc_max.ToJSON();
-        //    if (anc_min != new Vector2(0.5f, 0.5f))
-        //        jn["anc_min"] = anc_min.ToJSON();
-        //    if (pivot != new Vector2(0.5f, 0.5f))
-        //        jn["pivot"] = pivot.ToJSON();
-        //    if (pivot != new Vector2(100f, 100f))
-        //        jn["size"] = size.ToJSON();
-
-        //    if (rot != 0f)
-        //        jn["rot"] = rot.ToString();
-
-        //    return jn;
-        //}
 
         #endregion
     }
