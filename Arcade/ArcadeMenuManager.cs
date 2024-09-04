@@ -3174,7 +3174,7 @@ namespace BetterLegacy.Arcade
 
                             if (!OnlineLevelIcons.ContainsKey(id))
                             {
-                                StartCoroutine(AlephNetworkManager.DownloadBytes($"{CoverURL}{id}", bytes =>
+                                StartCoroutine(AlephNetworkManager.DownloadBytes($"{CoverURL}{id}.jpg", bytes =>
                                 {
                                     var sprite = SpriteManager.LoadSprite(bytes);
                                     OnlineLevelIcons.Add(id, sprite);
@@ -4170,7 +4170,7 @@ namespace BetterLegacy.Arcade
             {
                 var directory = $"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{ID}";
 
-                yield return inst.StartCoroutine(AlephNetworkManager.DownloadBytes($"{DownloadURL}{ID}", bytes =>
+                yield return inst.StartCoroutine(AlephNetworkManager.DownloadBytes($"{DownloadURL}{ID}.zip", bytes =>
                 {
                     Directory.CreateDirectory(directory);
 
