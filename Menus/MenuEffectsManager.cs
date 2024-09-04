@@ -186,7 +186,27 @@ namespace BetterLegacy.Menus
             ResetEffects();
 
             ppvolume = PostProcessManager.instance.QuickVolume(gameObject.layer, 100f,
-				chroma, bloom, vignette, lensDistort, grain, blur, pixelize, ripples);
+				chroma,
+                bloom,
+                vignette,
+                lensDistort,
+                grain,
+                blur,
+                pixelize,
+                ripples,
+                colorGrading,
+                gradient,
+                doubleVision,
+                radialBlur,
+                scanlines,
+                sharpen,
+                colorSplit,
+                blackBars,
+                danger,
+                invert,
+                mosaic,
+                tiltShift,
+                tubeDistortion);
 
 			ppvolume.isGlobal = true;
 		}
