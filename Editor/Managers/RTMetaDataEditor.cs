@@ -189,30 +189,11 @@ namespace BetterLegacy.Editor.Managers
             GenerateToggle(content, creatorLinkTitle, "is hub level", "Is Hub Level", 4);
             GenerateToggle(content, creatorLinkTitle, "unlock required", "Unlock Required", 5);
 
-            //// Preferred Player Count
-            //{
-            //    var preferredPlayerCount = Creator.NewUIObject("preferred player count", content, 6);
-            //    var preferredPlayerCountLayout = preferredPlayerCount.AddComponent<HorizontalLayoutGroup>();
-            //    preferredPlayerCountLayout.childControlHeight = true;
-            //    preferredPlayerCountLayout.childControlWidth = false;
-            //    preferredPlayerCountLayout.childForceExpandHeight = true;
-            //    preferredPlayerCountLayout.childForceExpandWidth = false;
-            //    preferredPlayerCount.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
-
-            //    var preferredPlayerCountLabel = creatorLinkTitle.gameObject.Duplicate(preferredPlayerCount.transform, "label");
-            //    var preferredPlayerCountLabelText = preferredPlayerCountLabel.GetComponent<Text>();
-            //    preferredPlayerCountLabelText.text = "Preferred Player count";
-            //    preferredPlayerCountLabelText.rectTransform.sizeDelta = new Vector2(260f, 32f);
-
-            //    var preferredPlayerCountDropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(preferredPlayerCount.transform, "dropdown");
-            //    var preferredPlayerCountLE = preferredPlayerCountDropdown.GetComponent<LayoutElement>() ?? preferredPlayerCountDropdown.AddComponent<LayoutElement>();
-            //    preferredPlayerCountLE.preferredWidth = 126f;
-            //    preferredPlayerCountLE.minWidth = 126f;
-            //    preferredPlayerCountDropdown.transform.AsRT().sizeDelta = new Vector2(256f, 32f);
-            //}
-
             GenerateDropdown(content, creatorLinkTitle, "preferred player count", "Preferred Player count", 6);
             GenerateDropdown(content, creatorLinkTitle, "server visibility", "Visibility", 7);
+
+            var serverID = content.Find("id").gameObject.Duplicate(content, "server id", 12);
+            Destroy(serverID.transform.GetChild(1).gameObject);
 
             #region Editor Theme Setup
 
@@ -240,6 +221,7 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddLightText(content.Find("agreement/text").GetComponent<Text>());
             EditorThemeManager.AddLightText(content.Find("id/id").GetComponent<Text>());
             EditorThemeManager.AddLightText(content.Find("id/revisions").GetComponent<Text>());
+            EditorThemeManager.AddLightText(serverID.transform.Find("id").GetComponent<Text>());
 
             EditorThemeManager.AddInputField(artist.Find("name/input").GetComponent<InputField>());
 
@@ -697,13 +679,26 @@ namespace BetterLegacy.Editor.Managers
                 "However, if you want to include modded features, then it's recommended to upload to the arcade server or zip the level.";
 
             bool hasID = !string.IsNullOrEmpty(metadata.serverID); // Only check for server id.
-            content.Find("id/id").GetComponent<Text>().text = !string.IsNullOrEmpty(metadata.ID) ? $"Level ID: {metadata.ID} (Click this text to copy)" : "No ID assigned.";
+            content.Find("id/id").GetComponent<Text>().text = !string.IsNullOrEmpty(metadata.ID) ? $"Arcade ID: {metadata.arcadeID} (Click this text to copy)" : "No ID assigned.";
             var idClickable = content.Find("id").GetComponent<Clickable>() ?? content.Find("id").gameObject.AddComponent<Clickable>();
             idClickable.onClick = eventData =>
             {
-                LSText.CopyToClipboard(metadata.ID);
-                EditorManager.inst.DisplayNotification($"Copied ID: {metadata.ID} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
+                LSText.CopyToClipboard(metadata.arcadeID);
+                EditorManager.inst.DisplayNotification($"Copied ID: {metadata.arcadeID} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
             };
+
+            var serverID = content.Find("server id");
+            serverID.gameObject.SetActive(hasID);
+            if (hasID)
+            {
+                serverID.transform.Find("id").GetComponent<Text>().text = $"Server ID: {metadata.serverID} (Click this text to copy)";
+                var serverIDClickable = content.Find("id").GetComponent<Clickable>() ?? content.Find("id").gameObject.AddComponent<Clickable>();
+                serverIDClickable.onClick = eventData =>
+                {
+                    LSText.CopyToClipboard(metadata.serverID);
+                    EditorManager.inst.DisplayNotification($"Copied ID: {metadata.serverID} to your clipboard!", 1.5f, EditorManager.NotificationType.Success);
+                };
+            }
 
             // Changed revisions to modded display.
             content.Find("id/revisions").GetComponent<Text>().text = $"Modded: {(GameData.Current.Modded ? "Yes" : "No")}";
