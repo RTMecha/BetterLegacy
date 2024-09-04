@@ -731,6 +731,11 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        bool VerifyFile(string file) => !file.Contains("autosave") && !file.Contains("backup") && !file.Contains("level-previous") && file != "editor.lse" && !file.Contains("waveform-") &&
+            (file.Contains(".lsb") || file.Contains(".vgd") || file.Contains(".vgm") ||
+            file.Contains(".jpg") || file.Contains(".png") ||
+            file.Contains(".ogg") || file.Contains(".wav") || file.Contains(".mp3") || file.Contains(".mp4"));
+
         public void ConvertLevel()
         {
             var exportPath = EditorConfig.Instance.ConvertLevelLSToVGExportPath.Value;
@@ -810,6 +815,8 @@ namespace BetterLegacy.Editor.Managers
 
             uploading = true;
 
+            EditorManager.inst.DisplayNotification("Attempting to upload to the server... please wait.", 3f, EditorManager.NotificationType.Warning);
+
             var exportPath = EditorConfig.Instance.ZIPLevelExportPath.Value;
 
             if (string.IsNullOrEmpty(exportPath))
@@ -841,7 +848,31 @@ namespace BetterLegacy.Editor.Managers
                 if (RTFile.FileExists(path))
                     File.Delete(path);
 
-                ZipFile.CreateFromDirectory(GameManager.inst.basePath, path);
+                // here we setup a temporary upload folder that has no editor files, which we then zip and delete the directory.
+                var tempDirectory = exportPath + EditorManager.inst.currentLoadedLevel + "-temp/";
+                if (!RTFile.DirectoryExists(tempDirectory))
+                    Directory.CreateDirectory(tempDirectory);
+                var directory = GameManager.inst.basePath;
+                var files = Directory.GetFiles(directory);
+                for (int i = 0; i < files.Length; i++)
+                {
+                    var file = files[i];
+                    if (!VerifyFile(Path.GetFileName(file)))
+                        continue;
+
+                    var copyTo = file.Replace(GameManager.inst.basePath, tempDirectory);
+
+                    var dir = Path.GetDirectoryName(copyTo).Replace("\\", "/");
+
+                    if (!RTFile.DirectoryExists(dir))
+                        Directory.CreateDirectory(dir);
+
+                    File.Copy(file, copyTo, RTFile.FileExists(copyTo));
+                }
+
+                //ZipFile.CreateFromDirectory(GameManager.inst.basePath, path);
+                ZipFile.CreateFromDirectory(tempDirectory, path);
+                Directory.Delete(tempDirectory, true);
 
                 var headers = new Dictionary<string, string>();
                 if (authData != null && authData["access_token"] != null)
@@ -926,6 +957,8 @@ namespace BetterLegacy.Editor.Managers
             {
                 try
                 {
+                    EditorManager.inst.DisplayNotification("Attempting to delete level from the server... please wait.", 3f, EditorManager.NotificationType.Warning);
+
                     var id = MetaData.Current.serverID;
 
                     var headers = new Dictionary<string, string>();
