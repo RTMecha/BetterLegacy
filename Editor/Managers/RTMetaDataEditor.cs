@@ -155,6 +155,8 @@ namespace BetterLegacy.Editor.Managers
             uploadText.fontSize = 22;
             uploadText.text = "Upload to Server";
 
+            TooltipHelper.AssignTooltip(upload, "Upload Level");
+
             var zip = convert.Duplicate(submitBase, "delete");
 
             zip.transform.AsRT().anchoredPosition = new Vector2(240f, 0f);
@@ -408,6 +410,7 @@ namespace BetterLegacy.Editor.Managers
                 input.text = tag;
                 input.onValueChanged.AddListener(_val =>
                 {
+                    _val = _val.Replace(" ", "_");
                     var oldVal = moddedMetadata.LevelSong.tags[index];
                     moddedMetadata.LevelSong.tags[index] = _val;
 
