@@ -46,6 +46,7 @@ namespace BetterLegacy.Core.Data
         public bool isHubLevel;
         public bool requireUnlock;
         public ServerVisibility visibility;
+        public string changelog;
 
         /// <summary>
         /// Gets the game version of the metadata.
@@ -117,7 +118,8 @@ namespace BetterLegacy.Core.Data
             arcadeID = orig.arcadeID,
             nextID = orig.nextID,
             prevID = orig.prevID,
-            visibility = orig.visibility
+            visibility = orig.visibility,
+            changelog = orig.changelog,
         };
 
         public static MetaData ParseVG(JSONNode jn)
@@ -403,6 +405,9 @@ namespace BetterLegacy.Core.Data
 
                 if (!string.IsNullOrEmpty(jn["visibility"]))
                     result.visibility = (ServerVisibility)jn["visibility"].AsInt;
+
+                if (!string.IsNullOrEmpty(jn["changelog"]))
+                    result.changelog = jn["changelog"];
             }
             catch
             {
@@ -486,7 +491,9 @@ namespace BetterLegacy.Core.Data
             jn["beatmap"]["game_version"] = beatmap.game_version;
             jn["beatmap"]["mod_version"] = LevelBeatmap.mod_version;
             jn["beatmap"]["workshop_id"] = !string.IsNullOrEmpty(LevelBeatmap.beatmap_id) ? LevelBeatmap.beatmap_id : "-1";
-            jn["beatmap"]["preferred_players"] = ((int)LevelBeatmap.preferredPlayerCount).ToString();
+
+            if (LevelBeatmap.preferredPlayerCount != LevelBeatmap.PreferredPlayerCount.Any)
+                jn["beatmap"]["preferred_players"] = ((int)LevelBeatmap.preferredPlayerCount).ToString();
 
             if (!string.IsNullOrEmpty(serverID))
                 jn["server_id"] = serverID;
@@ -514,6 +521,9 @@ namespace BetterLegacy.Core.Data
 
             if (visibility != ServerVisibility.Public)
                 jn["visibility"] = ((int)visibility).ToString();
+
+            if (!string.IsNullOrEmpty(changelog))
+                jn["changelog"] = changelog;
 
             return jn;
         }

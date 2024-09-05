@@ -189,11 +189,35 @@ namespace BetterLegacy.Editor.Managers
             GenerateToggle(content, creatorLinkTitle, "is hub level", "Is Hub Level", 4);
             GenerateToggle(content, creatorLinkTitle, "unlock required", "Unlock Required", 5);
 
-            GenerateDropdown(content, creatorLinkTitle, "preferred player count", "Preferred Player count", 6);
-            GenerateDropdown(content, creatorLinkTitle, "server visibility", "Visibility", 7);
+            GenerateDropdown(content, creatorLinkTitle, "preferred player count", "Preferred Players", 6);
 
-            var serverID = content.Find("id").gameObject.Duplicate(content, "server id", 12);
+            var serverID = content.Find("id").gameObject.Duplicate(content, "server id", 11);
             Destroy(serverID.transform.GetChild(1).gameObject);
+
+            var uploadInfo = content.Find("creator").gameObject.Duplicate(content, "upload", 7);
+
+            try
+            {
+                CoreHelper.Destroy(true, 0f,
+                    uploadInfo.transform.Find("cover_art").gameObject,
+                    uploadInfo.transform.Find("name").gameObject,
+                    uploadInfo.transform.Find("link").gameObject,
+                    uploadInfo.transform.Find("tags").gameObject);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
+
+            GenerateDropdown(uploadInfo.transform, creatorLinkTitle, "server visibility", "Visibility", 2);
+            uploadInfo.transform.Find("description").gameObject.name = "changelog";
+            uploadInfo.transform.AsRT().sizeDelta = new Vector2(738.5f, 200f);
+            var uploadInfoLabel = uploadInfo.transform.Find("title/title").GetComponent<Text>();
+            uploadInfoLabel.text = "Upload Info";
+
+            var changelogLabel = uploadInfo.transform.Find("changelog/Panel/title").GetComponent<Text>();
+            changelogLabel.text = "Changelog";
+            EditorThemeManager.AddInputField(uploadInfo.transform.Find("changelog/input").GetComponent<InputField>());
 
             #region Editor Theme Setup
 
@@ -205,6 +229,8 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddGraphic(zipText, ThemeGroup.Delete_Text);
             EditorThemeManager.AddGraphic(dialog.GetComponent<Image>(), ThemeGroup.Background_1);
 
+            EditorThemeManager.AddLightText(uploadInfoLabel);
+            EditorThemeManager.AddLightText(changelogLabel);
             EditorThemeManager.AddLightText(artist.Find("title/title").GetComponent<Text>());
             EditorThemeManager.AddLightText(song.Find("title_/title").GetComponent<Text>());
             EditorThemeManager.AddLightText(creator.Find("title/title").GetComponent<Text>());
@@ -294,7 +320,7 @@ namespace BetterLegacy.Editor.Managers
             var preferredPlayerCountLabel = creatorLinkTitle.gameObject.Duplicate(preferredPlayerCount.transform, "label");
             var preferredPlayerCountLabelText = preferredPlayerCountLabel.GetComponent<Text>();
             preferredPlayerCountLabelText.text = text;
-            preferredPlayerCountLabelText.rectTransform.sizeDelta = new Vector2(260f, 32f);
+            preferredPlayerCountLabelText.rectTransform.sizeDelta = new Vector2(210f, 32f);
 
             var preferredPlayerCountDropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(preferredPlayerCount.transform, "dropdown");
             var preferredPlayerCountLE = preferredPlayerCountDropdown.GetComponent<LayoutElement>() ?? preferredPlayerCountDropdown.AddComponent<LayoutElement>();
@@ -316,7 +342,7 @@ namespace BetterLegacy.Editor.Managers
             var label = creatorLinkTitle.gameObject.Duplicate(toggles.transform, "label");
             var labelText = label.GetComponent<Text>();
             labelText.text = text;
-            labelText.rectTransform.sizeDelta = new Vector2(260f, 32f);
+            labelText.rectTransform.sizeDelta = new Vector2(210, 32f);
 
             var toggle = EditorPrefabHolder.Instance.Toggle.Duplicate(toggles.transform, "toggle");
             var layoutElement = toggle.AddComponent<LayoutElement>();
@@ -662,23 +688,37 @@ namespace BetterLegacy.Editor.Managers
             var preferredPlayerCount = content.Find("preferred player count/dropdown").GetComponent<Dropdown>();
             preferredPlayerCount.options = CoreHelper.StringToOptionData("Any", "One", "Two", "Three", "Four", "More than four");
             preferredPlayerCount.value = (int)metadata.LevelBeatmap.preferredPlayerCount;
-            preferredPlayerCount.onValueChanged.AddListener(x =>
+            preferredPlayerCount.onValueChanged.AddListener(_val =>
             {
-                metadata.LevelBeatmap.preferredPlayerCount = (LevelBeatmap.PreferredPlayerCount)x;
+                metadata.LevelBeatmap.preferredPlayerCount = (LevelBeatmap.PreferredPlayerCount)_val;
             });
 
-            var serverVisibility = content.Find("server visibility/dropdown").GetComponent<Dropdown>();
+            var serverVisibility = content.Find("upload/server visibility/dropdown").GetComponent<Dropdown>();
             serverVisibility.options = CoreHelper.StringToOptionData("Public", "Unlisted", "Private");
             serverVisibility.value = (int)metadata.visibility;
-            serverVisibility.onValueChanged.AddListener(x =>
+            serverVisibility.onValueChanged.AddListener(_val =>
             {
-                metadata.visibility = (ServerVisibility)x;
+                metadata.visibility = (ServerVisibility)_val;
             });
+
+            bool hasID = !string.IsNullOrEmpty(metadata.serverID); // Only check for server id.
+
+            content.Find("upload/changelog").gameObject.SetActive(hasID);
+            content.Find("upload").transform.AsRT().sizeDelta = new Vector2(738.5f, !hasID ? 60f : 200f);
+            if (hasID)
+            {
+                var changelog = content.Find("upload/changelog/input").GetComponent<InputField>();
+                changelog.onValueChanged.ClearAll();
+                changelog.text = metadata.changelog;
+                changelog.onValueChanged.AddListener(_val =>
+                {
+                    metadata.changelog = _val;
+                });
+            }
 
             content.Find("agreement/text").GetComponent<Text>().text = "If you want to upload to the Steam Workshop, you can convert the level to the current level format for vanilla PA and upload it to the workshop. Beware any modded features not in current PA will not be saved. " +
                 "However, if you want to include modded features, then it's recommended to upload to the arcade server or zip the level.";
 
-            bool hasID = !string.IsNullOrEmpty(metadata.serverID); // Only check for server id.
             content.Find("id/id").GetComponent<Text>().text = !string.IsNullOrEmpty(metadata.ID) ? $"Arcade ID: {metadata.arcadeID} (Click this text to copy)" : "No ID assigned.";
             var idClickable = content.Find("id").GetComponent<Clickable>() ?? content.Find("id").gameObject.AddComponent<Clickable>();
             idClickable.onClick = eventData =>
