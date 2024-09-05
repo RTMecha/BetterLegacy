@@ -723,7 +723,7 @@ namespace BetterLegacy.Core.Data
             if (jn["iglif"] != null)
                 beatmapObject.ignoreLifespan = jn["iglif"].AsBool;
 
-            if (jn["desync"] != null)
+            if (jn["desync"] != null && !string.IsNullOrEmpty(beatmapObject.parent))
                 beatmapObject.desync = jn["desync"].AsBool;
 
             if (jn["empty"] != null)
@@ -964,7 +964,7 @@ namespace BetterLegacy.Core.Data
                 jn["opcol"] = opacityCollision.ToString();
             if (ignoreLifespan)
                 jn["iglif"] = ignoreLifespan.ToString();
-            if (desync)
+            if (desync && !string.IsNullOrEmpty(parent))
                 jn["desync"] = desync.ToString();
 
             if (LDM)

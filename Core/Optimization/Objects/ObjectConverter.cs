@@ -256,8 +256,8 @@ namespace BetterLegacy.Core.Optimization.Objects
                 prefabOffsetRotation = rot.eulerAngles;
             }
 
-            var tf = parentObjects != null && parentObjects.Count > 0 && parentObjects[parentObjects.Count - 1] && parentObjects[parentObjects.Count - 1].Transform ?
-                parentObjects[parentObjects.Count - 1].Transform : baseObject.transform;
+            var tf = parentObjects != null && parentObjects.Count > 0 && parentObjects[parentObjects.Count - 1] && parentObjects[parentObjects.Count - 1].transform ?
+                parentObjects[parentObjects.Count - 1].transform : baseObject.transform;
 
             tf.SetParent(top.transform);
             tf.localScale = Vector3.one;
@@ -352,31 +352,32 @@ namespace BetterLegacy.Core.Optimization.Objects
                 if (cachedSequences != null)
                     levelParentObject = new LevelParentObject
                     {
-                        Position3DSequence = cachedSequences.Position3DSequence,
-                        ScaleSequence = cachedSequences.ScaleSequence,
-                        RotationSequence = cachedSequences.RotationSequence,
+                        position3DSequence = cachedSequences.Position3DSequence,
+                        scaleSequence = cachedSequences.ScaleSequence,
+                        rotationSequence = cachedSequences.RotationSequence,
 
-                        TimeOffset = beatmapObject.StartTime,
+                        timeOffset = beatmapObject.StartTime,
 
-                        ParentAnimatePosition = beatmapObject.GetParentType(0),
-                        ParentAnimateScale = beatmapObject.GetParentType(1),
-                        ParentAnimateRotation = beatmapObject.GetParentType(2),
+                        parentAnimatePosition = beatmapObject.GetParentType(0),
+                        parentAnimateScale = beatmapObject.GetParentType(1),
+                        parentAnimateRotation = beatmapObject.GetParentType(2),
 
-                        ParentOffsetPosition = beatmapObject.getParentOffset(0),
-                        ParentOffsetScale = beatmapObject.getParentOffset(1),
-                        ParentOffsetRotation = beatmapObject.getParentOffset(2),
+                        parentOffsetPosition = beatmapObject.getParentOffset(0),
+                        parentOffsetScale = beatmapObject.getParentOffset(1),
+                        parentOffsetRotation = beatmapObject.getParentOffset(2),
 
-                        ParentAdditivePosition = beatmapObject.parentAdditive[0] == '1',
-                        ParentAdditiveScale = beatmapObject.parentAdditive[1] == '1',
-                        ParentAdditiveRotation = beatmapObject.parentAdditive[2] == '1',
+                        parentAdditivePosition = beatmapObject.parentAdditive[0] == '1',
+                        parentAdditiveScale = beatmapObject.parentAdditive[1] == '1',
+                        parentAdditiveRotation = beatmapObject.parentAdditive[2] == '1',
 
-                        ParentParallaxPosition = beatmapObject.parallaxSettings[0],
-                        ParentParallaxScale = beatmapObject.parallaxSettings[1],
-                        ParentParallaxRotation = beatmapObject.parallaxSettings[2],
+                        parentParallaxPosition = beatmapObject.parallaxSettings[0],
+                        parentParallaxScale = beatmapObject.parallaxSettings[1],
+                        parentParallaxRotation = beatmapObject.parallaxSettings[2],
 
-                        GameObject = gameObject,
-                        Transform = gameObject.transform,
-                        ID = beatmapObject.id,
+                        gameObject = gameObject,
+                        transform = gameObject.transform,
+                        id = beatmapObject.id,
+                        desync = !string.IsNullOrEmpty(beatmapObject.parent) && beatmapObject.desync,
                         BeatmapObject = beatmapObject
                     };
                 else
@@ -392,31 +393,32 @@ namespace BetterLegacy.Core.Optimization.Objects
 
                     levelParentObject = new LevelParentObject
                     {
-                        Position3DSequence = new Sequence<Vector3>(pos),
-                        ScaleSequence = new Sequence<Vector2>(sca),
-                        RotationSequence = new Sequence<float>(rot),
+                        position3DSequence = new Sequence<Vector3>(pos),
+                        scaleSequence = new Sequence<Vector2>(sca),
+                        rotationSequence = new Sequence<float>(rot),
 
-                        TimeOffset = beatmapObject.StartTime,
+                        timeOffset = beatmapObject.StartTime,
 
-                        ParentAnimatePosition = beatmapObject.GetParentType(0),
-                        ParentAnimateScale = beatmapObject.GetParentType(1),
-                        ParentAnimateRotation = beatmapObject.GetParentType(2),
+                        parentAnimatePosition = beatmapObject.GetParentType(0),
+                        parentAnimateScale = beatmapObject.GetParentType(1),
+                        parentAnimateRotation = beatmapObject.GetParentType(2),
 
-                        ParentOffsetPosition = beatmapObject.getParentOffset(0),
-                        ParentOffsetScale = beatmapObject.getParentOffset(1),
-                        ParentOffsetRotation = beatmapObject.getParentOffset(2),
+                        parentOffsetPosition = beatmapObject.getParentOffset(0),
+                        parentOffsetScale = beatmapObject.getParentOffset(1),
+                        parentOffsetRotation = beatmapObject.getParentOffset(2),
 
-                        ParentAdditivePosition = beatmapObject.parentAdditive[0] == '1',
-                        ParentAdditiveScale = beatmapObject.parentAdditive[1] == '1',
-                        ParentAdditiveRotation = beatmapObject.parentAdditive[2] == '1',
+                        parentAdditivePosition = beatmapObject.parentAdditive[0] == '1',
+                        parentAdditiveScale = beatmapObject.parentAdditive[1] == '1',
+                        parentAdditiveRotation = beatmapObject.parentAdditive[2] == '1',
 
-                        ParentParallaxPosition = beatmapObject.parallaxSettings[0],
-                        ParentParallaxScale = beatmapObject.parallaxSettings[1],
-                        ParentParallaxRotation = beatmapObject.parallaxSettings[2],
+                        parentParallaxPosition = beatmapObject.parallaxSettings[0],
+                        parentParallaxScale = beatmapObject.parallaxSettings[1],
+                        parentParallaxRotation = beatmapObject.parallaxSettings[2],
 
-                        GameObject = gameObject,
-                        Transform = gameObject.transform,
-                        ID = beatmapObject.id,
+                        gameObject = gameObject,
+                        transform = gameObject.transform,
+                        id = beatmapObject.id,
+                        desync = !string.IsNullOrEmpty(beatmapObject.parent) && beatmapObject.desync,
                         BeatmapObject = beatmapObject
                     };
                 } // In case the CashedSequence is null, set defaults.
