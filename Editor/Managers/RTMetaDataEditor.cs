@@ -308,46 +308,49 @@ namespace BetterLegacy.Editor.Managers
 
         void GenerateDropdown(Transform content, Text creatorLinkTitle, string name, string text, int siblingIndex)
         {
+            var dropdownBase = Creator.NewUIObject(name, content, siblingIndex);
+            var dropdownBaseLayout = dropdownBase.AddComponent<HorizontalLayoutGroup>();
+            dropdownBaseLayout.childControlHeight = true;
+            dropdownBaseLayout.childControlWidth = false;
+            dropdownBaseLayout.childForceExpandHeight = true;
+            dropdownBaseLayout.childForceExpandWidth = false;
+            dropdownBase.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
 
-            var preferredPlayerCount = Creator.NewUIObject(name, content, siblingIndex);
-            var preferredPlayerCountLayout = preferredPlayerCount.AddComponent<HorizontalLayoutGroup>();
-            preferredPlayerCountLayout.childControlHeight = true;
-            preferredPlayerCountLayout.childControlWidth = false;
-            preferredPlayerCountLayout.childForceExpandHeight = true;
-            preferredPlayerCountLayout.childForceExpandWidth = false;
-            preferredPlayerCount.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+            var label = creatorLinkTitle.gameObject.Duplicate(dropdownBase.transform, "label");
+            var labelText = label.GetComponent<Text>();
+            labelText.text = text;
+            labelText.rectTransform.sizeDelta = new Vector2(210f, 32f);
+            EditorThemeManager.AddLightText(labelText);
 
-            var preferredPlayerCountLabel = creatorLinkTitle.gameObject.Duplicate(preferredPlayerCount.transform, "label");
-            var preferredPlayerCountLabelText = preferredPlayerCountLabel.GetComponent<Text>();
-            preferredPlayerCountLabelText.text = text;
-            preferredPlayerCountLabelText.rectTransform.sizeDelta = new Vector2(210f, 32f);
-
-            var preferredPlayerCountDropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(preferredPlayerCount.transform, "dropdown");
-            var preferredPlayerCountLE = preferredPlayerCountDropdown.GetComponent<LayoutElement>() ?? preferredPlayerCountDropdown.AddComponent<LayoutElement>();
-            preferredPlayerCountLE.preferredWidth = 126f;
-            preferredPlayerCountLE.minWidth = 126f;
-            preferredPlayerCountDropdown.transform.AsRT().sizeDelta = new Vector2(256f, 32f);
+            var dropdown = EditorPrefabHolder.Instance.Dropdown.Duplicate(dropdownBase.transform, "dropdown");
+            var layoutElement = dropdown.GetComponent<LayoutElement>() ?? dropdown.AddComponent<LayoutElement>();
+            layoutElement.preferredWidth = 126f;
+            layoutElement.minWidth = 126f;
+            dropdown.transform.AsRT().sizeDelta = new Vector2(256f, 32f);
+            EditorThemeManager.AddDropdown(dropdown.GetComponent<Dropdown>());
         }
 
         void GenerateToggle(Transform content, Text creatorLinkTitle, string name, string text, int siblingIndex)
         {
-            var toggles = Creator.NewUIObject(name, content, siblingIndex);
-            var togglesLayout = toggles.AddComponent<HorizontalLayoutGroup>();
-            togglesLayout.childControlHeight = true;
-            togglesLayout.childControlWidth = false;
-            togglesLayout.childForceExpandHeight = true;
-            togglesLayout.childForceExpandWidth = false;
-            toggles.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
+            var toggleBase = Creator.NewUIObject(name, content, siblingIndex);
+            var toggleBaseLayout = toggleBase.AddComponent<HorizontalLayoutGroup>();
+            toggleBaseLayout.childControlHeight = true;
+            toggleBaseLayout.childControlWidth = false;
+            toggleBaseLayout.childForceExpandHeight = true;
+            toggleBaseLayout.childForceExpandWidth = false;
+            toggleBase.transform.AsRT().sizeDelta = new Vector2(0f, 32f);
 
-            var label = creatorLinkTitle.gameObject.Duplicate(toggles.transform, "label");
+            var label = creatorLinkTitle.gameObject.Duplicate(toggleBase.transform, "label");
             var labelText = label.GetComponent<Text>();
             labelText.text = text;
             labelText.rectTransform.sizeDelta = new Vector2(210, 32f);
+            EditorThemeManager.AddLightText(labelText);
 
-            var toggle = EditorPrefabHolder.Instance.Toggle.Duplicate(toggles.transform, "toggle");
+            var toggle = EditorPrefabHolder.Instance.Toggle.Duplicate(toggleBase.transform, "toggle");
             var layoutElement = toggle.AddComponent<LayoutElement>();
             layoutElement.preferredWidth = 32f;
             layoutElement.minWidth = 32f;
+            EditorThemeManager.AddToggle(toggle.GetComponent<Toggle>());
         }
 
         void RenderDifficultyToggles()
