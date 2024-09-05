@@ -1,5 +1,4 @@
 ﻿### Major feature
-- Arcade server
 - Level collections
 - Custom Achievement system
 - Story mode
@@ -15,6 +14,7 @@
 - Unclamped timeline (timeline can be navigated outside the regular range and objects can be placed before start time 0)
 - Text editor
 - New modifiers [prizeObject, setParent, playerAction (PlayerActionSet) trigger]
+- Asset sharing on the online server. (Prefabs, themes, player models, etc)
 ### Misc
 - Rework arcade menu to use new interface system.
 - Possibly update input select scene to use new interface system.
