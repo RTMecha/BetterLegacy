@@ -512,7 +512,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static List<DataManager.LinkType> SongLinks => new List<DataManager.LinkType>
         {
-            new DataManager.LinkType("Spotify", "https://open.spotify.com/artist/{0}"),
+            new DataManager.LinkType("Spotify", "https://open.spotify.com/{0}"),
             new DataManager.LinkType("SoundCloud", "https://soundcloud.com/{0}"),
             new DataManager.LinkType("Bandcamp", "https://{0}.bandcamp.com/{1}"),
             new DataManager.LinkType("YouTube", "https://youtube.com/watch?v={0}"),
@@ -530,7 +530,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static List<DataManager.LinkType> CreatorLinks => new List<DataManager.LinkType>
         {
-            new DataManager.LinkType("YouTube", "https://www.youtube.com/c/{0}"),
+            new DataManager.LinkType("YouTube", "https://youtube.com/c/{0}"),
             new DataManager.LinkType("Newgrounds", "https://{0}.newgrounds.com/"),
             new DataManager.LinkType("Discord", "https://discord.gg/{0}"),
             new DataManager.LinkType("Patreon", "https://patreon.com/{0}"),
