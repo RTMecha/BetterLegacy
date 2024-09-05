@@ -14,7 +14,7 @@ namespace BetterLegacy.Core.Managers
     {
         public static void TogglePlay() => (AudioManager.inst.CurrentAudioSource.isPlaying ? (Action)AudioManager.inst.CurrentAudioSource.Pause : AudioManager.inst.CurrentAudioSource.Play).Invoke();
 
-        public static int BeatmapObjectAliveCount() => GameData.Current.BeatmapObjects.Where(x => x.objectType != BeatmapObject.ObjectType.Empty && x.TimeWithinLifespan()).Count();
+        public static int BeatmapObjectAliveCount() => !GameData.IsValid ? 0 : GameData.Current.BeatmapObjects.Where(x => x.objectType != BeatmapObject.ObjectType.Empty && x.TimeWithinLifespan()).Count();
 
         public static void LogColor(Color color) => Debug.Log($"[<color=#{CoreHelper.ColorToHex(color)}>▓▓▓▓▓▓▓▓▓▓▓▓▓</color>]");
         public static void LogColor(string color) => Debug.Log($"[<color={color}>▓▓▓▓▓▓▓▓▓▓▓▓▓</color>]");
@@ -104,13 +104,18 @@ namespace BetterLegacy.Core.Managers
             if (!InfoSelection.dragging)
                 Info.transform.position = CoreConfig.Instance.DebugPosition.Value;
 
-            Info.text = $"<b>FPS:</b> {FPS.Text}<br>" +
-                        $"<b>Beatmap Objects Alive:</b> {BeatmapObjectAliveCount()} / {GameData.Current.beatmapObjects.Count}<br>" +
-                        $"<b>Main Camera Position: {Camera.main.transform.position}<br>" +
-                        $"<b>Main Camera Zoom: {Camera.main.orthographicSize}<br>" +
-                        $"<b>Main Camera Rotation: {Camera.main.transform.rotation.eulerAngles}<br>" +
-                        $"<b>BG Camera Position: {EventManager.inst.camPer.transform.position}<br>" +
-                        $"<b>BG Camera Rotation: {EventManager.inst.camPer.transform.rotation.eulerAngles}<br>";
+            if (CoreHelper.InGame && !CoreConfig.Instance.DebugShowOnlyFPS.Value)
+            {
+                Info.text = $"<b>FPS:</b> {FPS.Text}<br>" +
+                            $"<b>Beatmap Objects Alive:</b> {BeatmapObjectAliveCount()} / {(!GameData.IsValid ? 0 : GameData.Current.beatmapObjects.Count)}<br>" +
+                            $"<b>Main Camera Position: {Camera.main.transform.position}<br>" +
+                            $"<b>Main Camera Zoom: {Camera.main.orthographicSize}<br>" +
+                            $"<b>Main Camera Rotation: {Camera.main.transform.rotation.eulerAngles}<br>" +
+                            $"<b>BG Camera Position: {EventManager.inst.camPer.transform.position}<br>" +
+                            $"<b>BG Camera Rotation: {EventManager.inst.camPer.transform.rotation.eulerAngles}<br>";
+            }
+            else
+                Info.text = $"<b>FPS:</b> {FPS.Text}";
 
             if (canvas != null)
                 canvas.Canvas.scaleFactor = CoreHelper.ScreenScale;
