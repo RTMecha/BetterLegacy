@@ -243,7 +243,7 @@ namespace BetterLegacy.Editor.Managers
         {
             ignoreToggle.onValueChanged.ClearAll();
             ignoreToggle.isOn = beatmapObject.ignoreLifespan;
-            ignoreToggle.onValueChanged.AddListener(_val =>  { beatmapObject.ignoreLifespan = _val; });
+            ignoreToggle.onValueChanged.AddListener(_val => { beatmapObject.ignoreLifespan = _val; });
 
             if (!showModifiers)
                 yield break;
@@ -337,232 +337,6 @@ namespace BetterLegacy.Editor.Managers
                     EditorThemeManager.ApplyToggle(notToggle);
                 }
 
-                Action<string, int, float> singleGenerator = (string label, int type, float defaultValue) =>
-                {
-                    var single = numberInput.Duplicate(layout, label);
-                    single.transform.localScale = Vector3.one;
-                    var labelText = single.transform.Find("Text").GetComponent<Text>();
-                    labelText.text = label;
-
-                    var inputField = single.transform.Find("Input").GetComponent<InputField>();
-                    inputField.onValueChanged.ClearAll();
-                    inputField.textComponent.alignment = TextAnchor.MiddleCenter;
-                    inputField.text = Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], defaultValue).ToString();
-                    inputField.onValueChanged.AddListener(_val =>
-                    {
-                        if (float.TryParse(_val, out float num))
-                        {
-                            if (type == 0)
-                                modifier.value = num.ToString();
-                            else
-                                modifier.commands[type] = num.ToString();
-                        }
-
-                        modifier.active = false;
-                    });
-
-                    EditorThemeManager.ApplyLightText(labelText);
-                    EditorThemeManager.ApplyInputField(inputField);
-                    var leftButton = single.transform.Find("<").GetComponent<Button>();
-                    var rightButton = single.transform.Find(">").GetComponent<Button>();
-                    leftButton.transition = Selectable.Transition.ColorTint;
-                    rightButton.transition = Selectable.Transition.ColorTint;
-                    EditorThemeManager.ApplySelectable(leftButton, ThemeGroup.Function_2, false);
-                    EditorThemeManager.ApplySelectable(rightButton, ThemeGroup.Function_2, false);
-
-                    TriggerHelper.IncreaseDecreaseButtons(inputField, t: single.transform);
-                    TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDelta(inputField));
-
-                    var inputFieldSwapper = inputField.gameObject.AddComponent<InputFieldSwapper>();
-                    inputFieldSwapper.Init(inputField, InputFieldSwapper.Type.Num);
-                };
-
-                Action<string, int, int> integerGenerator = (string label, int type, int defaultValue) =>
-                {
-                    var single = numberInput.Duplicate(layout, label);
-                    single.transform.localScale = Vector3.one;
-                    var labelText = single.transform.Find("Text").GetComponent<Text>();
-                    labelText.text = label;
-
-                    var inputField = single.transform.Find("Input").GetComponent<InputField>();
-                    inputField.onValueChanged.ClearAll();
-                    inputField.textComponent.alignment = TextAnchor.MiddleCenter;
-                    inputField.text = Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], defaultValue).ToString();
-                    inputField.onValueChanged.AddListener(_val =>
-                    {
-                        if (int.TryParse(_val, out int num))
-                        {
-                            if (type == 0)
-                                modifier.value = num.ToString();
-                            else
-                                modifier.commands[type] = num.ToString();
-                        }
-
-                        modifier.active = false;
-                    });
-
-                    EditorThemeManager.ApplyLightText(labelText);
-                    EditorThemeManager.ApplyInputField(inputField);
-                    var leftButton = single.transform.Find("<").GetComponent<Button>();
-                    var rightButton = single.transform.Find(">").GetComponent<Button>();
-                    leftButton.transition = Selectable.Transition.ColorTint;
-                    rightButton.transition = Selectable.Transition.ColorTint;
-                    EditorThemeManager.ApplySelectable(leftButton, ThemeGroup.Function_2, false);
-                    EditorThemeManager.ApplySelectable(rightButton, ThemeGroup.Function_2, false);
-
-                    TriggerHelper.IncreaseDecreaseButtonsInt(inputField, t: single.transform);
-                    TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputField));
-
-                    var inputFieldSwapper = inputField.gameObject.AddComponent<InputFieldSwapper>();
-                    inputFieldSwapper.Init(inputField, InputFieldSwapper.Type.Num);
-                };
-
-                Action<string, int, bool> boolGenerator = (string label, int type, bool defaultValue) =>
-                {
-                    var global = booleanBar.Duplicate(layout, label);
-                    global.transform.localScale = Vector3.one;
-                    var labelText = global.transform.Find("Text").GetComponent<Text>();
-                    labelText.text = label;
-
-                    var globalToggle = global.transform.Find("Toggle").GetComponent<Toggle>();
-                    globalToggle.onValueChanged.ClearAll();
-                    globalToggle.isOn = Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], defaultValue);
-                    globalToggle.onValueChanged.AddListener(_val =>
-                    {
-                        if (type == 0)
-                            modifier.value = _val.ToString();
-                        else
-                            modifier.commands[type] = _val.ToString();
-                        modifier.active = false;
-                    });
-
-                    EditorThemeManager.ApplyLightText(labelText);
-                    EditorThemeManager.ApplyToggle(globalToggle);
-                };
-
-                Action<string, int> stringGenerator = (string label, int type) =>
-                {
-                    var path = stringInput.Duplicate(layout, label);
-                    path.transform.localScale = Vector3.one;
-                    var labelText = path.transform.Find("Text").GetComponent<Text>();
-                    labelText.text = label;
-
-                    var pathInputField = path.transform.Find("Input").GetComponent<InputField>();
-                    pathInputField.onValueChanged.ClearAll();
-                    pathInputField.textComponent.alignment = TextAnchor.MiddleLeft;
-                    pathInputField.text = type == 0 ? modifier.value : modifier.commands[type];
-                    pathInputField.onValueChanged.AddListener(_val =>
-                    {
-                        if (type == 0)
-                            modifier.value = _val;
-                        else
-                            modifier.commands[type] = _val;
-                        modifier.active = false;
-                    });
-
-                    EditorThemeManager.ApplyLightText(labelText);
-                    EditorThemeManager.ApplyInputField(pathInputField);
-                };
-
-                Action<string, int> colorGenerator = (string label, int type) =>
-                {
-                    var startColorBase = numberInput.Duplicate(layout, label);
-                    startColorBase.transform.localScale = Vector3.one;
-
-                    var labelText = startColorBase.transform.Find("Text").GetComponent<Text>();
-                    labelText.text = label;
-
-                    Destroy(startColorBase.transform.Find("Input").gameObject);
-                    Destroy(startColorBase.transform.Find(">").gameObject);
-                    Destroy(startColorBase.transform.Find("<").gameObject);
-
-                    var startColors = Instantiate(GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/right/color/color"));
-                    startColors.transform.SetParent(startColorBase.transform);
-                    startColors.transform.localScale = Vector3.one;
-                    startColors.name = "color";
-
-                    if (startColors.TryGetComponent(out GridLayoutGroup scglg))
-                    {
-                        scglg.cellSize = new Vector2(16f, 16f);
-                        scglg.spacing = new Vector2(4.66f, 2.5f);
-                    }
-
-                    startColors.transform.AsRT().sizeDelta = new Vector2(183f, 32f);
-
-                    var toggles = startColors.GetComponentsInChildren<Toggle>();
-
-                    foreach (var toggle in toggles)
-                    {
-                        EditorThemeManager.ApplyGraphic(toggle.image, ThemeGroup.Null, true);
-                        EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.List_Button_1_Normal);
-                    }
-
-                    EditorThemeManager.ApplyLightText(labelText);
-                    SetObjectColors(startColors.GetComponentsInChildren<Toggle>(), type, Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], 0), modifier);
-                };
-
-                Action<string, int, List<string>> dropdownGenerator = (string label, int type, List<string> options) =>
-                {
-                    var dd = dropdownBar.Duplicate(layout, label);
-                    dd.transform.localScale = Vector3.one;
-                    var labelText = dd.transform.Find("Text").GetComponent<Text>();
-                    labelText.text = label;
-
-                    Destroy(dd.transform.Find("Dropdown").GetComponent<HoverTooltip>());
-                    Destroy(dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>());
-
-                    var d = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
-                    d.onValueChanged.ClearAll();
-                    d.options.Clear();
-
-                    d.options = options.Select(x => new Dropdown.OptionData(x)).ToList();
-
-                    d.value = Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], 0);
-
-                    d.onValueChanged.AddListener(_val =>
-                    {
-                        if (type == 0)
-                            modifier.value = _val.ToString();
-                        else
-                            modifier.commands[type] = _val.ToString();
-                        modifier.active = false;
-                    });
-
-                    EditorThemeManager.ApplyLightText(labelText);
-                    EditorThemeManager.ApplyDropdown(d);
-                };
-
-                Action<string, int, List<Dropdown.OptionData>> dropdownGenerator2 = (string label, int type, List<Dropdown.OptionData> options) =>
-                {
-                    var dd = dropdownBar.Duplicate(layout, label);
-                    dd.transform.localScale = Vector3.one;
-                    var labelText = dd.transform.Find("Text").GetComponent<Text>();
-                    labelText.text = label;
-
-                    Destroy(dd.transform.Find("Dropdown").GetComponent<HoverTooltip>());
-                    Destroy(dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>());
-
-                    var d = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
-                    d.onValueChanged.ClearAll();
-                    d.options.Clear();
-
-                    d.options = options;
-
-                    d.value = Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], 0);
-
-                    d.onValueChanged.AddListener(_val =>
-                    {
-                        if (type == 0)
-                            modifier.value = _val.ToString();
-                        else
-                            modifier.commands[type] = _val.ToString();
-                        modifier.active = false;
-                    });
-
-                    EditorThemeManager.ApplyLightText(labelText);
-                    EditorThemeManager.ApplyDropdown(d);
-                };
-
                 if (!modifier.verified)
                 {
                     modifier.verified = true;
@@ -580,6 +354,7 @@ namespace BetterLegacy.Editor.Managers
                 switch (cmd)
                 {
                     #region Float
+
                     case "setPitch":
                     case "addPitch":
                     case "setMusicTime":
@@ -597,29 +372,25 @@ namespace BetterLegacy.Editor.Managers
                     case "musicTimeLesser":
                     case "playerSpeed":
                         {
-                            singleGenerator("Value", 0, 1f);
+                            SingleGenerator(modifier, layout, "Value", 0, 1f);
 
                             if (cmd == "setAlphaOther")
-                                stringGenerator("Object Group", 1);
+                                StringGenerator(modifier, layout, "Object Group", 1);
 
                             if (cmd == "blackHole")
-                            {
-                                if (modifier.commands.Count < 2)
-                                {
-                                    modifier.commands.Add("False");
-                                }
-
-                                boolGenerator("Use Opacity", 1, false);
-                            }
+                                BoolGenerator(modifier, layout, "Use Opacity", 1, false);
 
                             break;
                         }
+
                     #endregion
+
                     #region Sound
+
                     case "playSound":
                         {
-                            stringGenerator("Path", 0);
-                            var search = layout.Find("Path/Input").gameObject.AddComponent<Clickable>();
+                            var str = StringGenerator(modifier, layout, "Path", 0);
+                            var search = str.transform.Find("Input").gameObject.AddComponent<Clickable>();
                             search.onClick = pointerEventData =>
                             {
                                 if (pointerEventData.button != PointerEventData.InputButton.Right)
@@ -634,6 +405,7 @@ namespace BetterLegacy.Editor.Managers
                                 if (isGlobal && !RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/soundlibrary"))
                                 {
                                     EditorManager.inst.DisplayNotification("soundlibrary folder does not exist! If you want to have audio take from a global folder, make sure you create a soundlibrary folder inside your beatmaps folder and put your sounds in there.", 12f, EditorManager.NotificationType.Error);
+                                    return;
                                 }
 
                                 RTFileBrowser.inst.UpdateBrowser(directory, new string[] { ".wav", ".ogg", ".mp3" }, onSelectFile: _val =>
@@ -650,19 +422,20 @@ namespace BetterLegacy.Editor.Managers
                                     EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
                                 });
                             };
-                            boolGenerator("Global", 1, false);
-                            singleGenerator("Pitch", 2, 1f);
-                            singleGenerator("Volume", 3, 1f);
-                            boolGenerator("Loop", 4, false);
+                            BoolGenerator(modifier, layout, "Global", 1, false);
+                            SingleGenerator(modifier, layout, "Pitch", 2, 1f);
+                            SingleGenerator(modifier, layout, "Volume", 3, 1f);
+                            BoolGenerator(modifier, layout, "Loop", 4, false);
 
                             break;
                         }
                     case "playSoundOnline":
                         {
-                            stringGenerator("URL", 0);
-                            singleGenerator("Pitch", 2, 1f);
-                            singleGenerator("Volume", 3, 1f);
-                            boolGenerator("Loop", 4, false);
+                            StringGenerator(modifier, layout, "URL", 0);
+                            SingleGenerator(modifier, layout, "Pitch", 2, 1f);
+                            SingleGenerator(modifier, layout, "Volume", 3, 1f);
+                            BoolGenerator(modifier, layout, "Loop", 4, false);
+
                             break;
                         }
                     case "playDefaultSound":
@@ -694,17 +467,17 @@ namespace BetterLegacy.Editor.Managers
                             EditorThemeManager.ApplyLightText(labelText);
                             EditorThemeManager.ApplyDropdown(d);
 
-                            singleGenerator("Pitch", 1, 1f);
-                            singleGenerator("Volume", 2, 1f);
-                            boolGenerator("Loop", 3, false);
+                            SingleGenerator(modifier, layout, "Pitch", 1, 1f);
+                            SingleGenerator(modifier, layout, "Volume", 2, 1f);
+                            BoolGenerator(modifier, layout, "Loop", 3, false);
 
                             break;
                         }
                     case "audioSource":
                         {
-                            stringGenerator("Path", 0);
+                            var path = StringGenerator(modifier, layout, "Path", 0);
                             {
-                                var search = layout.Find("Path/Input").gameObject.AddComponent<Clickable>();
+                                var search = path.transform.Find("Input").gameObject.AddComponent<Clickable>();
                                 search.onClick = pointerEventData =>
                                 {
                                     if (pointerEventData.button != PointerEventData.InputButton.Right)
@@ -736,12 +509,15 @@ namespace BetterLegacy.Editor.Managers
                                     });
                                 };
                             }
-                            boolGenerator("Global", 1, false);
+                            BoolGenerator(modifier, layout, "Global", 1, false);
 
                             break;
                         }
+
                     #endregion
+
                     #region String
+
                     case "updateObject":
                     case "copyColor":
                     case "copyColorOther":
@@ -761,15 +537,14 @@ namespace BetterLegacy.Editor.Managers
                         {
                             if (cmd == "setTextOther" || cmd == "addTextOther" || cmd == "setImageOther")
                             {
-                                stringGenerator("Object Group", 1);
-                                stringGenerator(cmd == "setImageOther" ? "Path" : "Text", 0);
+                                StringGenerator(modifier, layout, "Object Group", 1);
+                                StringGenerator(modifier, layout, cmd == "setImageOther" ? "Path" : "Text", 0);
                             }
 
                             if (cmd == "updateObject" || cmd == "copyColor" || cmd == "copyColorOther" || cmd == "objectCollide")
-                                stringGenerator("Object Group", 0);
+                                StringGenerator(modifier, layout, "Object Group", 0);
                             else if (cmd != "setTextOther" && cmd != "addTextOther" && cmd != "setImageOther")
-                                stringGenerator(
-                                    cmd == "setText" || cmd == "addText" ? "Text" :
+                                StringGenerator(modifier, layout, cmd == "setText" || cmd == "addText" ? "Text" :
                                     cmd == "code" ? "Code" :
                                     cmd == "setWindowTitle" ? "Title" :
                                     cmd == "realTimeDayWeekEquals" ? "Day" :
@@ -779,15 +554,15 @@ namespace BetterLegacy.Editor.Managers
                         }
                     case "textSequence":
                         {
-                            singleGenerator("Time", 0, 1f);
-                            boolGenerator("Display Glitch", 1, true);
-                            boolGenerator("Play Sound", 2, true);
-                            boolGenerator("Custom Sound", 3, false);
-                            stringGenerator("Sound Path", 4);
-                            boolGenerator("Global", 5, false);
+                            SingleGenerator(modifier, layout, "Length", 0, 1f);
+                            BoolGenerator(modifier, layout, "Display Glitch", 1, true);
+                            BoolGenerator(modifier, layout, "Play Sound", 2, true);
+                            BoolGenerator(modifier, layout, "Custom Sound", 3, false);
+                            StringGenerator(modifier, layout, "Sound Path", 4);
+                            BoolGenerator(modifier, layout, "Global", 5, false);
 
-                            singleGenerator("Pitch", 6, 1f);
-                            singleGenerator("Volume", 7, 1f);
+                            SingleGenerator(modifier, layout, "Pitch", 6, 1f);
+                            SingleGenerator(modifier, layout, "Volume", 7, 1f);
 
                             break;
                         }
@@ -795,12 +570,15 @@ namespace BetterLegacy.Editor.Managers
                     case "loadLevelID":
                     case "levelCompletedOther":
                         {
-                            stringGenerator("ID", 0);
+                            StringGenerator(modifier, layout, "ID", 0);
 
                             break;
                         }
+
                     #endregion
+
                     #region Component
+
                     case "blur":
                     case "blurOther":
                     case "blurVariable":
@@ -808,28 +586,21 @@ namespace BetterLegacy.Editor.Managers
                     case "blurColored":
                     case "blurColoredOther":
                         {
-                            singleGenerator("Amount", 0, 0.5f);
+                            SingleGenerator(modifier, layout, "Amount", 0, 0.5f);
 
                             if (cmd == "blur" || cmd == "blurColored")
-                            {
-                                boolGenerator("Use Opacity", 1, false);
+                                BoolGenerator(modifier, layout, "Use Opacity", 1, false);
 
-                                if (modifier.commands.Count < 3)
-                                {
-                                    modifier.commands.Add("False");
-                                }
-                            }
+                            if (cmd.Contains("Other"))
+                                StringGenerator(modifier, layout, "Object Group", 1);
 
-                            if (cmd == "blurVariableOther" || cmd == "blurOther" || cmd == "blurColoredOther")
-                                stringGenerator("Object Group", 1);
-
-                            boolGenerator("Set Back to Normal", cmd != "blurVariable" ? 2 : 1, false);
+                            BoolGenerator(modifier, layout, "Set Back to Normal", cmd != "blurVariable" ? 2 : 1, false);
 
                             break;
                         }
                     case "particleSystem":
                         {
-                            singleGenerator("LifeTime", 0, 5f);
+                            SingleGenerator(modifier, layout, "Life Time", 0, 5f);
 
                             // Shape
                             {
@@ -904,31 +675,31 @@ namespace BetterLegacy.Editor.Managers
                                 TriggerHelper.AddEventTriggers(d.gameObject, TriggerHelper.ScrollDelta(d));
                             }
 
-                            colorGenerator("Color", 3);
-                            singleGenerator("StartOpacity", 4, 1f);
-                            singleGenerator("EndOpacity", 5, 0f);
-                            singleGenerator("StartScale", 6, 1f);
-                            singleGenerator("EndScale", 7, 0f);
-                            singleGenerator("Rotation", 8, 0f);
-                            singleGenerator("Speed", 9, 5f);
-                            singleGenerator("Amount", 10, 1f);
-                            singleGenerator("Duration", 11, 1f);
-                            singleGenerator("Force X", 12, 0f);
-                            singleGenerator("Force Y", 13, 0f);
-                            boolGenerator("Trail Emit", 14, false);
-                            singleGenerator("Angle", 15, 90f);
+                            ColorGenerator(modifier, layout, "Color", 3);
+                            SingleGenerator(modifier, layout, "Start Opacity", 4, 1f);
+                            SingleGenerator(modifier, layout, "End Opacity", 5, 0f);
+                            SingleGenerator(modifier, layout, "Start Scale", 6, 1f);
+                            SingleGenerator(modifier, layout, "End Scale", 7, 0f);
+                            SingleGenerator(modifier, layout, "Rotation", 8, 0f);
+                            SingleGenerator(modifier, layout, "Speed", 9, 5f);
+                            SingleGenerator(modifier, layout, "Amount", 10, 1f);
+                            SingleGenerator(modifier, layout, "Duration", 11, 1f);
+                            SingleGenerator(modifier, layout, "Force X", 12, 0f);
+                            SingleGenerator(modifier, layout, "Force Y", 13, 0f);
+                            BoolGenerator(modifier, layout, "Emit Trail", 14, false);
+                            SingleGenerator(modifier, layout, "Angle", 15, 0f);
 
                             break;
                         }
                     case "trailRenderer":
                         {
-                            singleGenerator("Time", 0, 1f);
-                            singleGenerator("StartWidth", 1, 1f);
-                            singleGenerator("EndWidth", 2, 0f);
-                            colorGenerator("StartColor", 3);
-                            colorGenerator("EndColor", 5);
-                            singleGenerator("StartOpacity", 4, 1f);
-                            singleGenerator("EndOpacity", 6, 0f);
+                            SingleGenerator(modifier, layout, "Time", 0, 1f);
+                            SingleGenerator(modifier, layout, "Start Width", 1, 1f);
+                            SingleGenerator(modifier, layout, "End Width", 2, 0f);
+                            ColorGenerator(modifier, layout, "Start Color", 3);
+                            SingleGenerator(modifier, layout, "Start Opacity", 4, 1f);
+                            ColorGenerator(modifier, layout, "End Color", 5);
+                            SingleGenerator(modifier, layout, "End Opacity", 6, 0f);
 
                             break;
                         }
@@ -936,22 +707,24 @@ namespace BetterLegacy.Editor.Managers
                     case "rigidbodyOther":
                         {
                             if (cmd == "rigidbodyOther")
-                                stringGenerator("Object Group", 0);
+                                StringGenerator(modifier, layout, "Object Group", 0);
 
-                            singleGenerator("Gravity", 1, 0f);
+                            SingleGenerator(modifier, layout, "Gravity", 1, 0f);
 
-                            dropdownGenerator("Collision Mode", 2, new List<string> { "Discrete", "Continuous" });
+                            DropdownGenerator(modifier, layout, "Collision Mode", 2, CoreHelper.StringToOptionData("Discrete", "Continuous"));
 
-                            singleGenerator("Drag", 3, 0f);
-                            singleGenerator("Velocity X", 4, 0f);
-                            singleGenerator("Velocity Y", 5, 0f);
+                            SingleGenerator(modifier, layout, "Drag", 3, 0f);
+                            SingleGenerator(modifier, layout, "Velocity X", 4, 0f);
+                            SingleGenerator(modifier, layout, "Velocity Y", 5, 0f);
 
-                            dropdownGenerator("Body Type", 6, new List<string> { "Dynamic", "Kinematic", "Static" });
+                            DropdownGenerator(modifier, layout, "Body Type", 6, CoreHelper.StringToOptionData("Dynamic", "Kinematic", "Static"));
 
                             break;
                         }
                     #endregion
+
                     #region Integer
+
                     case "playerHit":
                     case "playerHitAll":
                     case "playerHeal":
@@ -1027,17 +800,18 @@ namespace BetterLegacy.Editor.Managers
                     case "realTimeYearLesser":
                     case "realTimeYearGreater":
                         {
-                            integerGenerator("Value", 0, 0);
+                            IntegerGenerator(modifier, layout, "Value", 0, 0);
 
-                            if (cmd == "addVariable" || cmd == "subVariable" || cmd == "setVariable" || cmd.Contains("variableOther") || cmd == "setAlphaOther" || cmd == "removeTextOther" || cmd == "removeTextOtherAt")
-                            {
-                                stringGenerator("Object Group", 1);
-                            }
+                            if (cmd == "addVariable" || cmd == "subVariable" || cmd == "setVariable" || cmd.Contains("variableOther") ||
+                                cmd == "setAlphaOther" || cmd == "removeTextOther" || cmd == "removeTextOtherAt")
+                                StringGenerator(modifier, layout, "Object Group", 1);
 
                             break;
                         }
                     #endregion
+
                     #region Key
+
                     case "keyPressDown":
                     case "keyPress":
                     case "keyPressUp":
@@ -1074,8 +848,11 @@ namespace BetterLegacy.Editor.Managers
 
                             break;
                         }
+
                     #endregion
+
                     #region Save / Load JSON
+
                     case "loadEquals":
                     case "loadLesserEquals":
                     case "loadGreaterEquals":
@@ -1093,39 +870,41 @@ namespace BetterLegacy.Editor.Managers
                             if (cmd == "loadEquals" && Parser.TryParse(modifier.commands[4], 0) == 0 && !float.TryParse(modifier.value, out float abcdef))
                                 modifier.value = "0";
 
-                            stringGenerator("Path", 1);
-                            stringGenerator("JSON 1", 2);
-                            stringGenerator("JSON 2", 3);
+                            StringGenerator(modifier, layout, "Path", 1);
+                            StringGenerator(modifier, layout, "JSON 1", 2);
+                            StringGenerator(modifier, layout, "JSON 2", 3);
 
                             if (cmd != "saveVariable" && cmd != "saveText" && cmd != "loadExists" && cmd != "saveString" && (cmd != "loadEquals" || Parser.TryParse(modifier.commands[4], 0) == 0))
-                                singleGenerator("Value", 0, 0f);
+                                SingleGenerator(modifier, layout, "Value", 0, 0f);
 
                             if (cmd == "saveString" || cmd == "loadEquals" && Parser.TryParse(modifier.commands[4], 0) == 1)
-                                stringGenerator("Value", 0);
+                                StringGenerator(modifier, layout, "Value", 0);
 
                             if (cmd == "loadEquals")
                             {
-                                var dd = dropdownBar.Duplicate(layout, "Type");
-                                dd.transform.localScale = Vector3.one;
-                                var labelText = dd.transform.Find("Text").GetComponent<Text>();
-                                labelText.text = "Type";
+                                //var dd = dropdownBar.Duplicate(layout, "Type");
+                                //dd.transform.localScale = Vector3.one;
+                                //var labelText = dd.transform.Find("Text").GetComponent<Text>();
+                                //labelText.text = "Type";
 
-                                Destroy(dd.transform.Find("Dropdown").GetComponent<HoverTooltip>());
-                                Destroy(dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>());
+                                //Destroy(dd.transform.Find("Dropdown").GetComponent<HoverTooltip>());
+                                //Destroy(dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>());
 
-                                var d = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
-                                d.onValueChanged.ClearAll();
-                                d.options = CoreHelper.StringToOptionData("Number", "Text");
-                                d.value = Parser.TryParse(modifier.commands[4], 0);
-                                d.onValueChanged.AddListener(_val =>
-                                {
-                                    modifier.commands[4] = _val.ToString();
-                                    modifier.active = false;
-                                    StartCoroutine(RenderModifiers(beatmapObject));
-                                });
+                                //var d = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
+                                //d.onValueChanged.ClearAll();
+                                //d.options = CoreHelper.StringToOptionData("Number", "Text");
+                                //d.value = Parser.TryParse(modifier.commands[4], 0);
+                                //d.onValueChanged.AddListener(_val =>
+                                //{
+                                //    modifier.commands[4] = _val.ToString();
+                                //    modifier.active = false;
+                                //    StartCoroutine(RenderModifiers(beatmapObject));
+                                //});
 
-                                EditorThemeManager.ApplyLightText(labelText);
-                                EditorThemeManager.ApplyDropdown(d);
+                                //EditorThemeManager.ApplyLightText(labelText);
+                                //EditorThemeManager.ApplyDropdown(d);
+
+                                DropdownGenerator(modifier, layout, "Type", 4, CoreHelper.StringToOptionData("Number", "Text"));
                             }
 
                             break;
@@ -1133,17 +912,20 @@ namespace BetterLegacy.Editor.Managers
                     case "loadVariable":
                     case "loadVariableOther":
                         {
-                            stringGenerator("Path", 1);
-                            stringGenerator("JSON 1", 2);
-                            stringGenerator("JSON 2", 3);
-
                             if (cmd.Contains("Other"))
-                                stringGenerator("Object Group", 0);
+                                StringGenerator(modifier, layout, "Object Group", 0);
+
+                            StringGenerator(modifier, layout, "Path", 1);
+                            StringGenerator(modifier, layout, "JSON 1", 2);
+                            StringGenerator(modifier, layout, "JSON 2", 3);
 
                             break;
                         }
+
                     #endregion
+
                     #region Reactive
+
                     case "reactivePos":
                     case "reactiveSca":
                     case "reactiveRot":
@@ -1153,7 +935,7 @@ namespace BetterLegacy.Editor.Managers
                     case "reactiveScaChain":
                     case "reactiveRotChain":
                         {
-                            singleGenerator("Total Multiply", 0, 0f);
+                            SingleGenerator(modifier, layout, "Total Multiply", 0, 1f);
 
                             if (cmd == "reactivePos" || cmd == "reactiveSca" || cmd == "reactivePosChain" || cmd == "reactiveScaChain")
                             {
@@ -1281,18 +1063,19 @@ namespace BetterLegacy.Editor.Managers
                             }
                             else
                             {
-                                integerGenerator("Sample", 1, 0);
+                                IntegerGenerator(modifier, layout, "Sample", 1, 0);
 
                                 if (cmd == "reactiveCol" || cmd == "reactiveColLerp")
-                                {
-                                    colorGenerator("Color", 2);
-                                }
+                                    ColorGenerator(modifier, layout, "Color", 2);
                             }
 
                             break;
                         }
+
                     #endregion
+
                     #region Mod Compatibility
+
                     case "setPlayerModel":
                         {
                             var single = numberInput.Duplicate(layout, "Value");
@@ -1324,7 +1107,7 @@ namespace BetterLegacy.Editor.Managers
                             TriggerHelper.IncreaseDecreaseButtonsInt(inputField, 1, 0, 3, single.transform);
                             TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputField, 1, 0, 3));
 
-                            stringGenerator("Model ID", 0);
+                            StringGenerator(modifier, layout, "Model ID", 0);
 
                             break;
                         }
@@ -1333,7 +1116,7 @@ namespace BetterLegacy.Editor.Managers
                     case "eventOffsetAnimate":
                         {
                             // Event Keyframe Type
-                            dropdownGenerator("Event Type", 1, RTEventEditor.EventTypes.ToList());
+                            DropdownGenerator(modifier, layout, "Event Type", 1, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
 
                             var vindex = numberInput.Duplicate(layout, "Value");
                             var labelText = vindex.transform.Find("Text").GetComponent<Text>();
@@ -1364,103 +1147,152 @@ namespace BetterLegacy.Editor.Managers
                             TriggerHelper.IncreaseDecreaseButtonsInt(vindexIF, 1, 0, GameData.DefaultKeyframes[Parser.TryParse(modifier.commands[1], 0)].eventValues.Length - 1, vindex.transform);
                             TriggerHelper.AddEventTriggers(vindexIF.gameObject, TriggerHelper.ScrollDeltaInt(vindexIF, 1, 0, GameData.DefaultKeyframes[Parser.TryParse(modifier.commands[1], 0)].eventValues.Length - 1));
 
-                            singleGenerator(cmd == "eventOffsetVariable" ? "Multiply Var" : "Value", 0, 0f);
+                            SingleGenerator(modifier, layout, cmd == "eventOffsetVariable" ? "Multiply Var" : "Value", 0, 0f);
 
                             if (cmd == "eventOffsetAnimate")
                             {
-                                if (modifier.commands.Count < 6)
-                                    modifier.commands.Add("False");
-
-                                singleGenerator("Time", 3, 1f);
-
-                                dropdownGenerator2("Easing", 4, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
-
-                                boolGenerator("Relative", 5, false);
+                                SingleGenerator(modifier, layout, "Time", 3, 1f);
+                                DropdownGenerator(modifier, layout, "Easing", 4, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                                BoolGenerator(modifier, layout, "Relative", 5, false);
                             }
 
                             break;
                         }
+
                     #endregion
+
                     #region Color
+
                     case "addColor":
                     case "addColorOther":
                     case "lerpColor":
                     case "lerpColorOther":
                         {
                             if (cmd.Contains("Other"))
-                            {
-                                stringGenerator("Object Group", 1);
-                            }
+                                StringGenerator(modifier, layout, "Object Group", 1);
 
-                            colorGenerator("Color", !cmd.Contains("Other") ? 1 : 2);
+                            ColorGenerator(modifier, layout, "Color", !cmd.Contains("Other") ? 1 : 2);
 
-                            singleGenerator("Hue", !cmd.Contains("Other") ? 2 : 3, 0f);
-                            singleGenerator("Saturation", !cmd.Contains("Other") ? 3 : 4, 0f);
-                            singleGenerator("Value", !cmd.Contains("Other") ? 4 : 5, 0f);
+                            SingleGenerator(modifier, layout, "Hue", !cmd.Contains("Other") ? 2 : 3, 0f);
+                            SingleGenerator(modifier, layout, "Saturation", !cmd.Contains("Other") ? 3 : 4, 0f);
+                            SingleGenerator(modifier, layout, "Value", !cmd.Contains("Other") ? 4 : 5, 0f);
 
-                            singleGenerator("Multiply", 0, 1f);
+                            SingleGenerator(modifier, layout, "Multiply", 0, 1f);
 
                             break;
                         }
                     case "addColorPlayerDistance":
                     case "lerpColorPlayerDistance":
                         {
-                            colorGenerator("Color", 1);
-                            singleGenerator("Multiply", 0, 1f);
-                            singleGenerator("Offset", 2, 10f);
+                            ColorGenerator(modifier, layout, "Color", 1);
+                            SingleGenerator(modifier, layout, "Multiply", 0, 1f);
+                            SingleGenerator(modifier, layout, "Offset", 2, 10f);
 
                             if (cmd == "lerpColorPlayerDistance")
                             {
-                                singleGenerator("Opacity", 3, 1f);
-                                singleGenerator("Hue", 4, 0f);
-                                singleGenerator("Saturation", 5, 0f);
-                                singleGenerator("Value", 6, 0f);
+                                SingleGenerator(modifier, layout, "Opacity", 3, 1f);
+                                SingleGenerator(modifier, layout, "Hue", 4, 0f);
+                                SingleGenerator(modifier, layout, "Saturation", 5, 0f);
+                                SingleGenerator(modifier, layout, "Value", 6, 0f);
                             }
 
                             break;
                         }
                     #endregion
+
                     #region Signal
                     case "signalModifier":
                     case "mouseOverSignalModifier":
                         {
-                            stringGenerator("Object Group", 1);
-                            singleGenerator("Delay", 0, 0f);
+                            StringGenerator(modifier, layout, "Object Group", 1);
+                            SingleGenerator(modifier, layout, "Delay", 0, 0f);
+
+                            break;
+                        }
+                    case "activateModifier":
+                        {
+                            StringGenerator(modifier, layout, "Object Group", 0);
+                            BoolGenerator(modifier, layout, "Do Multiple", 1, true);
+                            IntegerGenerator(modifier, layout, "Singlular Index", 2, 0);
+
+                            for (int i = 3; i < modifier.commands.Count; i++)
+                            {
+                                int groupIndex = i;
+                                var label = stringInput.Duplicate(layout, "group label");
+                                label.transform.localScale = Vector3.one;
+                                var groupLabel = label.transform.Find("Text").GetComponent<Text>();
+                                groupLabel.text = $" Name {i + 1}";
+                                label.transform.Find("Text").AsRT().sizeDelta = new Vector2(268f, 32f);
+                                Destroy(label.transform.Find("Input").gameObject);
+
+                                StringGenerator(modifier, layout, "Modifier Name", groupIndex);
+
+                                var deleteGroup = gameObject.transform.Find("Label/Delete").gameObject.Duplicate(label.transform, "delete");
+                                var deleteGroupButton = deleteGroup.GetComponent<DeleteButtonStorage>();
+                                deleteGroup.GetComponent<LayoutElement>().ignoreLayout = false;
+                                deleteGroupButton.button.onClick.ClearAll();
+                                deleteGroupButton.button.onClick.AddListener(() =>
+                                {
+                                    modifier.commands.RemoveAt(groupIndex);
+
+                                    Updater.UpdateObject(beatmapObject);
+                                    StartCoroutine(RenderModifiers(beatmapObject));
+                                });
+
+                                EditorThemeManager.ApplyGraphic(deleteGroupButton.button.image, ThemeGroup.Delete, true);
+                                EditorThemeManager.ApplyGraphic(deleteGroupButton.image, ThemeGroup.Delete_Text);
+                            }
+
+                            AddGenerator(modifier, layout, "Add Group", () =>
+                            {
+                                modifier.commands.Add("modifierName");
+
+                                Updater.UpdateObject(beatmapObject);
+                                StartCoroutine(RenderModifiers(beatmapObject));
+                            });
 
                             break;
                         }
                     #endregion
+
                     #region Random
+
                     case "randomGreater":
                     case "randomLesser":
                     case "randomEquals":
                         {
-                            integerGenerator("Minimum", 1, 0);
-                            integerGenerator("Maximum", 2, 0);
-                            integerGenerator("Value", 0, 0);
+                            IntegerGenerator(modifier, layout, "Minimum", 1, 0);
+                            IntegerGenerator(modifier, layout, "Maximum", 2, 0);
+                            IntegerGenerator(modifier, layout, "Compare To", 0, 0);
 
                             break;
                         }
                     case "setVariableRandom":
                         {
-                            stringGenerator("Object Group", 0);
-                            integerGenerator("Minimum Range", 1, 0);
-                            integerGenerator("Maximum Range", 2, 0);
+                            StringGenerator(modifier, layout, "Object Group", 0);
+                            IntegerGenerator(modifier, layout, "Minimum", 1, 0);
+                            IntegerGenerator(modifier, layout, "Maximum", 2, 0);
 
                             break;
                         }
+
                     #endregion
+
                     #region Editor
+
                     case "editorNotify":
                         {
-                            stringGenerator("Text", 0);
-                            singleGenerator("Time", 1, 0.5f);
-                            dropdownGenerator("Notify Type", 2, new List<string> { "Info", "Success", "Error", "Warning" });
+                            StringGenerator(modifier, layout, "Text", 0);
+                            SingleGenerator(modifier, layout, "Time", 1, 0.5f);
+                            DropdownGenerator(modifier, layout, "Notify Type", 2, CoreHelper.StringToOptionData("Info", "Success", "Error", "Warning"));
 
                             break;
                         }
+
                     #endregion
+
                     #region Player Move
+
                     case "playerMove":
                     case "playerMoveAll":
                     case "playerMoveX":
@@ -1573,31 +1405,17 @@ namespace BetterLegacy.Editor.Managers
                             TriggerHelper.IncreaseDecreaseButtons(inputField, t: single.transform);
                             TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDelta(inputField));
 
-                            dropdownGenerator2("Easing", 2, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                            DropdownGenerator(modifier, layout, "Easing", 2, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
-                            if (modifier.commands.Count < 4)
-                                modifier.commands.Add("False");
-
-                            var global = booleanBar.Duplicate(layout, "Relative");
-                            var relativeLabel = global.transform.Find("Text").GetComponent<Text>();
-                            relativeLabel.text = "Relative";
-
-                            var globalToggle = global.transform.Find("Toggle").GetComponent<Toggle>();
-                            globalToggle.onValueChanged.ClearAll();
-                            globalToggle.isOn = Parser.TryParse(modifier.commands[3], false);
-                            globalToggle.onValueChanged.AddListener(_val =>
-                            {
-                                modifier.commands[3] = _val.ToString();
-                                modifier.active = false;
-                            });
-
-                            EditorThemeManager.ApplyLightText(relativeLabel);
-                            EditorThemeManager.ApplyToggle(globalToggle);
+                            BoolGenerator(modifier, layout, "Relative", 3, false);
 
                             break;
                         }
+
                     #endregion
+
                     #region Prefab
+
                     case "spawnPrefab":
                         {
                             var prefabIndex = numberInput.Duplicate(layout, "Index");
@@ -1629,158 +1447,139 @@ namespace BetterLegacy.Editor.Managers
                             TriggerHelper.IncreaseDecreaseButtonsInt(prefabIndexIF, 1, 0, DataManager.inst.gameData.prefabObjects.Count - 1, prefabIndex.transform);
                             TriggerHelper.AddEventTriggers(prefabIndexIF.gameObject, TriggerHelper.ScrollDeltaInt(prefabIndexIF, 1, 0, DataManager.inst.gameData.prefabObjects.Count - 1));
 
-                            singleGenerator("Position X", 1, 0f);
-                            singleGenerator("Position Y", 2, 0f);
-                            singleGenerator("Scale X", 3, 0f);
-                            singleGenerator("Scale Y", 4, 0f);
-                            singleGenerator("Rotation", 5, 0f);
+                            SingleGenerator(modifier, layout, "Position X", 1, 0f);
+                            SingleGenerator(modifier, layout, "Position Y", 2, 0f);
+                            SingleGenerator(modifier, layout, "Scale X", 3, 0f);
+                            SingleGenerator(modifier, layout, "Scale Y", 4, 0f);
+                            SingleGenerator(modifier, layout, "Rotation", 5, 0f);
 
-                            integerGenerator("Repeat Count", 6, 0);
-                            singleGenerator("Repeat Offset Time", 7, 0);
-                            singleGenerator("Speed", 8, 0);
+                            IntegerGenerator(modifier, layout, "Repeat Count", 6, 0);
+                            SingleGenerator(modifier, layout, "Repeat Offset Time", 7, 0f);
+                            SingleGenerator(modifier, layout, "Speed", 8, 1f);
 
                             break;
                         }
+
                     #endregion
+
                     #region Clamp Variable
+
                     case "clampVariable":
                     case "clampVariableOther":
                         {
                             if (cmd == "clampVariableOther")
-                                stringGenerator("Object Group", 0);
-
-                            integerGenerator("Minimum", 1, 0);
-                            integerGenerator("Maximum", 2, 0);
+                                StringGenerator(modifier, layout, "Object Group", 0);
+                            
+                            IntegerGenerator(modifier, layout, "Minimum", 1, 0);
+                            IntegerGenerator(modifier, layout, "Maximum", 2, 0);
 
                             break;
                         }
+
                     #endregion
+
                     #region Animate
+
                     case "animateObject":
                     case "animateObjectOther":
                     case "animateSignal":
                     case "animateSignalOther":
                         {
-                            singleGenerator("Time", 0, 1f);
-                            dropdownGenerator("Type", 1, new List<string> { "Position", "Scale", "Rotation" });
-                            singleGenerator("X", 2, 0f);
-                            singleGenerator("Y", 3, 0f);
-                            singleGenerator("Z", 4, 0f);
-                            boolGenerator("Relative", 5, true);
+                            SingleGenerator(modifier, layout, "Time", 0, 1f);
+                            DropdownGenerator(modifier, layout, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                            SingleGenerator(modifier, layout, "X", 2, 0f);
+                            SingleGenerator(modifier, layout, "Y", 3, 0f);
+                            SingleGenerator(modifier, layout, "Z", 4, 0f);
+                            BoolGenerator(modifier, layout, "Relative", 5, true);
 
-                            dropdownGenerator("Easing", 6, EditorManager.inst.CurveOptions.Select(x => x.name).ToList());
+                            DropdownGenerator(modifier, layout, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
                             if (cmd.Contains("Other"))
-                            {
-                                stringGenerator("Object Group", 7);
-                            }
+                                StringGenerator(modifier, layout, "Object Group", 7);
 
                             if (cmd.Contains("Signal"))
                             {
                                 int m = 0;
                                 if (cmd.Contains("Other"))
                                     m = 1;
-                                stringGenerator("Signal Group", 7 + m);
-                                singleGenerator("Signal Delay", 8 + m, 0f);
-                                boolGenerator("Signal Deactivate", 9 + m, true);
+
+                                StringGenerator(modifier, layout, "Signal Group", 7 + m);
+                                SingleGenerator(modifier, layout, "Signal Delay", 8 + m, 0f);
+                                BoolGenerator(modifier, layout, "Signal Deactivate", 9 + m, true);
                             }
 
                             break;
                         }
                     case "animateVariableOther":
                         {
-                            stringGenerator("Object Group", 0);
+                            StringGenerator(modifier, layout, "Object Group", 0);
 
-                            dropdownGenerator("From Type", 1, new List<string> { "Position", "Scale", "Rotation" });
-                            dropdownGenerator("From Axis", 2, new List<string> { "X", "Y", "Z" });
+                            DropdownGenerator(modifier, layout, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                            DropdownGenerator(modifier, layout, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
-                            singleGenerator("Delay", 3, 0f);
+                            SingleGenerator(modifier, layout, "Delay", 3, 0f);
 
-                            singleGenerator("Multiply", 4, 1f);
-                            singleGenerator("Offset", 5, 0f);
-                            singleGenerator("Min", 6, -99999f);
-                            singleGenerator("Max", 7, 99999f);
-
-                            singleGenerator("Loop", 8, 99999f);
+                            SingleGenerator(modifier, layout, "Multiply", 4, 1f);
+                            SingleGenerator(modifier, layout, "Offset", 5, 0f);
+                            SingleGenerator(modifier, layout, "Min", 6, -99999f);
+                            SingleGenerator(modifier, layout, "Max", 7, 99999f);
+                            SingleGenerator(modifier, layout, "Loop", 8, 99999f);
 
                             break;
                         }
                     case "copyAxis":
                     case "copyPlayerAxis":
                         {
-                            if (modifier.commands.Count < 6)
-                                modifier.commands.Add("0");
+                            if (cmd == "copyAxis")
+                                StringGenerator(modifier, layout, "Object Group", 0);
 
-                            if (modifier.commands.Count < 7)
-                                modifier.commands.Add("1");
+                            DropdownGenerator(modifier, layout, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
+                            DropdownGenerator(modifier, layout, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
-                            if (modifier.commands.Count < 8)
-                                modifier.commands.Add("0");
+                            DropdownGenerator(modifier, layout, "To Type", 3, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
+                            DropdownGenerator(modifier, layout, "To Axis (3D)", 4, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
-                            if (modifier.commands.Count < 9)
-                                modifier.commands.Add("-99999");
+                            if (cmd == "copyAxis")
+                                SingleGenerator(modifier, layout, "Delay", 5, 0f);
 
-                            if (modifier.commands.Count < 10)
-                                modifier.commands.Add("99999");
+                            SingleGenerator(modifier, layout, "Multiply", 6, 1f);
+                            SingleGenerator(modifier, layout, "Offset", 7, 0f);
+                            SingleGenerator(modifier, layout, "Min", 8, -99999f);
+                            SingleGenerator(modifier, layout, "Max", 9, 99999f);
 
                             if (cmd == "copyAxis")
                             {
-                                if (modifier.commands.Count < 11)
-                                    modifier.commands.Add("9999");
-
-                                if (modifier.commands.Count < 12)
-                                    modifier.commands.Add("False");
-
-                                stringGenerator("Object Group", 0);
-                            }
-
-                            dropdownGenerator("From Type", 1, new List<string> { "Position", "Scale", "Rotation", "Color" });
-                            dropdownGenerator("From Axis", 2, new List<string> { "X", "Y", "Z" });
-
-                            dropdownGenerator("To Type", 3, new List<string> { "Position", "Scale", "Rotation", "Color" });
-                            dropdownGenerator("To Axis (3D)", 4, new List<string> { "X", "Y", "Z" });
-
-                            if (cmd == "copyAxis")
-                                singleGenerator("Delay", 5, 0f);
-
-                            singleGenerator("Multiply", 6, 1f);
-                            singleGenerator("Offset", 7, 0f);
-                            singleGenerator("Min", 8, -99999f);
-                            singleGenerator("Max", 9, 99999f);
-
-                            if (cmd == "copyAxis")
-                            {
-                                singleGenerator("Loop", 10, 99999f);
-                                boolGenerator("Use Visual", 11, false);
+                                SingleGenerator(modifier, layout, "Loop", 10, 99999f);
+                                BoolGenerator(modifier, layout, "Use Visual", 11, false);
                             }
 
                             break;
                         }
                     case "copyAxisMath":
                         {
-                            stringGenerator("Object Group", 0);
+                            StringGenerator(modifier, layout, "Object Group", 0);
 
-                            dropdownGenerator("From Type", 1, new List<string> { "Position", "Scale", "Rotation", "Color" });
-                            dropdownGenerator("From Axis", 2, new List<string> { "X", "Y", "Z" });
+                            DropdownGenerator(modifier, layout, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
+                            DropdownGenerator(modifier, layout, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
-                            dropdownGenerator("To Type", 3, new List<string> { "Position", "Scale", "Rotation", "Color" });
-                            dropdownGenerator("To Axis (3D)", 4, new List<string> { "X", "Y", "Z" });
+                            DropdownGenerator(modifier, layout, "To Type", 3, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
+                            DropdownGenerator(modifier, layout, "To Axis (3D)", 4, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
-                            singleGenerator("Delay", 5, 0f);
+                            SingleGenerator(modifier, layout, "Delay", 5, 0f);
 
-                            singleGenerator("Min", 6, -99999f);
-                            singleGenerator("Max", 7, 99999f);
-                            stringGenerator("Expression", 8);
-                            boolGenerator("Use Visual", 9, false);
+                            SingleGenerator(modifier, layout, "Min", 6, -99999f);
+                            SingleGenerator(modifier, layout, "Max", 7, 99999f);
+                            BoolGenerator(modifier, layout, "Use Visual", 9, false);
+                            StringGenerator(modifier, layout, "Expression", 8);
 
                             break;
                         }
                     case "copyAxisGroup":
                         {
-                            stringGenerator("Expression", 0);
+                            StringGenerator(modifier, layout, "Expression", 0);
 
-                            dropdownGenerator("To Type", 1, new List<string> { "Position", "Scale", "Rotation" });
-                            dropdownGenerator("To Axis", 2, new List<string> { "X", "Y", "Z" });
+                            DropdownGenerator(modifier, layout, "To Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                            DropdownGenerator(modifier, layout, "To Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
                             int a = 0;
                             for (int i = 3; i < modifier.commands.Count; i += 8)
@@ -1811,36 +1610,19 @@ namespace BetterLegacy.Editor.Managers
                                 EditorThemeManager.ApplyGraphic(deleteGroupButton.button.image, ThemeGroup.Delete, true);
                                 EditorThemeManager.ApplyGraphic(deleteGroupButton.image, ThemeGroup.Delete_Text);
 
-                                stringGenerator("Name", i);
-                                stringGenerator("Object Group", i + 1);
-                                dropdownGenerator("From Type", i + 2, new List<string> { "Position", "Scale", "Rotation", "Color", "Variable" });
-                                dropdownGenerator("From Axis", i + 3, new List<string> { "X", "Y", "Z" });
-                                singleGenerator("Delay", i + 4, 0f);
-                                singleGenerator("Min", i + 5, -9999f);
-                                singleGenerator("Max", i + 6, 9999f);
-                                boolGenerator("Use Visual", 7, false);
+                                StringGenerator(modifier, layout, "Name", i);
+                                StringGenerator(modifier, layout, "Name", i + 1);
+                                DropdownGenerator(modifier, layout, "From Type", i + 2, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color", "Variable"));
+                                DropdownGenerator(modifier, layout, "From Axis", i + 3, CoreHelper.StringToOptionData("X", "Y", "Z"));
+                                SingleGenerator(modifier, layout, "Delay", i + 4, 0f);
+                                SingleGenerator(modifier, layout, "Min", i + 5, -9999f);
+                                SingleGenerator(modifier, layout, "Max", i + 6, 9999f);
+                                BoolGenerator(modifier, layout, "Use Visual", 7, false);
 
                                 a++;
                             }
 
-                            var baseAdd = new GameObject("add");
-                            baseAdd.transform.SetParent(layout);
-                            baseAdd.transform.localScale = Vector3.one;
-
-                            var baseAddRT = baseAdd.AddComponent<RectTransform>();
-                            baseAddRT.sizeDelta = new Vector2(0f, 32f);
-
-                            var add = PrefabEditor.inst.CreatePrefab.Duplicate(baseAddRT, "add");
-                            var addText = add.transform.GetChild(0).GetComponent<Text>();
-                            addText.text = "Add Group";
-                            add.transform.AsRT().anchoredPosition = new Vector2(-6f, 0f);
-                            add.transform.AsRT().anchorMax = new Vector2(0.5f, 0.5f);
-                            add.transform.AsRT().anchorMin = new Vector2(0.5f, 0.5f);
-                            add.transform.AsRT().sizeDelta = new Vector2(300f, 32f);
-
-                            var addButton = add.GetComponent<Button>();
-                            addButton.onClick.ClearAll();
-                            addButton.onClick.AddListener(() =>
+                            AddGenerator(modifier, layout, "Add Group", () =>
                             {
                                 var lastIndex = modifier.commands.Count - 1;
 
@@ -1857,28 +1639,25 @@ namespace BetterLegacy.Editor.Managers
                                 StartCoroutine(RenderModifiers(beatmapObject));
                             });
 
-                            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
-                            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
-
                             break;
                         }
                     case "eventOffsetCopyAxis":
                         {
-                            dropdownGenerator("From Type", 1, new List<string> { "Position", "Scale", "Rotation", "Color" });
-                            dropdownGenerator("From Axis", 2, new List<string> { "X", "Y", "Z" });
+                            DropdownGenerator(modifier, layout, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
+                            DropdownGenerator(modifier, layout, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
-                            dropdownGenerator("To Type", 3, RTEventEditor.EventTypes.ToList());
-                            integerGenerator("To Axis", 4, 0);
+                            DropdownGenerator(modifier, layout, "To Type", 3, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
+                            IntegerGenerator(modifier, layout, "To Axis", 4, 0);
 
-                            singleGenerator("Delay", 5, 0f);
+                            SingleGenerator(modifier, layout, "Delay", 5, 0f);
 
-                            singleGenerator("Multiply", 6, 1f);
-                            singleGenerator("Offset", 7, 0f);
-                            singleGenerator("Min", 8, -99999f);
-                            singleGenerator("Max", 9, 99999f);
+                            SingleGenerator(modifier, layout, "Multiply", 6, 1f);
+                            SingleGenerator(modifier, layout, "Offset", 7, 0f);
+                            SingleGenerator(modifier, layout, "Min", 8, -99999f);
+                            SingleGenerator(modifier, layout, "Max", 9, 99999f);
 
-                            singleGenerator("Loop", 10, 99999f);
-                            boolGenerator("Use Visual", 11, false);
+                            SingleGenerator(modifier, layout, "Loop", 10, 99999f);
+                            BoolGenerator(modifier, layout, "Use Visual", 11, false);
 
                             break;
                         }
@@ -1888,69 +1667,75 @@ namespace BetterLegacy.Editor.Managers
                     case "axisLesser":
                     case "axisGreater":
                         {
-                            if (modifier.commands.Count < 11)
-                            {
-                                modifier.commands.Add("9999");
-                            }
+                            StringGenerator(modifier, layout, "Object Group", 0);
 
-                            stringGenerator("Object Group", 0);
+                            DropdownGenerator(modifier, layout, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                            DropdownGenerator(modifier, layout, "Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
-                            dropdownGenerator("Type", 1, new List<string> { "Position", "Scale", "Rotation" });
-                            dropdownGenerator("Axis", 2, new List<string> { "X", "Y", "Z" });
+                            SingleGenerator(modifier, layout, "Delay", 3, 0f);
 
-                            singleGenerator("Delay", 3, 0f);
-                            singleGenerator("Multiply", 4, 1f);
-                            singleGenerator("Offset", 5, 0f);
-                            singleGenerator("Min", 6, -99999f);
-                            singleGenerator("Max", 7, 99999f);
-                            singleGenerator("Equals", 8, 1f);
-                            boolGenerator("Use Visual", 9, false);
-                            singleGenerator("Loop", 10, 99999f);
+                            SingleGenerator(modifier, layout, "Multiply", 4, 1f);
+                            SingleGenerator(modifier, layout, "Offset", 5, 0f);
+                            SingleGenerator(modifier, layout, "Min", 6, -99999f);
+                            SingleGenerator(modifier, layout, "Max", 7, 99999f);
+                            SingleGenerator(modifier, layout, "Loop", 10, 99999f);
+                            BoolGenerator(modifier, layout, "Use Visual", 9, false);
+
+                            SingleGenerator(modifier, layout, "Equals", 8, 1f);
 
                             break;
                         }
+
                     #endregion
+
                     #region Gravity
+
                     case "gravity":
                     case "gravityOther":
                         {
                             if (cmd == "gravityOther")
-                                stringGenerator("Object Group", 0);
+                                StringGenerator(modifier, layout, "Object Group", 0);
 
-                            singleGenerator("X", 1, -1f);
-                            singleGenerator("Y", 2, 0f);
+                            SingleGenerator(modifier, layout, "X", 1, -1f);
+                            SingleGenerator(modifier, layout, "Y", 2, 0f);
 
                             break;
                         }
+
                     #endregion
+
                     #region Enable / Disable
+
                     case "enableObjectTree":
                     case "disableObjectTree":
                         {
                             if (modifier.value == "0")
                                 modifier.value = "False";
 
-                            boolGenerator("Use Self", 0, true);
+                            BoolGenerator(modifier, layout, "Use Self", 0, true);
 
                             break;
                         }
                     case "enableObjectTreeOther":
                     case "disableObjectTreeOther":
                         {
-                            stringGenerator("Object Group", 1);
-                            boolGenerator("Use Self", 0, true);
+                            StringGenerator(modifier, layout, "Object Group", 1);
+                            BoolGenerator(modifier, layout, "Use Self", 0, true);
 
                             break;
                         }
                     case "enableObjectOther":
                     case "disableObjectOther":
                         {
-                            stringGenerator("Object Group", 0);
+                            StringGenerator(modifier, layout, "Object Group", 0);
 
                             break;
                         }
+
                     #endregion
+
                     #region Level Rank
+
                     case "levelRankEquals":
                     case "levelRankLesserEquals":
                     case "levelRankGreaterEquals":
@@ -1968,57 +1753,64 @@ namespace BetterLegacy.Editor.Managers
                     case "levelRankCurrentGreater":
                         {
                             if (cmd.Contains("Other"))
-                                stringGenerator("ID", 1);
+                                StringGenerator(modifier, layout, "ID", 1);
 
-                            dropdownGenerator("Rank", 0, DataManager.inst.levelRanks.Select(x => x.name).ToList());
+                            DropdownGenerator(modifier, layout, "Rank", 0, DataManager.inst.levelRanks.Select(x => x.name).ToList());
 
                             break;
                         }
+
                     #endregion
+
                     #region Discord
+
                     case "setDiscordStatus":
                         {
-                            stringGenerator("State", 0);
-                            stringGenerator("Details", 1);
-                            dropdownGenerator("Sub Icon", 2, new List<string> { "Arcade", "Editor", "Play", "Menu" });
-                            dropdownGenerator("Icon", 3, new List<string> { "PA Logo White", "PA Logo Black" });
+                            StringGenerator(modifier, layout, "State", 0);
+                            StringGenerator(modifier, layout, "Details", 1);
+                            DropdownGenerator(modifier, layout, "Sub Icon", 2, CoreHelper.StringToOptionData("Arcade", "Editor", "Play", "Menu"));
+                            DropdownGenerator(modifier, layout, "Icon", 3, CoreHelper.StringToOptionData("PA Logo White", "PA Logo Black"));
 
                             break;
                         }
+
                     #endregion
+
+                    #region Misc
+
                     case "gameMode":
                         {
-                            dropdownGenerator("Mode", 0, new List<string> { "Regular", "Platformer" });
+                            DropdownGenerator(modifier, layout, "Mode", 0, CoreHelper.StringToOptionData("Regular", "Platformer"));
 
                             break;
                         }
                     case "setCollision":
                     case "setCollisionOther":
                         {
-                            boolGenerator("On", 0, false);
+                            BoolGenerator(modifier, layout, "On", 0, false);
 
                             if (cmd == "setCollisionOther")
-                                stringGenerator("Object Group", 1);
+                                StringGenerator(modifier, layout, "Object Group", 1);
 
                             break;
                         }
                     case "playerVelocityAll":
                         {
-                            singleGenerator("X", 1, 0f);
-                            singleGenerator("Y", 2, 0f);
+                            SingleGenerator(modifier, layout, "X", 1, 0f);
+                            SingleGenerator(modifier, layout, "Y", 2, 0f);
 
                             break;
                         }
                     case "playerVelocityXAll":
                     case "playerVelocityYAll":
                         {
-                            singleGenerator(cmd == "playerVelocityXAll" ? "X" : "Y", 0, 0f);
+                            SingleGenerator(modifier, layout, cmd == "playerVelocityXAll" ? "X" : "Y", 0, 0f);
 
                             break;
                         }
                     case "legacyTail":
                         {
-                            singleGenerator("Total Time", 0, 200f);
+                            SingleGenerator(modifier, layout, "Total Time", 0, 200f);
 
                             var path = stringInput.Duplicate(layout, "usage");
                             path.transform.localScale = Vector3.one;
@@ -2053,29 +1845,51 @@ namespace BetterLegacy.Editor.Managers
                                 EditorThemeManager.ApplyGraphic(deleteGroupButton.button.image, ThemeGroup.Delete, true);
                                 EditorThemeManager.ApplyGraphic(deleteGroupButton.image, ThemeGroup.Delete_Text);
 
-                                stringGenerator("Object Group", i);
-                                singleGenerator("Distance", i + 1, 2f);
-                                singleGenerator("Time", i + 2, 12f);
+                                StringGenerator(modifier, layout, "Object Group", i);
+                                SingleGenerator(modifier, layout, "Distance", i + 1, 2f);
+                                SingleGenerator(modifier, layout, "Time", i + 2, 12f);
                             }
 
-                            var baseAdd = new GameObject("add");
-                            baseAdd.transform.SetParent(layout);
-                            baseAdd.transform.localScale = Vector3.one;
+                            //var baseAdd = new GameObject("add");
+                            //baseAdd.transform.SetParent(layout);
+                            //baseAdd.transform.localScale = Vector3.one;
 
-                            var baseAddRT = baseAdd.AddComponent<RectTransform>();
-                            baseAddRT.sizeDelta = new Vector2(0f, 32f);
+                            //var baseAddRT = baseAdd.AddComponent<RectTransform>();
+                            //baseAddRT.sizeDelta = new Vector2(0f, 32f);
 
-                            var add = PrefabEditor.inst.CreatePrefab.Duplicate(baseAddRT, "add");
-                            var addText = add.transform.GetChild(0).GetComponent<Text>();
-                            addText.text = "Add Group";
-                            add.transform.AsRT().anchoredPosition = new Vector2(-6f, 0f);
-                            add.transform.AsRT().anchorMax = new Vector2(0.5f, 0.5f);
-                            add.transform.AsRT().anchorMin = new Vector2(0.5f, 0.5f);
-                            add.transform.AsRT().sizeDelta = new Vector2(300f, 32f);
+                            //var add = PrefabEditor.inst.CreatePrefab.Duplicate(baseAddRT, "add");
+                            //var addText = add.transform.GetChild(0).GetComponent<Text>();
+                            //addText.text = "Add Group";
+                            //add.transform.AsRT().anchoredPosition = new Vector2(-6f, 0f);
+                            //add.transform.AsRT().anchorMax = new Vector2(0.5f, 0.5f);
+                            //add.transform.AsRT().anchorMin = new Vector2(0.5f, 0.5f);
+                            //add.transform.AsRT().sizeDelta = new Vector2(300f, 32f);
 
-                            var addButton = add.GetComponent<Button>();
-                            addButton.onClick.ClearAll();
-                            addButton.onClick.AddListener(() =>
+                            //var addButton = add.GetComponent<Button>();
+                            //addButton.onClick.ClearAll();
+                            //addButton.onClick.AddListener(() =>
+                            //{
+                            //    var lastIndex = modifier.commands.Count - 1;
+                            //    var length = "2";
+                            //    var time = "12";
+                            //    if (lastIndex - 1 > 2)
+                            //    {
+                            //        length = modifier.commands[lastIndex - 1];
+                            //        time = modifier.commands[lastIndex];
+                            //    }
+
+                            //    modifier.commands.Add("Object Group");
+                            //    modifier.commands.Add(length);
+                            //    modifier.commands.Add(time);
+
+                            //    Updater.UpdateObject(beatmapObject);
+                            //    StartCoroutine(RenderModifiers(beatmapObject));
+                            //});
+
+                            //EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
+                            //EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
+
+                            AddGenerator(modifier, layout, "Add Group", () =>
                             {
                                 var lastIndex = modifier.commands.Count - 1;
                                 var length = "2";
@@ -2094,59 +1908,32 @@ namespace BetterLegacy.Editor.Managers
                                 StartCoroutine(RenderModifiers(beatmapObject));
                             });
 
-                            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
-                            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
-
                             break;
                         }
                     case "setMousePosition":
                         {
-                            integerGenerator("Position X", 1, 0);
-                            integerGenerator("Position Y", 1, 0);
+                            IntegerGenerator(modifier, layout, "Position X", 1, 0);
+                            IntegerGenerator(modifier, layout, "Position Y", 1, 0);
 
                             break;
                         }
                     case "followMousePosition":
                         {
-                            singleGenerator("Position Focus", 0, 1f);
-                            singleGenerator("Rotation Delay", 1, 1f);
+                            SingleGenerator(modifier, layout, "Position Focus", 0, 1f);
+                            SingleGenerator(modifier, layout, "Rotation Delay", 1, 1f);
                             break;
                         }
                     case "loadSceneDEVONLY":
                         {
-                            stringGenerator("Scene", 0);
+                            StringGenerator(modifier, layout, "Scene", 0);
                             if (modifier.commands.Count > 1)
-                                boolGenerator("Show Loading", 1, true);
+                                BoolGenerator(modifier, layout, "Show Loading", 1, true);
 
                             break;
                         }
-                }
 
-                /* List of modifiers that have no values:
-                 * - playerKill
-                 * - playerKillAll
-                 * - playerCollide
-                 * - playerMoving
-                 * - playerBoosting
-                 * - playerAlive
-                 * - playerBoost
-                 * - playerBoostAll
-                 * - playerDisableBoost
-                 * - onPlayerHit
-                 * - inZenMode
-                 * - inNormal
-                 * - in1Life
-                 * - inNoHit
-                 * - inEditor
-                 * - showMouse
-                 * - hideMouse
-                 * - mouseOver
-                 * - disableObject
-                 * - disableObjectTree
-                 * - bulletCollide
-                 * - updateObjects
-                 * - requireSignal
-                 */
+                        #endregion
+                }
 
                 num++;
             }
@@ -2190,19 +1977,19 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
-        public void SetObjectColors(Toggle[] toggles, int index, int i, Modifier<BeatmapObject> modifier)
+        public void SetObjectColors(Toggle[] toggles, int index, int currentValue, Modifier<BeatmapObject> modifier)
         {
             if (index == 0)
-                modifier.value = i.ToString();
+                modifier.value = currentValue.ToString();
             else
-                modifier.commands[index] = i.ToString();
+                modifier.commands[index] = currentValue.ToString();
 
             int num = 0;
             foreach (var toggle in toggles)
             {
                 int toggleIndex = num;
                 toggle.onValueChanged.ClearAll();
-                toggle.isOn = num == i;
+                toggle.isOn = num == currentValue;
                 toggle.onValueChanged.AddListener(_val => { SetObjectColors(toggles, index, toggleIndex, modifier); });
 
                 toggle.GetComponent<Image>().color = GameManager.inst.LiveTheme.GetObjColor(toggleIndex);
@@ -2217,6 +2004,269 @@ namespace BetterLegacy.Editor.Managers
                 num++;
             }
         }
+
+        #region Generators
+
+        GameObject SingleGenerator(Modifier<BeatmapObject> modifier, Transform layout, string label, int type, float defaultValue)
+        {
+            var single = numberInput.Duplicate(layout, label);
+            single.transform.localScale = Vector3.one;
+            var labelText = single.transform.Find("Text").GetComponent<Text>();
+            labelText.text = label;
+
+            var inputField = single.transform.Find("Input").GetComponent<InputField>();
+            inputField.onValueChanged.ClearAll();
+            inputField.textComponent.alignment = TextAnchor.MiddleCenter;
+            inputField.text = Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], defaultValue).ToString();
+            inputField.onValueChanged.AddListener(_val =>
+            {
+                if (float.TryParse(_val, out float num))
+                {
+                    if (type == 0)
+                        modifier.value = num.ToString();
+                    else
+                        modifier.commands[type] = num.ToString();
+                }
+
+                modifier.active = false;
+            });
+
+            EditorThemeManager.ApplyLightText(labelText);
+            EditorThemeManager.ApplyInputField(inputField);
+            var leftButton = single.transform.Find("<").GetComponent<Button>();
+            var rightButton = single.transform.Find(">").GetComponent<Button>();
+            leftButton.transition = Selectable.Transition.ColorTint;
+            rightButton.transition = Selectable.Transition.ColorTint;
+            EditorThemeManager.ApplySelectable(leftButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(rightButton, ThemeGroup.Function_2, false);
+
+            TriggerHelper.IncreaseDecreaseButtons(inputField, t: single.transform);
+            TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDelta(inputField));
+
+            var inputFieldSwapper = inputField.gameObject.AddComponent<InputFieldSwapper>();
+            inputFieldSwapper.Init(inputField, InputFieldSwapper.Type.Num);
+            return single;
+        }
+
+        GameObject IntegerGenerator(Modifier<BeatmapObject> modifier, Transform layout, string label, int type, int defaultValue)
+        {
+            var single = numberInput.Duplicate(layout, label);
+            single.transform.localScale = Vector3.one;
+            var labelText = single.transform.Find("Text").GetComponent<Text>();
+            labelText.text = label;
+
+            var inputField = single.transform.Find("Input").GetComponent<InputField>();
+            inputField.onValueChanged.ClearAll();
+            inputField.textComponent.alignment = TextAnchor.MiddleCenter;
+            inputField.text = Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], defaultValue).ToString();
+            inputField.onValueChanged.AddListener(_val =>
+            {
+                if (int.TryParse(_val, out int num))
+                {
+                    if (type == 0)
+                        modifier.value = num.ToString();
+                    else
+                        modifier.commands[type] = num.ToString();
+                }
+
+                modifier.active = false;
+            });
+
+            EditorThemeManager.ApplyLightText(labelText);
+            EditorThemeManager.ApplyInputField(inputField);
+            var leftButton = single.transform.Find("<").GetComponent<Button>();
+            var rightButton = single.transform.Find(">").GetComponent<Button>();
+            leftButton.transition = Selectable.Transition.ColorTint;
+            rightButton.transition = Selectable.Transition.ColorTint;
+            EditorThemeManager.ApplySelectable(leftButton, ThemeGroup.Function_2, false);
+            EditorThemeManager.ApplySelectable(rightButton, ThemeGroup.Function_2, false);
+
+            TriggerHelper.IncreaseDecreaseButtonsInt(inputField, t: single.transform);
+            TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputField));
+
+            var inputFieldSwapper = inputField.gameObject.AddComponent<InputFieldSwapper>();
+            inputFieldSwapper.Init(inputField, InputFieldSwapper.Type.Num);
+            return single;
+        }
+
+        GameObject BoolGenerator(Modifier<BeatmapObject> modifier, Transform layout, string label, int type, bool defaultValue)
+        {
+            var global = booleanBar.Duplicate(layout, label);
+            global.transform.localScale = Vector3.one;
+            var labelText = global.transform.Find("Text").GetComponent<Text>();
+            labelText.text = label;
+
+            var globalToggle = global.transform.Find("Toggle").GetComponent<Toggle>();
+            globalToggle.onValueChanged.ClearAll();
+            globalToggle.isOn = Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], defaultValue);
+            globalToggle.onValueChanged.AddListener(_val =>
+            {
+                if (type == 0)
+                    modifier.value = _val.ToString();
+                else
+                    modifier.commands[type] = _val.ToString();
+                modifier.active = false;
+            });
+
+            EditorThemeManager.ApplyLightText(labelText);
+            EditorThemeManager.ApplyToggle(globalToggle);
+            return global;
+        }
+
+        GameObject StringGenerator(Modifier<BeatmapObject> modifier, Transform layout, string label, int type)
+        {
+            var path = stringInput.Duplicate(layout, label);
+            path.transform.localScale = Vector3.one;
+            var labelText = path.transform.Find("Text").GetComponent<Text>();
+            labelText.text = label;
+
+            var pathInputField = path.transform.Find("Input").GetComponent<InputField>();
+            pathInputField.onValueChanged.ClearAll();
+            pathInputField.textComponent.alignment = TextAnchor.MiddleLeft;
+            pathInputField.text = type == 0 ? modifier.value : modifier.commands[type];
+            pathInputField.onValueChanged.AddListener(_val =>
+            {
+                if (type == 0)
+                    modifier.value = _val;
+                else
+                    modifier.commands[type] = _val;
+                modifier.active = false;
+            });
+
+            EditorThemeManager.ApplyLightText(labelText);
+            EditorThemeManager.ApplyInputField(pathInputField);
+            return path;
+        }
+
+        GameObject ColorGenerator(Modifier<BeatmapObject> modifier, Transform layout, string label, int type)
+        {
+            var startColorBase = numberInput.Duplicate(layout, label);
+            startColorBase.transform.localScale = Vector3.one;
+
+            var labelText = startColorBase.transform.Find("Text").GetComponent<Text>();
+            labelText.text = label;
+
+            Destroy(startColorBase.transform.Find("Input").gameObject);
+            Destroy(startColorBase.transform.Find(">").gameObject);
+            Destroy(startColorBase.transform.Find("<").gameObject);
+
+            var startColors = Instantiate(GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/right/color/color"));
+            startColors.transform.SetParent(startColorBase.transform);
+            startColors.transform.localScale = Vector3.one;
+            startColors.name = "color";
+
+            if (startColors.TryGetComponent(out GridLayoutGroup scglg))
+            {
+                scglg.cellSize = new Vector2(16f, 16f);
+                scglg.spacing = new Vector2(4.66f, 2.5f);
+            }
+
+            startColors.transform.AsRT().sizeDelta = new Vector2(183f, 32f);
+
+            var toggles = startColors.GetComponentsInChildren<Toggle>();
+
+            foreach (var toggle in toggles)
+            {
+                EditorThemeManager.ApplyGraphic(toggle.image, ThemeGroup.Null, true);
+                EditorThemeManager.ApplyGraphic(toggle.graphic, ThemeGroup.List_Button_1_Normal);
+            }
+
+            EditorThemeManager.ApplyLightText(labelText);
+            SetObjectColors(startColors.GetComponentsInChildren<Toggle>(), type, Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], 0), modifier);
+            return startColorBase;
+        }
+
+        GameObject DropdownGenerator(Modifier<BeatmapObject> modifier, Transform layout, string label, int type, List<string> options)
+        {
+            var dd = dropdownBar.Duplicate(layout, label);
+            dd.transform.localScale = Vector3.one;
+            var labelText = dd.transform.Find("Text").GetComponent<Text>();
+            labelText.text = label;
+
+            Destroy(dd.transform.Find("Dropdown").GetComponent<HoverTooltip>());
+            Destroy(dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>());
+
+            var d = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
+            d.onValueChanged.ClearAll();
+            d.options.Clear();
+
+            d.options = options.Select(x => new Dropdown.OptionData(x)).ToList();
+
+            d.value = Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], 0);
+
+            d.onValueChanged.AddListener(_val =>
+            {
+                if (type == 0)
+                    modifier.value = _val.ToString();
+                else
+                    modifier.commands[type] = _val.ToString();
+                modifier.active = false;
+            });
+
+            EditorThemeManager.ApplyLightText(labelText);
+            EditorThemeManager.ApplyDropdown(d);
+            return dd;
+        }
+
+        GameObject DropdownGenerator(Modifier<BeatmapObject> modifier, Transform layout, string label, int type, List<Dropdown.OptionData> options)
+        {
+            var dd = dropdownBar.Duplicate(layout, label);
+            dd.transform.localScale = Vector3.one;
+            var labelText = dd.transform.Find("Text").GetComponent<Text>();
+            labelText.text = label;
+
+            Destroy(dd.transform.Find("Dropdown").GetComponent<HoverTooltip>());
+            Destroy(dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>());
+
+            var d = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
+            d.onValueChanged.ClearAll();
+            d.options.Clear();
+
+            d.options = options;
+
+            d.value = Parser.TryParse(type == 0 ? modifier.value : modifier.commands[type], 0);
+
+            d.onValueChanged.AddListener(_val =>
+            {
+                if (type == 0)
+                    modifier.value = _val.ToString();
+                else
+                    modifier.commands[type] = _val.ToString();
+                modifier.active = false;
+            });
+
+            EditorThemeManager.ApplyLightText(labelText);
+            EditorThemeManager.ApplyDropdown(d);
+            return dd;
+        }
+
+        GameObject AddGenerator(Modifier<BeatmapObject> modifier, Transform layout, string text, Action onAdd)
+        {
+            var baseAdd = new GameObject("add");
+            baseAdd.transform.SetParent(layout);
+            baseAdd.transform.localScale = Vector3.one;
+
+            var baseAddRT = baseAdd.AddComponent<RectTransform>();
+            baseAddRT.sizeDelta = new Vector2(0f, 32f);
+
+            var add = PrefabEditor.inst.CreatePrefab.Duplicate(baseAddRT, "add");
+            var addText = add.transform.GetChild(0).GetComponent<Text>();
+            addText.text = text;
+            add.transform.AsRT().anchoredPosition = new Vector2(-6f, 0f);
+            add.transform.AsRT().anchorMax = new Vector2(0.5f, 0.5f);
+            add.transform.AsRT().anchorMin = new Vector2(0.5f, 0.5f);
+            add.transform.AsRT().sizeDelta = new Vector2(300f, 32f);
+
+            var addButton = add.GetComponent<Button>();
+            addButton.onClick.ClearAll();
+            addButton.onClick.AddListener(() => { onAdd?.Invoke(); });
+
+            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
+            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
+            return baseAdd;
+        }
+
+        #endregion
 
         #region Default Modifiers
 
