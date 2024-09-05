@@ -371,7 +371,7 @@ namespace BetterLegacy.Arcade
             Searches[0] = search;
             Pages[0] = 0;
 
-            var levelButtons = elements.Where(x => x.name == "Level Button").ToList();
+            var levelButtons = elements.Where(x => x.name == "Level Button" || x.name == "Difficulty").ToList();
 
             for (int i = 0; i < levelButtons.Count; i++)
             {
@@ -379,7 +379,7 @@ namespace BetterLegacy.Arcade
                 levelButton.Clear();
                 CoreHelper.Destroy(levelButton.gameObject);
             }
-            elements.RemoveAll(x => x.name == "Level Button");
+            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty");
             RefreshLocalLevels(true);
         }
 
@@ -387,7 +387,7 @@ namespace BetterLegacy.Arcade
         {
             Pages[0] = Mathf.Clamp(page, 0, LocalLevelPageCount);
 
-            var levelButtons = elements.Where(x => x.name == "Level Button").ToList();
+            var levelButtons = elements.Where(x => x.name == "Level Button" || x.name == "Difficulty").ToList();
 
             for (int i = 0; i < levelButtons.Count; i++)
             {
@@ -395,7 +395,7 @@ namespace BetterLegacy.Arcade
                 levelButton.Clear();
                 CoreHelper.Destroy(levelButton.gameObject);
             }
-            elements.RemoveAll(x => x.name == "Level Button");
+            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty");
             RefreshLocalLevels(true);
         }
 
@@ -515,7 +515,7 @@ namespace BetterLegacy.Arcade
             if (loadingOnlineLevels)
                 yield break;
 
-            var levelButtons = elements.Where(x => x.name == "Level Button").ToList();
+            var levelButtons = elements.Where(x => x.name == "Level Button" || x.name == "Difficulty").ToList();
 
             for (int i = 0; i < levelButtons.Count; i++)
             {
@@ -523,7 +523,7 @@ namespace BetterLegacy.Arcade
                 levelButton.Clear();
                 CoreHelper.Destroy(levelButton.gameObject);
             }
-            elements.RemoveAll(x => x.name == "Level Button");
+            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty");
 
             var page = Pages[1];
             int currentPage = page + 1;
