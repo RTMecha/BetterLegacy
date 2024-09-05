@@ -1,3 +1,6 @@
+1.4.1 > [Sep 6, 2024]
+- Fixed a crash when going from Download Level menu to Play Level menu and playing the level.
+- Audio volume keyframe now only changes music volume.
 1.4.0 > [Sep 5, 2024]
 - Continuing work on the BetterLegacy story mode, chapter 1 is almost done so sit tight!
 - Arcade server is finally up and running! Which now means you can now upload and download modded levels.
