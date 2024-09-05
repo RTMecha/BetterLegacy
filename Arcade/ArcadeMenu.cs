@@ -23,6 +23,8 @@ namespace BetterLegacy.Arcade
     // Probably not gonna use this
     public class ArcadeMenu : MenuBase
     {
+        public static bool useThisUI = false;
+
         public static ArcadeMenu Current { get; set; }
 
         public enum Tab
@@ -46,6 +48,15 @@ namespace BetterLegacy.Arcade
 
         public const int MAX_LEVELS_PER_PAGE = 20;
 
+        public static string[] Searches { get; set; } = new string[]
+        {
+            "", // Local
+            "", // Online
+            "", // Browser
+            "", // Queue
+            "", // Steam
+        };
+
         public ArcadeMenu() : base()
         {
             InterfaceManager.inst.CurrentMenu = this;
@@ -53,6 +64,10 @@ namespace BetterLegacy.Arcade
             layouts.Add("tabs", new MenuHorizontalLayout
             {
                 name = "tabs",
+                rect = RectValues.HorizontalAnchored.AnchoredPosition(0f, 450f).SizeDelta(-126f, 100f),
+                childControlWidth = true,
+                childForceExpandWidth = true,
+                spacing = 12f,
             });
 
             elements.Add(new MenuButton
@@ -60,6 +75,7 @@ namespace BetterLegacy.Arcade
                 id = "0",
                 name = "Close",
                 parentLayout = "tabs",
+                selectionPosition = Vector2Int.zero,
                 text = "<align=center><b>[ RETURN ]",
                 func = () =>
                 {
@@ -72,9 +88,10 @@ namespace BetterLegacy.Arcade
                 selectedColor = 6,
                 selectedOpacity = 1f,
                 selectedTextColor = 7,
+                length = 0.1f,
             });
 
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < 5; i++)
             {
                 int index = i;
                 elements.Add(new MenuButton
@@ -82,6 +99,7 @@ namespace BetterLegacy.Arcade
                     id = (i + 1).ToString(),
                     name = "Tab",
                     parentLayout = "tabs",
+                    selectionPosition = new Vector2Int(i + 1, 0),
                     text = $"<align=center><b>[ {(Tab)i} ]",
                     func = () =>
                     {
@@ -94,11 +112,13 @@ namespace BetterLegacy.Arcade
                     selectedColor = 6,
                     selectedOpacity = 1f,
                     selectedTextColor = 7,
+                    length = 0.1f,
                 });
             }
 
             var currentPage = Pages[(int)CurrentTab] + 1;
             int max = currentPage * MAX_LEVELS_PER_PAGE;
+            var currentSearch = Searches[(int)CurrentTab];
 
             switch (CurrentTab)
             {
@@ -108,22 +128,29 @@ namespace BetterLegacy.Arcade
                         {
                             id = "842848",
                             name = "Search Bar",
+                            defaultText = currentSearch,
                             valueChangedFunc = SearchLocalLevels,
+                            length = 0.1f,
                         });
 
                         layouts.Add("levels", new MenuGridLayout
                         {
                             name = "levels",
+                            rect = RectValues.Default.AnchoredPosition(-500f, 100f).SizeDelta(800f, 400f),
+                            cellSize = new Vector2(350f, 180f),
+                            spacing = new Vector2(12f, 12f),
+                            constraint = UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount,
+                            constraintCount = 5,
                         });
 
-                        int row = 0;
                         for (int i = 0; i < LevelManager.Levels.Count; i++)
                         {
                             int index = i;
                             if (index < max - MAX_LEVELS_PER_PAGE || index >= max)
-                                return;
-                            if (index % 5 == 4)
-                                row++;
+                                continue;
+
+                            int column = (index % MAX_LEVELS_PER_PAGE) % 5;
+                            int row = (int)((index % MAX_LEVELS_PER_PAGE) / 5) + 1;
 
                             var level = LevelManager.Levels[index];
                             var button = new MenuButton
@@ -131,103 +158,86 @@ namespace BetterLegacy.Arcade
                                 id = level.id,
                                 name = "Level Button",
                                 parentLayout = "levels",
-                                selectionPosition = new Vector2Int(index % 5, row),
+                                selectionPosition = new Vector2Int(column, row),
                                 func = () => { CoreHelper.StartCoroutine(SelectLocalLevel(level)); },
                                 icon = level.icon,
-                                text = $"{level.metadata?.LevelBeatmap?.name}<b>By {level.metadata?.creator?.steam_name}",
+                                iconRect = RectValues.Default.AnchoredPosition(-90, 30f),
+                                text = "<size=24>" + level.metadata?.LevelBeatmap?.name,
+                                textRect = RectValues.FullAnchored.AnchoredPosition(20f, -50f),
+                                enableWordWrapping = true,
                                 color = 6,
                                 opacity = 0.1f,
                                 textColor = 6,
                                 selectedColor = 6,
                                 selectedOpacity = 1f,
                                 selectedTextColor = 7,
+                                length = 0.1f,
+
+                                allowOriginalHoverMethods = true,
+                                enterFunc = () =>
+                                {
+                                },
+                                exitFunc = () =>
+                                {
+                                },
                             };
                             elements.Add(button);
 
                             elements.Add(new MenuImage
                             {
-                                id = "41894948",
+                                id = "0",
                                 name = "Difficulty",
-                                overrideColor = level.metadata.song.getDifficultyColor(),
+                                parent = level.id,
+                                rect = new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(8f, 0f)),
+                                overrideColor = CoreHelper.GetDifficulty(level.metadata.song.difficulty).color,
                                 useOverrideColor = true,
                                 opacity = 1f,
                                 roundedSide = SpriteManager.RoundedSide.Left,
+                                length = 0f,
                             });
                         }
                         break;
                     }
+                case Tab.Online:
+                    {
+                        elements.Add(new MenuInputField
+                        {
+                            id = "842848",
+                            name = "Search Bar",
+                            defaultText = currentSearch,
+                            valueChangedFunc = x => Searches[(int)CurrentTab] = x,
+                            length = 0.1f,
+                        });
+
+                        elements.Add(new MenuButton
+                        {
+                            id = "25428852",
+                            name = "Search Button",
+                            text = "<align=center><b>[ SEARCH ]",
+                            selectionPosition = new Vector2Int(0, 1),
+                            func = () =>
+                            {
+
+                            },
+                            color = 6,
+                            opacity = 0.1f,
+                            textColor = 6,
+                            selectedColor = 6,
+                            selectedOpacity = 1f,
+                            selectedTextColor = 7,
+                            length = 0.1f,
+                        });
+
+                        break;
+                    }
             }
-
-
-            //layouts.Add("tabs", new MenuHorizontalLayout
-            //{
-            //    name = "tabs",
-            //    spacing = 4f,
-            //    rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(0f, 470f), new Vector2(1f, 0.5f), new Vector2(0f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-32f, 64f)),
-            //});
-
-            //layouts.Add("levels", new MenuGridLayout
-            //{
-            //    name = "levels",
-            //    spacing = new Vector2(8f, 8f),
-            //    cellSize = new Vector2(350f, 200f),
-            //    rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(1800f, 800f)),
-            //});
-
-            //elements.Add(new MenuButton
-            //{
-            //    id = "0",
-            //    name = "close",
-            //    text = "<align=center><b>X",
-            //    parentLayout = "tabs",
-            //    selectionPosition = Vector2Int.zero,
-            //    rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(78f, 78f)),
-            //    opacity = 0.1f,
-            //    val = -40f,
-            //    textVal = 40f,
-            //    selectedOpacity = 1f,
-            //    selectedVal = 40f,
-            //    selectedTextVal = -40f,
-            //    length = 1f,
-            //    playBlipSound = true,
-            //    func = ArcadeHelper.LoadInputSelect,
-            //});
-
-            //int num = 1;
-            //for (int i = 0; i < LevelManager.Levels.Count; i++)
-            //{
-            //    if (i >= 20)
-            //        break;
-
-            //    var level = LevelManager.Levels[i];
-            //    elements.Add(new MenuButton
-            //    {
-            //        id = level.id,
-            //        name = "level button",
-            //        text = $"{level.metadata.LevelBeatmap.name}",
-            //        icon = level.icon,
-            //        parentLayout = "levels",
-            //        selectionPosition = new Vector2Int(i % 5, num),
-            //        rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(64f, 64f)),
-            //        opacity = 0.1f,
-            //        val = -40f,
-            //        textVal = -40f,
-            //        selectedOpacity = 1f,
-            //        selectedVal = 40f,
-            //        selectedTextVal = -40f,
-            //        length = 1f,
-            //        playBlipSound = true,
-            //        func = () => { CoreHelper.Log($"Selected level: {level}"); },
-            //    });
-            //    if ((i % 5) == 4)
-            //        num++;
-            //}
 
             CoreHelper.StartCoroutine(GenerateUI());
         }
 
         public void SearchLocalLevels(string search)
         {
+            Searches[0] = search;
             var levels = LevelManager.Levels.Where(x => x.id == search).ToList();
             var levelButtons = elements.Where(x => x.name == "Level Button").ToList();
 

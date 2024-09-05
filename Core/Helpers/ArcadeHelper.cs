@@ -385,10 +385,9 @@ namespace BetterLegacy.Core.Helpers
 
         }
 
-        public static bool useCurrentInterface = false;
         public static void LoadArcadeMenu()
         {
-            if (useCurrentInterface)
+            if (ArcadeMenu.useThisUI)
             {
                 ArcadeMenu.Init();
                 return;
