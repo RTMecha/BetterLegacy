@@ -2941,6 +2941,16 @@ namespace BetterLegacy.Editor.Managers
             steamLayoutElement.minWidth = 95f;
             steamLayoutElement.preferredWidth = 95f;
 
+            EditorHelper.AddEditorDropdown("Login", "", "Steam", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_login.png"), () =>
+            {
+                if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
+                {
+                    CoreHelper.StartCoroutine(RTMetaDataEditor.inst.RefreshTokens(null));
+                    return;
+                }
+                RTMetaDataEditor.inst.ShowLoginPopup(null);
+            });
+
             titleBar.Find("Help/Help Dropdown/Join Discord/Text").GetComponent<Text>().text = "Modder's Discord";
             titleBar.Find("Help/Help Dropdown/Watch Tutorials/Text").AsRT().sizeDelta = new Vector2(200f, 0f);
             titleBar.Find("Help/Help Dropdown/Watch Tutorials/Text").GetComponent<Text>().text = "Watch Mod Showcases";
