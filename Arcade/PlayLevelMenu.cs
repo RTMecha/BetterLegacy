@@ -558,6 +558,9 @@ namespace BetterLegacy.Arcade
                 AudioManager.inst.PlayMusic(MenuManager.inst.currentMenuMusicName, MenuManager.inst.currentMenuMusic);
             LevelManager.CurrentLevelCollection = null;
             InterfaceManager.inst.CloseMenus();
+
+            if (ArcadeMenu.useThisUI)
+                ArcadeMenu.Init();
         }
 
         public override void Clear()
