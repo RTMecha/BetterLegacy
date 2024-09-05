@@ -477,7 +477,7 @@ namespace BetterLegacy.Configs
             SaveManager.inst.ApplyVideoSettings();
         }
 
-        void DebugInfoChanged() => RTDebugger.Init();
+        void DebugInfoChanged() => Core.Managers.DebugInfo.Init();
 
         void DiscordChanged()
         {

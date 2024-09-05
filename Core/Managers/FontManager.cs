@@ -670,7 +670,7 @@ namespace BetterLegacy.Core.Managers
             }
 
             if (CoreConfig.Instance.DebugInfoStartup.Value)
-                RTDebugger.Init();
+                DebugInfo.Init();
 
             loadedFiles = true;
 

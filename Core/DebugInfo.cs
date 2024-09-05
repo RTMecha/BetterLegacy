@@ -10,7 +10,7 @@ using UnityEngine.UI;
 
 namespace BetterLegacy.Core.Managers
 {
-    public static class RTDebugger
+    public static class DebugInfo
     {
         public static void TogglePlay() => (AudioManager.inst.CurrentAudioSource.isPlaying ? (Action)AudioManager.inst.CurrentAudioSource.Pause : AudioManager.inst.CurrentAudioSource.Play).Invoke();
 

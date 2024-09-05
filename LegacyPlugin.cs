@@ -278,7 +278,7 @@ namespace BetterLegacy
 
             Application.runInBackground = CoreConfig.Instance.RunInBackground.Value; // If the game should continue playing in the background while you don't have the app focused.
 
-            RTDebugger.Update();
+            DebugInfo.Update();
 
             try
             {
