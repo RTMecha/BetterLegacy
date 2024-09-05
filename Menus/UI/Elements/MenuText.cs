@@ -124,6 +124,17 @@ namespace BetterLegacy.Menus.UI.Elements
             }
         }
 
+        public override void Clear()
+        {
+            if (textInterpolation != null)
+            {
+                AnimationManager.inst.RemoveID(textInterpolation.id);
+                textInterpolation = null;
+            }
+
+            base.Clear();
+        }
+
         /// <summary>
         /// A sub-image that spawns if <see cref="MenuImage.icon"/> exists.
         /// </summary>
