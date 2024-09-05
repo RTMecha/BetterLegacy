@@ -3172,26 +3172,26 @@ namespace BetterLegacy.Arcade
                             Destroy(gameObject.transform.Find("Rank Shadow").gameObject);
                             Destroy(gameObject.transform.Find("Shine").gameObject);
 
-                            if (!OnlineLevelIcons.ContainsKey(id))
+                            if (!ArcadeMenu.OnlineLevelIcons.ContainsKey(id))
                             {
                                 StartCoroutine(AlephNetworkManager.DownloadBytes($"{CoverURL}{id}.jpg", bytes =>
                                 {
                                     var sprite = SpriteManager.LoadSprite(bytes);
-                                    OnlineLevelIcons.Add(id, sprite);
+                                    ArcadeMenu.OnlineLevelIcons.Add(id, sprite);
                                     icon.sprite = sprite;
                                 }, onError =>
                                 {
-                                    OnlineLevelIcons.Add(id, SteamWorkshop.inst.defaultSteamImageSprite);
+                                    ArcadeMenu.OnlineLevelIcons.Add(id, SteamWorkshop.inst.defaultSteamImageSprite);
                                     icon.sprite = SteamWorkshop.inst.defaultSteamImageSprite;
                                 }));
                             }
-                            else if (OnlineLevelIcons.ContainsKey(id))
+                            else if (ArcadeMenu.OnlineLevelIcons.ContainsKey(id))
                             {
-                                icon.sprite = OnlineLevelIcons[id];
+                                icon.sprite = ArcadeMenu.OnlineLevelIcons[id];
                             }
                             else
                             {
-                                OnlineLevelIcons.Add(id, SteamWorkshop.inst.defaultSteamImageSprite);
+                                ArcadeMenu.OnlineLevelIcons.Add(id, SteamWorkshop.inst.defaultSteamImageSprite);
                                 icon.sprite = SteamWorkshop.inst.defaultSteamImageSprite;
                             }
 
@@ -3226,7 +3226,8 @@ namespace BetterLegacy.Arcade
                             clickable.onClick = pointerEventData =>
                             {
                                 AudioManager.inst.PlaySound("blip");
-                                SelectOnlineLevel(level);
+                                //SelectOnlineLevel(level);
+                                DownloadLevelMenu.Init(item.AsObject);
                             };
 
                             OnlineLevels.Add(level);
@@ -3257,8 +3258,6 @@ namespace BetterLegacy.Arcade
         }
 
         public List<OnlineLevelButton> OnlineLevels { get; set; } = new List<OnlineLevelButton>();
-
-        public Dictionary<string, Sprite> OnlineLevelIcons { get; set; } = new Dictionary<string, Sprite>();
 
         string ReplaceSpace(string search) => search.ToLower().Replace(" ", "+");
 
