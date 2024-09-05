@@ -247,7 +247,7 @@ namespace BetterLegacy.Arcade
                     name = "Play Button",
                     rect = RectValues.Default.AnchoredPosition(-430f, -320f).SizeDelta(512f, 64f),
                     selectionPosition = new Vector2Int(0, 2),
-                    text = "<size=40><b><align=center>[ PLAY ]",
+                    text = "<size=40><b><align=center>[ OPEN LEVEL ]",
                     opacity = 0.1f,
                     selectedOpacity = 1f,
                     color = 6,
@@ -256,10 +256,7 @@ namespace BetterLegacy.Arcade
                     selectedTextColor = 7,
                     length = 0.5f,
                     playBlipSound = true,
-                    func = () =>
-                    {
-                        PlayLevelMenu.Init(level);
-                    },
+                    func = () => { CoreHelper.StartCoroutine(SelectLocalLevel(level)); },
                 });
             }
             else
@@ -328,6 +325,22 @@ namespace BetterLegacy.Arcade
                 Theme = InterfaceManager.inst.themes[0];
 
             base.UpdateTheme();
+        }
+
+        public IEnumerator SelectLocalLevel(Level level)
+        {
+            if (!level.music)
+                yield return CoreHelper.StartCoroutine(level.LoadAudioClipRoutine(() => { OpenPlayLevelMenu(level); }));
+            else
+                OpenPlayLevelMenu(level);
+        }
+
+        void OpenPlayLevelMenu(Level level)
+        {
+            AudioManager.inst.StopMusic();
+            PlayLevelMenu.Init(level);
+            AudioManager.inst.PlayMusic(level.metadata.song.title, level.music);
+            AudioManager.inst.SetPitch(CoreHelper.Pitch);
         }
 
         public static void Init(JSONObject level)
