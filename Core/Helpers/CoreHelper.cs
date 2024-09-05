@@ -193,6 +193,18 @@ namespace BetterLegacy.Core.Helpers
         }
 
         /// <summary>
+        /// Destroys multiple Unity Objects from anywhere, includes instant and delay time.
+        /// </summary>
+        /// <param name="instant">If object should destroy instantly.</param>
+        /// <param name="t">The delay to destroy the object at if instant is off.</param>
+        /// <param name="objects">Unity Objects to destroy.</param>
+        public static void Destroy(bool instant, float t, params UnityEngine.Object[] objects)
+        {
+            for (int i = 0; i < objects.Length; i++)
+                Destroy(objects[i], instant, t);
+        }
+
+        /// <summary>
         /// Starts a coroutine from anywhere.
         /// </summary>
         /// <param name="routine">Routine to start.</param>
