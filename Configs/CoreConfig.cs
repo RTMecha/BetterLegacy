@@ -343,6 +343,11 @@ namespace BetterLegacy.Configs
         public Setting<bool> DebugInfoStartup { get; set; }
 
         /// <summary>
+        /// If the Debug Info menu should only display FPS.
+        /// </summary>
+        public Setting<bool> DebugShowOnlyFPS { get; set; }
+
+        /// <summary>
         /// Shows a helpful info overlay with some information about the current gamestate.
         /// </summary>
         public Setting<KeyCode> DebugInfoToggleKey { get; set; }
@@ -435,6 +440,7 @@ namespace BetterLegacy.Configs
             DebugInfo = Bind(this, "Debugging", "Show Debug Info", false, "Shows a helpful info overlay with some information about the current gamestate.");
             DebugInfoStartup = Bind(this, "Debugging", "Create Debug Info", false, "If the Debug Info menu should be created on game start. Requires restart to have this option take affect.");
             DebugInfoToggleKey = BindEnum(this, "Debugging", "Show Debug Info Toggle Key", KeyCode.F6, "Shows a helpful info overlay with some information about the current gamestate.");
+            DebugShowOnlyFPS = Bind(this, "Debugging", "Show Only FPS", true, "If the Debug Info menu should only display FPS.");
             DebugPosition = Bind(this, "Debugging", "Debug Info Position", new Vector2(10f, 1080f), "The position the Debug Info menu is at.");
             NotifyREPL = Bind(this, "Debugging", "Notify REPL", false, "If in editor, code ran will have their results be notified.");
 
