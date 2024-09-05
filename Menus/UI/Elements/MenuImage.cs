@@ -62,6 +62,16 @@ namespace BetterLegacy.Menus.UI.Elements
         public int siblingIndex = -1;
 
         /// <summary>
+        /// If the element should regenerate when the <see cref="MenuBase.GenerateUI"/> coroutine is run. If <see cref="MenuBase.regenerate"/> is true, then this will be ignored.
+        /// </summary>
+        public bool regenerate = true;
+
+        /// <summary>
+        /// While the interface is generating, should the interface wait while the element is spawning?
+        /// </summary>
+        public bool wait = true;
+
+        /// <summary>
         /// Spawn length of the element, to be used for spacing each element out. Time is not always exactly a second.
         /// </summary>
         public float length = 1f;
@@ -208,6 +218,9 @@ namespace BetterLegacy.Menus.UI.Elements
                 isSpawning = false;
         }
 
+        /// <summary>
+        /// Clears any external or internal data.
+        /// </summary>
         public virtual void Clear()
         {
             for (int i = 0; i < animations.Count; i++)

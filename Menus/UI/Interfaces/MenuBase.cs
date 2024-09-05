@@ -68,6 +68,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// </summary>
         public bool isOpen;
 
+        /// <summary>
+        /// If the menu should regenerate when <see cref="GenerateUI"/> is run.
+        /// </summary>
+        public bool regenerate = true;
+
         #region Elements
 
         /// <summary>
@@ -326,30 +331,39 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// <returns></returns>
         public virtual IEnumerator GenerateUI()
         {
-            selected = defaultSelection;
-
-            InterfaceManager.inst.LoadThemes();
-
-            var canvas = UIManager.GenerateUICanvas(nameof(CustomMenu), null, sortingOrder: layer);
-            this.canvas = canvas;
-            canvas.Canvas.scaleFactor = 1f;
-            canvas.CanvasScaler.referenceResolution = new Vector2(1920f, 1080f);
-
-            canvas.GameObject.AddComponent<CursorManager>();
-
-            if (!CoreHelper.InGame && allowEffects)
+            if (regenerate || this.canvas == null || !this.canvas.GameObject)
             {
-                canvas.GameObject.layer = 5;
-                canvas.GameObject.AddComponent<MenuEffectsManager>();
-                canvas.Canvas.worldCamera = Camera.main;
-                canvas.Canvas.renderMode = RenderMode.ScreenSpaceCamera;
-                yield return null;
-                canvas.Canvas.renderMode = RenderMode.WorldSpace;
+                if (this.canvas != null && this.canvas.GameObject)
+                {
+                    CoreHelper.Destroy(this.canvas.GameObject);
+                    this.canvas = null;
+                }
 
-                MenuEffectsManager.inst.ResetEffects();
-                MenuEffectsManager.inst.MoveCamera(Vector2.zero);
-                MenuEffectsManager.inst.ZoomCamera(5f);
-                MenuEffectsManager.inst.RotateCamera(0f);
+                selected = defaultSelection;
+
+                InterfaceManager.inst.LoadThemes();
+
+                var canvas = UIManager.GenerateUICanvas(nameof(CustomMenu), null, sortingOrder: layer);
+                this.canvas = canvas;
+                canvas.Canvas.scaleFactor = 1f;
+                canvas.CanvasScaler.referenceResolution = new Vector2(1920f, 1080f);
+
+                canvas.GameObject.AddComponent<CursorManager>();
+
+                if (!CoreHelper.InGame && allowEffects)
+                {
+                    canvas.GameObject.layer = 5;
+                    canvas.GameObject.AddComponent<MenuEffectsManager>();
+                    canvas.Canvas.worldCamera = Camera.main;
+                    canvas.Canvas.renderMode = RenderMode.ScreenSpaceCamera;
+                    yield return null;
+                    canvas.Canvas.renderMode = RenderMode.WorldSpace;
+
+                    MenuEffectsManager.inst.ResetEffects();
+                    MenuEffectsManager.inst.MoveCamera(Vector2.zero);
+                    MenuEffectsManager.inst.ZoomCamera(5f);
+                    MenuEffectsManager.inst.RotateCamera(0f);
+                }
             }
 
             if (loopingEvents != null)
@@ -366,7 +380,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             CoreHelper.Log("Creating layouts...");
 
-            var gameObject = Creator.NewUIObject("Base Layout", canvas.Canvas.transform);
+            var gameObject = canvas.Canvas.transform.Find("Base Layout") ? canvas.Canvas.transform.Find("Base Layout").gameObject : Creator.NewUIObject("Base Layout", canvas.Canvas.transform);
             UIManager.SetRectTransform(gameObject.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
 
             for (int i = 0; i < prefabs.Count; i++)
@@ -382,6 +396,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
             for (int i = 0; i < layouts.Count; i++)
             {
                 var layout = layouts.ElementAt(i).Value;
+
+                if (!regenerate && !layout.regenerate && layout.gameObject)
+                    continue;
+
                 if (layout is MenuGridLayout gridLayout)
                     SetupGridLayout(gridLayout, gameObject.transform);
                 if (layout is MenuHorizontalLayout horizontalLayout)
@@ -415,8 +433,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     }
 
                     prefabObject.Spawn();
-                    while (prefabObject.isSpawning)
-                        yield return null;
+                    if (prefabObject.wait)
+                        while (prefabObject.isSpawning)
+                            yield return null;
                     num++;
                 }
             }
@@ -434,11 +453,15 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 if (element is MenuEvent menuEvent)
                 {
                     menuEvent.TriggerEvent();
-                    while (menuEvent.isSpawning)
-                        yield return null;
+                    if (menuEvent.wait)
+                        while (menuEvent.isSpawning)
+                            yield return null;
 
                     continue;
                 }
+
+                if (!regenerate && !element.regenerate && element.gameObject)
+                    continue;
 
                 var parent = GetElementParent(element, gameObject);
 
@@ -458,8 +481,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         // idk how to handle MenuGridLayout
                     }
 
-                    while (element.isSpawning)
-                        yield return null;
+                    if (menuButton.wait)
+                        while (menuButton.isSpawning)
+                            yield return null;
 
                     menuButton.clickable.onClick = p =>
                     {
@@ -480,8 +504,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     SetupInputField(menuInputField, parent);
                     if (menuInputField.siblingIndex >= 0 && menuInputField.siblingIndex < menuInputField.gameObject.transform.parent.childCount)
                         menuInputField.gameObject.transform.SetSiblingIndex(menuInputField.siblingIndex);
-                    while (menuInputField.isSpawning)
-                        yield return null;
+                    if (menuInputField.wait)
+                        while (menuInputField.isSpawning)
+                            yield return null;
 
                     continue;
                 }
@@ -491,16 +516,18 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     SetupText(menuText, parent);
                     if (menuText.siblingIndex >= 0 && menuText.siblingIndex < menuText.gameObject.transform.parent.childCount)
                         menuText.gameObject.transform.SetSiblingIndex(menuText.siblingIndex);
-                    while (menuText.isSpawning)
-                        yield return null;
+                    if (menuText.wait)
+                        while (menuText.isSpawning)
+                            yield return null;
                 }
                 else
                 {
                     SetupImage(element, parent);
                     if (element.siblingIndex >= 0 && element.siblingIndex < element.gameObject.transform.parent.childCount)
                         element.gameObject.transform.SetSiblingIndex(element.siblingIndex);
-                    while (element.isSpawning)
-                        yield return null;
+                    if (element.wait)
+                        while (element.isSpawning)
+                            yield return null;
                 }
 
                 if (element.clickable != null)
@@ -514,10 +541,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     };
             }
 
-            if (elements.TryFind(x => x is MenuButton, out MenuImage menuImage) && menuImage is MenuButton button)
-            {
-                button.OnEnter();
-            }
+            //if (elements.TryFind(x => x is MenuButton, out MenuImage menuImage) && menuImage is MenuButton button)
+            //{
+            //    button.OnEnter();
+            //}
 
             isOpen = true;
 
@@ -762,6 +789,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
             menuButton.Spawn();
         }
 
+        /// <summary>
+        /// Initializes a <see cref="MenuInputField"/>'s UI.
+        /// </summary>
+        /// <param name="menuInputField">The element to generate UI for.</param>
+        /// <param name="parent">The parent to set the element to.</param>
         public void SetupInputField(MenuInputField menuInputField, Transform parent)
         {
             if (menuInputField.gameObject)
@@ -789,9 +821,17 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             menuInputField.inputField.onValueChanged.ClearAll();
             menuInputField.inputField.onEndEdit.ClearAll();
-            menuInputField.inputField.text = menuInputField.defaultText;
+            menuInputField.inputField.PlaceholderText().text = menuInputField.placeholder;
+            menuInputField.inputField.text = menuInputField.text;
+            menuInputField.inputField.textComponent.alignment = menuInputField.textAnchor;
+            menuInputField.inputField.PlaceholderText().alignment = menuInputField.placeholderAnchor;
+            menuInputField.inputField.textComponent.fontSize = menuInputField.textFontSize;
+            menuInputField.inputField.PlaceholderText().fontSize = menuInputField.placeholderFontSize;
             menuInputField.inputField.onValueChanged.AddListener(menuInputField.Write);
             menuInputField.inputField.onEndEdit.AddListener(menuInputField.Finish);
+
+            if (menuInputField.triggers != null)
+                TriggerHelper.AddEventTriggers(menuInputField.gameObject, menuInputField.triggers);
 
             if (menuInputField.spawnFuncJSON != null)
                 menuInputField.ParseFunction(menuInputField.spawnFuncJSON);
@@ -1002,6 +1042,22 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             text.textSat,
                             text.textVal);
                     text.UpdateText();
+                }
+
+                if (element is MenuInputField inputField)
+                {
+                    inputField.inputField.textComponent.color =
+                        CoreHelper.ChangeColorHSV(
+                            inputField.useOverrideTextColor ? inputField.overrideTextColor : Theme.GetObjColor(inputField.textColor),
+                            inputField.textHue,
+                            inputField.textSat,
+                            inputField.textVal);
+                    inputField.inputField.PlaceholderText().color =
+                        LSColors.fadeColor(CoreHelper.ChangeColorHSV(
+                            inputField.useOverridePlaceholderColor ? inputField.overridePlaceholderColor : Theme.GetObjColor(inputField.placeholderColor),
+                            inputField.placeholderHue,
+                            inputField.placeholderSat,
+                            inputField.placeholderVal), 0.3f);
                 }
 
                 element.image.color =
