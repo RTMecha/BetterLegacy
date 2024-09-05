@@ -234,6 +234,7 @@ namespace BetterLegacy.Menus
             EndLevelMenu.Current = null;
             ArcadeMenu.Current = null;
             PlayLevelMenu.Current = null;
+            DownloadLevelMenu.Current = null;
 
             if (CurrentGenerateUICoroutine != null)
             {
