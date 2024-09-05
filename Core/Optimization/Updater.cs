@@ -181,7 +181,7 @@ namespace BetterLegacy.Core.Optimization
                             levelObject.SetActive(beatmapObject.TimeWithinLifespan());
 
                             foreach (var levelParent in levelObject.parentObjects)
-                                levelParent.TimeOffset = levelParent.BeatmapObject.StartTime;
+                                levelParent.timeOffset = levelParent.BeatmapObject.StartTime;
 
                             break;
                         } // StartTime
@@ -272,15 +272,15 @@ namespace BetterLegacy.Core.Optimization
 
                             foreach (var levelParent in levelObject.parentObjects)
                             {
-                                if (DataManager.inst.gameData.beatmapObjects.TryFind(x => x.id == levelParent.ID, out BaseBeatmapObject parent))
+                                if (DataManager.inst.gameData.beatmapObjects.TryFind(x => x.id == levelParent.id, out BaseBeatmapObject parent))
                                 {
-                                    levelParent.ParentAnimatePosition = parent.GetParentType(0);
-                                    levelParent.ParentAnimateScale = parent.GetParentType(1);
-                                    levelParent.ParentAnimateRotation = parent.GetParentType(2);
+                                    levelParent.parentAnimatePosition = parent.GetParentType(0);
+                                    levelParent.parentAnimateScale = parent.GetParentType(1);
+                                    levelParent.parentAnimateRotation = parent.GetParentType(2);
 
-                                    levelParent.ParentOffsetPosition = parent.getParentOffset(0);
-                                    levelParent.ParentOffsetScale = parent.getParentOffset(1);
-                                    levelParent.ParentOffsetRotation = parent.getParentOffset(2);
+                                    levelParent.parentOffsetPosition = parent.getParentOffset(0);
+                                    levelParent.parentOffsetScale = parent.getParentOffset(1);
+                                    levelParent.parentOffsetRotation = parent.getParentOffset(2);
                                 }
                             }
 
@@ -459,7 +459,7 @@ namespace BetterLegacy.Core.Optimization
                                             var levelParent = levelObject.parentObjects[j];
                                             var parent = levelParent.BeatmapObject;
 
-                                            levelParent.TimeOffset = parent.StartTime;
+                                            levelParent.timeOffset = parent.StartTime;
                                         }
                                     }
                                 }
@@ -609,7 +609,7 @@ namespace BetterLegacy.Core.Optimization
                                             var levelParent = levelObject.parentObjects[j];
                                             var parent = levelParent.BeatmapObject;
 
-                                            levelParent.TimeOffset = parent.StartTime;
+                                            levelParent.timeOffset = parent.StartTime;
                                         }
                                     }
                                 }
@@ -921,12 +921,12 @@ namespace BetterLegacy.Core.Optimization
                     if (updateParents)
                         foreach (var levelParent in levelObject.parentObjects)
                         {
-                            if (converter.cachedSequences.ContainsKey(levelParent.ID))
+                            if (converter.cachedSequences.ContainsKey(levelParent.id))
                             {
-                                var cachedSequences = converter.cachedSequences[levelParent.ID];
-                                levelParent.Position3DSequence = cachedSequences.Position3DSequence;
-                                levelParent.ScaleSequence = cachedSequences.ScaleSequence;
-                                levelParent.RotationSequence = cachedSequences.RotationSequence;
+                                var cachedSequences = converter.cachedSequences[levelParent.id];
+                                levelParent.position3DSequence = cachedSequences.Position3DSequence;
+                                levelParent.scaleSequence = cachedSequences.ScaleSequence;
+                                levelParent.rotationSequence = cachedSequences.RotationSequence;
                             }
                         }
                 }

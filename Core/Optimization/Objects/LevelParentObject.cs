@@ -5,32 +5,35 @@ namespace BetterLegacy.Core.Optimization.Objects
 {
     public class LevelParentObject : Exists
     {
-        public Sequence<Vector2> PositionSequence { get; set; }
-        public Sequence<Vector3> Position3DSequence { get; set; }
-        public Sequence<Vector2> ScaleSequence { get; set; }
-        public Sequence<float> RotationSequence { get; set; }
+        public LevelParentObject() { }
 
-        public float TimeOffset { get; set; }
+        public Sequence<Vector2> positionSequence;
+        public Sequence<Vector3> position3DSequence;
+        public Sequence<Vector2> scaleSequence;
+        public Sequence<float> rotationSequence;
 
-        public bool ParentAnimatePosition { get; set; }
-        public bool ParentAnimateScale { get; set; }
-        public bool ParentAnimateRotation { get; set; }
+        public float timeOffset;
 
-        public float ParentOffsetPosition { get; set; }
-        public float ParentOffsetScale { get; set; }
-        public float ParentOffsetRotation { get; set; }
+        public bool parentAnimatePosition;
+        public bool parentAnimateScale;
+        public bool parentAnimateRotation;
 
-        public bool ParentAdditivePosition { get; set; }
-        public bool ParentAdditiveScale { get; set; }
-        public bool ParentAdditiveRotation { get; set; }
+        public float parentOffsetPosition;
+        public float parentOffsetScale;
+        public float parentOffsetRotation;
 
-        public float ParentParallaxPosition { get; set; }
-        public float ParentParallaxScale { get; set; }
-        public float ParentParallaxRotation { get; set; }
+        public bool parentAdditivePosition;
+        public bool parentAdditiveScale;
+        public bool parentAdditiveRotation;
 
-        public GameObject GameObject { get; set; }
-        public Transform Transform { get; set; }
-        public string ID { get; set; }
+        public float parentParallaxPosition;
+        public float parentParallaxScale;
+        public float parentParallaxRotation;
+
+        public GameObject gameObject;
+        public Transform transform;
+        public string id;
+        public bool desync;
         public Data.BeatmapObject BeatmapObject { get; set; }
     }
 }

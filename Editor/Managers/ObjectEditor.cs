@@ -331,7 +331,7 @@ namespace BetterLegacy.Editor.Managers
                         var levelParent = levelObject.parentObjects[i];
                         var parent = levelParent.BeatmapObject;
 
-                        levelParent.TimeOffset = parent.StartTime;
+                        levelParent.timeOffset = parent.StartTime;
                     }
                 }
 

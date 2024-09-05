@@ -3947,7 +3947,7 @@ namespace BetterLegacy.Core.Helpers
                                 float rotation = 0f;
 
                                 for (int i = 1; i < list.Count; i++)
-                                    rotation += list[i].Transform.localRotation.eulerAngles.z;
+                                    rotation += list[i].transform.localRotation.eulerAngles.z;
 
                                 if (modifier.Result == null)
                                 {
@@ -3962,7 +3962,7 @@ namespace BetterLegacy.Core.Helpers
                                     modifier.Result = f;
                                 }
 
-                                modifier.reference.positionOffset = RTMath.Rotate((Vector2)modifier.Result, (list[0].Transform.localRotation.eulerAngles.z - rotation));
+                                modifier.reference.positionOffset = RTMath.Rotate((Vector2)modifier.Result, (list[0].transform.localRotation.eulerAngles.z - rotation));
                             }
 
                             break;
@@ -3983,7 +3983,7 @@ namespace BetterLegacy.Core.Helpers
                                 float rotation = 0f;
 
                                 for (int i = 1; i < list.Count; i++)
-                                    rotation += list[i].Transform.localRotation.eulerAngles.z;
+                                    rotation += list[i].transform.localRotation.eulerAngles.z;
 
                                 if (modifier.Result == null)
                                     modifier.Result = new Vector2(gravityX / 1000f, gravityY / 1000f);
@@ -3996,7 +3996,7 @@ namespace BetterLegacy.Core.Helpers
                                     modifier.Result = f;
                                 }
 
-                                bm.positionOffset = RTMath.Rotate((Vector2)modifier.Result, (list[0].Transform.localRotation.eulerAngles.z - rotation));
+                                bm.positionOffset = RTMath.Rotate((Vector2)modifier.Result, (list[0].transform.localRotation.eulerAngles.z - rotation));
                             }
 
                             break;

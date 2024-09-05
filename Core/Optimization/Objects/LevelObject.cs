@@ -51,12 +51,12 @@ namespace BetterLegacy.Core.Optimization.Objects
                 {
                     var parentObject = parentObjects[i];
                     parentObject.BeatmapObject = null;
-                    parentObject.GameObject = null;
-                    parentObject.ID = null;
-                    parentObject.Position3DSequence = null;
-                    parentObject.PositionSequence = null;
-                    parentObject.ScaleSequence = null;
-                    parentObject.RotationSequence = null;
+                    parentObject.gameObject = null;
+                    parentObject.id = null;
+                    parentObject.position3DSequence = null;
+                    parentObject.positionSequence = null;
+                    parentObject.scaleSequence = null;
+                    parentObject.rotationSequence = null;
                 }
                 parentObjects.Clear();
             }
@@ -116,7 +116,7 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             try
             {
-                top = this.parentObjects[this.parentObjects.Count - 1].Transform.parent;
+                top = this.parentObjects[this.parentObjects.Count - 1].transform.parent;
 
                 var pc = beatmapObject.GetParentChain();
 
@@ -145,7 +145,7 @@ namespace BetterLegacy.Core.Optimization.Objects
         public void SetActive(bool active)
         {
             if (parentObjects.Count > 0)
-                parentObjects[parentObjects.Count - 1].GameObject?.SetActive(active);
+                parentObjects[parentObjects.Count - 1].gameObject?.SetActive(active);
 
             if (!active && this.active)
             {
@@ -154,12 +154,12 @@ namespace BetterLegacy.Core.Optimization.Objects
                 //for (int i = 0; i < parentObjects.Count; i++)
                 //{
                     var parentObject = parentObjects[0];
-                    for (int j = 0; j < parentObject.Position3DSequence.keyframes.Length; j++)
-                        parentObject.Position3DSequence.keyframes[j].Stop();
-                    for (int j = 0; j < parentObject.ScaleSequence.keyframes.Length; j++)
-                        parentObject.ScaleSequence.keyframes[j].Stop();
-                    for (int j = 0; j < parentObject.RotationSequence.keyframes.Length; j++)
-                        parentObject.RotationSequence.keyframes[j].Stop();
+                    for (int j = 0; j < parentObject.position3DSequence.keyframes.Length; j++)
+                        parentObject.position3DSequence.keyframes[j].Stop();
+                    for (int j = 0; j < parentObject.scaleSequence.keyframes.Length; j++)
+                        parentObject.scaleSequence.keyframes[j].Stop();
+                    for (int j = 0; j < parentObject.rotationSequence.keyframes.Length; j++)
+                        parentObject.rotationSequence.keyframes[j].Stop();
                 //}
                 for (int i = 0; i < colorSequence.keyframes.Length; i++)
                     colorSequence.keyframes[i].Stop();
@@ -276,28 +276,28 @@ namespace BetterLegacy.Core.Optimization.Objects
 
                 if (!spawned || i >= syncParentIndex && i < this.desyncParentIndex)
                 {
-                    if (parentObject.ParentAdditivePosition)
-                        positionAddedOffset += parentObject.ParentOffsetPosition;
-                    if (parentObject.ParentAdditiveScale)
-                        scaleAddedOffset += parentObject.ParentOffsetScale;
-                    if (parentObject.ParentAdditiveRotation)
-                        rotationAddedOffset += parentObject.ParentOffsetRotation;
+                    if (parentObject.parentAdditivePosition)
+                        positionAddedOffset += parentObject.parentOffsetPosition;
+                    if (parentObject.parentAdditiveScale)
+                        scaleAddedOffset += parentObject.parentOffsetScale;
+                    if (parentObject.parentAdditiveRotation)
+                        rotationAddedOffset += parentObject.parentOffsetRotation;
 
                     // If last parent is position parented, animate position
                     if (animatePosition)
                     {
-                        if (parentObject.Position3DSequence != null)
+                        if (parentObject.position3DSequence != null)
                         {
-                            var value = parentObject.Position3DSequence.Interpolate(time - parentObject.TimeOffset - (positionOffset + positionAddedOffset)) + parentObject.BeatmapObject.reactivePositionOffset + parentObject.BeatmapObject.positionOffset;
+                            var value = parentObject.position3DSequence.Interpolate(time - parentObject.timeOffset - (positionOffset + positionAddedOffset)) + parentObject.BeatmapObject.reactivePositionOffset + parentObject.BeatmapObject.positionOffset;
 
                             float z = depth * 0.0005f + (value.z / 10f);
 
-                            parentObject.Transform.localPosition = new Vector3(value.x * positionParallax, value.y * positionParallax, z);
+                            parentObject.transform.localPosition = new Vector3(value.x * positionParallax, value.y * positionParallax, z);
                         }
                         else
                         {
-                            var value = parentObject.PositionSequence.Interpolate(time - parentObject.TimeOffset - (positionOffset + positionAddedOffset));
-                            parentObject.Transform.localPosition = new Vector3(value.x * positionParallax, value.y * positionParallax, depth * 0.0005f);
+                            var value = parentObject.positionSequence.Interpolate(time - parentObject.timeOffset - (positionOffset + positionAddedOffset));
+                            parentObject.transform.localPosition = new Vector3(value.x * positionParallax, value.y * positionParallax, depth * 0.0005f);
                         }
                     }
 
@@ -305,36 +305,36 @@ namespace BetterLegacy.Core.Optimization.Objects
                     if (animateScale)
                     {
                         var r = parentObject.BeatmapObject.reactiveScaleOffset + parentObject.BeatmapObject.reactiveScaleOffset + parentObject.BeatmapObject.scaleOffset;
-                        var value = parentObject.ScaleSequence.Interpolate(time - parentObject.TimeOffset - (scaleOffset + scaleAddedOffset)) + new Vector2(r.x, r.y);
-                        parentObject.Transform.localScale = new Vector3(value.x * scaleParallax, value.y * scaleParallax, 1.0f + parentObject.BeatmapObject.scaleOffset.z);
+                        var value = parentObject.scaleSequence.Interpolate(time - parentObject.timeOffset - (scaleOffset + scaleAddedOffset)) + new Vector2(r.x, r.y);
+                        parentObject.transform.localScale = new Vector3(value.x * scaleParallax, value.y * scaleParallax, 1.0f + parentObject.BeatmapObject.scaleOffset.z);
                     }
 
                     // If last parent is rotation parented, animate rotation
                     if (animateRotation)
                     {
                         var value = Quaternion.AngleAxis(
-                            (parentObject.RotationSequence.Interpolate(time - parentObject.TimeOffset - (rotationOffset + rotationAddedOffset)) + parentObject.BeatmapObject.reactiveRotationOffset) * rotationParallax,
+                            (parentObject.rotationSequence.Interpolate(time - parentObject.timeOffset - (rotationOffset + rotationAddedOffset)) + parentObject.BeatmapObject.reactiveRotationOffset) * rotationParallax,
                             Vector3.forward);
-                        parentObject.Transform.localRotation = Quaternion.Euler(value.eulerAngles + parentObject.BeatmapObject.rotationOffset);
+                        parentObject.transform.localRotation = Quaternion.Euler(value.eulerAngles + parentObject.BeatmapObject.rotationOffset);
                     }
 
                     // Cache parent values to use for next parent
-                    positionOffset = parentObject.ParentOffsetPosition;
-                    scaleOffset = parentObject.ParentOffsetScale;
-                    rotationOffset = parentObject.ParentOffsetRotation;
+                    positionOffset = parentObject.parentOffsetPosition;
+                    scaleOffset = parentObject.parentOffsetScale;
+                    rotationOffset = parentObject.parentOffsetRotation;
 
-                    animatePosition = parentObject.ParentAnimatePosition;
-                    animateScale = parentObject.ParentAnimateScale;
-                    animateRotation = parentObject.ParentAnimateRotation;
+                    animatePosition = parentObject.parentAnimatePosition;
+                    animateScale = parentObject.parentAnimateScale;
+                    animateRotation = parentObject.parentAnimateRotation;
 
-                    positionParallax = parentObject.ParentParallaxPosition;
-                    scaleParallax = parentObject.ParentParallaxScale;
-                    rotationParallax = parentObject.ParentParallaxRotation;
+                    positionParallax = parentObject.parentParallaxPosition;
+                    scaleParallax = parentObject.parentParallaxScale;
+                    rotationParallax = parentObject.parentParallaxRotation;
 
                     if (!spawned)
                         syncParentIndex = i;
 
-                    if (parentObject.BeatmapObject.desync && !spawned)
+                    if (parentObject.desync && !spawned)
                     {
                         hasSpawned = true;
                         spawned = true;
