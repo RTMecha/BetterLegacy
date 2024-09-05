@@ -221,23 +221,67 @@ namespace BetterLegacy.Arcade
                 alignment = TMPro.TextAlignmentOptions.TopLeft,
             });
 
-            elements.Add(new MenuButton
+            if (LevelManager.Levels.TryFind(x => x.metadata != null && x.metadata.serverID == jn["id"], out Level level))
             {
-                id = "3525734",
-                name = "Download Button",
-                rect = RectValues.Default.AnchoredPosition(-430f, -220f).SizeDelta(512f, 64f),
-                selectionPosition = new Vector2Int(0, 1),
-                text = "<size=40><b><align=center>[ DOWNLOAD ]",
-                opacity = 0.1f,
-                selectedOpacity = 1f,
-                color = 6,
-                selectedColor = 6,
-                textColor = 6,
-                selectedTextColor = 7,
-                length = 0.5f,
-                playBlipSound = true,
-                func = DownloadLevel,
-            });
+                elements.Add(new MenuButton
+                {
+                    id = "3525734",
+                    name = "Download Button",
+                    rect = RectValues.Default.AnchoredPosition(-430f, -220f).SizeDelta(512f, 64f),
+                    selectionPosition = new Vector2Int(0, 1),
+                    text = "<size=40><b><align=center>[ UPDATE ]",
+                    opacity = 0.1f,
+                    selectedOpacity = 1f,
+                    color = 6,
+                    selectedColor = 6,
+                    textColor = 6,
+                    selectedTextColor = 7,
+                    length = 0.5f,
+                    playBlipSound = true,
+                    func = DownloadLevel,
+                });
+
+                elements.Add(new MenuButton
+                {
+                    id = "498145857",
+                    name = "Play Button",
+                    rect = RectValues.Default.AnchoredPosition(-430f, -320f).SizeDelta(512f, 64f),
+                    selectionPosition = new Vector2Int(0, 2),
+                    text = "<size=40><b><align=center>[ PLAY ]",
+                    opacity = 0.1f,
+                    selectedOpacity = 1f,
+                    color = 6,
+                    selectedColor = 6,
+                    textColor = 6,
+                    selectedTextColor = 7,
+                    length = 0.5f,
+                    playBlipSound = true,
+                    func = () =>
+                    {
+                        PlayLevelMenu.Init(level);
+                    },
+                });
+            }
+            else
+            {
+                elements.Add(new MenuButton
+                {
+                    id = "3525734",
+                    name = "Download Button",
+                    rect = RectValues.Default.AnchoredPosition(-430f, -220f).SizeDelta(512f, 64f),
+                    selectionPosition = new Vector2Int(0, 1),
+                    text = "<size=40><b><align=center>[ DOWNLOAD ]",
+                    opacity = 0.1f,
+                    selectedOpacity = 1f,
+                    color = 6,
+                    selectedColor = 6,
+                    textColor = 6,
+                    selectedTextColor = 7,
+                    length = 0.5f,
+                    playBlipSound = true,
+                    func = DownloadLevel,
+                });
+            }
 
             exitFunc = Close;
 
@@ -249,15 +293,21 @@ namespace BetterLegacy.Arcade
 
         public void DownloadLevel()
         {
-            var directory = $"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{CurrentOnlineLevel["id"].Value}";
+            var jn = CurrentOnlineLevel;
+            Close();
 
-            CoreHelper.StartCoroutine(AlephNetworkManager.DownloadBytes($"{ArcadeMenu.DownloadURL}{CurrentOnlineLevel["id"].Value}.zip", bytes =>
+            var directory = $"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{jn["id"].Value}";
+
+            CoreHelper.StartCoroutine(AlephNetworkManager.DownloadBytes($"{ArcadeMenu.DownloadURL}{jn["id"].Value}.zip", bytes =>
             {
+                if (RTFile.DirectoryExists(directory))
+                    Directory.Delete(directory, true);
+
                 Directory.CreateDirectory(directory);
 
                 File.WriteAllBytes($"{directory}.zip", bytes);
 
-                ZipFile.ExtractToDirectory($"{directory}.zip", $"{directory}");
+                ZipFile.ExtractToDirectory($"{directory}.zip", directory);
 
                 File.Delete($"{directory}.zip");
 
