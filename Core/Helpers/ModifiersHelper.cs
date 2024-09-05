@@ -4549,7 +4549,42 @@ namespace BetterLegacy.Core.Helpers
                             var list = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
 
                             foreach (var bm in list)
-                                CoreHelper.StartCoroutine(ModifiersManager.ActivateModifier((BeatmapObject)bm, Parser.TryParse(modifier.value, 0f)));
+                                CoreHelper.StartCoroutine(ModifiersManager.ActivateModifier(bm, Parser.TryParse(modifier.value, 0f)));
+
+                            break;
+                        }
+                    case "activateModifier":
+                        {
+                            var list = CoreHelper.FindObjectsWithTag(modifier.value);
+
+                            var doMultiple = Parser.TryParse(modifier.commands[1], true);
+                            var index = Parser.TryParse(modifier.commands[2], -1);
+
+                            // 3 is modifier names
+                            var modifierNames = new List<string>();
+                            for (int i = 3; i < modifier.commands.Count; i++)
+                                modifierNames.Add(modifier.commands[i]);
+
+                            for (int i = 0; i < list.Count; i++)
+                            {
+                                if (doMultiple)
+                                {
+                                    var modifiers = list[i].modifiers.FindAll(x => x.type == ModifierBase.Type.Action && modifierNames.Contains(x.commands[0]));
+
+                                    for (int j = 0; j < modifiers.Count; j++)
+                                    {
+                                        var otherModifier = modifiers[i];
+                                        otherModifier.Action?.Invoke(otherModifier);
+                                    }
+                                    continue;
+                                }
+                                
+                                if (index >= 0 && index < list[i].modifiers.Count)
+                                {
+                                    var otherModifier = list[i].modifiers[index];
+                                    otherModifier.Action?.Invoke(otherModifier);
+                                }
+                            }
 
                             break;
                         }
@@ -4714,6 +4749,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
 
+                        // dev only (story mode)
                     case "loadSceneDEVONLY":
                         {
                             SceneManager.inst.LoadScene(modifier.value, modifier.commands.Count > 1 ? Parser.TryParse(modifier.commands[1], true) : false);
