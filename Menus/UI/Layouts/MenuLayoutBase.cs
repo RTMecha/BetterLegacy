@@ -19,5 +19,7 @@ namespace BetterLegacy.Menus.UI.Layouts
         public TextAnchor childAlignment;
 
         public RectValues rect = RectValues.Default;
+
+        public bool regenerate = true;
     }
 }
