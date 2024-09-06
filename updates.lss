@@ -1,3 +1,6 @@
+1.4.2 > [Sep 7, 2024]
+- Actually fixed the download level crash. (The crash was due to no audio being loaded)
+- Added Boost Recover only with Boost Tail to Config Manager > Players > General.
 1.4.1 > [Sep 6, 2024]
 - Fixed a crash when going from Download Level menu to Play Level menu and playing the level.
 - Audio volume keyframe now only changes music volume.
