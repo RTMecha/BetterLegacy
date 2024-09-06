@@ -870,28 +870,6 @@ namespace BetterLegacy.Arcade
 
             var playLevelMenuImage = playLevelMenuBase.AddComponent<Image>();
 
-            //var playLevelMenu = playLevelMenuBase.AddComponent<PlayLevelMenuManager>();
-            //playLevelMenu.rectTransform = playLevelMenuBaseRT;
-            //playLevelMenu.background = playLevelMenuImage;
-
-            //StartCoroutine(playLevelMenu.SetupPlayLevelMenu());
-
-            var downloadLevelMenuBase = new GameObject("Download Level Menu");
-            downloadLevelMenuBase.transform.SetParent(inter.transform);
-            downloadLevelMenuBase.transform.localScale = Vector3.one;
-
-            var downloadLevelMenuBaseRT = downloadLevelMenuBase.AddComponent<RectTransform>();
-            downloadLevelMenuBaseRT.anchoredPosition = new Vector2(0f, -1080f);
-            downloadLevelMenuBaseRT.sizeDelta = new Vector2(1920f, 1080f);
-
-            var downloadLevelMenuImage = downloadLevelMenuBase.AddComponent<Image>();
-
-            var downloadLevelMenu = downloadLevelMenuBase.AddComponent<DownloadLevelMenuManager>();
-            downloadLevelMenu.rectTransform = downloadLevelMenuBaseRT;
-            downloadLevelMenu.background = downloadLevelMenuImage;
-
-            StartCoroutine(downloadLevelMenu.SetupDownloadLevelMenu());
-
             var steamLevelMenuBase = new GameObject("Steam Level Menu");
             steamLevelMenuBase.transform.SetParent(inter.transform);
             steamLevelMenuBase.transform.localScale = Vector3.one;
@@ -3261,17 +3239,6 @@ namespace BetterLegacy.Arcade
 
         string ReplaceSpace(string search) => search.ToLower().Replace(" ", "+");
 
-        public void SelectOnlineLevel(OnlineLevelButton onlineLevel)
-        {
-            if (LevelManager.Levels.TryFind(x => x.metadata != null && x.metadata.serverID == onlineLevel.ID, out Level level))
-            {
-                CoreHelper.StartCoroutine(SelectLocalLevel(level));
-                return;
-            }
-
-            DownloadLevelMenuManager.inst?.OpenLevel(onlineLevel);
-        }
-
         #endregion
 
         #region Browser
@@ -4164,42 +4131,6 @@ namespace BetterLegacy.Arcade
             public RTAnimation ExitAnimation { get; set; }
 
             public bool selected;
-
-            public IEnumerator DownloadLevel()
-            {
-                var directory = $"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{ID}";
-
-                yield return inst.StartCoroutine(AlephNetworkManager.DownloadBytes($"{DownloadURL}{ID}.zip", bytes =>
-                {
-                    Directory.CreateDirectory(directory);
-
-                    File.WriteAllBytes($"{directory}.zip", bytes);
-
-                    ZipFile.ExtractToDirectory($"{directory}.zip", $"{directory}");
-
-                    File.Delete($"{directory}.zip");
-
-                    MetaData metadata = RTFile.FileExists($"{directory}/metadata.vgm") ? MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile($"{directory}/metadata.vgm"))) : MetaData.Parse(JSON.Parse(RTFile.ReadFromFile($"{directory}/metadata.lsb")));
-
-                    var level = new Level(directory + "/");
-
-                    LevelManager.Levels.Add(level);
-
-                    if (inst.CurrentTab == 0)
-                        inst.StartCoroutine(inst.RefreshLocalLevels());
-
-                    else if (inst.OpenedOnlineLevel)
-                    {
-                        DownloadLevelMenuManager.inst.Close(() =>
-                        {
-                            if (ArcadeConfig.Instance.OpenOnlineLevelAfterDownload.Value)
-                                inst.StartCoroutine(inst.SelectLocalLevel(level));
-                        });
-                    }
-                }));
-
-                yield break;
-            }
         }
 
         public class LocalLevelCollectionButton : LocalLevelButton
