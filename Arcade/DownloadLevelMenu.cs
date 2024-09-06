@@ -313,7 +313,7 @@ namespace BetterLegacy.Arcade
                 LevelManager.Levels.Add(level);
 
                 if (ArcadeConfig.Instance.OpenOnlineLevelAfterDownload.Value)
-                    PlayLevelMenu.Init(level);
+                    CoreHelper.StartCoroutine(SelectLocalLevel(level));
             }));
         }
 
@@ -330,9 +330,10 @@ namespace BetterLegacy.Arcade
         public IEnumerator SelectLocalLevel(Level level)
         {
             if (!level.music)
-                yield return CoreHelper.StartCoroutine(level.LoadAudioClipRoutine(() => { OpenPlayLevelMenu(level); }));
+                CoreHelper.StartCoroutine(level.LoadAudioClipRoutine(() => { OpenPlayLevelMenu(level); }));
             else
                 OpenPlayLevelMenu(level);
+            yield break;
         }
 
         void OpenPlayLevelMenu(Level level)
