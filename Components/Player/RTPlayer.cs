@@ -1657,7 +1657,7 @@ namespace BetterLegacy.Components.Player
 
             yield return new WaitForSeconds(boostCooldown / CoreHelper.ForwardPitch);
             CanBoost = true;
-            if (PlayBoostRecoverSound && !(PlayerConfig.Instance.PlaySoundRBoostTail.Value || showBoostTail))
+            if (PlayBoostRecoverSound && (!PlayerConfig.Instance.PlaySoundRBoostTail.Value || showBoostTail))
                 AudioManager.inst.PlaySound("boost_recover");
 
             if (showBoostTail)
