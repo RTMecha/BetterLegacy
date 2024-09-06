@@ -15,6 +15,8 @@
 - Text editor
 - New modifiers [prizeObject, setParent, playerAction (PlayerActionSet) trigger]
 - Asset sharing on the online server. (Prefabs, themes, player models, etc)
+- Collab sharing via server?
+- Editor online backups?
 ### Misc
 - Rework arcade menu to use new interface system.
 - Possibly update input select scene to use new interface system.
