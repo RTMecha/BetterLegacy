@@ -42,6 +42,11 @@ namespace BetterLegacy.Configs
         public Setting<bool> PlaySoundR { get; set; }
 
         /// <summary>
+        /// If the boost recovery sound should only play if the player has the boost tail.
+        /// </summary>
+        public Setting<bool> PlaySoundRBoostTail { get; set; }
+
+        /// <summary>
         /// Makes Player ignore solid objects in editor.
         /// </summary>
         public Setting<bool> ZenEditorIncludesSolid { get; set; }
@@ -102,6 +107,7 @@ namespace BetterLegacy.Configs
 
             PlaySoundB = Bind(this, "General", "Play Boost Sound", true, "Plays a little sound when you boost.");
             PlaySoundR = Bind(this, "General", "Play Boost Recover Sound", false, "Plays a little sound when you can boost again.");
+            PlaySoundRBoostTail = Bind(this, "General", "Boost Recover only with Boost Tail", true, "If the boost recovery sound should only play if the player has the boost tail.");
 
             ZenEditorIncludesSolid = Bind(this, "General", "Editor Zen Mode includes Solid", false, "Makes Player ignore solid objects in editor.");
 
