@@ -731,7 +731,7 @@ namespace BetterLegacy.Arcade
             // Click setting 2
             if (actions.Submit.WasPressed && selected.y == 2 && CurrentTab == 1)
             {
-                Settings[CurrentTab][selected.x].Clickable.onClick?.Invoke(null);
+                Settings[CurrentTab][2].Clickable.onClick?.Invoke(null);
             }
 
             // Set tabs
