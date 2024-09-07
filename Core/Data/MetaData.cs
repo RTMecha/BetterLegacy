@@ -620,7 +620,7 @@ namespace BetterLegacy.Core.Data
         }
 
         public int linkType = 2;
-        public string link = "album/full-devoid";
+        public string link;
         public string[] tags;
 
         #region Operators
