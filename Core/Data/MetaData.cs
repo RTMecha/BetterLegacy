@@ -328,7 +328,7 @@ namespace BetterLegacy.Core.Data
                         tags = new string[jn["song"]["tags"].Count];
                         for (int i = 0; i < jn["song"]["tags"].Count; i++)
                         {
-                            tags[i] = jn["song"]["tags"][i];
+                            tags[i] = jn["song"]["tags"][i].Value.Replace(" ", "_");
                         }
                     }
                 }
