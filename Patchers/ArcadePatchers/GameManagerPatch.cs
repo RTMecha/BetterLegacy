@@ -63,7 +63,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool StartPrefix()
         {
-            AudioManager.inst.CurrentAudioSource.time = 0f;
+            AudioManager.inst.SetMusicTime(0f);
             Instance.gameState = GameManager.State.Loading;
             InputDataManager.inst.PlayerPrefabs = Instance.PlayerPrefabs;
             InputDataManager.inst.playersCanJoin = false;
@@ -174,64 +174,64 @@ namespace BetterLegacy.Patchers
 
         public static IEnumerator ReverseToCheckpointLoop(GameManager __instance)
         {
-            if (!__instance.isReversing)
+            if (__instance.isReversing)
+                yield break;
+
+            __instance.playingCheckpointAnimation = true;
+            __instance.isReversing = true;
+
+            int index = DataManager.inst.gameData.beatmapData.checkpoints.FindLastIndex(x => x.time < AudioManager.inst.CurrentAudioSource.time);
+            if (index < 0)
+                index = 0;
+
+            var checkpoint = DataManager.inst.gameData.beatmapData.checkpoints[index];
+
+            var animation = new RTAnimation("Reverse");
+            animation.animationHandlers = new List<AnimationHandlerBase>
             {
-                __instance.playingCheckpointAnimation = true;
-                __instance.isReversing = true;
-
-                int index = DataManager.inst.gameData.beatmapData.checkpoints.FindLastIndex(x => x.time < AudioManager.inst.CurrentAudioSource.time);
-                if (index < 0)
-                    index = 0;
-
-                var checkpoint = DataManager.inst.gameData.beatmapData.checkpoints[index];
-
-                var animation = new RTAnimation("Reverse");
-                animation.animationHandlers = new List<AnimationHandlerBase>
+                new AnimationHandler<float>(new List<IKeyframe<float>>
                 {
-                    new AnimationHandler<float>(new List<IKeyframe<float>>
-                    {
-                        new FloatKeyframe(0f, AudioManager.inst.CurrentAudioSource.pitch, Ease.Linear),
-                        new FloatKeyframe(1f, -1.5f, Ease.CircIn)
-                    }, delegate (float x)
-                    {
-                        if (AudioManager.inst.CurrentAudioSource.time > 1f)
-                            AudioManager.inst.SetPitch(x);
-                        else
-                            AudioManager.inst.CurrentAudioSource.time = 1f;
-                    }),
-                };
-
-                animation.onComplete = delegate ()
+                    new FloatKeyframe(0f, AudioManager.inst.CurrentAudioSource.pitch, Ease.Linear),
+                    new FloatKeyframe(1f, -1.5f, Ease.CircIn)
+                }, x =>
                 {
-                    AnimationManager.inst.RemoveID(animation.id);
-                };
+                    if (AudioManager.inst.CurrentAudioSource.time > 1f)
+                        AudioManager.inst.SetPitch(x);
+                    else
+                        AudioManager.inst.SetMusicTime(1f);
+                }),
+            };
 
-                AnimationManager.inst.Play(animation);
+            animation.onComplete = () =>
+            {
+                AnimationManager.inst.RemoveID(animation.id);
+            };
 
-                //AudioManager.inst.SetPitch(-1.5f);
-                AudioManager.inst.PlaySound("rewind");
+            AnimationManager.inst.Play(animation);
 
-                yield return new WaitForSeconds(2f);
+            AudioManager.inst.PlaySound("rewind");
 
-                float time = Mathf.Clamp(checkpoint.time + 0.01f, 0.1f, AudioManager.inst.CurrentAudioSource.clip.length);
-                if (EditorManager.inst == null && (DataManager.inst.GetSettingInt("ArcadeDifficulty", 0) == 2 || DataManager.inst.GetSettingInt("ArcadeDifficulty", 0) == 3))
-                    time = 0.1f;
+            yield return new WaitForSeconds(2f);
 
-                AudioManager.inst.CurrentAudioSource.time = time;
-                __instance.gameState = GameManager.State.Playing;
+            float time = Mathf.Clamp(checkpoint.time + 0.01f, 0.1f, AudioManager.inst.CurrentAudioSource.clip.length);
+            if (EditorManager.inst == null && (DataManager.inst.GetSettingInt("ArcadeDifficulty", 0) == 2 || DataManager.inst.GetSettingInt("ArcadeDifficulty", 0) == 3))
+                time = 0.1f;
 
-                AudioManager.inst.CurrentAudioSource.Play();
-                AudioManager.inst.SetPitch(__instance.getPitch());
+            AudioManager.inst.SetMusicTime(time);
+            __instance.gameState = GameManager.State.Playing;
 
-                __instance.UpdateEventSequenceTime();
-                __instance.isReversing = false;
+            AudioManager.inst.CurrentAudioSource.Play();
+            AudioManager.inst.SetPitch(__instance.getPitch());
 
-                yield return new WaitForSeconds(0.1f);
+            __instance.UpdateEventSequenceTime();
+            __instance.isReversing = false;
 
-                __instance.SpawnPlayers(checkpoint.pos);
-                __instance.playingCheckpointAnimation = false;
-                checkpoint = null;
-            }
+            yield return new WaitForSeconds(0.1f);
+
+            __instance.SpawnPlayers(checkpoint.pos);
+            __instance.playingCheckpointAnimation = false;
+            checkpoint = null;
+
             yield break;
         }
 

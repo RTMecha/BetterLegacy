@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Configs;
+using BetterLegacy.Core.Helpers;
 using System;
 using System.Collections;
 using UnityEngine;
@@ -26,12 +27,6 @@ namespace BetterLegacy.Core.Managers
 
         public event Action<bool, float, float> UpdatedAudioPos;
 
-        bool prevPlaying;
-        float prevTime;
-        float prevPitch;
-
-        bool canUpdate = true;
-
         public static void Init() => Creator.NewGameObject(nameof(VideoManager), SystemManager.inst.transform).AddComponent<RTVideoManager>();
 
         void Awake()
@@ -44,23 +39,10 @@ namespace BetterLegacy.Core.Managers
             videoPlayer.timeSource = VideoTimeSource.GameTimeSource;
             videoPlayer.audioOutputMode = VideoAudioOutputMode.None;
             videoPlayer.isLooping = false;
+            videoPlayer.playOnAwake = true;
             videoPlayer.waitForFirstFrame = false;
 
             UpdatedAudioPos += UpdateTime;
-        }
-
-        void Update()
-        {
-            if (canUpdate && (prevTime != AudioManager.inst.CurrentAudioSource.time || prevPlaying != AudioManager.inst.CurrentAudioSource.isPlaying))
-            {
-                if (videoPlayer != null && videoPlayer.enabled && videoPlayer.isPrepared)
-                {
-                    UpdatedAudioPos?.Invoke(AudioManager.inst.CurrentAudioSource.isPlaying, AudioManager.inst.CurrentAudioSource.time, AudioManager.inst.CurrentAudioSource.pitch);
-                }
-            }
-            prevPlaying = AudioManager.inst.CurrentAudioSource.isPlaying;
-            prevTime = AudioManager.inst.CurrentAudioSource.time;
-            prevPitch = AudioManager.inst.CurrentAudioSource.pitch;
         }
 
         public void SetType(RenderType renderType)
@@ -76,20 +58,41 @@ namespace BetterLegacy.Core.Managers
             Play(currentURL, currentAlpha);
         }
 
+        public static YieldType yieldType = YieldType.FixedUpdate;
+
+        public bool stopped = false;
+
+        IEnumerator IUpdateVideo()
+        {
+            float delay = 0f;
+            while (true)
+            {
+                if (stopped)
+                {
+                    stopped = false;
+                    yield break;
+                }
+
+                UpdatedAudioPos?.Invoke(AudioManager.inst.CurrentAudioSource.isPlaying, AudioManager.inst.CurrentAudioSource.time, AudioManager.inst.CurrentAudioSource.pitch);
+
+                if (yieldType != YieldType.None)
+                    yield return CoreHelper.GetYieldInstruction(yieldType, ref delay);
+                else
+                    yield return null; // not having it yield return will freeze the game indefinitely.
+            }
+        }
+
         void UpdateTime(bool isPlaying, float time, float pitch)
         {
-            if (isPlaying)
-            {
-                if (!videoPlayer.isPlaying)
-                    videoPlayer.Play();
-                videoPlayer.Pause();
+            if (!videoPlayer || !videoPlayer.enabled)
+                return;
 
-                videoPlayer.time = time;
-            }
-            else
-            {
+            if (isPlaying && !videoPlayer.isPlaying)
+                videoPlayer.Play();
+            else if (videoPlayer.isPaused)
                 videoPlayer.Pause();
-            }
+            videoPlayer.playbackSpeed = pitch;
+            videoPlayer.time = time;
         }
 
         public string currentURL;
@@ -152,6 +155,8 @@ namespace BetterLegacy.Core.Managers
             videoPlayer.clip = videoClip;
             videoPlayer.Prepare();
             didntPlay = false;
+
+            CoreHelper.StartCoroutine(IUpdateVideo());
         }
 
         public void Play(string url, float alpha)
@@ -187,6 +192,8 @@ namespace BetterLegacy.Core.Managers
             videoPlayer.url = url;
             videoPlayer.Prepare();
             didntPlay = false;
+
+            CoreHelper.StartCoroutine(IUpdateVideo());
         }
 
         public void Stop()
@@ -199,6 +206,8 @@ namespace BetterLegacy.Core.Managers
                 Debug.LogError($"{className}VideoPlayer does not exist so it wasn't disabled. Continuing...");
 
             videoTexture?.SetActive(false);
+
+            stopped = true;
         }
     }
 }

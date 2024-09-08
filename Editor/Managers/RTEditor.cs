@@ -2321,7 +2321,7 @@ namespace BetterLegacy.Editor.Managers
             timeField.onValueChanged.AddListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
-                    AudioManager.inst.CurrentAudioSource.time = Mathf.Clamp(num, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                    AudioManager.inst.SetMusicTime(num);
             });
 
             TriggerHelper.AddEventTriggers(timeObj, TriggerHelper.ScrollDelta(timeField));

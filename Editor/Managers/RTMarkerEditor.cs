@@ -72,7 +72,7 @@ namespace BetterLegacy.Editor.Managers
                 markerEnd = DataManager.inst.gameData.beatmapData.markers.Count - 1;
 
             if (AudioManager.inst.CurrentAudioSource.time > DataManager.inst.gameData.beatmapData.markers[markerEnd].time)
-                AudioManager.inst.CurrentAudioSource.time = DataManager.inst.gameData.beatmapData.markers[markerStart].time;
+                AudioManager.inst.SetMusicTime(DataManager.inst.gameData.beatmapData.markers[markerStart].time);
         }
 
         public IEnumerator SetupUI()

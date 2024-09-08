@@ -18,9 +18,9 @@ namespace BetterLegacy.Patchers
             __instance.sfxVol = (float)DataManager.inst.GetSettingInt("EffectsVolume", 9) / 9f * __instance.masterVol;
             if (!__instance.isFading)
             {
-                __instance.musicSources[__instance.activeMusicSourceIndex].volume = __instance.musicVol;
+                __instance.CurrentAudioSource.volume = __instance.musicVol;
             }
-            __instance.musicSources[__instance.activeMusicSourceIndex].pitch = __instance.pitch;
+            __instance.CurrentAudioSource.pitch = __instance.pitch;
 
             return false;
         }

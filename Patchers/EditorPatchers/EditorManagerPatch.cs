@@ -619,7 +619,7 @@ namespace BetterLegacy.Patchers
             var rect = new Rect(0f, 0.305f * (float)Screen.height, (float)Screen.width, (float)Screen.height * 0.025f);
             if (Instance.updateAudioTime && Input.GetMouseButtonUp(0) && rect.Contains(point))
             {
-                AudioManager.inst.CurrentAudioSource.time = Instance.audioTimeForSlider / Instance.Zoom;
+                AudioManager.inst.SetMusicTime(Instance.audioTimeForSlider / Instance.Zoom);
                 Instance.updateAudioTime = false;
             }
             if (Input.GetMouseButton(0) && rect.Contains(point) && RTEditor.inst && RTEditor.inst.timelineSlider)
@@ -637,12 +637,12 @@ namespace BetterLegacy.Patchers
                         AudioManager.inst.CurrentAudioSource.Pause();
                         Instance.UpdatePlayButton();
                     }
-                    AudioManager.inst.CurrentAudioSource.time = Instance.audioTimeForSlider / Instance.Zoom;
+                    AudioManager.inst.SetMusicTime(Instance.audioTimeForSlider / Instance.Zoom);
                 }
             }
             else if (Instance.updateAudioTime && Instance.wasDraggingPointer && !rect.Contains(point))
             {
-                AudioManager.inst.CurrentAudioSource.time = Instance.audioTimeForSlider / Instance.Zoom;
+                AudioManager.inst.SetMusicTime(Instance.audioTimeForSlider / Instance.Zoom);
                 Instance.updateAudioTime = false;
                 Instance.wasDraggingPointer = false;
             }

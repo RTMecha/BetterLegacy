@@ -417,7 +417,7 @@ namespace BetterLegacy.Components.Editor
             {
                 selected = (EventKeyframe)beatmapObject.events[type].Find(x => x.eventTime > timeOffset - 0.1f && x.eventTime < timeOffset + 0.1f);
                 index = beatmapObject.events[type].FindIndex(x => x.eventTime > timeOffset - 0.1f && x.eventTime < timeOffset + 0.1f);
-                AudioManager.inst.CurrentAudioSource.time = selected.eventTime + beatmapObject.StartTime;
+                AudioManager.inst.SetMusicTime(selected.eventTime + beatmapObject.StartTime);
             }
             else if (CreateKeyframe)
             {
