@@ -49,7 +49,7 @@ namespace BetterLegacy.Arcade
             {
                 id = "626274",
                 name = "Close Button",
-                rect = RectValues.Default.AnchoredPosition(-560f, 440f).SizeDelta(250f, 64f),
+                rect = RectValues.Default.AnchoredPosition(-676f, 460f).SizeDelta(250f, 64f),
                 selectionPosition = Vector2Int.zero,
                 text = "<b><align=center><size=40>[ RETURN ]",
                 opacity = 0.1f,
@@ -69,7 +69,7 @@ namespace BetterLegacy.Arcade
             {
                 id = "4857529985",
                 name = "Copy ID",
-                rect = RectValues.Default.AnchoredPosition(550f, 440f).SizeDelta(250f, 64f),
+                rect = RectValues.Default.AnchoredPosition(576f, 460f).SizeDelta(250f, 64f),
                 selectionPosition = new Vector2Int(1, 0),
                 text = $"<b><align=center><size=40>[ COPY ID ]",
                 opacity = 0.1f,
@@ -87,7 +87,7 @@ namespace BetterLegacy.Arcade
             {
                 id = "5356325",
                 name = "Backer",
-                rect = RectValues.Default.AnchoredPosition(250f, 100f).SizeDelta(844f, 512f),
+                rect = RectValues.Default.AnchoredPosition(250f, 100f).SizeDelta(900f, 600f),
                 opacity = 0.1f,
                 color = 6,
                 length = 0.1f,
@@ -97,7 +97,7 @@ namespace BetterLegacy.Arcade
             {
                 id = "84682758635",
                 name = "Cover",
-                rect = RectValues.Default.AnchoredPosition(-430f, 100f).SizeDelta(512f, 512f),
+                rect = RectValues.Default.AnchoredPosition(-500f, 100f).SizeDelta(600f, 600f),
                 icon = ArcadeMenu.OnlineLevelIcons.ContainsKey(jn["id"]) ? ArcadeMenu.OnlineLevelIcons[jn["id"]] : SteamWorkshop.inst.defaultSteamImageSprite,
                 opacity = 1f,
                 val = 40f,
@@ -113,7 +113,7 @@ namespace BetterLegacy.Arcade
             {
                 id = "4624859539",
                 name = "Title",
-                rect = RectValues.Default.AnchoredPosition(-80f, 280f),
+                rect = RectValues.Default.AnchoredPosition(-80f, 320f),
                 text = $"<size={size}><b>{name}",
                 hideBG = true,
                 textColor = 6,
@@ -123,7 +123,7 @@ namespace BetterLegacy.Arcade
             {
                 id = "4624859539",
                 name = "Song",
-                rect = RectValues.Default.AnchoredPosition(-100f, 200f),
+                rect = RectValues.Default.AnchoredPosition(-100f, 240f),
                 text = $"<size=40>Song:",
                 hideBG = true,
                 textColor = 6,
@@ -133,7 +133,7 @@ namespace BetterLegacy.Arcade
             {
                 id = "638553",
                 name = "Song Button",
-                rect = RectValues.Default.AnchoredPosition(340f, 200f).SizeDelta(500f, 48f),
+                rect = RectValues.Default.AnchoredPosition(340f, 240f).SizeDelta(500f, 48f),
                 text = $" [ {jn["title"].Value} ]",
                 opacity = 0f,
                 color = 6,
@@ -146,7 +146,7 @@ namespace BetterLegacy.Arcade
             {
                 id = "4624859539",
                 name = "Artist",
-                rect = RectValues.Default.AnchoredPosition(-100f, 150f),
+                rect = RectValues.Default.AnchoredPosition(-100f, 190f),
                 text = $"<size=40>Artist:",
                 hideBG = true,
                 textColor = 6,
@@ -156,7 +156,7 @@ namespace BetterLegacy.Arcade
             {
                 id = "638553",
                 name = "Artist Button",
-                rect = RectValues.Default.AnchoredPosition(340f, 150f).SizeDelta(500f, 48f),
+                rect = RectValues.Default.AnchoredPosition(340f, 190f).SizeDelta(500f, 48f),
                 text = $" [ {jn["artist"].Value} ]",
                 opacity = 0f,
                 color = 6,
@@ -168,7 +168,7 @@ namespace BetterLegacy.Arcade
             {
                 id = "4624859539",
                 name = "Creator",
-                rect = RectValues.Default.AnchoredPosition(-100f, 100f),
+                rect = RectValues.Default.AnchoredPosition(-100f, 140f),
                 text = $"<size=40>Creator:",
                 hideBG = true,
                 textColor = 6,
@@ -178,7 +178,7 @@ namespace BetterLegacy.Arcade
             {
                 id = "638553",
                 name = "Creator Button",
-                rect = RectValues.Default.AnchoredPosition(340f, 100f).SizeDelta(500f, 48f),
+                rect = RectValues.Default.AnchoredPosition(340f, 140f).SizeDelta(500f, 48f),
                 text = $" [ {jn["creator"].Value} ]",
                 opacity = 0f,
                 color = 6,
@@ -191,7 +191,7 @@ namespace BetterLegacy.Arcade
             {
                 id = "4624859539",
                 name = "Difficulty",
-                rect = RectValues.Default.AnchoredPosition(-100f, 50f),
+                rect = RectValues.Default.AnchoredPosition(-100f, 90f),
                 text = $"<size=40>Difficulty: <b><#{LSColors.ColorToHex(difficulty.color)}><voffset=-13><size=64>■</voffset><size=40>{difficulty.name}",
                 hideBG = true,
                 textColor = 6,
@@ -201,7 +201,7 @@ namespace BetterLegacy.Arcade
             {
                 id = "4624859539",
                 name = "Description Label",
-                rect = RectValues.Default.AnchoredPosition(250f, -20f).SizeDelta(800f, 100f),
+                rect = RectValues.Default.AnchoredPosition(250f, 20f).SizeDelta(800f, 100f),
                 text = "<size=40><b>Description:",
                 hideBG = true,
                 textColor = 6,
@@ -213,8 +213,20 @@ namespace BetterLegacy.Arcade
             {
                 id = "4624859539",
                 name = "Description",
-                rect = RectValues.Default.AnchoredPosition(250f, -60f).SizeDelta(800f, 100f),
+                rect = RectValues.Default.AnchoredPosition(250f, -20f).SizeDelta(800f, 100f),
                 text = "<size=22>" + jn["description"],
+                hideBG = true,
+                textColor = 6,
+                enableWordWrapping = true,
+                alignment = TMPro.TextAlignmentOptions.TopLeft,
+            });
+
+            elements.Add(new MenuText
+            {
+                id = "4624859539",
+                name = "Tags",
+                rect = RectValues.Default.AnchoredPosition(250f, -200f).SizeDelta(800f, 100f),
+                text = "<size=22><b>Tags</b>: " + CurrentOnlineLevel["tags"].Value,
                 hideBG = true,
                 textColor = 6,
                 enableWordWrapping = true,
@@ -227,7 +239,7 @@ namespace BetterLegacy.Arcade
                 {
                     id = "3525734",
                     name = "Download Button",
-                    rect = RectValues.Default.AnchoredPosition(-430f, -220f).SizeDelta(512f, 64f),
+                    rect = RectValues.Default.AnchoredPosition(-500f, -260f).SizeDelta(600f, 64f),
                     selectionPosition = new Vector2Int(0, 1),
                     text = "<size=40><b><align=center>[ UPDATE ]",
                     opacity = 0.1f,
@@ -245,7 +257,7 @@ namespace BetterLegacy.Arcade
                 {
                     id = "498145857",
                     name = "Play Button",
-                    rect = RectValues.Default.AnchoredPosition(-430f, -320f).SizeDelta(512f, 64f),
+                    rect = RectValues.Default.AnchoredPosition(-500f, -360f).SizeDelta(600f, 64f),
                     selectionPosition = new Vector2Int(0, 2),
                     text = "<size=40><b><align=center>[ OPEN LEVEL ]",
                     opacity = 0.1f,
@@ -265,7 +277,7 @@ namespace BetterLegacy.Arcade
                 {
                     id = "3525734",
                     name = "Download Button",
-                    rect = RectValues.Default.AnchoredPosition(-430f, -220f).SizeDelta(512f, 64f),
+                    rect = RectValues.Default.AnchoredPosition(-500f, -260f).SizeDelta(600f, 64f),
                     selectionPosition = new Vector2Int(0, 1),
                     text = "<size=40><b><align=center>[ DOWNLOAD ]",
                     opacity = 0.1f,
