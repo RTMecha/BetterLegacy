@@ -916,6 +916,13 @@ namespace BetterLegacy.Core
             return t != null;
         }
 
+        public static bool TryFindIndex<T>(this List<T> ts, Predicate<T> match, out int index)
+        {
+            var i = ts.FindIndex(match);
+            index = i;
+            return index >= 0 && index < ts.Count;
+        }
+
         public static Vector3 X(this Vector3 vector3) => new Vector3(vector3.x, 0f, 0f);
         public static Vector3 Y(this Vector3 vector3) => new Vector3(0f, vector3.y, 0f);
         public static Vector3 Z(this Vector3 vector3) => new Vector3(0f, 0f, vector3.z);
