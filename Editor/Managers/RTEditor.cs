@@ -415,6 +415,11 @@ namespace BetterLegacy.Editor.Managers
                 tooltipActive = true;
 
                 mouseTooltip?.SetActive(true);
+
+                if (mouseTooltipText)
+                    LayoutRebuilder.ForceRebuildLayoutImmediate(mouseTooltipText.rectTransform);
+                if (mouseTooltipRT)
+                    LayoutRebuilder.ForceRebuildLayoutImmediate(mouseTooltipRT);
             }
 
             if (tooltipActive)
