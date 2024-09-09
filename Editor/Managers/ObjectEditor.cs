@@ -1593,7 +1593,7 @@ namespace BetterLegacy.Editor.Managers
                 rectTransform.anchoredPosition = new Vector2(startTime * zoom, (-20 * Mathf.Clamp(bin, 0, 14)));
                 if (timelineObject.Hover)
                     timelineObject.Hover.size = TimelineObjectHoverSize;
-                gameObject.SetActive(true);
+                gameObject.SetActive(RTEditor.inst.Layer == timelineObject.Layer);
             }
 
             return gameObject;
