@@ -1,3 +1,8 @@
+1.4.5 > [Sep 9, 2024]
+- Fixed updating a level creating duplicated levels in local arcade.
+- Downloaded level folder now contains level name for clarity.
+- Timeline objects no longer spawn on the first frame.
+- Fixed mouse tooltip UI bugging out.
 1.4.4 > [Sep 8, 2024]
 - Resized Play & Download Level menus.
 - Added tag displaying to arcade.
