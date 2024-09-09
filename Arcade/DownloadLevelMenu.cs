@@ -305,10 +305,18 @@ namespace BetterLegacy.Arcade
             var jn = CurrentOnlineLevel;
             Close();
 
-            var directory = $"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{jn["id"].Value}";
+            var directory = $"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{RTFile.ValidateDirectory(jn["name"].Value)} [{jn["id"].Value}]";
 
             CoreHelper.StartCoroutine(AlephNetworkManager.DownloadBytes($"{ArcadeMenu.DownloadURL}{jn["id"].Value}.zip", bytes =>
             {
+                if (LevelManager.Levels.TryFindIndex(x => x.metadata.serverID == jn["id"].Value, out int existingLevelIndex)) // prevent multiple of the same level ID
+                {
+                    var existingLevel = LevelManager.Levels[existingLevelIndex];
+                    if (RTFile.DirectoryExists(existingLevel.path))
+                        Directory.Delete(existingLevel.path, true);
+                    LevelManager.Levels.RemoveAt(existingLevelIndex);
+                }
+
                 if (RTFile.DirectoryExists(directory))
                     Directory.Delete(directory, true);
 
