@@ -39,10 +39,10 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public static void OnLevelTick()
         {
-            if (!GameData.IsValid || GameData.Current.modifierCount <= 0 && !CoreHelper.InEditor)
-            {
-                return;
-            }
+            //if (!GameData.IsValid || GameData.Current.modifierCount <= 0 && !CoreHelper.InEditor)
+            //{
+            //    return;
+            //}
 
             var order = DataManager.inst.gameData is GameData gameData ? gameData.BeatmapObjects.FindAll(x => x.modifiers.Count > 0) : null;
 
