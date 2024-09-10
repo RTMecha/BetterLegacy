@@ -4282,7 +4282,7 @@ namespace BetterLegacy.Editor.Managers
                              HideWarningPopup();
                          }, HideWarningPopup);
                      }) { FontSize = 16 },
-                     new ButtonFunction("Clear animations", () =>
+                     new ButtonFunction("Clear anims", () =>
                      {
                          ShowWarningPopup("You are about to clear animations from all selected objects, this <b>CANNOT</b> be undone!", () =>
                          {
