@@ -64,17 +64,23 @@ namespace BetterLegacy.Core.Managers
             if (!CoreHelper.Playing && !CoreHelper.Reversing && !GameData.IsValid)
                 return;
 
-            foreach (var beatmapObject in GameData.Current.BeatmapObjects.Where(x =>
-                            x.shape == 4 && x.Alive && x.objectType != BeatmapObject.ObjectType.Empty))
+            if (!AudioManager.inst.CurrentAudioSource.clip)
+                return;
+
+            var beatmapObjects = GameData.Current.BeatmapObjects.FindAll(x => x.shape == 4 && x.Alive && x.objectType != BeatmapObject.ObjectType.Empty);
+
+            var currentAudioTime = AudioManager.inst.CurrentAudioSource.time;
+            var currentAudioLength = AudioManager.inst.CurrentAudioSource.clip.length;
+
+            for (int i = 0; i < beatmapObjects.Count; i++)
             {
+                var beatmapObject = beatmapObjects[i];
+
                 try
                 {
                     if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject is TextObject textObject && textObject.textMeshPro)
                     {
                         var tmp = textObject.textMeshPro;
-
-                        var currentAudioTime = AudioManager.inst.CurrentAudioSource.time;
-                        var currentAudioLength = AudioManager.inst.CurrentAudioSource.clip.length;
 
                         var str = textObject.text;
 
@@ -287,7 +293,7 @@ namespace BetterLegacy.Core.Managers
                         {
                             var ph = 0;
 
-                            for (int i = 0; i < InputDataManager.inst.players.Count; i++)
+                            for (int j = 0; j < InputDataManager.inst.players.Count; j++)
                             {
                                 ph += InputDataManager.inst.players[i].health;
                             }

@@ -39,7 +39,12 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public static void OnLevelTick()
         {
-            var order = DataManager.inst.gameData is GameData gameData ? gameData.BeatmapObjects.OrderBy(x => x.StartTime).Where(x => x.modifiers.Count > 0).ToList() : null;
+            if (!GameData.IsValid || GameData.Current.modifierCount <= 0 && !CoreHelper.InEditor)
+            {
+                return;
+            }
+
+            var order = DataManager.inst.gameData is GameData gameData ? gameData.BeatmapObjects.FindAll(x => x.modifiers.Count > 0) : null;
 
             if (order != null && CoreHelper.Playing)
                 for (int i = 0; i < order.Count; i++)

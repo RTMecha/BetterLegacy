@@ -887,7 +887,11 @@ namespace BetterLegacy.Core.Data
             }
 
             for (int i = 0; i < jn["beatmap_objects"].Count; i++)
-                gameData.beatmapObjects.Add(Data.BeatmapObject.Parse(jn["beatmap_objects"][i]));
+            {
+                var beatmapObject = Data.BeatmapObject.Parse(jn["beatmap_objects"][i]);
+                gameData.beatmapObjects.Add(beatmapObject);
+                gameData.modifierCount += beatmapObject.modifiers.Count;
+            }
 
             if (parseOptimizations)
                 for (int i = 0; i < gameData.beatmapObjects.Count; i++)
@@ -1318,6 +1322,8 @@ namespace BetterLegacy.Core.Data
         }
 
         #endregion
+
+        public int modifierCount;
 
         public bool Modded => BeatmapObjectsModded || EventKeyframesModded || PrefabObjectsModded;
 
