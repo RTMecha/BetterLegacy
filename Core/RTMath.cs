@@ -5,6 +5,8 @@ using System.Linq;
 using UnityEngine;
 
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Helpers;
+using System.Text.RegularExpressions;
 
 namespace BetterLegacy.Core
 {
@@ -15,20 +17,40 @@ namespace BetterLegacy.Core
 
         public static string Replace(string input)
         {
-            return input
-                .Replace("player1PosX", PlayerManager.Players.Count <= 0 || PlayerManager.Players[0].Player == null ? "0" : PlayerManager.Players[0].Player.rb.position.x.ToString())
-                .Replace("player1PosY", PlayerManager.Players.Count <= 0 || PlayerManager.Players[0].Player == null ? "0" : PlayerManager.Players[0].Player.rb.position.y.ToString())
-                .Replace("player2PosX", PlayerManager.Players.Count <= 1 || PlayerManager.Players[1].Player == null ? "0" : PlayerManager.Players[1].Player.rb.position.x.ToString())
-                .Replace("player2PosY", PlayerManager.Players.Count <= 1 || PlayerManager.Players[1].Player == null ? "0" : PlayerManager.Players[1].Player.rb.position.y.ToString())
-                .Replace("player3PosX", PlayerManager.Players.Count <= 2 || PlayerManager.Players[2].Player == null ? "0" : PlayerManager.Players[2].Player.rb.position.x.ToString())
-                .Replace("player3PosY", PlayerManager.Players.Count <= 2 || PlayerManager.Players[2].Player == null ? "0" : PlayerManager.Players[2].Player.rb.position.y.ToString())
-                .Replace("player4PosX", PlayerManager.Players.Count <= 3 || PlayerManager.Players[3].Player == null ? "0" : PlayerManager.Players[3].Player.rb.position.x.ToString())
-                .Replace("player4PosY", PlayerManager.Players.Count <= 3 || PlayerManager.Players[3].Player == null ? "0" : PlayerManager.Players[3].Player.rb.position.y.ToString())
-                .Replace("actionMoveX", InputDataManager.inst.menuActions.Move.X.ToString())
-                .Replace("actionMoveY", InputDataManager.inst.menuActions.Move.Y.ToString())
-                .Replace("time", Time.time.ToString())
-                .Replace("deltaTime", Time.deltaTime.ToString())
-                .Replace("audioTime", AudioManager.inst.CurrentAudioSource.time.ToString());
+            try
+            {
+                if (CoreHelper.RegexMatch(input, new Regex(@"player([0-9]+)PosX"), out Match matchX))
+                {
+                    var baseString = matchX.Groups[0].ToString();
+                    var index = Mathf.Clamp(Parser.TryParse(matchX.Groups[1].ToString(), 0), 1, int.MaxValue) - 1;
+
+                    if (PlayerManager.Players.Count <= index || !PlayerManager.Players[index].Player || !PlayerManager.Players[index].Player.rb)
+                        input = input.Replace(baseString, "0");
+                    else
+                        input = input.Replace(baseString, PlayerManager.Players[0].Player.rb.position.x.ToString());
+                }
+                if (CoreHelper.RegexMatch(input, new Regex(@"player([0-9]+)PosY"), out Match matchY))
+                {
+                    var baseString = matchY.Groups[0].ToString();
+                    var index = Mathf.Clamp(Parser.TryParse(matchY.Groups[1].ToString(), 0), 1, int.MaxValue) - 1;
+
+                    if (PlayerManager.Players.Count <= index || !PlayerManager.Players[index].Player || !PlayerManager.Players[index].Player.rb)
+                        input = input.Replace(baseString, "0");
+                    else
+                        input = input.Replace(baseString, PlayerManager.Players[0].Player.rb.position.y.ToString());
+                }
+
+                return input
+                    .Replace("actionMoveX", InputDataManager.inst.menuActions.Move.X.ToString())
+                    .Replace("actionMoveY", InputDataManager.inst.menuActions.Move.Y.ToString())
+                    .Replace("time", Time.time.ToString())
+                    .Replace("deltaTime", Time.deltaTime.ToString())
+                    .Replace("audioTime", AudioManager.inst.CurrentAudioSource.time.ToString());
+            }
+            catch
+            {
+                return input;
+            }
         }
 
         public static float Lerp(float x, float y, float t) => x + (y - x) * t;
