@@ -3248,6 +3248,10 @@ namespace BetterLegacy.Core.Helpers
                                 Color color;
                                 {
                                     var prevKFIndex = beatmapObject.events[3].FindLastIndex(x => x.eventTime < time);
+
+                                    if (prevKFIndex < 0)
+                                        return;
+
                                     var prevKF = beatmapObject.events[3][prevKFIndex];
                                     var nextKF = beatmapObject.events[3][Mathf.Clamp(prevKFIndex + 1, 0, beatmapObject.events[3].Count - 1)];
                                     var easing = Ease.GetEaseFunction(nextKF.curveType.Name)(RTMath.InverseLerp(prevKF.eventTime, nextKF.eventTime, time));
@@ -4897,16 +4901,16 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "enableObject":
                     {
-                        if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.top)
+                        if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.top && Parser.TryParse(modifier.commands[1], true))
                             levelObject.top.gameObject.SetActive(false);
 
                         break;
                     }
                 case "enableObjectOther":
                     {
-                        var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.value));
+                        var list = CoreHelper.FindObjectsWithTag(modifier.value);
 
-                        if (list.Count() > 0)
+                        if (list.Count > 0 && Parser.TryParse(modifier.commands[1], true))
                         {
                             foreach (var beatmapObject in list)
                             {
@@ -4921,6 +4925,9 @@ namespace BetterLegacy.Core.Helpers
                     {
                         if (modifier.value == "0")
                             modifier.value = "False";
+
+                        if (!Parser.TryParse(modifier.commands[1], true))
+                            return;
 
                         if (modifier.Result == null)
                         {
@@ -4945,9 +4952,12 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "enableObjectTreeOther":
                     {
+                        if (!Parser.TryParse(modifier.commands[2], true))
+                            return;
+
                         if (modifier.Result == null)
                         {
-                            var beatmapObjects = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
+                            var beatmapObjects = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
 
                             var resultList = new List<List<DataManager.GameData.BeatmapObject>>();
                             foreach (var bm in beatmapObjects)
@@ -4977,7 +4987,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "disableObject":
                     {
-                        if (!modifier.hasChanged && modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.top)
+                        if (!modifier.hasChanged && modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.top && Parser.TryParse(modifier.commands[1], true))
                         {
                             levelObject.top.gameObject.SetActive(true);
                             modifier.hasChanged = true;
@@ -4987,9 +4997,9 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "disableObjectOther":
                     {
-                        var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.value));
+                        var list = CoreHelper.FindObjectsWithTag(modifier.value);
 
-                        if (list.Count() > 0)
+                        if (list.Count > 0 && Parser.TryParse(modifier.commands[1], true))
                         {
                             foreach (var beatmapObject in list)
                             {
@@ -5004,6 +5014,9 @@ namespace BetterLegacy.Core.Helpers
                     {
                         if (modifier.value == "0")
                             modifier.value = "False";
+
+                        if (!Parser.TryParse(modifier.commands[1], true))
+                            return;
 
                         if (Parser.TryParse(modifier.value, true))
                         {
@@ -5034,9 +5047,12 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "disableObjectTreeOther":
                     {
+                        if (!Parser.TryParse(modifier.commands[2], true))
+                            return;
+
                         if (modifier.Result == null)
                         {
-                            var beatmapObjects = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
+                            var beatmapObjects = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
 
                             var resultList = new List<List<DataManager.GameData.BeatmapObject>>();
                             foreach (var bm in beatmapObjects)
