@@ -1714,6 +1714,13 @@ namespace BetterLegacy.Editor.Managers
 
                     #region Enable / Disable
 
+                    case "enableObject":
+                    case "disableObject":
+                        {
+                            BoolGenerator(modifier, layout, "Reset", 1, true);
+                            break;
+                        }
+
                     case "enableObjectTree":
                     case "disableObjectTree":
                         {
@@ -1721,6 +1728,7 @@ namespace BetterLegacy.Editor.Managers
                                 modifier.value = "False";
 
                             BoolGenerator(modifier, layout, "Use Self", 0, true);
+                            BoolGenerator(modifier, layout, "Reset", 1, true);
 
                             break;
                         }
@@ -1729,6 +1737,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             StringGenerator(modifier, layout, "Object Group", 1);
                             BoolGenerator(modifier, layout, "Use Self", 0, true);
+                            BoolGenerator(modifier, layout, "Reset", 2, true);
 
                             break;
                         }
@@ -1736,6 +1745,7 @@ namespace BetterLegacy.Editor.Managers
                     case "disableObjectOther":
                         {
                             StringGenerator(modifier, layout, "Object Group", 0);
+                            BoolGenerator(modifier, layout, "Reset", 1, true);
 
                             break;
                         }
