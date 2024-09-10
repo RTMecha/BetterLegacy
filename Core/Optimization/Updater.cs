@@ -154,9 +154,10 @@ namespace BetterLegacy.Core.Optimization
         /// <param name="context">The specific context to update under.</param>
         public static void UpdateObject(BaseBeatmapObject beatmapObject, string context)
         {
+            context = context.ToLower().Replace(" ", "").Replace("_", "");
             if (TryGetObject(beatmapObject, out LevelObject levelObject))
             {
-                switch (context.ToLower().Replace(" ", "").Replace("_", ""))
+                switch (context)
                 {
                     case "objecttype":
                         {
@@ -326,9 +327,13 @@ namespace BetterLegacy.Core.Optimization
             {
                 CoreHelper.StartCoroutine(RecacheSequences(beatmapObject, levelProcessor.converter, true, true));
             }
-            else if (context.ToLower() == "starttime" || context.ToLower() == "time")
+            else if (context == "starttime" || context == "time")
             {
                 Sort();
+            }
+            else if (context == "objecttype")
+            {
+                UpdateObject(beatmapObject);
             }
         }
 
