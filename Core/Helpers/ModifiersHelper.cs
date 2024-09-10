@@ -3227,15 +3227,85 @@ namespace BetterLegacy.Core.Helpers
                         {
                             var list = CoreHelper.FindObjectsWithTag(modifier.value);
 
-                            if (list.Count > 0)
+                            if (list.Count > 0 && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer)
                                 foreach (var bm in list)
                                 {
                                     if (Updater.TryGetObject(bm, out LevelObject otherLevelObject) &&
-                                        otherLevelObject.visualObject.Renderer &&
-                                        Updater.TryGetObject(modifier.reference, out LevelObject levelObject) &&
-                                        levelObject.visualObject.Renderer)
+                                        otherLevelObject.visualObject.Renderer)
                                         otherLevelObject.visualObject.Renderer.material.color = levelObject.visualObject.Renderer.material.color;
                                 }
+
+                            break;
+                        }
+                    case "applyColorGroup":
+                        {
+                            var list = CoreHelper.FindObjectsWithTag(modifier.value);
+
+                            if (list.Count > 0 && Updater.levelProcessor.converter.cachedSequences.TryGetValue(modifier.reference.id, out ObjectConverter.CachedSequences cachedSequence))
+                            {
+                                var beatmapObject = modifier.reference;
+                                var time = Updater.CurrentTime - beatmapObject.StartTime;
+                                Color color;
+                                {
+                                    var prevKFIndex = beatmapObject.events[3].FindLastIndex(x => x.eventTime < time);
+                                    var prevKF = beatmapObject.events[3][prevKFIndex];
+                                    var nextKF = beatmapObject.events[3][Mathf.Clamp(prevKFIndex + 1, 0, beatmapObject.events[3].Count - 1)];
+                                    var easing = Ease.GetEaseFunction(nextKF.curveType.Name)(RTMath.InverseLerp(prevKF.eventTime, nextKF.eventTime, time));
+                                    int prevcolor = (int)prevKF.eventValues[0];
+                                    int nextColor = (int)nextKF.eventValues[0];
+                                    var lerp = RTMath.Lerp(0f, 1f, easing);
+                                    if (float.IsNaN(lerp) || float.IsInfinity(lerp))
+                                        lerp = 1f;
+
+                                    color = Color.Lerp(
+                                        CoreHelper.CurrentBeatmapTheme.GetObjColor(prevcolor),
+                                        CoreHelper.CurrentBeatmapTheme.GetObjColor(nextColor),
+                                        lerp);
+
+                                    lerp = RTMath.Lerp(prevKF.eventValues[1], nextKF.eventValues[1], easing);
+                                    if (float.IsNaN(lerp) || float.IsInfinity(lerp))
+                                        lerp = 1f;
+
+                                    color = LSColors.fadeColor(color, lerp);
+
+                                    var lerpHue = RTMath.Lerp(prevKF.eventValues[2], nextKF.eventValues[2], easing);
+                                    var lerpSat = RTMath.Lerp(prevKF.eventValues[3], nextKF.eventValues[3], easing);
+                                    var lerpVal = RTMath.Lerp(prevKF.eventValues[4], nextKF.eventValues[4], easing);
+
+                                    if (float.IsNaN(lerpHue))
+                                        lerpHue = nextKF.eventValues[2];
+                                    if (float.IsNaN(lerpSat))
+                                        lerpSat = nextKF.eventValues[3];
+                                    if (float.IsNaN(lerpVal))
+                                        lerpVal = nextKF.eventValues[4];
+
+                                    color = CoreHelper.ChangeColorHSV(color, lerpHue, lerpSat, lerpVal);
+                                }
+                                var type = Parser.TryParse(modifier.commands[1], 0);
+                                var axis = Parser.TryParse(modifier.commands[2], 0);
+
+                                var isEmpty = modifier.reference.objectType == BeatmapObject.ObjectType.Empty;
+
+                                float t = !isEmpty ? type switch
+                                {
+                                    0 => axis == 0 ? cachedSequence.Position3DSequence.Value.x : axis == 1 ? cachedSequence.Position3DSequence.Value.y : cachedSequence.Position3DSequence.Value.z,
+                                    1 => axis == 0 ? cachedSequence.ScaleSequence.Value.x : cachedSequence.ScaleSequence.Value.y,
+                                    2 => cachedSequence.RotationSequence.Value,
+                                    _ => 0f
+                                } : type switch
+                                {
+                                    0 => axis == 0 ? cachedSequence.Position3DSequence.Interpolate(time).x : axis == 1 ? cachedSequence.Position3DSequence.Interpolate(time).y : cachedSequence.Position3DSequence.Interpolate(time).z,
+                                    1 => axis == 0 ? cachedSequence.ScaleSequence.Interpolate(time).x : cachedSequence.ScaleSequence.Interpolate(time).y,
+                                    2 => cachedSequence.RotationSequence.Interpolate(time),
+                                    _ => 0f
+                                };
+
+                                foreach (var bm in list)
+                                {
+                                    if (Updater.TryGetObject(bm, out LevelObject otherLevelObject) && otherLevelObject.visualObject.Renderer)
+                                        otherLevelObject.visualObject.Renderer.material.color = Color.Lerp(otherLevelObject.visualObject.Renderer.material.color, color, t);
+                                }
+                            }
 
                             break;
                         }

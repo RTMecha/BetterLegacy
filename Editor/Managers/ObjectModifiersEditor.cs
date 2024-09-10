@@ -1198,6 +1198,14 @@ namespace BetterLegacy.Editor.Managers
 
                             break;
                         }
+                    case "applyColorGroup":
+                        {
+                            StringGenerator(modifier, layout, "Object Group", 0);
+                            DropdownGenerator(modifier, layout, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                            DropdownGenerator(modifier, layout, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
+
+                            break;
+                        }
                     #endregion
 
                     #region Signal
