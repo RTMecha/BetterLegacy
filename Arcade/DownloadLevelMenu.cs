@@ -305,7 +305,10 @@ namespace BetterLegacy.Arcade
             var jn = CurrentOnlineLevel;
             Close();
 
-            var directory = $"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{RTFile.ValidateDirectory(jn["name"].Value)} [{jn["id"].Value}]";
+            var name = jn["name"].Value;
+            name = CoreHelper.ReplaceFormatting(name); // for cases where a user has used symbols not allowed.
+            name = RTFile.ValidateDirectory(name);
+            var directory = $"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{name} [{jn["id"].Value}]";
 
             CoreHelper.StartCoroutine(AlephNetworkManager.DownloadBytes($"{ArcadeMenu.DownloadURL}{jn["id"].Value}.zip", bytes =>
             {
