@@ -1,3 +1,9 @@
+1.4.6 > [Sep 10, 2024]
+- Added a "Reset" toggle to enable / disableObject modifiers.
+- Added applyColorGroup modifier. This applies the objects' own color to a group of objects.
+- Shorted multi object editors' "Clear animations" to "Clear anims" so the entire label is visible in specific resolutions.
+- Fixed an error log spam that is caused by no players being active if the level has a copyAxisGroup modifier.
+- Fixed object type not updating sometimes.
 1.4.5 > [Sep 9, 2024]
 - Fixed updating a level creating duplicated levels in local arcade.
 - Downloaded level folder now contains level name for clarity.
