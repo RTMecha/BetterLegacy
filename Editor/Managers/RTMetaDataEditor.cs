@@ -179,7 +179,7 @@ namespace BetterLegacy.Editor.Managers
 
             content.Find("creator/description").AsRT().sizeDelta = new Vector2(757f, 140f);
             content.Find("creator/description/input").AsRT().sizeDelta = new Vector2(523f, 140f);
-            content.Find("agreement").AsRT().sizeDelta = new Vector2(732f, 100f);
+            content.Find("agreement").AsRT().sizeDelta = new Vector2(732f, 220f);
 
             content.Find("id/revisions").gameObject.SetActive(true);
 
@@ -722,8 +722,14 @@ namespace BetterLegacy.Editor.Managers
                 });
             }
 
-            content.Find("agreement/text").GetComponent<Text>().text = "If you want to upload to the Steam Workshop, you can convert the level to the current level format for vanilla PA and upload it to the workshop. Beware any modded features not in current PA will not be saved. " +
-                "However, if you want to include modded features, then it's recommended to upload to the arcade server or zip the level.";
+            //content.Find("agreement/text").GetComponent<Text>().text =
+            //    "If you want to upload to the Steam Workshop, you can convert the level to the current level format for vanilla PA and upload it to the workshop." +
+            //    "Beware any modded features not in current PA will not be saved. " +
+            //    "However, if you want to include modded features, then it's recommended to upload to the Arcade server.";
+            content.Find("agreement/text").GetComponent<Text>().text =
+                "If your level does not use any modded features (not including alpha ported ones) and your level uses a verified song, you can convert the level to an alpha level format and upload it using the alpha editor.*\n" +
+                "However, if your level DOES use modded features not present anywhere in vanilla or the song is not verified, then upload it to the Arcade server.\n\n" +
+                "* Make sure you test the level in vanilla first!";
 
             content.Find("id/id").GetComponent<Text>().text = !string.IsNullOrEmpty(metadata.ID) ? $"Arcade ID: {metadata.arcadeID} (Click this text to copy)" : "No ID assigned.";
             var idClickable = content.Find("id").GetComponent<Clickable>() ?? content.Find("id").gameObject.AddComponent<Clickable>();
@@ -738,7 +744,7 @@ namespace BetterLegacy.Editor.Managers
             if (hasID)
             {
                 serverID.transform.Find("id").GetComponent<Text>().text = $"Server ID: {metadata.serverID} (Click this text to copy)";
-                var serverIDClickable = content.Find("id").GetComponent<Clickable>() ?? content.Find("id").gameObject.AddComponent<Clickable>();
+                var serverIDClickable = serverID.GetComponent<Clickable>() ?? serverID.gameObject.AddComponent<Clickable>();
                 serverIDClickable.onClick = eventData =>
                 {
                     LSText.CopyToClipboard(metadata.serverID);
