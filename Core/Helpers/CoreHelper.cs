@@ -683,6 +683,17 @@ namespace BetterLegacy.Core.Helpers
             action?.Invoke();
         }
 
+        public static IEnumerator ReturnToUnity(Action action)
+        {
+            yield return Ninja.JumpToUnity;
+            action?.Invoke();
+        }
+
+        public static void LogOnMainThread(string message)
+        {
+            StartCoroutine(ReturnToUnity(() => { Log(message); }));
+        }
+
         public static string currentPopupID;
         public static GameObject currentPopup;
         public static void Popup(string dialogue, Color bar, string title, float time = 2f, bool destroyPrevious = true)
