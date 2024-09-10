@@ -64,7 +64,7 @@ namespace BetterLegacy.Core.Managers
             if (!CoreHelper.Playing && !CoreHelper.Reversing && !GameData.IsValid)
                 return;
 
-            if (!AudioManager.inst.CurrentAudioSource.clip)
+            if (!AudioManager.inst.CurrentAudioSource.clip || !CoreConfig.Instance.AllowCustomTextFormatting.Value)
                 return;
 
             var beatmapObjects = GameData.Current.BeatmapObjects.FindAll(x => x.shape == 4 && x.Alive && x.objectType != BeatmapObject.ObjectType.Empty);

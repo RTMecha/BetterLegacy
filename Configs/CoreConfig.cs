@@ -238,6 +238,11 @@ namespace BetterLegacy.Configs
         public Setting<bool> RunInBackground { get; set; }
 
         /// <summary>
+        /// If text objects should display custom formatting such as levelRank. Currently very unoptimized, so it's off by default.
+        /// </summary>
+        public Setting<bool> AllowCustomTextFormatting { get; set; }
+
+        /// <summary>
         /// Increases the clip panes to a very high amount, allowing for object render depth to go really high or really low. Off is the unmodded setting.
         /// </summary>
         public Setting<bool> IncreasedClipPlanes { get; set; }
@@ -395,6 +400,7 @@ namespace BetterLegacy.Configs
             AllowControlsInputField = Bind(this, "Game", "Allow Controls While Using InputField", true, "The player will not move while an InputField is being used with this off.");
             AntiAliasing = Bind(this, "Game", "Anti-Aliasing", true, "If anti-aliasing is on or not.");
             RunInBackground = Bind(this, "Game", "Run In Background", true, "If you want the game to continue playing when minimized.");
+            AllowCustomTextFormatting = Bind(this, "Game", "Allow Custom Text Formatting", false, "If text objects should display custom formatting such as levelRank. Currently very unoptimized, so it's off by default.");
             IncreasedClipPlanes = Bind(this, "Game", "Increase Camera Clip Planes", true, "Increases the clip panes to a very high amount, allowing for object render depth to go really high or really low. Off is the unmodded setting.");
             EvaluateCode = Bind(this, "Game", "Evaluate Custom Code", false, "If custom written code should evaluate. Turn this on if you're sure the level you're using isn't going to mess anything up with a code Modifier or custom player code.");
 
