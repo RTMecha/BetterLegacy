@@ -1,3 +1,7 @@
+1.4.8 > [Sep 11, 2024]
+- Added a setting for running custom text formatting. This is off by default as having it on can lag levels with a few text objects. Until a more optimized way of getting the custom formatting to work is found, this setting will exist.
+- Levels with a ton of text objects should now run a LOT smoother!
+- Updated uploading info text (now it's a bit more clear on what you should do when you want to upload your level).
 1.4.7 > [Sep 10, 2024]
 - Fixed a major bug with the level folder name change in 1.4.5.
 1.4.6 > [Sep 10, 2024]
