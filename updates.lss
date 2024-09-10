@@ -1,3 +1,5 @@
+1.4.7 > [Sep 10, 2024]
+- Fixed a major bug with the level folder name change in 1.4.5.
 1.4.6 > [Sep 10, 2024]
 - Added a "Reset" toggle to enable / disableObject modifiers.
 - Added applyColorGroup modifier. This applies the objects' own color to a group of objects.
