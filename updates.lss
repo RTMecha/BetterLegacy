@@ -1,3 +1,10 @@
+1.4.9 > [Sep 11, 2024]
+- Fixed Config Manager UI not applying theme colors when rounded is on.
+- Removed homing color as it can just be done using modifiers. Additionally, the UI needs room for gradient objects if it were ever implemented.
+- Levels should run a tiny bit smoother since opacity, hue, saturation and value are now in one animation sequence instead of multiple.
+- Fixed an error with enable / disableObject modifiers not working.
+- Removed the Reactive Color Lerp setting and made it the default.
+- Cleaned up BG Object color code.
 1.4.8 > [Sep 11, 2024]
 - Added a setting for running custom text formatting. This is off by default as having it on can lag levels with a few text objects. Until a more optimized way of getting the custom formatting to work is found, this setting will exist.
 - Levels with a ton of text objects should now run a LOT smoother!
