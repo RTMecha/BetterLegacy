@@ -11,6 +11,8 @@ using BetterLegacy.Menus.UI.Layouts;
 using BetterLegacy.Menus.UI.Interfaces;
 using UnityEngine;
 using BetterLegacy.Core;
+using BetterLegacy.Core.Animation;
+using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Configs;
@@ -371,7 +373,7 @@ namespace BetterLegacy.Arcade
             Searches[0] = search;
             Pages[0] = 0;
 
-            var levelButtons = elements.Where(x => x.name == "Level Button" || x.name == "Difficulty").ToList();
+            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
 
             for (int i = 0; i < levelButtons.Count; i++)
             {
@@ -379,7 +381,7 @@ namespace BetterLegacy.Arcade
                 levelButton.Clear();
                 CoreHelper.Destroy(levelButton.gameObject);
             }
-            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty");
+            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
             RefreshLocalLevels(true);
         }
 
@@ -387,7 +389,7 @@ namespace BetterLegacy.Arcade
         {
             Pages[0] = Mathf.Clamp(page, 0, LocalLevelPageCount);
 
-            var levelButtons = elements.Where(x => x.name == "Level Button" || x.name == "Difficulty").ToList();
+            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
 
             for (int i = 0; i < levelButtons.Count; i++)
             {
@@ -395,7 +397,7 @@ namespace BetterLegacy.Arcade
                 levelButton.Clear();
                 CoreHelper.Destroy(levelButton.gameObject);
             }
-            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty");
+            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
             RefreshLocalLevels(true);
         }
 
@@ -416,6 +418,11 @@ namespace BetterLegacy.Arcade
                 int row = (int)((index % MAX_LEVELS_PER_PAGE) / 5) + 2;
 
                 var level = levels[index];
+
+                var isSSRank = LevelManager.GetLevelRank(level).name == "SS";
+
+                MenuImage shine = null;
+
                 var button = new MenuButton
                 {
                     id = level.id,
@@ -434,16 +441,41 @@ namespace BetterLegacy.Arcade
                     selectedColor = 6,
                     selectedOpacity = 1f,
                     selectedTextColor = 7,
-                    length = 0.01f,
+                    length = regenerateUI ? 0f : 0.01f,
+                    wait = !regenerateUI,
+                    mask = true,
 
                     allowOriginalHoverMethods = true,
                     enterFunc = () =>
                     {
-                        CoreHelper.Log($"Start shine");
+                        if (!isSSRank)
+                            return;
+
+                        var animation = new RTAnimation("Level Shine")
+                        {
+                            animationHandlers = new List<AnimationHandlerBase>
+                            {
+                                new AnimationHandler<float>(new List<IKeyframe<float>>
+                                {
+                                    new FloatKeyframe(0f, -240f, Ease.Linear),
+                                    new FloatKeyframe(1f, 240f, Ease.CircInOut),
+                                }, x => { if (shine != null && shine.gameObject) shine.gameObject.transform.AsRT().anchoredPosition = new Vector2(x, 0f); }),
+                            },
+                            loop = true,
+                        };
+
+                        AnimationManager.inst.Play(animation);
                     },
                     exitFunc = () =>
                     {
-                        CoreHelper.Log($"End shine");
+                        if (!isSSRank)
+                            return;
+
+                        if (AnimationManager.inst.animations.TryFind(x => x.name.Contains("Level Shine"), out RTAnimation animation))
+                            AnimationManager.inst.RemoveID(animation.id);
+
+                        if (shine != null && shine.gameObject)
+                            shine.gameObject.transform.AsRT().anchoredPosition = new Vector2(-240f, 0f);
                     },
                 };
                 elements.Add(button);
@@ -461,6 +493,50 @@ namespace BetterLegacy.Arcade
                     length = 0f,
                     wait = false,
                 });
+
+                if (isSSRank)
+                {
+                    shine = new MenuImage
+                    {
+                        id = LSText.randomNumString(16),
+                        name = "Shine Base",
+                        parent = level.id,
+                        rect = RectValues.Default.AnchoredPosition(-240f, 0f).Rotation(15f),
+                        opacity = 0f,
+                        length = 0f,
+                        wait = false,
+                    };
+
+                    var shine1 = new MenuImage
+                    {
+                        id = "0",
+                        name = "Shine 1",
+                        parent = shine.id,
+                        rect = RectValues.Default.AnchoredPosition(-12f, 0f).SizeDelta(8f, 400f),
+                        overrideColor = ArcadeConfig.Instance.ShineColor.Value,
+                        useOverrideColor = true,
+                        opacity = 1f,
+                        length = 0f,
+                        wait = false,
+                    };
+
+                    var shine2 = new MenuImage
+                    {
+                        id = "0",
+                        name = "Shine 2",
+                        parent = shine.id,
+                        rect = RectValues.Default.AnchoredPosition(12f, 0f).SizeDelta(20f, 400f),
+                        overrideColor = ArcadeConfig.Instance.ShineColor.Value,
+                        useOverrideColor = true,
+                        opacity = 1f,
+                        length = 0f,
+                        wait = false,
+                    };
+
+                    elements.Add(shine);
+                    elements.Add(shine1);
+                    elements.Add(shine2);
+                }
             }
 
             if (regenerateUI)
