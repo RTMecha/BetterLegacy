@@ -80,7 +80,7 @@ namespace BetterLegacy.Patchers
                 }
             }
 
-            if (InputDataManager.inst.players.Count > 0 && InputDataManager.inst.menuActions.Start.WasPressed)
+            if (!CoreHelper.IsUsingInputField && InputDataManager.inst.players.Count > 0 && InputDataManager.inst.menuActions.Start.WasPressed)
                 __instance.LoadLevel();
 
             return false;
@@ -94,14 +94,7 @@ namespace BetterLegacy.Patchers
             __instance.randomStrings.Clear();
             for (int i = 0; i < 8; i++)
             {
-                __instance.randomStrings.Add(string.Concat(new string[]
-                {
-                    "<color=",
-                    LSText.randomHex("666666"),
-                    ">",
-                    LSText.randomString(___randomLength),
-                    "</color>"
-                }));
+                __instance.randomStrings.Add($"<color=>{LSText.randomHex("666666")}{LSText.randomString(___randomLength)}</color>");
                 __instance.randomStrings2.Add(LSText.randomHex("666666"));
             }
             return false;
@@ -111,29 +104,22 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool canChangePrefix(InputSelectManager __instance, ref IEnumerator __result, ref int ___randomLength)
         {
-            __result = canChange(__instance, ___randomLength);
+            __result = CanChange(__instance, ___randomLength);
             return false;
         }
 
-        static IEnumerator canChange(InputSelectManager __instance, int ___randomLength)
+        static IEnumerator CanChange(InputSelectManager __instance, int ___randomLength)
         {
             for (int i = 0; i < 8; i++)
             {
                 if (Random.value < 0.5f)
                 {
-                    __instance.randomStrings[i] = string.Concat(new string[]
-                    {
-                    "<color=",
-                    LSText.randomHex("666666"),
-                    ">",
-                    LSText.randomString(___randomLength),
-                    "</color>"
-                    });
+                    __instance.randomStrings[i] = $"<color=>{LSText.randomHex("666666")}{LSText.randomString(___randomLength)}</color>";
                     __instance.randomStrings2[i] = LSText.randomHex("666666");
                 }
             }
             yield return new WaitForSeconds(Random.Range(0f, 0.4f));
-            __instance.StartCoroutine(canChange(__instance, ___randomLength));
+            __instance.StartCoroutine(CanChange(__instance, ___randomLength));
             yield break;
         }
 

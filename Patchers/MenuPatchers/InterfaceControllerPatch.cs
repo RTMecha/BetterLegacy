@@ -150,28 +150,32 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdatePrefix(InterfaceController __instance)
         {
-            if (InputDataManager.inst.menuActions.Cancel.WasPressed && __instance.screenDone && __instance.currentBranch != "main_menu" && __instance.interfaceBranches[__instance.CurrentBranchIndex].type == BranchType.Menu)
+            if (!CoreHelper.IsUsingInputField && InputDataManager.inst.menuActions.Cancel.WasPressed && __instance.screenDone)
             {
-                if (__instance.branchChain.Count > 1)
+                if (__instance.currentBranch != "main_menu" && __instance.interfaceBranches[__instance.CurrentBranchIndex].type == BranchType.Menu)
                 {
-                    if (!string.IsNullOrEmpty(__instance.interfaceBranches[__instance.CurrentBranchIndex].BackBranch))
+                    if (__instance.branchChain.Count > 1)
                     {
-                        __instance.SwitchBranch(__instance.interfaceBranches[__instance.CurrentBranchIndex].BackBranch);
+                        if (!string.IsNullOrEmpty(__instance.interfaceBranches[__instance.CurrentBranchIndex].BackBranch))
+                        {
+                            __instance.SwitchBranch(__instance.interfaceBranches[__instance.CurrentBranchIndex].BackBranch);
+                        }
+                        else
+                        {
+                            __instance.SwitchBranch(__instance.branchChain[__instance.branchChain.Count - 2]);
+                        }
                     }
                     else
                     {
-                        __instance.SwitchBranch(__instance.branchChain[__instance.branchChain.Count - 2]);
+                        AudioManager.inst.PlaySound("Block");
                     }
                 }
-                else
+                else if (__instance.interfaceBranches[__instance.CurrentBranchIndex].type == BranchType.MainMenu && !string.IsNullOrEmpty(__instance.interfaceSettings.returnBranch))
                 {
-                    AudioManager.inst.PlaySound("Block");
+                    __instance.SwitchBranch(__instance.interfaceSettings.returnBranch);
                 }
             }
-            else if (InputDataManager.inst.menuActions.Cancel.WasPressed && __instance.screenDone && __instance.interfaceBranches[__instance.CurrentBranchIndex].type == BranchType.MainMenu && !string.IsNullOrEmpty(__instance.interfaceSettings.returnBranch))
-            {
-                __instance.SwitchBranch(__instance.interfaceSettings.returnBranch);
-            }
+
 
             int num = 0;
             foreach (var gameObject in __instance.buttons)
