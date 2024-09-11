@@ -48,7 +48,10 @@ namespace BetterLegacy.Core.Optimization.Objects
             var beatmapObjects = gameData.BeatmapObjects;
             for (int i = 0; i < beatmapObjects.Count; i++)
             {
-                this.beatmapObjects.AddSet(beatmapObjects[i].id, beatmapObjects[i]);
+                if (this.beatmapObjects.ContainsKey(beatmapObjects[i].id))
+                    CoreHelper.LogError($"Object with ID \"{beatmapObjects[i].id}\" already exists!");
+
+                this.beatmapObjects[beatmapObjects[i].id] = beatmapObjects[i];
             }
 
             for (int i = 0; i < beatmapObjects.Count; i++)
@@ -69,11 +72,9 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             // Empty objects don't need a color sequence, so it is not cached
             if (ShowEmpties || beatmapObject.objectType != ObjectType.Empty)
-            {
                 collection.ColorSequence = GetColorSequence(beatmapObject.events[3], new ThemeKeyframe(0.0f, 0, 0.0f, 0.0f, 0.0f, 0.0f, Ease.Linear));
-            }
 
-            cachedSequences.AddSet(beatmapObject.id, collection);
+            cachedSequences[beatmapObject.id] = collection;
 
             yield break;
         }
