@@ -47,8 +47,6 @@ namespace BetterLegacy.Core.Animation.Keyframe
             var ease = second.Ease(time);
             var color = RTMath.Lerp(Theme[colorSlot], Theme[second.colorSlot], ease);
             var opacity = -(RTMath.Lerp(this.opacity, second.opacity, ease) - 1f);
-            if (opacity <= 0f || opacity > 1f)
-                opacity = color.a;
 
             color =
                 LSColors.fadeColor(
