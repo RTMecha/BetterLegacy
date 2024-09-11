@@ -264,14 +264,14 @@ namespace BetterLegacy.Arcade
                 for (int j = 0; j < Buttons[i].Count; j++)
                 {
                     if (ArcadeConfig.Instance.PlayLevelMenuButtonsRoundness.Value != 0)
-                        SpriteManager.SetRoundedSprite(Buttons[i][j].Image, ArcadeConfig.Instance.PlayLevelMenuButtonsRoundness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(Buttons[i][j].Image, ArcadeConfig.Instance.PlayLevelMenuButtonsRoundness.Value, SpriteHelper.RoundedSide.W);
                     else
                         Buttons[i][j].Image.sprite = null;
                 }
             }
 
             if (ArcadeConfig.Instance.PlayLevelMenuIconRoundness.Value != 0)
-                SpriteManager.SetRoundedSprite(coverBase, ArcadeConfig.Instance.PlayLevelMenuIconRoundness.Value, SpriteManager.RoundedSide.W);
+                SpriteHelper.SetRoundedSprite(coverBase, ArcadeConfig.Instance.PlayLevelMenuIconRoundness.Value, SpriteHelper.RoundedSide.W);
             else
                 coverBase.sprite = null;
         }

@@ -111,7 +111,7 @@ namespace BetterLegacy.Core.Data
         {
             var requirement = AchievementManager.requirements[jn["requirement"] == null ? 0 : Mathf.Clamp(jn["requirement"].AsInt, 0, AchievementManager.requirements.Count - 1)];
 
-            return new Achievement(jn["id"], jn["name"], jn["desc"], jn["difficulty"].AsInt, SpriteManager.StringToSprite(jn["icon"]), requirement, jn["hidden"].AsBool)
+            return new Achievement(jn["id"], jn["name"], jn["desc"], jn["difficulty"].AsInt, SpriteHelper.StringToSprite(jn["icon"]), requirement, jn["hidden"].AsBool)
             {
                 unlocked = parseUnlock && jn["unlocked"] != null && jn["unlocked"].AsBool,
             };
@@ -132,7 +132,7 @@ namespace BetterLegacy.Core.Data
             if (RequirementIndex != 0)
                 jn["requirement"] = RequirementIndex.ToString();
 
-            jn["icon"] = SpriteManager.SpriteToString(Icon);
+            jn["icon"] = SpriteHelper.SpriteToString(Icon);
 
             return jn;
         }

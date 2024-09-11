@@ -27,7 +27,7 @@ namespace BetterLegacy.Core
             else if (RTFile.FileExists($"{path}metadata.lsb"))
                 metadata = MetaData.Parse(JSON.Parse(RTFile.ReadFromFile($"{path}metadata.lsb")), false);
 
-            icon = RTFile.FileExists($"{path}level.jpg") ? SpriteManager.LoadSprite($"{path}level.jpg") : RTFile.FileExists($"{path}cover.jpg") ? SpriteManager.LoadSprite($"{path}cover.jpg") : SteamWorkshop.inst.defaultSteamImageSprite;
+            icon = RTFile.FileExists($"{path}level.jpg") ? SpriteHelper.LoadSprite($"{path}level.jpg") : RTFile.FileExists($"{path}cover.jpg") ? SpriteHelper.LoadSprite($"{path}cover.jpg") : SteamWorkshop.inst.defaultSteamImageSprite;
 
             UpdateDefaults();
         }
@@ -38,7 +38,7 @@ namespace BetterLegacy.Core
 
             this.metadata = metadata;
 
-            icon = RTFile.FileExists($"{path}level.jpg") ? SpriteManager.LoadSprite($"{path}level.jpg") : RTFile.FileExists($"{path}cover.jpg") ? SpriteManager.LoadSprite($"{path}cover.jpg") : SteamWorkshop.inst.defaultSteamImageSprite;
+            icon = RTFile.FileExists($"{path}level.jpg") ? SpriteHelper.LoadSprite($"{path}level.jpg") : RTFile.FileExists($"{path}cover.jpg") ? SpriteHelper.LoadSprite($"{path}cover.jpg") : SteamWorkshop.inst.defaultSteamImageSprite;
 
             UpdateDefaults();
         }

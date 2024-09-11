@@ -454,7 +454,7 @@ namespace BetterLegacy.Editor.Managers
             }, placeholderText: "Search for keybind...");
             content = popup.Content;
 
-            editSprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_edit.png");
+            editSprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_edit.png");
 
             var dialog = EditorManager.inst.GetDialog("Multi Keyframe Editor (Object)").Dialog;
             editorDialog = dialog.gameObject.Duplicate(dialog.parent, "KeybindEditor").transform;
@@ -621,7 +621,7 @@ namespace BetterLegacy.Editor.Managers
 
             EditorHelper.AddEditorDialog("Keybind Editor", editorDialog.gameObject);
 
-            EditorHelper.AddEditorDropdown("Edit Keybinds", "", "Edit", SpriteManager.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_keybind.png"), OpenPopup);
+            EditorHelper.AddEditorDropdown("Edit Keybinds", "", "Edit", SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_keybind.png"), OpenPopup);
 
             // Editor Themes
             {

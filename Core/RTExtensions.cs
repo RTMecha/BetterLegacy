@@ -534,7 +534,7 @@ namespace BetterLegacy.Core
 
         #region UI
 
-        public static void AssignTexture(this Image image, Texture2D texture2D) => image.sprite = SpriteManager.CreateSprite(texture2D);
+        public static void AssignTexture(this Image image, Texture2D texture2D) => image.sprite = SpriteHelper.CreateSprite(texture2D);
 
         public static ColorBlock SetColorBlock(this ColorBlock cb, Color normal, Color highlighted, Color pressed, Color selected, Color disabled, float fade = 0.2f)
         {
@@ -890,7 +890,7 @@ namespace BetterLegacy.Core
             }
         }
 
-        public static void Save(this Sprite sprite, string path) => SpriteManager.SaveSprite(sprite, path);
+        public static void Save(this Sprite sprite, string path) => SpriteHelper.SaveSprite(sprite, path);
 
         public static bool TryGetComponent<T>(this GameObject gameObject, out T result)
         {

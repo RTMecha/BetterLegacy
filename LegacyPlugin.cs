@@ -120,10 +120,10 @@ namespace BetterLegacy
                 assetBundle.Unload(false);
                 GetKinoGlitch();
 
-                LockSprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}lock.png");
-                EmptyObjectSprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_empty.png");
-                AtanPlaceholder = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}atan-placeholder.png");
-                PALogoSprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}pa_logo.png");
+                LockSprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}lock.png");
+                EmptyObjectSprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_empty.png");
+                AtanPlaceholder = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}atan-placeholder.png");
+                PALogoSprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}pa_logo.png");
             }
             catch (Exception ex)
             {
@@ -169,6 +169,9 @@ namespace BetterLegacy
                 CoreHelper.LogError($"Failed to initialize Editor Themes.\n{ex}");
                 throw;
             } // Editor themes loading
+
+            // For loading rounded sprites before Config Manager UI.
+            SpriteHelper.Init();
 
             try
             {

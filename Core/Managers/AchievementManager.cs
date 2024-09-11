@@ -75,7 +75,7 @@ namespace BetterLegacy.Core.Managers
             var bar = Creator.NewUIObject("Difficulty", this.popup);
             UIManager.SetRectTransform(bar.transform.AsRT(), new Vector2(-8f, 0f), new Vector2(0f, 1f), Vector2.zero, new Vector2(0f, 0.5f), new Vector2(8f, 0f));
             difficultyImage = bar.AddComponent<Image>();
-            EditorThemeManager.ApplyGraphic(difficultyImage, ThemeGroup.Null, true, roundedSide: SpriteManager.RoundedSide.Left);
+            EditorThemeManager.ApplyGraphic(difficultyImage, ThemeGroup.Null, true, roundedSide: SpriteHelper.RoundedSide.Left);
 
             popup.gameObject.SetActive(false);
 

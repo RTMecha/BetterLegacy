@@ -182,8 +182,8 @@ namespace BetterLegacy.Editor.Managers
             functionButton1Storage.button.onClick.ClearAll();
             functionButton1Storage.text = prefabHolder.Function1Button.transform.GetChild(0).GetComponent<Text>();
 
-            CloseSprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_close.png");
-            ReloadSprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_refresh-white.png");
+            CloseSprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_close.png");
+            ReloadSprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_refresh-white.png");
 
             if (!RTFile.FileExists(EditorSettingsPath))
                 CreateGlobalSettings();
@@ -239,7 +239,7 @@ namespace BetterLegacy.Editor.Managers
 
             var image = img.AddComponent<Image>();
 
-            dropperSprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_dropper.png");
+            dropperSprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_dropper.png");
             image.sprite = dropperSprite;
 
             timelineTime = EditorManager.inst.timelineTime.GetComponent<Text>();
@@ -278,7 +278,7 @@ namespace BetterLegacy.Editor.Managers
             mouseTooltipText = mouseTooltip.transform.Find("text").GetComponent<TextMeshProUGUI>();
 
             EditorThemeManager.AddGraphic(mouseTooltip.GetComponent<Image>(), ThemeGroup.Notification_Background, true);
-            EditorThemeManager.AddGraphic(mouseTooltipRT.Find("bg/bg").GetComponent<Image>(), ThemeGroup.Notification_Info, true, roundedSide: SpriteManager.RoundedSide.Top);
+            EditorThemeManager.AddGraphic(mouseTooltipRT.Find("bg/bg").GetComponent<Image>(), ThemeGroup.Notification_Info, true, roundedSide: SpriteHelper.RoundedSide.Top);
             EditorThemeManager.AddLightText(mouseTooltipText);
             EditorThemeManager.AddGraphic(mouseTooltipRT.Find("bg/Image").GetComponent<Image>(), ThemeGroup.Light_Text);
             EditorThemeManager.AddLightText(mouseTooltipRT.Find("bg/title").GetComponent<Text>());
@@ -872,7 +872,7 @@ namespace BetterLegacy.Editor.Managers
                 notif.transform.localScale = Vector3.one;
 
                 EditorThemeManager.ApplyGraphic(notif.GetComponent<Image>(), ThemeGroup.Notification_Background, true);
-                EditorThemeManager.ApplyGraphic(notif.transform.Find("bg/bg").GetComponent<Image>(), EditorThemeManager.EditorTheme.GetGroup($"Notification {type}"), true, roundedSide: SpriteManager.RoundedSide.Top);
+                EditorThemeManager.ApplyGraphic(notif.transform.Find("bg/bg").GetComponent<Image>(), EditorThemeManager.EditorTheme.GetGroup($"Notification {type}"), true, roundedSide: SpriteHelper.RoundedSide.Top);
                 EditorThemeManager.ApplyGraphic(textComponent, ThemeGroup.Light_Text);
                 EditorThemeManager.ApplyGraphic(notif.transform.Find("bg/Image").GetComponent<Image>(), ThemeGroup.Light_Text);
                 EditorThemeManager.ApplyLightText(notif.transform.Find("bg/title").GetComponent<Text>());
@@ -948,7 +948,7 @@ namespace BetterLegacy.Editor.Managers
             tooltipText = EditorManager.inst.tooltip.GetComponent<TextMeshProUGUI>();
             var tooltip = EditorManager.inst.tooltip.transform.parent.gameObject;
             EditorThemeManager.AddGraphic(tooltip.GetComponent<Image>(), ThemeGroup.Notification_Background, true);
-            EditorThemeManager.AddGraphic(tooltip.transform.Find("bg/bg").GetComponent<Image>(), ThemeGroup.Notification_Info, true, roundedSide: SpriteManager.RoundedSide.Top);
+            EditorThemeManager.AddGraphic(tooltip.transform.Find("bg/bg").GetComponent<Image>(), ThemeGroup.Notification_Info, true, roundedSide: SpriteHelper.RoundedSide.Top);
             EditorThemeManager.AddLightText(tooltipText);
             EditorThemeManager.AddGraphic(tooltip.transform.Find("bg/Image").GetComponent<Image>(), ThemeGroup.Light_Text);
             EditorThemeManager.AddLightText(tooltip.transform.Find("bg/title").GetComponent<Text>());
@@ -1165,7 +1165,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadImageTexture("file://" + (!EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading ?
                 settingsPath :
-                path), texture2D => { SetTimelineSprite(SpriteManager.CreateSprite(texture2D)); }));
+                path), texture2D => { SetTimelineSprite(SpriteHelper.CreateSprite(texture2D)); }));
             }
 
             SetTimelineGridSize();
@@ -2281,9 +2281,9 @@ namespace BetterLegacy.Editor.Managers
 
             EditorHelper.AddEditorPopup(name, popup);
 
-            EditorThemeManager.AddGraphic(popup.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteManager.RoundedSide.Bottom_Left_I);
+            EditorThemeManager.AddGraphic(popup.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Bottom_Left_I);
 
-            EditorThemeManager.AddGraphic(popupInstance.TopPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteManager.RoundedSide.Top);
+            EditorThemeManager.AddGraphic(popupInstance.TopPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
 
             EditorThemeManager.AddSelectable(popupInstance.Close, ThemeGroup.Close);
 
@@ -2293,9 +2293,9 @@ namespace BetterLegacy.Editor.Managers
 
             var scrollbar = popup.transform.Find("Scrollbar").GetComponent<Scrollbar>();
             scrollbar.value = 1f;
-            EditorThemeManager.AddScrollbar(scrollbar, scrollbarRoundedSide: SpriteManager.RoundedSide.Bottom_Right_I);
+            EditorThemeManager.AddScrollbar(scrollbar, scrollbarRoundedSide: SpriteHelper.RoundedSide.Bottom_Right_I);
 
-            EditorThemeManager.AddInputField(popup.transform.Find("search-box/search").GetComponent<InputField>(), ThemeGroup.Search_Field_1, 1, SpriteManager.RoundedSide.Bottom);
+            EditorThemeManager.AddInputField(popup.transform.Find("search-box/search").GetComponent<InputField>(), ThemeGroup.Search_Field_1, 1, SpriteHelper.RoundedSide.Bottom);
 
             return popupInstance;
         }
@@ -2611,7 +2611,7 @@ namespace BetterLegacy.Editor.Managers
                 ShowWarningPopup("Are you sure you want to quit to the arcade? Any unsaved progress will be lost!", ArcadeHelper.QuitToArcade, HideWarningPopup);
             }, 7);
 
-            EditorHelper.AddEditorDropdown("Switch to Arcade Mode", "", "File", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_right_small.png"), () =>
+            EditorHelper.AddEditorDropdown("Switch to Arcade Mode", "", "File", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_right_small.png"), () =>
             {
                 if (!EditorManager.inst.hasLoadedLevel)
                 {
@@ -2864,7 +2864,7 @@ namespace BetterLegacy.Editor.Managers
             }, 5);
             EditorHelper.SetComplexity(addFileToLevelFolder, Complexity.Normal);
 
-            EditorHelper.AddEditorDropdown("Editor Preferences", "", "Edit", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_preferences-white.png"), () =>
+            EditorHelper.AddEditorDropdown("Editor Preferences", "", "Edit", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_preferences-white.png"), () =>
             {
                 ConfigManager.inst.Show();
                 ConfigManager.inst.SetTab(2);
@@ -2937,16 +2937,16 @@ namespace BetterLegacy.Editor.Managers
             });
             EditorHelper.SetComplexity(resetObjectVariables, Complexity.Advanced);
 
-            EditorHelper.AddEditorDropdown("Get Example", "", "View", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_example-white.png"), ExampleManager.Init);
+            EditorHelper.AddEditorDropdown("Get Example", "", "View", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_example-white.png"), ExampleManager.Init);
             
-            EditorHelper.AddEditorDropdown("Show Config Manager", "", "View", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_preferences-white.png"), ConfigManager.inst.Show);
+            EditorHelper.AddEditorDropdown("Show Config Manager", "", "View", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_preferences-white.png"), ConfigManager.inst.Show);
 
             titleBar.Find("Steam/Text").GetComponent<Text>().text = "Upload";
             var steamLayoutElement = titleBar.Find("Steam").GetComponent<LayoutElement>();
             steamLayoutElement.minWidth = 95f;
             steamLayoutElement.preferredWidth = 95f;
 
-            EditorHelper.AddEditorDropdown("Login", "", "Steam", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_login.png"), () =>
+            EditorHelper.AddEditorDropdown("Login", "", "Steam", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_login.png"), () =>
             {
                 if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
                 {
@@ -3350,7 +3350,7 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddGraphic(fileBrowser.GetComponent<Image>(), ThemeGroup.Background_1, true);
 
             var panel = fileBrowser.transform.Find("Panel").gameObject;
-            EditorThemeManager.AddGraphic(panel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteManager.RoundedSide.Top);
+            EditorThemeManager.AddGraphic(panel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
             EditorThemeManager.AddSelectable(close, ThemeGroup.Close);
 
             EditorThemeManager.AddGraphic(close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
@@ -3520,7 +3520,7 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddGraphic(newFilePopup.GetComponent<Image>(), ThemeGroup.Background_1, true);
 
             var newFilePopupPanel = newFilePopup.Find("Panel").gameObject;
-            EditorThemeManager.AddGraphic(newFilePopupPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteManager.RoundedSide.Top);
+            EditorThemeManager.AddGraphic(newFilePopupPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
 
             var newFilePopupClose = newFilePopupPanel.transform.Find("x").gameObject;
             EditorThemeManager.AddSelectable(newFilePopupClose.GetComponent<Button>(), ThemeGroup.Close);
@@ -3721,7 +3721,7 @@ namespace BetterLegacy.Editor.Managers
 
             StartCoroutine(AlephNetworkManager.DownloadImageTexture($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}default_template.png", texture2D =>
             {
-                newLevelTemplateBaseSprite = SpriteManager.CreateSprite(texture2D);
+                newLevelTemplateBaseSprite = SpriteHelper.CreateSprite(texture2D);
             }));
 
             var gameObject = new GameObject("create");
@@ -3783,7 +3783,7 @@ namespace BetterLegacy.Editor.Managers
                     string text = FileBrowser.OpenSingleFile("Select a preview image to use!", RTFile.ApplicationDirectory, "png");
                     if (!string.IsNullOrEmpty(text))
                     {
-                        var sprite = SpriteManager.LoadSprite(text);
+                        var sprite = SpriteHelper.LoadSprite(text);
 
                         if (sprite.texture.width != 480 || sprite.texture.height != 270)
                         {
@@ -3805,7 +3805,7 @@ namespace BetterLegacy.Editor.Managers
                             return;
 
                         EditorManager.inst.HideDialog("Browser Popup");
-                        var sprite = SpriteManager.LoadSprite(_val);
+                        var sprite = SpriteHelper.LoadSprite(_val);
 
                         if (sprite.texture.width != 480 || sprite.texture.height != 270)
                         {
@@ -3914,7 +3914,7 @@ namespace BetterLegacy.Editor.Managers
             EditorHelper.AddEditorPopup("Warning Popup", warningPopup);
 
             EditorThemeManager.AddGraphic(main.GetComponent<Image>(), ThemeGroup.Background_1, true);
-            EditorThemeManager.AddGraphic(panel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteManager.RoundedSide.Top);
+            EditorThemeManager.AddGraphic(panel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
 
             EditorThemeManager.AddSelectable(close, ThemeGroup.Close, true);
             EditorThemeManager.AddGraphic(close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
@@ -4195,7 +4195,7 @@ namespace BetterLegacy.Editor.Managers
                 var addFilePath = RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/add.png";
 
                 if (RTFile.FileExists(addFilePath))
-                    inputFieldStorage.rightButton.image.sprite = SpriteManager.LoadSprite(addFilePath);
+                    inputFieldStorage.rightButton.image.sprite = SpriteHelper.LoadSprite(addFilePath);
 
                 var mtnLeftLE = inputFieldStorage.rightButton.gameObject.AddComponent<LayoutElement>();
                 mtnLeftLE.ignoreLayout = true;
@@ -4245,7 +4245,7 @@ namespace BetterLegacy.Editor.Managers
                 var addFilePath = RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/add.png";
 
                 if (RTFile.FileExists(addFilePath))
-                    inputFieldStorage.rightButton.image.sprite = SpriteManager.LoadSprite(addFilePath);
+                    inputFieldStorage.rightButton.image.sprite = SpriteHelper.LoadSprite(addFilePath);
 
                 var mtnLeftLE = inputFieldStorage.rightButton.gameObject.AddComponent<LayoutElement>();
                 mtnLeftLE.ignoreLayout = true;
@@ -6413,7 +6413,7 @@ namespace BetterLegacy.Editor.Managers
                 RefreshDocumentation();
             }, placeholderText: "Search for document...");
 
-            EditorHelper.AddEditorDropdown("Wiki / Documentation", "", "Help", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_question.png"), () =>
+            EditorHelper.AddEditorDropdown("Wiki / Documentation", "", "Help", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_question.png"), () =>
             {
                 EditorManager.inst.ShowDialog("Documentation Popup");
                 RefreshDocumentation();
@@ -7452,7 +7452,7 @@ namespace BetterLegacy.Editor.Managers
 
             reloadButton.image.sprite = ReloadSprite;
 
-            EditorHelper.AddEditorDropdown("Debugger", "", "View", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}debugger.png"), () =>
+            EditorHelper.AddEditorDropdown("Debugger", "", "View", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}debugger.png"), () =>
             {
                 EditorManager.inst.ShowDialog("Debugger Popup");
                 RefreshDebugger();
@@ -8090,7 +8090,7 @@ namespace BetterLegacy.Editor.Managers
                         return;
                     }
 
-                    var sprite = SpriteManager.CreateSprite(cover);
+                    var sprite = SpriteHelper.CreateSprite(cover);
                     iconImage.sprite = sprite;
                     editorWrapper.albumArt = sprite;
 
@@ -9390,7 +9390,7 @@ namespace BetterLegacy.Editor.Managers
                             imageObjImage.color = new Color(1f, 1f, 1f, 1f);
 
                             if (RTFile.FileExists($"{RTFile.ApplicationDirectory}{(string)element.Data}"))
-                                imageObjImage.sprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{(string)element.Data}");
+                                imageObjImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{(string)element.Data}");
                             else
                                 imageObjImage.enabled = false;
 
@@ -9576,7 +9576,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyLightText(title);
 
                 if (RTFile.FileExists(directory + "/preview.png"))
-                    previewImage.sprite = SpriteManager.LoadSprite(directory + "/preview.png");
+                    previewImage.sprite = SpriteHelper.LoadSprite(directory + "/preview.png");
                 else
                 {
                     previewImage.color = new Color(1f, 1f, 1f, 0.1f);
@@ -9785,7 +9785,7 @@ namespace BetterLegacy.Editor.Managers
                         return;
 
                     image.enabled = true;
-                    image.sprite = SpriteManager.CreateSprite(texture2D);
+                    image.sprite = SpriteHelper.CreateSprite(texture2D);
                 }));
             }
         }

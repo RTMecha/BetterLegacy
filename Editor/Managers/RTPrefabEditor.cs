@@ -609,11 +609,11 @@ namespace BetterLegacy.Editor.Managers
                 {
                     #region External
 
-                    EditorThemeManager.AddGraphic(PrefabEditor.inst.externalPrefabDialog.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteManager.RoundedSide.Bottom_Left_I);
+                    EditorThemeManager.AddGraphic(PrefabEditor.inst.externalPrefabDialog.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Bottom_Left_I);
 
                     var externalPanel = PrefabEditor.inst.externalPrefabDialog.Find("Panel");
                     externalPanel.AsRT().sizeDelta = new Vector2(32f, 32f);
-                    EditorThemeManager.AddGraphic(externalPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteManager.RoundedSide.Top);
+                    EditorThemeManager.AddGraphic(externalPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
 
                     var externalClose = externalPanel.Find("x").GetComponent<Button>();
                     Destroy(externalClose.GetComponent<Animator>());
@@ -624,7 +624,7 @@ namespace BetterLegacy.Editor.Managers
 
                     EditorThemeManager.AddLightText(externalPanel.Find("Text").GetComponent<Text>());
 
-                    EditorThemeManager.AddScrollbar(PrefabEditor.inst.externalPrefabDialog.transform.Find("Scrollbar").GetComponent<Scrollbar>(), scrollbarRoundedSide: SpriteManager.RoundedSide.Bottom_Right_I);
+                    EditorThemeManager.AddScrollbar(PrefabEditor.inst.externalPrefabDialog.transform.Find("Scrollbar").GetComponent<Scrollbar>(), scrollbarRoundedSide: SpriteHelper.RoundedSide.Bottom_Right_I);
 
                     EditorThemeManager.AddInputField(PrefabEditor.inst.externalSearch, ThemeGroup.Search_Field_2);
 
@@ -632,11 +632,11 @@ namespace BetterLegacy.Editor.Managers
 
                     #region Internal
 
-                    EditorThemeManager.AddGraphic(PrefabEditor.inst.internalPrefabDialog.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteManager.RoundedSide.Bottom_Left_I);
+                    EditorThemeManager.AddGraphic(PrefabEditor.inst.internalPrefabDialog.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Bottom_Left_I);
 
                     var internalPanel = PrefabEditor.inst.internalPrefabDialog.Find("Panel");
                     internalPanel.AsRT().sizeDelta = new Vector2(32f, 32f);
-                    EditorThemeManager.AddGraphic(internalPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteManager.RoundedSide.Top);
+                    EditorThemeManager.AddGraphic(internalPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
 
                     var internalClose = internalPanel.Find("x").GetComponent<Button>();
                     Destroy(internalClose.GetComponent<Animator>());
@@ -647,11 +647,11 @@ namespace BetterLegacy.Editor.Managers
 
                     EditorThemeManager.AddLightText(internalPanel.Find("Text").GetComponent<Text>());
 
-                    EditorThemeManager.AddScrollbar(PrefabEditor.inst.internalPrefabDialog.transform.Find("Scrollbar").GetComponent<Scrollbar>(), scrollbarRoundedSide: SpriteManager.RoundedSide.Bottom_Right_I);
+                    EditorThemeManager.AddScrollbar(PrefabEditor.inst.internalPrefabDialog.transform.Find("Scrollbar").GetComponent<Scrollbar>(), scrollbarRoundedSide: SpriteHelper.RoundedSide.Bottom_Right_I);
 
                     EditorThemeManager.AddInputField(PrefabEditor.inst.internalSearch, ThemeGroup.Search_Field_2);
 
-                    EditorThemeManager.AddGraphic(PrefabEditor.inst.internalPrefabDialog.Find("select_prefab").GetComponent<Image>(), ThemeGroup.Background_2, true, roundedSide: SpriteManager.RoundedSide.Bottom_Left_I);
+                    EditorThemeManager.AddGraphic(PrefabEditor.inst.internalPrefabDialog.Find("select_prefab").GetComponent<Image>(), ThemeGroup.Background_2, true, roundedSide: SpriteHelper.RoundedSide.Bottom_Left_I);
 
                     EditorThemeManager.AddSelectable(selectQuickPrefabButton, ThemeGroup.Function_2);
                     EditorThemeManager.AddGraphic(selectQuickPrefabButton.transform.GetChild(0).GetComponent<Text>(), ThemeGroup.Function_2_Text);
@@ -1528,14 +1528,14 @@ namespace BetterLegacy.Editor.Managers
             scrollbar.transform.AsRT().sizeDelta = new Vector2(32f, 600f);
             scrollRectSR.verticalScrollbar = scrollbar.GetComponent<Scrollbar>();
 
-            EditorThemeManager.AddGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteManager.RoundedSide.Bottom_Left_I);
-            EditorThemeManager.AddGraphic(maskImage, ThemeGroup.Background_1, true, roundedSide: SpriteManager.RoundedSide.Bottom_Left_I);
-            EditorThemeManager.AddGraphic(panelRT.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteManager.RoundedSide.Top);
+            EditorThemeManager.AddGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Bottom_Left_I);
+            EditorThemeManager.AddGraphic(maskImage, ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Bottom_Left_I);
+            EditorThemeManager.AddGraphic(panelRT.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
             EditorThemeManager.AddSelectable(closeButton, ThemeGroup.Close);
             EditorThemeManager.AddGraphic(closeButton.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
             EditorThemeManager.AddLightText(title);
 
-            EditorThemeManager.AddScrollbar(scrollRectSR.verticalScrollbar, scrollbarRoundedSide: SpriteManager.RoundedSide.Bottom_Right_I);
+            EditorThemeManager.AddScrollbar(scrollRectSR.verticalScrollbar, scrollbarRoundedSide: SpriteHelper.RoundedSide.Bottom_Right_I);
 
             // Prefab Type Prefab
             prefabTypePrefab = new GameObject("Prefab Type");
@@ -1816,7 +1816,7 @@ namespace BetterLegacy.Editor.Managers
                         EditorManager.inst.ShowDialog("Browser Popup");
                         RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".png" }, onSelectFile: _val =>
                         {
-                            prefabType.icon = SpriteManager.LoadSprite(_val);
+                            prefabType.icon = SpriteHelper.LoadSprite(_val);
                             icon.sprite = prefabType.icon;
 
                             SavePrefabTypes();

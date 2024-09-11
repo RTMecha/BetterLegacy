@@ -3336,7 +3336,7 @@ namespace BetterLegacy.Core.Helpers
 
                                 CoreHelper.StartCoroutine(AlephNetworkManager.DownloadImageTexture("file://" + path, x =>
                                 {
-                                    ((SpriteRenderer)imageObject.Renderer).sprite = SpriteManager.CreateSprite(x);
+                                    ((SpriteRenderer)imageObject.Renderer).sprite = SpriteHelper.CreateSprite(x);
                                     imageObject.GameObject.transform.localPosition = local;
                                     imageObject.GameObject.transform.localPosition = local;
                                     imageObject.GameObject.transform.localPosition = local;
@@ -3369,7 +3369,7 @@ namespace BetterLegacy.Core.Helpers
 
                                     CoreHelper.StartCoroutine(AlephNetworkManager.DownloadImageTexture("file://" + path, x =>
                                     {
-                                        ((SpriteRenderer)imageObject.Renderer).sprite = SpriteManager.CreateSprite(x);
+                                        ((SpriteRenderer)imageObject.Renderer).sprite = SpriteHelper.CreateSprite(x);
                                         imageObject.GameObject.transform.localPosition = local;
                                         imageObject.GameObject.transform.localPosition = local;
                                         imageObject.GameObject.transform.localPosition = local;

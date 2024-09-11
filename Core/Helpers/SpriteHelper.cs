@@ -6,10 +6,8 @@ using UnityEngine;
 
 namespace BetterLegacy.Core.Managers
 {
-    public class SpriteManager : MonoBehaviour
+    public static class SpriteHelper
     {
-        public static SpriteManager inst;
-
         public static List<List<Sprite>> RoundedSprites = new List<List<Sprite>>
         {
             new List<Sprite>(),
@@ -20,14 +18,10 @@ namespace BetterLegacy.Core.Managers
         };
 
         /// <summary>
-        /// Inits SpriteManager.
+        /// Inits SpriteHelper data.
         /// </summary>
-        public static void Init() => Creator.NewGameObject(nameof(SpriteManager), SystemManager.inst.transform).AddComponent<SpriteManager>();
-
-        void Awake()
+        public static void Init()
         {
-            inst = this;
-
             try
             {
                 var assetBundle = AssetBundle.LoadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}sprites.asset");
@@ -50,7 +44,7 @@ namespace BetterLegacy.Core.Managers
                     }
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Debug.LogError(ex);
             }

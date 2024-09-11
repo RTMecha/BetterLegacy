@@ -100,7 +100,7 @@ namespace BetterLegacy.Core.Data
             prefabType.id = jn["id"] ?? LSText.randomNumString(16);
             try
             {
-                prefabType.icon = jn["icon"] == null ? null : SpriteManager.StringToSprite(jn["icon"]);
+                prefabType.icon = jn["icon"] == null ? null : SpriteHelper.StringToSprite(jn["icon"]);
             }
             catch
             {
@@ -119,7 +119,7 @@ namespace BetterLegacy.Core.Data
             try
             {
                 if (icon && icon.texture)
-                    jn["icon"] = SpriteManager.SpriteToString(icon);
+                    jn["icon"] = SpriteHelper.SpriteToString(icon);
             }
             catch
             {

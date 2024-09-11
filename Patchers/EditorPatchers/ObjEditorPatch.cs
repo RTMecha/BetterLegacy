@@ -684,12 +684,12 @@ namespace BetterLegacy.Patchers
                 var homingStaticPosition = randomPosition.Find("none").gameObject.Duplicate(randomPosition, "homing-static", 4);
 
                 if (RTFile.FileExists(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui__s_homing.png"))
-                    homingStaticPosition.transform.Find("Image").GetComponent<Image>().sprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui__s_homing.png");
+                    homingStaticPosition.transform.Find("Image").GetComponent<Image>().sprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui__s_homing.png");
 
                 var homingDynamicPosition = randomPosition.Find("none").gameObject.Duplicate(randomPosition, "homing-dynamic", 5);
 
                 if (RTFile.FileExists(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_d_homing.png"))
-                    homingDynamicPosition.transform.Find("Image").GetComponent<Image>().sprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_d_homing.png");
+                    homingDynamicPosition.transform.Find("Image").GetComponent<Image>().sprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_d_homing.png");
 
                 var rotation = ObjEditor.inst.KeyframeDialogs[2].transform;
                 var randomRotation = rotation.Find("random");
@@ -697,12 +697,12 @@ namespace BetterLegacy.Patchers
                 var homingStaticRotation = randomRotation.Find("none").gameObject.Duplicate(randomRotation, "homing-static", 3);
 
                 if (RTFile.FileExists(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui__s_homing.png"))
-                    homingStaticRotation.transform.Find("Image").GetComponent<Image>().sprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui__s_homing.png");
+                    homingStaticRotation.transform.Find("Image").GetComponent<Image>().sprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui__s_homing.png");
 
                 var homingDynamicRotation = randomRotation.Find("none").gameObject.Duplicate(randomRotation, "homing-dynamic", 4);
 
                 if (RTFile.FileExists(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_d_homing.png"))
-                    homingDynamicRotation.transform.Find("Image").GetComponent<Image>().sprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_d_homing.png");
+                    homingDynamicRotation.transform.Find("Image").GetComponent<Image>().sprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_d_homing.png");
 
                 var rRotation = rotation.Find("r_rotation");
                 var rRotationX = rRotation.Find("x");
@@ -927,7 +927,7 @@ namespace BetterLegacy.Patchers
 
                     var path = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_{array[i]}_addtoggle.png";
                     if (RTFile.FileExists(path))
-                        additiveImage.sprite = SpriteManager.LoadSprite(path);
+                        additiveImage.sprite = SpriteHelper.LoadSprite(path);
                 }
             }
 

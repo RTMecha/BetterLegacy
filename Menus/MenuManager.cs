@@ -1401,7 +1401,7 @@ namespace BetterLegacy.Menus
                                 {
                                     StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{path}", delegate (Texture2D texture2D)
                                     {
-                                        image.sprite = SpriteManager.CreateSprite(texture2D);
+                                        image.sprite = SpriteHelper.CreateSprite(texture2D);
                                         image.color = Color.white;
                                     }, delegate (string onError)
                                     {
@@ -1596,7 +1596,7 @@ namespace BetterLegacy.Menus
                             gameObjectRT.sizeDelta = new Vector2(sizeX, sizeY);
 
                         if (_element.data.Count > 1 && RTFile.FileExists(RTFile.ApplicationDirectory + _element.data[0]))
-                            gameObjectImage.sprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + _element.data[0]);
+                            gameObjectImage.sprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + _element.data[0]);
 
                         break;
                     }

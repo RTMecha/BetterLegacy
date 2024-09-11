@@ -99,7 +99,7 @@ namespace BetterLegacy.Core.Managers
 
                         if (RTFile.FileExists(fullPath + "/icon.png"))
                         {
-                            shape.Icon = SpriteManager.LoadSprite(fullPath + "/icon.png");
+                            shape.Icon = SpriteHelper.LoadSprite(fullPath + "/icon.png");
                         }
 
                         if (!StoredShapes2D.ContainsKey(shape.Vector))
@@ -134,7 +134,7 @@ namespace BetterLegacy.Core.Managers
 
                         if (RTFile.FileExists(fullPath + "/icon.png"))
                         {
-                            shape.Icon = SpriteManager.LoadSprite(fullPath + "/icon.png");
+                            shape.Icon = SpriteHelper.LoadSprite(fullPath + "/icon.png");
                         }
 
                         if (!StoredShapes3D.ContainsKey(shape.Vector))
@@ -148,7 +148,7 @@ namespace BetterLegacy.Core.Managers
 
                         if (RTFile.FileExists(fullPath + "/icon.png"))
                         {
-                            shape.Icon = SpriteManager.LoadSprite(fullPath + "/icon.png");
+                            shape.Icon = SpriteHelper.LoadSprite(fullPath + "/icon.png");
                         }
 
                         if (!StoredShapes3D.ContainsKey(shape.Vector))

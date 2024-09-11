@@ -63,7 +63,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
 
             CoreHelper.StartCoroutine(AlephNetworkManager.DownloadImageTexture("file://" + path, x =>
             {
-                ((SpriteRenderer)Renderer).sprite = SpriteManager.CreateSprite(x);
+                ((SpriteRenderer)Renderer).sprite = SpriteHelper.CreateSprite(x);
                 gameObject.transform.localPosition = position;
             }, onError =>  { ((SpriteRenderer)Renderer).sprite = ArcadeManager.inst.defaultImage; }));
         }

@@ -172,7 +172,7 @@ namespace BetterLegacy.Menus.UI.Elements
         /// <summary>
         /// The side that should be rounded, if <see cref="rounded"/> if higher than 0.
         /// </summary>
-        public SpriteManager.RoundedSide roundedSide = SpriteManager.RoundedSide.W;
+        public SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W;
 
         /// <summary>
         /// How many times the element should loop.

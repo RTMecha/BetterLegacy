@@ -1248,7 +1248,7 @@ namespace BetterLegacy.Arcade
         public static void GetImage(Image _image, string _filePath)
         {
             if (RTFile.FileExists(_filePath))
-                _image.sprite = SpriteManager.LoadSprite(_filePath);
+                _image.sprite = SpriteHelper.LoadSprite(_filePath);
         }
 
         public static string publishedLevels;

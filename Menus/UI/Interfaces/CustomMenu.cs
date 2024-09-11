@@ -77,7 +77,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     if (customMenu.spriteAssets.ContainsKey(keyValuePair.Key))
                         continue;
 
-                    customMenu.spriteAssets.Add(keyValuePair.Key, SpriteManager.StringToSprite(keyValuePair.Value));
+                    customMenu.spriteAssets.Add(keyValuePair.Key, SpriteHelper.StringToSprite(keyValuePair.Value));
                 }
             }
 
@@ -265,7 +265,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     parentLayout = jnElement["parent_layout"],
                                     parent = jnElement["parent"],
                                     siblingIndex = jnElement["sibling_index"] == null ? -1 : jnElement["sibling_index"].AsInt,
-                                    icon = jnElement["icon"] != null ? spriteAssets.ContainsKey(jnElement["icon"]) ? spriteAssets[jnElement["icon"]] : SpriteManager.StringToSprite(jnElement["icon"]) : null,
+                                    icon = jnElement["icon"] != null ? spriteAssets.ContainsKey(jnElement["icon"]) ? spriteAssets[jnElement["icon"]] : SpriteHelper.StringToSprite(jnElement["icon"]) : null,
                                     rect = RectValues.TryParse(jnElement["rect"], RectValues.Default),
                                     color = jnElement["col"].AsInt,
                                     opacity = jnElement["opacity"] == null ? 1f : jnElement["opacity"].AsFloat,
@@ -275,7 +275,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     length = jnElement["anim_length"].AsFloat,
                                     playBlipSound = jnElement["play_blip_sound"].AsBool,
                                     rounded = jnElement["rounded"] == null ? 1 : jnElement["rounded"].AsInt, // roundness can be prevented by setting rounded to 0.
-                                    roundedSide = jnElement["rounded_side"] == null ? SpriteManager.RoundedSide.W : (SpriteManager.RoundedSide)jnElement["rounded_side"].AsInt, // default side should be Whole.
+                                    roundedSide = jnElement["rounded_side"] == null ? SpriteHelper.RoundedSide.W : (SpriteHelper.RoundedSide)jnElement["rounded_side"].AsInt, // default side should be Whole.
                                     funcJSON = jnElement["func"], // function to run when the element is clicked.
                                     spawnFuncJSON = jnElement["spawn_func"], // function to run when the element spawns.
                                     reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j),
@@ -297,7 +297,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     parent = jnElement["parent"],
                                     siblingIndex = jnElement["sibling_index"] == null ? -1 : jnElement["sibling_index"].AsInt,
                                     text = FontManager.TextTranslater.ReplaceProperties(jnElement["text"]),
-                                    icon = jnElement["icon"] != null ? spriteAssets.ContainsKey(jnElement["icon"]) ? spriteAssets[jnElement["icon"]] : SpriteManager.StringToSprite(jnElement["icon"]) : null,
+                                    icon = jnElement["icon"] != null ? spriteAssets.ContainsKey(jnElement["icon"]) ? spriteAssets[jnElement["icon"]] : SpriteHelper.StringToSprite(jnElement["icon"]) : null,
                                     rect = RectValues.TryParse(jnElement["rect"], RectValues.Default),
                                     textRect = RectValues.TryParse(jnElement["text_rect"], RectValues.FullAnchored),
                                     iconRect = RectValues.TryParse(jnElement["icon_rect"], RectValues.Default),
@@ -314,7 +314,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     length = jnElement["anim_length"].AsFloat,
                                     playBlipSound = jnElement["play_blip_sound"].AsBool,
                                     rounded = jnElement["rounded"] == null ? 1 : jnElement["rounded"].AsInt, // roundness can be prevented by setting rounded to 0.
-                                    roundedSide = jnElement["rounded_side"] == null ? SpriteManager.RoundedSide.W : (SpriteManager.RoundedSide)jnElement["rounded_side"].AsInt, // default side should be Whole.
+                                    roundedSide = jnElement["rounded_side"] == null ? SpriteHelper.RoundedSide.W : (SpriteHelper.RoundedSide)jnElement["rounded_side"].AsInt, // default side should be Whole.
                                     funcJSON = jnElement["func"], // function to run when the element is clicked.
                                     spawnFuncJSON = jnElement["spawn_func"], // function to run when the element spawns.
                                     reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j),
@@ -339,7 +339,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     text = FontManager.TextTranslater.ReplaceProperties(jnElement["text"]),
                                     selectionPosition = new Vector2Int(jnElement["select"]["x"].AsInt, jnElement["select"]["y"].AsInt),
                                     autoAlignSelectionPosition = jnElement["align_select"].AsBool,
-                                    icon = jnElement["icon"] != null ? spriteAssets.ContainsKey(jnElement["icon"]) ? spriteAssets[jnElement["icon"]] : SpriteManager.StringToSprite(jnElement["icon"]) : null,
+                                    icon = jnElement["icon"] != null ? spriteAssets.ContainsKey(jnElement["icon"]) ? spriteAssets[jnElement["icon"]] : SpriteHelper.StringToSprite(jnElement["icon"]) : null,
                                     rect = RectValues.TryParse(jnElement["rect"], RectValues.Default),
                                     textRect = RectValues.TryParse(jnElement["text_rect"], RectValues.FullAnchored),
                                     iconRect = RectValues.TryParse(jnElement["icon_rect"], RectValues.Default),
@@ -365,7 +365,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     length = jnElement["anim_length"].AsFloat,
                                     playBlipSound = jnElement["play_blip_sound"].AsBool,
                                     rounded = jnElement["rounded"] == null ? 1 : jnElement["rounded"].AsInt, // roundness can be prevented by setting rounded to 0.
-                                    roundedSide = jnElement["rounded_side"] == null ? SpriteManager.RoundedSide.W : (SpriteManager.RoundedSide)jnElement["rounded_side"].AsInt, // default side should be Whole.
+                                    roundedSide = jnElement["rounded_side"] == null ? SpriteHelper.RoundedSide.W : (SpriteHelper.RoundedSide)jnElement["rounded_side"].AsInt, // default side should be Whole.
                                     funcJSON = jnElement["func"], // function to run when the element is clicked.
                                     spawnFuncJSON = jnElement["spawn_func"], // function to run when the element spawns.
                                     enterFuncJSON = jnElement["enter_func"], // function to run when the element is hovered over.

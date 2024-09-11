@@ -651,7 +651,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             if (menuImage.icon)
                 menuImage.image.sprite = menuImage.icon;
             else if (MenuConfig.Instance.RoundedUI.Value)
-                SpriteManager.SetRoundedSprite(menuImage.image, menuImage.rounded, menuImage.roundedSide);
+                SpriteHelper.SetRoundedSprite(menuImage.image, menuImage.rounded, menuImage.roundedSide);
 
             if (menuImage.reactiveSetting.init)
             {
@@ -685,7 +685,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             menuText.image.enabled = !menuText.hideBG;
             if (!menuText.hideBG && MenuConfig.Instance.RoundedUI.Value)
-                SpriteManager.SetRoundedSprite(menuText.image, menuText.rounded, menuText.roundedSide);
+                SpriteHelper.SetRoundedSprite(menuText.image, menuText.rounded, menuText.roundedSide);
 
             menuText.clickable = menuText.gameObject.AddComponent<Clickable>();
 
@@ -742,7 +742,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             menuButton.image.enabled = !menuButton.hideBG;
             if (!menuButton.hideBG && MenuConfig.Instance.RoundedUI.Value)
-                SpriteManager.SetRoundedSprite(menuButton.image, menuButton.rounded, menuButton.roundedSide);
+                SpriteHelper.SetRoundedSprite(menuButton.image, menuButton.rounded, menuButton.roundedSide);
 
             menuButton.clickable = menuButton.gameObject.AddComponent<Clickable>();
             menuButton.clickable.onEnter = pointerEventdata =>
@@ -810,7 +810,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             if (menuInputField.icon)
                 menuInputField.image.sprite = menuInputField.icon;
             else if (MenuConfig.Instance.RoundedUI.Value)
-                SpriteManager.SetRoundedSprite(menuInputField.image, menuInputField.rounded, menuInputField.roundedSide);
+                SpriteHelper.SetRoundedSprite(menuInputField.image, menuInputField.rounded, menuInputField.roundedSide);
 
             if (menuInputField.reactiveSetting.init)
             {

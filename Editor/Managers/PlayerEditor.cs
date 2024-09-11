@@ -139,7 +139,7 @@ namespace BetterLegacy.Editor.Managers
 
             scrollView.transform.AsRT().sizeDelta = new Vector2(765f, 512f);
 
-            PlayerSprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_player.png");
+            PlayerSprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_player.png");
 
             EditorHelper.AddEditorDialog("Player Editor", dialog);
             var playerEditor = EditorHelper.AddEditorDropdown("Player Editor", "", "Edit", PlayerSprite, () =>

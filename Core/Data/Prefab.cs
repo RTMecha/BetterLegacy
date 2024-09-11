@@ -138,7 +138,7 @@ namespace BetterLegacy.Core.Data
                     {
                         if (jn["assets"]["spr"][i]["i"] != null)
                         {
-                            prefab.SpriteAssets.Add(name, SpriteManager.StringToSprite(jn["assets"]["spr"][i]["i"]));
+                            prefab.SpriteAssets.Add(name, SpriteHelper.StringToSprite(jn["assets"]["spr"][i]["i"]));
                             continue;
                         }
 
@@ -155,7 +155,7 @@ namespace BetterLegacy.Core.Data
                         texture2d.filterMode = FilterMode.Point;
                         texture2d.Apply();
 
-                        prefab.SpriteAssets.Add(name, SpriteManager.CreateSprite(texture2d));
+                        prefab.SpriteAssets.Add(name, SpriteHelper.CreateSprite(texture2d));
                     }
                 }
             }
@@ -220,7 +220,7 @@ namespace BetterLegacy.Core.Data
             for (int i = 0; i < spriteAssets.Count; i++)
             {
                 jn["assets"]["spr"][i]["n"] = spriteAssets.ElementAt(i).Key;
-                jn["assets"]["spr"][i]["i"] = SpriteManager.SpriteToString(spriteAssets.ElementAt(i).Value);
+                jn["assets"]["spr"][i]["i"] = SpriteHelper.SpriteToString(spriteAssets.ElementAt(i).Value);
             }
 
             return jn;

@@ -2029,8 +2029,8 @@ namespace BetterLegacy.Components.Player
                     {
                         if (health.image)
                         {
-                            health.image.sprite = RTFile.FileExists(RTFile.BasePath + "health.png") && !AssetsGlobal ? SpriteManager.LoadSprite(RTFile.BasePath + "health.png") :
-                                RTFile.FileExists(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/health.png") ? SpriteManager.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/health.png") :
+                            health.image.sprite = RTFile.FileExists(RTFile.BasePath + "health.png") && !AssetsGlobal ? SpriteHelper.LoadSprite(RTFile.BasePath + "health.png") :
+                                RTFile.FileExists(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/health.png") ? SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/health.png") :
                                 PlayerManager.healthSprite;
                         }
                     }
@@ -2435,7 +2435,7 @@ namespace BetterLegacy.Components.Player
                                     if (!spriteRenderer)
                                         return;
 
-                                    spriteRenderer.sprite = SpriteManager.CreateSprite(texture2D);
+                                    spriteRenderer.sprite = SpriteHelper.CreateSprite(texture2D);
                                 }));
                             }
                         }

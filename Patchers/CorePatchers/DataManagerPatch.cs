@@ -37,7 +37,6 @@ namespace BetterLegacy.Patchers
             ShapeManager.Init();
             UIManager.Init();
             QuickElementManager.Init();
-            SpriteManager.Init();
             FontManager.Init();
             AssetManager.Init();
             AchievementManager.Init();

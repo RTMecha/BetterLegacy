@@ -2848,7 +2848,7 @@ namespace BetterLegacy.Editor.Managers
 
                 if (ObjectManager.inst.objectPrefabs.Count > 9)
                 {
-                    var playerSprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_player.png");
+                    var playerSprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_player.png");
                     int i = shape.childCount;
                     var obj = shapeButtonPrefab.Duplicate(shape, (i + 1).ToString());
                     if (obj.transform.Find("Image") && obj.transform.Find("Image").gameObject.TryGetComponent(out Image image))
@@ -3054,7 +3054,7 @@ namespace BetterLegacy.Editor.Managers
                             texture2d.filterMode = FilterMode.Point;
                             texture2d.Apply();
 
-                            AssetManager.SpriteAssets.Add(beatmapObject.text, SpriteManager.CreateSprite(texture2d));
+                            AssetManager.SpriteAssets.Add(beatmapObject.text, SpriteHelper.CreateSprite(texture2d));
                         }
                         else
                         {
@@ -3067,7 +3067,7 @@ namespace BetterLegacy.Editor.Managers
                             texture2d.filterMode = FilterMode.Point;
                             texture2d.Apply();
 
-                            AssetManager.SpriteAssets.Add(beatmapObject.text, SpriteManager.CreateSprite(texture2d));
+                            AssetManager.SpriteAssets.Add(beatmapObject.text, SpriteHelper.CreateSprite(texture2d));
                         }
 
                         Updater.UpdateObject(beatmapObject);

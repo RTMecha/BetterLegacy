@@ -204,7 +204,7 @@ namespace BetterLegacy.Editor.Managers
             var closeX = close.transform.GetChild(0).gameObject;
             EditorThemeManager.AddGraphic(close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
 
-            EditorHelper.AddEditorDropdown("Open Project Planner", "", "Edit", SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_planner.png"), () =>
+            EditorHelper.AddEditorDropdown("Open Project Planner", "", "Edit", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_planner.png"), () =>
             {
                 Open();
                 EditorManager.inst.HideAllDropdowns();
@@ -239,7 +239,7 @@ namespace BetterLegacy.Editor.Managers
             handleImage.color = new Color(0.878f, 0.878f, 0.878f, 1f);
             handleImage.sprite = null;
             
-            EditorThemeManager.AddScrollbar(scrollBarVertical.GetComponent<Scrollbar>(), scrollBarVertical.GetComponent<Image>(), scrollbarRoundedSide: SpriteManager.RoundedSide.Bottom_Right_I);
+            EditorThemeManager.AddScrollbar(scrollBarVertical.GetComponent<Scrollbar>(), scrollBarVertical.GetComponent<Image>(), scrollbarRoundedSide: SpriteHelper.RoundedSide.Bottom_Right_I);
 
             contentBase.Find("Image").AsRT().anchoredPosition = new Vector2(690f, /*-94f*/ -104f);
             contentBase.Find("Image").AsRT().sizeDelta = new Vector2(1384f, 48f);
@@ -263,7 +263,7 @@ namespace BetterLegacy.Editor.Managers
                     RefreshList();
                 });
 
-                EditorThemeManager.AddInputField(searchField, ThemeGroup.Search_Field_1, 1, SpriteManager.RoundedSide.Bottom);
+                EditorThemeManager.AddInputField(searchField, ThemeGroup.Search_Field_1, 1, SpriteHelper.RoundedSide.Bottom);
 
                 var tfv = ObjEditor.inst.ObjectView.transform;
 
@@ -342,7 +342,7 @@ namespace BetterLegacy.Editor.Managers
                                     character.CharacterAbilities.Add("???");
                                 }
 
-                                character.CharacterSprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "CA Hal.png");
+                                character.CharacterSprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "CA Hal.png");
                                 character.Name = Path.GetFileName(fullPath);
                                 character.FullPath = fullPath;
                                 character.Gender = "He";
@@ -451,7 +451,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddGraphic(reloadText, ThemeGroup.Function_2_Text);
             }
 
-            gradientSprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "linear_gradient.png");
+            gradientSprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "linear_gradient.png");
 
             // Item Prefabs
             {
@@ -586,7 +586,7 @@ namespace BetterLegacy.Editor.Managers
                     editPrefabButton.colors = UIManager.SetColorBlock(editPrefabButton.colors, new Color(0.9f, 0.9f, 0.9f, 1f), Color.white, Color.white, new Color(0.9f, 0.9f, 0.9f, 1f), LSColors.red700);
                     var spritePrefabImage = editPrefab.transform.GetChild(0).GetComponent<Image>();
                     spritePrefabImage.color = new Color(0.037f, 0.037f, 0.037f, 1f);
-                    spritePrefabImage.sprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_edit.png");
+                    spritePrefabImage.sprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_edit.png");
 
                     var deletePrefab = EditorPrefabHolder.Instance.DeleteButton.Duplicate(prefab.transform, "delete");
                     UIManager.SetRectTransform(deletePrefab.transform.AsRT(), new Vector2(-12f, -12f), Vector2.one, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(20f, 20f));
@@ -657,7 +657,7 @@ namespace BetterLegacy.Editor.Managers
                     editButton.colors = UIManager.SetColorBlock(editButton.colors, new Color(0.9f, 0.9f, 0.9f, 1f), Color.white, Color.white, new Color(0.9f, 0.9f, 0.9f, 1f), LSColors.red700);
                     var spriteImage = edit.transform.GetChild(0).GetComponent<Image>();
                     spriteImage.color = new Color(0.037f, 0.037f, 0.037f, 1f);
-                    spriteImage.sprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_edit.png");
+                    spriteImage.sprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_edit.png");
 
                     var delete = EditorPrefabHolder.Instance.DeleteButton.Duplicate(timelineButtonPrefab.transform, "delete");
                     UIManager.SetRectTransform(delete.transform.AsRT(), new Vector2(-16f, -16f), Vector2.one, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(24f, 24f));
@@ -755,7 +755,7 @@ namespace BetterLegacy.Editor.Managers
                     editPrefabButton.colors = UIManager.SetColorBlock(editPrefabButton.colors, new Color(0.9f, 0.9f, 0.9f, 1f), Color.white, Color.white, new Color(0.9f, 0.9f, 0.9f, 1f), LSColors.red700);
                     var spritePrefabImage = editPrefab.transform.GetChild(0).GetComponent<Image>();
                     spritePrefabImage.color = new Color(0.037f, 0.037f, 0.037f, 1f);
-                    spritePrefabImage.sprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_edit.png");
+                    spritePrefabImage.sprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "editor_gui_edit.png");
 
                     var closeB = closePrefab.Duplicate(prefabPanel.transform, "close");
                     UIManager.SetRectTransform(closeB.transform.AsRT(), new Vector2(-16f, 0f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(26f, 26f));
@@ -2384,7 +2384,7 @@ namespace BetterLegacy.Editor.Managers
 
                 if (!string.IsNullOrEmpty(jpgFile))
                 {
-                    character.CharacterSprite = SpriteManager.LoadSprite(jpgFile);
+                    character.CharacterSprite = SpriteHelper.LoadSprite(jpgFile);
                     character.ProfileUI.sprite = character.CharacterSprite;
                     character.Save();
                 }
@@ -3047,7 +3047,7 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.List_Button_1_Normal, true);
 
             var scrollbar = gameObject.transform.Find("Scrollbar");
-            EditorThemeManager.ApplyScrollbar(scrollbar.GetComponent<Scrollbar>(), scrollbar.GetComponent<Image>(), ThemeGroup.List_Button_1_Normal, ThemeGroup.Scrollbar_1_Handle, scrollbarRoundedSide: SpriteManager.RoundedSide.Bottom);
+            EditorThemeManager.ApplyScrollbar(scrollbar.GetComponent<Scrollbar>(), scrollbar.GetComponent<Image>(), ThemeGroup.List_Button_1_Normal, ThemeGroup.Scrollbar_1_Handle, scrollbarRoundedSide: SpriteHelper.RoundedSide.Bottom);
 
             timeline.NameUI = gameObject.transform.Find("name").GetComponent<TextMeshProUGUI>();
             timeline.NameUI.text = timeline.Name;
@@ -3118,7 +3118,7 @@ namespace BetterLegacy.Editor.Managers
             var noteDraggable = gameObject.AddComponent<NoteDraggable>();
             noteDraggable.note = note;
 
-            EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Background_3, true, roundedSide: SpriteManager.RoundedSide.Bottom);
+            EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Background_3, true, roundedSide: SpriteHelper.RoundedSide.Bottom);
 
             string[] names = new string[] { "left", "right", "up", "down" };
             for (int i = 0; i < 4; i++)
@@ -3359,7 +3359,7 @@ namespace BetterLegacy.Editor.Managers
 
             public CharacterItem(string fullPath)
             {
-                CharacterSprite = RTFile.FileExists(fullPath + "/profile.png") ? SpriteManager.LoadSprite(fullPath + "/profile.png") : SteamWorkshop.inst.defaultSteamImageSprite;
+                CharacterSprite = RTFile.FileExists(fullPath + "/profile.png") ? SpriteHelper.LoadSprite(fullPath + "/profile.png") : SteamWorkshop.inst.defaultSteamImageSprite;
 
                 if (RTFile.FileExists(fullPath + "/info.lsn"))
                 {
@@ -3509,7 +3509,7 @@ namespace BetterLegacy.Editor.Managers
 
                 RTFile.WriteToFile(FullPath + "/info.lsn", jn.ToString(3));
 
-                SpriteManager.SaveSprite(CharacterSprite, FullPath + "/profile.png");
+                SpriteHelper.SaveSprite(CharacterSprite, FullPath + "/profile.png");
             }
         }
 

@@ -280,7 +280,7 @@ namespace BetterLegacy.Core
                 for (int i = 0; i < AssetManager.SpriteAssets.Count; i++)
                 {
                     jn["assets"]["spr"][i]["n"] = AssetManager.SpriteAssets.ElementAt(i).Key;
-                    jn["assets"]["spr"][i]["i"] = SpriteManager.SpriteToString(AssetManager.SpriteAssets.ElementAt(i).Value);
+                    jn["assets"]["spr"][i]["i"] = SpriteHelper.SpriteToString(AssetManager.SpriteAssets.ElementAt(i).Value);
                 }
 
                 CoreHelper.Log("Saving Object Prefabs");

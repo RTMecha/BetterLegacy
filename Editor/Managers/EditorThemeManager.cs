@@ -96,7 +96,7 @@ namespace BetterLegacy.Editor.Managers
                 AddGraphic(dropdown.captionImage, ThemeGroup.Dropdown_1_Overlay);
 
             var template = dropdown.template.gameObject;
-            AddGraphic(template.GetComponent<Image>(), ThemeGroup.Dropdown_1, true, roundedSide: SpriteManager.RoundedSide.Bottom);
+            AddGraphic(template.GetComponent<Image>(), ThemeGroup.Dropdown_1, true, roundedSide: SpriteHelper.RoundedSide.Bottom);
 
             var templateItem = template.transform.Find("Viewport/Content/Item");
             AddGraphic(templateItem.Find("Item Background").GetComponent<Image>(), ThemeGroup.Dropdown_1_Item, true);
@@ -115,7 +115,7 @@ namespace BetterLegacy.Editor.Managers
                 ApplyGraphic(dropdown.captionImage, ThemeGroup.Dropdown_1_Overlay);
 
             var template = dropdown.template.gameObject;
-            ApplyGraphic(template.GetComponent<Image>(), ThemeGroup.Dropdown_1, true, roundedSide: SpriteManager.RoundedSide.Bottom);
+            ApplyGraphic(template.GetComponent<Image>(), ThemeGroup.Dropdown_1, true, roundedSide: SpriteHelper.RoundedSide.Bottom);
 
             var templateItem = template.transform.Find("Viewport/Content/Item");
             ApplyGraphic(templateItem.Find("Item Background").GetComponent<Image>(), ThemeGroup.Dropdown_1_Item, true);
@@ -125,7 +125,7 @@ namespace BetterLegacy.Editor.Managers
                 ApplyGraphic(dropdown.itemImage, ThemeGroup.Dropdown_1_Overlay);
         }
 
-        public static void AddInputField(InputField inputField, ThemeGroup group = ThemeGroup.Input_Field, int rounded = 1, SpriteManager.RoundedSide roundedSide = SpriteManager.RoundedSide.W)
+        public static void AddInputField(InputField inputField, ThemeGroup group = ThemeGroup.Input_Field, int rounded = 1, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W)
         {
             inputField.image.fillCenter = true;
             AddElement(new Element(group, inputField.gameObject, new List<Component>
@@ -139,7 +139,7 @@ namespace BetterLegacy.Editor.Managers
             }));
         }
 
-        public static void AddInputField(TMP_InputField inputField, ThemeGroup group = ThemeGroup.Input_Field, int rounded = 1, SpriteManager.RoundedSide roundedSide = SpriteManager.RoundedSide.W)
+        public static void AddInputField(TMP_InputField inputField, ThemeGroup group = ThemeGroup.Input_Field, int rounded = 1, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W)
         {
             inputField.image.fillCenter = true;
             AddElement(new Element(group, inputField.gameObject, new List<Component>
@@ -153,7 +153,7 @@ namespace BetterLegacy.Editor.Managers
             }));
         }
 
-        public static void ApplyInputField(InputField inputField, ThemeGroup group = ThemeGroup.Input_Field, SpriteManager.RoundedSide roundedSide = SpriteManager.RoundedSide.W)
+        public static void ApplyInputField(InputField inputField, ThemeGroup group = ThemeGroup.Input_Field, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W)
         {
             inputField.image.fillCenter = true;
             ApplyElement(new Element(group, inputField.gameObject, new List<Component>
@@ -181,7 +181,7 @@ namespace BetterLegacy.Editor.Managers
                 AddElement(new Element(ThemeGroup.Input_Field, input.gameObject, new List<Component>
                 {
                     selfInput ? inputField.image : input.GetComponent<Image>(),
-                }, true, 1, SpriteManager.RoundedSide.W));
+                }, true, 1, SpriteHelper.RoundedSide.W));
 
                 AddElement(new Element(ThemeGroup.Input_Field_Text, inputField.textComponent.gameObject, new List<Component>
                 {
@@ -223,7 +223,7 @@ namespace BetterLegacy.Editor.Managers
                 AddElement(new Element(ThemeGroup.Input_Field, input.gameObject, new List<Component>
                 {
                     selfInput ? inputField.image : input.GetComponent<Image>(),
-                }, true, 1, SpriteManager.RoundedSide.W));
+                }, true, 1, SpriteHelper.RoundedSide.W));
 
                 AddElement(new Element(ThemeGroup.Input_Field_Text, inputField.textComponent.gameObject, new List<Component>
                 {
@@ -256,7 +256,7 @@ namespace BetterLegacy.Editor.Managers
             AddElement(new Element(ThemeGroup.Toggle_1, toggle.gameObject, new List<Component>
             {
                 toggle.image,
-            }, true, 1, SpriteManager.RoundedSide.W));
+            }, true, 1, SpriteHelper.RoundedSide.W));
 
             var checkMarkGroup = checkGroup != ThemeGroup.Null ? checkGroup : ThemeGroup.Toggle_1_Check;
             AddElement(new Element(checkMarkGroup, toggle.graphic.gameObject, new List<Component>
@@ -292,7 +292,7 @@ namespace BetterLegacy.Editor.Managers
             ApplyElement(new Element(ThemeGroup.Toggle_1, toggle.gameObject, new List<Component>
             {
                 toggle.image,
-            }, true, 1, SpriteManager.RoundedSide.W));
+            }, true, 1, SpriteHelper.RoundedSide.W));
 
             var checkMarkGroup = checkGroup != ThemeGroup.Null ? checkGroup : ThemeGroup.Toggle_1_Check;
             ApplyElement(new Element(checkMarkGroup, toggle.graphic.gameObject, new List<Component>
@@ -354,7 +354,7 @@ namespace BetterLegacy.Editor.Managers
             }));
         }
 
-        public static void AddSelectable(Selectable selectable, ThemeGroup group, bool canSetRounded = true, int rounded = 1, SpriteManager.RoundedSide roundedSide = SpriteManager.RoundedSide.W)
+        public static void AddSelectable(Selectable selectable, ThemeGroup group, bool canSetRounded = true, int rounded = 1, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W)
         {
             AddElement(new Element(group, selectable.gameObject, new List<Component>
             {
@@ -363,7 +363,7 @@ namespace BetterLegacy.Editor.Managers
             }, canSetRounded, rounded, roundedSide, true));
         }
 
-        public static void ApplySelectable(Selectable selectable, ThemeGroup group, bool canSetRounded = true, int rounded = 1, SpriteManager.RoundedSide roundedSide = SpriteManager.RoundedSide.W)
+        public static void ApplySelectable(Selectable selectable, ThemeGroup group, bool canSetRounded = true, int rounded = 1, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W)
         {
             ApplyElement(new Element(group, selectable.gameObject, new List<Component>
             {
@@ -372,7 +372,7 @@ namespace BetterLegacy.Editor.Managers
             }, canSetRounded, rounded, roundedSide, true));
         }
 
-        public static void AddGraphic(Graphic graphic, ThemeGroup group, bool canSetRounded = false, int rounded = 1, SpriteManager.RoundedSide roundedSide = SpriteManager.RoundedSide.W)
+        public static void AddGraphic(Graphic graphic, ThemeGroup group, bool canSetRounded = false, int rounded = 1, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W)
         {
             AddElement(new Element(group, graphic.gameObject, new List<Component>
             {
@@ -380,7 +380,7 @@ namespace BetterLegacy.Editor.Managers
             }, canSetRounded, rounded, roundedSide));
         }
 
-        public static void ApplyGraphic(Graphic graphic, ThemeGroup group, bool canSetRounded = false, int rounded = 1, SpriteManager.RoundedSide roundedSide = SpriteManager.RoundedSide.W)
+        public static void ApplyGraphic(Graphic graphic, ThemeGroup group, bool canSetRounded = false, int rounded = 1, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W)
         {
             ApplyElement(new Element(group, graphic.gameObject, new List<Component>
             {
@@ -390,7 +390,7 @@ namespace BetterLegacy.Editor.Managers
 
         public static void AddScrollbar(Scrollbar scrollbar, Image backgroundImage = null, ThemeGroup scrollbarGroup = ThemeGroup.Background_1, ThemeGroup handleGroup = ThemeGroup.Scrollbar_1_Handle,
             bool canSetScrollbarRounded = true, bool canSetHandleRounded = true, int scrollbarRounded = 1, int handleRounded = 1,
-            SpriteManager.RoundedSide scrollbarRoundedSide = SpriteManager.RoundedSide.W, SpriteManager.RoundedSide handleRoundedSide = SpriteManager.RoundedSide.W)
+            SpriteHelper.RoundedSide scrollbarRoundedSide = SpriteHelper.RoundedSide.W, SpriteHelper.RoundedSide handleRoundedSide = SpriteHelper.RoundedSide.W)
         {
             AddGraphic(backgroundImage ?? scrollbar.GetComponent<Image>(), scrollbarGroup, canSetScrollbarRounded, scrollbarRounded, scrollbarRoundedSide);
 
@@ -403,7 +403,7 @@ namespace BetterLegacy.Editor.Managers
 
         public static void ApplyScrollbar(Scrollbar scrollbar, Image backgroundImage = null, ThemeGroup scrollbarGroup = ThemeGroup.Background_1, ThemeGroup handleGroup = ThemeGroup.Scrollbar_1_Handle,
             bool canSetScrollbarRounded = true, bool canSetHandleRounded = true, int scrollbarRounded = 1, int handleRounded = 1,
-            SpriteManager.RoundedSide scrollbarRoundedSide = SpriteManager.RoundedSide.W, SpriteManager.RoundedSide handleRoundedSide = SpriteManager.RoundedSide.W)
+            SpriteHelper.RoundedSide scrollbarRoundedSide = SpriteHelper.RoundedSide.W, SpriteHelper.RoundedSide handleRoundedSide = SpriteHelper.RoundedSide.W)
         {
             ApplyGraphic(backgroundImage ?? scrollbar.GetComponent<Image>(), scrollbarGroup, canSetScrollbarRounded, scrollbarRounded, scrollbarRoundedSide);
 
@@ -416,7 +416,7 @@ namespace BetterLegacy.Editor.Managers
 
         public static void AddSlider(Slider slider, Image backgroundImage = null, ThemeGroup sliderGroup = ThemeGroup.Slider_2, ThemeGroup handleGroup = ThemeGroup.Slider_2_Handle,
             bool canSetSliderRounded = true, bool canSetHandleRounded = true, int sliderRounded = 1, int handleRounded = 1,
-            SpriteManager.RoundedSide sliderRoundedSide = SpriteManager.RoundedSide.W, SpriteManager.RoundedSide handleRoundedSide = SpriteManager.RoundedSide.W, bool selectable = false)
+            SpriteHelper.RoundedSide sliderRoundedSide = SpriteHelper.RoundedSide.W, SpriteHelper.RoundedSide handleRoundedSide = SpriteHelper.RoundedSide.W, bool selectable = false)
         {
             AddGraphic(backgroundImage ?? slider.GetComponent<Image>(), sliderGroup, canSetSliderRounded, sliderRounded, sliderRoundedSide);
 
@@ -429,7 +429,7 @@ namespace BetterLegacy.Editor.Managers
 
         public static void ApplySlider(Slider slider, Image backgroundImage = null, ThemeGroup sliderGroup = ThemeGroup.Slider_2, ThemeGroup handleGroup = ThemeGroup.Slider_2_Handle,
             bool canSetSliderRounded = true, bool canSetHandleRounded = true, int sliderRounded = 1, int handleRounded = 1,
-            SpriteManager.RoundedSide sliderRoundedSide = SpriteManager.RoundedSide.W, SpriteManager.RoundedSide handleRoundedSide = SpriteManager.RoundedSide.W, bool selectable = false)
+            SpriteHelper.RoundedSide sliderRoundedSide = SpriteHelper.RoundedSide.W, SpriteHelper.RoundedSide handleRoundedSide = SpriteHelper.RoundedSide.W, bool selectable = false)
         {
             ApplyGraphic(backgroundImage ?? slider.GetComponent<Image>(), sliderGroup, canSetSliderRounded, sliderRounded, sliderRoundedSide);
 
@@ -773,7 +773,7 @@ namespace BetterLegacy.Editor.Managers
 
         public class Element
         {
-            public Element(ThemeGroup group, GameObject gameObject, List<Component> components, bool canSetRounded = false, int rounded = 0, SpriteManager.RoundedSide roundedSide = SpriteManager.RoundedSide.W, bool isSelectable = false)
+            public Element(ThemeGroup group, GameObject gameObject, List<Component> components, bool canSetRounded = false, int rounded = 0, SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W, bool isSelectable = false)
             {
                 themeGroup = group;
                 this.gameObject = gameObject;
@@ -796,7 +796,7 @@ namespace BetterLegacy.Editor.Managers
 
             int rounded;
 
-            SpriteManager.RoundedSide roundedSide = SpriteManager.RoundedSide.W;
+            SpriteHelper.RoundedSide roundedSide = SpriteHelper.RoundedSide.W;
 
             public void ApplyTheme(EditorTheme theme)
             {
@@ -902,7 +902,7 @@ namespace BetterLegacy.Editor.Managers
                     if (component is Image image)
                     {
                         if (rounded != 0 && canSet)
-                            SpriteManager.SetRoundedSprite(image, rounded, roundedSide);
+                            SpriteHelper.SetRoundedSprite(image, rounded, roundedSide);
                         else
                             image.sprite = null;
                     }

@@ -457,7 +457,7 @@ namespace BetterLegacy.Arcade
                     overrideColor = CoreHelper.GetDifficulty(level.metadata.song.difficulty).color,
                     useOverrideColor = true,
                     opacity = 1f,
-                    roundedSide = SpriteManager.RoundedSide.Left,
+                    roundedSide = SpriteHelper.RoundedSide.Left,
                     length = 0f,
                     wait = false,
                 });
@@ -608,7 +608,7 @@ namespace BetterLegacy.Arcade
                                 overrideColor = CoreHelper.GetDifficulty(difficulty).color,
                                 useOverrideColor = true,
                                 opacity = 1f,
-                                roundedSide = SpriteManager.RoundedSide.Left,
+                                roundedSide = SpriteHelper.RoundedSide.Left,
                                 length = 0f,
                                 wait = false,
                             });
@@ -637,7 +637,7 @@ namespace BetterLegacy.Arcade
                 {
                     yield return CoreHelper.StartCoroutine(AlephNetworkManager.DownloadBytes($"{CoverURL}{id}.jpg", bytes =>
                     {
-                        var sprite = SpriteManager.LoadSprite(bytes);
+                        var sprite = SpriteHelper.LoadSprite(bytes);
                         OnlineLevelIcons.Add(id, sprite);
                         button.icon = sprite;
                     }, onError =>

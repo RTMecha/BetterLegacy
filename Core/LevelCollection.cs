@@ -81,8 +81,8 @@ namespace BetterLegacy.Core
                     collection.levels.Add(new Level(levelFolder) { fromCollection = true });
             }
 
-            collection.Icon = RTFile.FileExists($"{path}icon.png") ? SpriteManager.LoadSprite($"{path}icon.png") : SpriteManager.LoadSprite($"{path}icon.jpg");
-            collection.Banner = RTFile.FileExists($"{path}banner.png") ? SpriteManager.LoadSprite($"{path}banner.png") : SpriteManager.LoadSprite($"{path}banner.jpg");
+            collection.Icon = RTFile.FileExists($"{path}icon.png") ? SpriteHelper.LoadSprite($"{path}icon.png") : SpriteHelper.LoadSprite($"{path}icon.jpg");
+            collection.Banner = RTFile.FileExists($"{path}banner.png") ? SpriteHelper.LoadSprite($"{path}banner.png") : SpriteHelper.LoadSprite($"{path}banner.jpg");
 
             return collection;
         }
@@ -129,9 +129,9 @@ namespace BetterLegacy.Core
                 jn["levels"][i] = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(this[i].path));
 
             if (Icon)
-                SpriteManager.SaveSprite(Icon, $"{Path}icon.png");
+                SpriteHelper.SaveSprite(Icon, $"{Path}icon.png");
             if (Banner)
-                SpriteManager.SaveSprite(Banner, $"{Path}banner.png");
+                SpriteHelper.SaveSprite(Banner, $"{Path}banner.png");
             RTFile.WriteToFile($"{Path}collection.lsco", jn.ToString(3));
         }
 

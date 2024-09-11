@@ -102,7 +102,7 @@ namespace BetterLegacy.Editor.Managers
                 StartCoroutine(RenderDialog());
             });
 
-            EditorThemeManager.AddInputField(searchField, ThemeGroup.Search_Field_1, 1, SpriteManager.RoundedSide.Bottom);
+            EditorThemeManager.AddInputField(searchField, ThemeGroup.Search_Field_1, 1, SpriteHelper.RoundedSide.Bottom);
 
             search.transform.GetChild(0).Find("Placeholder").GetComponent<Text>().text = "Search for level...";
 
@@ -180,7 +180,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             // Dropdown
-            EditorHelper.AddEditorDropdown("Level Combiner", "", "File", SpriteManager.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_combine_t.png"), OpenDialog, 4);
+            EditorHelper.AddEditorDropdown("Level Combiner", "", "File", SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_combine_t.png"), OpenDialog, 4);
 
             EditorThemeManager.AddGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
             EditorThemeManager.AddLightText(infoText);

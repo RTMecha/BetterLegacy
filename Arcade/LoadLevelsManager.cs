@@ -120,7 +120,7 @@ namespace BetterLegacy.Arcade
             baseImage = ((Image)openFilePopup["Image"]);
 
             if (ArcadeConfig.Instance.LoadingBackRoundness.Value != 0)
-                SpriteManager.SetRoundedSprite(baseImage, ArcadeConfig.Instance.LoadingBackRoundness.Value, SpriteManager.RoundedSide.W);
+                SpriteHelper.SetRoundedSprite(baseImage, ArcadeConfig.Instance.LoadingBackRoundness.Value, SpriteHelper.RoundedSide.W);
             else
                 baseImage.sprite = null;
 
@@ -141,7 +141,7 @@ namespace BetterLegacy.Arcade
             loadMask.showMaskGraphic = false;
 
             if (ArcadeConfig.Instance.LoadingIconRoundness.Value != 0)
-                SpriteManager.SetRoundedSprite(iconBaseImage, ArcadeConfig.Instance.LoadingIconRoundness.Value, SpriteManager.RoundedSide.W);
+                SpriteHelper.SetRoundedSprite(iconBaseImage, ArcadeConfig.Instance.LoadingIconRoundness.Value, SpriteHelper.RoundedSide.W);
             else
                 iconBaseImage.sprite = null;
 
@@ -173,7 +173,7 @@ namespace BetterLegacy.Arcade
             ((GameObject)loaderBase["GameObject"]).AddComponent<Mask>();
 
             if (ArcadeConfig.Instance.LoadingBarRoundness.Value != 0)
-                SpriteManager.SetRoundedSprite(((Image)loaderBase["Image"]), ArcadeConfig.Instance.LoadingBarRoundness.Value, SpriteManager.RoundedSide.W);
+                SpriteHelper.SetRoundedSprite(((Image)loaderBase["Image"]), ArcadeConfig.Instance.LoadingBarRoundness.Value, SpriteHelper.RoundedSide.W);
             else
                 ((Image)loaderBase["Image"]).sprite = null;
 

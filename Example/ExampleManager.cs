@@ -1858,7 +1858,7 @@ namespace BetterLegacy.Example
             chatterBase.transform.localScale = Vector2.one;
 
             var chatterImage = chatterBase.gameObject.AddComponent<Image>();
-            EditorThemeManager.ApplyGraphic(chatterImage, ThemeGroup.Background_1, true, roundedSide: SpriteManager.RoundedSide.Top);
+            EditorThemeManager.ApplyGraphic(chatterImage, ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
 
             var draggable = chatterBase.gameObject.AddComponent<SelectGUI>();
             draggable.OverrideDrag = true;
@@ -1892,7 +1892,7 @@ namespace BetterLegacy.Example
             autocomplete = Creator.NewUIObject("Autocomplete", chatterBase);
             UIManager.SetRectTransform(autocomplete.transform.AsRT(), new Vector2(-16f, -64f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 1f), new Vector2(768f, 300f));
 
-            EditorThemeManager.ApplyGraphic(autocomplete.AddComponent<Image>(), ThemeGroup.Background_2, true, roundedSide: SpriteManager.RoundedSide.Bottom);
+            EditorThemeManager.ApplyGraphic(autocomplete.AddComponent<Image>(), ThemeGroup.Background_2, true, roundedSide: SpriteHelper.RoundedSide.Bottom);
 
             var scrollrect = autocomplete.AddComponent<ScrollRect>();
             scrollrect.decelerationRate = 0.135f;

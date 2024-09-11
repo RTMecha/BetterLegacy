@@ -1472,7 +1472,7 @@ namespace BetterLegacy.Menus
 
                         var image = (Image)img["Image"];
                         if (RTFile.FileExists(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/add.png"))
-                            image.sprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/add.png");
+                            image.sprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/add.png");
                     }
 
                     // Edit
@@ -1501,7 +1501,7 @@ namespace BetterLegacy.Menus
 
                         var image = (Image)img["Image"];
                         if (RTFile.FileExists(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_edit.png"))
-                            image.sprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_edit.png");
+                            image.sprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_edit.png");
                     }
 
                     // Delete
@@ -1534,7 +1534,7 @@ namespace BetterLegacy.Menus
 
                         var image = (Image)img["Image"];
                         if (RTFile.FileExists(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_delete.png"))
-                            image.sprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_delete.png");
+                            image.sprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_delete.png");
                     }
 
                     if (inter.expanded)
@@ -1601,7 +1601,7 @@ namespace BetterLegacy.Menus
 
                                     var image = (Image)img["Image"];
                                     if (RTFile.FileExists(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/add.png"))
-                                        image.sprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/add.png");
+                                        image.sprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/add.png");
                                 }
 
                                 // Edit
@@ -1631,7 +1631,7 @@ namespace BetterLegacy.Menus
 
                                     var image = (Image)img["Image"];
                                     if (RTFile.FileExists(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_edit.png"))
-                                        image.sprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_edit.png");
+                                        image.sprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_edit.png");
                                 }
 
                                 // Delete
@@ -1664,7 +1664,7 @@ namespace BetterLegacy.Menus
 
                                     var image = (Image)img["Image"];
                                     if (RTFile.FileExists(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_delete.png"))
-                                        image.sprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_delete.png");
+                                        image.sprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_delete.png");
                                 }
 
                                 int num = 0;
@@ -1733,7 +1733,7 @@ namespace BetterLegacy.Menus
 
                                             var image = (Image)img["Image"];
                                             if (RTFile.FileExists(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_delete.png"))
-                                                image.sprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_delete.png");
+                                                image.sprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_delete.png");
                                         }
                                     }
                                     num++;
@@ -1810,7 +1810,7 @@ namespace BetterLegacy.Menus
 
                             var image = (Image)img["Image"];
                             if (RTFile.FileExists(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_delete.png"))
-                                image.sprite = SpriteManager.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_delete.png");
+                                image.sprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_delete.png");
                         }
                     }
                     else

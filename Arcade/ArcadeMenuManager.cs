@@ -935,7 +935,7 @@ namespace BetterLegacy.Arcade
             };
 
             if (ArcadeConfig.Instance.TabsRoundedness.Value != 0)
-                SpriteManager.SetRoundedSprite(close.Image, ArcadeConfig.Instance.TabsRoundedness.Value, SpriteManager.RoundedSide.W);
+                SpriteHelper.SetRoundedSprite(close.Image, ArcadeConfig.Instance.TabsRoundedness.Value, SpriteHelper.RoundedSide.W);
             else
                 close.Image.sprite = null;
 
@@ -953,7 +953,7 @@ namespace BetterLegacy.Arcade
                 tab.Image.color = Color.Lerp(buttonBGColor, Color.white, 0.01f);
 
                 if (ArcadeConfig.Instance.TabsRoundedness.Value != 0)
-                    SpriteManager.SetRoundedSprite(tab.Image, ArcadeConfig.Instance.TabsRoundedness.Value, SpriteManager.RoundedSide.W);
+                    SpriteHelper.SetRoundedSprite(tab.Image, ArcadeConfig.Instance.TabsRoundedness.Value, SpriteHelper.RoundedSide.W);
                 else
                     tab.Image.sprite = null;
 
@@ -1007,7 +1007,7 @@ namespace BetterLegacy.Arcade
                     reload.GetObject<Image>().color = Color.Lerp(buttonBGColor, Color.white, 0.03f);
 
                     if (ArcadeConfig.Instance.TabsRoundedness.Value != 0)
-                        SpriteManager.SetRoundedSprite(reload.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(reload.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteHelper.RoundedSide.W);
                     else
                         reload.GetObject<Image>().sprite = null;
 
@@ -1036,7 +1036,7 @@ namespace BetterLegacy.Arcade
                     prevPage.GetObject<Image>().color = Color.Lerp(buttonBGColor, Color.white, 0.03f);
 
                     if (ArcadeConfig.Instance.TabsRoundedness.Value != 0)
-                        SpriteManager.SetRoundedSprite(prevPage.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(prevPage.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteHelper.RoundedSide.W);
                     else
                         prevPage.GetObject<Image>().sprite = null;
 
@@ -1072,7 +1072,7 @@ namespace BetterLegacy.Arcade
                     localPageField.text = DataManager.inst.GetSettingInt("CurrentArcadePage", 0).ToString();
 
                     if (ArcadeConfig.Instance.PageFieldRoundness.Value != 0)
-                        SpriteManager.SetRoundedSprite(localPageField.image, ArcadeConfig.Instance.PageFieldRoundness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(localPageField.image, ArcadeConfig.Instance.PageFieldRoundness.Value, SpriteHelper.RoundedSide.W);
                     else
                         localPageField.image.sprite = null;
 
@@ -1084,7 +1084,7 @@ namespace BetterLegacy.Arcade
                     nextPage.GetObject<Image>().color = Color.Lerp(buttonBGColor, Color.white, 0.03f);
 
                     if (ArcadeConfig.Instance.TabsRoundedness.Value != 0)
-                        SpriteManager.SetRoundedSprite(nextPage.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(nextPage.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteHelper.RoundedSide.W);
                     else
                         nextPage.GetObject<Image>().sprite = null;
 
@@ -1255,7 +1255,7 @@ namespace BetterLegacy.Arcade
                 UIManager.SetRectTransform(searchField.GetObject<RectTransform>(), new Vector2(0f, 270f), ZeroFive, ZeroFive, ZeroFive, new Vector2(1600f, 60f));
 
                 if (ArcadeConfig.Instance.MiscRounded.Value)
-                    SpriteManager.SetRoundedSprite(searchField.GetObject<Image>(), 1, SpriteManager.RoundedSide.Bottom);
+                    SpriteHelper.SetRoundedSprite(searchField.GetObject<Image>(), 1, SpriteHelper.RoundedSide.Bottom);
                 else
                     searchField.GetObject<Image>().sprite = null;
 
@@ -1301,7 +1301,7 @@ namespace BetterLegacy.Arcade
                     prevPage.GetObject<Image>().color = Color.Lerp(buttonBGColor, Color.white, 0.03f);
 
                     if (ArcadeConfig.Instance.TabsRoundedness.Value != 0)
-                        SpriteManager.SetRoundedSprite(prevPage.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(prevPage.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteHelper.RoundedSide.W);
                     else
                         prevPage.GetObject<Image>().sprite = null;
 
@@ -1337,7 +1337,7 @@ namespace BetterLegacy.Arcade
                     onlinePageField.text = DataManager.inst.GetSettingInt("CurrentArcadePage", 0).ToString();
 
                     if (ArcadeConfig.Instance.PageFieldRoundness.Value != 0)
-                        SpriteManager.SetRoundedSprite(onlinePageField.image, ArcadeConfig.Instance.PageFieldRoundness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(onlinePageField.image, ArcadeConfig.Instance.PageFieldRoundness.Value, SpriteHelper.RoundedSide.W);
                     else
                         onlinePageField.image.sprite = null;
 
@@ -1349,7 +1349,7 @@ namespace BetterLegacy.Arcade
                     nextPage.GetObject<Image>().color = Color.Lerp(buttonBGColor, Color.white, 0.03f);
 
                     if (ArcadeConfig.Instance.TabsRoundedness.Value != 0)
-                        SpriteManager.SetRoundedSprite(nextPage.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(nextPage.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteHelper.RoundedSide.W);
                     else
                         nextPage.GetObject<Image>().sprite = null;
 
@@ -1453,7 +1453,7 @@ namespace BetterLegacy.Arcade
                 UIManager.SetRectTransform(searchField.GetObject<RectTransform>(), new Vector2(-100f, 270f), ZeroFive, ZeroFive, ZeroFive, new Vector2(1400f, 60f));
 
                 if (ArcadeConfig.Instance.MiscRounded.Value)
-                    SpriteManager.SetRoundedSprite(searchField.GetObject<Image>(), 1, SpriteManager.RoundedSide.Bottom);
+                    SpriteHelper.SetRoundedSprite(searchField.GetObject<Image>(), 1, SpriteHelper.RoundedSide.Bottom);
                 else
                     searchField.GetObject<Image>().sprite = null;
 
@@ -1478,7 +1478,7 @@ namespace BetterLegacy.Arcade
                 reload.GetObject<Image>().color = Color.Lerp(buttonBGColor, Color.white, 0.03f);
 
                 if (ArcadeConfig.Instance.TabsRoundedness.Value != 0)
-                    SpriteManager.SetRoundedSprite(reload.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteManager.RoundedSide.W);
+                    SpriteHelper.SetRoundedSprite(reload.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteHelper.RoundedSide.W);
                 else
                     reload.GetObject<Image>().sprite = null;
 
@@ -1543,7 +1543,7 @@ namespace BetterLegacy.Arcade
                     reload.GetObject<Image>().color = Color.Lerp(buttonBGColor, Color.white, 0.03f);
 
                     if (ArcadeConfig.Instance.TabsRoundedness.Value != 0)
-                        SpriteManager.SetRoundedSprite(reload.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(reload.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteHelper.RoundedSide.W);
                     else
                         reload.GetObject<Image>().sprite = null;
 
@@ -1617,7 +1617,7 @@ namespace BetterLegacy.Arcade
                     downloadField.text = "";
 
                     if (ArcadeConfig.Instance.MiscRounded.Value)
-                        SpriteManager.SetRoundedSprite(downloadField.image, 1, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(downloadField.image, 1, SpriteHelper.RoundedSide.W);
                     else
                         downloadField.image.sprite = null;
 
@@ -1629,7 +1629,7 @@ namespace BetterLegacy.Arcade
                     reload.GetObject<Image>().color = Color.Lerp(buttonBGColor, Color.white, 0.03f);
 
                     if (ArcadeConfig.Instance.TabsRoundedness.Value != 0)
-                        SpriteManager.SetRoundedSprite(reload.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(reload.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteHelper.RoundedSide.W);
                     else
                         reload.GetObject<Image>().sprite = null;
 
@@ -1695,7 +1695,7 @@ namespace BetterLegacy.Arcade
                     reload.GetObject<Image>().color = Color.Lerp(buttonBGColor, Color.white, 0.03f);
 
                     if (ArcadeConfig.Instance.TabsRoundedness.Value != 0)
-                        SpriteManager.SetRoundedSprite(reload.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(reload.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteHelper.RoundedSide.W);
                     else
                         reload.GetObject<Image>().sprite = null;
 
@@ -1738,7 +1738,7 @@ namespace BetterLegacy.Arcade
                     shuffle.GetObject<Image>().color = Color.Lerp(buttonBGColor, Color.white, 0.03f);
 
                     if (ArcadeConfig.Instance.TabsRoundedness.Value != 0)
-                        SpriteManager.SetRoundedSprite(shuffle.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(shuffle.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteHelper.RoundedSide.W);
                     else
                         shuffle.GetObject<Image>().sprite = null;
 
@@ -1781,7 +1781,7 @@ namespace BetterLegacy.Arcade
                     play.GetObject<Image>().color = Color.Lerp(buttonBGColor, Color.white, 0.03f);
 
                     if (ArcadeConfig.Instance.TabsRoundedness.Value != 0)
-                        SpriteManager.SetRoundedSprite(play.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(play.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteHelper.RoundedSide.W);
                     else
                         play.GetObject<Image>().sprite = null;
 
@@ -1839,7 +1839,7 @@ namespace BetterLegacy.Arcade
                     clear.GetObject<Image>().color = Color.Lerp(buttonBGColor, Color.white, 0.03f);
 
                     if (ArcadeConfig.Instance.TabsRoundedness.Value != 0)
-                        SpriteManager.SetRoundedSprite(clear.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(clear.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteHelper.RoundedSide.W);
                     else
                         clear.GetObject<Image>().sprite = null;
 
@@ -1883,7 +1883,7 @@ namespace BetterLegacy.Arcade
                     copy.GetObject<Image>().color = Color.Lerp(buttonBGColor, Color.white, 0.03f);
 
                     if (ArcadeConfig.Instance.TabsRoundedness.Value != 0)
-                        SpriteManager.SetRoundedSprite(copy.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(copy.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteHelper.RoundedSide.W);
                     else
                         copy.GetObject<Image>().sprite = null;
 
@@ -1926,7 +1926,7 @@ namespace BetterLegacy.Arcade
                     paste.GetObject<Image>().color = Color.Lerp(buttonBGColor, Color.white, 0.03f);
 
                     if (ArcadeConfig.Instance.TabsRoundedness.Value != 0)
-                        SpriteManager.SetRoundedSprite(paste.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(paste.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteHelper.RoundedSide.W);
                     else
                         paste.GetObject<Image>().sprite = null;
 
@@ -1969,7 +1969,7 @@ namespace BetterLegacy.Arcade
                     prevPage.GetObject<Image>().color = Color.Lerp(buttonBGColor, Color.white, 0.03f);
 
                     if (ArcadeConfig.Instance.TabsRoundedness.Value != 0)
-                        SpriteManager.SetRoundedSprite(prevPage.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(prevPage.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteHelper.RoundedSide.W);
                     else
                         prevPage.GetObject<Image>().sprite = null;
 
@@ -2005,7 +2005,7 @@ namespace BetterLegacy.Arcade
                     queuePageField.text = DataManager.inst.GetSettingInt("CurrentArcadePage", 0).ToString();
 
                     if (ArcadeConfig.Instance.PageFieldRoundness.Value != 0)
-                        SpriteManager.SetRoundedSprite(queuePageField.image, ArcadeConfig.Instance.PageFieldRoundness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(queuePageField.image, ArcadeConfig.Instance.PageFieldRoundness.Value, SpriteHelper.RoundedSide.W);
                     else
                         queuePageField.image.sprite = null;
 
@@ -2017,7 +2017,7 @@ namespace BetterLegacy.Arcade
                     nextPage.GetObject<Image>().color = Color.Lerp(buttonBGColor, Color.white, 0.03f);
 
                     if (ArcadeConfig.Instance.TabsRoundedness.Value != 0)
-                        SpriteManager.SetRoundedSprite(nextPage.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(nextPage.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteHelper.RoundedSide.W);
                     else
                         nextPage.GetObject<Image>().sprite = null;
 
@@ -2121,7 +2121,7 @@ namespace BetterLegacy.Arcade
                 UIManager.SetRectTransform(searchField.GetObject<RectTransform>(), new Vector2(0f, 270f), ZeroFive, ZeroFive, ZeroFive, new Vector2(1600f, 60f));
 
                 if (ArcadeConfig.Instance.MiscRounded.Value)
-                    SpriteManager.SetRoundedSprite(searchField.GetObject<Image>(), 1, SpriteManager.RoundedSide.Bottom);
+                    SpriteHelper.SetRoundedSprite(searchField.GetObject<Image>(), 1, SpriteHelper.RoundedSide.Bottom);
                 else
                     searchField.GetObject<Image>().sprite = null;
 
@@ -2167,7 +2167,7 @@ namespace BetterLegacy.Arcade
                     reload.GetObject<Image>().color = Color.Lerp(buttonBGColor, Color.white, 0.03f);
 
                     if (ArcadeConfig.Instance.TabsRoundedness.Value != 0)
-                        SpriteManager.SetRoundedSprite(reload.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(reload.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteHelper.RoundedSide.W);
                     else
                         reload.GetObject<Image>().sprite = null;
 
@@ -2196,7 +2196,7 @@ namespace BetterLegacy.Arcade
                     viewType.GetObject<Image>().color = Color.Lerp(buttonBGColor, Color.white, 0.03f);
 
                     if (ArcadeConfig.Instance.TabsRoundedness.Value != 0)
-                        SpriteManager.SetRoundedSprite(viewType.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(viewType.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteHelper.RoundedSide.W);
                     else
                         viewType.GetObject<Image>().sprite = null;
 
@@ -2225,7 +2225,7 @@ namespace BetterLegacy.Arcade
                     prevPage.GetObject<Image>().color = Color.Lerp(buttonBGColor, Color.white, 0.03f);
 
                     if (ArcadeConfig.Instance.TabsRoundedness.Value != 0)
-                        SpriteManager.SetRoundedSprite(prevPage.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(prevPage.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteHelper.RoundedSide.W);
                     else
                         prevPage.GetObject<Image>().sprite = null;
 
@@ -2261,7 +2261,7 @@ namespace BetterLegacy.Arcade
                     steamPageField.text = DataManager.inst.GetSettingInt("CurrentArcadePage", 0).ToString();
 
                     if (ArcadeConfig.Instance.PageFieldRoundness.Value != 0)
-                        SpriteManager.SetRoundedSprite(steamPageField.image, ArcadeConfig.Instance.PageFieldRoundness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(steamPageField.image, ArcadeConfig.Instance.PageFieldRoundness.Value, SpriteHelper.RoundedSide.W);
                     else
                         steamPageField.image.sprite = null;
 
@@ -2273,7 +2273,7 @@ namespace BetterLegacy.Arcade
                     nextPage.GetObject<Image>().color = Color.Lerp(buttonBGColor, Color.white, 0.03f);
 
                     if (ArcadeConfig.Instance.TabsRoundedness.Value != 0)
-                        SpriteManager.SetRoundedSprite(nextPage.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(nextPage.GetObject<Image>(), ArcadeConfig.Instance.TabsRoundedness.Value, SpriteHelper.RoundedSide.W);
                     else
                         nextPage.GetObject<Image>().sprite = null;
 
@@ -2412,7 +2412,7 @@ namespace BetterLegacy.Arcade
                 UIManager.SetRectTransform(searchField.GetObject<RectTransform>(), new Vector2(0f, 270f), ZeroFive, ZeroFive, ZeroFive, new Vector2(1600f, 60f));
 
                 if (ArcadeConfig.Instance.MiscRounded.Value)
-                    SpriteManager.SetRoundedSprite(searchField.GetObject<Image>(), 1, SpriteManager.RoundedSide.Bottom);
+                    SpriteHelper.SetRoundedSprite(searchField.GetObject<Image>(), 1, SpriteHelper.RoundedSide.Bottom);
                 else
                     searchField.GetObject<Image>().sprite = null;
 
@@ -2444,10 +2444,10 @@ namespace BetterLegacy.Arcade
         {
             if (ArcadeConfig.Instance.PageFieldRoundness.Value != 0)
             {
-                SpriteManager.SetRoundedSprite(localPageField.image, ArcadeConfig.Instance.PageFieldRoundness.Value, SpriteManager.RoundedSide.W);
-                SpriteManager.SetRoundedSprite(onlinePageField.image, ArcadeConfig.Instance.PageFieldRoundness.Value, SpriteManager.RoundedSide.W);
-                SpriteManager.SetRoundedSprite(queuePageField.image, ArcadeConfig.Instance.PageFieldRoundness.Value, SpriteManager.RoundedSide.W);
-                SpriteManager.SetRoundedSprite(steamPageField.image, ArcadeConfig.Instance.PageFieldRoundness.Value, SpriteManager.RoundedSide.W);
+                SpriteHelper.SetRoundedSprite(localPageField.image, ArcadeConfig.Instance.PageFieldRoundness.Value, SpriteHelper.RoundedSide.W);
+                SpriteHelper.SetRoundedSprite(onlinePageField.image, ArcadeConfig.Instance.PageFieldRoundness.Value, SpriteHelper.RoundedSide.W);
+                SpriteHelper.SetRoundedSprite(queuePageField.image, ArcadeConfig.Instance.PageFieldRoundness.Value, SpriteHelper.RoundedSide.W);
+                SpriteHelper.SetRoundedSprite(steamPageField.image, ArcadeConfig.Instance.PageFieldRoundness.Value, SpriteHelper.RoundedSide.W);
             }
             else
             {
@@ -2459,10 +2459,10 @@ namespace BetterLegacy.Arcade
 
             if (ArcadeConfig.Instance.MiscRounded.Value)
             {
-                SpriteManager.SetRoundedSprite(localSearchFieldImage, 1, SpriteManager.RoundedSide.Bottom);
-                SpriteManager.SetRoundedSprite(onlineSearchFieldImage, 1, SpriteManager.RoundedSide.Bottom);
-                SpriteManager.SetRoundedSprite(queueSearchFieldImage, 1, SpriteManager.RoundedSide.Bottom);
-                SpriteManager.SetRoundedSprite(steamSearchFieldImage, 1, SpriteManager.RoundedSide.Bottom);
+                SpriteHelper.SetRoundedSprite(localSearchFieldImage, 1, SpriteHelper.RoundedSide.Bottom);
+                SpriteHelper.SetRoundedSprite(onlineSearchFieldImage, 1, SpriteHelper.RoundedSide.Bottom);
+                SpriteHelper.SetRoundedSprite(queueSearchFieldImage, 1, SpriteHelper.RoundedSide.Bottom);
+                SpriteHelper.SetRoundedSprite(steamSearchFieldImage, 1, SpriteHelper.RoundedSide.Bottom);
             }
             else
             {
@@ -2572,7 +2572,7 @@ namespace BetterLegacy.Arcade
             foreach (var tab in Tabs)
             {
                 if (ArcadeConfig.Instance.TabsRoundedness.Value != 0)
-                    SpriteManager.SetRoundedSprite(tab.Image, ArcadeConfig.Instance.TabsRoundedness.Value, SpriteManager.RoundedSide.W);
+                    SpriteHelper.SetRoundedSprite(tab.Image, ArcadeConfig.Instance.TabsRoundedness.Value, SpriteHelper.RoundedSide.W);
                 else
                     tab.Image.sprite = null;
             }
@@ -2582,7 +2582,7 @@ namespace BetterLegacy.Arcade
                 foreach (var tab in Settings[i])
                 {
                     if (ArcadeConfig.Instance.TabsRoundedness.Value != 0)
-                        SpriteManager.SetRoundedSprite(tab.Image, ArcadeConfig.Instance.TabsRoundedness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(tab.Image, ArcadeConfig.Instance.TabsRoundedness.Value, SpriteHelper.RoundedSide.W);
                     else
                         tab.Image.sprite = null;
                 }
@@ -2720,7 +2720,7 @@ namespace BetterLegacy.Arcade
                 image.color = buttonBGColor;
 
                 if (ArcadeConfig.Instance.LocalLevelsRoundness.Value != 0)
-                    SpriteManager.SetRoundedSprite(image, ArcadeConfig.Instance.LocalLevelsRoundness.Value, SpriteManager.RoundedSide.W);
+                    SpriteHelper.SetRoundedSprite(image, ArcadeConfig.Instance.LocalLevelsRoundness.Value, SpriteHelper.RoundedSide.W);
                 else
                     image.sprite = null;
 
@@ -2738,7 +2738,7 @@ namespace BetterLegacy.Arcade
                 iconBase.rectTransform.anchoredPosition = new Vector2(-90f, 30f);
 
                 if (ArcadeConfig.Instance.LocalLevelsIconRoundness.Value != 0)
-                    SpriteManager.SetRoundedSprite(iconBase, ArcadeConfig.Instance.LocalLevelsIconRoundness.Value, SpriteManager.RoundedSide.W);
+                    SpriteHelper.SetRoundedSprite(iconBase, ArcadeConfig.Instance.LocalLevelsIconRoundness.Value, SpriteHelper.RoundedSide.W);
                 else
                     iconBase.sprite = null;
 
@@ -2873,7 +2873,7 @@ namespace BetterLegacy.Arcade
                 difficulty.color = CoreHelper.GetDifficulty(level.metadata.song.difficulty).color;
 
                 if (ArcadeConfig.Instance.LocalLevelsRoundness.Value != 0)
-                    SpriteManager.SetRoundedSprite(image, ArcadeConfig.Instance.LocalLevelsRoundness.Value, SpriteManager.RoundedSide.W);
+                    SpriteHelper.SetRoundedSprite(image, ArcadeConfig.Instance.LocalLevelsRoundness.Value, SpriteHelper.RoundedSide.W);
                 else
                     image.sprite = null;
 
@@ -2891,7 +2891,7 @@ namespace BetterLegacy.Arcade
                 iconBase.rectTransform.anchoredPosition = new Vector2(-90f, 30f);
 
                 if (ArcadeConfig.Instance.LocalLevelsIconRoundness.Value != 0)
-                    SpriteManager.SetRoundedSprite(iconBase, ArcadeConfig.Instance.LocalLevelsIconRoundness.Value, SpriteManager.RoundedSide.W);
+                    SpriteHelper.SetRoundedSprite(iconBase, ArcadeConfig.Instance.LocalLevelsIconRoundness.Value, SpriteHelper.RoundedSide.W);
                 else
                     iconBase.sprite = null;
 
@@ -2960,12 +2960,12 @@ namespace BetterLegacy.Arcade
             foreach (var level in LocalLevels)
             {
                 if (ArcadeConfig.Instance.LocalLevelsRoundness.Value != 0)
-                    SpriteManager.SetRoundedSprite(level.BaseImage, ArcadeConfig.Instance.LocalLevelsRoundness.Value, SpriteManager.RoundedSide.W);
+                    SpriteHelper.SetRoundedSprite(level.BaseImage, ArcadeConfig.Instance.LocalLevelsRoundness.Value, SpriteHelper.RoundedSide.W);
                 else
                     level.BaseImage.sprite = null;
 
                 if (ArcadeConfig.Instance.LocalLevelsIconRoundness.Value != 0)
-                    SpriteManager.SetRoundedSprite(level.BaseIcon, ArcadeConfig.Instance.LocalLevelsIconRoundness.Value, SpriteManager.RoundedSide.W);
+                    SpriteHelper.SetRoundedSprite(level.BaseIcon, ArcadeConfig.Instance.LocalLevelsIconRoundness.Value, SpriteHelper.RoundedSide.W);
                 else
                     level.BaseIcon.sprite = null;
             }
@@ -3119,7 +3119,7 @@ namespace BetterLegacy.Arcade
                             difficultyImage.color = CoreHelper.GetDifficulty(difficulty).color;
 
                             if (ArcadeConfig.Instance.LocalLevelsRoundness.Value != 0)
-                                SpriteManager.SetRoundedSprite(image, ArcadeConfig.Instance.LocalLevelsRoundness.Value, SpriteManager.RoundedSide.W);
+                                SpriteHelper.SetRoundedSprite(image, ArcadeConfig.Instance.LocalLevelsRoundness.Value, SpriteHelper.RoundedSide.W);
                             else
                                 image.sprite = null;
 
@@ -3137,7 +3137,7 @@ namespace BetterLegacy.Arcade
                             iconBase.rectTransform.anchoredPosition = new Vector2(-90f, 30f);
 
                             if (ArcadeConfig.Instance.LocalLevelsIconRoundness.Value != 0)
-                                SpriteManager.SetRoundedSprite(iconBase, ArcadeConfig.Instance.LocalLevelsIconRoundness.Value, SpriteManager.RoundedSide.W);
+                                SpriteHelper.SetRoundedSprite(iconBase, ArcadeConfig.Instance.LocalLevelsIconRoundness.Value, SpriteHelper.RoundedSide.W);
                             else
                                 iconBase.sprite = null;
 
@@ -3154,7 +3154,7 @@ namespace BetterLegacy.Arcade
                             {
                                 StartCoroutine(AlephNetworkManager.DownloadBytes($"{CoverURL}{id}.jpg", bytes =>
                                 {
-                                    var sprite = SpriteManager.LoadSprite(bytes);
+                                    var sprite = SpriteHelper.LoadSprite(bytes);
                                     ArcadeMenu.OnlineLevelIcons.Add(id, sprite);
                                     icon.sprite = sprite;
                                 }, onError =>
@@ -3464,7 +3464,7 @@ namespace BetterLegacy.Arcade
                     difficulty.color = CoreHelper.GetDifficulty(level.metadata.song.difficulty).color;
 
                     if (ArcadeConfig.Instance.LocalLevelsRoundness.Value != 0)
-                        SpriteManager.SetRoundedSprite(image, ArcadeConfig.Instance.LocalLevelsRoundness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(image, ArcadeConfig.Instance.LocalLevelsRoundness.Value, SpriteHelper.RoundedSide.W);
                     else
                         image.sprite = null;
 
@@ -3483,7 +3483,7 @@ namespace BetterLegacy.Arcade
                     iconBase.rectTransform.sizeDelta = new Vector2(132f, 132f);
 
                     if (ArcadeConfig.Instance.LocalLevelsIconRoundness.Value != 0)
-                        SpriteManager.SetRoundedSprite(iconBase, ArcadeConfig.Instance.LocalLevelsIconRoundness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(iconBase, ArcadeConfig.Instance.LocalLevelsIconRoundness.Value, SpriteHelper.RoundedSide.W);
                     else
                         iconBase.sprite = null;
 
@@ -3763,7 +3763,7 @@ namespace BetterLegacy.Arcade
                     difficulty.color = CoreHelper.GetDifficulty(level.metadata.song.difficulty).color;
 
                     if (ArcadeConfig.Instance.SteamLevelsRoundness.Value != 0)
-                        SpriteManager.SetRoundedSprite(image, ArcadeConfig.Instance.SteamLevelsRoundness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(image, ArcadeConfig.Instance.SteamLevelsRoundness.Value, SpriteHelper.RoundedSide.W);
                     else
                         image.sprite = null;
 
@@ -3784,7 +3784,7 @@ namespace BetterLegacy.Arcade
                     iconBase.rectTransform.sizeDelta = new Vector2(64f, 64f);
 
                     if (ArcadeConfig.Instance.SteamLevelsIconRoundness.Value != 0)
-                        SpriteManager.SetRoundedSprite(iconBase, ArcadeConfig.Instance.SteamLevelsIconRoundness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(iconBase, ArcadeConfig.Instance.SteamLevelsIconRoundness.Value, SpriteHelper.RoundedSide.W);
                     else
                         iconBase.sprite = null;
 
@@ -3913,7 +3913,7 @@ namespace BetterLegacy.Arcade
                 Destroy(gameObject.transform.Find("Difficulty").gameObject);
 
                 if (ArcadeConfig.Instance.SteamLevelsRoundness.Value != 0)
-                    SpriteManager.SetRoundedSprite(image, ArcadeConfig.Instance.SteamLevelsRoundness.Value, SpriteManager.RoundedSide.W);
+                    SpriteHelper.SetRoundedSprite(image, ArcadeConfig.Instance.SteamLevelsRoundness.Value, SpriteHelper.RoundedSide.W);
                 else
                     image.sprite = null;
 
@@ -3934,7 +3934,7 @@ namespace BetterLegacy.Arcade
                 iconBase.rectTransform.sizeDelta = new Vector2(48f, 48f);
 
                 if (ArcadeConfig.Instance.SteamLevelsIconRoundness.Value != 0)
-                    SpriteManager.SetRoundedSprite(iconBase, ArcadeConfig.Instance.SteamLevelsIconRoundness.Value, SpriteManager.RoundedSide.W);
+                    SpriteHelper.SetRoundedSprite(iconBase, ArcadeConfig.Instance.SteamLevelsIconRoundness.Value, SpriteHelper.RoundedSide.W);
                 else
                     iconBase.sprite = null;
 
@@ -3946,7 +3946,7 @@ namespace BetterLegacy.Arcade
                 {
                     StartCoroutine(AlephNetworkManager.DownloadBytes(item.PreviewImageUrl, bytes =>
                     {
-                        var sprite = SpriteManager.LoadSprite(bytes);
+                        var sprite = SpriteHelper.LoadSprite(bytes);
 
                         if (!steamPreviews.ContainsKey(item.Id))
                             steamPreviews.Add(item.Id, sprite);
@@ -4015,12 +4015,12 @@ namespace BetterLegacy.Arcade
                 foreach (var level in SubscribedSteamLevels)
                 {
                     if (ArcadeConfig.Instance.SteamLevelsRoundness.Value != 0)
-                        SpriteManager.SetRoundedSprite(level.BaseImage, ArcadeConfig.Instance.SteamLevelsRoundness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(level.BaseImage, ArcadeConfig.Instance.SteamLevelsRoundness.Value, SpriteHelper.RoundedSide.W);
                     else
                         level.BaseImage.sprite = null;
 
                     if (ArcadeConfig.Instance.SteamLevelsIconRoundness.Value != 0)
-                        SpriteManager.SetRoundedSprite(level.BaseIcon, ArcadeConfig.Instance.SteamLevelsIconRoundness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(level.BaseIcon, ArcadeConfig.Instance.SteamLevelsIconRoundness.Value, SpriteHelper.RoundedSide.W);
                     else
                         level.BaseIcon.sprite = null;
                 }
@@ -4029,12 +4029,12 @@ namespace BetterLegacy.Arcade
                 foreach (var level in OnlineSteamLevels)
                 {
                     if (ArcadeConfig.Instance.SteamLevelsRoundness.Value != 0)
-                        SpriteManager.SetRoundedSprite(level.BaseImage, ArcadeConfig.Instance.SteamLevelsRoundness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(level.BaseImage, ArcadeConfig.Instance.SteamLevelsRoundness.Value, SpriteHelper.RoundedSide.W);
                     else
                         level.BaseImage.sprite = null;
 
                     if (ArcadeConfig.Instance.SteamLevelsIconRoundness.Value != 0)
-                        SpriteManager.SetRoundedSprite(level.BaseIcon, ArcadeConfig.Instance.SteamLevelsIconRoundness.Value, SpriteManager.RoundedSide.W);
+                        SpriteHelper.SetRoundedSprite(level.BaseIcon, ArcadeConfig.Instance.SteamLevelsIconRoundness.Value, SpriteHelper.RoundedSide.W);
                     else
                         level.BaseIcon.sprite = null;
                 }

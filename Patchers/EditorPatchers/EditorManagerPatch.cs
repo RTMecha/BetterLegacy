@@ -100,10 +100,10 @@ namespace BetterLegacy.Patchers
             EditorThemeManager.AddGraphic(EditorManager.inst.timeline.transform.parent.Find("Panel 2").GetComponent<Image>(), ThemeGroup.Timeline_Background);
 
             var openFilePopup = __instance.GetDialog("Open File Popup").Dialog.gameObject;
-            EditorThemeManager.AddGraphic(openFilePopup.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteManager.RoundedSide.Bottom_Left_I);
+            EditorThemeManager.AddGraphic(openFilePopup.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Bottom_Left_I);
 
             var openFilePopupPanel = openFilePopup.transform.Find("Panel").gameObject;
-            EditorThemeManager.AddGraphic(openFilePopupPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteManager.RoundedSide.Top);
+            EditorThemeManager.AddGraphic(openFilePopupPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
 
             var openFilePopupClose = openFilePopupPanel.transform.Find("x").gameObject;
             var openFilePopupCloseButton = openFilePopupClose.GetComponent<Button>();
@@ -114,9 +114,9 @@ namespace BetterLegacy.Patchers
 
             EditorThemeManager.AddLightText(openFilePopupPanel.transform.Find("Text").GetComponent<Text>());
 
-            EditorThemeManager.AddScrollbar(openFilePopup.transform.Find("Scrollbar").GetComponent<Scrollbar>(), scrollbarRoundedSide: SpriteManager.RoundedSide.Bottom_Right_I);
+            EditorThemeManager.AddScrollbar(openFilePopup.transform.Find("Scrollbar").GetComponent<Scrollbar>(), scrollbarRoundedSide: SpriteHelper.RoundedSide.Bottom_Right_I);
 
-            EditorThemeManager.AddInputField(openFilePopup.transform.Find("search-box/search").GetComponent<InputField>(), ThemeGroup.Search_Field_1, 1, SpriteManager.RoundedSide.Bottom);
+            EditorThemeManager.AddInputField(openFilePopup.transform.Find("search-box/search").GetComponent<InputField>(), ThemeGroup.Search_Field_1, 1, SpriteHelper.RoundedSide.Bottom);
 
             EditorThemeManager.AddGraphic(EditorManager.inst.dialogs.GetComponent<Image>(), ThemeGroup.Background_1);
 
@@ -137,7 +137,7 @@ namespace BetterLegacy.Patchers
 
                     dropdownBase.AddComponent<Mask>();
 
-                    EditorThemeManager.AddGraphic(dropdownBase.GetComponent<Image>(), ThemeGroup.Title_Bar_Dropdown_Normal, true, roundedSide: SpriteManager.RoundedSide.Bottom);
+                    EditorThemeManager.AddGraphic(dropdownBase.GetComponent<Image>(), ThemeGroup.Title_Bar_Dropdown_Normal, true, roundedSide: SpriteHelper.RoundedSide.Bottom);
 
                     for (int j = 0; j < dropdownBase.transform.childCount; j++)
                     {
@@ -157,7 +157,7 @@ namespace BetterLegacy.Patchers
             EditorThemeManager.AddGraphic(saveAsPopup.GetComponent<Image>(), ThemeGroup.Background_1, true);
 
             var saveAsPopupPanel = saveAsPopup.transform.Find("Panel").gameObject;
-            EditorThemeManager.AddGraphic(saveAsPopupPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteManager.RoundedSide.Top);
+            EditorThemeManager.AddGraphic(saveAsPopupPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
 
             var saveAsPopupClose = saveAsPopupPanel.transform.Find("x").gameObject;
             Destroy(saveAsPopupClose.GetComponent<Animator>());
@@ -191,7 +191,7 @@ namespace BetterLegacy.Patchers
             EditorThemeManager.AddGraphic(parentSelectorPopup.GetComponent<Image>(), ThemeGroup.Background_1, true);
 
             var parentSelectorPopupPanel = parentSelectorPopup.transform.Find("Panel").gameObject;
-            EditorThemeManager.AddGraphic(parentSelectorPopupPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteManager.RoundedSide.Top);
+            EditorThemeManager.AddGraphic(parentSelectorPopupPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
 
             EditorThemeManager.AddSelectable(parentSelectorPopupPanel.transform.Find("x").GetComponent<Button>(), ThemeGroup.Close);
 
@@ -200,9 +200,9 @@ namespace BetterLegacy.Patchers
 
             EditorThemeManager.AddLightText(parentSelectorPopupPanel.transform.Find("Text").GetComponent<Text>());
 
-            EditorThemeManager.AddScrollbar(parentSelectorPopup.transform.Find("Scrollbar").GetComponent<Scrollbar>(), scrollbarRoundedSide: SpriteManager.RoundedSide.Bottom_Right_I);
+            EditorThemeManager.AddScrollbar(parentSelectorPopup.transform.Find("Scrollbar").GetComponent<Scrollbar>(), scrollbarRoundedSide: SpriteHelper.RoundedSide.Bottom_Right_I);
 
-            EditorThemeManager.AddInputField(parentSelectorPopup.transform.Find("search-box/search").GetComponent<InputField>(), ThemeGroup.Search_Field_1, 1, SpriteManager.RoundedSide.Bottom);
+            EditorThemeManager.AddInputField(parentSelectorPopup.transform.Find("search-box/search").GetComponent<InputField>(), ThemeGroup.Search_Field_1, 1, SpriteHelper.RoundedSide.Bottom);
 
             #endregion
 
@@ -1161,7 +1161,7 @@ namespace BetterLegacy.Patchers
             inst.ClearDialogs();
             CoreHelper.StartCoroutine(AlephNetworkManager.DownloadImageTexture($"file://{RTFile.BasePath}level.jpg", x =>
             {
-                var cover = SpriteManager.CreateSprite(x);
+                var cover = SpriteHelper.CreateSprite(x);
                 inst.GetDialog("Metadata Editor").Dialog.Find("Scroll View/Viewport/Content/creator/cover_art/image").GetComponent<Image>().sprite = cover;
                 MetadataEditor.inst.currentLevelCover = cover;
             }, onError =>

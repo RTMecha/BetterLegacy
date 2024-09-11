@@ -88,7 +88,7 @@ namespace BetterLegacy.Configs
             UIManager.SetRectTransform(closeX.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-8f, -8f));
 
             var closeXImage = closeX.AddComponent<Image>();
-            closeXImage.sprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_close.png");
+            closeXImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_close.png");
 
             EditorThemeManager.ApplyGraphic(closeXImage, ThemeGroup.Close_X);
 
@@ -235,7 +235,7 @@ namespace BetterLegacy.Configs
 
                 var leftGreater = Creator.NewUIObject("<<", page.transform);
                 var leftGreaterImage = leftGreater.AddComponent<Image>();
-                leftGreaterImage.sprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_left_double.png");
+                leftGreaterImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_left_double.png");
                 var leftGreaterButton = leftGreater.AddComponent<Button>();
                 leftGreaterButton.image = leftGreaterImage;
                 var leftGreaterLayoutElement = leftGreater.AddComponent<LayoutElement>();
@@ -245,7 +245,7 @@ namespace BetterLegacy.Configs
 
                 var left = Creator.NewUIObject("<", page.transform);
                 var leftImage = left.AddComponent<Image>();
-                leftImage.sprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_left_small.png");
+                leftImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_left_small.png");
                 var leftButton = left.AddComponent<Button>();
                 leftButton.image = leftImage;
                 var leftLayoutElement = left.AddComponent<LayoutElement>();
@@ -255,7 +255,7 @@ namespace BetterLegacy.Configs
 
                 var right = Creator.NewUIObject(">", page.transform);
                 var rightImage = right.AddComponent<Image>();
-                rightImage.sprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_right_small.png");
+                rightImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_right_small.png");
                 var rightButton = right.AddComponent<Button>();
                 rightButton.image = rightImage;
                 var rightLayoutElement = right.AddComponent<LayoutElement>();
@@ -265,7 +265,7 @@ namespace BetterLegacy.Configs
 
                 var rightGreater = Creator.NewUIObject(">>", page.transform);
                 var rightGreaterImage = rightGreater.AddComponent<Image>();
-                rightGreaterImage.sprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_right_double.png");
+                rightGreaterImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_right_double.png");
                 var rightGreaterButton = rightGreater.AddComponent<Button>();
                 rightGreaterButton.image = rightGreaterImage;
                 var rightGreaterLayoutElement = rightGreater.AddComponent<LayoutElement>();
@@ -317,7 +317,7 @@ namespace BetterLegacy.Configs
             descriptionText.fontSize = 18;
             descriptionText.text = "Hover over a setting to get the description.";
 
-            EditorThemeManager.ApplyGraphic(descriptionBaseImage, ThemeGroup.Background_2, true, roundedSide: SpriteManager.RoundedSide.Left);
+            EditorThemeManager.ApplyGraphic(descriptionBaseImage, ThemeGroup.Background_2, true, roundedSide: SpriteHelper.RoundedSide.Left);
             EditorThemeManager.ApplyLightText(descriptionText);
 
             configs.Add(CoreConfig.Instance);
@@ -487,7 +487,7 @@ namespace BetterLegacy.Configs
                         var checkmark = Creator.NewUIObject("Checkmark", boolean.transform);
                         UIManager.SetRectTransform(checkmark.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-8f, -8f));
                         var checkmarkImage = checkmark.AddComponent<Image>();
-                        checkmarkImage.sprite = SpriteManager.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_checkmark.png");
+                        checkmarkImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_checkmark.png");
 
                         var booleanToggle = boolean.AddComponent<Toggle>();
                         booleanToggle.image = booleanImage;
