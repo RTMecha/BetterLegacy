@@ -160,6 +160,11 @@ namespace BetterLegacy.Menus.UI.Elements
         public float timeOffset;
 
         /// <summary>
+        /// If the image should have a mask component added to it.
+        /// </summary>
+        public bool mask;
+
+        /// <summary>
         /// If a "Blip" sound should play when the user clicks on the element.
         /// </summary>
         public bool playBlipSound;

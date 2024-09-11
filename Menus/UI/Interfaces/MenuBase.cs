@@ -580,6 +580,12 @@ namespace BetterLegacy.Menus.UI.Interfaces
             layout.gridLayout.startCorner = layout.startCorner;
 
             layout.rect.AssignToRectTransform(layout.gameObject.transform.AsRT());
+
+            if (layout.mask)
+            {
+                layout.gameObject.AddComponent<Image>();
+                layout.gameObject.AddComponent<Mask>().showMaskGraphic = false;
+            }
         }
 
         /// <summary>
@@ -604,6 +610,12 @@ namespace BetterLegacy.Menus.UI.Interfaces
             layout.horizontalLayout.childAlignment = layout.childAlignment;
 
             layout.rect.AssignToRectTransform(layout.gameObject.transform.AsRT());
+
+            if (layout.mask)
+            {
+                layout.gameObject.AddComponent<Image>();
+                layout.gameObject.AddComponent<Mask>().showMaskGraphic = false;
+            }
         }
 
         /// <summary>
@@ -628,6 +640,12 @@ namespace BetterLegacy.Menus.UI.Interfaces
             layout.verticalLayout.childAlignment = layout.childAlignment;
 
             layout.rect.AssignToRectTransform(layout.gameObject.transform.AsRT());
+
+            if (layout.mask)
+            {
+                layout.gameObject.AddComponent<Image>();
+                layout.gameObject.AddComponent<Mask>().showMaskGraphic = false;
+            }
         }
 
         /// <summary>
@@ -659,6 +677,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 reactiveAudio.reactiveSetting = menuImage.reactiveSetting;
                 reactiveAudio.ogPosition = menuImage.rect.anchoredPosition;
             }
+
+            if (menuImage.mask)
+                menuImage.gameObject.AddComponent<Mask>();
 
             if (menuImage.spawnFuncJSON != null)
                 menuImage.ParseFunction(menuImage.spawnFuncJSON);
@@ -716,6 +737,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 reactiveAudio.reactiveSetting = menuText.reactiveSetting;
                 reactiveAudio.ogPosition = menuText.rect.anchoredPosition;
             }
+
+            if (menuText.mask)
+                menuText.gameObject.AddComponent<Mask>();
 
             if (menuText.spawnFuncJSON != null)
                 menuText.ParseFunction(menuText.spawnFuncJSON);
@@ -782,6 +806,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 reactiveAudio.ogPosition = menuButton.rect.anchoredPosition;
             }
 
+            if (menuButton.mask)
+                menuButton.gameObject.AddComponent<Mask>();
+
             if (menuButton.spawnFuncJSON != null)
                 menuButton.ParseFunction(menuButton.spawnFuncJSON);
             menuButton.spawnFunc?.Invoke();
@@ -832,6 +859,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             if (menuInputField.triggers != null)
                 TriggerHelper.AddEventTriggers(menuInputField.gameObject, menuInputField.triggers);
+
+            if (menuInputField.mask)
+                menuInputField.gameObject.AddComponent<Mask>();
 
             if (menuInputField.spawnFuncJSON != null)
                 menuInputField.ParseFunction(menuInputField.spawnFuncJSON);

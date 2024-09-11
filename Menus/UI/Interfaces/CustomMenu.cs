@@ -279,6 +279,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     funcJSON = jnElement["func"], // function to run when the element is clicked.
                                     spawnFuncJSON = jnElement["spawn_func"], // function to run when the element spawns.
                                     reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j),
+                                    mask = jnElement["mask"].AsBool,
                                     fromLoop = j > 0, // if element has been spawned from the loop or if its the first / only of its kind.
                                     loop = loop,
                                 };
@@ -318,6 +319,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     funcJSON = jnElement["func"], // function to run when the element is clicked.
                                     spawnFuncJSON = jnElement["spawn_func"], // function to run when the element spawns.
                                     reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j),
+                                    mask = jnElement["mask"].AsBool,
                                     fromLoop = j > 0, // if element has been spawned from the loop or if its the first / only of its kind.
                                     loop = loop,
                                 };
@@ -371,6 +373,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                     enterFuncJSON = jnElement["enter_func"], // function to run when the element is hovered over.
                                     exitFuncJSON = jnElement["exit_func"], // function to run when the element is hovered over.
                                     reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j),
+                                    mask = jnElement["mask"].AsBool,
                                     fromLoop = j > 0, // if element has been spawned from the loop or if its the first / only of its kind.
                                     loop = loop,
                                 };

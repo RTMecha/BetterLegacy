@@ -33,6 +33,7 @@ namespace BetterLegacy.Menus.UI.Layouts
                 childAlignment = (TextAnchor)jn["align"].AsInt,
 
                 rect = RectValues.TryParse(jn["rect"], RectValues.Default),
+                mask = jn["mask"].AsBool,
             };
 
             return gridLayout;

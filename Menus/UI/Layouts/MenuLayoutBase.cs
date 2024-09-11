@@ -21,5 +21,7 @@ namespace BetterLegacy.Menus.UI.Layouts
         public RectValues rect = RectValues.Default;
 
         public bool regenerate = true;
+
+        public bool mask;
     }
 }
