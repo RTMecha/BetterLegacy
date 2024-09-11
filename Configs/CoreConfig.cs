@@ -280,11 +280,6 @@ namespace BetterLegacy.Configs
         #region Level
 
         /// <summary>
-        /// If on, reactive color will lerp from base color to reactive color. Otherwise, the reactive color will be added to the base color.
-        /// </summary>
-        public Setting<bool> BGReactiveLerp { get; set; }
-
-        /// <summary>
         /// If enabled, any objects with "LDM" (Low Detail Mode) toggled on will not be rendered.
         /// </summary>
         public Setting<bool> LDM { get; set; }
@@ -423,7 +418,6 @@ namespace BetterLegacy.Configs
 
             #region Level
 
-            BGReactiveLerp = Bind(this, "Level", "Reactive Color Lerp", true, "If on, reactive color will lerp from base color to reactive color. Otherwise, the reactive color will be added to the base color.");
             LDM = Bind(this, "Level", "Low Detail Mode", false, "If enabled, any objects with \"LDM\" (Low Detail Mode) toggled on will not be rendered.");
             EnableVideoBackground = Bind(this, "Level", "Video Backgrounds", true, "If on, the old video BG feature returns, though somewhat buggy. Requires a bg.mp4 or bg.mov file to exist in the level folder.");
             UseNewUpdateMethod = Bind(this, "Level", "Use New Update Method", true, "Possibly releases the fixed framerate of the game.");

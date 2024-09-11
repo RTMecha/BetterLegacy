@@ -106,7 +106,6 @@ namespace BetterLegacy.Patchers
         {
             if ((CoreHelper.Playing || LevelManager.LevelEnded && CoreConfig.Instance.ReplayLevel.Value) && BackgroundManager.inst?.backgroundParent?.gameObject)
             {
-                var lerp = CoreConfig.Instance.BGReactiveLerp.Value;
                 __instance.sampleLow = Updater.samples.Skip(0).Take(56).Average((float a) => a) * 1000f;
                 __instance.sampleMid = Updater.samples.Skip(56).Take(100).Average((float a) => a) * 3000f;
                 __instance.sampleHigh = Updater.samples.Skip(156).Take(100).Average((float a) => a) * 6000f;
@@ -123,49 +122,41 @@ namespace BetterLegacy.Patchers
                     if (!backgroundObject.active || !backgroundObject.Enabled || !backgroundObject.BaseObject)
                         continue;
 
-                    Color a;
+                    Color mainColor =
+                        CoreHelper.ChangeColorHSV(beatmapTheme.GetBGColor(backgroundObject.color), backgroundObject.hue, backgroundObject.saturation, backgroundObject.value);
 
                     if (backgroundObject.reactive)
-                    {
-                        if (lerp)
-                        {
-                            a = RTMath.Lerp(beatmapTheme.GetBGColor(backgroundObject.color), beatmapTheme.GetBGColor(backgroundObject.reactiveCol), Updater.samples[Mathf.Clamp(backgroundObject.reactiveColSample, 0, Updater.samples.Length - 1)] * backgroundObject.reactiveColIntensity);
-                        }
-                        else
-                        {
-                            a = beatmapTheme.GetBGColor(backgroundObject.color);
-                            a += beatmapTheme.GetBGColor(backgroundObject.reactiveCol) * Updater.samples[Mathf.Clamp(backgroundObject.reactiveColSample, 0, Updater.samples.Length - 1)] * backgroundObject.reactiveColIntensity;
-                        }
-                    }
-                    else
-                    {
-                        a = beatmapTheme.GetBGColor(backgroundObject.color);
-                    }
+                        mainColor =
+                            RTMath.Lerp(mainColor,
+                                CoreHelper.ChangeColorHSV(
+                                    beatmapTheme.GetBGColor(backgroundObject.reactiveCol),
+                                    backgroundObject.hue,
+                                    backgroundObject.saturation,
+                                    backgroundObject.value),
+                                Updater.samples[Mathf.Clamp(backgroundObject.reactiveColSample, 0, Updater.samples.Length - 1)] * backgroundObject.reactiveColIntensity);
 
-                    a = CoreHelper.ChangeColorHSV(a, backgroundObject.hue, backgroundObject.saturation, backgroundObject.value);
+                    mainColor.a = 1f;
 
-                    a.a = 1f;
+                    var fadeColor =
+                        CoreHelper.ChangeColorHSV(beatmapTheme.GetBGColor(backgroundObject.FadeColor), backgroundObject.fadeHue, backgroundObject.fadeSaturation, backgroundObject.fadeValue);
+
+                    if (CoreHelper.ColorMatch(fadeColor, beatmapTheme.backgroundColor, 0.05f))
+                        fadeColor = bgColorToLerp;
+                    fadeColor.a = 1f;
 
                     for (int i = 0; i < backgroundObject.renderers.Count; i++)
                     {
                         var renderer = backgroundObject.renderers[i];
                         if (i == 0)
                         {
-                            renderer.material.color = a;
+                            renderer.material.color = mainColor;
                             continue;
                         }
 
                         int layer = backgroundObject.depth - backgroundObject.layer;
-                        float t = a.a / (float)layer * (float)i;
-                        Color b = beatmapTheme.GetBGColor(backgroundObject.FadeColor);
+                        float t = 1f / (float)layer * (float)i;
 
-                        b = CoreHelper.ChangeColorHSV(b, backgroundObject.fadeHue, backgroundObject.fadeSaturation, backgroundObject.fadeValue);
-
-                        if (CoreHelper.ColorMatch(b, beatmapTheme.backgroundColor, 0.05f))
-                            b = bgColorToLerp;
-
-                        b.a = 1f;
-                        renderer.material.color = Color.Lerp(Color.Lerp(a, b, t), b, t);
+                        renderer.material.color = Color.Lerp(Color.Lerp(mainColor, fadeColor, t), fadeColor, t);
                     }
 
                     if (backgroundObject.reactive)
