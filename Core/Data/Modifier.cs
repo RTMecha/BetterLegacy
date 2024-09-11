@@ -77,7 +77,7 @@ namespace BetterLegacy.Core.Data
                 jn["not"] = not.ToString();
 
             for (int i = 0; i < commands.Count; i++)
-                jn["commands"][i] = commands[i].Replace(":", "{{colon}}");
+                jn["commands"][i] = commands[i];
 
             jn["value"] = value;
 

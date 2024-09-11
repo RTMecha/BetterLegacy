@@ -670,10 +670,7 @@ namespace BetterLegacy.Core.Data
                 beatmapObject.parentType = jn["pt"];
 
             if (jn["po"] != null)
-            {
-                beatmapObject.parentOffsets = new List<float>(from n in jn["po"].AsArray.Children
-                                                              select n.AsFloat).ToList();
-            }
+                beatmapObject.parentOffsets = jn["po"].AsArray.Children.Select(x => x.AsFloat).ToList();
 
             if (jn["ps"] != null)
             {
@@ -949,7 +946,7 @@ namespace BetterLegacy.Core.Data
             jn["st"] = StartTime.ToString();
 
             if (!string.IsNullOrEmpty(name))
-                jn["name"] = name.Replace(":", "{{colon}}");
+                jn["name"] = name;
 
             jn["ot"] = (int)objectType;
             jn["akt"] = (int)autoKillType;
@@ -962,16 +959,15 @@ namespace BetterLegacy.Core.Data
                 jn["so"] = shapeOption.ToString();
 
             if (!string.IsNullOrEmpty(text))
-                jn["text"] = text.Replace(":", "{{colon}}");
+                jn["text"] = text;
 
             if (tags != null && tags.Count > 0)
                 for (int i = 0; i < tags.Count; i++)
-                    jn["tags"][i] = tags[i].Replace(":", "{{colon}}");
+                    jn["tags"][i] = tags[i];
 
             if (origin.x != 0f || origin.y != 0f)
             {
-                jn["o"]["x"] = origin.x.ToString();
-                jn["o"]["y"] = origin.y.ToString();
+                jn["o"] = origin.ToJSON();
             }
 
             if (editorData.locked)
