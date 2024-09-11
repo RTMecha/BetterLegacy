@@ -4849,178 +4849,194 @@ namespace BetterLegacy.Core.Helpers
             if (!modifier.IsValid(ModifiersManager.defaultBeatmapObjectModifiers))
                 return;
 
-            switch (modifier.commands[0])
+            try
             {
-                case "blur":
-                case "blurOther":
-                case "blurVariableOther":
-                    {
-                        if (modifier.Result != null && modifier.reference &&
-                            modifier.reference.objectType != BeatmapObject.ObjectType.Empty &&
-                            Updater.TryGetObject(modifier.reference, out LevelObject levelObject) &&
-                            levelObject.visualObject.Renderer && levelObject.visualObject is SolidObject &&
-                            modifier.commands.Count > 2 && bool.TryParse(modifier.commands[2], out bool setNormal) && setNormal)
+                switch (modifier.commands[0])
+                {
+                    case "blur":
+                    case "blurOther":
+                    case "blurVariableOther":
                         {
+                            if (modifier.Result != null && modifier.reference &&
+                                modifier.reference.objectType != BeatmapObject.ObjectType.Empty &&
+                                Updater.TryGetObject(modifier.reference, out LevelObject levelObject) &&
+                                levelObject.visualObject.Renderer && levelObject.visualObject is SolidObject &&
+                                modifier.commands.Count > 2 && bool.TryParse(modifier.commands[2], out bool setNormal) && setNormal)
+                            {
+                                modifier.Result = null;
+
+                                levelObject.visualObject.Renderer.material = ObjectManager.inst.norm;
+
+                                ((SolidObject)levelObject.visualObject).material = levelObject.visualObject.Renderer.material;
+                            }
+
+                            break;
+                        }
+                    case "blurVariable":
+                        {
+                            if (modifier.Result != null && modifier.reference &&
+                                modifier.reference.objectType != BeatmapObject.ObjectType.Empty &&
+                                Updater.TryGetObject(modifier.reference, out LevelObject levelObject) &&
+                                levelObject.visualObject.Renderer && levelObject.visualObject is SolidObject &&
+                                modifier.commands.Count > 1 && bool.TryParse(modifier.commands[1], out bool setNormal) && setNormal)
+                            {
+                                modifier.Result = null;
+
+                                levelObject.visualObject.Renderer.material = ObjectManager.inst.norm;
+
+                                ((SolidObject)levelObject.visualObject).material = levelObject.visualObject.Renderer.material;
+                            }
+
+                            break;
+                        }
+                    case "spawnPrefab":
+                        {
+                            if (!modifier.constant && modifier.Result != null && modifier.Result is PrefabObject)
+                            {
+                                Updater.UpdatePrefab((PrefabObject)modifier.Result, false);
+
+                                DataManager.inst.gameData.prefabObjects.RemoveAll(x => ((PrefabObject)x).fromModifier && x.ID == ((PrefabObject)modifier.Result).ID);
+
+                                modifier.Result = null;
+                            }
+                            break;
+                        }
+                    case "enableObject":
+                        {
+                            if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.top && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], true)))
+                                levelObject.top.gameObject.SetActive(false);
+
+                            break;
+                        }
+                    case "enableObjectOther":
+                        {
+                            var list = CoreHelper.FindObjectsWithTag(modifier.value);
+
+                            if (list.Count > 0 && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], true)))
+                            {
+                                foreach (var beatmapObject in list)
+                                {
+                                    if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
+                                        levelObject.top.gameObject.SetActive(false);
+                                }
+                            }
+
+                            break;
+                        }
+                    case "enableObjectTree":
+                        {
+                            if (modifier.value == "0")
+                                modifier.value = "False";
+
+                            if (modifier.commands.Count > 1 && !Parser.TryParse(modifier.commands[1], true))
+                                return;
+
+                            if (modifier.Result == null)
+                            {
+                                var beatmapObject = Parser.TryParse(modifier.value, true) ? modifier.reference : modifier.reference.GetParentChain().Last();
+
+                                modifier.Result = beatmapObject.GetChildChain();
+                            }
+
+                            var list = (List<List<DataManager.GameData.BeatmapObject>>)modifier.Result;
+
+                            for (int i = 0; i < list.Count; i++)
+                            {
+                                var childList = list[i];
+                                for (int j = 0; j < childList.Count; j++)
+                                {
+                                    if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.top)
+                                        levelObject.top.gameObject.SetActive(false);
+                                }
+                            }
+
+                            break;
+                        }
+                    case "enableObjectTreeOther":
+                        {
+                            if (modifier.commands.Count > 2 && !Parser.TryParse(modifier.commands[2], true))
+                                return;
+
+                            if (modifier.Result == null)
+                            {
+                                var beatmapObjects = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
+
+                                var resultList = new List<List<DataManager.GameData.BeatmapObject>>();
+                                foreach (var bm in beatmapObjects)
+                                {
+                                    var beatmapObject = Parser.TryParse(modifier.value, true) ? bm : bm.GetParentChain().Last();
+                                    resultList.AddRange(beatmapObject.GetChildChain());
+                                }
+
+                                modifier.Result = resultList;
+                            }
+
+                            var list = (List<List<DataManager.GameData.BeatmapObject>>)modifier.Result;
+
+                            for (int i = 0; i < list.Count; i++)
+                            {
+                                var childList = list[i];
+                                for (int j = 0; j < childList.Count; j++)
+                                {
+                                    if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.top)
+                                        levelObject.top.gameObject.SetActive(false);
+                                }
+                            }
+
                             modifier.Result = null;
 
-                            levelObject.visualObject.Renderer.material = ObjectManager.inst.norm;
-
-                            ((SolidObject)levelObject.visualObject).material = levelObject.visualObject.Renderer.material;
+                            break;
                         }
-
-                        break;
-                    }
-                case "blurVariable":
-                    {
-                        if (modifier.Result != null && modifier.reference &&
-                            modifier.reference.objectType != BeatmapObject.ObjectType.Empty &&
-                            Updater.TryGetObject(modifier.reference, out LevelObject levelObject) &&
-                            levelObject.visualObject.Renderer && levelObject.visualObject is SolidObject &&
-                            modifier.commands.Count > 1 && bool.TryParse(modifier.commands[1], out bool setNormal) && setNormal)
+                    case "disableObject":
                         {
-                            modifier.Result = null;
-
-                            levelObject.visualObject.Renderer.material = ObjectManager.inst.norm;
-
-                            ((SolidObject)levelObject.visualObject).material = levelObject.visualObject.Renderer.material;
-                        }
-
-                        break;
-                    }
-                case "spawnPrefab":
-                    {
-                        if (!modifier.constant && modifier.Result != null && modifier.Result is PrefabObject)
-                        {
-                            Updater.UpdatePrefab((PrefabObject)modifier.Result, false);
-
-                            DataManager.inst.gameData.prefabObjects.RemoveAll(x => ((PrefabObject)x).fromModifier && x.ID == ((PrefabObject)modifier.Result).ID);
-
-                            modifier.Result = null;
-                        }
-                        break;
-                    }
-                case "enableObject":
-                    {
-                        if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.top && Parser.TryParse(modifier.commands[1], true))
-                            levelObject.top.gameObject.SetActive(false);
-
-                        break;
-                    }
-                case "enableObjectOther":
-                    {
-                        var list = CoreHelper.FindObjectsWithTag(modifier.value);
-
-                        if (list.Count > 0 && Parser.TryParse(modifier.commands[1], true))
-                        {
-                            foreach (var beatmapObject in list)
+                            if (!modifier.hasChanged && modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.top && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], true)))
                             {
-                                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
-                                    levelObject.top.gameObject.SetActive(false);
-                            }
-                        }
-
-                        break;
-                    }
-                case "enableObjectTree":
-                    {
-                        if (modifier.value == "0")
-                            modifier.value = "False";
-
-                        if (!Parser.TryParse(modifier.commands[1], true))
-                            return;
-
-                        if (modifier.Result == null)
-                        {
-                            var beatmapObject = Parser.TryParse(modifier.value, true) ? modifier.reference : modifier.reference.GetParentChain().Last();
-
-                            modifier.Result = beatmapObject.GetChildChain();
-                        }
-
-                        var list = (List<List<DataManager.GameData.BeatmapObject>>)modifier.Result;
-
-                        for (int i = 0; i < list.Count; i++)
-                        {
-                            var childList = list[i];
-                            for (int j = 0; j < childList.Count; j++)
-                            {
-                                if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.top)
-                                    levelObject.top.gameObject.SetActive(false);
-                            }
-                        }
-
-                        break;
-                    }
-                case "enableObjectTreeOther":
-                    {
-                        if (!Parser.TryParse(modifier.commands[2], true))
-                            return;
-
-                        if (modifier.Result == null)
-                        {
-                            var beatmapObjects = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
-
-                            var resultList = new List<List<DataManager.GameData.BeatmapObject>>();
-                            foreach (var bm in beatmapObjects)
-                            {
-                                var beatmapObject = Parser.TryParse(modifier.value, true) ? bm : bm.GetParentChain().Last();
-                                resultList.AddRange(beatmapObject.GetChildChain());
+                                levelObject.top.gameObject.SetActive(true);
+                                modifier.hasChanged = true;
                             }
 
-                            modifier.Result = resultList;
+                            break;
                         }
-
-                        var list = (List<List<DataManager.GameData.BeatmapObject>>)modifier.Result;
-
-                        for (int i = 0; i < list.Count; i++)
+                    case "disableObjectOther":
                         {
-                            var childList = list[i];
-                            for (int j = 0; j < childList.Count; j++)
+                            var list = CoreHelper.FindObjectsWithTag(modifier.value);
+
+                            if (list.Count > 0 && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], true)))
                             {
-                                if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.top)
-                                    levelObject.top.gameObject.SetActive(false);
+                                foreach (var beatmapObject in list)
+                                {
+                                    if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
+                                        levelObject.top.gameObject.SetActive(true);
+                                }
                             }
+
+                            break;
                         }
-
-                        modifier.Result = null;
-
-                        break;
-                    }
-                case "disableObject":
-                    {
-                        if (!modifier.hasChanged && modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.top && Parser.TryParse(modifier.commands[1], true))
+                    case "disableObjectTree":
                         {
-                            levelObject.top.gameObject.SetActive(true);
-                            modifier.hasChanged = true;
-                        }
+                            if (modifier.value == "0")
+                                modifier.value = "False";
+                            
+                            if (modifier.commands.Count > 1 && !Parser.TryParse(modifier.commands[1], true))
+                                return;
 
-                        break;
-                    }
-                case "disableObjectOther":
-                    {
-                        var list = CoreHelper.FindObjectsWithTag(modifier.value);
-
-                        if (list.Count > 0 && Parser.TryParse(modifier.commands[1], true))
-                        {
-                            foreach (var beatmapObject in list)
+                            if (Parser.TryParse(modifier.value, true))
                             {
-                                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
-                                    levelObject.top.gameObject.SetActive(true);
+                                foreach (var cc in modifier.reference.GetChildChain())
+                                {
+                                    for (int o = 0; o < cc.Count; o++)
+                                    {
+                                        if (cc[o] != null && Updater.TryGetObject(cc[o], out LevelObject levelObject) && levelObject.top)
+                                            levelObject.top.gameObject.SetActive(true);
+                                    }
+                                }
+
+                                break;
                             }
-                        }
 
-                        break;
-                    }
-                case "disableObjectTree":
-                    {
-                        if (modifier.value == "0")
-                            modifier.value = "False";
+                            var parentChain = modifier.reference.GetParentChain();
 
-                        if (!Parser.TryParse(modifier.commands[1], true))
-                            return;
-
-                        if (Parser.TryParse(modifier.value, true))
-                        {
-                            foreach (var cc in modifier.reference.GetChildChain())
+                            foreach (var cc in parentChain[parentChain.Count - 1].GetChildChain())
                             {
                                 for (int o = 0; o < cc.Count; o++)
                                 {
@@ -5031,141 +5047,132 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
-
-                        var parentChain = modifier.reference.GetParentChain();
-
-                        foreach (var cc in parentChain[parentChain.Count - 1].GetChildChain())
+                    case "disableObjectTreeOther":
                         {
-                            for (int o = 0; o < cc.Count; o++)
+                            if (modifier.commands.Count > 2 && !Parser.TryParse(modifier.commands[2], true))
+                                return;
+
+                            if (modifier.Result == null)
                             {
-                                if (cc[o] != null && Updater.TryGetObject(cc[o], out LevelObject levelObject) && levelObject.top)
-                                    levelObject.top.gameObject.SetActive(true);
-                            }
-                        }
+                                var beatmapObjects = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
 
-                        break;
-                    }
-                case "disableObjectTreeOther":
-                    {
-                        if (!Parser.TryParse(modifier.commands[2], true))
-                            return;
-
-                        if (modifier.Result == null)
-                        {
-                            var beatmapObjects = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
-
-                            var resultList = new List<List<DataManager.GameData.BeatmapObject>>();
-                            foreach (var bm in beatmapObjects)
-                            {
-                                var beatmapObject = Parser.TryParse(modifier.value, true) ? bm : bm.GetParentChain().Last();
-                                resultList.AddRange(beatmapObject.GetChildChain());
-                            }
-
-                            modifier.Result = resultList;
-                        }
-
-                        var list = (List<List<DataManager.GameData.BeatmapObject>>)modifier.Result;
-
-                        for (int i = 0; i < list.Count; i++)
-                        {
-                            var childList = list[i];
-                            for (int j = 0; j < childList.Count; j++)
-                            {
-                                if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.top)
-                                    levelObject.top.gameObject.SetActive(true);
-                            }
-                        }
-
-                        modifier.Result = null;
-
-                        break;
-                    }
-                case "reactivePosChain":
-                    {
-                        modifier.reference.reactivePositionOffset = Vector3.zero;
-
-                        break;
-                    }
-                case "reactiveScaChain":
-                    {
-                        modifier.reference.reactiveScaleOffset = Vector3.zero;
-
-                        break;
-                    }
-                case "reactiveRotChain":
-                    {
-                        modifier.reference.reactiveRotationOffset = 0f;
-
-                        break;
-                    }
-                case "signalModifier":
-                case "mouseOverSignalModifier":
-                    {
-                        var list = DataManager.inst.gameData.beatmapObjects.Where(x => x is BeatmapObject beatmapObject && beatmapObject.tags.Contains(modifier.commands[1]) && beatmapObject.modifiers.Any(y => y.Result != null));
-
-                        if (list.Count() > 0)
-                            foreach (var bm in list)
-                            {
-                                if ((bm as BeatmapObject).modifiers.Count > 0 && (bm as BeatmapObject).modifiers.Where(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger).Count() > 0 &&
-                                    (bm as BeatmapObject).modifiers.TryFind(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> m))
+                                var resultList = new List<List<DataManager.GameData.BeatmapObject>>();
+                                foreach (var bm in beatmapObjects)
                                 {
-                                    m.Result = null;
+                                    var beatmapObject = Parser.TryParse(modifier.value, true) ? bm : bm.GetParentChain().Last();
+                                    resultList.AddRange(beatmapObject.GetChildChain());
+                                }
+
+                                modifier.Result = resultList;
+                            }
+
+                            var list = (List<List<DataManager.GameData.BeatmapObject>>)modifier.Result;
+
+                            for (int i = 0; i < list.Count; i++)
+                            {
+                                var childList = list[i];
+                                for (int j = 0; j < childList.Count; j++)
+                                {
+                                    if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.top)
+                                        levelObject.top.gameObject.SetActive(true);
                                 }
                             }
 
-                        break;
-                    }
-                case "animateSignal":
-                case "animateSignalOther":
-                    {
-                        if (!Parser.TryParse(modifier.commands[!modifier.commands[0].Contains("Other") ? 9 : 10], true))
-                            return;
+                            modifier.Result = null;
 
-                        var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[!modifier.commands[0].Contains("Other") ? 7 : 8]));
+                            break;
+                        }
+                    case "reactivePosChain":
+                        {
+                            modifier.reference.reactivePositionOffset = Vector3.zero;
 
-                        if (list.Count() > 0 && !modifier.constant)
-                            foreach (var bm in list)
-                            {
-                                if ((bm as BeatmapObject).modifiers.Count > 0 && (bm as BeatmapObject).modifiers.Where(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger).Count() > 0 &&
-                                    (bm as BeatmapObject).modifiers.TryFind(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> m))
+                            break;
+                        }
+                    case "reactiveScaChain":
+                        {
+                            modifier.reference.reactiveScaleOffset = Vector3.zero;
+
+                            break;
+                        }
+                    case "reactiveRotChain":
+                        {
+                            modifier.reference.reactiveRotationOffset = 0f;
+
+                            break;
+                        }
+                    case "signalModifier":
+                    case "mouseOverSignalModifier":
+                        {
+                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => x is BeatmapObject beatmapObject && beatmapObject.tags.Contains(modifier.commands[1]) && beatmapObject.modifiers.Any(y => y.Result != null));
+
+                            if (list.Count() > 0)
+                                foreach (var bm in list)
                                 {
-                                    m.Result = null;
+                                    if ((bm as BeatmapObject).modifiers.Count > 0 && (bm as BeatmapObject).modifiers.Where(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger).Count() > 0 &&
+                                        (bm as BeatmapObject).modifiers.TryFind(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> m))
+                                    {
+                                        m.Result = null;
+                                    }
+                                }
+
+                            break;
+                        }
+                    case "animateSignal":
+                    case "animateSignalOther":
+                        {
+                            if (!Parser.TryParse(modifier.commands[!modifier.commands[0].Contains("Other") ? 9 : 10], true))
+                                return;
+
+                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[!modifier.commands[0].Contains("Other") ? 7 : 8]));
+
+                            if (list.Count() > 0 && !modifier.constant)
+                                foreach (var bm in list)
+                                {
+                                    if ((bm as BeatmapObject).modifiers.Count > 0 && (bm as BeatmapObject).modifiers.Where(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger).Count() > 0 &&
+                                        (bm as BeatmapObject).modifiers.TryFind(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> m))
+                                    {
+                                        m.Result = null;
+                                    }
+                                }
+
+                            break;
+                        }
+                    case "randomGreater":
+                    case "randomLesser":
+                    case "randomEquals":
+                    case "gravity":
+                    case "gravityOther":
+                        {
+                            modifier.Result = null;
+                            break;
+                        }
+                    case "setText":
+                        {
+                            if (modifier.constant && modifier.reference.shape == 4 && modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null &&
+                                modifier.reference.levelObject.visualObject is TextObject textObject)
+                                textObject.text = modifier.reference.text;
+                            break;
+                        }
+                    case "setTextOther":
+                        {
+                            var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
+
+                            if (modifier.constant && list.Count() > 0)
+                            {
+                                foreach (var bm in list.Select(x => x as BeatmapObject))
+                                {
+                                    if (bm.shape == 4 && bm.levelObject && bm.levelObject.visualObject != null &&
+                                        bm.levelObject.visualObject is TextObject textObject)
+                                        textObject.text = bm.text;
                                 }
                             }
-
-                        break;
-                    }
-                case "randomGreater":
-                case "randomLesser":
-                case "randomEquals":
-                case "gravity":
-                case "gravityOther":
-                    {
-                        modifier.Result = null;
-                        break;
-                    }
-                case "setText":
-                    {
-                        if (modifier.constant && modifier.reference.shape == 4 && modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null &&
-                            modifier.reference.levelObject.visualObject is TextObject textObject)
-                            textObject.text = modifier.reference.text;
-                        break;
-                    }
-                case "setTextOther":
-                    {
-                        var list = DataManager.inst.gameData.beatmapObjects.Where(x => (x as BeatmapObject).tags.Contains(modifier.commands[1]));
-
-                        if (modifier.constant && list.Count() > 0)
-                        {
-                            foreach (var bm in list.Select(x => x as BeatmapObject))
-                            {
-                                if (bm.shape == 4 && bm.levelObject && bm.levelObject.visualObject != null &&
-                                    bm.levelObject.visualObject is TextObject textObject)
-                                    textObject.text = bm.text;
-                            }
+                            break;
                         }
-                        break;
-                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Modifier ({modifier.commands[0]}) had an error. {ex}");
             }
         }
 
