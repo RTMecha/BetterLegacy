@@ -21,7 +21,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static void UpdatePrefix()
         {
-            var list = DataManager.inst.gameData is GameData gameData && gameData.backgroundObjects != null ? gameData.BackgroundObjects.Where(x => x.modifiers.Count > 0).ToList() : null;
+            var list = DataManager.inst.gameData is GameData gameData && gameData.backgroundObjects != null ? gameData.BackgroundObjects.FindAll(x => x.modifiers.Count > 0) : null;
 
             if (CoreHelper.Playing)
                 for (int i = 0; i < list.Count; i++)
@@ -104,7 +104,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdateBackgroundObjectsPrefix(BackgroundManager __instance)
         {
-            if ((GameManager.inst.gameState == GameManager.State.Playing || LevelManager.LevelEnded && CoreConfig.Instance.ReplayLevel.Value) && BackgroundManager.inst?.backgroundParent?.gameObject)
+            if ((CoreHelper.Playing || LevelManager.LevelEnded && CoreConfig.Instance.ReplayLevel.Value) && BackgroundManager.inst?.backgroundParent?.gameObject)
             {
                 var lerp = CoreConfig.Instance.BGReactiveLerp.Value;
                 __instance.sampleLow = Updater.samples.Skip(0).Take(56).Average((float a) => a) * 1000f;
