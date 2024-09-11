@@ -4193,17 +4193,6 @@ namespace BetterLegacy.Editor.Managers
                         kfdialog.Find("huesatval_label").gameObject.SetActive(RTEditor.ShowModdedUI);
                         kfdialog.Find("huesatval").gameObject.SetActive(RTEditor.ShowModdedUI);
 
-                        kfdialog.Find("r_color_label").gameObject.SetActive(RTEditor.ShowModdedUI);
-                        kfdialog.Find("r_color").gameObject.SetActive(RTEditor.ShowModdedUI);
-
-                        kfdialog.Find("r_color_target_label").gameObject.SetActive(RTEditor.ShowModdedUI);
-                        kfdialog.Find("r_color_target").gameObject.SetActive(RTEditor.ShowModdedUI);
-
-                        kfdialog.Find("r_label").gameObject.SetActive(RTEditor.ShowModdedUI);
-                        kfdialog.Find("random").gameObject.SetActive(RTEditor.ShowModdedUI);
-
-                        kfdialog.Find("shift").gameObject.SetActive(RTEditor.ShowModdedUI);
-
                         if (!RTEditor.ShowModdedUI)
                             break;
 
@@ -4299,141 +4288,6 @@ namespace BetterLegacy.Editor.Managers
 
                         TriggerHelper.AddEventTriggers(val.gameObject, TriggerHelper.ScrollDelta(val));
                         TriggerHelper.IncreaseDecreaseButtons(val);
-
-                        var rColor = kfdialog.Find("r_color");
-
-                        kfdialog.Find("r_color_label").gameObject.SetActive(random != 0);
-                        rColor.gameObject.SetActive(random != 0);
-
-                        kfdialog.Find("r_color_target_label").gameObject.SetActive(random != 0);
-
-                        var randomColorTarget = kfdialog.Find("r_color_target");
-                        randomColorTarget.gameObject.SetActive(random != 0);
-
-                        kfdialog.Find("r_label/interval").gameObject.SetActive(random != 0);
-                        kfdialog.Find("r_label/interval").GetComponent<Text>().text = random == 6 ? "Speed" : "Random Interval";
-                        var rand = kfdialog.Find("random");
-                        var none = rand.Find("none").GetComponent<Toggle>();
-                        var homingDynamic = rand.Find("homing-dynamic").GetComponent<Toggle>();
-
-                        none.onValueChanged.ClearAll();
-                        none.isOn = random == 0;
-                        none.onValueChanged.AddListener(_val =>
-                        {
-                            if (_val)
-                            {
-                                foreach (var keyframe in selected.Select(x => x.GetData<EventKeyframe>()))
-                                    keyframe.random = 0;
-                                if (UpdateObjects)
-                                    Updater.UpdateObject(beatmapObject, "Keyframes");
-                                RenderObjectKeyframesDialog(beatmapObject);
-                            }
-                        });
-
-                        homingDynamic.onValueChanged.ClearAll();
-                        homingDynamic.isOn = random == 5;
-                        homingDynamic.onValueChanged.AddListener(_val =>
-                        {
-                            if (_val)
-                            {
-                                foreach (var keyframe in selected.Select(x => x.GetData<EventKeyframe>()))
-                                    keyframe.random = 5;
-                                if (UpdateObjects)
-                                    Updater.UpdateObject(beatmapObject, "Keyframes");
-                                RenderObjectKeyframesDialog(beatmapObject);
-                            }
-                        });
-
-                        rand.Find("interval-input").gameObject.SetActive(random != 0);
-
-                        if (random != 0)
-                        {
-                            var x = rColor.Find("x").GetComponent<InputField>();
-                            var y = rColor.Find("y").GetComponent<InputField>();
-
-                            x.onValueChanged.ClearAll();
-                            x.text = firstKF.GetData<EventKeyframe>().eventRandomValues[0].ToString();
-                            x.onValueChanged.AddListener(_val =>
-                            {
-                                if (float.TryParse(_val, out float n))
-                                {
-                                    firstKF.GetData<EventKeyframe>().eventRandomValues[0] = n;
-                                    if (UpdateObjects)
-                                        Updater.UpdateObject(beatmapObject, "Keyframes");
-                                }
-                            });
-
-                            y.onValueChanged.ClearAll();
-                            y.text = firstKF.GetData<EventKeyframe>().eventRandomValues[1].ToString();
-                            y.onValueChanged.AddListener(_val =>
-                            {
-                                if (float.TryParse(_val, out float n))
-                                {
-                                    firstKF.GetData<EventKeyframe>().eventRandomValues[1] = n;
-                                    if (UpdateObjects)
-                                        Updater.UpdateObject(beatmapObject, "Keyframes");
-                                }
-                            });
-
-                            TriggerHelper.AddEventTriggers(x.gameObject,
-                                TriggerHelper.ScrollDelta(x, multi: true),
-                                TriggerHelper.ScrollDeltaVector2(x, y, 0.1f, 10f));
-                            TriggerHelper.AddEventTriggers(y.gameObject,
-                                TriggerHelper.ScrollDelta(y, multi: true),
-                                TriggerHelper.ScrollDeltaVector2(x, y, 0.1f, 10f));
-
-                            TriggerHelper.IncreaseDecreaseButtons(x);
-                            TriggerHelper.IncreaseDecreaseButtons(y);
-
-                            var toggles = randomColorTarget.GetComponentsInChildren<Toggle>();
-                            int num6 = 0;
-                            foreach (var toggle in toggles)
-                            {
-                                toggle.onValueChanged.ClearAll();
-                                int tmpIndex = num6;
-                                toggle.isOn = num6 == firstKF.GetData<EventKeyframe>().eventRandomValues[3];
-                                toggle.onValueChanged.AddListener(_val => { SetKeyframeRandomColorTarget(beatmapObject, 3, tmpIndex, toggles); });
-
-                                if (showModifiedColors)
-                                {
-                                    var color = CoreHelper.CurrentBeatmapTheme.GetObjColor(tmpIndex);
-
-                                    float hueNum = beatmapObject.Interpolate(type, 2);
-                                    float satNum = beatmapObject.Interpolate(type, 3);
-                                    float valNum = beatmapObject.Interpolate(type, 4);
-
-                                    toggle.image.color = CoreHelper.ChangeColorHSV(color, hueNum, satNum, valNum);
-                                }
-                                else
-                                    toggle.image.color = CoreHelper.CurrentBeatmapTheme.GetObjColor(tmpIndex);
-
-                                if (!toggle.GetComponent<HoverUI>())
-                                {
-                                    var hoverUI = toggle.gameObject.AddComponent<HoverUI>();
-                                    hoverUI.animatePos = false;
-                                    hoverUI.animateSca = true;
-                                    hoverUI.size = 1.1f;
-                                }
-                                num6++;
-                            }
-
-                            var intervalInput = rand.Find("interval-input").GetComponent<InputField>();
-                            intervalInput.onValueChanged.ClearAll();
-                            intervalInput.text = firstKF.GetData<EventKeyframe>().eventRandomValues[2].ToString();
-                            intervalInput.onValueChanged.AddListener(_val =>
-                            {
-                                if (float.TryParse(_val, out float n))
-                                {
-                                    foreach (var keyframe in selected.Select(x => x.GetData<EventKeyframe>()))
-                                        keyframe.eventRandomValues[2] = n;
-                                    if (UpdateObjects)
-                                        Updater.UpdateObject(beatmapObject, "Keyframes");
-                                }
-                            });
-
-                            TriggerHelper.AddEventTriggers(intervalInput.gameObject,
-                                TriggerHelper.ScrollDelta(intervalInput, 0.01f, max: random == 6 ? 1f : 0f));
-                        }
 
                         break;
                     }
@@ -4755,25 +4609,6 @@ namespace BetterLegacy.Editor.Managers
 
         #region Set Values
 
-        public void SetKeyframeColor(BeatmapObject beatmapObject, int index, int value)
-        {
-            beatmapObject.events[3][ObjEditor.inst.currentKeyframe].eventValues[index] = (float)value;
-
-            // Since keyframe color has no affect on the timeline object, we will only need to update the physical object.
-            if (UpdateObjects)
-                Updater.UpdateObject(beatmapObject, "Keyframes");
-
-            int num = 0;
-            foreach (var toggle in ObjEditor.inst.colorButtons)
-            {
-                int tmpIndex = num;
-                toggle.onValueChanged.ClearAll();
-                toggle.isOn = num == value;
-                toggle.onValueChanged.AddListener(_val => { SetKeyframeColor(beatmapObject, 0, tmpIndex); });
-                num++;
-            }
-        }
-
         public void SetKeyframeColor(BeatmapObject beatmapObject, int index, int value, IEnumerable<TimelineObject> selected)
         {
             foreach (var keyframe in selected.Select(x => x.GetData<EventKeyframe>()))
@@ -4789,7 +4624,7 @@ namespace BetterLegacy.Editor.Managers
                 int tmpIndex = num;
                 toggle.onValueChanged.ClearAll();
                 toggle.isOn = num == value;
-                toggle.onValueChanged.AddListener(_val => { SetKeyframeColor(beatmapObject, 0, tmpIndex); });
+                toggle.onValueChanged.AddListener(_val => { SetKeyframeColor(beatmapObject, 0, tmpIndex, selected); });
                 num++;
             }
         }

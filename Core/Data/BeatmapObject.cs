@@ -529,7 +529,7 @@ namespace BetterLegacy.Core.Data
                     var eventKeyframe = new EventKeyframe();
                     var kfjn = jn["events"]["pos"][i];
 
-                    eventKeyframe.id = !string.IsNullOrEmpty(kfjn["id"]) ? kfjn["id"] : LSText.randomNumString(8);
+                    eventKeyframe.id = LSText.randomNumString(8);
 
                     eventKeyframe.eventTime = kfjn["t"].AsFloat;
 
@@ -538,32 +538,20 @@ namespace BetterLegacy.Core.Data
 
                     try
                     {
-                        eventKeyframe.SetEventValues(new float[]
-                        {
-                            kfjn["x"].AsFloat,
-                            kfjn["y"].AsFloat,
-                            kfjn["z"].AsFloat
-                        });
+                        eventKeyframe.SetEventValues(kfjn["x"].AsFloat, kfjn["y"].AsFloat, kfjn["z"].AsFloat);
                     }
                     catch
                     {
-                        eventKeyframe.SetEventValues(new float[]
-                        {
-							// If all values end up as zero, then we definitely know Z axis didn't load for whatever reason.
-							0f,
-                            0f,
-                            0f
-                        });
+                        // If all values end up as zero, then we definitely know Z axis didn't load for whatever reason.
+                        eventKeyframe.SetEventValues(0f, 0f, 0f);
                     }
 
                     eventKeyframe.random = kfjn["r"].AsInt;
-                    eventKeyframe.SetEventRandomValues(new float[]
-                    {
-                        kfjn["rx"].AsFloat, // Random Value X
-						kfjn["ry"].AsFloat, // Random Value Y
-						kfjn["rz"].AsFloat, // Random Interval
-						kfjn["rx2"].AsFloat, // Random Axis
-					});
+                    // rx = random x
+                    // ry = random y
+                    // rz = random interval
+                    // rx2 = random axis
+                    eventKeyframe.SetEventRandomValues(kfjn["rx"].AsFloat, kfjn["ry"].AsFloat, kfjn["rz"].AsFloat, kfjn["rx2"].AsFloat);
 
                     eventKeyframe.relative = !string.IsNullOrEmpty(kfjn["rel"]) && kfjn["rel"].AsBool;
                     eventKeyframe.locked = !string.IsNullOrEmpty(kfjn["l"]) && kfjn["l"].AsBool;
@@ -578,26 +566,17 @@ namespace BetterLegacy.Core.Data
                     var eventKeyframe = new EventKeyframe();
                     var kfjn = jn["events"]["sca"][j];
 
-                    eventKeyframe.id = !string.IsNullOrEmpty(kfjn["id"]) ? kfjn["id"] : LSText.randomNumString(8);
+                    eventKeyframe.id = LSText.randomNumString(8);
 
                     eventKeyframe.eventTime = kfjn["t"].AsFloat;
 
                     if (kfjn["ct"] != null)
                         eventKeyframe.curveType = DataManager.inst.AnimationListDictionaryStr[kfjn["ct"]];
 
-                    eventKeyframe.SetEventValues(new float[]
-                    {
-                        kfjn["x"].AsFloat,
-                        kfjn["y"].AsFloat
-                    });
+                    eventKeyframe.SetEventValues(kfjn["x"].AsFloat, kfjn["y"].AsFloat);
 
                     eventKeyframe.random = kfjn["r"].AsInt;
-                    eventKeyframe.SetEventRandomValues(new float[]
-                    {
-                        kfjn["rx"].AsFloat,
-                        kfjn["ry"].AsFloat,
-                        kfjn["rz"].AsFloat
-                    });
+                    eventKeyframe.SetEventRandomValues(kfjn["rx"].AsFloat, kfjn["ry"].AsFloat, kfjn["rz"].AsFloat);
 
                     eventKeyframe.relative = !string.IsNullOrEmpty(kfjn["rel"]) && kfjn["rel"].AsBool;
                     eventKeyframe.locked = !string.IsNullOrEmpty(kfjn["l"]) && kfjn["l"].AsBool;
@@ -612,25 +591,17 @@ namespace BetterLegacy.Core.Data
                     var eventKeyframe = new EventKeyframe();
                     var kfjn = jn["events"]["rot"][k];
 
-                    eventKeyframe.id = !string.IsNullOrEmpty(kfjn["id"]) ? kfjn["id"] : LSText.randomNumString(8);
+                    eventKeyframe.id = LSText.randomNumString(8);
 
                     eventKeyframe.eventTime = kfjn["t"].AsFloat;
 
                     if (kfjn["ct"] != null)
                         eventKeyframe.curveType = DataManager.inst.AnimationListDictionaryStr[kfjn["ct"]];
 
-                    eventKeyframe.SetEventValues(new float[]
-                    {
-                        kfjn["x"].AsFloat
-                    });
+                    eventKeyframe.SetEventValues(kfjn["x"].AsFloat);
 
                     eventKeyframe.random = kfjn["r"].AsInt;
-                    eventKeyframe.SetEventRandomValues(new float[]
-                    {
-                        kfjn["rx"].AsFloat,
-                        kfjn["ry"].AsFloat,
-                        kfjn["rz"].AsFloat
-                    });
+                    eventKeyframe.SetEventRandomValues(kfjn["rx"].AsFloat, kfjn["ry"].AsFloat, kfjn["rz"].AsFloat);
 
                     eventKeyframe.relative = string.IsNullOrEmpty(kfjn["rel"]) || kfjn["rel"].AsBool;
                     eventKeyframe.locked = !string.IsNullOrEmpty(kfjn["l"]) && kfjn["l"].AsBool;
@@ -645,30 +616,35 @@ namespace BetterLegacy.Core.Data
                     var eventKeyframe = new EventKeyframe();
                     var kfjn = jn["events"]["col"][l];
 
-                    eventKeyframe.id = !string.IsNullOrEmpty(kfjn["id"]) ? kfjn["id"] : LSText.randomNumString(8);
+                    eventKeyframe.id = LSText.randomNumString(8);
 
                     eventKeyframe.eventTime = kfjn["t"].AsFloat;
 
                     if (kfjn["ct"] != null)
                         eventKeyframe.curveType = DataManager.inst.AnimationListDictionaryStr[kfjn["ct"]];
 
-                    eventKeyframe.SetEventValues(new float[]
-                    {
-                        kfjn["x"].AsFloat,
-                        kfjn["y"].AsFloat,
-                        kfjn["z"].AsFloat,
-                        kfjn["x2"].AsFloat,
-                        kfjn["y2"].AsFloat,
-                    });
+                    // x = color slot
+                    // y = opacity
+                    // z = hue
+                    // x2 = saturation
+                    // y2 = value
+                    eventKeyframe.SetEventValues(kfjn["x"].AsFloat, kfjn["y"].AsFloat, kfjn["z"].AsFloat, kfjn["x2"].AsFloat, kfjn["y2"].AsFloat);
+
+                    // if gradient objects are implemented
+                    // x = start color slot
+                    // y = start opacity
+                    // z = start hue
+                    // x2 = start saturation
+                    // y2 = start value
+                    // z2 = end color slot
+                    // x3 = end opacity
+                    // y3 = end hue
+                    // z3 = end saturation
+                    // x4 = end value
+                    //eventKeyframe.SetEventValues(kfjn["x"].AsFloat, kfjn["y"].AsFloat, kfjn["z"].AsFloat, kfjn["x2"].AsFloat, kfjn["y2"].AsFloat, kfjn["z2"].AsFloat, kfjn["x3"].AsFloat, kfjn["y3"].AsFloat, kfjn["z3"].AsFloat, kfjn["x4"].AsFloat);
 
                     eventKeyframe.random = kfjn["r"].AsInt;
-                    eventKeyframe.SetEventRandomValues(new float[]
-                    {
-                            kfjn["rx"].AsFloat,
-                            kfjn["ry"].AsFloat,
-                            kfjn["rz"].AsFloat,
-                            kfjn["rx2"].AsFloat,
-                    });
+                    eventKeyframe.SetEventRandomValues(kfjn["rx"].AsFloat);
 
                     eventKeyframe.locked = !string.IsNullOrEmpty(kfjn["l"]) && kfjn["l"].AsBool;
 

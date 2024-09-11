@@ -715,36 +715,6 @@ namespace BetterLegacy.Patchers
 
                 Destroy(rRotation.GetComponent<EventTrigger>());
 
-                var color = ObjEditor.inst.KeyframeDialogs[3].transform;
-                var randomColorRangeLabel = position.Find("r_position_label").gameObject.Duplicate(color, "r_color_label");
-                randomColorRangeLabel.transform.GetChild(0).GetComponent<Text>().text = "Minimum Range";
-                randomColorRangeLabel.transform.GetChild(1).GetComponent<Text>().text = "Maximum Range";
-                var randomColorRange = position.Find("r_position").gameObject.Duplicate(color, "r_color");
-                EditorThemeManager.AddInputFields(randomColorRange, true, "");
-
-                var randomColorTargetLabel = position.GetChild(3).gameObject.Duplicate(color, "r_color_target_label");
-                var randomColorTargetLabelText = randomColorTargetLabel.transform.GetChild(0).GetComponent<Text>();
-                randomColorTargetLabelText.text = "Color Target";
-                EditorThemeManager.AddLightText(randomColorTargetLabelText);
-
-                var randomColorTarget = color.Find("color").gameObject.Duplicate(color, "r_color_target");
-                randomColorTarget.transform.AsRT().sizeDelta = new Vector2(366f, 64f);
-                for (int i = 0; i < randomColorTarget.transform.childCount; i++)
-                {
-                    var toggle = randomColorTarget.transform.GetChild(i).GetComponent<Toggle>();
-
-                    EditorThemeManager.AddGraphic(toggle.image, ThemeGroup.Null, true);
-                    EditorThemeManager.AddGraphic(toggle.graphic, ThemeGroup.Background_1);
-                }
-
-                var randomColorLabel = position.Find("r_label").gameObject.Duplicate(color, "r_label");
-                var randomColor = randomPosition.gameObject.Duplicate(color, "random");
-
-                Destroy(randomColor.transform.Find("normal").gameObject);
-                Destroy(randomColor.transform.Find("toggle").gameObject);
-                Destroy(randomColor.transform.Find("scale").gameObject);
-                Destroy(randomColor.transform.Find("homing-static").gameObject);
-
                 var rAxis = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View/Viewport/Content/autokill/tod-dropdown")
                     .Duplicate(position, "r_axis", 14);
                 var rAxisDD = rAxis.GetComponent<Dropdown>();
@@ -850,39 +820,39 @@ namespace BetterLegacy.Patchers
 
                 DestroyImmediate(GameObject.Find("Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/right").GetComponent<VerticalLayoutGroup>());
 
-                var di = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/right/grain").transform;
-                var shift = di.GetChild(13).gameObject.Duplicate(ObjEditor.inst.KeyframeDialogs[3].transform, "shift", 16);
-                var text = shift.transform.GetChild(1).GetComponent<Text>();
-                text.text = "Shift Dialog Down";
-                var shiftToggle = shift.GetComponent<Toggle>();
-                shiftToggle.onValueChanged.ClearAll();
-                shiftToggle.isOn = false;
-                shiftToggle.onValueChanged.AddListener(_val =>
-                {
-                    ObjectEditor.inst.colorShifted = _val;
-                    text.text = _val ? "Shift Dialog Up" : "Shift Dialog Down";
-                    var animation = new RTAnimation("shift color UI");
-                    animation.animationHandlers = new List<AnimationHandlerBase>
-                        {
-                            new AnimationHandler<float>(new List<IKeyframe<float>>
-                            {
-                                new FloatKeyframe(0f, _val ? 0f : 185f, Ease.Linear),
-                                new FloatKeyframe(0.3f, _val ? 185f : 0f, Ease.CircOut),
-                                new FloatKeyframe(0.32f, _val ? 185f : 0f, Ease.Linear),
-                            }, x => { ObjEditor.inst.KeyframeDialogs[3].transform.AsRT().anchoredPosition = new Vector2(0f, x); }),
-                        };
+                //var di = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/right/grain").transform;
+                //var shift = di.GetChild(13).gameObject.Duplicate(ObjEditor.inst.KeyframeDialogs[3].transform, "shift", 16);
+                //var text = shift.transform.GetChild(1).GetComponent<Text>();
+                //text.text = "Shift Dialog Down";
+                //var shiftToggle = shift.GetComponent<Toggle>();
+                //shiftToggle.onValueChanged.ClearAll();
+                //shiftToggle.isOn = false;
+                //shiftToggle.onValueChanged.AddListener(_val =>
+                //{
+                //    ObjectEditor.inst.colorShifted = _val;
+                //    text.text = _val ? "Shift Dialog Up" : "Shift Dialog Down";
+                //    var animation = new RTAnimation("shift color UI");
+                //    animation.animationHandlers = new List<AnimationHandlerBase>
+                //        {
+                //            new AnimationHandler<float>(new List<IKeyframe<float>>
+                //            {
+                //                new FloatKeyframe(0f, _val ? 0f : 185f, Ease.Linear),
+                //                new FloatKeyframe(0.3f, _val ? 185f : 0f, Ease.CircOut),
+                //                new FloatKeyframe(0.32f, _val ? 185f : 0f, Ease.Linear),
+                //            }, x => { ObjEditor.inst.KeyframeDialogs[3].transform.AsRT().anchoredPosition = new Vector2(0f, x); }),
+                //        };
 
-                    animation.onComplete = () =>
-                    {
-                        ObjEditor.inst.KeyframeDialogs[3].transform.AsRT().anchoredPosition = new Vector2(0f, _val ? 185f : 0f);
-                        AnimationManager.inst.RemoveID(animation.id);
-                    };
+                //    animation.onComplete = () =>
+                //    {
+                //        ObjEditor.inst.KeyframeDialogs[3].transform.AsRT().anchoredPosition = new Vector2(0f, _val ? 185f : 0f);
+                //        AnimationManager.inst.RemoveID(animation.id);
+                //    };
 
-                    AnimationManager.inst.Play(animation);
-                });
+                //    AnimationManager.inst.Play(animation);
+                //});
 
-                EditorThemeManager.AddSelectable(shiftToggle, ThemeGroup.Function_2);
-                EditorThemeManager.AddGraphic(text, ThemeGroup.Function_2_Text);
+                //EditorThemeManager.AddSelectable(shiftToggle, ThemeGroup.Function_2);
+                //EditorThemeManager.AddGraphic(text, ThemeGroup.Function_2_Text);
             }
 
             // Parent Settings
@@ -1195,7 +1165,7 @@ namespace BetterLegacy.Patchers
                         {
                             var label = kfdialog.GetChild(j);
                             if (label.name == "label" || label.name == "curves_label" || label.name == "r_label" ||
-                                label.name == "r_position_label" || label.name == "r_scale_label" || label.name == "r_rotation_label" || label.name == "r_color_label")
+                                label.name == "r_position_label" || label.name == "r_scale_label" || label.name == "r_rotation_label")
                             {
                                 for (int k = 0; k < label.childCount; k++)
                                     EditorThemeManager.AddLightText(label.GetChild(k).GetComponent<Text>());
@@ -1246,23 +1216,22 @@ namespace BetterLegacy.Patchers
 
                                     break;
                                 }
-                            case 3:
-                                {
-                                    break;
-                                }
                         }
 
-                        for (int j = 0; j < kfdialog.Find("random").childCount; j++)
+                        if (kfdialog.Find("random"))
                         {
-                            var toggle = kfdialog.Find("random").GetChild(j).GetComponent<Toggle>();
-                            if (!toggle)
-                                continue;
+                            for (int j = 0; j < kfdialog.Find("random").childCount; j++)
+                            {
+                                var toggle = kfdialog.Find("random").GetChild(j).GetComponent<Toggle>();
+                                if (!toggle)
+                                    continue;
 
-                            EditorThemeManager.AddToggle(toggle, ThemeGroup.Background_3);
-                            EditorThemeManager.AddGraphic(toggle.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
+                                EditorThemeManager.AddToggle(toggle, ThemeGroup.Background_3);
+                                EditorThemeManager.AddGraphic(toggle.transform.Find("Image").GetComponent<Image>(), ThemeGroup.Toggle_1_Check);
+                            }
+
+                            EditorThemeManager.AddInputField(kfdialog.Find("random/interval-input").GetComponent<InputField>());
                         }
-
-                        EditorThemeManager.AddInputField(kfdialog.Find("random/interval-input").GetComponent<InputField>());
                     }
                 }
                 catch (Exception ex)
