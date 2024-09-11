@@ -916,12 +916,7 @@ namespace BetterLegacy.Core.Optimization
                 if (TryGetObject(baseBeatmapObject, out LevelObject levelObject))
                 {
                     if (converter.cachedSequences.ContainsKey(baseBeatmapObject.id))
-                        levelObject.SetSequences(
-                            converter.cachedSequences[baseBeatmapObject.id].ColorSequence,
-                            converter.cachedSequences[baseBeatmapObject.id].OpacitySequence,
-                            converter.cachedSequences[baseBeatmapObject.id].HueSequence,
-                            converter.cachedSequences[baseBeatmapObject.id].SaturationSequence,
-                            converter.cachedSequences[baseBeatmapObject.id].ValueSequence);
+                        levelObject.colorSequence = converter.cachedSequences[baseBeatmapObject.id].ColorSequence;
 
                     if (updateParents)
                         foreach (var levelParent in levelObject.parentObjects)

@@ -1276,7 +1276,7 @@ namespace BetterLegacy.Menus.UI.Elements
                                     var kf = events["x"][i];
                                     var val = kf["val"].AsFloat + (i == 0 && kf["rel"].AsBool ? element.GetTransform(type, 0) : 0f);
                                     x = kf["rel"].AsBool ? x + val : val;
-                                    keyframes.Add(new ThemeKeyframe(kf["t"].AsFloat, (int)x, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
+                                    keyframes.Add(new ThemeKeyframe(kf["t"].AsFloat, (int)x, 0.0f, 0.0f, 0.0f, 0.0f, kf["ct"] != null && Ease.HasEaseFunction(kf["ct"]) ? Ease.GetEaseFunction(kf["ct"]) : Ease.Linear));
 
                                     lastX = kf["val"];
                                 }

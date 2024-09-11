@@ -12,17 +12,14 @@ namespace BetterLegacy.Core.Optimization.Objects
         public float KillTime { get; set; }
 
         public string ID { get; }
-        Sequence<Color> colorSequence;
-        Sequence<float> opacitySequence;
-        Sequence<float> hueSequence;
-        Sequence<float> satSequence;
-        Sequence<float> valSequence;
+        public Data.BeatmapObject beatmapObject;
 
-        public float depth;
         public List<LevelParentObject> parentObjects;
         public VisualObject visualObject;
 
-        public Data.BeatmapObject beatmapObject;
+        public Sequence<Color> colorSequence;
+
+        public float depth;
 
         public bool cameraParent;
         public bool positionParent;
@@ -63,10 +60,6 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             parentObjects = null;
             colorSequence = null;
-            opacitySequence = null;
-            hueSequence = null;
-            satSequence = null;
-            valSequence = null;
             top = null;
             beatmapObject = null;
 
@@ -79,17 +72,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             visualObject = null;
         }
 
-        public void SetSequences(Sequence<Color> colorSequence, Sequence<float> opacitySequence, Sequence<float> hueSequence, Sequence<float> satSequence, Sequence<float> valSequence)
-        {
-            this.colorSequence = colorSequence;
-            this.opacitySequence = opacitySequence;
-            this.hueSequence = hueSequence;
-            this.satSequence = satSequence;
-            this.valSequence = valSequence;
-        }
-
         public LevelObject(Data.BeatmapObject beatmapObject, Sequence<Color> colorSequence, List<LevelParentObject> parentObjects, VisualObject visualObject,
-            Sequence<float> opacitySequence, Sequence<float> hueSequence, Sequence<float> satSequence, Sequence<float> valSequence,
             Vector3 prefabOffsetPosition, Vector3 prefabOffsetScale, Vector3 prefabOffsetRotation)
         {
             this.beatmapObject = beatmapObject;
@@ -103,10 +86,6 @@ namespace BetterLegacy.Core.Optimization.Objects
             this.visualObject = visualObject;
 
             this.colorSequence = colorSequence;
-            this.opacitySequence = opacitySequence;
-            this.hueSequence = hueSequence;
-            this.satSequence = satSequence;
-            this.valSequence = valSequence;
 
             this.prefabOffsetPosition = prefabOffsetPosition;
             this.prefabOffsetScale = prefabOffsetScale;
@@ -151,30 +130,19 @@ namespace BetterLegacy.Core.Optimization.Objects
             {
                 desyncParentIndex = parentObjects.Count;
                 spawned = false;
-                //for (int i = 0; i < parentObjects.Count; i++)
-                //{
-                    var parentObject = parentObjects[0];
-                    for (int j = 0; j < parentObject.position3DSequence.keyframes.Length; j++)
-                        parentObject.position3DSequence.keyframes[j].Stop();
-                    for (int j = 0; j < parentObject.scaleSequence.keyframes.Length; j++)
-                        parentObject.scaleSequence.keyframes[j].Stop();
-                    for (int j = 0; j < parentObject.rotationSequence.keyframes.Length; j++)
-                        parentObject.rotationSequence.keyframes[j].Stop();
-                //}
+
+                var parentObject = parentObjects[0];
+                for (int j = 0; j < parentObject.position3DSequence.keyframes.Length; j++)
+                    parentObject.position3DSequence.keyframes[j].Stop();
+                for (int j = 0; j < parentObject.scaleSequence.keyframes.Length; j++)
+                    parentObject.scaleSequence.keyframes[j].Stop();
+                for (int j = 0; j < parentObject.rotationSequence.keyframes.Length; j++)
+                    parentObject.rotationSequence.keyframes[j].Stop();
                 for (int i = 0; i < colorSequence.keyframes.Length; i++)
                     colorSequence.keyframes[i].Stop();
             }
 
             this.active = active;
-        }
-
-        public static Color ChangeColorHSV(Color color, float hue, float sat, float val)
-        {
-            double num;
-            double saturation;
-            double value;
-            LSFunctions.LSColors.ColorToHSV(color, out num, out saturation, out value);
-            return LSFunctions.LSColors.ColorFromHSV(num + hue, saturation + sat, value + val);
         }
 
         float prevStartTime = 0f;
@@ -185,33 +153,7 @@ namespace BetterLegacy.Core.Optimization.Objects
         public void Interpolate(float time)
         {
             // Set visual object color
-            if (opacitySequence != null && hueSequence != null && satSequence != null && valSequence != null)
-            {
-                Color color = colorSequence.Interpolate(time - StartTime);
-                float opacity = opacitySequence.Interpolate(time - StartTime);
-
-                float hue = hueSequence.Interpolate(time - StartTime);
-                float sat = satSequence.Interpolate(time - StartTime);
-                float val = valSequence.Interpolate(time - StartTime);
-
-                float a = -(opacity - 1f);
-
-                visualObject.SetColor(LSFunctions.LSColors.fadeColor(ChangeColorHSV(color, hue, sat, val), a >= 0f && a <= 1f ? color.a * a : color.a));
-            }
-            else if (opacitySequence != null)
-            {
-                Color color = colorSequence.Interpolate(time - StartTime);
-                float opacity = opacitySequence.Interpolate(time - StartTime);
-
-                float a = -(opacity - 1f);
-
-                visualObject.SetColor(LSFunctions.LSColors.fadeColor(color, a >= 0f && a <= 1f ? color.a * a : color.a));
-            }
-            else
-            {
-                Color color = colorSequence.Interpolate(time - StartTime);
-                visualObject.SetColor(color);
-            }
+            visualObject.SetColor(colorSequence.Interpolate(time - StartTime));
 
             // Update Camera Parent
             if (positionParent && cameraParent)
