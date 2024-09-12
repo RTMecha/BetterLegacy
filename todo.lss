@@ -21,7 +21,7 @@
 - Rework arcade menu to use new interface system.
 - Possibly update input select scene to use new interface system.
 - Implement rotate reset to players.
-- Make sure Window Event keyframes are consistent across monitors + add a fake Desktop thing like Rhythm Doctor
+- Add a fake Desktop thing like Rhythm Doctor for Window event keyframes.
 - Follow Player keyframe needs to have a setting for not resetting
 - Follow Player keyframe modifier
 - Documentation & tooltips
