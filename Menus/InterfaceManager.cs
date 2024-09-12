@@ -207,6 +207,9 @@ namespace BetterLegacy.Menus
 
             CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{songFileCurrent}", audioType, audioClip =>
             {
+                if (CoreHelper.InEditor)
+                    return;
+
                 CoreHelper.Log($"Attempting to play music: {songFileCurrent}");
                 CurrentMenu.music = audioClip;
                 CurrentMenu.music.name = Path.GetFileName(songFileCurrent);
