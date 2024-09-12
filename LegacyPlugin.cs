@@ -320,8 +320,14 @@ namespace BetterLegacy
             jn["user_data"]["name"] = player.sprName;
             jn["user_data"]["spr-id"] = player.sprID;
 
-            for (int i = 0; i < AchievementManager.achievements.Count; i++)
-                jn["achievements"][i] = AchievementManager.achievements[i].ToJSON(true);
+            for (int i = 0; i < AchievementManager.globalAchievements.Count; i++)
+            {
+                jn["internal_achievements"][i]["id"] = AchievementManager.globalAchievements[i].ID;
+                jn["internal_achievements"][i]["unlocked"] = AchievementManager.globalAchievements[i].unlocked;
+            }
+
+            for (int i = 0; i < AchievementManager.customAchievements.Count; i++)
+                jn["custom_achievements"][i] = AchievementManager.customAchievements[i].ToJSON(true);
 
             if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "profile"))
                 Directory.CreateDirectory(RTFile.ApplicationDirectory + "profile");
@@ -349,12 +355,18 @@ namespace BetterLegacy
 
             try
             {
-                if (jn["achievements"] == null)
+                if (jn["internal_achievements"] != null)
+                {
+                    for (int i = 0; i < jn["internal_achievements"].Count; i++)
+                        AchievementManager.unlockedGlobalAchievements[jn["internal_achievements"][i]["id"]] = jn["internal_achievements"][i]["unlocked"].AsBool;
+                }
+
+                if (jn["custom_achievements"] == null)
                     return;
 
-                AchievementManager.achievements.Clear();
-                for (int i = 0; i < jn["achievements"].Count; i++)
-                    AchievementManager.achievements.Add(Achievement.Parse(jn["achievements"][i]));
+                AchievementManager.customAchievements.Clear();
+                for (int i = 0; i < jn["custom_achievements"].Count; i++)
+                    AchievementManager.customAchievements.Add(Achievement.Parse(jn["custom_achievements"][i]));
             }
             catch (Exception ex)
             {
