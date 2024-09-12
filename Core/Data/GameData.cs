@@ -889,6 +889,10 @@ namespace BetterLegacy.Core.Data
             for (int i = 0; i < jn["beatmap_objects"].Count; i++)
             {
                 var beatmapObject = Data.BeatmapObject.Parse(jn["beatmap_objects"][i]);
+
+                if (gameData.beatmapObjects.TryFindIndex(x => x.id == beatmapObject.id, out int index))
+                    gameData.beatmapObjects.RemoveAt(index);
+
                 gameData.beatmapObjects.Add(beatmapObject);
                 gameData.modifierCount += beatmapObject.modifiers.Count;
             }
