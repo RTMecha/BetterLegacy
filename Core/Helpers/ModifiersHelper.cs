@@ -3316,7 +3316,8 @@ namespace BetterLegacy.Core.Helpers
                         {
                             if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer)
                             {
-                                levelObject.visualObject.Renderer.material.color = LSColors.HexToColorAlpha(modifier.value);
+                                var opacity = levelObject.visualObject.Renderer.material.color.a;
+                                levelObject.visualObject.Renderer.material.color = LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.value), opacity);
                             }
 
                             break;
@@ -3331,7 +3332,8 @@ namespace BetterLegacy.Core.Helpers
                                     if (!Updater.TryGetObject(bm, out LevelObject levelObject) || !levelObject.visualObject.Renderer)
                                         continue;
 
-                                    levelObject.visualObject.Renderer.material.color = LSColors.HexToColorAlpha(modifier.value);
+                                    var opacity = levelObject.visualObject.Renderer.material.color.a;
+                                    levelObject.visualObject.Renderer.material.color = LSColors.fadeColor(LSColors.HexToColorAlpha(modifier.value), opacity);
                                 }
 
                             break;
