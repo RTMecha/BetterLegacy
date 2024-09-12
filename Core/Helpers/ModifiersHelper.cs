@@ -3072,8 +3072,7 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 index = Mathf.Clamp(index, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
 
-                                if (levelObject.visualObject.Renderer != null)
-                                    levelObject.visualObject.Renderer.material.color += CoreHelper.ChangeColorHSV(GameManager.inst.LiveTheme.objectColors[index], hue, sat, val) * multiply;
+                                levelObject.visualObject.Renderer.material.color += CoreHelper.ChangeColorHSV(GameManager.inst.LiveTheme.objectColors[index], hue, sat, val) * multiply;
                             }
 
                             break;
@@ -3310,6 +3309,30 @@ namespace BetterLegacy.Core.Helpers
                                         otherLevelObject.visualObject.Renderer.material.color = Color.Lerp(otherLevelObject.visualObject.Renderer.material.color, color, t);
                                 }
                             }
+
+                            break;
+                        }
+                    case "setColorHex":
+                        {
+                            if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer)
+                            {
+                                levelObject.visualObject.Renderer.material.color = LSColors.HexToColorAlpha(modifier.value);
+                            }
+
+                            break;
+                        }
+                    case "setColorHexOther":
+                        {
+                            var list = CoreHelper.FindObjectsWithTag(modifier.commands[1]);
+
+                            if (list.Count > 0)
+                                foreach (var bm in list)
+                                {
+                                    if (!Updater.TryGetObject(bm, out LevelObject levelObject) || !levelObject.visualObject.Renderer)
+                                        continue;
+
+                                    levelObject.visualObject.Renderer.material.color = LSColors.HexToColorAlpha(modifier.value);
+                                }
 
                             break;
                         }
@@ -4708,7 +4731,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "setAchievement":
                         {
-                            AchievementManager.inst.SetAchievement(modifier.value);
+                            AchievementManager.inst.UnlockAchievement(modifier.value);
                             break;
                         }
                     case "videoPlayer":

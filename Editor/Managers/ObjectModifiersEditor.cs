@@ -1206,6 +1206,16 @@ namespace BetterLegacy.Editor.Managers
 
                             break;
                         }
+                    case "setColorHex":
+                    case "setColorHexOther":
+                        {
+                            StringGenerator(modifier, layout, "Hex Code", 0);
+                            if (cmd.Contains("Other"))
+                                StringGenerator(modifier, layout, "Object Group", 1);
+
+                            break;
+                        }
+
                     #endregion
 
                     #region Signal
