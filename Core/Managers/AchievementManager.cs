@@ -32,10 +32,26 @@ namespace BetterLegacy.Core.Managers
         public void Awake()
         {
             inst = this;
+            LoadAchievements();
             StartCoroutine(GenerateUI());
         }
 
-        public IEnumerator GenerateUI()
+        Sprite LoadIcon(string name) => SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Achievements/{name}.png");
+
+        void LoadAchievements()
+        {
+            CreateGlobalAchievement("0", "Welcome", "Welcome to BetterLegacy!", 0, "welcome");
+            CreateGlobalAchievement("1", "Create Something Awesome!", "Open the Project Arrhythmia editor.", 1, "editor");
+        }
+
+        void CreateGlobalAchievement(string id, string name, string desc, int difficulty, string iconFileName)
+        {
+            var achievement = new Achievement(id, name, desc, difficulty, LoadIcon(iconFileName));
+            achievement.unlocked = unlockedGlobalAchievements.ContainsKey(id) && unlockedGlobalAchievements[id];
+            globalAchievements.Add(achievement);
+        }
+
+        IEnumerator GenerateUI()
         {
             while (!FontManager.inst || !FontManager.inst.loadedFiles)
                 yield return null;
@@ -67,7 +83,7 @@ namespace BetterLegacy.Core.Managers
             achievementName.text = "test name";
 
             var description = Creator.NewUIObject("Description", this.popup);
-            UIManager.SetRectTransform(description.transform.AsRT(), new Vector2(-100f, -48f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 0.5f), new Vector2(290f, 100f));
+            UIManager.SetRectTransform(description.transform.AsRT(), new Vector2(-100f, -50f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 0.5f), new Vector2(290f, 100f));
             achievementDescription = description.AddComponent<Text>();
             achievementDescription.font = FontManager.inst.allFonts["Fredoka One"];
             achievementDescription.text = "test description";
@@ -79,60 +95,106 @@ namespace BetterLegacy.Core.Managers
 
             popup.gameObject.SetActive(false);
 
+            while (!AudioManager.inst && !AnimationManager.inst)
+                yield return null;
+
+            if (!RTFile.FileExists($"{RTFile.ApplicationDirectory}{RTFile.BepInExPluginsPath}EditorOnStartup.dll")) // show editor achievement if PA is open with the EditorOnStartup mod
+                UnlockAchievement("0");
+            else
+                UnlockAchievement("1");
+
             yield break;
         }
 
-        public void RemoveAchievement(string name)
+        /// <summary>
+        /// Locks the achievement, marking it incomplete.
+        /// </summary>
+        /// <param name="achievement">Achievement to lock.</param>
+        public void LockAchievement(Achievement achievement)
         {
-            if (!achievements.Any(x => x.Name == name))
-            {
-                CoreHelper.LogError($"No achievement of name {name}");
-                return;
-            }
-
-            var achievement = achievements.First(x => x.Name == name);
-
-            if (!achievement || achievement.unlocked)
+            if (achievement != null && achievement.unlocked)
             {
                 achievement.unlocked = false;
-                CoreHelper.Log($"Removed achievement {name}");
+                LegacyPlugin.SaveProfile();
+                CoreHelper.Log($"Locked achievement {name}");
             }
         }
 
-        public void SetAchievement(string name)
+        /// <summary>
+        /// Locks the achievement, marking it incomplete.
+        /// </summary>
+        /// <param name="id">ID to find a matching achievement and lock.</param>
+        public void LockAchievement(string id, bool global = true)
         {
-            if (!achievements.Any(x => x.Name == name))
+            var list = global ? globalAchievements : customAchievements;
+            if (!list.Any(x => x.ID == id))
             {
-                CoreHelper.LogError($"No achievement of name {name}");
+                CoreHelper.LogError($"No achievement of ID {id}");
                 return;
             }
 
-            var achievement = achievements.First(x => x.Name == name);
+            LockAchievement(list.First(x => x.ID == id));
+        }
 
-            if (achievement && !achievement.unlocked)
+        /// <summary>
+        /// Unlocks the achievement, marking it complete.
+        /// </summary>
+        /// <param name="achievement">Achievement to unlock.</param>
+        public void UnlockAchievement(Achievement achievement)
+        {
+            if (achievement != null && !achievement.unlocked)
             {
                 achievement.unlocked = true;
-                ShowAchievement(achievement.Name, achievement.Description, achievement.Icon, achievement.DifficultyType.color);
+                LegacyPlugin.SaveProfile();
+                ShowAchievement(achievement);
             }
         }
 
-        public bool GetAchievement(string name)
+        /// <summary>
+        /// Unlocks the achievement, marking it complete.
+        /// </summary>
+        /// <param name="id">ID to find a matching achievement and unlock.</param>
+        public void UnlockAchievement(string id, bool global = true)
         {
-            if (!achievements.Any(x => x.Name == name))
+            var list = global ? globalAchievements : customAchievements;
+            if (!list.Any(x => x.ID == id))
             {
-                CoreHelper.LogError($"No achievement of name {name}");
+                CoreHelper.LogError($"No achievement of ID {id}");
+                return;
+            }
+
+            UnlockAchievement(list.First(x => x.ID == id));
+        }
+
+        /// <summary>
+        /// Checks if an achievement with a matching ID exists and if it is unlocked.
+        /// </summary>
+        /// <param name="id">ID to find a matching achievement.</param>
+        /// <returns>Returns true if an achievement is found and it is unlocked, otherwise returns false.</returns>
+        public bool AchievementUnlocked(string id, bool global = true)
+        {
+            var list = global ? globalAchievements : customAchievements;
+            if (!list.Any(x => x.ID == id))
+            {
+                CoreHelper.LogError($"No achievement of ID {id}");
                 return false;
             }
 
-            return achievements.First(x => x.Name == name);
+            return list.First(x => x.ID == id).unlocked;
         }
+
+        /// <summary>
+        /// Displays the achievement popup.
+        /// </summary>
+        /// <param name="achievement">Achievement to apply to the popup UI.</param>
+        public void ShowAchievement(Achievement achievement) => ShowAchievement(achievement.Name, achievement.Description, achievement.Icon, achievement.DifficultyType.color);
 
         public void ShowAchievement(string name, string description, Sprite icon, Color color = default)
         {
             CoreHelper.Log($"{CoreConfig.Instance.DisplayName.Value} Achieved - {name}");
 
             popup.gameObject.SetActive(true);
-            achievementName?.SetText(LSText.ClampString(name, 34));
+            achievementName?.SetText(LSText.ClampString(name.ToUpper(), 34));
             achievementDescription?.SetText(LSText.ClampString(description, 83));
             iconImage.sprite = icon;
             difficultyImage?.SetColor(color);
@@ -162,20 +224,32 @@ namespace BetterLegacy.Core.Managers
             AnimationManager.inst.Play(animation);
         }
 
-        public void ResetAchievements()
+        /// <summary>
+        /// Resets all achievements.
+        /// </summary>
+        public void ResetGlobalAchievements()
         {
-            for (int i = 0; i < achievements.Count; i++)
-                achievements[i].unlocked = false;
+            for (int i = 0; i < customAchievements.Count; i++)
+                globalAchievements[i].unlocked = false;
+            LegacyPlugin.SaveProfile();
         }
 
-        public static List<Achievement> achievements = new List<Achievement>
+        /// <summary>
+        /// Resets all achievements.
+        /// </summary>
+        public void ResetCustomAchievements()
+        {
+            for (int i = 0; i < customAchievements.Count; i++)
+                customAchievements[i].unlocked = false;
+        }
+
+        public static Dictionary<string, bool> unlockedGlobalAchievements = new Dictionary<string, bool>();
+
+        public static List<Achievement> globalAchievements = new List<Achievement>();
+
+        public static List<Achievement> customAchievements = new List<Achievement>
         {
             Achievement.TestAchievement,
-        };
-
-        public static List<AchievementFunction> requirements = new List<AchievementFunction>()
-        {
-            () => true,
         };
     }
 }

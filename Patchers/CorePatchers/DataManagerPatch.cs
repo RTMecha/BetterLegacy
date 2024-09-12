@@ -31,6 +31,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPostfix]
         static void StartPostfix(DataManager __instance)
         {
+            LegacyPlugin.ParseProfile();
+
             // Initialize managers
             AlephNetworkManager.Init();
             ModCompatibility.Init();
@@ -39,7 +41,6 @@ namespace BetterLegacy.Patchers
             QuickElementManager.Init();
             FontManager.Init();
             AssetManager.Init();
-            AchievementManager.Init();
             LevelManager.Init();
             PlayerManager.Init();
             StoryManager.Init();
@@ -58,6 +59,7 @@ namespace BetterLegacy.Patchers
             AnimationManager.Init();
             RTVideoManager.Init();
             ModifiersManager.Init();
+            AchievementManager.Init();
 
             __instance.languagesToIndex.Add("japanese", 2);
             __instance.languagesToIndex.Add("thai", 3);
@@ -189,8 +191,6 @@ namespace BetterLegacy.Patchers
 
             __instance.UpdateSettingString("versionNumber", "4.1.16");
             __instance.UpdateSettingBool("CanEdit", true);
-
-            LegacyPlugin.ParseProfile();
 
             if (RTFile.FileExists(RTFile.ApplicationDirectory + "settings/menu.lss"))
             {

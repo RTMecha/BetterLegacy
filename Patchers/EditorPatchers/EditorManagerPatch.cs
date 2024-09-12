@@ -89,8 +89,7 @@ namespace BetterLegacy.Patchers
                 Updater.levelProcessor = null;
             }
 
-            if (Menus.InterfaceManager.inst.CurrentAudioSource.clip != null)
-                Menus.InterfaceManager.inst.StopMusic();
+            Menus.InterfaceManager.inst.StopMusic();
             Menus.InterfaceManager.inst.CloseMenus();
             Menus.InterfaceManager.inst.Clear();
             CoreHelper.InStory = false;
@@ -290,6 +289,8 @@ namespace BetterLegacy.Patchers
                 else
                     Instance.DisplayNotification("Welcome to the 3.0.0 update!\njk, April Fools!", 6f, EditorManager.NotificationType.Error);
                 Instance.ClearDialogs();
+
+                AchievementManager.inst.UnlockAchievement("1");
             }
             catch (Exception ex)
             {
