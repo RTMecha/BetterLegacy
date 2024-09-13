@@ -16,7 +16,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
 
         readonly bool opacityCollision;
         readonly float opacity;
-        private readonly int gradientType;
+        readonly int gradientType;
         public GradientObject(GameObject gameObject, float opacity, bool hasCollider, bool solid, bool background, bool opacityCollision, int gradientType)
         {
             GameObject = gameObject;
@@ -67,8 +67,16 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
                 }
             }
 
-            material.SetColor("_Color", new Color(color.r, color.g, color.b, color.a * opacity));
-            material.SetColor("_ColorSecondary", new Color(color2.r, color2.g, color2.b, color2.a * opacity));
+            if (gradientType == 1 || gradientType == 3)
+            {
+                material.SetColor("_Color", new Color(color2.r, color2.g, color2.b, color2.a * opacity));
+                material.SetColor("_ColorSecondary", new Color(color.r, color.g, color.b, color.a * opacity));
+            }
+            else
+            {
+                material.SetColor("_Color", new Color(color.r, color.g, color.b, color.a * opacity));
+                material.SetColor("_ColorSecondary", new Color(color2.r, color2.g, color2.b, color2.a * opacity));
+            }
             
             if (opacityCollision)
                 Collider.enabled = color.a + color2.a > 1.99f;
