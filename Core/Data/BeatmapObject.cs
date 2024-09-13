@@ -65,6 +65,12 @@ namespace BetterLegacy.Core.Data
         }
 
         /// <summary>
+        /// The type of the gradient, they being:
+        /// 0. normal, 1.RightGradient, 2.LeftGradient, 3.OutInRadialGradient, 3.InOutRadialGradient
+        /// </summary>
+        public int gradientType;
+
+        /// <summary>
         /// If true and objects' opacity is less than 100%, disables collision. Acts the same as modern Project Arrhythmia.
         /// </summary>
         public bool opacityCollision = false;
@@ -413,9 +419,25 @@ namespace BetterLegacy.Core.Data
                         if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.ContainsKey(kfjn["ct"]))
                             eventKeyframe.curveType = DataManager.inst.AnimationListDictionaryStr[kfjn["ct"]];
 
+                     
+                        // 0 = start color slot
+                        // 1 = start opacity
+                        // 2 = start hue
+                        // 3 = start saturation
+                        // 4 = start value
+                        // 5 = end color slot
+                        // 6 = end opacity
+                        // 7 = end hue
+                        // 8 = end saturation
+                        // 9 = end value
                         eventKeyframe.SetEventValues(
                             kfjn["ev"][0].AsFloat,
-                            kfjn["ev"].Count == 1 ? 0f : (-(kfjn["ev"][1].AsFloat / 100f) + 1f),
+                            kfjn["ev"].Count <= 1 ? 0f : (-(kfjn["ev"][1].AsFloat / 100f) + 1f),
+                            0f,
+                            0f,
+                            0f,
+                            kfjn["ev"].Count <= 2 ? 0f : kfjn["ev"][2].AsFloat,
+                            10f,
                             0f,
                             0f,
                             0f);
@@ -486,6 +508,9 @@ namespace BetterLegacy.Core.Data
 
             if (jn["so"] != null)
                 beatmapObject.shapeOption = jn["so"].AsInt;
+            
+            if (jn["gt"] != null)
+                beatmapObject.gradientType = jn["gt"].AsInt;
 
             if (jn["text"] != null)
                 beatmapObject.text = jn["text"];
@@ -622,14 +647,7 @@ namespace BetterLegacy.Core.Data
 
                     if (kfjn["ct"] != null)
                         eventKeyframe.curveType = DataManager.inst.AnimationListDictionaryStr[kfjn["ct"]];
-
-                    // x = color slot
-                    // y = opacity
-                    // z = hue
-                    // x2 = saturation
-                    // y2 = value
-                    eventKeyframe.SetEventValues(kfjn["x"].AsFloat, kfjn["y"].AsFloat, kfjn["z"].AsFloat, kfjn["x2"].AsFloat, kfjn["y2"].AsFloat);
-
+                    
                     // if gradient objects are implemented
                     // x = start color slot
                     // y = start opacity
@@ -641,8 +659,23 @@ namespace BetterLegacy.Core.Data
                     // y3 = end hue
                     // z3 = end saturation
                     // x4 = end value
-                    //eventKeyframe.SetEventValues(kfjn["x"].AsFloat, kfjn["y"].AsFloat, kfjn["z"].AsFloat, kfjn["x2"].AsFloat, kfjn["y2"].AsFloat, kfjn["z2"].AsFloat, kfjn["x3"].AsFloat, kfjn["y3"].AsFloat, kfjn["z3"].AsFloat, kfjn["x4"].AsFloat);
-
+                    
+                    if(kfjn["z2"] != null) //check for gradient values
+                        eventKeyframe.SetEventValues(
+                        kfjn["x"].AsFloat,
+                        kfjn["y"].AsFloat, 
+                        kfjn["z"].AsFloat,
+                        kfjn["x2"].AsFloat,
+                        kfjn["y2"].AsFloat,
+                        kfjn["z2"].AsFloat,
+                        kfjn["x3"].AsFloat,
+                        kfjn["y3"].AsFloat,
+                        kfjn["z3"].AsFloat, 
+                        kfjn["x4"].AsFloat);
+                    
+                    else //no gradient values
+                        eventKeyframe.SetEventValues(kfjn["x"].AsFloat, kfjn["y"].AsFloat, kfjn["z"].AsFloat, kfjn["x2"].AsFloat, kfjn["y2"].AsFloat);
+                    
                     eventKeyframe.random = kfjn["r"].AsInt;
                     eventKeyframe.SetEventRandomValues(kfjn["rx"].AsFloat);
 
@@ -728,6 +761,9 @@ namespace BetterLegacy.Core.Data
             if (jn["so"] != null)
                 beatmapObject.shapeOption = jn["so"].AsInt;
 
+            // if (jn["gt"] != null)
+            //     beatmapObject.gradientType = jn["gt"].AsInt;
+           
             if (jn["text"] != null)
                 beatmapObject.text = ((string)jn["text"]).Replace("{{colon}}", ":");
 

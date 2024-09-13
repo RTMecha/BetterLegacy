@@ -30,6 +30,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             public Sequence<Vector2> ScaleSequence { get; set; }
             public Sequence<float> RotationSequence { get; set; }
             public Sequence<Color> ColorSequence { get; set; }
+            public Sequence<Color> SecondaryColorSequence { get; set; }
         }
 
         public Dictionary<string, CachedSequences> cachedSequences = new Dictionary<string, CachedSequences>();
@@ -72,7 +73,16 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             // Empty objects don't need a color sequence, so it is not cached
             if (ShowEmpties || beatmapObject.objectType != ObjectType.Empty)
-                collection.ColorSequence = GetColorSequence(beatmapObject.events[3], new ThemeKeyframe(0.0f, 0, 0.0f, 0.0f, 0.0f, 0.0f, Ease.Linear));
+            {
+                collection.ColorSequence = GetColorSequence(beatmapObject.events[3],
+                    new ThemeKeyframe(0.0f, 0, 0.0f, 0.0f, 0.0f, 0.0f, Ease.Linear));
+
+                if (beatmapObject.gradientType != 0)
+                {
+                    collection.SecondaryColorSequence = GetColorSequence(beatmapObject.events[3],
+                        new ThemeKeyframe(0.0f, 0, 0.0f, 0.0f, 0.0f, 0.0f, Ease.Linear), true);
+                }
+            }
 
             cachedSequences[beatmapObject.id] = collection;
 
@@ -166,7 +176,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             }
 
             GameObject baseObject = Object.Instantiate(ObjectManager.inst.objectPrefabs[shape].options[shapeOption], parent == null ? ObjectManager.inst.objectParent.transform : parent.transform);
-
+            
             if (shape == 9)
             {
                 var rtPlayer = baseObject.GetComponent<RTPlayer>();
@@ -265,7 +275,8 @@ namespace BetterLegacy.Core.Optimization.Objects
             VisualObject visual =
                 sprite == null && beatmapObject.shape == 4 ? new TextObject(visualObject, opacity, beatmapObject.text, isBackground) :
                 sprite != null || beatmapObject.shape == 6 ? new ImageObject(visualObject, opacity, beatmapObject.text, isBackground, sprite != null ? sprite : AssetManager.SpriteAssets.ContainsKey(beatmapObject.text) ? AssetManager.SpriteAssets[beatmapObject.text] : null) :
-                beatmapObject.shape == 9 ? new PlayerObject(visualObject) :
+                beatmapObject.shape == 9 ? new PlayerObject(visualObject) : 
+                beatmapObject.gradientType != 0 ? new GradientObject(visualObject, opacity, hasCollider, isSolid, isBackground, beatmapObject.opacityCollision, beatmapObject.gradientType) : 
                 new SolidObject(visualObject, opacity, hasCollider, isSolid, isBackground, beatmapObject.opacityCollision);
 
             if (EditorManager.inst && shape != 9)
@@ -280,6 +291,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             var levelObject = new LevelObject(
                 beatmapObject,
                 cachedSequences[beatmapObject.id].ColorSequence,
+                cachedSequences[beatmapObject.id].SecondaryColorSequence,
                 parentObjects, visual,
                 prefabOffsetPosition, prefabOffsetScale, prefabOffsetRotation);
 
@@ -558,21 +570,22 @@ namespace BetterLegacy.Core.Optimization.Objects
             return new Sequence<float>(keyframes);
         }
 
-        public Sequence<Color> GetColorSequence(List<BaseEventKeyframe> eventKeyframes, ThemeKeyframe defaultKeyframe)
+        public Sequence<Color> GetColorSequence(List<BaseEventKeyframe> eventKeyframes, ThemeKeyframe defaultKeyframe, bool getSecondary = false)
         {
             List<IKeyframe<Color>> keyframes = new List<IKeyframe<Color>>(eventKeyframes.Count);
 
             int num = 0;
+            int index = getSecondary ? 5 : 0;
+            
             foreach (BaseEventKeyframe eventKeyframe in eventKeyframes)
             {
                 if (keyframes.Has(x => x.Time == eventKeyframe.eventTime))
                     continue;
 
-                int value = (int)eventKeyframe.eventValues[0];
-
+                int value = (int)eventKeyframe.eventValues[index];
                 value = Mathf.Clamp(value, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
 
-                keyframes.Add(new ThemeKeyframe(eventKeyframe.eventTime, value, eventKeyframe.eventValues[1], eventKeyframe.eventValues[2], eventKeyframe.eventValues[3], eventKeyframe.eventValues[4], Ease.GetEaseFunction(eventKeyframe.curveType.Name)));
+                keyframes.Add(new ThemeKeyframe(eventKeyframe.eventTime, value, eventKeyframe.eventValues[index + 1], eventKeyframe.eventValues[index + 2], eventKeyframe.eventValues[index + 3], eventKeyframe.eventValues[index + 4], Ease.GetEaseFunction(eventKeyframe.curveType.Name)));
 
                 num++;
             }

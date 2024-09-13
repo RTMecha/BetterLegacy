@@ -60,6 +60,7 @@ namespace BetterLegacy
         public static Material analogGlitchMaterial;
         public static Shader digitalGlitchShader;
         public static Material digitalGlitchMaterial;
+     
         public static void GetKinoGlitch()
         {
             var assetBundle = AssetBundle.LoadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}effects.asset"); // Get AssetBundle from assets folder.
@@ -68,7 +69,21 @@ namespace BetterLegacy
             analogGlitchShader = assetBundle.LoadAsset<Shader>("analogglitch.shader"); // Load asset
             digitalGlitchShader = assetBundle.LoadAsset<Shader>("digitalglitch.shader"); // Load asset
         }
+        
+        public static Shader gradientShader;
+        public static Material gradientMaterial;
+        public static Shader radialGradientShader;
+        public static Material radialGradientMaterial;
 
+        public static void GetGradients()
+        {
+
+            var assetBundle = AssetBundle.LoadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}gradients.asset"); // Get AssetBundle from assets folder.
+            gradientMaterial = assetBundle.LoadAsset<Material>("assets/gradientmaterial.mat"); // Load asset
+            radialGradientMaterial = assetBundle.LoadAsset<Material>("assets/radialgradientmaterial.mat"); // Load asset
+            gradientShader = assetBundle.LoadAsset<Shader>("assets/gradientshader.shader"); // Load asset
+            radialGradientShader = assetBundle.LoadAsset<Shader>("assets/radialshader.shader"); // Load asset
+        }
         System.Timers.Timer timer;
 
         public static Prefab ExamplePrefab { get; set; }
@@ -119,7 +134,8 @@ namespace BetterLegacy
                 blurColored = assetBundle.LoadAsset<Shader>("simpleblur.shader");
                 assetBundle.Unload(false);
                 GetKinoGlitch();
-
+                GetGradients();
+                
                 LockSprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}lock.png");
                 EmptyObjectSprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_empty.png");
                 AtanPlaceholder = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}atan-placeholder.png");

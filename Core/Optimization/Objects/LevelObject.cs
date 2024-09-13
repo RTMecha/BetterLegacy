@@ -16,9 +16,10 @@ namespace BetterLegacy.Core.Optimization.Objects
 
         public List<LevelParentObject> parentObjects;
         public VisualObject visualObject;
-
+        public GradientObject gradientObject;
+        
         public Sequence<Color> colorSequence;
-
+        public Sequence<Color> secondaryColorSequence;
         public float depth;
 
         public bool cameraParent;
@@ -26,6 +27,7 @@ namespace BetterLegacy.Core.Optimization.Objects
         public bool scaleParent;
         public bool rotationParent;
 
+        public bool isGradient;
         public float positionParentOffset;
         public float scaleParentOffset;
         public float rotationParentOffset;
@@ -72,7 +74,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             visualObject = null;
         }
 
-        public LevelObject(Data.BeatmapObject beatmapObject, Sequence<Color> colorSequence, List<LevelParentObject> parentObjects, VisualObject visualObject,
+        public LevelObject(Data.BeatmapObject beatmapObject, Sequence<Color> colorSequence, Sequence<Color> secondaryColorSequence, List<LevelParentObject> parentObjects, VisualObject visualObject,
             Vector3 prefabOffsetPosition, Vector3 prefabOffsetScale, Vector3 prefabOffsetRotation)
         {
             this.beatmapObject = beatmapObject;
@@ -84,9 +86,14 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             this.parentObjects = parentObjects;
             this.visualObject = visualObject;
-
+            
             this.colorSequence = colorSequence;
+            this.secondaryColorSequence = secondaryColorSequence;
 
+            this.isGradient = this.secondaryColorSequence != null;
+            if (isGradient)
+                gradientObject = (GradientObject)visualObject;
+            
             this.prefabOffsetPosition = prefabOffsetPosition;
             this.prefabOffsetScale = prefabOffsetScale;
             this.prefabOffsetRotation = prefabOffsetRotation;
@@ -153,7 +160,10 @@ namespace BetterLegacy.Core.Optimization.Objects
         public void Interpolate(float time)
         {
             // Set visual object color
-            visualObject.SetColor(colorSequence.Interpolate(time - StartTime));
+            if(!isGradient)
+                visualObject.SetColor(colorSequence.Interpolate(time - StartTime));
+            else
+                gradientObject.SetColor(colorSequence.Interpolate(time - StartTime), secondaryColorSequence.Interpolate(time - StartTime));
 
             // Update Camera Parent
             if (positionParent && cameraParent)
