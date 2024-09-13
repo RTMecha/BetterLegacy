@@ -40,8 +40,13 @@ namespace BetterLegacy.Core.Managers
 
         void LoadAchievements()
         {
-            CreateGlobalAchievement("0", "Welcome", "Welcome to BetterLegacy!", 0, "welcome");
-            CreateGlobalAchievement("1", "Create Something Awesome!", "Open the Project Arrhythmia editor.", 1, "editor");
+            CreateGlobalAchievement("welcome", "Welcome", "Welcome to BetterLegacy!", 0, "welcome");
+            CreateGlobalAchievement("editor", "Create Something Awesome!", "Open the Project Arrhythmia editor.", 1, "editor");
+            CreateGlobalAchievement("no_boost", "No Boosting!", "Do not boost once in a level.", 4, "no_boost");
+            CreateGlobalAchievement("complete_animation", "Masterpiece.", "Complete an animation level.", 1, "complete_animation");
+            CreateGlobalAchievement("costume_party", "Costume Party", "Play a level with a custom player model.", 2, "costume_party");
+            CreateGlobalAchievement("expert_plus_ss_rank", "A true expert!", "Complete an expert+ difficulty level with SS rank.", 5, "expert_plus_ss_rank");
+            CreateGlobalAchievement("master_ss_rank", "A true master!", "Complete a master difficulty level with SS rank.", 6, "master_ss_rank");
         }
 
         void CreateGlobalAchievement(string id, string name, string desc, int difficulty, string iconFileName)
@@ -99,9 +104,9 @@ namespace BetterLegacy.Core.Managers
                 yield return null;
 
             if (!RTFile.FileExists($"{RTFile.ApplicationDirectory}{RTFile.BepInExPluginsPath}EditorOnStartup.dll")) // show editor achievement if PA is open with the EditorOnStartup mod
-                UnlockAchievement("0");
+                UnlockAchievement("welcome");
             else
-                UnlockAchievement("1");
+                UnlockAchievement("editor");
 
             yield break;
         }

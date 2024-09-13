@@ -27,6 +27,12 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 return;
             }
 
+            if (RTEventManager.windowPositionResolutionChanged)
+            {
+                RTEventManager.windowPositionResolutionChanged = false;
+                WindowController.ResetResolution();
+            }
+
             InterfaceManager.inst.CurrentMenu = this;
 
             GameManager.inst.players.SetActive(false);
@@ -67,6 +73,15 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 //else if (levelRank.name == "F")
                 //    SteamWrapper.inst.achievements.SetAchievement("F_RANK");
 
+                if (metadata.song.difficulty == 6)
+                    AchievementManager.inst.UnlockAchievement("complete_animation");
+                if (LevelManager.BoostCount == 0)
+                    AchievementManager.inst.UnlockAchievement("no_boost");
+                if (metadata.song.difficulty == 4 && levelRank.name == "SS")
+                    AchievementManager.inst.UnlockAchievement("expert_plus_ss_rank");
+                if (metadata.song.difficulty == 5 && levelRank.name == "SS")
+                    AchievementManager.inst.UnlockAchievement("master_ss_rank");
+
                 CoreHelper.Log($"Setting End UI");
                 string easy = LSColors.GetThemeColorHex("easy");
                 string normal = LSColors.GetThemeColorHex("normal");
@@ -87,7 +102,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 layouts.Add("results", new MenuVerticalLayout
                 {
                     name = "results",
-                    //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(-700f, 140f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(400f, 400f)),
                     rect = RectValues.Default.AnchoredPosition(-700f, 140f).SizeDelta(400f, 400f),
                 });
                 
@@ -111,36 +125,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     opacity = 0.7f,
                     length = 0f,
                 });
-
-                //elements.Add(new MenuText
-                //{
-                //    id = "264726346",
-                //    name = "Top Title",
-                //    text = $"Level Summary > <b>\"{metadata.LevelBeatmap.name}\"</b> ({metadata.artist.Name} - {metadata.song.title}) | BetterLegacy {LegacyPlugin.ModVersion}",
-                //    //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(0f, 460f), new Vector2(1f, 0.5f), new Vector2(0f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(100f, 100f)),
-                //    //textRectJSON = SimpleJSON.JSON.Parse("{\"anc_pos\": { \"x\": \"-850\",\"y\": \"0\" } }"),
-                //    //rect = new RectValues(new Vector2(0f, 460f), new Vector2(1f, 0.5f), new Vector2(0f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(100f, 100f)),
-                //    rect = RectValues.HorizontalAnchored.AnchoredPosition(0f, 460f),
-                //    textRect = RectValues.FullAnchored.AnchoredPosition(-850f,  0f),
-                //    hideBG = true,
-                //    textVal = 40f,
-                //    length = 0.6f,
-                //});
-
-                //elements.Add(new MenuText
-                //{
-                //    id = "800",
-                //    name = "Top Bar",
-                //    text = "<size=56>----------------------------------------------------------------",
-                //    //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(0f, 400f), new Vector2(1f, 0.5f), new Vector2(0f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(100f, 100f)),
-                //    //textRectJSON = SimpleJSON.JSON.Parse("{\"anc_pos\": { \"x\": \"-870\",\"y\": \"0\" } }"),
-                //    //rect = new RectValues(new Vector2(0f, 400f), new Vector2(1f, 0.5f), new Vector2(0f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(100f, 100f)),
-                //    rect = RectValues.HorizontalAnchored.AnchoredPosition(0f, 400f),
-                //    textRect = RectValues.FullAnchored.AnchoredPosition(-870f, 0f),
-                //    hideBG = true,
-                //    textVal = 40f,
-                //    length = 0.6f,
-                //});
 
                 elements.AddRange(GenerateTopBar($"Level Summary > <b>\"{metadata.LevelBeatmap.name}\"</b> ({metadata.artist.Name} - {metadata.song.title})"));
 
@@ -197,10 +181,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         text = "<voffset=0em>" + text + $"       <voffset=0em><size=100%><b>Song length is {FontManager.TextTranslater.SecondsToTime(AudioManager.inst.CurrentAudioSource.clip.length)}</b></color>";
                     if (line == 13)
                         text = "<voffset=0em>" + text + $"       <voffset=0em><size=100%><b>You spent {FontManager.TextTranslater.SecondsToTime(LevelManager.timeInLevel)} in the level.</b></color>";
-                    //if (line >= 9 && sayings.Count > line - 9)
-                    //{
-                    //    text = text + "       <alpha=#ff>" + sayings[line - 9];
-                    //}
 
                     elements.Add(new MenuText
                     {
@@ -236,7 +216,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     layouts.Add("sayings", new MenuVerticalLayout
                     {
                         name = "sayings",
-                        //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(420f, -300f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(400f, 400f)),
                         rect = RectValues.Default.AnchoredPosition(420f, -300f).SizeDelta(400f, 400f),
                     });
 
@@ -250,7 +229,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             text = text,
                             parentLayout = "sayings",
                             length = 0.1f,
-                            //rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 32f)),
                             rect = RectValues.Default.SizeDelta(300f, 32f),
                             hideBG = true,
                             textVal = 40f,
@@ -272,7 +250,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         text = "<b><align=center>[ NEXT ]", // continue if story mode.
                         parentLayout = "buttons",
                         autoAlignSelectionPosition = true,
-                        //rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(100f, 64f)),
                         rect = RectValues.Default.SizeDelta(100f, 64f),
                         opacity = 0.1f,
                         val = -40f,
@@ -295,7 +272,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         text = "<b><align=center>[ RESTART QUEUE ]",
                         parentLayout = "buttons",
                         autoAlignSelectionPosition = true,
-                        //rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(100f, 64f)),
                         rect = RectValues.Default.SizeDelta(100f, 64f),
                         opacity = 0.1f,
                         val = -40f,
@@ -318,7 +294,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         text = "<b><align=center>[ RETURN TO HUB ]",
                         parentLayout = "buttons",
                         autoAlignSelectionPosition = true,
-                        //rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(100f, 64f)),
                         rect = RectValues.Default.SizeDelta(100f, 64f),
                         opacity = 0.1f,
                         val = -40f,
@@ -347,7 +322,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     selectedTextVal = -40f,
                     length = 0.3f,
                     playBlipSound = true,
-                    //rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(100f, 64f)),
                     rect = RectValues.Default.SizeDelta(100f, 64f),
                     func = ArcadeHelper.QuitToArcade,
                 });
@@ -367,7 +341,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     selectedTextVal = -40f,
                     length = 0.3f,
                     playBlipSound = true,
-                    //rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(100f, 64f)),
                     rect = RectValues.Default.SizeDelta(100f, 64f),
                     func = () => ArcadeHelper.RestartLevel(Close),
                 });

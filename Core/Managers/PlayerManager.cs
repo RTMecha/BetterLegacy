@@ -179,6 +179,9 @@ namespace BetterLegacy.Core.Managers
                 if (!PlayerModels.ContainsKey(id))
                     PlayerModels.Add(id, model);
             }
+
+            if (PlayerModelsIndex.Any(x => x.Value != "0"))
+                AchievementManager.inst.UnlockAchievement("costume_party");
         }
 
         public static void CreateNewPlayerModel()
