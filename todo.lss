@@ -31,7 +31,6 @@
 - loadLevel modifiers custom end function (same as above)
 - Possible multi object editor rework???
 - Find a way to implement Re-rendering waveform.
-- See if gradient is possible to implement to objects. (if it is, then replace color homing)
 - Multiplayer editor, possibly. (everyone has their own perspective of the hosts' editor but have limited functionality compared to the host)
 # Internal
 - Clean up UIManager
