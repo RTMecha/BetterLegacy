@@ -1188,7 +1188,19 @@ namespace BetterLegacy.Editor.Managers
             list[2].Add(new EventKeyframe(0f, new float[1], new float[3], 0));
             ((EventKeyframe)list[2][0]).relative = true;
             // Color
-            list[3].Add(new EventKeyframe(0f, new float[5], new float[4], 0));
+            list[3].Add(new EventKeyframe(0f, new float[10]
+                {
+                    0f, // start color slot
+                    0f, // start opacity
+                    0f, // start hue
+                    0f, // start saturation
+                    0f, // start value
+                    1f, // end color slot
+                    0f, // end opacity
+                    0f, // end hue
+                    0f, // end saturation
+                    0f, // end value
+                }, new float[4], 0));
 
             var beatmapObject = new BeatmapObject(true, AudioManager.inst.CurrentAudioSource.time, "", 0, "", list);
             beatmapObject.id = LSText.randomString(16);
@@ -1252,6 +1264,11 @@ namespace BetterLegacy.Editor.Managers
             colorKeyframe.eventTime = 0f;
             colorKeyframe.SetEventValues(new float[]
             {
+                0f,
+                0f,
+                0f,
+                0f,
+                0f,
                 0f,
                 0f,
                 0f,
@@ -1801,6 +1818,7 @@ namespace BetterLegacy.Editor.Managers
                     objectUIElements.Add("Origin X IF", tfv.Find("origin/x").GetComponent<InputField>());
                     objectUIElements.Add("Origin Y IF", tfv.Find("origin/y").GetComponent<InputField>());
 
+                    objectUIElements.Add("Gradient", tfv.Find("gradienttype"));
                     objectUIElements.Add("Shape", tfv.Find("shape"));
                     objectUIElements.Add("Shape Settings", tfv.Find("shapesettings"));
 
@@ -1880,6 +1898,7 @@ namespace BetterLegacy.Editor.Managers
             if (!HideVisualElementsWhenObjectIsEmpty || beatmapObject.objectType != ObjectType.Empty)
             {
                 inst.RenderOrigin(beatmapObject);
+                inst.RenderGradient(beatmapObject);
                 inst.RenderShape(beatmapObject);
                 inst.RenderDepth(beatmapObject);
             }
@@ -1924,6 +1943,8 @@ namespace BetterLegacy.Editor.Managers
             var shapeTFPActive = shapeTF.parent.GetChild(shapeTF.GetSiblingIndex() - 1).gameObject.activeSelf;
             shapeTF.parent.GetChild(shapeTF.GetSiblingIndex() - 1).gameObject.SetActive(active);
             shapeTF.gameObject.SetActive(active);
+
+            ((Transform)ObjectUIElements["Gradient"]).gameObject.SetActive(active);
 
             ((Transform)ObjectUIElements["Shape Settings"]).gameObject.SetActive(active);
             ((Transform)ObjectUIElements["Depth"]).gameObject.SetActive(active);
@@ -2672,6 +2693,29 @@ namespace BetterLegacy.Editor.Managers
 
             TriggerHelper.AddEventTriggers(oxIF.gameObject, TriggerHelper.ScrollDelta(oxIF, multi: true), TriggerHelper.ScrollDeltaVector2(oxIF, oyIF, 0.1f, 10f));
             TriggerHelper.AddEventTriggers(oyIF.gameObject, TriggerHelper.ScrollDelta(oyIF, multi: true), TriggerHelper.ScrollDeltaVector2(oxIF, oyIF, 0.1f, 10f));
+        }
+
+        public void RenderGradient(BeatmapObject beatmapObject)
+        {
+            var gradient = (Transform)ObjectUIElements["Gradient"];
+            for (int i = 0; i < gradient.childCount; i++)
+            {
+                var index = i;
+                var toggle = gradient.GetChild(i).GetComponent<Toggle>();
+                toggle.onValueChanged.ClearAll();
+                toggle.isOn = index == (int)beatmapObject.gradientType;
+                toggle.onValueChanged.AddListener(_val =>
+                {
+                    beatmapObject.gradientType = (BeatmapObject.GradientType)index;
+
+                    // Since shape has no affect on the timeline object, we will only need to update the physical object.
+                    if (UpdateObjects)
+                        Updater.UpdateObject(beatmapObject);
+
+                    RenderGradient(beatmapObject);
+                    inst.RenderObjectKeyframesDialog(beatmapObject);
+                });
+            }
         }
 
         /// <summary>
@@ -4161,7 +4205,7 @@ namespace BetterLegacy.Editor.Managers
                             if (RTEditor.ShowModdedUI || tmpIndex < 9)
                             {
                                 toggle.isOn = index == firstKF.GetData<EventKeyframe>().eventValues[0];
-                                toggle.onValueChanged.AddListener(_val => { SetKeyframeColor(beatmapObject, 0, tmpIndex, selected); });
+                                toggle.onValueChanged.AddListener(_val => { SetKeyframeColor(beatmapObject, 0, tmpIndex, ObjEditor.inst.colorButtons, selected); });
                             }
 
                             if (showModifiedColors)
@@ -4196,7 +4240,31 @@ namespace BetterLegacy.Editor.Managers
                         kfdialog.Find("huesatval_label").gameObject.SetActive(RTEditor.ShowModdedUI);
                         kfdialog.Find("huesatval").gameObject.SetActive(RTEditor.ShowModdedUI);
 
+                        var showGradient = RTEditor.NotSimple && beatmapObject.gradientType != BeatmapObject.GradientType.Normal;
+
+                        kfdialog.Find("color_label").GetChild(0).GetComponent<Text>().text = showGradient ? "Start Color" : "Color";
+                        kfdialog.Find("opacity_label").GetChild(0).GetComponent<Text>().text = showGradient ? "Start Opacity" : "Opacity";
+                        kfdialog.Find("huesatval_label").GetChild(0).GetComponent<Text>().text = showGradient ? "Start Hue" : "Hue";
+                        kfdialog.Find("huesatval_label").GetChild(1).GetComponent<Text>().text = showGradient ? "Start Saturation" : "Saturation";
+                        kfdialog.Find("huesatval_label").GetChild(2).GetComponent<Text>().text = showGradient ? "Start Value" : "Value";
+
+                        kfdialog.Find("gradient_color_label").gameObject.SetActive(showGradient);
+                        kfdialog.Find("gradient_color").gameObject.SetActive(showGradient);
+                        kfdialog.Find("gradient_opacity_label").gameObject.SetActive(showGradient);
+                        kfdialog.Find("gradient_opacity").gameObject.SetActive(showGradient);
+                        kfdialog.Find("gradient_huesatval_label").gameObject.SetActive(showGradient);
+                        kfdialog.Find("gradient_huesatval").gameObject.SetActive(showGradient);
+
                         kfdialog.Find("color").AsRT().sizeDelta = new Vector2(366f, RTEditor.ShowModdedUI ? 78f : 32f);
+                        kfdialog.Find("gradient_color").AsRT().sizeDelta = new Vector2(366f, RTEditor.ShowModdedUI ? 78f : 32f);
+
+                        if (gradientColorButtons.Count == 0)
+                        {
+                            for (int i = 0; i < kfdialog.Find("gradient_color").childCount; i++)
+                            {
+                                gradientColorButtons.Add(kfdialog.Find("gradient_color").GetChild(i).GetComponent<Toggle>());
+                            }
+                        }
 
                         if (!RTEditor.NotSimple)
                             break;
@@ -4209,8 +4277,13 @@ namespace BetterLegacy.Editor.Managers
                         {
                             if (float.TryParse(_val, out float n))
                             {
+                                var value = Mathf.Clamp(-n + 1, 0f, 1f);
                                 foreach (var keyframe in selected.Select(x => x.GetData<EventKeyframe>()))
-                                    keyframe.eventValues[1] = Mathf.Clamp(-n + 1, 0f, 1f);
+                                {
+                                    keyframe.eventValues[1] = value;
+                                    if (!RTEditor.ShowModdedUI)
+                                        keyframe.eventValues[6] = value;
+                                }
 
                                 // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                                 if (UpdateObjects)
@@ -4221,6 +4294,43 @@ namespace BetterLegacy.Editor.Managers
                         TriggerHelper.AddEventTriggers(kfdialog.Find("opacity").gameObject, TriggerHelper.ScrollDelta(opacity, 0.1f, 10f, 0f, 1f));
 
                         TriggerHelper.IncreaseDecreaseButtons(opacity);
+
+                        index = 0;
+                        foreach (var toggle in gradientColorButtons)
+                        {
+                            int tmpIndex = index;
+
+                            toggle.gameObject.SetActive(RTEditor.ShowModdedUI || tmpIndex < 9);
+
+                            toggle.onValueChanged.ClearAll();
+                            if (RTEditor.ShowModdedUI || tmpIndex < 9)
+                            {
+                                toggle.isOn = index == firstKF.GetData<EventKeyframe>().eventValues[5];
+                                toggle.onValueChanged.AddListener(_val => { SetKeyframeColor(beatmapObject, 5, tmpIndex, gradientColorButtons, selected); });
+                            }
+
+                            if (showModifiedColors)
+                            {
+                                var color = CoreHelper.CurrentBeatmapTheme.GetObjColor(tmpIndex);
+
+                                float hueNum = beatmapObject.Interpolate(type, 7);
+                                float satNum = beatmapObject.Interpolate(type, 8);
+                                float valNum = beatmapObject.Interpolate(type, 9);
+
+                                toggle.image.color = CoreHelper.ChangeColorHSV(color, hueNum, satNum, valNum);
+                            }
+                            else
+                                toggle.image.color = CoreHelper.CurrentBeatmapTheme.GetObjColor(tmpIndex);
+
+                            if (!toggle.GetComponent<HoverUI>())
+                            {
+                                var hoverUI = toggle.gameObject.AddComponent<HoverUI>();
+                                hoverUI.animatePos = false;
+                                hoverUI.animateSca = true;
+                                hoverUI.size = 1.1f;
+                            }
+                            index++;
+                        }
 
                         if (!RTEditor.ShowModdedUI)
                             break;
@@ -4236,15 +4346,16 @@ namespace BetterLegacy.Editor.Managers
                                 Updater.UpdateObject(beatmapObject);
                         });
 
-                        var hue = kfdialog.Find("huesatval/x").GetComponent<InputField>();
+                        var gradientOpacity = kfdialog.Find("gradient_opacity/x").GetComponent<InputField>();
 
-                        hue.onValueChanged.RemoveAllListeners();
-                        hue.text = firstKF.GetData<EventKeyframe>().eventValues[2].ToString();
-                        hue.onValueChanged.AddListener(_val =>
+                        gradientOpacity.onValueChanged.RemoveAllListeners();
+                        gradientOpacity.text = Mathf.Clamp(-firstKF.GetData<EventKeyframe>().eventValues[6] + 1, 0f, 1f).ToString();
+                        gradientOpacity.onValueChanged.AddListener(_val =>
                         {
                             if (float.TryParse(_val, out float n))
                             {
-                                firstKF.GetData<EventKeyframe>().eventValues[2] = n;
+                                foreach (var keyframe in selected.Select(x => x.GetData<EventKeyframe>()))
+                                    keyframe.eventValues[6] = Mathf.Clamp(-n + 1, 0f, 1f);
 
                                 // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                                 if (UpdateObjects)
@@ -4252,48 +4363,133 @@ namespace BetterLegacy.Editor.Managers
                             }
                         });
 
-                        Destroy(kfdialog.transform.Find("huesatval").GetComponent<EventTrigger>());
+                        TriggerHelper.AddEventTriggers(kfdialog.Find("gradient_opacity").gameObject, TriggerHelper.ScrollDelta(gradientOpacity, 0.1f, 10f, 0f, 1f));
 
-                        TriggerHelper.AddEventTriggers(hue.gameObject, TriggerHelper.ScrollDelta(hue));
-                        TriggerHelper.IncreaseDecreaseButtons(hue);
+                        TriggerHelper.IncreaseDecreaseButtons(gradientOpacity);
 
-                        var sat = kfdialog.Find("huesatval/y").GetComponent<InputField>();
-
-                        sat.onValueChanged.RemoveAllListeners();
-                        sat.text = firstKF.GetData<EventKeyframe>().eventValues[3].ToString();
-                        sat.onValueChanged.AddListener(_val =>
+                        // Start
                         {
-                            if (float.TryParse(_val, out float n))
+                            var hue = kfdialog.Find("huesatval/x").GetComponent<InputField>();
+
+                            hue.onValueChanged.RemoveAllListeners();
+                            hue.text = firstKF.GetData<EventKeyframe>().eventValues[2].ToString();
+                            hue.onValueChanged.AddListener(_val =>
                             {
-                                firstKF.GetData<EventKeyframe>().eventValues[3] = n;
+                                if (float.TryParse(_val, out float n))
+                                {
+                                    firstKF.GetData<EventKeyframe>().eventValues[2] = n;
 
-                                // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                                if (UpdateObjects)
-                                    Updater.UpdateObject(beatmapObject, "Keyframes");
-                            }
-                        });
+                                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                                    if (UpdateObjects)
+                                        Updater.UpdateObject(beatmapObject, "Keyframes");
+                                }
+                            });
 
-                        TriggerHelper.AddEventTriggers(sat.gameObject, TriggerHelper.ScrollDelta(sat));
-                        TriggerHelper.IncreaseDecreaseButtons(sat);
+                            Destroy(kfdialog.transform.Find("huesatval").GetComponent<EventTrigger>());
 
-                        var val = kfdialog.Find("huesatval/z").GetComponent<InputField>();
+                            TriggerHelper.AddEventTriggers(hue.gameObject, TriggerHelper.ScrollDelta(hue));
+                            TriggerHelper.IncreaseDecreaseButtons(hue);
 
-                        val.onValueChanged.RemoveAllListeners();
-                        val.text = firstKF.GetData<EventKeyframe>().eventValues[4].ToString();
-                        val.onValueChanged.AddListener(_val =>
+                            var sat = kfdialog.Find("huesatval/y").GetComponent<InputField>();
+
+                            sat.onValueChanged.RemoveAllListeners();
+                            sat.text = firstKF.GetData<EventKeyframe>().eventValues[3].ToString();
+                            sat.onValueChanged.AddListener(_val =>
+                            {
+                                if (float.TryParse(_val, out float n))
+                                {
+                                    firstKF.GetData<EventKeyframe>().eventValues[3] = n;
+
+                                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                                    if (UpdateObjects)
+                                        Updater.UpdateObject(beatmapObject, "Keyframes");
+                                }
+                            });
+
+                            TriggerHelper.AddEventTriggers(sat.gameObject, TriggerHelper.ScrollDelta(sat));
+                            TriggerHelper.IncreaseDecreaseButtons(sat);
+
+                            var val = kfdialog.Find("huesatval/z").GetComponent<InputField>();
+
+                            val.onValueChanged.RemoveAllListeners();
+                            val.text = firstKF.GetData<EventKeyframe>().eventValues[4].ToString();
+                            val.onValueChanged.AddListener(_val =>
+                            {
+                                if (float.TryParse(_val, out float n))
+                                {
+                                    firstKF.GetData<EventKeyframe>().eventValues[4] = n;
+
+                                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                                    if (UpdateObjects)
+                                        Updater.UpdateObject(beatmapObject, "Keyframes");
+                                }
+                            });
+
+                            TriggerHelper.AddEventTriggers(val.gameObject, TriggerHelper.ScrollDelta(val));
+                            TriggerHelper.IncreaseDecreaseButtons(val);
+                        }
+                        
+                        // End
                         {
-                            if (float.TryParse(_val, out float n))
+                            var hue = kfdialog.Find("gradient_huesatval/x").GetComponent<InputField>();
+
+                            hue.onValueChanged.RemoveAllListeners();
+                            hue.text = firstKF.GetData<EventKeyframe>().eventValues[7].ToString();
+                            hue.onValueChanged.AddListener(_val =>
                             {
-                                firstKF.GetData<EventKeyframe>().eventValues[4] = n;
+                                if (float.TryParse(_val, out float n))
+                                {
+                                    firstKF.GetData<EventKeyframe>().eventValues[7] = n;
 
-                                // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
-                                if (UpdateObjects)
-                                    Updater.UpdateObject(beatmapObject, "Keyframes");
-                            }
-                        });
+                                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                                    if (UpdateObjects)
+                                        Updater.UpdateObject(beatmapObject, "Keyframes");
+                                }
+                            });
 
-                        TriggerHelper.AddEventTriggers(val.gameObject, TriggerHelper.ScrollDelta(val));
-                        TriggerHelper.IncreaseDecreaseButtons(val);
+                            Destroy(kfdialog.transform.Find("gradient_huesatval").GetComponent<EventTrigger>());
+
+                            TriggerHelper.AddEventTriggers(hue.gameObject, TriggerHelper.ScrollDelta(hue));
+                            TriggerHelper.IncreaseDecreaseButtons(hue);
+
+                            var sat = kfdialog.Find("gradient_huesatval/y").GetComponent<InputField>();
+
+                            sat.onValueChanged.RemoveAllListeners();
+                            sat.text = firstKF.GetData<EventKeyframe>().eventValues[8].ToString();
+                            sat.onValueChanged.AddListener(_val =>
+                            {
+                                if (float.TryParse(_val, out float n))
+                                {
+                                    firstKF.GetData<EventKeyframe>().eventValues[8] = n;
+
+                                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                                    if (UpdateObjects)
+                                        Updater.UpdateObject(beatmapObject, "Keyframes");
+                                }
+                            });
+
+                            TriggerHelper.AddEventTriggers(sat.gameObject, TriggerHelper.ScrollDelta(sat));
+                            TriggerHelper.IncreaseDecreaseButtons(sat);
+
+                            var val = kfdialog.Find("gradient_huesatval/z").GetComponent<InputField>();
+
+                            val.onValueChanged.RemoveAllListeners();
+                            val.text = firstKF.GetData<EventKeyframe>().eventValues[9].ToString();
+                            val.onValueChanged.AddListener(_val =>
+                            {
+                                if (float.TryParse(_val, out float n))
+                                {
+                                    firstKF.GetData<EventKeyframe>().eventValues[9] = n;
+
+                                    // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
+                                    if (UpdateObjects)
+                                        Updater.UpdateObject(beatmapObject, "Keyframes");
+                                }
+                            });
+
+                            TriggerHelper.AddEventTriggers(val.gameObject, TriggerHelper.ScrollDelta(val));
+                            TriggerHelper.IncreaseDecreaseButtons(val);
+                        }
 
                         break;
                     }
@@ -4615,7 +4811,7 @@ namespace BetterLegacy.Editor.Managers
 
         #region Set Values
 
-        public void SetKeyframeColor(BeatmapObject beatmapObject, int index, int value, IEnumerable<TimelineObject> selected)
+        public void SetKeyframeColor(BeatmapObject beatmapObject, int index, int value, List<Toggle> colorButtons, IEnumerable<TimelineObject> selected)
         {
             foreach (var keyframe in selected.Select(x => x.GetData<EventKeyframe>()))
                 keyframe.eventValues[index] = value;
@@ -4625,12 +4821,12 @@ namespace BetterLegacy.Editor.Managers
                 Updater.UpdateObject(beatmapObject, "Keyframes");
 
             int num = 0;
-            foreach (var toggle in ObjEditor.inst.colorButtons)
+            foreach (var toggle in colorButtons)
             {
                 int tmpIndex = num;
                 toggle.onValueChanged.ClearAll();
                 toggle.isOn = num == value;
-                toggle.onValueChanged.AddListener(_val => { SetKeyframeColor(beatmapObject, 0, tmpIndex, selected); });
+                toggle.onValueChanged.AddListener(_val => { SetKeyframeColor(beatmapObject, index, tmpIndex, colorButtons, selected); });
                 num++;
             }
         }

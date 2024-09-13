@@ -87,6 +87,8 @@ namespace BetterLegacy.Patchers
             var dialog = ObjEditor.inst.ObjectView.transform.parent.parent.parent.parent.parent; // lol wtf
             var right = dialog.Find("data/right");
 
+            right.gameObject.AddComponent<Mask>();
+
             var todDropdown = objectView.Find("autokill/tod-dropdown");
             var hide = todDropdown.GetComponent<HideDropdownOptions>();
             hide.DisabledOptions[0] = false;
@@ -353,9 +355,8 @@ namespace BetterLegacy.Patchers
 
             // Hue / Sat / Val
             {
-                var hsvLabels = __instance.KeyframeDialogs[2].transform.Find("label").gameObject.Duplicate(__instance.KeyframeDialogs[3].transform);
+                var hsvLabels = __instance.KeyframeDialogs[2].transform.Find("label").gameObject.Duplicate(__instance.KeyframeDialogs[3].transform, "huesatval_label");
                 hsvLabels.transform.GetChild(0).GetComponent<Text>().text = "Hue";
-                hsvLabels.name = "huesatval_label";
 
                 hsvLabels.AddComponent<HorizontalLayoutGroup>();
 
@@ -397,9 +398,141 @@ namespace BetterLegacy.Patchers
                 EditorThemeManager.AddInputFields(opacity, true, "");
             }
 
+            CoreHelper.Log($"Before Gradient");
+
             // Gradient
             {
+                try
+                {
+                    var index = objectView.Find("shape").GetSiblingIndex();
+                    objectView.GetChild(index - 1).GetComponentInChildren<Text>().text = "Gradient / Shape";
+                    var gradient = objectView.Find("shape").gameObject.Duplicate(objectView, "gradienttype", index);
 
+                    var listToDestroy = new List<GameObject>();
+                    for (int i = 1; i < gradient.transform.childCount; i++)
+                        listToDestroy.Add(gradient.transform.GetChild(i).gameObject);
+                    for (int i = 0; i < listToDestroy.Count; i++)
+                        Destroy(listToDestroy[i]);
+
+                    Destroy(gradient.GetComponent<ToggleGroup>());
+
+                    // Normal
+                    {
+                        var normalToggle = gradient.transform.GetChild(0);
+                        var normalToggleImage = normalToggle.Find("Image").GetComponent<Image>();
+                        normalToggleImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_close.png");
+
+                        EditorThemeManager.AddGraphic(normalToggleImage, ThemeGroup.Toggle_1_Check);
+                        var tog = normalToggle.GetComponent<Toggle>();
+                        tog.group = null;
+                        EditorThemeManager.AddToggle(tog, ThemeGroup.Background_1);
+                    }
+                    
+                    // Right
+                    {
+                        var normalToggle = gradient.transform.GetChild(0).gameObject.Duplicate(gradient.transform, "2");
+                        var normalToggleImage = normalToggle.transform.Find("Image").GetComponent<Image>();
+                        normalToggleImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_linear_gradient_right.png");
+
+                        EditorThemeManager.AddGraphic(normalToggleImage, ThemeGroup.Toggle_1_Check);
+                        var tog = normalToggle.GetComponent<Toggle>();
+                        tog.group = null;
+                        EditorThemeManager.AddToggle(tog, ThemeGroup.Background_1);
+                    }
+                    
+                    // Left
+                    {
+                        var normalToggle = gradient.transform.GetChild(0).gameObject.Duplicate(gradient.transform, "3");
+                        var normalToggleImage = normalToggle.transform.Find("Image").GetComponent<Image>();
+                        normalToggleImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_linear_gradient_left.png");
+
+                        EditorThemeManager.AddGraphic(normalToggleImage, ThemeGroup.Toggle_1_Check);
+                        var tog = normalToggle.GetComponent<Toggle>();
+                        tog.group = null;
+                        EditorThemeManager.AddToggle(tog, ThemeGroup.Background_1);
+                    }
+
+                    // In
+                    {
+                        var normalToggle = gradient.transform.GetChild(0).gameObject.Duplicate(gradient.transform, "4");
+                        var normalToggleImage = normalToggle.transform.Find("Image").GetComponent<Image>();
+                        normalToggleImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_radial_gradient_in.png");
+
+                        EditorThemeManager.AddGraphic(normalToggleImage, ThemeGroup.Toggle_1_Check);
+                        var tog = normalToggle.GetComponent<Toggle>();
+                        tog.group = null;
+                        EditorThemeManager.AddToggle(tog, ThemeGroup.Background_1);
+                    }
+
+                    // Out
+                    {
+                        var normalToggle = gradient.transform.GetChild(0).gameObject.Duplicate(gradient.transform, "5");
+                        var normalToggleImage = normalToggle.transform.Find("Image").GetComponent<Image>();
+                        normalToggleImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_radial_gradient_out.png");
+
+                        EditorThemeManager.AddGraphic(normalToggleImage, ThemeGroup.Toggle_1_Check);
+                        var tog = normalToggle.GetComponent<Toggle>();
+                        tog.group = null;
+                        EditorThemeManager.AddToggle(tog, ThemeGroup.Background_1);
+                    }
+                    
+                    var colorDialog = __instance.KeyframeDialogs[3].transform;
+
+                    var di = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/right/grain").transform;
+                    var shift = di.GetChild(13).gameObject.Duplicate(colorDialog, "shift", 16);
+                    var text = shift.transform.GetChild(1).GetComponent<Text>();
+                    text.text = "Shift Dialog Down";
+                    var shiftToggle = shift.GetComponent<Toggle>();
+                    shiftToggle.onValueChanged.ClearAll();
+                    shiftToggle.isOn = false;
+                    shiftToggle.onValueChanged.AddListener(_val =>
+                    {
+                        ObjectEditor.inst.colorShifted = _val;
+                        text.text = _val ? "Shift Dialog Up" : "Shift Dialog Down";
+                        var animation = new RTAnimation("shift color UI");
+                        animation.animationHandlers = new List<AnimationHandlerBase>
+                            {
+                                new AnimationHandler<float>(new List<IKeyframe<float>>
+                                {
+                                    new FloatKeyframe(0f, _val ? 0f : 195f, Ease.Linear),
+                                    new FloatKeyframe(0.3f, _val ? 195f : 0f, Ease.CircOut),
+                                    new FloatKeyframe(0.32f, _val ? 195f : 0f, Ease.Linear),
+                                }, x => { if (ObjEditor.inst) ObjEditor.inst.KeyframeDialogs[3].transform.AsRT().anchoredPosition = new Vector2(0f, x); }),
+                            };
+
+                        animation.onComplete = () =>
+                        {
+                            if (ObjEditor.inst)
+                                ObjEditor.inst.KeyframeDialogs[3].transform.AsRT().anchoredPosition = new Vector2(0f, _val ? 195f : 0f);
+                            AnimationManager.inst.RemoveID(animation.id);
+                        };
+
+                        AnimationManager.inst.Play(animation);
+                    });
+
+                    EditorThemeManager.AddSelectable(shiftToggle, ThemeGroup.Function_2);
+                    EditorThemeManager.AddGraphic(text, ThemeGroup.Function_2_Text);
+
+                    var endColorLabel = colorDialog.Find("color_label").gameObject.Duplicate(colorDialog, "gradient_color_label");
+                    endColorLabel.GetComponentInChildren<Text>().text = "End Color";
+                    var endColor = colorDialog.Find("color").gameObject.Duplicate(colorDialog, "gradient_color");
+
+                    var endOpacityLabel = colorDialog.Find("opacity_label").gameObject.Duplicate(colorDialog, "gradient_opacity_label");
+                    endOpacityLabel.GetComponentInChildren<Text>().text = "End Opacity";
+                    var endOpacity = colorDialog.Find("opacity").gameObject.Duplicate(colorDialog, "gradient_opacity");
+                    if (endOpacity.transform.Find("collision"))
+                        Destroy(endOpacity.transform.Find("collision").gameObject);
+
+                    var endHSVLabel = colorDialog.Find("huesatval_label").gameObject.Duplicate(colorDialog, "gradient_huesatval_label");
+                    endHSVLabel.transform.GetChild(0).GetComponent<Text>().text = "End Hue";
+                    endHSVLabel.transform.GetChild(1).GetComponent<Text>().text = "End Saturation";
+                    endHSVLabel.transform.GetChild(2).GetComponent<Text>().text = "End Value";
+                    var endHSV = colorDialog.Find("huesatval").gameObject.Duplicate(colorDialog, "gradient_huesatval");
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
             }
 
             // Position Z
@@ -462,7 +595,7 @@ namespace BetterLegacy.Patchers
 
             // Layers
             {
-                objectView.GetChild(objectView.Find("spacer") ? 17 : 16).GetChild(1).gameObject.SetActive(true);
+                objectView.GetChild(objectView.Find("spacer") ? 18 : 17).GetChild(1).gameObject.SetActive(true);
 
                 Destroy(objectView.Find("editor/layer").gameObject);
 
@@ -803,50 +936,23 @@ namespace BetterLegacy.Patchers
 
             // Shift Dialogs
             {
-                ObjEditor.inst.KeyframeDialogs[0].transform.GetChild(2).gameObject.SetActive(false);
-                ObjEditor.inst.KeyframeDialogs[0].transform.GetChild(7).gameObject.SetActive(false);
-                ObjEditor.inst.KeyframeDialogs[1].transform.GetChild(2).gameObject.SetActive(false);
-                ObjEditor.inst.KeyframeDialogs[1].transform.GetChild(7).gameObject.SetActive(false);
-                ObjEditor.inst.KeyframeDialogs[2].transform.GetChild(2).gameObject.SetActive(false);
-                ObjEditor.inst.KeyframeDialogs[2].transform.GetChild(7).gameObject.SetActive(false);
-                ObjEditor.inst.KeyframeDialogs[3].transform.GetChild(2).gameObject.SetActive(false);
-                ObjEditor.inst.KeyframeDialogs[3].transform.GetChild(7).gameObject.SetActive(false);
+                try
+                {
+                    ObjEditor.inst.KeyframeDialogs[0].transform.GetChild(2).gameObject.SetActive(false);
+                    ObjEditor.inst.KeyframeDialogs[0].transform.GetChild(7).gameObject.SetActive(false);
+                    ObjEditor.inst.KeyframeDialogs[1].transform.GetChild(2).gameObject.SetActive(false);
+                    ObjEditor.inst.KeyframeDialogs[1].transform.GetChild(7).gameObject.SetActive(false);
+                    ObjEditor.inst.KeyframeDialogs[2].transform.GetChild(2).gameObject.SetActive(false);
+                    ObjEditor.inst.KeyframeDialogs[2].transform.GetChild(7).gameObject.SetActive(false);
+                    ObjEditor.inst.KeyframeDialogs[3].transform.GetChild(2).gameObject.SetActive(false);
+                    ObjEditor.inst.KeyframeDialogs[3].transform.GetChild(7).gameObject.SetActive(false);
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
 
                 DestroyImmediate(GameObject.Find("Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/right").GetComponent<VerticalLayoutGroup>());
-
-                //var di = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/right/grain").transform;
-                //var shift = di.GetChild(13).gameObject.Duplicate(ObjEditor.inst.KeyframeDialogs[3].transform, "shift", 16);
-                //var text = shift.transform.GetChild(1).GetComponent<Text>();
-                //text.text = "Shift Dialog Down";
-                //var shiftToggle = shift.GetComponent<Toggle>();
-                //shiftToggle.onValueChanged.ClearAll();
-                //shiftToggle.isOn = false;
-                //shiftToggle.onValueChanged.AddListener(_val =>
-                //{
-                //    ObjectEditor.inst.colorShifted = _val;
-                //    text.text = _val ? "Shift Dialog Up" : "Shift Dialog Down";
-                //    var animation = new RTAnimation("shift color UI");
-                //    animation.animationHandlers = new List<AnimationHandlerBase>
-                //        {
-                //            new AnimationHandler<float>(new List<IKeyframe<float>>
-                //            {
-                //                new FloatKeyframe(0f, _val ? 0f : 185f, Ease.Linear),
-                //                new FloatKeyframe(0.3f, _val ? 185f : 0f, Ease.CircOut),
-                //                new FloatKeyframe(0.32f, _val ? 185f : 0f, Ease.Linear),
-                //            }, x => { ObjEditor.inst.KeyframeDialogs[3].transform.AsRT().anchoredPosition = new Vector2(0f, x); }),
-                //        };
-
-                //    animation.onComplete = () =>
-                //    {
-                //        ObjEditor.inst.KeyframeDialogs[3].transform.AsRT().anchoredPosition = new Vector2(0f, _val ? 185f : 0f);
-                //        AnimationManager.inst.RemoveID(animation.id);
-                //    };
-
-                //    AnimationManager.inst.Play(animation);
-                //});
-
-                //EditorThemeManager.AddSelectable(shiftToggle, ThemeGroup.Function_2);
-                //EditorThemeManager.AddGraphic(text, ThemeGroup.Function_2_Text);
             }
 
             // Parent Settings
