@@ -4814,7 +4814,11 @@ namespace BetterLegacy.Editor.Managers
         public void SetKeyframeColor(BeatmapObject beatmapObject, int index, int value, List<Toggle> colorButtons, IEnumerable<TimelineObject> selected)
         {
             foreach (var keyframe in selected.Select(x => x.GetData<EventKeyframe>()))
+            {
                 keyframe.eventValues[index] = value;
+                if (!RTEditor.ShowModdedUI)
+                    keyframe.eventValues[6] = 10f; // set behaviour to alpha's default if editor complexity is not set to advanced.
+            }
 
             // Since keyframe color has no affect on the timeline object, we will only need to update the physical object.
             if (UpdateObjects)
