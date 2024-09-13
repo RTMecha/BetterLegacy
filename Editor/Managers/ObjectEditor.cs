@@ -144,6 +144,8 @@ namespace BetterLegacy.Editor.Managers
         public EventKeyframe CopiedRotationData { get; set; }
         public EventKeyframe CopiedColorData { get; set; }
 
+        public List<Toggle> gradientColorButtons = new List<Toggle>();
+
         public bool colorShifted;
 
         public static bool RenderPrefabTypeIcon { get; set; }
@@ -4187,16 +4189,17 @@ namespace BetterLegacy.Editor.Managers
 
                         var random = firstKF.GetData<EventKeyframe>().random;
 
-                        kfdialog.Find("opacity_label").gameObject.SetActive(RTEditor.ShowModdedUI);
-                        kfdialog.Find("opacity").gameObject.SetActive(RTEditor.ShowModdedUI);
+                        kfdialog.Find("opacity_label").gameObject.SetActive(RTEditor.NotSimple);
+                        kfdialog.Find("opacity").gameObject.SetActive(RTEditor.NotSimple);
+                        kfdialog.Find("opacity/collision").gameObject.SetActive(RTEditor.ShowModdedUI);
 
                         kfdialog.Find("huesatval_label").gameObject.SetActive(RTEditor.ShowModdedUI);
                         kfdialog.Find("huesatval").gameObject.SetActive(RTEditor.ShowModdedUI);
 
-                        if (!RTEditor.ShowModdedUI)
-                            break;
+                        kfdialog.Find("color").AsRT().sizeDelta = new Vector2(366f, RTEditor.ShowModdedUI ? 78f : 32f);
 
-                        kfdialog.Find("color").GetComponent<RectTransform>().sizeDelta = new Vector2(366f, 78f);
+                        if (!RTEditor.NotSimple)
+                            break;
 
                         var opacity = kfdialog.Find("opacity/x").GetComponent<InputField>();
 
@@ -4218,6 +4221,9 @@ namespace BetterLegacy.Editor.Managers
                         TriggerHelper.AddEventTriggers(kfdialog.Find("opacity").gameObject, TriggerHelper.ScrollDelta(opacity, 0.1f, 10f, 0f, 1f));
 
                         TriggerHelper.IncreaseDecreaseButtons(opacity);
+
+                        if (!RTEditor.ShowModdedUI)
+                            break;
 
                         var collision = kfdialog.Find("opacity/collision").GetComponent<Toggle>();
                         collision.onValueChanged.ClearAll();

@@ -239,8 +239,10 @@ namespace BetterLegacy.Patchers
 
             // Colors
             {
-                var colorParent = __instance.KeyframeDialogs[3].transform.Find("color").transform;
+                var colorParent = __instance.KeyframeDialogs[3].transform.Find("color");
                 colorParent.GetComponent<GridLayoutGroup>().spacing = new Vector2(9.32f, 9.32f);
+
+                __instance.KeyframeDialogs[3].transform.GetChild(colorParent.GetSiblingIndex() - 1).gameObject.name = "color_label";
 
                 for (int i = 1; i < 19; i++)
                 {
@@ -351,33 +353,22 @@ namespace BetterLegacy.Patchers
 
             // Hue / Sat / Val
             {
-                var opacityLabel = __instance.KeyframeDialogs[2].transform.Find("label").gameObject.Duplicate(__instance.KeyframeDialogs[3].transform);
-                opacityLabel.transform.GetChild(0).GetComponent<Text>().text = "Hue";
-                opacityLabel.name = "huesatval_label";
+                var hsvLabels = __instance.KeyframeDialogs[2].transform.Find("label").gameObject.Duplicate(__instance.KeyframeDialogs[3].transform);
+                hsvLabels.transform.GetChild(0).GetComponent<Text>().text = "Hue";
+                hsvLabels.name = "huesatval_label";
 
-                opacityLabel.AddComponent<HorizontalLayoutGroup>();
+                hsvLabels.AddComponent<HorizontalLayoutGroup>();
 
-                var n2 = Instantiate(opacityLabel.transform.GetChild(0).gameObject);
-                n2.transform.SetParent(opacityLabel.transform);
-                n2.transform.localScale = Vector3.one;
-                if (n2.TryGetComponent(out Text saturation))
-                    saturation.text = "Saturation";
+                var saturationLabel = hsvLabels.transform.GetChild(0).gameObject.Duplicate(hsvLabels.transform);
+                saturationLabel.GetComponent<Text>().text = "Saturation";
 
-                var n3 = Instantiate(opacityLabel.transform.GetChild(0).gameObject);
-                n3.transform.SetParent(opacityLabel.transform);
-                n3.transform.localScale = Vector3.one;
-                if (n3.TryGetComponent(out Text value))
-                    value.text = "Value";
+                var valueLabel = hsvLabels.transform.GetChild(0).gameObject.Duplicate(hsvLabels.transform);
+                valueLabel.GetComponent<Text>().text = "Value";
 
-                var opacity = Instantiate(__instance.KeyframeDialogs[1].transform.Find("scale").gameObject);
-                opacity.transform.SetParent(__instance.KeyframeDialogs[3].transform);
-                opacity.transform.localScale = Vector3.one;
+                var opacity = __instance.KeyframeDialogs[1].transform.Find("scale").gameObject.Duplicate(__instance.KeyframeDialogs[3].transform);
                 opacity.name = "huesatval";
 
-                var z = Instantiate(opacity.transform.GetChild(1).gameObject);
-                z.transform.SetParent(opacity.transform);
-                z.transform.localScale = Vector3.one;
-                z.name = "z";
+                opacity.transform.GetChild(1).gameObject.Duplicate(opacity.transform, "z");
 
                 for (int i = 0; i < opacity.transform.childCount; i++)
                 {
@@ -404,8 +395,11 @@ namespace BetterLegacy.Patchers
                 }
 
                 EditorThemeManager.AddInputFields(opacity, true, "");
+            }
 
-                //Triggers.AddTooltip(opacity.gameObject, "Set the hue value here.", "Shifts the hue levels of the objects' color.");
+            // Gradient
+            {
+
             }
 
             // Position Z
