@@ -945,6 +945,8 @@ namespace BetterLegacy.Core.Data
 
                     jn["e"][3]["k"][j]["ev"][0] = Mathf.Clamp(eventKeyframe.eventValues[0], 0, 8);
                     jn["e"][3]["k"][j]["ev"][1] = (-eventKeyframe.eventValues[1] + 1f) * 100f;
+                    if (eventKeyframe.eventValues.Length > 5)
+                        jn["e"][3]["k"][j]["ev"][2] = Mathf.Clamp(eventKeyframe.eventValues[5], 0, 8);
                 }
             }
 
