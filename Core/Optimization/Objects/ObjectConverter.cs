@@ -276,7 +276,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                 sprite == null && beatmapObject.shape == 4 ? new TextObject(visualObject, opacity, beatmapObject.text, isBackground) :
                 sprite != null || beatmapObject.shape == 6 ? new ImageObject(visualObject, opacity, beatmapObject.text, isBackground, sprite != null ? sprite : AssetManager.SpriteAssets.ContainsKey(beatmapObject.text) ? AssetManager.SpriteAssets[beatmapObject.text] : null) :
                 beatmapObject.shape == 9 ? new PlayerObject(visualObject) : 
-                beatmapObject.gradientType != 0 ? new GradientObject(visualObject, opacity, hasCollider, isSolid, isBackground, beatmapObject.opacityCollision, beatmapObject.gradientType) : 
+                beatmapObject.gradientType != BeatmapObject.GradientType.Normal ? new GradientObject(visualObject, opacity, hasCollider, isSolid, isBackground, beatmapObject.opacityCollision, (int)beatmapObject.gradientType) : 
                 new SolidObject(visualObject, opacity, hasCollider, isSolid, isBackground, beatmapObject.opacityCollision);
 
             if (EditorManager.inst && shape != 9)
