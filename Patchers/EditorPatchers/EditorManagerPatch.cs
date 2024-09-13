@@ -290,7 +290,7 @@ namespace BetterLegacy.Patchers
                     Instance.DisplayNotification("Welcome to the 3.0.0 update!\njk, April Fools!", 6f, EditorManager.NotificationType.Error);
                 Instance.ClearDialogs();
 
-                AchievementManager.inst.UnlockAchievement("1");
+                AchievementManager.inst.UnlockAchievement("editor");
             }
             catch (Exception ex)
             {
@@ -993,9 +993,9 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SetEditRenderAreaPrefix()
         {
-            if (Instance.hasLoadedLevel && RTEventManager.inst.windowHasChanged)
+            if (Instance.hasLoadedLevel && RTEventManager.windowPositionResolutionChanged)
             {
-                RTEventManager.inst.windowHasChanged = false;
+                RTEventManager.windowPositionResolutionChanged = false;
                 WindowController.ResetResolution();
             }
 

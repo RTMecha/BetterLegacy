@@ -194,7 +194,12 @@ namespace BetterLegacy.Core.Managers
                     yield return null;
 
             Debug.Log($"{className}Resetting Window resolution.");
-            WindowController.ResetResolution();
+            if (RTEventManager.windowPositionResolutionChanged)
+            {
+                RTEventManager.windowPositionResolutionChanged = false;
+                WindowController.ResetResolution();
+            }
+
             WindowController.ResetTitle();
 
             if (BackgroundManager.inst)
