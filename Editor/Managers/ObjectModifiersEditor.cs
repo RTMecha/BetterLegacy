@@ -1959,6 +1959,16 @@ namespace BetterLegacy.Editor.Managers
 
                             break;
                         }
+                    case "translateShape":
+                        {
+                            SingleGenerator(modifier, layout, "Pos X", 1, 0f);
+                            SingleGenerator(modifier, layout, "Pos Y", 2, 0f);
+                            SingleGenerator(modifier, layout, "Sca X", 3, 0f);
+                            SingleGenerator(modifier, layout, "Sca Y", 4, 0f);
+                            SingleGenerator(modifier, layout, "Rot", 5, 0f, 15f, 3f);
+
+                            break;
+                        }
 
                         #endregion
                 }
@@ -2035,7 +2045,7 @@ namespace BetterLegacy.Editor.Managers
 
         #region Generators
 
-        GameObject SingleGenerator(Modifier<BeatmapObject> modifier, Transform layout, string label, int type, float defaultValue)
+        GameObject SingleGenerator(Modifier<BeatmapObject> modifier, Transform layout, string label, int type, float defaultValue, float amount = 0.1f, float multiply = 10f)
         {
             var single = numberInput.Duplicate(layout, label);
             single.transform.localScale = Vector3.one;
@@ -2068,8 +2078,8 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.ApplySelectable(leftButton, ThemeGroup.Function_2, false);
             EditorThemeManager.ApplySelectable(rightButton, ThemeGroup.Function_2, false);
 
-            TriggerHelper.IncreaseDecreaseButtons(inputField, t: single.transform);
-            TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDelta(inputField));
+            TriggerHelper.IncreaseDecreaseButtons(inputField, amount, multiply, t: single.transform);
+            TriggerHelper.AddEventTriggers(inputField.gameObject, TriggerHelper.ScrollDelta(inputField, amount, multiply));
 
             var inputFieldSwapper = inputField.gameObject.AddComponent<InputFieldSwapper>();
             inputFieldSwapper.Init(inputField, InputFieldSwapper.Type.Num);

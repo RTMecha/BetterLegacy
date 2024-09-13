@@ -3741,6 +3741,32 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+                    case "translateShape":
+                        {
+                            if (!Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || !levelObject.visualObject.GameObject)
+                                return;
+
+                            if (modifier.Result == null)
+                            {
+                                var meshFilter = levelObject.visualObject.GameObject.GetComponent<MeshFilter>();
+                                var mesh = meshFilter.mesh;
+
+                                modifier.Result = new KeyValuePair<MeshFilter, Vector3[]>(meshFilter, mesh.vertices);
+
+                                levelObject.visualObject.GameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
+                            }
+
+                            if (modifier.Result is KeyValuePair<MeshFilter, Vector3[]> keyValuePair &&
+                                float.TryParse(modifier.commands[1], out float posX) && float.TryParse(modifier.commands[2], out float posY) &&
+                                float.TryParse(modifier.commands[3], out float scaleX) && float.TryParse(modifier.commands[4], out float scaleY)
+                                && float.TryParse(modifier.commands[5], out float rot))
+                            {
+                                keyValuePair.Key.mesh.vertices =
+                                    keyValuePair.Value.Select(x => RTMath.Move(RTMath.Rotate(RTMath.Scale(x, new Vector2(scaleX, scaleY)), rot), new Vector2(posX, posY))).ToArray();
+                            }
+
+                            break;
+                        }
                     #endregion
                     #region Animation
                     case "animateObject":
