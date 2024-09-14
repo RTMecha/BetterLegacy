@@ -311,7 +311,7 @@ namespace BetterLegacy
             if (CoreHelper.IsUsingInputField)
                 return;
 
-            if (Input.GetKeyDown(EventsConfig.Instance.EditorCamToggle.Value))
+            if (CoreHelper.InEditor && Input.GetKeyDown(EventsConfig.Instance.EditorCamToggle.Value))
                 EventsConfig.Instance.EditorCamEnabled.Value = !EventsConfig.Instance.EditorCamEnabled.Value; // Enables / disables editor camera via the custom keybind.
 
             if (Input.GetKeyDown(EventsConfig.Instance.ShowGUIToggle.Value))
