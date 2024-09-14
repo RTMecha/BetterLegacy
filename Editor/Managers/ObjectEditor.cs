@@ -4765,6 +4765,9 @@ namespace BetterLegacy.Editor.Managers
                 else
                     timelineObject.InternalSelections[0].selected = true;
             }
+
+            if (timelineObject.InternalSelections.Count >= 1000)
+                AchievementManager.inst.UnlockAchievement("holy_keyframes");
         }
 
         public void RenderKeyframe(BeatmapObject beatmapObject, TimelineObject timelineObject)

@@ -45,6 +45,7 @@ namespace BetterLegacy.Core.Managers
             ui.GetProperty("ShowMenu").SetValue(ui, true);
             inspector.GetMethod("Inspect", new[] { typeof(object), AccessTools.TypeByName("UnityExplorer.CacheObject.CacheObjectBase") })
             .Invoke(inspector, new object[] { obj, null });
+            AchievementManager.inst.UnlockAchievement("hackerman");
         }
 
         public static void ShowExplorer()
@@ -54,6 +55,7 @@ namespace BetterLegacy.Core.Managers
 
             var ui = UEUIManager;
             ui.GetProperty("ShowMenu").SetValue(ui, true);
+            AchievementManager.inst.UnlockAchievement("hackerman");
         }
 
         public static void HideExplorer()
@@ -71,7 +73,11 @@ namespace BetterLegacy.Core.Managers
                 return;
 
             var ui = UEUIManager;
-            ui.GetProperty("ShowMenu").SetValue(ui, !(bool)ui.GetProperty("ShowMenu").GetValue(ui));
+            var enabled = (bool)ui.GetProperty("ShowMenu").GetValue(ui);
+            ui.GetProperty("ShowMenu").SetValue(ui, !enabled);
+
+            if (!enabled)
+                AchievementManager.inst.UnlockAchievement("hackerman");
         }
     }
 }

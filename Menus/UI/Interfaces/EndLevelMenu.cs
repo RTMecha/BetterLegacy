@@ -66,21 +66,21 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     newLevelRank = null;
                 }
 
-                // TODO: custom achievements
-                //CoreHelper.Log($"Setting Achievements");
-                //if (levelRank.name == "SS")
-                //    SteamWrapper.inst.achievements.SetAchievement("SS_RANK");
-                //else if (levelRank.name == "F")
-                //    SteamWrapper.inst.achievements.SetAchievement("F_RANK");
-
                 if (metadata.song.difficulty == 6)
                     AchievementManager.inst.UnlockAchievement("complete_animation");
                 if (LevelManager.BoostCount == 0)
                     AchievementManager.inst.UnlockAchievement("no_boost");
+                if (levelRank.name == "F")
+                    AchievementManager.inst.UnlockAchievement("f_rank");
                 if (metadata.song.difficulty == 4 && levelRank.name == "SS")
                     AchievementManager.inst.UnlockAchievement("expert_plus_ss_rank");
                 if (metadata.song.difficulty == 5 && levelRank.name == "SS")
                     AchievementManager.inst.UnlockAchievement("master_ss_rank");
+                if (AudioManager.inst.musicVol == 0f)
+                    AchievementManager.inst.UnlockAchievement("no_volume");
+
+                if (LevelManager.currentQueueIndex >= 9)
+                    AchievementManager.inst.UnlockAchievement("queue_ten");
 
                 CoreHelper.Log($"Setting End UI");
                 string easy = LSColors.GetThemeColorHex("easy");

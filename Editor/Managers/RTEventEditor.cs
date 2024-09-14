@@ -2905,6 +2905,9 @@ namespace BetterLegacy.Editor.Managers
                         kf.GetData<EventKeyframe>().eventValues[index] = num;
 
                     EventManager.inst.updateEvents();
+
+                    if (name == "zoom/x" && num < 0f)
+                        AchievementManager.inst.UnlockAchievement("editor_zoom_break");
                 }
                 else
                     LogIncorrectFormat(_val);

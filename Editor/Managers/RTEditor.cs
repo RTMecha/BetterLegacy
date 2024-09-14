@@ -373,6 +373,11 @@ namespace BetterLegacy.Editor.Managers
                 timelinePreviewLine.color = GameStorageManager.inst.timelineLine.color;
             }
 
+            if (timeEditing > 36000f)
+                AchievementManager.inst.UnlockAchievement("serious_dedication");
+            if (timeEditing > 86400f)
+                AchievementManager.inst.UnlockAchievement("true_dedication");
+
             // Only want this during April Fools.
             //if (CoreHelper.AprilFools && RandomHelper.PercentChanceSingle(0.001f))
             //{
@@ -2157,6 +2162,12 @@ namespace BetterLegacy.Editor.Managers
         /// <param name="setHistory">If the action should be undoable.</param>
         public void SetLayer(int layer, LayerType layerType, bool setHistory = true)
         {
+            if (layer == 68)
+                AchievementManager.inst.UnlockAchievement("editor_layer_lol");
+            
+            if (layer == 554)
+                AchievementManager.inst.UnlockAchievement("editor_layer_funny");
+
             DataManager.inst.UpdateSettingInt("EditorLayer", layer);
             var oldLayer = Layer;
             var oldLayerType = this.layerType;

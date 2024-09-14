@@ -439,6 +439,8 @@ namespace BetterLegacy.Example
             SetLastInteracted();
             for (int i = 0; i < commands.Count; i++)
                 commands[i].CheckResponse(chatter.text);
+
+            AchievementManager.inst.UnlockAchievement("example_chat");
         }
 
         public bool RegexMatch(Regex regex, string text, out Match match)

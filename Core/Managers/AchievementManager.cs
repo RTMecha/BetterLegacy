@@ -36,7 +36,11 @@ namespace BetterLegacy.Core.Managers
             StartCoroutine(GenerateUI());
         }
 
-        Sprite LoadIcon(string name) => SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Achievements/{name}.png");
+        Sprite LoadIcon(string name)
+        {
+            var path = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Achievements/{name}.png";
+            return !RTFile.FileExists(path) ? LegacyPlugin.AtanPlaceholder : SpriteHelper.LoadSprite(path);
+        }
 
         void LoadAchievements()
         {
@@ -45,16 +49,40 @@ namespace BetterLegacy.Core.Managers
             CreateGlobalAchievement("no_boost", "No Boosting!", "Do not boost once in a level.", 4, "no_boost");
             CreateGlobalAchievement("complete_animation", "Masterpiece.", "Complete an animation level.", 1, "complete_animation");
             CreateGlobalAchievement("costume_party", "Costume Party", "Play a level with a custom player model.", 2, "costume_party");
-            CreateGlobalAchievement("expert_plus_ss_rank", "A true expert!", "Complete an expert+ difficulty level with SS rank.", 5, "expert_plus_ss_rank");
-            CreateGlobalAchievement("master_ss_rank", "A true master!", "Complete a master difficulty level with SS rank.", 6, "master_ss_rank");
+            CreateGlobalAchievement("f_rank", "At least we made it...", "Complete a level with an F rank", 1, "f_rank");
+            CreateGlobalAchievement("expert_plus_ss_rank", "A true expert!", "Complete an expert+ difficulty level with an SS rank.", 5, "expert_plus_ss_rank");
+            CreateGlobalAchievement("master_ss_rank", "A true master!", "Complete a master difficulty level with an SS rank.", 6, "master_ss_rank");
             CreateGlobalAchievement("editor_reverse_speed", "!yaw gnorw eht s'thaT", "Reverse the level in the editor.", 3, "editor_reverse_speed");
+            CreateGlobalAchievement("editor_layer_lol", "nice", "nice.", 4, "editor_layer_lol");
+            CreateGlobalAchievement("editor_layer_funny", "Thai Funny", "Go to editor layer 555.", 4, "editor_layer_funny");
+            CreateGlobalAchievement("example_chat", "Having a Conversation", "Talk with Example.", 4, "example_chat");
+            CreateGlobalAchievement("editor_zoom_break", "Breaking Boundaries", "Reverse the level in the editor.", 3, "editor_zoom_break");
+            CreateGlobalAchievement("no_volume", "Is the Sound Off?", "Complete a level with volume turned down to 0.", 4, "no_volume");
+            CreateGlobalAchievement("queue_ten", "Data Management", "Play 10 levels in a row in a Queue.", 4, "queue_ten");
+            CreateGlobalAchievement("friendship", "Friendship!", "Play with friends!", 4, "friendship");
+            CreateGlobalAchievement("holy_keyframes", "Holy Keyframes!", "Look at an object in the editor with over 1000 keyframes.", 6, "holy_keyframes");
+            CreateGlobalAchievement("serious_dedication", "Serious Dedication", "Spend 10 hours in a level in the editor.", 5, "serious_dedication");
+            CreateGlobalAchievement("true_dedication", "True Dedication", "Spend 24 hours in a level in the editor.", 6, "true_dedication");
+            CreateGlobalAchievement("upload_level", "Upload a Level!", "Publish a level to the arcade server.", 2, "upload_level");
+            CreateGlobalAchievement("youve_been_trolled", "You've Been Trolled", "Play a meme / joke level.", 3, "youve_been_trolled");
+            CreateGlobalAchievement("ten_levels", "That's some data.", "Complete 10 levels.", 2, "ten_levels");
+            CreateGlobalAchievement("fifty_levels", "B", "That's more data!", 3, "fifty_levels");
+            CreateGlobalAchievement("one_hundred_levels", "That's a lot of data!", "Complete 100 levels.", 4, "one_hundred_levels");
+            CreateGlobalAchievement("hackerman", "Hackerman", "Open UnityExplorer in the editor.", 0, "hackerman");
         }
 
         void CreateGlobalAchievement(string id, string name, string desc, int difficulty, string iconFileName)
         {
-            var achievement = new Achievement(id, name, desc, difficulty, LoadIcon(iconFileName));
-            achievement.unlocked = unlockedGlobalAchievements.ContainsKey(id) && unlockedGlobalAchievements[id];
-            globalAchievements.Add(achievement);
+            try
+            {
+                var achievement = new Achievement(id, name, desc, difficulty, LoadIcon(iconFileName));
+                achievement.unlocked = unlockedGlobalAchievements.ContainsKey(id) && unlockedGlobalAchievements[id];
+                globalAchievements.Add(achievement);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
         }
 
         IEnumerator GenerateUI()

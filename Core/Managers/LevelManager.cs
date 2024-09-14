@@ -317,6 +317,12 @@ namespace BetterLegacy.Core.Managers
             AudioManager.inst.SetMusicTime(0f);
 
             LoadingFromHere = false;
+
+            if (PlayerManager.Players.Count > 1)
+                AchievementManager.inst.UnlockAchievement("friendship");
+            var tags = CurrentLevel.metadata.LevelSong.tags;
+            if (tags.Contains("joke") || tags.Contains("joke_level") || tags.Contains("meme") || tags.Contains("meme_level"))
+                AchievementManager.inst.UnlockAchievement("youve_been_trolled");
         }
 
         /// <summary>
@@ -354,11 +360,12 @@ namespace BetterLegacy.Core.Managers
 
             PlayedLevelCount++;
 
-            // TODO: Implement achievement system (not the Steam one, the custom one)
-            //if (Saves.Where(x => x.Completed).Count() >= 100)
-            //{
-            //    SteamWrapper.inst.achievements.SetAchievement("GREAT_TESTER");
-            //}
+            if (Saves.Where(x => x.Completed).Count() >= 10)
+                AchievementManager.inst.UnlockAchievement("ten_levels");
+            if (Saves.Where(x => x.Completed).Count() >= 50)
+                AchievementManager.inst.UnlockAchievement("fifty_levels");
+            if (Saves.Where(x => x.Completed).Count() >= 100)
+                AchievementManager.inst.UnlockAchievement("one_hundred_levels");
 
             if (PlayerManager.IsZenMode || PlayerManager.IsPractice)
                 return;

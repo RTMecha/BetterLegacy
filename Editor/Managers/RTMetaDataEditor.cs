@@ -938,6 +938,8 @@ namespace BetterLegacy.Editor.Managers
 
                     EditorManager.inst.DisplayNotification($"Level uploaded! ID: {id}", 3f, EditorManager.NotificationType.Success);
                     RenderEditor();
+
+                    AchievementManager.inst.UnlockAchievement("upload_level");
                 }, (string onError, long responseCode, string errorMsg) =>
                 {
                     uploading = false;
