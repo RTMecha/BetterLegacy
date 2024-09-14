@@ -1,10 +1,10 @@
 1.5.0 > [Sep 14, 2024]
 - Implemented internal achievements!
-   You'll unlock some of the internal ones as you play the game.
-   Custom achievements will come later once I figure out how to do them.
-   Do note achievements do not *currently* stack, so if you get multiple at once, you will only see one of them.
-   You also can't currently view achievements anywhere. Eventually it'll be added to the profile menu.
-Here's a list of the current achievements (some names are more obvious than others, so you will need to search around for what these are for):
+You'll unlock some of the internal ones as you play the game.
+Custom achievements will come later once I figure out how to do them.
+Do note achievements do not *currently* stack, so if you get multiple at once, you will only see one of them.
+You also can't currently view achievements anywhere. Eventually it'll be added to the profile menu.
+Here's a list of the current achievements (some names are more obvious than others, so you will need to search around for what these are for)
 -- welcome
 -- editor
 -- no_boost
