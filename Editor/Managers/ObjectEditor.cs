@@ -2708,6 +2708,13 @@ namespace BetterLegacy.Editor.Managers
                 {
                     beatmapObject.gradientType = (BeatmapObject.GradientType)index;
 
+                    if (beatmapObject.gradientType != BeatmapObject.GradientType.Normal && (beatmapObject.shape == 4 || beatmapObject.shape == 6 || beatmapObject.shape == 10))
+                    {
+                        beatmapObject.shape = 0;
+                        beatmapObject.shapeOption = 0;
+                        RenderShape(beatmapObject);
+                    }
+
                     if (!RTEditor.ShowModdedUI)
                     {
                         for (int i = 0; i < beatmapObject.events[3].Count; i++)
@@ -3023,6 +3030,11 @@ namespace BetterLegacy.Editor.Managers
                         beatmapObject.shape = index;
                         beatmapObject.shapeOption = 0;
                         //beatmapObject.text = "";
+
+                        if (beatmapObject.gradientType != BeatmapObject.GradientType.Normal && (index == 4 || index == 6 || index == 10))
+                        {
+                            beatmapObject.shape = 0;
+                        }
 
                         // Since shape has no affect on the timeline object, we will only need to update the physical object.
                         if (UpdateObjects)
