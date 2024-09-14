@@ -1940,8 +1940,8 @@ namespace BetterLegacy.Editor.Managers
         {
             var active = !HideVisualElementsWhenObjectIsEmpty || beatmapObject.objectType != ObjectType.Empty;
             var shapeTF = (Transform)ObjectUIElements["Shape"];
-            var shapeTFPActive = shapeTF.parent.GetChild(shapeTF.GetSiblingIndex() - 1).gameObject.activeSelf;
-            shapeTF.parent.GetChild(shapeTF.GetSiblingIndex() - 1).gameObject.SetActive(active);
+            var shapeTFPActive = shapeTF.parent.GetChild(shapeTF.GetSiblingIndex() - 2).gameObject.activeSelf;
+            shapeTF.parent.GetChild(shapeTF.GetSiblingIndex() - 2).gameObject.SetActive(active);
             shapeTF.gameObject.SetActive(active);
 
             ((Transform)ObjectUIElements["Gradient"]).gameObject.SetActive(active);
@@ -2707,6 +2707,12 @@ namespace BetterLegacy.Editor.Managers
                 toggle.onValueChanged.AddListener(_val =>
                 {
                     beatmapObject.gradientType = (BeatmapObject.GradientType)index;
+
+                    if (!RTEditor.ShowModdedUI)
+                    {
+                        for (int i = 0; i < beatmapObject.events[3].Count; i++)
+                            beatmapObject.events[3][i].eventValues[6] = 10f;
+                    }
 
                     // Since shape has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
@@ -4250,10 +4256,10 @@ namespace BetterLegacy.Editor.Managers
 
                         kfdialog.Find("gradient_color_label").gameObject.SetActive(showGradient);
                         kfdialog.Find("gradient_color").gameObject.SetActive(showGradient);
-                        kfdialog.Find("gradient_opacity_label").gameObject.SetActive(showGradient);
-                        kfdialog.Find("gradient_opacity").gameObject.SetActive(showGradient);
-                        kfdialog.Find("gradient_huesatval_label").gameObject.SetActive(showGradient);
-                        kfdialog.Find("gradient_huesatval").gameObject.SetActive(showGradient);
+                        kfdialog.Find("gradient_opacity_label").gameObject.SetActive(showGradient && RTEditor.ShowModdedUI);
+                        kfdialog.Find("gradient_opacity").gameObject.SetActive(showGradient && RTEditor.ShowModdedUI);
+                        kfdialog.Find("gradient_huesatval_label").gameObject.SetActive(showGradient && RTEditor.ShowModdedUI);
+                        kfdialog.Find("gradient_huesatval").gameObject.SetActive(showGradient && RTEditor.ShowModdedUI);
 
                         kfdialog.Find("color").AsRT().sizeDelta = new Vector2(366f, RTEditor.ShowModdedUI ? 78f : 32f);
                         kfdialog.Find("gradient_color").AsRT().sizeDelta = new Vector2(366f, RTEditor.ShowModdedUI ? 78f : 32f);
@@ -4282,7 +4288,7 @@ namespace BetterLegacy.Editor.Managers
                                 {
                                     keyframe.eventValues[1] = value;
                                     if (!RTEditor.ShowModdedUI)
-                                        keyframe.eventValues[6] = value;
+                                        keyframe.eventValues[6] = 10f;
                                 }
 
                                 // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
