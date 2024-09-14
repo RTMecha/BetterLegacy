@@ -71,10 +71,25 @@ namespace BetterLegacy.Core.Data
 
         public enum GradientType
         {
+            /// <summary>
+            /// The regular render method.
+            /// </summary>
             Normal,
+            /// <summary>
+            /// Renders a linear gradient going from right to left.
+            /// </summary>
             RightLinear,
+            /// <summary>
+            /// Renders a linear gradient going from left to right.
+            /// </summary>
             LeftLinear,
+            /// <summary>
+            /// Renders a radial gradient going from out to in.
+            /// </summary>
             OutInRadial,
+            /// <summary>
+            /// Renders a radial gradient going from in to out.
+            /// </summary>
             InOutRadial
         }
 
