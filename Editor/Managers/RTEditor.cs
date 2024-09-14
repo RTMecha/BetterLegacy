@@ -489,7 +489,9 @@ namespace BetterLegacy.Editor.Managers
         public static List<Dropdown> EasingDropdowns { get; set; } = new List<Dropdown>();
 
         List<MultiColorButton> multiColorButtons = new List<MultiColorButton>();
+        List<MultiColorButton> multiGradientColorButtons = new List<MultiColorButton>();
         int currentMultiColorSelection = -1;
+        int currentMultiGradientColorSelection = -1;
 
         #region Dragging
 
@@ -4377,7 +4379,7 @@ namespace BetterLegacy.Editor.Managers
                 }));
             }
 
-            // Set Autokill Type
+            // Autokill Type
             {
                 GenerateLabels(parent, 32f, "Set Autokill Type");
 
@@ -4482,7 +4484,7 @@ namespace BetterLegacy.Editor.Managers
                 }));
             }
 
-            // Cycle Object Type
+            // Object Type
             {
                 GenerateLabels(parent, 32f, "Set Object Type");
 
@@ -4582,6 +4584,105 @@ namespace BetterLegacy.Editor.Managers
                         }
                     }));
             }
+            
+            // Gradient Type
+            {
+                GenerateLabels(parent, 32f, "Set Gradient Type");
+
+                GenerateButtons(parent, 32f, 8f,
+                    new ButtonFunction("Sub", () =>
+                    {
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        {
+                            var bm = timelineObject.GetData<BeatmapObject>();
+
+                            int gradientType = (int)bm.gradientType;
+
+                            gradientType--;
+                            if (gradientType < 0)
+                                gradientType = 4;
+
+                            bm.gradientType = (BeatmapObject.GradientType)gradientType;
+
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                            Updater.UpdateObject(bm, "GradientType");
+                        }
+                    }),
+                    new ButtonFunction("Add", () =>
+                    {
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        {
+                            var bm = timelineObject.GetData<BeatmapObject>();
+                            int gradientType = (int)bm.gradientType;
+
+                            gradientType--;
+                            if (gradientType > 4)
+                                gradientType = 0;
+
+                            bm.gradientType = (BeatmapObject.GradientType)gradientType;
+
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                            Updater.UpdateObject(bm, "GradientType");
+                        }
+                    }));
+
+                GenerateButtons(parent, 48f, 8f,
+                    new ButtonFunction(nameof(BeatmapObject.GradientType.Normal), () =>
+                    {
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        {
+                            var bm = timelineObject.GetData<BeatmapObject>();
+                            bm.gradientType = BeatmapObject.GradientType.Normal;
+
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                            Updater.UpdateObject(bm, "GradientType");
+                        }
+                    }),
+                    new ButtonFunction("Linear Right", () =>
+                    {
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        {
+                            var bm = timelineObject.GetData<BeatmapObject>();
+                            bm.gradientType = BeatmapObject.GradientType.RightLinear;
+
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                            Updater.UpdateObject(bm, "GradientType");
+                        }
+                    }),
+                    new ButtonFunction("Linear Left", () =>
+                    {
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        {
+                            var bm = timelineObject.GetData<BeatmapObject>();
+                            bm.gradientType = BeatmapObject.GradientType.LeftLinear;
+
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                            Updater.UpdateObject(bm, "GradientType");
+                        }
+                    }),
+                    new ButtonFunction("Radial In", () =>
+                    {
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        {
+                            var bm = timelineObject.GetData<BeatmapObject>();
+                            bm.gradientType = BeatmapObject.GradientType.OutInRadial;
+
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                            Updater.UpdateObject(bm, "GradientType");
+                        }
+                    }),
+                    new ButtonFunction("Radial Out", () =>
+                    {
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        {
+                            var bm = timelineObject.GetData<BeatmapObject>();
+                            bm.gradientType = BeatmapObject.GradientType.InOutRadial;
+
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                            Updater.UpdateObject(bm, "GradientType");
+                        }
+                    }));
+            }
 
             // Assign Objects to Prefab
             {
@@ -4677,7 +4778,7 @@ namespace BetterLegacy.Editor.Managers
                 var labels = GenerateLabels(parent, 32f, "Modify Object Render Type");
 
                 var buttons1 = GenerateButtons(parent, 32f, 8f,
-                    new ButtonFunction("On", () =>
+                    new ButtonFunction("Background", () =>
                     {
                         foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
@@ -4686,7 +4787,7 @@ namespace BetterLegacy.Editor.Managers
                                 levelObject.visualObject.GameObject.layer = beatmapObject.background ? 9 : 8;
                         }
                     }),
-                    new ButtonFunction("Off", () =>
+                    new ButtonFunction("Foreground", () =>
                     {
                         foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                         {
@@ -5402,6 +5503,79 @@ namespace BetterLegacy.Editor.Managers
                 var valIF = CreateInputField("val", "", "Enter value... (Keep empty to not set)", parent, isInteger: false);
                 ((Text)valIF.placeholder).fontSize = 13;
 
+                var disableGradient = EditorPrefabHolder.Instance.Function2Button.Duplicate(parent, "disable color");
+                var disableGradientX = EditorManager.inst.colorGUI.transform.Find("Image").gameObject.Duplicate(disableGradient.transform, "x");
+                var disableGradientXImage = disableGradientX.GetComponent<Image>();
+                disableGradientXImage.sprite = CloseSprite;
+                RectValues.Default.AnchoredPosition(-170f, 0f).SizeDelta(32f, 32f).AssignToRectTransform(disableGradientXImage.rectTransform);
+                var disableGradientButtonStorage = disableGradient.GetComponent<FunctionButtonStorage>();
+                disableGradientButtonStorage.button.onClick.ClearAll();
+                disableGradientButtonStorage.button.onClick.AddListener(() =>
+                {
+                    disableGradientX.gameObject.SetActive(true);
+                    currentMultiGradientColorSelection = -1;
+                    UpdateMultiColorButtons();
+                });
+                disableGradientButtonStorage.text.text = "Don't set color";
+                EditorThemeManager.AddGraphic(disableGradientXImage, ThemeGroup.Function_2_Text);
+                EditorThemeManager.AddGraphic(disableGradientButtonStorage.text, ThemeGroup.Function_2_Text);
+                EditorThemeManager.AddSelectable(disableGradientButtonStorage.button, ThemeGroup.Function_2);
+
+                var colorGradientLayout = Creator.NewUIObject("color layout", parent);
+                colorGradientLayout.transform.AsRT().sizeDelta = new Vector2(390f, 76f);
+                var colorGradientLayoutGLG = colorGradientLayout.AddComponent<GridLayoutGroup>();
+                colorGradientLayoutGLG.spacing = new Vector2(4f, 4f);
+                colorGradientLayoutGLG.cellSize = new Vector2(36f, 36f);
+
+                for (int i = 0; i < 18; i++)
+                {
+                    var index = i;
+                    var colorGUI = EditorManager.inst.colorGUI.Duplicate(colorGradientLayout.transform, (i + 1).ToString());
+                    var assigner = colorGUI.AddComponent<AssignToTheme>();
+                    assigner.Index = i;
+                    var image = colorGUI.GetComponent<Image>();
+                    assigner.Graphic = image;
+
+                    var selected = colorGUI.transform.GetChild(0).gameObject;
+                    selected.SetActive(false);
+
+                    var button = colorGUI.GetComponent<Button>();
+                    button.onClick.ClearAll();
+                    button.onClick.AddListener(() =>
+                    {
+                        disableGradientX.gameObject.SetActive(false);
+                        currentMultiGradientColorSelection = index;
+                        UpdateMultiColorButtons();
+                    });
+
+                    multiGradientColorButtons.Add(new MultiColorButton
+                    {
+                        Button = button,
+                        Image = image,
+                        Selected = selected
+                    });
+                }
+
+                GenerateLabels(parent, 32f, "Gradient Opacity");
+
+                var opacityGradientIF = CreateInputField("opacity", "", "Enter value... (Keep empty to not set)", parent, isInteger: false);
+                ((Text)opacityGradientIF.placeholder).fontSize = 13;
+
+                GenerateLabels(parent, 32f, "Gradient Hue");
+
+                var hueGradientIF = CreateInputField("hue", "", "Enter value... (Keep empty to not set)", parent, isInteger: false);
+                ((Text)hueGradientIF.placeholder).fontSize = 13;
+
+                GenerateLabels(parent, 32f, "Gradient Saturation");
+
+                var satGradientIF = CreateInputField("sat", "", "Enter value... (Keep empty to not set)", parent, isInteger: false);
+                ((Text)satGradientIF.placeholder).fontSize = 13;
+
+                GenerateLabels(parent, 32f, "Gradient Value (Brightness)");
+
+                var valGradientIF = CreateInputField("val", "", "Enter value... (Keep empty to not set)", parent, isInteger: false);
+                ((Text)valGradientIF.placeholder).fontSize = 13;
+
                 GenerateLabels(parent, 32f, "Ease Type");
 
                 var curvesObject = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/right/position/curves").Duplicate(parent, "curves");
@@ -5448,6 +5622,18 @@ namespace BetterLegacy.Editor.Managers
                                         kf.eventValues[3] = Parser.TryParse(satIF.text, 0f);
                                     if (!string.IsNullOrEmpty(valIF.text))
                                         kf.eventValues[4] = Parser.TryParse(valIF.text, 0f);
+
+                                    // Gradient
+                                    if (currentMultiGradientColorSelection >= 0)
+                                        kf.eventValues[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18);
+                                    if (!string.IsNullOrEmpty(opacityGradientIF.text))
+                                        kf.eventValues[6] = -Mathf.Clamp(Parser.TryParse(opacityGradientIF.text, 1f), 0f, 1f) + 1f;
+                                    if (!string.IsNullOrEmpty(hueGradientIF.text))
+                                        kf.eventValues[7] = Parser.TryParse(hueGradientIF.text, 0f);
+                                    if (!string.IsNullOrEmpty(satGradientIF.text))
+                                        kf.eventValues[8] = Parser.TryParse(satGradientIF.text, 0f);
+                                    if (!string.IsNullOrEmpty(valGradientIF.text))
+                                        kf.eventValues[9] = Parser.TryParse(valGradientIF.text, 0f);
                                 }
 
                                 Updater.UpdateObject(bm, "Keyframes");
@@ -5474,6 +5660,18 @@ namespace BetterLegacy.Editor.Managers
                                         kf.eventValues[3] += Parser.TryParse(satIF.text, 0f);
                                     if (!string.IsNullOrEmpty(valIF.text))
                                         kf.eventValues[4] += Parser.TryParse(valIF.text, 0f);
+
+                                    // Gradient
+                                    if (currentMultiGradientColorSelection >= 0)
+                                        kf.eventValues[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18); // color slots can't be added onto.
+                                    if (!string.IsNullOrEmpty(opacityGradientIF.text))
+                                        kf.eventValues[6] = Mathf.Clamp(kf.eventValues[6] - Parser.TryParse(opacityGradientIF.text, 1f), 0f, 1f);
+                                    if (!string.IsNullOrEmpty(hueGradientIF.text))
+                                        kf.eventValues[7] += Parser.TryParse(hueGradientIF.text, 0f);
+                                    if (!string.IsNullOrEmpty(satGradientIF.text))
+                                        kf.eventValues[8] += Parser.TryParse(satGradientIF.text, 0f);
+                                    if (!string.IsNullOrEmpty(valGradientIF.text))
+                                        kf.eventValues[9] += Parser.TryParse(valGradientIF.text, 0f);
                                 }
 
                                 Updater.UpdateObject(bm, "Keyframes");
@@ -5500,6 +5698,18 @@ namespace BetterLegacy.Editor.Managers
                                         kf.eventValues[3] -= Parser.TryParse(satIF.text, 0f);
                                     if (!string.IsNullOrEmpty(valIF.text))
                                         kf.eventValues[4] -= Parser.TryParse(valIF.text, 0f);
+
+                                    // Gradient
+                                    if (currentMultiGradientColorSelection >= 0)
+                                        kf.eventValues[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18); // color slots can't be added onto.
+                                    if (!string.IsNullOrEmpty(opacityGradientIF.text))
+                                        kf.eventValues[6] = Mathf.Clamp(kf.eventValues[6] + Parser.TryParse(opacityGradientIF.text, 1f), 0f, 1f);
+                                    if (!string.IsNullOrEmpty(hueGradientIF.text))
+                                        kf.eventValues[7] -= Parser.TryParse(hueGradientIF.text, 0f);
+                                    if (!string.IsNullOrEmpty(satGradientIF.text))
+                                        kf.eventValues[8] -= Parser.TryParse(satGradientIF.text, 0f);
+                                    if (!string.IsNullOrEmpty(valGradientIF.text))
+                                        kf.eventValues[9] -= Parser.TryParse(valGradientIF.text, 0f);
                                 }
 
                                 Updater.UpdateObject(bm, "Keyframes");
@@ -5535,6 +5745,18 @@ namespace BetterLegacy.Editor.Managers
                                 if (!string.IsNullOrEmpty(valIF.text))
                                     kf.eventValues[4] = Parser.TryParse(valIF.text, 0f);
 
+                                // Gradient
+                                if (currentMultiGradientColorSelection >= 0)
+                                    kf.eventValues[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18);
+                                if (!string.IsNullOrEmpty(opacityGradientIF.text))
+                                    kf.eventValues[6] = -Mathf.Clamp(Parser.TryParse(opacityGradientIF.text, 1f), 0f, 1f) + 1f;
+                                if (!string.IsNullOrEmpty(hueGradientIF.text))
+                                    kf.eventValues[7] = Parser.TryParse(hueGradientIF.text, 0f);
+                                if (!string.IsNullOrEmpty(satGradientIF.text))
+                                    kf.eventValues[8] = Parser.TryParse(satGradientIF.text, 0f);
+                                if (!string.IsNullOrEmpty(valGradientIF.text))
+                                    kf.eventValues[9] = Parser.TryParse(valGradientIF.text, 0f);
+
                                 Updater.UpdateObject(bm, "Keyframes");
                             }
                         }),
@@ -5560,6 +5782,18 @@ namespace BetterLegacy.Editor.Managers
                                 if (!string.IsNullOrEmpty(valIF.text))
                                     kf.eventValues[4] += Parser.TryParse(valIF.text, 0f);
 
+                                // Gradient
+                                if (currentMultiGradientColorSelection >= 0)
+                                    kf.eventValues[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18); // color slots can't be added onto.
+                                if (!string.IsNullOrEmpty(opacityGradientIF.text))
+                                    kf.eventValues[6] = Mathf.Clamp(kf.eventValues[6] - Parser.TryParse(opacityGradientIF.text, 1f), 0f, 1f);
+                                if (!string.IsNullOrEmpty(hueGradientIF.text))
+                                    kf.eventValues[7] += Parser.TryParse(hueGradientIF.text, 0f);
+                                if (!string.IsNullOrEmpty(satGradientIF.text))
+                                    kf.eventValues[8] += Parser.TryParse(satGradientIF.text, 0f);
+                                if (!string.IsNullOrEmpty(valGradientIF.text))
+                                    kf.eventValues[9] += Parser.TryParse(valGradientIF.text, 0f);
+
                                 Updater.UpdateObject(bm, "Keyframes");
                             }
                         }),
@@ -5584,6 +5818,18 @@ namespace BetterLegacy.Editor.Managers
                                     kf.eventValues[3] -= Parser.TryParse(satIF.text, 0f);
                                 if (!string.IsNullOrEmpty(valIF.text))
                                     kf.eventValues[4] -= Parser.TryParse(valIF.text, 0f);
+
+                                // Gradient
+                                if (currentMultiGradientColorSelection >= 0)
+                                    kf.eventValues[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18); // color slots can't be added onto.
+                                if (!string.IsNullOrEmpty(opacityGradientIF.text))
+                                    kf.eventValues[6] = Mathf.Clamp(kf.eventValues[6] + Parser.TryParse(opacityGradientIF.text, 1f), 0f, 1f);
+                                if (!string.IsNullOrEmpty(hueGradientIF.text))
+                                    kf.eventValues[7] -= Parser.TryParse(hueGradientIF.text, 0f);
+                                if (!string.IsNullOrEmpty(satGradientIF.text))
+                                    kf.eventValues[8] -= Parser.TryParse(satGradientIF.text, 0f);
+                                if (!string.IsNullOrEmpty(valGradientIF.text))
+                                    kf.eventValues[9] -= Parser.TryParse(valGradientIF.text, 0f);
 
                                 Updater.UpdateObject(bm, "Keyframes");
                             }
@@ -5623,6 +5869,19 @@ namespace BetterLegacy.Editor.Managers
                                     kf.eventValues[3] = Parser.TryParse(satIF.text, 0f);
                                 if (!string.IsNullOrEmpty(valIF.text))
                                     kf.eventValues[4] = Parser.TryParse(valIF.text, 0f);
+
+                                // Gradient
+                                if (currentMultiGradientColorSelection >= 0)
+                                    kf.eventValues[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18);
+                                if (!string.IsNullOrEmpty(opacityGradientIF.text))
+                                    kf.eventValues[6] = -Mathf.Clamp(Parser.TryParse(opacityGradientIF.text, 1f), 0f, 1f) + 1f;
+                                if (!string.IsNullOrEmpty(hueGradientIF.text))
+                                    kf.eventValues[7] = Parser.TryParse(hueGradientIF.text, 0f);
+                                if (!string.IsNullOrEmpty(satGradientIF.text))
+                                    kf.eventValues[8] = Parser.TryParse(satGradientIF.text, 0f);
+                                if (!string.IsNullOrEmpty(valGradientIF.text))
+                                    kf.eventValues[9] = Parser.TryParse(valGradientIF.text, 0f);
+
                                 bm.events[3].Add(kf);
                             }
 
@@ -6379,10 +6638,10 @@ namespace BetterLegacy.Editor.Managers
         void UpdateMultiColorButtons()
         {
             for (int i = 0; i < multiColorButtons.Count; i++)
-            {
-                var multiColorButton = multiColorButtons[i];
-                multiColorButton.Selected.SetActive(currentMultiColorSelection == i);
-            }
+                multiColorButtons[i].Selected.SetActive(currentMultiColorSelection == i);
+
+            for (int i = 0; i < multiGradientColorButtons.Count; i++)
+                multiGradientColorButtons[i].Selected.SetActive(currentMultiGradientColorSelection == i);
         }
 
         Document GenerateDocument(string name, string description, List<Document.Element> elements)
