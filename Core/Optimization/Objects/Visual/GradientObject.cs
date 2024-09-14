@@ -57,14 +57,9 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
             if (color2.a < 0) //no custom opacity, it means it's an alpha gradient
             {
                 color2.a = color.a;
-                
+
                 if (color.r == color2.r && color.g == color2.g && color.b == color2.b)
-                {
-                    if (gradientType == 1 || gradientType == 3)
-                        color.a = 0;
-                    else 
-                        color2.a = 0;
-                }
+                    color2.a = 0;
             }
 
             if (gradientType == 1 || gradientType == 3)
