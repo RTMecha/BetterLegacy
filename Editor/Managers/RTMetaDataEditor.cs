@@ -779,9 +779,7 @@ namespace BetterLegacy.Editor.Managers
         }
 
         bool VerifyFile(string file) => !file.Contains("autosave") && !file.Contains("backup") && !file.Contains("level-previous") && file != "editor.lse" && !file.Contains("waveform-") &&
-            (file.Contains(".lsb") || file.Contains(".vgd") || file.Contains(".vgm") ||
-            file.Contains(".jpg") || file.Contains(".png") ||
-            file.Contains(".ogg") || file.Contains(".wav") || file.Contains(".mp3") || file.Contains(".mp4"));
+            (file.Contains(".lsb") || file.Contains(".jpg") || file.Contains(".png") || file.Contains(".ogg") || file.Contains(".wav") || file.Contains(".mp3") || file.Contains(".mp4"));
 
         public void ConvertLevel()
         {
