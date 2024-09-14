@@ -6574,6 +6574,7 @@ namespace BetterLegacy.Editor.Managers
                 new Document.Element("<b>SPECIAL THANKS</b>", Document.Element.Type.Text),
                 new Document.Element("Pidge (developer of the game) - Obviously for making the game itself and inspiring some features in BetterLegacy.", Document.Element.Type.Text),
                 new Document.Element("enchart - Massively helped RTMecha get into modding in the first place. Without enchart, none of this would have been possible.", Document.Element.Type.Text),
+                new Document.Element("aiden_ytarame - Ported gradient objects from alpha to BetterLegacy.", Document.Element.Type.Text),
                 new Document.Element("SleepyzGamer - Helped a lot in finding things", Document.Element.Type.Text),
                 new Document.Element("KarasuTori - For motivating RTMecha to keep going and experimenting with modding.", Document.Element.Type.Text),
                 new Document.Element("MoNsTeR and CubeCube for testing the mods, reporting bugs and giving suggestions.", Document.Element.Type.Text),
