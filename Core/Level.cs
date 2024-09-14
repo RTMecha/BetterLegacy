@@ -21,11 +21,10 @@ namespace BetterLegacy.Core
         public Level(string path)
         {
             this.path = path;
-
-            if (RTFile.FileExists($"{path}metadata.vgm"))
-                metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile($"{path}metadata.vgm")));
-            else if (RTFile.FileExists($"{path}metadata.lsb"))
+            if (RTFile.FileExists($"{path}metadata.lsb"))
                 metadata = MetaData.Parse(JSON.Parse(RTFile.ReadFromFile($"{path}metadata.lsb")), false);
+            else if (RTFile.FileExists($"{path}metadata.vgm"))
+                metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile($"{path}metadata.vgm")));
 
             icon = RTFile.FileExists($"{path}level.jpg") ? SpriteHelper.LoadSprite($"{path}level.jpg") : RTFile.FileExists($"{path}cover.jpg") ? SpriteHelper.LoadSprite($"{path}cover.jpg") : SteamWorkshop.inst.defaultSteamImageSprite;
 
