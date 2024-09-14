@@ -519,8 +519,6 @@ namespace BetterLegacy.Editor.Managers
                     #region String
 
                     case "updateObject":
-                    case "copyColor":
-                    case "copyColorOther":
                     case "loadLevel":
                     case "loadLevelInternal":
                     case "setText":
@@ -541,7 +539,7 @@ namespace BetterLegacy.Editor.Managers
                                 StringGenerator(modifier, layout, cmd == "setImageOther" ? "Path" : "Text", 0);
                             }
 
-                            if (cmd == "updateObject" || cmd == "copyColor" || cmd == "copyColorOther" || cmd == "objectCollide")
+                            if (cmd == "updateObject" || cmd == "objectCollide")
                                 StringGenerator(modifier, layout, "Object Group", 0);
                             else if (cmd != "setTextOther" && cmd != "addTextOther" && cmd != "setImageOther")
                                 StringGenerator(modifier, layout, cmd == "setText" || cmd == "addText" ? "Text" :
@@ -1163,6 +1161,15 @@ namespace BetterLegacy.Editor.Managers
 
                     #region Color
 
+                    case "copyColor":
+                    case "copyColorOther":
+                        {
+                            StringGenerator(modifier, layout, "Object Group", 0);
+                            BoolGenerator(modifier, layout, "Apply Color 1", 1, true);
+                            BoolGenerator(modifier, layout, "Apply Color 2", 2, true);
+
+                            break;
+                        }
                     case "addColor":
                     case "addColorOther":
                     case "lerpColor":
@@ -1212,6 +1219,8 @@ namespace BetterLegacy.Editor.Managers
                             StringGenerator(modifier, layout, "Hex Code", 0);
                             if (cmd.Contains("Other"))
                                 StringGenerator(modifier, layout, "Object Group", 1);
+
+                            StringGenerator(modifier, layout, "Hex Gradient Color", cmd.Contains("Other") ? 2 : 1);
 
                             break;
                         }
