@@ -5725,111 +5725,114 @@ namespace BetterLegacy.Editor.Managers
                     GenerateButtons(parent, 32f, 8f,
                         new ButtonFunction("Set", () =>
                         {
+                            if (assignIndex.text.Contains(","))
+                            {
+                                var split = assignIndex.text.Split(',');
+
+                                for (int i = 0; i < split.Length; i++)
+                                {
+                                    var text = split[i];
+                                    if (!int.TryParse(text, out int a))
+                                        continue;
+
+                                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                                    {
+                                        var bm = timelineObject.GetData<BeatmapObject>();
+
+                                        SetKeyframeValues((EventKeyframe)bm.events[3][Mathf.Clamp(a, 0, bm.events[3].Count - 1)], curves,
+                                            opacityIF.text, hueIF.text, satIF.text, valIF.text, opacityGradientIF.text, hueGradientIF.text, satGradientIF.text, valGradientIF.text);
+
+                                        Updater.UpdateObject(bm, "Keyframes");
+                                    }
+                                }
+
+                                return;
+                            }
+
                             if (!int.TryParse(assignIndex.text, out int num))
                                 return;
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
                                 var bm = timelineObject.GetData<BeatmapObject>();
 
-                                var kf = bm.events[3][Mathf.Clamp(num, 0, bm.events[3].Count - 1)];
-                                if (curves.value != 0 && DataManager.inst.AnimationListDictionary.ContainsKey(curves.value - 1))
-                                    kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
-                                if (currentMultiColorSelection >= 0)
-                                    kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
-                                if (!string.IsNullOrEmpty(opacityIF.text))
-                                    kf.eventValues[1] = Mathf.Clamp(kf.eventValues[1] - Parser.TryParse(opacityIF.text, 1f), 0f, 1f);
-                                if (!string.IsNullOrEmpty(hueIF.text))
-                                    kf.eventValues[2] = Parser.TryParse(hueIF.text, 0f);
-                                if (!string.IsNullOrEmpty(satIF.text))
-                                    kf.eventValues[3] = Parser.TryParse(satIF.text, 0f);
-                                if (!string.IsNullOrEmpty(valIF.text))
-                                    kf.eventValues[4] = Parser.TryParse(valIF.text, 0f);
-
-                                // Gradient
-                                if (currentMultiGradientColorSelection >= 0)
-                                    kf.eventValues[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18);
-                                if (!string.IsNullOrEmpty(opacityGradientIF.text))
-                                    kf.eventValues[6] = -Mathf.Clamp(Parser.TryParse(opacityGradientIF.text, 1f), 0f, 1f) + 1f;
-                                if (!string.IsNullOrEmpty(hueGradientIF.text))
-                                    kf.eventValues[7] = Parser.TryParse(hueGradientIF.text, 0f);
-                                if (!string.IsNullOrEmpty(satGradientIF.text))
-                                    kf.eventValues[8] = Parser.TryParse(satGradientIF.text, 0f);
-                                if (!string.IsNullOrEmpty(valGradientIF.text))
-                                    kf.eventValues[9] = Parser.TryParse(valGradientIF.text, 0f);
+                                SetKeyframeValues((EventKeyframe)bm.events[3][Mathf.Clamp(num, 0, bm.events[3].Count - 1)], curves,
+                                    opacityIF.text, hueIF.text, satIF.text, valIF.text, opacityGradientIF.text, hueGradientIF.text, satGradientIF.text, valGradientIF.text);
 
                                 Updater.UpdateObject(bm, "Keyframes");
                             }
                         }),
                         new ButtonFunction("Add", () =>
                         {
+                            if (assignIndex.text.Contains(","))
+                            {
+                                var split = assignIndex.text.Split(',');
+
+                                for (int i = 0; i < split.Length; i++)
+                                {
+                                    var text = split[i];
+                                    if (!int.TryParse(text, out int a))
+                                        return;
+
+                                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                                    {
+                                        var bm = timelineObject.GetData<BeatmapObject>();
+
+                                        AddKeyframeValues((EventKeyframe)bm.events[3][Mathf.Clamp(a, 0, bm.events[3].Count - 1)], curves,
+                                            opacityIF.text, hueIF.text, satIF.text, valIF.text, opacityGradientIF.text, hueGradientIF.text, satGradientIF.text, valGradientIF.text);
+
+                                        Updater.UpdateObject(bm, "Keyframes");
+                                    }
+                                }
+
+                                return;
+                            }
+
                             if (!int.TryParse(assignIndex.text, out int num))
                                 return;
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
                                 var bm = timelineObject.GetData<BeatmapObject>();
 
-                                var kf = bm.events[3][Mathf.Clamp(num, 0, bm.events[3].Count - 1)];
-                                if (curves.value != 0 && DataManager.inst.AnimationListDictionary.ContainsKey(curves.value - 1))
-                                    kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
-                                if (currentMultiColorSelection >= 0)
-                                    kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
-                                if (!string.IsNullOrEmpty(opacityIF.text))
-                                    kf.eventValues[1] = Mathf.Clamp(kf.eventValues[1] - Parser.TryParse(opacityIF.text, 1f), 0f, 1f);
-                                if (!string.IsNullOrEmpty(hueIF.text))
-                                    kf.eventValues[2] += Parser.TryParse(hueIF.text, 0f);
-                                if (!string.IsNullOrEmpty(satIF.text))
-                                    kf.eventValues[3] += Parser.TryParse(satIF.text, 0f);
-                                if (!string.IsNullOrEmpty(valIF.text))
-                                    kf.eventValues[4] += Parser.TryParse(valIF.text, 0f);
-
-                                // Gradient
-                                if (currentMultiGradientColorSelection >= 0)
-                                    kf.eventValues[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18); // color slots can't be added onto.
-                                if (!string.IsNullOrEmpty(opacityGradientIF.text))
-                                    kf.eventValues[6] = Mathf.Clamp(kf.eventValues[6] - Parser.TryParse(opacityGradientIF.text, 1f), 0f, 1f);
-                                if (!string.IsNullOrEmpty(hueGradientIF.text))
-                                    kf.eventValues[7] += Parser.TryParse(hueGradientIF.text, 0f);
-                                if (!string.IsNullOrEmpty(satGradientIF.text))
-                                    kf.eventValues[8] += Parser.TryParse(satGradientIF.text, 0f);
-                                if (!string.IsNullOrEmpty(valGradientIF.text))
-                                    kf.eventValues[9] += Parser.TryParse(valGradientIF.text, 0f);
+                                AddKeyframeValues((EventKeyframe)bm.events[3][Mathf.Clamp(num, 0, bm.events[3].Count - 1)], curves,
+                                    opacityIF.text, hueIF.text, satIF.text, valIF.text, opacityGradientIF.text, hueGradientIF.text, satGradientIF.text, valGradientIF.text);
 
                                 Updater.UpdateObject(bm, "Keyframes");
                             }
                         }),
                         new ButtonFunction("Sub", () =>
                         {
+                            if (assignIndex.text.Contains(","))
+                            {
+                                var split = assignIndex.text.Split(',');
+
+                                for (int i = 0; i < split.Length; i++)
+                                {
+                                    var text = split[i];
+                                    if (!int.TryParse(text, out int a))
+                                        return;
+
+                                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                                    {
+                                        var bm = timelineObject.GetData<BeatmapObject>();
+
+                                        SubKeyframeValues((EventKeyframe)bm.events[3][Mathf.Clamp(a, 0, bm.events[3].Count - 1)], curves,
+                                            opacityIF.text, hueIF.text, satIF.text, valIF.text, opacityGradientIF.text, hueGradientIF.text, satGradientIF.text, valGradientIF.text);
+
+                                        Updater.UpdateObject(bm, "Keyframes");
+                                    }
+                                }
+
+                                return;
+                            }
+
                             if (!int.TryParse(assignIndex.text, out int num))
                                 return;
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
                                 var bm = timelineObject.GetData<BeatmapObject>();
 
-                                var kf = bm.events[3][Mathf.Clamp(num, 0, bm.events[3].Count - 1)];
-                                if (curves.value != 0 && DataManager.inst.AnimationListDictionary.ContainsKey(curves.value - 1))
-                                    kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
-                                if (currentMultiColorSelection >= 0)
-                                    kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
-                                if (!string.IsNullOrEmpty(opacityIF.text))
-                                    kf.eventValues[1] = Mathf.Clamp(kf.eventValues[1] + Parser.TryParse(opacityIF.text, 1f), 0f, 1f);
-                                if (!string.IsNullOrEmpty(hueIF.text))
-                                    kf.eventValues[2] -= Parser.TryParse(hueIF.text, 0f);
-                                if (!string.IsNullOrEmpty(satIF.text))
-                                    kf.eventValues[3] -= Parser.TryParse(satIF.text, 0f);
-                                if (!string.IsNullOrEmpty(valIF.text))
-                                    kf.eventValues[4] -= Parser.TryParse(valIF.text, 0f);
-
-                                // Gradient
-                                if (currentMultiGradientColorSelection >= 0)
-                                    kf.eventValues[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18); // color slots can't be added onto.
-                                if (!string.IsNullOrEmpty(opacityGradientIF.text))
-                                    kf.eventValues[6] = Mathf.Clamp(kf.eventValues[6] + Parser.TryParse(opacityGradientIF.text, 1f), 0f, 1f);
-                                if (!string.IsNullOrEmpty(hueGradientIF.text))
-                                    kf.eventValues[7] -= Parser.TryParse(hueGradientIF.text, 0f);
-                                if (!string.IsNullOrEmpty(satGradientIF.text))
-                                    kf.eventValues[8] -= Parser.TryParse(satGradientIF.text, 0f);
-                                if (!string.IsNullOrEmpty(valGradientIF.text))
-                                    kf.eventValues[9] -= Parser.TryParse(valGradientIF.text, 0f);
+                                SubKeyframeValues((EventKeyframe)bm.events[3][Mathf.Clamp(num, 0, bm.events[3].Count - 1)], curves,
+                                    opacityIF.text, hueIF.text, satIF.text, valIF.text, opacityGradientIF.text, hueGradientIF.text, satGradientIF.text, valGradientIF.text);
 
                                 Updater.UpdateObject(bm, "Keyframes");
                             }
@@ -6506,6 +6509,93 @@ namespace BetterLegacy.Editor.Managers
 
             multiObjectEditorDialog.Find("data").AsRT().sizeDelta = new Vector2(810f, 730.11f);
             multiObjectEditorDialog.Find("data/left").AsRT().sizeDelta = new Vector2(355f, 730f);
+        }
+
+        public void SetKeyframeValues(EventKeyframe kf, Dropdown curves,
+            string opacity, string hue, string sat, string val, string opacityGradient, string hueGradient, string satGradient, string valGradient)
+        {
+            if (curves.value != 0 && DataManager.inst.AnimationListDictionary.ContainsKey(curves.value - 1))
+                kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
+            if (currentMultiColorSelection >= 0)
+                kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
+            if (!string.IsNullOrEmpty(opacity))
+                kf.eventValues[1] = Mathf.Clamp(kf.eventValues[1] - Parser.TryParse(opacity, 1f), 0f, 1f);
+            if (!string.IsNullOrEmpty(hue))
+                kf.eventValues[2] = Parser.TryParse(sat, 0f);
+            if (!string.IsNullOrEmpty(sat))
+                kf.eventValues[3] = Parser.TryParse(sat, 0f);
+            if (!string.IsNullOrEmpty(val))
+                kf.eventValues[4] = Parser.TryParse(val, 0f);
+
+            // Gradient
+            if (currentMultiGradientColorSelection >= 0)
+                kf.eventValues[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18);
+            if (!string.IsNullOrEmpty(opacityGradient))
+                kf.eventValues[6] = -Mathf.Clamp(Parser.TryParse(opacityGradient, 1f), 0f, 1f) + 1f;
+            if (!string.IsNullOrEmpty(hueGradient))
+                kf.eventValues[7] = Parser.TryParse(hueGradient, 0f);
+            if (!string.IsNullOrEmpty(satGradient))
+                kf.eventValues[8] = Parser.TryParse(satGradient, 0f);
+            if (!string.IsNullOrEmpty(valGradient))
+                kf.eventValues[9] = Parser.TryParse(valGradient, 0f);
+        }
+        
+        public void AddKeyframeValues(EventKeyframe kf, Dropdown curves,
+            string opacity, string hue, string sat, string val, string opacityGradient, string hueGradient, string satGradient, string valGradient)
+        {
+            if (curves.value != 0 && DataManager.inst.AnimationListDictionary.ContainsKey(curves.value - 1))
+                kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
+            if (currentMultiColorSelection >= 0)
+                kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
+            if (!string.IsNullOrEmpty(opacity))
+                kf.eventValues[1] = Mathf.Clamp(kf.eventValues[1] - Parser.TryParse(opacity, 1f), 0f, 1f);
+            if (!string.IsNullOrEmpty(hue))
+                kf.eventValues[2] += Parser.TryParse(hue, 0f);
+            if (!string.IsNullOrEmpty(sat))
+                kf.eventValues[3] += Parser.TryParse(sat, 0f);
+            if (!string.IsNullOrEmpty(val))
+                kf.eventValues[4] += Parser.TryParse(val, 0f);
+
+            // Gradient
+            if (currentMultiGradientColorSelection >= 0)
+                kf.eventValues[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18); // color slots can't be added onto.
+            if (!string.IsNullOrEmpty(opacityGradient))
+                kf.eventValues[6] = Mathf.Clamp(kf.eventValues[6] - Parser.TryParse(opacityGradient, 1f), 0f, 1f);
+            if (!string.IsNullOrEmpty(hueGradient))
+                kf.eventValues[7] += Parser.TryParse(hueGradient, 0f);
+            if (!string.IsNullOrEmpty(satGradient))
+                kf.eventValues[8] += Parser.TryParse(satGradient, 0f);
+            if (!string.IsNullOrEmpty(valGradient))
+                kf.eventValues[9] += Parser.TryParse(valGradient, 0f);
+        }
+        
+        public void SubKeyframeValues(EventKeyframe kf, Dropdown curves,
+            string opacity, string hue, string sat, string val, string opacityGradient, string hueGradient, string satGradient, string valGradient)
+        {
+            if (curves.value != 0 && DataManager.inst.AnimationListDictionary.ContainsKey(curves.value - 1))
+                kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
+            if (currentMultiColorSelection >= 0)
+                kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
+            if (!string.IsNullOrEmpty(opacity))
+                kf.eventValues[1] = Mathf.Clamp(kf.eventValues[1] + Parser.TryParse(opacity, 1f), 0f, 1f);
+            if (!string.IsNullOrEmpty(hue))
+                kf.eventValues[2] -= Parser.TryParse(hue, 0f);
+            if (!string.IsNullOrEmpty(sat))
+                kf.eventValues[3] -= Parser.TryParse(sat, 0f);
+            if (!string.IsNullOrEmpty(val))
+                kf.eventValues[4] -= Parser.TryParse(val, 0f);
+
+            // Gradient
+            if (currentMultiGradientColorSelection >= 0)
+                kf.eventValues[5] = Mathf.Clamp(currentMultiGradientColorSelection, 0, 18); // color slots can't be added onto.
+            if (!string.IsNullOrEmpty(opacityGradient))
+                kf.eventValues[6] = Mathf.Clamp(kf.eventValues[6] + Parser.TryParse(opacityGradient, 1f), 0f, 1f);
+            if (!string.IsNullOrEmpty(hueGradient))
+                kf.eventValues[7] -= Parser.TryParse(hueGradient, 0f);
+            if (!string.IsNullOrEmpty(satGradient))
+                kf.eventValues[8] -= Parser.TryParse(satGradient, 0f);
+            if (!string.IsNullOrEmpty(valGradient))
+                kf.eventValues[9] -= Parser.TryParse(valGradient, 0f);
         }
 
         public GameObject GenerateLabels(Transform parent, float sizeY, params string[] labels)
