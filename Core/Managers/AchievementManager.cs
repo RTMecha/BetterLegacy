@@ -47,6 +47,7 @@ namespace BetterLegacy.Core.Managers
             CreateGlobalAchievement("costume_party", "Costume Party", "Play a level with a custom player model.", 2, "costume_party");
             CreateGlobalAchievement("expert_plus_ss_rank", "A true expert!", "Complete an expert+ difficulty level with SS rank.", 5, "expert_plus_ss_rank");
             CreateGlobalAchievement("master_ss_rank", "A true master!", "Complete a master difficulty level with SS rank.", 6, "master_ss_rank");
+            CreateGlobalAchievement("editor_reverse_speed", "!yaw gnorw eht s'thaT", "Reverse the level in the editor.", 3, "editor_reverse_speed");
         }
 
         void CreateGlobalAchievement(string id, string name, string desc, int difficulty, string iconFileName)

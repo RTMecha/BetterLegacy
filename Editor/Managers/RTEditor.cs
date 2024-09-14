@@ -2384,7 +2384,12 @@ namespace BetterLegacy.Editor.Managers
             pitchField.onValueChanged.AddListener(_val =>
             {
                 if (float.TryParse(_val, out float num))
+                {
                     AudioManager.inst.SetPitch(num);
+
+                    if (num < 0f)
+                        AchievementManager.inst.UnlockAchievement("editor_reverse_speed");
+                }
             });
 
             TriggerHelper.AddEventTriggers(pitchObj, TriggerHelper.ScrollDelta(pitchField, 0.1f, 10f));
