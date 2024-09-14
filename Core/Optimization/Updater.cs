@@ -159,6 +159,7 @@ namespace BetterLegacy.Core.Optimization
             {
                 switch (context)
                 {
+                    case "gradienttype": // TODO: find a way to do this better
                     case "objecttype":
                         {
                             UpdateObject(beatmapObject);
