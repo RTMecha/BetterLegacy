@@ -947,13 +947,13 @@ namespace BetterLegacy.Components.Player
             {
                 if (path.Count >= i && path[i].transform != null && path[i].transform.gameObject.activeSelf)
                 {
-                    if (isSpawning)
-                    {
-                        path[i].pos = path[0].pos;
-                        path[i].lastPos = path[0].pos;
-                        path[i].rot = path[0].rot;
-                        continue;
-                    }
+                    //if (isSpawning)
+                    //{
+                    //    path[i].pos = path[0].pos;
+                    //    path[i].lastPos = path[0].pos;
+                    //    path[i].rot = path[0].rot;
+                    //    continue;
+                    //}
 
                     num *= Vector3.Distance(path[i].lastPos, path[i].pos);
                     path[i].transform.position = Vector3.MoveTowards(path[i].lastPos, path[i].pos, num);
@@ -1292,13 +1292,16 @@ namespace BetterLegacy.Components.Player
                         }
                     case RotateMode.FlipX:
                         {
+                            b = Quaternion.AngleAxis(Mathf.Atan2(lastMovementTotal.y, lastMovementTotal.x) * 57.29578f, player.transform.forward);
+                            c = Quaternion.Slerp(player.transform.rotation, b, 720f * Time.deltaTime);
+
                             var vectorRotation = c.eulerAngles;
                             if (vectorRotation.z > 90f && vectorRotation.z < 270f)
                                 vectorRotation.z = -vectorRotation.z + 180f;
 
-                            player.transform.rotation = Quaternion.identity;
-
                             playerObjects["Face Base"].gameObject.transform.rotation = Quaternion.Euler(vectorRotation);
+
+                            player.transform.rotation = Quaternion.identity;
 
                             if (lastMovement.x > 0.01f)
                             {
@@ -1326,13 +1329,16 @@ namespace BetterLegacy.Components.Player
                         }
                     case RotateMode.FlipY:
                         {
+                            b = Quaternion.AngleAxis(Mathf.Atan2(lastMovementTotal.y, lastMovementTotal.x) * 57.29578f, player.transform.forward);
+                            c = Quaternion.Slerp(player.transform.rotation, b, 720f * Time.deltaTime);
+
                             var vectorRotation = c.eulerAngles;
                             if (vectorRotation.z > 0f && vectorRotation.z < 180f)
                                 vectorRotation.z = -vectorRotation.z + 90f;
 
-                            player.transform.rotation = Quaternion.identity;
-
                             playerObjects["Face Base"].gameObject.transform.rotation = Quaternion.Euler(vectorRotation);
+
+                            player.transform.rotation = Quaternion.identity;
 
                             if (lastMovement.y > 0.01f)
                             {
@@ -1360,7 +1366,65 @@ namespace BetterLegacy.Components.Player
                         }
                     case RotateMode.RotateReset:
                         {
-                            
+                            if (!moved)
+                            {
+                                animatingRotateReset = false;
+
+                                if (rotateResetAnimation != null)
+                                {
+                                    AnimationManager.inst.RemoveID(rotateResetAnimation.id);
+                                    rotateResetAnimation = null;
+                                }
+
+                                player.transform.rotation = c;
+
+                                playerObjects["Face Base"].gameObject.transform.localRotation = Quaternion.identity;
+                            }
+
+                            var time = Time.time - timeNotMovingOffset;
+
+                            if (moved && !animatingRotateReset && time > 0.03f)
+                            {
+                                animatingRotateReset = true;
+
+                                var z = player.transform.rotation.eulerAngles.z;
+
+                                if (rotateResetAnimation != null)
+                                {
+                                    AnimationManager.inst.RemoveID(rotateResetAnimation.id);
+                                    rotateResetAnimation = null;
+                                }
+
+                                rotateResetAnimation = new RTAnimation("Player Rotate Reset");
+                                rotateResetAnimation.animationHandlers = new List<AnimationHandlerBase>
+                                {
+                                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                                    {
+                                        new FloatKeyframe(0f, z, Ease.Linear),
+                                        new FloatKeyframe(0.2f, 0f, Ease.CircOut),
+                                    }, x =>
+                                    {
+                                        if (!player || !playerObjects["Face Base"].gameObject)
+                                            return;
+
+                                        player.transform.rotation = Quaternion.Euler(new Vector3(0f, 0f, x));
+
+                                        playerObjects["Face Base"].gameObject.transform.localRotation = Quaternion.identity;
+                                    }),
+                                };
+
+                                rotateResetAnimation.onComplete = () =>
+                                {
+                                    if (rotateResetAnimation == null)
+                                        return;
+
+                                    AnimationManager.inst.RemoveID(rotateResetAnimation.id);
+                                    rotateResetAnimation = null;
+                                    animatingRotateReset = false;
+                                };
+
+                                AnimationManager.inst.Play(rotateResetAnimation);
+                            }
 
                             break;
                         }
@@ -1450,6 +1514,13 @@ namespace BetterLegacy.Components.Player
                     lastMovement.y = posCalc.y;
             }
 
+            if (posCalc.x < -0.01f || posCalc.x > 0.01f || posCalc.y < -0.01f || posCalc.y > 0.01f)
+            {
+                lastMovementTotal = posCalc;
+                timeNotMovingOffset = Time.time;
+            }
+
+            moved = posCalc == Vector3.zero;
 
             lastPos = player.transform.position;
 
@@ -1457,6 +1528,12 @@ namespace BetterLegacy.Components.Player
             dfs.z = 0f;
             player.transform.localPosition = dfs;
         }
+
+        bool animatingRotateReset;
+        bool moved;
+        float timeNotMovingOffset;
+        Vector2 lastMovementTotal;
+        RTAnimation rotateResetAnimation;
 
         void UpdateTheme()
         {
@@ -2400,7 +2477,7 @@ namespace BetterLegacy.Components.Player
                                     }
                                 case 1:
                                     {
-                                        PlayerDelayTracker.leader = playerObjects["Boost Base"].gameObject.transform;
+                                        PlayerDelayTracker.leader = playerObjects["Boost"].gameObject.transform;
                                         break;
                                     }
                                 case 2:
