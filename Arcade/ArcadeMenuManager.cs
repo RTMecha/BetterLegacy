@@ -827,31 +827,10 @@ namespace BetterLegacy.Arcade
 
             #region Interface Setup
 
-            var inter = new GameObject("Arcade UI");
-            inter.transform.localScale = Vector3.one * CoreHelper.ScreenScale;
+            var uiCanvas = UIManager.GenerateUICanvas("Arcade UI", null, sortingOrder: 9999);
+            uiCanvas.GameObject.AddComponent<CursorManager>();
+            var inter = uiCanvas.GameObject;
             menuUI = inter;
-            inter.AddComponent<CursorManager>();
-            var interfaceRT = inter.AddComponent<RectTransform>();
-            interfaceRT.anchoredPosition = new Vector2(960f, 540f);
-            interfaceRT.sizeDelta = new Vector2(1920f, 1080f);
-            interfaceRT.pivot = new Vector2(0.5f, 0.5f);
-            interfaceRT.anchorMin = Vector2.zero;
-            interfaceRT.anchorMax = Vector2.zero;
-
-            var canvas = inter.AddComponent<Canvas>();
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.None;
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.TexCoord1;
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.Tangent;
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.Normal;
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.scaleFactor = CoreHelper.ScreenScale;
-            canvas.sortingOrder = 9999;
-
-            var canvasScaler = inter.AddComponent<CanvasScaler>();
-            canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            canvasScaler.referenceResolution = new Vector2(Screen.width, Screen.height);
-
-            inter.AddComponent<GraphicRaycaster>();
 
             var selectionBase = new GameObject("Selection Base");
             selectionBase.transform.SetParent(inter.transform);

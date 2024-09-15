@@ -464,7 +464,7 @@ namespace BetterLegacy.Core.Managers
 
             var canvasScaler = gameObject.AddComponent<CanvasScaler>();
             canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            canvasScaler.referenceResolution = new Vector2(Screen.width, Screen.height);
+            canvasScaler.referenceResolution = new Vector2(1920f, 1080f);
 
             gameObject.AddComponent<GraphicRaycaster>();
 
