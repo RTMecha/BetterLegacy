@@ -76,7 +76,7 @@ namespace BetterLegacy.Core.Managers
             CreateGlobalAchievement("editor_layer_funny", "Thai Funny", "Go to editor layer 555.", 4, "editor_layer_funny");
             CreateGlobalAchievement("example_chat", "Having a Conversation", "Talk with Example.", 4, "example_chat");
             CreateGlobalAchievement("example_touch", "No touchie touchie!", "Do not the Example.", 4, "example_touch");
-            CreateGlobalAchievement("editor_zoom_break", "Breaking Boundaries", "Reverse the level in the editor.", 3, "editor_zoom_break");
+            CreateGlobalAchievement("editor_zoom_break", "Breaking Boundaries", "Change the zoom keyframe to a value lower than 0.", 3, "editor_zoom_break");
             CreateGlobalAchievement("no_volume", "Is the Sound Off?", "Complete a level with volume turned down to 0.", 4, "no_volume");
             CreateGlobalAchievement("queue_ten", "Data Management", "Play 10 levels in a row in a Queue.", 4, "queue_ten");
             CreateGlobalAchievement("friendship", "Friendship!", "Play with friends!", 4, "friendship");
