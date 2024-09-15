@@ -20,7 +20,7 @@
 ### Misc
 - Rework arcade menu to use new interface system.
 - Possibly update input select scene to use new interface system.
-- Implement rotate reset to players.
+- MetaData settings that can be adjusted in the Play Level (Settings) menu and can be read using modifiers.
 - Add a fake Desktop thing like Rhythm Doctor for Window event keyframes.
 - Follow Player keyframe needs to have a setting for not resetting
 - Follow Player keyframe modifier
