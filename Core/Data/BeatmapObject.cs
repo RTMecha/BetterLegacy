@@ -1062,7 +1062,7 @@ namespace BetterLegacy.Core.Data
             for (int i = 0; i < events[2].Count; i++)
                 jn["events"]["rot"][i] = ((EventKeyframe)events[2][i]).ToJSON(true);
             for (int i = 0; i < events[3].Count; i++)
-                jn["events"]["col"][i] = ((EventKeyframe)events[3][i]).ToJSON();
+                jn["events"]["col"][i] = ((EventKeyframe)events[3][i]).ToJSON(maxValuesToSave: gradientType != GradientType.Normal ? -1 : 5);
 
             for (int i = 0; i < modifiers.Count; i++)
                 jn["modifiers"][i] = modifiers[i].ToJSON();

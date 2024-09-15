@@ -110,13 +110,18 @@ namespace BetterLegacy.Core.Data
             return eventKeyframe;
         }
 
-        public JSONNode ToJSON(bool defaultRelative = false)
+        public JSONNode ToJSON(bool defaultRelative = false, int maxValuesToSave = -1)
         {
             JSONNode jn = JSON.Parse("{}");
             jn["t"] = eventTime.ToString();
 
             for (int i = 0; i < eventValues.Length; i++)
+            {
+                if (maxValuesToSave != -1 && i >= maxValuesToSave)
+                    break;
+
                 jn[axis[i]] = eventValues[i].ToString();
+            }
 
             if (curveType.Name != "Linear")
                 jn["ct"] = curveType.Name;
