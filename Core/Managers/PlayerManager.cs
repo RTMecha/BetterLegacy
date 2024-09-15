@@ -1,6 +1,7 @@
 ﻿using BepInEx.Configuration;
 using BetterLegacy.Components.Player;
 using BetterLegacy.Configs;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
 using LSFunctions;
@@ -180,8 +181,15 @@ namespace BetterLegacy.Core.Managers
                     PlayerModels.Add(id, model);
             }
 
-            if (PlayerModelsIndex.Any(x => x.Value != "0"))
-                AchievementManager.inst.UnlockAchievement("costume_party");
+            try
+            {
+                if (PlayerModelsIndex.Any(x => x.Value != "0") && (!MetaData.IsValid || MetaData.Current.song == null || MetaData.Current.song.difficulty != 6))
+                    AchievementManager.inst.UnlockAchievement("costume_party");
+            }
+            catch (System.Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
         }
 
         public static void CreateNewPlayerModel()
