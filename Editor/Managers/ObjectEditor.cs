@@ -4290,7 +4290,7 @@ namespace BetterLegacy.Editor.Managers
                         var opacity = kfdialog.Find("opacity/x").GetComponent<InputField>();
 
                         opacity.onValueChanged.RemoveAllListeners();
-                        opacity.text = Mathf.Clamp(-firstKF.GetData<EventKeyframe>().eventValues[1] + 1, 0f, 1f).ToString();
+                        opacity.text = (-firstKF.GetData<EventKeyframe>().eventValues[1] + 1).ToString();
                         opacity.onValueChanged.AddListener(_val =>
                         {
                             if (float.TryParse(_val, out float n))
@@ -4367,7 +4367,7 @@ namespace BetterLegacy.Editor.Managers
                         var gradientOpacity = kfdialog.Find("gradient_opacity/x").GetComponent<InputField>();
 
                         gradientOpacity.onValueChanged.RemoveAllListeners();
-                        gradientOpacity.text = Mathf.Clamp(-firstKF.GetData<EventKeyframe>().eventValues[6] + 1, 0f, 1f).ToString();
+                        gradientOpacity.text = (-firstKF.GetData<EventKeyframe>().eventValues[6] + 1).ToString();
                         gradientOpacity.onValueChanged.AddListener(_val =>
                         {
                             if (float.TryParse(_val, out float n))
