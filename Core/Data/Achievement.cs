@@ -113,5 +113,7 @@ namespace BetterLegacy.Core.Data
         }
 
         public static Achievement TestAchievement => new Achievement("265265", "Test", "Test this achievement!", 3, LegacyPlugin.AtanPlaceholder);
+
+        public override string ToString() => $"{ID} - {Name} = {unlocked}";
     }
 }
