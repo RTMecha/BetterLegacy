@@ -625,6 +625,8 @@ namespace BetterLegacy.Editor.Managers
                             RTFile.WriteToFile($"{exportPath}{beatmapTheme.name.ToLower()}.vgt", vgjn.ToString());
 
                             EditorManager.inst.DisplayNotification($"Converted Theme {beatmapTheme.name.ToLower()}.lst from LS format to VG format and saved to {beatmapTheme.name.ToLower()}.vgt!", 4f, EditorManager.NotificationType.Success);
+
+                            AchievementManager.inst.UnlockAchievement("time_machine");
                         });
 
                         EditorThemeManager.ApplyGraphic(viewThemeStorage.baseImage, ThemeGroup.List_Button_1_Normal, true);

@@ -813,14 +813,10 @@ namespace BetterLegacy.Editor.Managers
             var ogPath = GameManager.inst.path.Replace("/level.lsb", "");
 
             if (RTFile.FileExists(ogPath + "/level.ogg"))
-            {
                 File.Copy(ogPath + "/level.ogg", path + "/audio.ogg", RTFile.FileExists(path + "/audio.ogg"));
-            }
 
             if (RTFile.FileExists(ogPath + "/level.jpg"))
-            {
                 File.Copy(ogPath + "/level.jpg", path + "/cover.jpg", RTFile.FileExists(path + "/cover.jpg"));
-            }
 
             try
             {
@@ -842,6 +838,8 @@ namespace BetterLegacy.Editor.Managers
 
             EditorManager.inst.DisplayNotification($"Converted Level \"{EditorManager.inst.currentLoadedLevel}\" from LS format to VG format and saved to {Path.GetFileName(path)}.", 4f,
                 EditorManager.NotificationType.Success);
+
+            AchievementManager.inst.UnlockAchievement("time_machine");
         }
 
         public void UploadLevel()

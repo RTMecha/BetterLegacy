@@ -2078,6 +2078,8 @@ namespace BetterLegacy.Editor.Managers
                 RTFile.WriteToFile($"{exportPath}{prefab.Name.ToLower()}.vgp", vgjn.ToString());
 
                 EditorManager.inst.DisplayNotification($"Converted Prefab {prefab.Name.ToLower()}.lsp from LS format to VG format and saved to {prefab.Name.ToLower()}.vgp!", 4f, EditorManager.NotificationType.Success);
+
+                AchievementManager.inst.UnlockAchievement("time_machine");
             });
 
             externalDescriptionField.onValueChanged.ClearAll();

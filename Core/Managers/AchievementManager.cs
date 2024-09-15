@@ -56,6 +56,7 @@ namespace BetterLegacy.Core.Managers
             CreateGlobalAchievement("editor_layer_lol", "nice", "nice.", 4, "editor_layer_lol");
             CreateGlobalAchievement("editor_layer_funny", "Thai Funny", "Go to editor layer 555.", 4, "editor_layer_funny");
             CreateGlobalAchievement("example_chat", "Having a Conversation", "Talk with Example.", 4, "example_chat");
+            CreateGlobalAchievement("example_touch", "No touchie touchie!", "Do not the Example.", 4, "example_touch");
             CreateGlobalAchievement("editor_zoom_break", "Breaking Boundaries", "Reverse the level in the editor.", 3, "editor_zoom_break");
             CreateGlobalAchievement("no_volume", "Is the Sound Off?", "Complete a level with volume turned down to 0.", 4, "no_volume");
             CreateGlobalAchievement("queue_ten", "Data Management", "Play 10 levels in a row in a Queue.", 4, "queue_ten");
@@ -70,6 +71,9 @@ namespace BetterLegacy.Core.Managers
             CreateGlobalAchievement("one_hundred_levels", "That's a lot of data!", "Complete 100 levels.", 4, "one_hundred_levels");
             CreateGlobalAchievement("hackerman", "Hackerman", "Open UnityExplorer in the editor.", 0, "hackerman");
             CreateGlobalAchievement("death_hd", "Death HD", "Die in the editor.", 3, "death_hd");
+            CreateGlobalAchievement("select_player", "This is not a clicker game!", "Select the player in the editor preview window.", 4, "select_player");
+            CreateGlobalAchievement("time_machine", "Time Machine", "Convert a VG file to an LS file, or the other way around.", 4, "time_machine");
+            CreateGlobalAchievement("time_traveler", "Time Traveler", "Play a level made in the modern (alpha / public) editor.", 2, "time_traveler");
         }
 
         void CreateGlobalAchievement(string id, string name, string desc, int difficulty, string iconFileName)

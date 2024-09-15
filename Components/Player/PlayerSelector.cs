@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Editor.Managers;
 using UnityEngine;
 
@@ -21,6 +22,7 @@ namespace BetterLegacy.Components.Player
         {
             EditorManager.inst.ShowDialog("Player Editor");
             StartCoroutine(PlayerEditor.inst.RefreshEditor());
+            AchievementManager.inst.UnlockAchievement("select_player");
         }
     }
 }

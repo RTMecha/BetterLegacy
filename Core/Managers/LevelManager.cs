@@ -203,9 +203,7 @@ namespace BetterLegacy.Core.Managers
             WindowController.ResetTitle();
 
             if (BackgroundManager.inst)
-            {
                 LSHelpers.DeleteChildren(BackgroundManager.inst.backgroundParent);
-            }
 
             Debug.Log($"{className}Parsing level...");
 
@@ -213,9 +211,7 @@ namespace BetterLegacy.Core.Managers
 
             Story.StoryLevel storyLevel = null;
             if (level is Story.StoryLevel a)
-            {
                 storyLevel = a;
-            }
 
             if (level.isStory && storyLevel)
             {
@@ -224,14 +220,17 @@ namespace BetterLegacy.Core.Managers
             }
             else
             {
-                var levelMode = level.LevelModes[Mathf.Clamp(CurrentLevelMode, 0, level.LevelModes.Length - 1)];
+                var levelMode = level.CurrentFile;
                 Debug.Log($"{className}Level Mode: {levelMode}...");
 
                 var rawJSON = RTFile.ReadFromFile(level.path + levelMode);
                 if (level.metadata.beatmap.game_version != "4.1.16" && level.metadata.beatmap.game_version != "20.4.4")
                     rawJSON = UpdateBeatmap(rawJSON, level.metadata.beatmap.game_version);
 
-                GameData.Current = levelMode.Contains(".vgd") ? GameData.ParseVG(JSON.Parse(rawJSON)) : GameData.Parse(JSONNode.Parse(rawJSON));
+                if (level.IsVG)
+                    AchievementManager.inst.UnlockAchievement("time_traveler");
+
+                GameData.Current = level.IsVG ? GameData.ParseVG(JSON.Parse(rawJSON)) : GameData.Parse(JSONNode.Parse(rawJSON));
             }
 
             Debug.Log($"{className}Setting paths...");

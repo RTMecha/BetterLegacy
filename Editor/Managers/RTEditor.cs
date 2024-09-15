@@ -2727,6 +2727,8 @@ namespace BetterLegacy.Editor.Managers
 
                             EditorManager.inst.DisplayNotification($"Successfully converted {Path.GetFileName(_val)} to {fileName} and added it to your prefab ({prefabListPath}) folder.", 2f,
                                 EditorManager.NotificationType.Success);
+
+                            AchievementManager.inst.UnlockAchievement("time_machine");
                         }
                         catch (Exception ex)
                         {
@@ -2765,6 +2767,8 @@ namespace BetterLegacy.Editor.Managers
 
                             EditorManager.inst.DisplayNotification($"Successfully converted {Path.GetFileName(_val)} to {fileName} and added it to your theme ({themeListPath}) folder.", 2f,
                                 EditorManager.NotificationType.Success);
+
+                            AchievementManager.inst.UnlockAchievement("time_machine");
                         }
                         catch (Exception ex)
                         {
@@ -2854,6 +2858,8 @@ namespace BetterLegacy.Editor.Managers
                                     levelVGJSON = null;
                                     levelVGJN = null;
                                     level = null;
+
+                                    AchievementManager.inst.UnlockAchievement("time_machine");
                                 }, true));
                             }
                             else

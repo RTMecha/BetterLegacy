@@ -1241,6 +1241,7 @@ namespace BetterLegacy.Example
                     talking = true;
                     Say("Please don't touch me there.", new List<IKeyframe<float>> { new FloatKeyframe(0f, parentX.localPosition.x, Ease.Linear) }, new List<IKeyframe<float>> { new FloatKeyframe(0f, parentY.localPosition.y + 200f, Ease.Linear) });
                     Play("Angry", false);
+                    AchievementManager.inst.UnlockAchievement("example_touch");
                 };
             }
 
