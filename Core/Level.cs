@@ -83,6 +83,7 @@ namespace BetterLegacy.Core
 
         public int currentMode = 0;
         public string[] LevelModes { get; set; }
+        public string CurrentFile => LevelModes[Mathf.Clamp(LevelManager.CurrentLevelMode, 0, LevelModes.Length - 1)];
 
         public bool Locked => metadata != null && metadata.requireUnlock && playerData != null && !playerData.Unlocked;
 
@@ -174,7 +175,8 @@ namespace BetterLegacy.Core
 
         public bool isStory;
 
-        public bool IsVG => RTFile.FileExists($"{path}level.vgd") && RTFile.FileExists($"{path}metadata.vgm");
+        public bool IsVG => CurrentFile.Contains(".vgd");
+        public bool VGExists => RTFile.FileExists($"{path}level.vgd") && RTFile.FileExists($"{path}metadata.vgm");
 
         public bool InvalidID => string.IsNullOrEmpty(id) || id == "0" || id == "-1";
 
