@@ -2629,25 +2629,48 @@ namespace BetterLegacy.Editor.Managers
                 ShowWarningPopup("Are you sure you want to quit to the arcade? Any unsaved progress will be lost!", ArcadeHelper.QuitToArcade, HideWarningPopup);
             }, 7);
 
-            EditorHelper.AddEditorDropdown("Switch to Arcade Mode", "", "File", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_right_small.png"), () =>
+            EditorHelper.AddEditorDropdown("Copy Level to Arcade", "", "File", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_right_small.png"), () =>
             {
                 if (!EditorManager.inst.hasLoadedLevel)
                 {
-                    EditorManager.inst.DisplayNotification("Load a level before switching to Arcade Mode!", 2f, EditorManager.NotificationType.Error);
+                    EditorManager.inst.DisplayNotification("Load a level before trying to copy a level to the arcade folder!", 2f, EditorManager.NotificationType.Error);
                     return;
                 }
 
-                ShowWarningPopup("Are you sure you want to switch to Arcade Mode? Any unsaved progress will be lost!", () =>
+                ShowWarningPopup("Are you sure you want to copy the level to the arcade folder?", () =>
                 {
-                    LevelManager.OnLevelEnd = () =>
+                    var name = MetaData.Current.LevelBeatmap.name;
+                    name = CoreHelper.ReplaceFormatting(name); // for cases where a user has used symbols not allowed.
+                    name = RTFile.ValidateDirectory(name);
+                    var directory = $"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{name} [{MetaData.Current.arcadeID}]";
+
+                    if (RTFile.DirectoryExists(directory))
                     {
-                        DG.Tweening.DOTween.Clear();
-                        DataManager.inst.gameData = null;
-                        DataManager.inst.gameData = new GameData();
-                        Updater.OnLevelEnd();
-                        SceneManager.inst.LoadScene("Editor");
-                    };
-                    LevelManager.Load(GameManager.inst.basePath + "level.lsb", false);
+                        var backupDirectory = directory.Replace("beatmaps", "beatmaps/arcade backups");
+                        if (RTFile.DirectoryExists(backupDirectory))
+                            Directory.Delete(backupDirectory, true);
+
+                        //Directory.CreateDirectory(backupDirectory);
+                        Directory.Move(directory, backupDirectory);
+                    }
+
+                    var files = Directory.GetFiles(GameManager.inst.basePath, "*", SearchOption.AllDirectories);
+                    for (int i = 0; i < files.Length; i++)
+                    {
+                        var file = files[i];
+                        if (!RTMetaDataEditor.inst.VerifyFile(Path.GetFileName(file)))
+                            continue;
+
+                        var fileDirectory = Path.GetDirectoryName(file).Replace("\\", "/");
+                        var fileDestination = file.Replace(fileDirectory, directory);
+                        if (!RTFile.DirectoryExists(Path.GetDirectoryName(fileDestination)))
+                            Directory.CreateDirectory(Path.GetDirectoryName(fileDestination));
+
+                        File.Copy(file, fileDestination, true);
+                    }
+
+                    EditorManager.inst.DisplayNotification($"Successfully copied {name} to {LevelManager.Path}!", 2f, EditorManager.NotificationType.Success);
+                    HideWarningPopup();
                 }, HideWarningPopup);
             }, 7);
 
@@ -2903,7 +2926,18 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorManager.inst.DisplayNotification("Event Offsets have been reset.", 1.4f, EditorManager.NotificationType.Success);
             });
-            
+
+            EditorHelper.AddEditorDropdown("Render Waveform", "", "Edit", ReloadSprite, () =>
+            {
+                if (EditorConfig.Instance.WaveformGenerate.Value)
+                {
+                    SetTimelineSprite(null);
+                    StartCoroutine(AssignTimelineTexture());
+                }
+                else
+                    SetTimelineSprite(null);
+            });
+
             var deactivateModifiers = EditorHelper.AddEditorDropdown("Deactivate Modifiers", "", "Edit", CloseSprite, () =>
             {
                 if (!GameData.IsValid)
@@ -3502,8 +3536,14 @@ namespace BetterLegacy.Editor.Managers
             if (!timelinePreview || !AudioManager.inst.CurrentAudioSource.clip || DataManager.inst.gameData.beatmapData == null)
                 return;
 
+            for (int i = 0; i < checkpointImages.Count; i++)
+            {
+                if (checkpointImages[i] && checkpointImages[i].gameObject)
+                    Destroy(checkpointImages[i].gameObject);
+            }
+
             checkpointImages.Clear();
-            LSHelpers.DeleteChildren(timelinePreview.Find("elements"), true);
+            LSHelpers.DeleteChildren(timelinePreview.Find("elements"));
             foreach (var checkpoint in DataManager.inst.gameData.beatmapData.checkpoints)
             {
                 if (checkpoint.time <= 0.5f)
