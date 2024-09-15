@@ -492,17 +492,18 @@ namespace BetterLegacy.Core.Managers
 
             foreach (var path in player.path)
             {
-                if (path.transform != null)
-                {
-                    path.pos = new Vector3(pos.x, pos.y);
-                }
-            }
+                path.pos = new Vector3(pos.x, pos.y);
+                path.lastPos = new Vector3(pos.x, pos.y);
 
+                if (path.transform)
+                    path.transform.position = path.pos;
+            }
+            
             if (Is1Life || IsNoHit)
             {
-                player.playerDeathEvent += delegate (Vector3 _val)
+                player.playerDeathEvent += _val =>
                 {
-                    if (InputDataManager.inst.players.All(x => x is CustomPlayer && (x as CustomPlayer).Player == null || !(x as CustomPlayer).Player.PlayerAlive))
+                    if (InputDataManager.inst.players.All(x => x is CustomPlayer customPlayer && (customPlayer.Player == null || !customPlayer.Player.PlayerAlive)))
                     {
                         GameManager.inst.lastCheckpointState = -1;
                         GameManager.inst.ResetCheckpoints();
@@ -517,25 +518,28 @@ namespace BetterLegacy.Core.Managers
             }
             else
             {
-                player.playerDeathEvent += delegate (Vector3 _val)
+                player.playerDeathEvent += _val =>
                 {
-                    if (InputDataManager.inst.players.All(x => x is CustomPlayer && (x as CustomPlayer).Player == null || !(x as CustomPlayer).Player.PlayerAlive))
-                    {
+                    if (InputDataManager.inst.players.All(x => x is CustomPlayer customPlayer && (customPlayer.Player == null || !customPlayer.Player.PlayerAlive)))
                         GameManager.inst.gameState = GameManager.State.Reversing;
-                    }
                 };
             }
 
-            if ((IncludeOtherPlayersInRank || player.playerIndex == 0) && !EditorManager.inst)
+            if ((IncludeOtherPlayersInRank || player.playerIndex == 0))
             {
-                player.playerDeathEvent += delegate (Vector3 _val)
+                player.playerDeathEvent += _val =>
                 {
-                    GameManager.inst.deaths.Add(new SaveManager.SaveGroup.Save.PlayerDataPoint(_val, GameManager.inst.UpcomingCheckpointIndex, AudioManager.inst.CurrentAudioSource.time));
+                    if (!CoreHelper.InEditor)
+                        GameManager.inst.deaths.Add(new SaveManager.SaveGroup.Save.PlayerDataPoint(_val, GameManager.inst.UpcomingCheckpointIndex, AudioManager.inst.CurrentAudioSource.time));
+                    else
+                        AchievementManager.inst.UnlockAchievement("death_hd");
                 };
-                player.playerHitEvent += delegate (int _health, Vector3 _val)
-                {
-                    GameManager.inst.hits.Add(new SaveManager.SaveGroup.Save.PlayerDataPoint(_val, GameManager.inst.UpcomingCheckpointIndex, AudioManager.inst.CurrentAudioSource.time));
-                };
+
+                if (!CoreHelper.InEditor)
+                    player.playerHitEvent += (int _health, Vector3 _val) =>
+                    {
+                        GameManager.inst.hits.Add(new SaveManager.SaveGroup.Save.PlayerDataPoint(_val, GameManager.inst.UpcomingCheckpointIndex, AudioManager.inst.CurrentAudioSource.time));
+                    };
             }
 
             customPlayer.active = true;

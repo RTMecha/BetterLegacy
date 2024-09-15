@@ -745,6 +745,7 @@ namespace BetterLegacy.Components.Player
                 UpdatePlayer();
         }
 
+        public bool isSpawning;
         public void Spawn()
         {
             CanTakeDamage = false;
@@ -752,8 +753,28 @@ namespace BetterLegacy.Components.Player
             CanMove = false;
             isDead = false;
             isBoosting = false;
+            isSpawning = true;
             anim.SetTrigger("spawn");
             PlaySpawnParticles();
+
+            try
+            {
+                path[0].pos = ((Transform)playerObjects["RB Parent"].values["Transform"]).position;
+                path[0].rot = ((Transform)playerObjects["RB Parent"].values["Transform"]).rotation;
+                var pos = path[0].pos;
+                var rot = path[0].rot;
+                for (int i = 1; i < path.Count; i++)
+                {
+                    var path = this.path[i];
+                    path.pos = new Vector3(pos.x, pos.y);
+                    path.rot = rot;
+                    path.lastPos = new Vector3(pos.x, pos.y);
+                }
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
 
             CoreHelper.Log($"Spawned Player {playerIndex}");
         }
@@ -926,6 +947,14 @@ namespace BetterLegacy.Components.Player
             {
                 if (path.Count >= i && path[i].transform != null && path[i].transform.gameObject.activeSelf)
                 {
+                    if (isSpawning)
+                    {
+                        path[i].pos = path[0].pos;
+                        path[i].lastPos = path[0].pos;
+                        path[i].rot = path[0].rot;
+                        continue;
+                    }
+
                     num *= Vector3.Distance(path[i].lastPos, path[i].pos);
                     path[i].transform.position = Vector3.MoveTowards(path[i].lastPos, path[i].pos, num);
                     path[i].lastPos = path[i].transform.position;
@@ -1697,6 +1726,7 @@ namespace BetterLegacy.Components.Player
             CanMove = true;
             CanBoost = true;
             CanTakeDamage = true;
+            isSpawning = false;
         }
 
         public void StartBoost()
