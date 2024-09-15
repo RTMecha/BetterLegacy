@@ -17,19 +17,38 @@ using BetterLegacy.Core.Animation.Keyframe;
 
 namespace BetterLegacy.Core.Managers
 {
+    public class AchievementStorage : MonoBehaviour
+    {
+        [SerializeField]
+        public Image back;
+
+        [SerializeField]
+        public Image iconBase;
+
+        [SerializeField]
+        public Image icon;
+
+        [SerializeField]
+        public Text title;
+
+        [SerializeField]
+        public Text description;
+
+        [SerializeField]
+        public Image difficulty;
+    }
+
     public class AchievementManager : MonoBehaviour
     {
         public static AchievementManager inst;
 
-        public RectTransform popup;
-        public Image iconImage;
-        public Text achievementName;
-        public Text achievementDescription;
-        public Image difficultyImage;
+        public UICanvas canvas;
+
+        public GameObject achievementPrefab;
 
         public static void Init() => Creator.NewGameObject(nameof(AchievementManager), SystemManager.inst.transform).AddComponent<AchievementManager>();
 
-        public void Awake()
+        void Awake()
         {
             inst = this;
             LoadAchievements();
@@ -76,7 +95,7 @@ namespace BetterLegacy.Core.Managers
             CreateGlobalAchievement("time_traveler", "Time Traveler", "Play a level made in the modern (alpha / public) editor.", 2, "time_traveler");
         }
 
-        void CreateGlobalAchievement(string id, string name, string desc, int difficulty, string iconFileName)
+        public void CreateGlobalAchievement(string id, string name, string desc, int difficulty, string iconFileName)
         {
             try
             {
@@ -95,42 +114,61 @@ namespace BetterLegacy.Core.Managers
             while (!FontManager.inst || !FontManager.inst.loadedFiles)
                 yield return null;
 
-            var canvas = UIManager.GenerateUICanvas("Achievement Canvas", null, true);
+            canvas = UIManager.GenerateUICanvas("Achievement Canvas", null, true);
+            var layoutGroup = canvas.GameObject.AddComponent<VerticalLayoutGroup>();
+            layoutGroup.childControlWidth = false;
+            layoutGroup.childControlHeight = false;
+            layoutGroup.childForceExpandWidth = true;
+            layoutGroup.childForceExpandHeight = false;
+            layoutGroup.spacing = 8f;
+            layoutGroup.childAlignment = TextAnchor.LowerRight;
 
             var popup = Creator.NewUIObject("Popup", canvas.GameObject.transform);
-            this.popup = popup.transform.AsRT();
-            UIManager.SetRectTransform(this.popup, new Vector2(0f, -100f), Vector2.right, Vector2.right, Vector2.right, new Vector2(400f, 100f));
+            UIManager.SetRectTransform(popup.transform.AsRT(), new Vector2(0f, -100f), Vector2.right, Vector2.right, Vector2.right, new Vector2(400f, 100f));
 
-            var popupImage = popup.AddComponent<Image>();
-            EditorThemeManager.ApplyGraphic(popupImage, ThemeGroup.Background_1, true);
+            var back = popup.AddComponent<Image>();
 
-            var iconBase = Creator.NewUIObject("Icon Base", this.popup);
+            var iconBase = Creator.NewUIObject("Icon Base", popup.transform);
             UIManager.SetRectTransform(iconBase.transform.AsRT(), new Vector2(-150f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(64f, 64f));
             var iconBaseImage = iconBase.AddComponent<Image>();
             var iconBaseMask = iconBase.AddComponent<Mask>();
             iconBaseMask.showMaskGraphic = false;
-            EditorThemeManager.ApplyGraphic(iconBaseImage, ThemeGroup.Null, true);
 
             var icon = Creator.NewUIObject("Icon", iconBase.transform);
             UIManager.SetRectTransform(icon.transform.AsRT(), Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), Vector2.zero);
-            iconImage = icon.AddComponent<Image>();
+            var iconImage = icon.AddComponent<Image>();
 
-            var name = Creator.NewUIObject("Name", this.popup);
+            var name = Creator.NewUIObject("Name", popup.transform);
             UIManager.SetRectTransform(name.transform.AsRT(), new Vector2(-100f, -16f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 0.5f), new Vector2(290f, 100f));
-            achievementName = name.AddComponent<Text>();
+            var achievementName = name.AddComponent<Text>();
             achievementName.font = FontManager.inst.allFonts["Arrhythmia"];
             achievementName.text = "test name";
 
-            var description = Creator.NewUIObject("Description", this.popup);
+            var description = Creator.NewUIObject("Description", popup.transform);
             UIManager.SetRectTransform(description.transform.AsRT(), new Vector2(-100f, -50f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 0.5f), new Vector2(290f, 100f));
-            achievementDescription = description.AddComponent<Text>();
+            var achievementDescription = description.AddComponent<Text>();
             achievementDescription.font = FontManager.inst.allFonts["Fredoka One"];
             achievementDescription.text = "test description";
 
-            var bar = Creator.NewUIObject("Difficulty", this.popup);
+            var bar = Creator.NewUIObject("Difficulty", popup.transform);
             UIManager.SetRectTransform(bar.transform.AsRT(), new Vector2(-8f, 0f), new Vector2(0f, 1f), Vector2.zero, new Vector2(0f, 0.5f), new Vector2(8f, 0f));
-            difficultyImage = bar.AddComponent<Image>();
-            EditorThemeManager.ApplyGraphic(difficultyImage, ThemeGroup.Null, true, roundedSide: SpriteHelper.RoundedSide.Left);
+            var difficultyImage = bar.AddComponent<Image>();
+
+            try
+            {
+                achievementPrefab = popup;
+                var achievementStorage = achievementPrefab.AddComponent<AchievementStorage>();
+                achievementStorage.back = back;
+                achievementStorage.iconBase = iconBaseImage;
+                achievementStorage.icon = iconImage;
+                achievementStorage.title = achievementName;
+                achievementStorage.description = achievementDescription;
+                achievementStorage.difficulty = difficultyImage;
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
 
             popup.gameObject.SetActive(false);
 
@@ -166,13 +204,13 @@ namespace BetterLegacy.Core.Managers
         public void LockAchievement(string id, bool global = true)
         {
             var list = global ? globalAchievements : customAchievements;
-            if (!list.Any(x => x.ID == id))
+            if (!list.TryFind(x => x.ID == id, out Achievement achievement))
             {
                 CoreHelper.LogError($"No achievement of ID {id}");
                 return;
             }
 
-            LockAchievement(list.First(x => x.ID == id));
+            LockAchievement(achievement);
         }
 
         /// <summary>
@@ -196,13 +234,13 @@ namespace BetterLegacy.Core.Managers
         public void UnlockAchievement(string id, bool global = true)
         {
             var list = global ? globalAchievements : customAchievements;
-            if (!list.Any(x => x.ID == id))
+            if (!list.TryFind(x => x.ID == id, out Achievement achievement))
             {
                 CoreHelper.LogError($"No achievement of ID {id}");
                 return;
             }
 
-            UnlockAchievement(list.First(x => x.ID == id));
+            UnlockAchievement(achievement);
         }
 
         /// <summary>
@@ -213,13 +251,25 @@ namespace BetterLegacy.Core.Managers
         public bool AchievementUnlocked(string id, bool global = true)
         {
             var list = global ? globalAchievements : customAchievements;
-            if (!list.Any(x => x.ID == id))
+            if (!list.TryFind(x => x.ID == id, out Achievement achievement))
             {
                 CoreHelper.LogError($"No achievement of ID {id}");
                 return false;
             }
 
-            return list.First(x => x.ID == id).unlocked;
+            return achievement.unlocked;
+        }
+
+        public void ShowAchievement(string id, bool global = true)
+        {
+            var list = global ? globalAchievements : customAchievements;
+            if (!list.TryFind(x => x.ID == id, out Achievement achievement))
+            {
+                CoreHelper.LogError($"No achievement of ID {id}");
+                return;
+            }
+
+            ShowAchievement(achievement);
         }
 
         /// <summary>
@@ -230,37 +280,45 @@ namespace BetterLegacy.Core.Managers
 
         public void ShowAchievement(string name, string description, Sprite icon, Color color = default)
         {
-            CoreHelper.Log($"{CoreConfig.Instance.DisplayName.Value} Achieved - {name}");
-
-            popup.gameObject.SetActive(true);
-            achievementName?.SetText(LSText.ClampString(name.ToUpper(), 34));
-            achievementDescription?.SetText(LSText.ClampString(description, 83));
-            iconImage.sprite = icon;
-            difficultyImage?.SetColor(color);
-
-            AudioManager.inst.PlaySound("loadsound");
-
-            AnimationManager.inst.RemoveName("Achievement Notification");
-
-            var animation = new RTAnimation("Achievement Notification");
-            animation.animationHandlers = new List<AnimationHandlerBase>
+            try
             {
-                new AnimationHandler<float>(new List<IKeyframe<float>>
+                var achievement = achievementPrefab.Duplicate(canvas.GameObject.transform, "Achievement");
+                achievement.SetActive(true);
+
+                var achievementStorage = achievement.GetComponent<AchievementStorage>();
+                achievementStorage.title.text = LSText.ClampString(name.ToUpper(), 34);
+                achievementStorage.description.text = LSText.ClampString(description, 83);
+                achievementStorage.icon.sprite = icon;
+                achievementStorage.difficulty.color = color;
+
+                EditorThemeManager.ApplyGraphic(achievementStorage.back, ThemeGroup.Background_1, true);
+                EditorThemeManager.ApplyGraphic(achievementStorage.iconBase, ThemeGroup.Null, true);
+                EditorThemeManager.ApplyLightText(achievementStorage.title);
+                EditorThemeManager.ApplyLightText(achievementStorage.description);
+                EditorThemeManager.ApplyGraphic(achievementStorage.difficulty, ThemeGroup.Null, true, roundedSide: SpriteHelper.RoundedSide.Left);
+
+                var animation = new RTAnimation("Achievement Notification");
+                animation.animationHandlers = new List<AnimationHandlerBase>
                 {
-                    new FloatKeyframe(0f, -100f, Ease.Linear),
-                    new FloatKeyframe(0.4f, 0f, Ease.BackOut),
-                    new FloatKeyframe(3f, 0f, Ease.Linear),
-                    new FloatKeyframe(3.4f, -100f, Ease.BackIn),
-                    new FloatKeyframe(3.5f, -100f, Ease.Linear),
-                }, x => { popup.anchoredPosition = new Vector2(0f, x); }),
-            };
-            animation.onComplete = () =>
+                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                    {
+                        new FloatKeyframe(0f, 0f, Ease.Linear),
+                        new FloatKeyframe(0.4f, 1f, Ease.BackOut),
+                        new FloatKeyframe(3f, 1f, Ease.BackOut),
+                        new FloatKeyframe(3.4f, 0f, Ease.BackIn),
+                        new FloatKeyframe(3.5f, 0f, Ease.Linear),
+                    }, achievement.transform.SetLocalScaleY),
+                };
+                animation.onComplete = () => { CoreHelper.Destroy(achievement); };
+                AnimationManager.inst.Play(animation);
+
+                AudioManager.inst.PlaySound("loadsound");
+                CoreHelper.Log($"{CoreConfig.Instance.DisplayName.Value} Achieved - {name}");
+            }
+            catch (Exception ex)
             {
-                popup.gameObject.SetActive(false);
-                popup.anchoredPosition = new Vector2(0f, -100f);
-                AnimationManager.inst.RemoveID(animation.id);
-            };
-            AnimationManager.inst.Play(animation);
+                CoreHelper.LogException(ex);
+            }
         }
 
         /// <summary>
@@ -268,7 +326,7 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public void ResetGlobalAchievements()
         {
-            for (int i = 0; i < customAchievements.Count; i++)
+            for (int i = 0; i < globalAchievements.Count; i++)
                 globalAchievements[i].unlocked = false;
             LegacyPlugin.SaveProfile();
         }
