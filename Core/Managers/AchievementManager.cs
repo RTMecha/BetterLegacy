@@ -69,6 +69,7 @@ namespace BetterLegacy.Core.Managers
             CreateGlobalAchievement("fifty_levels", "B", "That's more data!", 3, "fifty_levels");
             CreateGlobalAchievement("one_hundred_levels", "That's a lot of data!", "Complete 100 levels.", 4, "one_hundred_levels");
             CreateGlobalAchievement("hackerman", "Hackerman", "Open UnityExplorer in the editor.", 0, "hackerman");
+            CreateGlobalAchievement("death_hd", "Death HD", "Die in the editor.", 3, "death_hd");
         }
 
         void CreateGlobalAchievement(string id, string name, string desc, int difficulty, string iconFileName)
