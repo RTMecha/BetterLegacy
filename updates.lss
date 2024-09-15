@@ -3,6 +3,8 @@
 - Implemented Rotate Reset.
 - Custom Player objects parented to the boost now scale with it.
 - Fixed Flip X face rotation being weird.
+- Fixed Player Editor lagging on first open.
+- Added achievements: player_select, example_touch, time_machine and time_traveler.
 1.5.1 > [Sep 15, 2024]
 - Added death_hd achievement.
 - Fixed game timeline not clearing previous checkpoint images properly.
