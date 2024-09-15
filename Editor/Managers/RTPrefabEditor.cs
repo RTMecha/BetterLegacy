@@ -1706,7 +1706,7 @@ namespace BetterLegacy.Editor.Managers
                 RenderPrefabTypesPopup(current, onSelect);
             });
 
-            EditorThemeManager.ApplyGraphic(createPrefabTypeButton.image, ThemeGroup.Add);
+            EditorThemeManager.ApplyGraphic(createPrefabTypeButton.image, ThemeGroup.Add, true);
             EditorThemeManager.ApplyGraphic(createPrefabTypeText, ThemeGroup.Add_Text);
 
             int num = 0;
