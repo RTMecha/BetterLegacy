@@ -1,3 +1,11 @@
+1.5.1 > [Sep 15, 2024]
+- Added death_hd achievement.
+- Fixed game timeline not clearing previous checkpoint images properly.
+- Uploading a level to the arcade server will no longer include VG files (level.vgd & metadata.vgm).
+- Replaced Switch to Arcade Mode button in File dropdown with Copy Level to Arcade button. This now copies the current levels' folder into the arcade folder, allowing you to load it from there.
+- Added a button under the Edit dropdown for re-rendering the timeline waveform.
+- Set pasting objects notification to 5 seconds.
+- Made Beatmap Objects only save Gradient Color keyframe values if the object is a gradient.
 1.5.0 > [Sep 14, 2024]
 - Implemented internal achievements!
 You'll unlock some of the internal ones as you play the game.
