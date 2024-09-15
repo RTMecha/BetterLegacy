@@ -21,6 +21,8 @@
 - Rework arcade menu to use new interface system.
 - Possibly update input select scene to use new interface system.
 - MetaData settings that can be adjusted in the Play Level (Settings) menu and can be read using modifiers.
+- Allow custom player models in Global tab Player Editor. (Prevents players from loading in their own custom models)
+- More player model limits.
 - Add a fake Desktop thing like Rhythm Doctor for Window event keyframes.
 - Follow Player keyframe needs to have a setting for not resetting
 - Follow Player keyframe modifier
