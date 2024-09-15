@@ -1109,6 +1109,8 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddGraphic(loadStorage.text, ThemeGroup.Function_2_Text);
             }
 
+            LSHelpers.SetActiveChildren(content, false);
+
             ModelsPopup = RTEditor.inst.GeneratePopup("Player Models Popup", "Player Models", Vector2.zero, Vector2.zero, _val =>
             {
                 modelSearchTerm = _val;
