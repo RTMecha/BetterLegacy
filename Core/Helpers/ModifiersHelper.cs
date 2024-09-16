@@ -1243,6 +1243,8 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
 
+        //static float timeTaken;
+
         public static void Action(Modifier<BeatmapObject> modifier)
         {
             modifier.hasChanged = false;
@@ -1260,6 +1262,10 @@ namespace BetterLegacy.Core.Helpers
 
             try
             {
+                //System.Diagnostics.Stopwatch sw = null;
+                //if (Input.GetKeyDown(KeyCode.G))
+                //    sw = CoreHelper.StartNewStopwatch();
+
                 switch (modifier.commands[0])
                 {
                     #region Audio
@@ -3087,22 +3093,33 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "lerpColorOther":
                         {
+                            //if (sw != null)
+                            //    CoreHelper.Log($"Time taken: {sw.Elapsed}");
+
                             var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
+
+                            //if (sw != null)
+                            //    CoreHelper.Log($"Time taken: {sw.Elapsed}");
 
                             if (list.Count > 0 &&
                                         int.TryParse(modifier.commands[2], out int index) && float.TryParse(modifier.value, out float multiply) &&
                                         float.TryParse(modifier.commands[3], out float hue) && float.TryParse(modifier.commands[4], out float sat) && float.TryParse(modifier.commands[5], out float val))
-                                foreach (var bm in list)
+                            {
+                                var color = CoreHelper.ChangeColorHSV(GameManager.inst.LiveTheme.GetObjColor(index), hue, sat, val);
+                                for (int i = 0; i < list.Count; i++)
                                 {
-                                    if (!Updater.TryGetObject(bm, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.Renderer)
+                                    var bm = list[i];
+                                    if (!Updater.TryGetObject(bm, out LevelObject levelObject) || levelObject.visualObject == null)
                                         continue;
 
-                                    index = Mathf.Clamp(index, 0, GameManager.inst.LiveTheme.objectColors.Count - 1);
+                                    var renderer = levelObject.visualObject.Renderer;
+                                    if (!renderer)
+                                        continue;
 
-                                    if (levelObject.visualObject != null && levelObject.visualObject.Renderer)
-                                        levelObject.visualObject.Renderer.material.color =
-                                            RTMath.Lerp(levelObject.visualObject.Renderer.material.color, CoreHelper.ChangeColorHSV(GameManager.inst.LiveTheme.objectColors[index], hue, sat, val), multiply);
+                                    var material = renderer.material;
+                                    material.color = RTMath.Lerp(material.color, color, multiply);
                                 }
+                            }
 
                             break;
                         }
@@ -4259,74 +4276,88 @@ namespace BetterLegacy.Core.Helpers
                                 && float.TryParse(modifier.commands[10], out float loop) && bool.TryParse(modifier.commands[11], out bool useVisual)
                                 && CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
                             {
-                                var time = AudioManager.inst.CurrentAudioSource.time;
+                                var time = Updater.CurrentTime;
 
                                 fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
                                 fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].eventValues.Length);
 
+                                if (toType < 0 || toType > 3)
+                                    break;
+
                                 if (!useVisual && Updater.levelProcessor.converter.cachedSequences.ContainsKey(bm.id))
                                 {
                                     var cachedSequence = Updater.levelProcessor.converter.cachedSequences[bm.id];
-                                    if (toType >= 0 && toType < 3 && fromType == 0)
+                                    switch (fromType)
                                     {
-                                        var sequence = cachedSequence.Position3DSequence.Interpolate(time - bm.StartTime - delay);
-                                        float value = ((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) - offset) * multiply % loop;
+                                        case 0:
+                                            {
+                                                var sequence = cachedSequence.Position3DSequence.Interpolate(time - bm.StartTime - delay);
+                                                float value = ((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) - offset) * multiply % loop;
 
-                                        modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
-                                    }
+                                                modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
+                                                break;
+                                            }
+                                        case 1:
+                                            {
+                                                var sequence = cachedSequence.ScaleSequence.Interpolate(time - bm.StartTime - delay);
+                                                float value = ((fromAxis == 0 ? sequence.x : sequence.y) - offset) * multiply % loop;
 
-                                    if (toType >= 0 && toType < 3 && fromType == 1)
-                                    {
-                                        var sequence = cachedSequence.ScaleSequence.Interpolate(time - bm.StartTime - delay);
-                                        float value = ((fromAxis == 0 ? sequence.x : sequence.y) - offset) * multiply % loop;
+                                                modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
+                                                break;
+                                            }
+                                        case 2:
+                                            {
+                                                var sequence = (cachedSequence.RotationSequence.Interpolate(time - bm.StartTime - delay) - offset) * multiply % loop;
 
-                                        modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
-                                    }
+                                                modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(sequence, min, max));
+                                                break;
+                                            }
+                                        case 3:
+                                            {
+                                                if (toType == 3 && toAxis == 0 && cachedSequence.ColorSequence != null &&
+                                                    modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null &&
+                                                    modifier.reference.levelObject.visualObject.Renderer)
+                                                {
+                                                    var sequence = cachedSequence.ColorSequence.Interpolate(time - bm.StartTime - delay);
 
-                                    if (toType >= 0 && toType < 3 && fromType == 2)
-                                    {
-                                        var sequence = (cachedSequence.RotationSequence.Interpolate(time - bm.StartTime - delay) - offset) * multiply % loop;
+                                                    var renderer = modifier.reference.levelObject.visualObject.Renderer;
 
-                                        modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(sequence, min, max));
-                                    }
-
-                                    if (toType == 3 && toAxis == 0 && fromType == 3 && cachedSequence.ColorSequence != null &&
-                                        modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null &&
-                                        modifier.reference.levelObject.visualObject.Renderer)
-                                    {
-                                        var sequence = cachedSequence.ColorSequence.Interpolate(time - bm.StartTime - delay);
-
-                                        var renderer = modifier.reference.levelObject.visualObject.Renderer;
-
-                                        renderer.material.color = RTMath.Lerp(renderer.material.color, sequence, multiply);
+                                                    renderer.material.color = RTMath.Lerp(renderer.material.color, sequence, multiply);
+                                                }
+                                                break;
+                                            }
                                     }
                                 }
                                 else if (useVisual && Updater.TryGetObject(bm, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
                                 {
                                     var transform = levelObject.visualObject.GameObject.transform;
 
-                                    if (toType >= 0 && toType < 3 && fromType == 0)
+                                    switch (fromType)
                                     {
-                                        var sequence = transform.position;
-                                        float value = ((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) - offset) * multiply % loop;
+                                        case 0:
+                                            {
+                                                var sequence = transform.position;
+                                                float value = ((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) - offset) * multiply % loop;
 
-                                        modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
-                                    }
+                                                modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
+                                                break;
+                                            }
+                                        case 1:
+                                            {
+                                                var sequence = transform.lossyScale;
+                                                float value = ((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) - offset) * multiply % loop;
 
-                                    if (toType >= 0 && toType < 3 && fromType == 1)
-                                    {
-                                        var sequence = transform.lossyScale;
-                                        float value = ((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) - offset) * multiply % loop;
+                                                modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
+                                                break;
+                                            }
+                                        case 2:
+                                            {
+                                                var sequence = transform.rotation.eulerAngles;
+                                                float value = ((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) - offset) * multiply % loop;
 
-                                        modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
-                                    }
-
-                                    if (toType >= 0 && toType < 3 && fromType == 2)
-                                    {
-                                        var sequence = transform.rotation.eulerAngles;
-                                        float value = ((fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z) - offset) * multiply % loop;
-
-                                        modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
+                                                modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
+                                                break;
+                                            }
                                     }
                                 }
                             }
@@ -4351,7 +4382,7 @@ namespace BetterLegacy.Core.Helpers
                                     && float.TryParse(modifier.commands[7], out float max) && bool.TryParse(modifier.commands[9], out bool useVisual)
                                     && CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
                                 {
-                                    var time = AudioManager.inst.CurrentAudioSource.time;
+                                    var time = Updater.CurrentTime;
 
                                     fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
                                     fromAxis = Mathf.Clamp(fromAxis, 0, bm.events[fromType][0].eventValues.Length);
@@ -4993,6 +5024,13 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                 }
+
+                //if (sw != null)
+                //{
+                //    CoreHelper.StopAndLogStopwatch(sw, $"Ran modifier: {modifier.commands[0]}\nObject ID: {modifier.reference.id}\nObject Name: {modifier.reference.name}\nTotal Time Taken: {timeTaken + sw.Elapsed.TotalSeconds}");
+                //    timeTaken += (float)sw.Elapsed.TotalSeconds;
+                //    sw = null;
+                //}
             }
             catch (Exception ex)
             {
@@ -5458,24 +5496,6 @@ namespace BetterLegacy.Core.Helpers
                         To Type: (Pos / Sca / Rot)
                         To Axis: (X / Y / Z)
                         */
-
-                        if (modifier.commands.Count < 6)
-                            modifier.commands.Add("0");
-
-                        if (modifier.commands.Count < 7)
-                            modifier.commands.Add("1");
-
-                        if (modifier.commands.Count < 8)
-                            modifier.commands.Add("0");
-
-                        if (modifier.commands.Count < 9)
-                            modifier.commands.Add("-99999");
-
-                        if (modifier.commands.Count < 10)
-                            modifier.commands.Add("99999");
-
-                        if (modifier.commands.Count < 11)
-                            modifier.commands.Add("9999");
 
                         if (int.TryParse(modifier.commands[1], out int fromType) && int.TryParse(modifier.commands[2], out int fromAxis)
                             && int.TryParse(modifier.commands[3], out int toType) && int.TryParse(modifier.commands[4], out int toAxis)
