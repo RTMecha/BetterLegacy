@@ -1,3 +1,9 @@
+1.5.3 > [Sep 16, 2024]
+- Achievements now stack.
+- Fixed achievement "editor_zoom_break" having the wrong description.
+- Added achievements: no_fps.
+- Object modifiers now have a Prefab Group Only toggle. This is for when you want an objects' modifier to only check for objects within the prefab that contains the object.
+- Fixed player model not saving correctly if custom object name is left empty.
 1.5.2 > [Sep 15, 2024]
 - Reverted player tail position change from last patch. I have no idea how to properly fix the tail problem...
 - Implemented Rotate Reset.
