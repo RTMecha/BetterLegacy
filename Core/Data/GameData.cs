@@ -1925,7 +1925,7 @@ namespace BetterLegacy.Core.Data
         public List<Data.BeatmapObject> BeatmapObjects
         {
             //get => beatmapObjects.Select(x => (Data.BeatmapObject)x).ToList();
-            get => moddedBeatmapObjects;
+            get => moddedBeatmapObjects ?? beatmapObjects.Select(x => (Data.BeatmapObject)x).ToList();
             set
             {
                 beatmapObjects.Clear();
