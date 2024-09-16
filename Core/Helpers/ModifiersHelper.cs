@@ -3454,6 +3454,19 @@ namespace BetterLegacy.Core.Helpers
                         }
                     #endregion
                     #region Shape
+                    case "actorFrameTexture":
+                        {
+                            if (modifier.reference.shape != 6 || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject is not ImageObject imageObject)
+                                break;
+
+                            var camera = Parser.TryParse(modifier.value, 0) == 0 ? EventManager.inst.cam : EventManager.inst.camPer;
+
+                            var frame = SpriteHelper.CaptureFrame(camera, Parser.TryParse(modifier.commands[1], 512), Parser.TryParse(modifier.commands[2], 512), Parser.TryParse(modifier.commands[3], 0f), Parser.TryParse(modifier.commands[4], 0f));
+
+                            ((SpriteRenderer)imageObject.Renderer).sprite = frame;
+
+                            break;
+                        }
                     case "setImage":
                         {
                             if (modifier.reference.shape == 6 && modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null &&

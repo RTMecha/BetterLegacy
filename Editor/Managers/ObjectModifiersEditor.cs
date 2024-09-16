@@ -1992,6 +1992,16 @@ namespace BetterLegacy.Editor.Managers
 
                             break;
                         }
+                    case "actorFrameTexture":
+                        {
+                            DropdownGenerator(modifier, layout, "Camera", 0, CoreHelper.StringToOptionData("Foreground", "Background"));
+                            IntegerGenerator(modifier, layout, "Width", 1, 512);
+                            IntegerGenerator(modifier, layout, "Height", 2, 512);
+                            SingleGenerator(modifier, layout, "Pos X", 3, 0f);
+                            SingleGenerator(modifier, layout, "Pos Y", 4, 0f);
+
+                            break;
+                        }
 
                         #endregion
                 }
