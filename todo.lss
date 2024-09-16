@@ -22,6 +22,7 @@
 - Rework arcade menu to use new interface system.
 - Possibly update input select scene to use new interface system.
 - Fix spawnPrefab modifier potential issues by not adding to the prefabObjects list, assigning a custom Prefab Object property to Beatmap Object and have ObjectConverter read from that.
+- Add a value for spawning a prefab at the object's position.
 - MetaData settings that can be adjusted in the Play Level (Settings) menu and can be read using modifiers.
 - Allow custom player models in Global tab Player Editor. (Prevents players from loading in their own custom models).
 - More player model limits (move speed, boost speed, etc, allow / disallow custom models).
