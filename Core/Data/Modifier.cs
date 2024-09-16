@@ -35,19 +35,16 @@ namespace BetterLegacy.Core.Data
 
         public bool IsValid(List<Modifier<T>> modifiers) => commands.Count > 0 && modifiers.Has(x => x.commands[0] == commands[0]);
 
-        public static Modifier<T> DeepCopy(Modifier<T> orig, T reference = default)
+        public static Modifier<T> DeepCopy(Modifier<T> orig, T reference = default) => new Modifier<T>
         {
-            var modifier = new Modifier<T>();
-            modifier.type = orig.type;
-            modifier.commands.Clear();
-            modifier.commands.AddRange(orig.commands);
-            modifier.value = orig.value;
-            modifier.reference = reference ?? orig.reference;
-            modifier.not = orig.not;
-            modifier.constant = orig.constant;
-
-            return modifier;
-        }
+            type = orig.type,
+            commands = orig.commands.Clone(),
+            value = orig.value,
+            reference = reference ?? orig.reference,
+            not = orig.not,
+            constant = orig.constant,
+            prefabInstanceOnly = orig.prefabInstanceOnly,
+        };
 
         public static Modifier<T> Parse(JSONNode jn, T reference = default)
         {
@@ -61,6 +58,8 @@ namespace BetterLegacy.Core.Data
 
             modifier.constant = jn["const"].AsBool;
             modifier.value = string.IsNullOrEmpty(jn["value"]) ? "" : jn["value"];
+
+            modifier.prefabInstanceOnly = jn["po"].AsBool;
 
             modifier.reference = reference;
 
@@ -82,6 +81,9 @@ namespace BetterLegacy.Core.Data
             jn["value"] = value;
 
             jn["const"] = constant.ToString();
+
+            if (prefabInstanceOnly)
+                jn["po"] = prefabInstanceOnly.ToString();
 
             return jn;
         }

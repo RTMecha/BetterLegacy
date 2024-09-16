@@ -372,6 +372,9 @@ namespace BetterLegacy.Editor.Managers
                     case "musicTimeLesser":
                     case "playerSpeed":
                         {
+                            if (cmd.Contains("Other"))
+                                PrefabGroupOnly(modifier, layout);
+
                             SingleGenerator(modifier, layout, "Value", 0, 1f);
 
                             if (cmd == "setAlphaOther")
@@ -535,12 +538,16 @@ namespace BetterLegacy.Editor.Managers
                         {
                             if (cmd == "setTextOther" || cmd == "addTextOther" || cmd == "setImageOther")
                             {
+                                PrefabGroupOnly(modifier, layout);
                                 StringGenerator(modifier, layout, "Object Group", 1);
                                 StringGenerator(modifier, layout, cmd == "setImageOther" ? "Path" : "Text", 0);
                             }
 
                             if (cmd == "updateObject" || cmd == "objectCollide")
+                            {
+                                PrefabGroupOnly(modifier, layout);
                                 StringGenerator(modifier, layout, "Object Group", 0);
+                            }
                             else if (cmd != "setTextOther" && cmd != "addTextOther" && cmd != "setImageOther")
                                 StringGenerator(modifier, layout, cmd == "setText" || cmd == "addText" ? "Text" :
                                     cmd == "code" ? "Code" :
@@ -584,6 +591,8 @@ namespace BetterLegacy.Editor.Managers
                     case "blurColored":
                     case "blurColoredOther":
                         {
+                            if (cmd.Contains("Other"))
+                                PrefabGroupOnly(modifier, layout);
                             SingleGenerator(modifier, layout, "Amount", 0, 0.5f);
 
                             if (cmd == "blur" || cmd == "blurColored")
@@ -798,6 +807,9 @@ namespace BetterLegacy.Editor.Managers
                     case "realTimeYearLesser":
                     case "realTimeYearGreater":
                         {
+                            if (cmd == "addVariable" || cmd == "subVariable" || cmd == "setVariable" || cmd.Contains("variableOther") ||
+                                cmd == "setAlphaOther" || cmd == "removeTextOther" || cmd == "removeTextOtherAt")
+                                PrefabGroupOnly(modifier, layout);
                             IntegerGenerator(modifier, layout, "Value", 0, 0);
 
                             if (cmd == "addVariable" || cmd == "subVariable" || cmd == "setVariable" || cmd.Contains("variableOther") ||
@@ -879,31 +891,7 @@ namespace BetterLegacy.Editor.Managers
                                 StringGenerator(modifier, layout, "Value", 0);
 
                             if (cmd == "loadEquals")
-                            {
-                                //var dd = dropdownBar.Duplicate(layout, "Type");
-                                //dd.transform.localScale = Vector3.one;
-                                //var labelText = dd.transform.Find("Text").GetComponent<Text>();
-                                //labelText.text = "Type";
-
-                                //Destroy(dd.transform.Find("Dropdown").GetComponent<HoverTooltip>());
-                                //Destroy(dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>());
-
-                                //var d = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
-                                //d.onValueChanged.ClearAll();
-                                //d.options = CoreHelper.StringToOptionData("Number", "Text");
-                                //d.value = Parser.TryParse(modifier.commands[4], 0);
-                                //d.onValueChanged.AddListener(_val =>
-                                //{
-                                //    modifier.commands[4] = _val.ToString();
-                                //    modifier.active = false;
-                                //    StartCoroutine(RenderModifiers(beatmapObject));
-                                //});
-
-                                //EditorThemeManager.ApplyLightText(labelText);
-                                //EditorThemeManager.ApplyDropdown(d);
-
                                 DropdownGenerator(modifier, layout, "Type", 4, CoreHelper.StringToOptionData("Number", "Text"));
-                            }
 
                             break;
                         }
@@ -911,7 +899,10 @@ namespace BetterLegacy.Editor.Managers
                     case "loadVariableOther":
                         {
                             if (cmd.Contains("Other"))
+                            {
+                                PrefabGroupOnly(modifier, layout);
                                 StringGenerator(modifier, layout, "Object Group", 0);
+                            }
 
                             StringGenerator(modifier, layout, "Path", 1);
                             StringGenerator(modifier, layout, "JSON 1", 2);
@@ -1164,6 +1155,7 @@ namespace BetterLegacy.Editor.Managers
                     case "copyColor":
                     case "copyColorOther":
                         {
+                            PrefabGroupOnly(modifier, layout);
                             StringGenerator(modifier, layout, "Object Group", 0);
                             BoolGenerator(modifier, layout, "Apply Color 1", 1, true);
                             BoolGenerator(modifier, layout, "Apply Color 2", 2, true);
@@ -1176,7 +1168,10 @@ namespace BetterLegacy.Editor.Managers
                     case "lerpColorOther":
                         {
                             if (cmd.Contains("Other"))
+                            {
+                                PrefabGroupOnly(modifier, layout);
                                 StringGenerator(modifier, layout, "Object Group", 1);
+                            }
 
                             ColorGenerator(modifier, layout, "Color", !cmd.Contains("Other") ? 1 : 2);
 
@@ -1207,6 +1202,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     case "applyColorGroup":
                         {
+                            PrefabGroupOnly(modifier, layout);
                             StringGenerator(modifier, layout, "Object Group", 0);
                             DropdownGenerator(modifier, layout, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
                             DropdownGenerator(modifier, layout, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
@@ -1216,6 +1212,8 @@ namespace BetterLegacy.Editor.Managers
                     case "setColorHex":
                     case "setColorHexOther":
                         {
+                            if (cmd.Contains("Other"))
+                                PrefabGroupOnly(modifier, layout);
                             StringGenerator(modifier, layout, "Hex Code", 0);
                             if (cmd.Contains("Other"))
                                 StringGenerator(modifier, layout, "Object Group", 1);
@@ -1231,6 +1229,7 @@ namespace BetterLegacy.Editor.Managers
                     case "signalModifier":
                     case "mouseOverSignalModifier":
                         {
+                            PrefabGroupOnly(modifier, layout);
                             StringGenerator(modifier, layout, "Object Group", 1);
                             SingleGenerator(modifier, layout, "Delay", 0, 0f);
 
@@ -1238,6 +1237,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     case "activateModifier":
                         {
+                            PrefabGroupOnly(modifier, layout);
                             StringGenerator(modifier, layout, "Object Group", 0);
                             BoolGenerator(modifier, layout, "Do Multiple", 1, true);
                             IntegerGenerator(modifier, layout, "Singlular Index", 2, 0);
@@ -1296,6 +1296,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     case "setVariableRandom":
                         {
+                            PrefabGroupOnly(modifier, layout);
                             StringGenerator(modifier, layout, "Object Group", 0);
                             IntegerGenerator(modifier, layout, "Minimum", 1, 0);
                             IntegerGenerator(modifier, layout, "Maximum", 2, 0);
@@ -1495,7 +1496,10 @@ namespace BetterLegacy.Editor.Managers
                     case "clampVariableOther":
                         {
                             if (cmd == "clampVariableOther")
+                            {
+                                PrefabGroupOnly(modifier, layout);
                                 StringGenerator(modifier, layout, "Object Group", 0);
+                            }
                             
                             IntegerGenerator(modifier, layout, "Minimum", 1, 0);
                             IntegerGenerator(modifier, layout, "Maximum", 2, 0);
@@ -1512,6 +1516,9 @@ namespace BetterLegacy.Editor.Managers
                     case "animateSignal":
                     case "animateSignalOther":
                         {
+                            if (cmd.Contains("Signal") || cmd.Contains("Other"))
+                                PrefabGroupOnly(modifier, layout);
+
                             SingleGenerator(modifier, layout, "Time", 0, 1f);
                             DropdownGenerator(modifier, layout, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
                             SingleGenerator(modifier, layout, "X", 2, 0f);
@@ -1539,6 +1546,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     case "animateVariableOther":
                         {
+                            PrefabGroupOnly(modifier, layout);
                             StringGenerator(modifier, layout, "Object Group", 0);
 
                             DropdownGenerator(modifier, layout, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
@@ -1558,7 +1566,10 @@ namespace BetterLegacy.Editor.Managers
                     case "copyPlayerAxis":
                         {
                             if (cmd == "copyAxis")
+                            {
+                                PrefabGroupOnly(modifier, layout);
                                 StringGenerator(modifier, layout, "Object Group", 0);
+                            }
 
                             DropdownGenerator(modifier, layout, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
                             DropdownGenerator(modifier, layout, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
@@ -1584,6 +1595,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     case "copyAxisMath":
                         {
+                            PrefabGroupOnly(modifier, layout);
                             StringGenerator(modifier, layout, "Object Group", 0);
 
                             DropdownGenerator(modifier, layout, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
@@ -1603,6 +1615,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     case "copyAxisGroup":
                         {
+                            PrefabGroupOnly(modifier, layout);
                             StringGenerator(modifier, layout, "Expression", 0);
 
                             DropdownGenerator(modifier, layout, "To Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
@@ -1694,6 +1707,7 @@ namespace BetterLegacy.Editor.Managers
                     case "axisLesser":
                     case "axisGreater":
                         {
+                            PrefabGroupOnly(modifier, layout);
                             StringGenerator(modifier, layout, "Object Group", 0);
 
                             DropdownGenerator(modifier, layout, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
@@ -2053,6 +2067,26 @@ namespace BetterLegacy.Editor.Managers
         }
 
         #region Generators
+
+        void PrefabGroupOnly(Modifier<BeatmapObject> modifier, Transform layout)
+        {
+            var prefabInstance = booleanBar.Duplicate(layout, "Prefab");
+            prefabInstance.transform.localScale = Vector3.one;
+            var prefabInstanceText = prefabInstance.transform.Find("Text").GetComponent<Text>();
+            prefabInstanceText.text = "Prefab Group Only";
+
+            var prefabInstanceToggle = prefabInstance.transform.Find("Toggle").GetComponent<Toggle>();
+            prefabInstanceToggle.onValueChanged.ClearAll();
+            prefabInstanceToggle.isOn = modifier.prefabInstanceOnly;
+            prefabInstanceToggle.onValueChanged.AddListener(_val =>
+            {
+                modifier.prefabInstanceOnly = _val;
+                modifier.active = false;
+            });
+
+            EditorThemeManager.ApplyLightText(prefabInstanceText);
+            EditorThemeManager.ApplyToggle(prefabInstanceToggle);
+        }
 
         GameObject SingleGenerator(Modifier<BeatmapObject> modifier, Transform layout, string label, int type, float defaultValue, float amount = 0.1f, float multiply = 10f)
         {

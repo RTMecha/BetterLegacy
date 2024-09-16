@@ -10,6 +10,8 @@ namespace BetterLegacy.Core.Data
 
         public bool constant = true;
 
+        public bool prefabInstanceOnly = false;
+
         public enum Type { Trigger, Action }
 
         public Type type = Type.Action;
