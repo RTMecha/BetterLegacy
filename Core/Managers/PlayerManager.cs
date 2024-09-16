@@ -201,8 +201,9 @@ namespace BetterLegacy.Core.Managers
             PlayerModels.Add(model.basePart.id, model);
         }
 
-        public static void SaveGlobalModels()
+        public static bool SaveGlobalModels()
         {
+            bool success = true;
             if (EditorManager.inst != null)
                 EditorManager.inst.DisplayNotification("Saving Player Models...", 1f, EditorManager.NotificationType.Warning);
 
@@ -210,11 +211,19 @@ namespace BetterLegacy.Core.Managers
             {
                 if (!PlayerModel.DefaultModels.Any(x => x.basePart.id == model.Key))
                 {
-                    RTFile.WriteToFile(RTFile.ApplicationDirectory + "beatmaps/players/" + model.Value.basePart.name.ToLower().Replace(" ", "_") + ".lspl", model.Value.ToJSON().ToString(3));
+                    try
+                    {
+                        RTFile.WriteToFile(RTFile.ApplicationDirectory + "beatmaps/players/" + RTFile.ValidateFileName(model.Value.basePart.name).ToLower().Replace(" ", "_") + ".lspl", model.Value.ToJSON().ToString(3));
+                    }
+                    catch (System.Exception ex)
+                    {
+                        success = false;
+                    }
                 }
             }
             if (EditorManager.inst)
                 EditorManager.inst.DisplayNotification("Saved Player Models!", 1f, EditorManager.NotificationType.Success);
+            return success;
         }
 
         public static void LoadGlobalModels()

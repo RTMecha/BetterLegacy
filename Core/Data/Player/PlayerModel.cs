@@ -281,28 +281,36 @@ namespace BetterLegacy.Core.Data.Player
         {
             var jn = JSON.Parse("{}");
 
-            jn["base"] = basePart.ToJSON();
-            jn["stretch"] = stretchPart.ToJSON();
-            jn["gui"] = guiPart.ToJSON();
+            if (basePart != null)
+                jn["base"] = basePart.ToJSON();
+            if (stretchPart != null)
+                jn["stretch"] = stretchPart.ToJSON();
+            if (guiPart != null)
+                jn["gui"] = guiPart.ToJSON();
             jn["face"]["position"] = FacePosition.ToJSON();
             jn["face"]["con_active"] = FaceControlActive.ToString();
-            jn["head"] = headPart.ToJSON();
-            jn["boost"] = boostPart.ToJSON();
-            jn["pulse"] = pulsePart.ToJSON();
-            jn["bullet"] = bulletPart.ToJSON();
-            jn["tail_base"] = tailBase.ToJSON();
-            jn["tail_boost"] = boostTailPart.ToJSON();
+            if (headPart != null)
+                jn["head"] = headPart.ToJSON();
+            if (boostPart != null)
+                jn["boost"] = boostPart.ToJSON();
+            if (pulsePart != null)
+                jn["pulse"] = pulsePart.ToJSON();
+            if (bulletPart != null)
+                jn["bullet"] = bulletPart.ToJSON();
+            if (tailBase != null)
+                jn["tail_base"] = tailBase.ToJSON();
+            if (boostTailPart != null)
+                jn["tail_boost"] = boostTailPart.ToJSON();
 
-            for (int i = 0; i < tailParts.Count; i++)
-            {
+            if (tailParts != null)
+                for (int i = 0; i < tailParts.Count; i++)
                 jn["tail"][i] = tailParts[i].ToJSON();
-            }
 
-            if (modifiers.Count > 0)
+            if (modifiers != null && modifiers.Count > 0)
                 for (int i = 0; i < modifiers.Count; i++)
                     jn["modifiers"][i] = modifiers[i].ToJSON();
 
-            if (customObjects.Count > 0)
+            if (customObjects != null && customObjects.Count > 0)
                 for (int i = 0; i < customObjects.Count; i++)
                     jn["custom_objects"][i] = customObjects.ElementAt(i).Value.ToJSON();
 
@@ -1803,6 +1811,8 @@ namespace BetterLegacy.Core.Data.Player
                     b.name = jn["name"];
                 if (!string.IsNullOrEmpty(jn["id"]))
                     b.id = jn["id"];
+                else
+                    b.id = LSFunctions.LSText.randomNumString(16);
                 if (!string.IsNullOrEmpty(jn["health"]))
                     b.health = jn["health"].AsInt;
                 if (!string.IsNullOrEmpty(jn["move_speed"]))
@@ -1844,7 +1854,8 @@ namespace BetterLegacy.Core.Data.Player
             {
                 var jn = JSON.Parse("{}");
 
-                jn["name"] = name;
+                if (!string.IsNullOrEmpty(name))
+                    jn["name"] = name;
                 jn["id"] = id;
 
                 if (health != 3)

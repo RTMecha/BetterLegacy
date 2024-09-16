@@ -1082,8 +1082,16 @@ namespace BetterLegacy.Editor.Managers
                 saveStorage.button.onClick.ClearAll();
                 saveStorage.button.onClick.AddListener(() =>
                 {
-                    PlayerManager.SaveGlobalModels();
-                    EditorManager.inst.DisplayNotification("Saved player models", 1.5f, EditorManager.NotificationType.Success);
+                    try
+                    {
+                        if (!PlayerManager.SaveGlobalModels())
+                            EditorManager.inst.DisplayNotification("Failed to save player models.", 2f, EditorManager.NotificationType.Error);
+                    }
+                    catch (Exception ex)
+                    {
+                        EditorManager.inst.DisplayNotification("Failed to save player models.", 2f, EditorManager.NotificationType.Error);
+                        CoreHelper.LogException(ex);
+                    }
                 });
 
                 EditorThemeManager.AddSelectable(saveStorage.button, ThemeGroup.Function_2);
