@@ -322,6 +322,8 @@ namespace BetterLegacy.Core.Managers
             var tags = CurrentLevel.metadata.LevelSong.tags;
             if (tags.Contains("joke") || tags.Contains("joke_level") || tags.Contains("meme") || tags.Contains("meme_level"))
                 AchievementManager.inst.UnlockAchievement("youve_been_trolled");
+            if (tags.Contains("high_detail") || tags.Contains("lag"))
+                AchievementManager.inst.UnlockAchievement("no_fps");
         }
 
         /// <summary>

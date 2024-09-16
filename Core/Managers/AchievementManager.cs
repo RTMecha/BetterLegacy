@@ -85,6 +85,7 @@ namespace BetterLegacy.Core.Managers
             CreateGlobalAchievement("true_dedication", "True Dedication", "Spend 24 hours in a level in the editor.", 6, "true_dedication");
             CreateGlobalAchievement("upload_level", "Upload a Level!", "Publish a level to the arcade server.", 2, "upload_level");
             CreateGlobalAchievement("youve_been_trolled", "You've Been Trolled", "Play a meme / joke level.", 3, "youve_been_trolled");
+            CreateGlobalAchievement("no_fps", "No FPS?", "Play a high detail level.", 4, "no_fps");
             CreateGlobalAchievement("ten_levels", "That's some data.", "Complete 10 levels.", 2, "ten_levels");
             CreateGlobalAchievement("fifty_levels", "B", "That's more data!", 3, "fifty_levels");
             CreateGlobalAchievement("one_hundred_levels", "That's a lot of data!", "Complete 100 levels.", 4, "one_hundred_levels");
