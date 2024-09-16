@@ -615,19 +615,19 @@ namespace BetterLegacy.Core.Helpers
 
         #region Misc
 
-        public static bool TryFindObjectWithTag(BeatmapObject beatmapObject, bool prefabInstanceOnly, string tag, out BeatmapObject result)
+        public static bool TryFindObjectWithTag(Modifier<BeatmapObject> modifier, string tag, out BeatmapObject result)
         {
-            result = FindObjectWithTag(beatmapObject, prefabInstanceOnly, tag);
+            result = FindObjectWithTag(modifier, tag);
             return result != null;
         }
 
         public static BeatmapObject FindObjectWithTag(string tag) => GameData.Current.BeatmapObjects.Find(x => x.tags.Contains(tag));
 
-        public static BeatmapObject FindObjectWithTag(BeatmapObject beatmapObject, bool prefabInstanceOnly, string tag)
+        public static BeatmapObject FindObjectWithTag(Modifier<BeatmapObject> modifier, string tag)
         {
             var gameData = GameData.Current;
 
-            if (prefabInstanceOnly && gameData.prefabObjects.TryFind(x => x.ID == beatmapObject.prefabInstanceID, out DataManager.GameData.PrefabObject p) && p is PrefabObject prefabObject)
+            if (modifier.prefabInstanceOnly && gameData.prefabObjects.TryFind(x => x.ID == modifier.reference.prefabInstanceID, out DataManager.GameData.PrefabObject p) && p is PrefabObject prefabObject)
             {
                 var bm = gameData.BeatmapObjects.Find(x => x.tags.Contains(tag) && x.fromPrefab && x.prefabID == prefabObject.prefabID && x.prefabInstanceID == prefabObject.ID);
 
@@ -638,9 +638,11 @@ namespace BetterLegacy.Core.Helpers
             return gameData.BeatmapObjects.Find(x => x.tags.Contains(tag));
         }
         
-        public static BeatmapObject FindObjectWithTag(List<BeatmapObject> beatmapObjects, List<DataManager.GameData.PrefabObject> prefabObjects, BeatmapObject beatmapObject, bool prefabInstanceOnly, string tag)
+        public static BeatmapObject FindObjectWithTag(List<BeatmapObject> beatmapObjects, BeatmapObject beatmapObject, string tag) => beatmapObjects.Find(x => x.tags.Contains(tag));
+
+        public static BeatmapObject FindObjectWithTag(List<BeatmapObject> beatmapObjects, List<DataManager.GameData.PrefabObject> prefabObjects, BeatmapObject beatmapObject, string tag)
         {
-            if (prefabInstanceOnly && prefabObjects.TryFind(x => x.ID == beatmapObject.prefabInstanceID, out DataManager.GameData.PrefabObject p) && p is PrefabObject prefabObject)
+            if (prefabObjects.TryFind(x => x.ID == beatmapObject.prefabInstanceID, out DataManager.GameData.PrefabObject p) && p is PrefabObject prefabObject)
             {
                 var bm = beatmapObjects.Find(x => x.tags.Contains(tag) && x.fromPrefab && x.prefabID == prefabObject.prefabID && x.prefabInstanceID == prefabObject.ID);
 
@@ -648,27 +650,29 @@ namespace BetterLegacy.Core.Helpers
                     return bm;
             }
 
-            return beatmapObjects.Find(x => x.tags.Contains(tag));
+            return null;
         }
 
         public static List<BeatmapObject> FindObjectsWithTag(string tag) => GameData.Current.BeatmapObjects.FindAll(x => x.tags.Contains(tag));
 
-        public static List<BeatmapObject> FindObjectsWithTag(BeatmapObject beatmapObject, bool prefabInstanceOnly, string tag)
+        public static List<BeatmapObject> FindObjectsWithTag(BeatmapObject beatmapObject, string tag)
         {
             var gameData = GameData.Current;
 
-            if (prefabInstanceOnly && gameData.prefabObjects.TryFind(x => x.ID == beatmapObject.prefabInstanceID, out DataManager.GameData.PrefabObject p) && p is PrefabObject prefabObject)
+            if (gameData.prefabObjects.TryFind(x => x.ID == beatmapObject.prefabInstanceID, out DataManager.GameData.PrefabObject p) && p is PrefabObject prefabObject)
                 return gameData.BeatmapObjects.FindAll(x => x.tags.Contains(tag) && x.fromPrefab && x.prefabID == prefabObject.prefabID && x.prefabInstanceID == prefabObject.ID);
 
-            return gameData.BeatmapObjects.FindAll(x => x.tags.Contains(tag));
+            return new List<BeatmapObject>();
         }
         
-        public static List<BeatmapObject> FindObjectsWithTag(List<BeatmapObject> beatmapObjects, List<DataManager.GameData.PrefabObject> prefabObjects, BeatmapObject beatmapObject, bool prefabInstanceOnly, string tag)
+        public static List<BeatmapObject> FindObjectsWithTag(List<BeatmapObject> beatmapObjects, string tag) => beatmapObjects.FindAll(x => x.tags.Contains(tag));
+
+        public static List<BeatmapObject> FindObjectsWithTag(List<BeatmapObject> beatmapObjects, List<DataManager.GameData.PrefabObject> prefabObjects, BeatmapObject beatmapObject, string tag)
         {
-            if (prefabInstanceOnly && prefabObjects.TryFind(x => x.ID == beatmapObject.prefabInstanceID, out DataManager.GameData.PrefabObject p) && p is PrefabObject prefabObject)
+            if (prefabObjects.TryFind(x => x.ID == beatmapObject.prefabInstanceID, out DataManager.GameData.PrefabObject p) && p is PrefabObject prefabObject)
                 return beatmapObjects.FindAll(x => x.tags.Contains(tag) && x.fromPrefab && x.prefabID == prefabObject.prefabID && x.prefabInstanceID == prefabObject.ID);
 
-            return beatmapObjects.FindAll(x => x.tags.Contains(tag));
+            return new List<BeatmapObject>();
         }
 
         /// <summary>

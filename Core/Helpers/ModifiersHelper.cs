@@ -274,7 +274,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 case "mouseOverSignalModifier":
                     {
-                        var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[1]);
+                        var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
                         if (modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null && modifier.reference.levelObject.visualObject.GameObject)
                         {
                             if (!modifier.reference.detector)
@@ -321,7 +321,7 @@ namespace BetterLegacy.Core.Helpers
                     {
                         if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.Collider)
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.value).FindAll(x => Updater.TryGetObject(x, out LevelObject levelObject1) && levelObject1.visualObject != null && levelObject1.visualObject.Collider);
+                            var list = (!modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value)).FindAll(x => Updater.TryGetObject(x, out LevelObject levelObject1) && levelObject1.visualObject != null && levelObject1.visualObject.Collider);
                             return list.Count > 0 && list.Any(x => x.levelObject.visualObject.Collider.IsTouching(levelObject.visualObject.Collider));
                         }
 
@@ -592,7 +592,7 @@ namespace BetterLegacy.Core.Helpers
                             && float.TryParse(modifier.commands[5], out float offset) && float.TryParse(modifier.commands[6], out float min) && float.TryParse(modifier.commands[7], out float max)
                             && float.TryParse(modifier.commands[8], out float equals) && bool.TryParse(modifier.commands[9], out bool visual)
                             && float.TryParse(modifier.commands[10], out float loop)
-                            && CoreHelper.TryFindObjectWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.value, out BeatmapObject bm))
+                            && CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
                         {
                             var time = AudioManager.inst.CurrentAudioSource.time;
 
@@ -663,7 +663,7 @@ namespace BetterLegacy.Core.Helpers
                             && float.TryParse(modifier.commands[5], out float offset) && float.TryParse(modifier.commands[6], out float min) && float.TryParse(modifier.commands[7], out float max)
                             && float.TryParse(modifier.commands[8], out float equals) && bool.TryParse(modifier.commands[9], out bool visual)
                             && float.TryParse(modifier.commands[10], out float loop)
-                            && CoreHelper.TryFindObjectWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.value, out BeatmapObject bm))
+                            && CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
                         {
                             var time = AudioManager.inst.CurrentAudioSource.time;
 
@@ -734,7 +734,7 @@ namespace BetterLegacy.Core.Helpers
                             && float.TryParse(modifier.commands[5], out float offset) && float.TryParse(modifier.commands[6], out float min) && float.TryParse(modifier.commands[7], out float max)
                             && float.TryParse(modifier.commands[8], out float equals) && bool.TryParse(modifier.commands[9], out bool visual)
                             && float.TryParse(modifier.commands[10], out float loop)
-                            && CoreHelper.TryFindObjectWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.value, out BeatmapObject bm))
+                            && CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
                         {
                             var time = AudioManager.inst.CurrentAudioSource.time;
 
@@ -804,7 +804,7 @@ namespace BetterLegacy.Core.Helpers
                             && float.TryParse(modifier.commands[5], out float offset) && float.TryParse(modifier.commands[6], out float min) && float.TryParse(modifier.commands[7], out float max)
                             && float.TryParse(modifier.commands[8], out float equals) && bool.TryParse(modifier.commands[9], out bool visual)
                             && float.TryParse(modifier.commands[10], out float loop)
-                            && CoreHelper.TryFindObjectWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.value, out BeatmapObject bm))
+                            && CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
                         {
                             var time = AudioManager.inst.CurrentAudioSource.time;
 
@@ -874,7 +874,7 @@ namespace BetterLegacy.Core.Helpers
                             && float.TryParse(modifier.commands[5], out float offset) && float.TryParse(modifier.commands[6], out float min) && float.TryParse(modifier.commands[7], out float max)
                             && float.TryParse(modifier.commands[8], out float equals) && bool.TryParse(modifier.commands[9], out bool visual)
                             && float.TryParse(modifier.commands[10], out float loop)
-                            && CoreHelper.TryFindObjectWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.value, out BeatmapObject bm))
+                            && CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
                         {
                             var time = AudioManager.inst.CurrentAudioSource.time;
 
@@ -1532,8 +1532,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "blurOther":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[1]);
-
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
                             if (list.Count <= 0 || !float.TryParse(modifier.value, out float num))
                                 break;
 
@@ -1587,8 +1586,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "blurVariableOther":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[1]);
-
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
                             if (list.Count <= 0 || !float.TryParse(modifier.value, out float num))
                                 break;
 
@@ -1646,8 +1644,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "blurColoredOther":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[1]);
-
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
                             if (list.Count <= 0 || !float.TryParse(modifier.value, out float num))
                                 break;
 
@@ -1885,8 +1882,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "rigidbodyOther":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.value);
-
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
                             if (list.Count > 0
                                         && float.TryParse(modifier.commands[1], out float gravity)
                                         && int.TryParse(modifier.commands[2], out int collisionMode)
@@ -2389,8 +2385,7 @@ namespace BetterLegacy.Core.Helpers
                     #region Variable
                     case "addVariable":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[1]);
-
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
                             if (list.Count <= 0 || !int.TryParse(modifier.value, out int num))
                                 break;
 
@@ -2401,8 +2396,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "subVariable":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[1]);
-
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
                             if (list.Count <= 0 || !int.TryParse(modifier.value, out int num))
                                 break;
 
@@ -2413,8 +2407,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "setVariable":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[1]);
-
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
                             if (list.Count <= 0 || !int.TryParse(modifier.value, out int num))
                                 break;
 
@@ -2425,8 +2418,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "setVariableRandom":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.value);
-
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
                             if (list.Count <= 0 || !int.TryParse(modifier.commands[1], out int min) || !int.TryParse(modifier.commands[2], out int max))
                                 break;
 
@@ -2437,8 +2429,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "animateVariableOther":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.value);
-
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
                             if (list.Count <= 0 || !int.TryParse(modifier.commands[1], out int fromType) || !int.TryParse(modifier.commands[2], out int fromAxis) ||
                                 !float.TryParse(modifier.commands[3], out float delay) || !float.TryParse(modifier.commands[4], out float multiply) ||
                                 !float.TryParse(modifier.commands[5], out float offset) || !float.TryParse(modifier.commands[6], out float min) ||
@@ -2502,7 +2493,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "clampVariableOther":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             if (list.Count > 0)
                                 foreach (var bm in list)
@@ -2547,7 +2538,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "enableObjectOther":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.value);
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
 
                             if (list.Count > 0)
                                 foreach (var beatmapObject in list)
@@ -2560,7 +2551,7 @@ namespace BetterLegacy.Core.Helpers
                         {
                             if (modifier.Result == null)
                             {
-                                var beatmapObjects = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[1]);
+                                var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                                 var resultList = new List<List<DataManager.GameData.BeatmapObject>>();
                                 foreach (var bm in beatmapObjects)
@@ -2621,7 +2612,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "disableObjectOther":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.value);
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
 
                             if (list.Count > 0)
                                 foreach (var beatmapObject in list)
@@ -2634,7 +2625,7 @@ namespace BetterLegacy.Core.Helpers
                         {
                             if (modifier.Result == null)
                             {
-                                var beatmapObjects = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[1]);
+                                var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                                 var resultList = new List<List<DataManager.GameData.BeatmapObject>>();
                                 foreach (var bm in beatmapObjects)
@@ -2720,8 +2711,8 @@ namespace BetterLegacy.Core.Helpers
                                 break;
 
                             var jn = JSON.Parse(json);
-
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.value);
+                            
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
 
                             if (list.Count > 0 && !string.IsNullOrEmpty(jn[modifier.commands[2]][modifier.commands[3]]["float"]) &&
                                 float.TryParse(jn[modifier.commands[2]][modifier.commands[3]]["float"], out float eq))
@@ -3062,7 +3053,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "addColorOther":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             if (list.Count > 0 &&
                                 int.TryParse(modifier.commands[2], out int index) && float.TryParse(modifier.value, out float multiply) &&
@@ -3096,7 +3087,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "lerpColorOther":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             if (list.Count > 0 &&
                                         int.TryParse(modifier.commands[2], out int index) && float.TryParse(modifier.value, out float multiply) &&
@@ -3176,7 +3167,7 @@ namespace BetterLegacy.Core.Helpers
                     case "setAlphaOther":
                     case "setOpacityOther":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             if (list.Count > 0 && float.TryParse(modifier.value, out float num))
                                 foreach (var bm in list)
@@ -3194,7 +3185,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "copyColor":
                         {
-                            if (!CoreHelper.TryFindObjectWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.value, out BeatmapObject beatmapObject))
+                            if (!CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject beatmapObject))
                                 break;
 
                             if (!Updater.TryGetObject(beatmapObject, out LevelObject otherLevelObject) ||
@@ -3236,7 +3227,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "copyColorOther":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.value);
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
 
                             if (list.Count > 0 && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Renderer)
                                 foreach (var bm in list)
@@ -3282,7 +3273,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "applyColorGroup":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.value);
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
 
                             if (list.Count > 0 && Updater.levelProcessor.converter.cachedSequences.TryGetValue(modifier.reference.id, out ObjectConverter.CachedSequences cachedSequence))
                             {
@@ -3426,7 +3417,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "setColorHexOther":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             if (list.Count > 0)
                                 foreach (var bm in list)
@@ -3498,7 +3489,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "setImageOther":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             if (list.Count <= 0 || modifier.constant)
                                 break;
@@ -3545,7 +3536,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "setTextOther":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             if (list.Count <= 0)
                                 break;
@@ -3575,7 +3566,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "addTextOther":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             if (list.Count <= 0)
                                 break;
@@ -3607,7 +3598,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "removeTextOther":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             if (list.Count <= 0 || !int.TryParse(modifier.value, out int remove))
                                 break;
@@ -3647,7 +3638,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "removeTextOtherAt":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             if (list.Count <= 0 || !int.TryParse(modifier.value, out int remove))
                                 break;
@@ -3959,7 +3950,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "animateObjectOther":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[7]);
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[7]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
 
                             if (list.Count > 0 && int.TryParse(modifier.commands[1], out int type)
                                 && float.TryParse(modifier.commands[2], out float x) && float.TryParse(modifier.commands[3], out float y) && float.TryParse(modifier.commands[4], out float z)
@@ -4031,7 +4022,7 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 if (!Parser.TryParse(modifier.commands[9], true))
                                 {
-                                    var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[7]);
+                                    var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[7]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
 
                                     foreach (var bm in list)
                                     {
@@ -4083,7 +4074,7 @@ namespace BetterLegacy.Core.Helpers
                                     {
                                         AnimationManager.inst.RemoveID(animation.id);
 
-                                        var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[7]);
+                                        var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[7]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
 
                                         foreach (var bm in list)
                                             CoreHelper.StartCoroutine(ModifiersManager.ActivateModifier(bm, Parser.TryParse(modifier.commands[8], 0f)));
@@ -4105,7 +4096,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "animateSignalOther":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[7]);
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[7]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
 
                             if (list.Count > 0 && int.TryParse(modifier.commands[1], out int type)
                                 && float.TryParse(modifier.commands[2], out float x) && float.TryParse(modifier.commands[3], out float y) && float.TryParse(modifier.commands[4], out float z)
@@ -4113,7 +4104,7 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 if (!Parser.TryParse(modifier.commands[10], true))
                                 {
-                                    var list2 = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[8]);
+                                    var list2 = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[8]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[8]);
 
                                     foreach (var bm in list2)
                                     {
@@ -4167,7 +4158,7 @@ namespace BetterLegacy.Core.Helpers
                                         {
                                             AnimationManager.inst.RemoveID(animation.id);
 
-                                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[8]);
+                                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[8]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[8]);
 
                                             foreach (var bm in list)
                                                 CoreHelper.StartCoroutine(ModifiersManager.ActivateModifier((BeatmapObject)bm, Parser.TryParse(modifier.commands[9], 0f)));
@@ -4219,7 +4210,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "gravityOther":
                         {
-                            var beatmapObjects = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.value);
+                            var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
 
                             if (beatmapObjects.Count <= 0 || !float.TryParse(modifier.commands[1], out float gravityX) || !float.TryParse(modifier.commands[2], out float gravityY))
                                 break;
@@ -4266,7 +4257,7 @@ namespace BetterLegacy.Core.Helpers
                                 && float.TryParse(modifier.commands[5], out float delay) && float.TryParse(modifier.commands[6], out float multiply)
                                 && float.TryParse(modifier.commands[7], out float offset) && float.TryParse(modifier.commands[8], out float min) && float.TryParse(modifier.commands[9], out float max)
                                 && float.TryParse(modifier.commands[10], out float loop) && bool.TryParse(modifier.commands[11], out bool useVisual)
-                                && CoreHelper.TryFindObjectWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.value, out BeatmapObject bm))
+                                && CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
                             {
                                 var time = AudioManager.inst.CurrentAudioSource.time;
 
@@ -4358,7 +4349,7 @@ namespace BetterLegacy.Core.Helpers
                                     && int.TryParse(modifier.commands[3], out int toType) && int.TryParse(modifier.commands[4], out int toAxis)
                                     && float.TryParse(modifier.commands[5], out float delay) && float.TryParse(modifier.commands[6], out float min)
                                     && float.TryParse(modifier.commands[7], out float max) && bool.TryParse(modifier.commands[9], out bool useVisual)
-                                    && CoreHelper.TryFindObjectWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.value, out BeatmapObject bm))
+                                    && CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
                                 {
                                     var time = AudioManager.inst.CurrentAudioSource.time;
 
@@ -4471,7 +4462,7 @@ namespace BetterLegacy.Core.Helpers
                                     var max = Parser.TryParse(modifier.commands[i + 6], 0);
                                     var useVisual = Parser.TryParse(modifier.commands[i + 7], false);
 
-                                    var beatmapObject = CoreHelper.FindObjectWithTag(beatmapObjects, prefabObjects, modifier.reference, modifier.prefabInstanceOnly, group);
+                                    var beatmapObject = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectWithTag(group) : CoreHelper.FindObjectWithTag(beatmapObjects, prefabObjects, modifier.reference, group);
 
                                     if (!beatmapObject)
                                         continue;
@@ -4589,7 +4580,7 @@ namespace BetterLegacy.Core.Helpers
 
                                     for (int i = 1; i < modifier.commands.Count; i += 3)
                                     {
-                                        var group = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[i]);
+                                        var group = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[i]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[i]);
 
                                         if (modifier.commands.Count <= i + 2 || group.Count() < 1)
                                             break;
@@ -4762,7 +4753,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "setCollisionOther":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             foreach (var beatmapObject in list)
                             {
@@ -4781,7 +4772,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "updateObject":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.value);
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
 
                             if (!modifier.constant && list.Count > 0)
                                 foreach (var bm in list)
@@ -4791,7 +4782,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "signalModifier":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             foreach (var bm in list)
                                 CoreHelper.StartCoroutine(ModifiersManager.ActivateModifier(bm, Parser.TryParse(modifier.value, 0f)));
@@ -4800,7 +4791,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "activateModifier":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.value);
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
 
                             var doMultiple = Parser.TryParse(modifier.commands[1], true);
                             var index = Parser.TryParse(modifier.commands[2], -1);
@@ -5081,7 +5072,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "enableObjectOther":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.value);
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
 
                             if (list.Count > 0 && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], true)))
                             {
@@ -5130,7 +5121,7 @@ namespace BetterLegacy.Core.Helpers
 
                             if (modifier.Result == null)
                             {
-                                var beatmapObjects = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[1]);
+                                var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                                 var resultList = new List<List<DataManager.GameData.BeatmapObject>>();
                                 foreach (var bm in beatmapObjects)
@@ -5170,7 +5161,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "disableObjectOther":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.value);
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
 
                             if (list.Count > 0 && (modifier.commands.Count == 1 || Parser.TryParse(modifier.commands[1], true)))
                             {
@@ -5225,7 +5216,7 @@ namespace BetterLegacy.Core.Helpers
 
                             if (modifier.Result == null)
                             {
-                                var beatmapObjects = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[1]);
+                                var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                                 var resultList = new List<List<DataManager.GameData.BeatmapObject>>();
                                 foreach (var bm in beatmapObjects)
@@ -5274,7 +5265,7 @@ namespace BetterLegacy.Core.Helpers
                     case "signalModifier":
                     case "mouseOverSignalModifier":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             if (list.Count > 0 && list.Any(x => x.modifiers.Any(y => y.Result != null)))
                                 foreach (var bm in list)
@@ -5292,7 +5283,8 @@ namespace BetterLegacy.Core.Helpers
                             if (!Parser.TryParse(modifier.commands[!modifier.commands[0].Contains("Other") ? 9 : 10], true))
                                 return;
 
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[!modifier.commands[0].Contains("Other") ? 7 : 8]);
+                            int groupIndex = !modifier.commands[0].Contains("Other") ? 7 : 8;
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[groupIndex]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[groupIndex]);
 
                             if (list.Count > 0 && !modifier.constant)
                                 foreach (var bm in list)
@@ -5324,7 +5316,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "setTextOther":
                         {
-                            var list = CoreHelper.FindObjectsWithTag(modifier.reference, modifier.prefabInstanceOnly, modifier.commands[1]);
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
                             if (modifier.constant && list.Count > 0)
                                 foreach (var bm in list)

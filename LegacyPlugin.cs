@@ -14,6 +14,7 @@ using SimpleJSON;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 
 namespace BetterLegacy
@@ -296,6 +297,21 @@ namespace BetterLegacy
             EditorThemeManager.Update(); // Checks if editor scene has been exited, if it has it'll clear the editor theme elements.
 
             Application.runInBackground = CoreConfig.Instance.RunInBackground.Value; // If the game should continue playing in the background while you don't have the app focused.
+
+            try
+            {
+                if (DataManager.inst.gameData is GameData gameData)
+                {
+                    GameData.current = gameData;
+                    gameData.moddedBeatmapObjects = gameData.beatmapObjects.Select(x => (BeatmapObject)x).ToList();
+                }
+                else
+                    GameData.current = null;
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
 
             DebugInfo.Update();
 
