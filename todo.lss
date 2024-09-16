@@ -32,6 +32,7 @@
 - Custom end level function [end level screen, return to hub, return to previous, return to arcade, return to main menu].
 - loadLevel modifiers custom end function (same as above).
 - Possible multi object editor rework???
+- Add feedback (KinoFeedback) effect to event keyframes.
 - Multiplayer editor, possibly. (everyone has their own perspective of the hosts' editor but have limited functionality compared to the host)
 ### Internal
 - Clean up UIManager.
