@@ -810,6 +810,46 @@ namespace BetterLegacy.Core
                     }
             }
         }
+        
+        public static void SetTransform(this BackgroundObject backgroundObject, int toType, int toAxis, float value)
+        {
+            switch (toType)
+            {
+                case 0:
+                    {
+                        if (toAxis == 0)
+                            backgroundObject.positionOffset.x = value;
+                        if (toAxis == 1)
+                            backgroundObject.positionOffset.y = value;
+                        if (toAxis == 2)
+                            backgroundObject.positionOffset.z = value;
+
+                        break;
+                    }
+                case 1:
+                    {
+                        if (toAxis == 0)
+                            backgroundObject.scaleOffset.x = value;
+                        if (toAxis == 1)
+                            backgroundObject.scaleOffset.y = value;
+                        if (toAxis == 2)
+                            backgroundObject.scaleOffset.z = value;
+
+                        break;
+                    }
+                case 2:
+                    {
+                        if (toAxis == 0)
+                            backgroundObject.rotationOffset.x = value;
+                        if (toAxis == 1)
+                            backgroundObject.rotationOffset.y = value;
+                        if (toAxis == 2)
+                            backgroundObject.rotationOffset.z = value;
+
+                        break;
+                    }
+            }
+        }
 
         public static void CreateCollider(this PolygonCollider2D polygonCollider, MeshFilter meshFilter)
         {
