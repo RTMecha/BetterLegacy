@@ -34,51 +34,51 @@ namespace BetterLegacy.Core.Managers
                         quickElements.Add(quickElement.name, quickElement);
                 }
 
-                if (quickElements.ContainsKey("loading_bar_1"))
-                    quickElements["loading_bar_1"].effects.Add(new QuickElement.Effect { data = new List<string> { "loop" }, name = "loop", });
+                if (quickElements.TryGetValue("loading_bar_1", out QuickElement loadingBar1))
+                    loadingBar1.effects.Add(new QuickElement.Effect { data = new List<string> { "loop" }, name = "loop", });
 
                 if (!quickElements.ContainsKey("blink_loop"))
                 {
-                    quickElements.Add("blink_loop", new QuickElement
+                    var blinkLoop = ScriptableObject.CreateInstance<QuickElement>();
+                    blinkLoop.name = "blink_loop";
+                    blinkLoop.keyframes = new List<QuickElement.Keyframe>
                     {
-                        name = "blink_loop",
-                        keyframes = new List<QuickElement.Keyframe>
+                        new QuickElement.Keyframe
                         {
-                            new QuickElement.Keyframe
-                            {
-                                text = "(._.)",
-                                time = 1f
-                            },
-                            new QuickElement.Keyframe
-                            {
-                                text = "(-_-)",
-                                time = 0.1f
-                            },
-                            new QuickElement.Keyframe
-                            {
-                                text = "(._.)",
-                                time = 0.1f
-                            },
-                            new QuickElement.Keyframe
-                            {
-                                text = "(-_-)",
-                                time = 0.1f
-                            },
-                            new QuickElement.Keyframe
-                            {
-                                text = "(._.)",
-                                time = 1f
-                            },
+                            text = "(._.)",
+                            time = 1f
                         },
-                        effects = new List<QuickElement.Effect>
+                        new QuickElement.Keyframe
                         {
-                            new QuickElement.Effect
-                            {
-                                name = "loop",
-                                data = new List<string> { "loop" },
-                            }
+                            text = "(-_-)",
+                            time = 0.1f
+                        },
+                        new QuickElement.Keyframe
+                        {
+                            text = "(._.)",
+                            time = 0.1f
+                        },
+                        new QuickElement.Keyframe
+                        {
+                            text = "(-_-)",
+                            time = 0.1f
+                        },
+                        new QuickElement.Keyframe
+                        {
+                            text = "(._.)",
+                            time = 1f
+                        },
+                    };
+                    blinkLoop.effects = new List<QuickElement.Effect>
+                    {
+                        new QuickElement.Effect
+                        {
+                            name = "loop",
+                            data = new List<string> { "loop" },
                         }
-                    });
+                    };
+
+                    quickElements.Add("blink_loop", blinkLoop);
                 }
             }
 
@@ -89,21 +89,6 @@ namespace BetterLegacy.Core.Managers
         {
             get
             {
-                //foreach (var qe in quickElements)
-                //{
-                //    if (!allQuickElements.ContainsKey(qe.Key))
-                //    {
-                //        allQuickElements.Add(qe.Key, qe.Value);
-                //    }
-                //}
-
-                //foreach (var qe in customQuickElements)
-                //{
-                //    if (!allQuickElements.ContainsKey(qe.Key))
-                //    {
-                //        allQuickElements.Add(qe.Key, qe.Value);
-                //    }
-                //}
                 allQuickElements = quickElements.Union(customQuickElements).ToDictionary(x => x.Key, x => x.Value);
 
                 return allQuickElements;
@@ -157,7 +142,7 @@ namespace BetterLegacy.Core.Managers
             customQuickElements.Add(name, quickElement);
         }
 
-        public static string ConvertQuickElement(string element, float t) => !AllQuickElements.ContainsKey(element) ? "" : ConvertQuickElement(AllQuickElements[element], t);
+        public static string ConvertQuickElement(string element, float t) => AllQuickElements.TryGetValue(element, out QuickElement quickElement) ? ConvertQuickElement(quickElement, t) : "";
 
         public static string ConvertQuickElement(QuickElement quickElement, float t)
         {

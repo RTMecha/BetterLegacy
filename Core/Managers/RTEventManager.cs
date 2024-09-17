@@ -582,9 +582,9 @@ namespace BetterLegacy.Core.Managers
 
                 foreach (var customPlayer in PlayerManager.Players)
                 {
-                    if (customPlayer.Player && customPlayer.Player.playerObjects.ContainsKey("RB Parent"))
+                    if (customPlayer.Player && customPlayer.Player.playerObjects.TryGetValue("RB Parent", out RTPlayer.PlayerObject rbParent))
                     {
-                        var player = customPlayer.Player.playerObjects["RB Parent"].gameObject.transform;
+                        var player = rbParent.gameObject.transform;
                         if (!inst.playersCanMove)
                         {
                             player.localPosition = new Vector3(inst.playerPositionX, inst.playerPositionY, 0f);

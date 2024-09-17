@@ -714,7 +714,7 @@ namespace BetterLegacy.Core.Helpers
 
             foreach (var obj in DataManager.inst.gameData.beatmapObjects)
             {
-                bool flag = true;
+                bool canParent = true;
                 if (!string.IsNullOrEmpty(obj.parent))
                 {
                     string parentID = currentSelection.ID;
@@ -722,7 +722,7 @@ namespace BetterLegacy.Core.Helpers
                     {
                         if (parentID == obj.parent)
                         {
-                            flag = false;
+                            canParent = false;
                             break;
                         }
                         int num2 = DataManager.inst.gameData.beatmapObjects.FindIndex(x => x.parent == parentID);
@@ -736,14 +736,15 @@ namespace BetterLegacy.Core.Helpers
                         }
                     }
                 }
-                if (!dictionary.ContainsKey(obj.id))
-                    dictionary.Add(obj.id, flag);
+
+                dictionary[obj.id] = canParent;
             }
 
-            if (dictionary.ContainsKey(currentSelection.ID))
-                dictionary[currentSelection.ID] = false;
+            dictionary[currentSelection.ID] = false;
 
-            if (dictionary.ContainsKey(timelineObjectToParentTo.ID) && dictionary[timelineObjectToParentTo.ID])
+            var canBeParented = dictionary.TryGetValue(timelineObjectToParentTo.ID, out bool value) && value;
+
+            if (canBeParented)
             {
                 currentSelection.GetData<BeatmapObject>().parent = timelineObjectToParentTo.ID;
                 Updater.UpdateObject(currentSelection.GetData<BeatmapObject>());
@@ -751,7 +752,7 @@ namespace BetterLegacy.Core.Helpers
                 RTEditor.inst.StartCoroutine(ObjectEditor.RefreshObjectGUI(currentSelection.GetData<BeatmapObject>()));
             }
 
-            return dictionary.ContainsKey(timelineObjectToParentTo.ID) && dictionary[timelineObjectToParentTo.ID];
+            return canBeParented;
         }
 
         #endregion

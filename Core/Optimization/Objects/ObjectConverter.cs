@@ -56,10 +56,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             }
 
             for (int i = 0; i < beatmapObjects.Count; i++)
-            {
-                if (this.beatmapObjects.ContainsKey(beatmapObjects[i].id))
-                    CoreHelper.StartCoroutine(CacheSequence(beatmapObjects[i]));
-            }
+                CoreHelper.StartCoroutine(CacheSequence(beatmapObjects[i]));
         }
 
         public IEnumerator CacheSequence(BeatmapObject beatmapObject)
@@ -163,8 +160,8 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             GameObject parent = null;
 
-            if (!string.IsNullOrEmpty(beatmapObject.parent) && beatmapObjects.ContainsKey(beatmapObject.parent))
-                parent = InitParentChain(beatmapObjects[beatmapObject.parent], parentObjects);
+            if (!string.IsNullOrEmpty(beatmapObject.parent) && beatmapObjects.TryGetValue(beatmapObject.parent, out BeatmapObject beatmapObjectParent))
+                parent = InitParentChain(beatmapObjectParent, parentObjects);
 
             var shape = Mathf.Clamp(beatmapObject.shape, 0, ObjectManager.inst.objectPrefabs.Count - 1);
             var shapeOption = Mathf.Clamp(beatmapObject.shapeOption, 0, ObjectManager.inst.objectPrefabs[shape].options.Count - 1);
@@ -274,7 +271,7 @@ namespace BetterLegacy.Core.Optimization.Objects
             // 9 = player object
             VisualObject visual =
                 sprite == null && beatmapObject.shape == 4 ? new TextObject(visualObject, opacity, beatmapObject.text, isBackground) :
-                sprite != null || beatmapObject.shape == 6 ? new ImageObject(visualObject, opacity, beatmapObject.text, isBackground, sprite != null ? sprite : AssetManager.SpriteAssets.ContainsKey(beatmapObject.text) ? AssetManager.SpriteAssets[beatmapObject.text] : null) :
+                sprite != null || beatmapObject.shape == 6 ? new ImageObject(visualObject, opacity, beatmapObject.text, isBackground, sprite ?? (AssetManager.SpriteAssets.TryGetValue(beatmapObject.text, out Sprite spriteAsset) ? spriteAsset : null)) :
                 beatmapObject.shape == 9 ? new PlayerObject(visualObject) : 
                 beatmapObject.gradientType != BeatmapObject.GradientType.Normal ? new GradientObject(visualObject, opacity, hasCollider, isSolid, isBackground, beatmapObject.opacityCollision, (int)beatmapObject.gradientType) : 
                 new SolidObject(visualObject, opacity, hasCollider, isSolid, isBackground, beatmapObject.opacityCollision);
@@ -288,10 +285,11 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             Object.Destroy(visualObject.GetComponent<SelectObjectInEditor>());
 
+            var cachedSequence = cachedSequences[beatmapObject.id];
             var levelObject = new LevelObject(
                 beatmapObject,
-                cachedSequences[beatmapObject.id].ColorSequence,
-                cachedSequences[beatmapObject.id].SecondaryColorSequence,
+                cachedSequence.ColorSequence,
+                cachedSequence.SecondaryColorSequence,
                 parentObjects, visual,
                 prefabOffsetPosition, prefabOffsetScale, prefabOffsetRotation);
 
@@ -309,9 +307,9 @@ namespace BetterLegacy.Core.Optimization.Objects
             parentObjects.Add(InitLevelParentObject(beatmapObject, gameObject));
 
             // Has parent - init parent (recursive)
-            if (!string.IsNullOrEmpty(beatmapObject.parent) && beatmapObjects.ContainsKey(beatmapObject.parent))
+            if (!string.IsNullOrEmpty(beatmapObject.parent) && beatmapObjects.TryGetValue(beatmapObject.parent, out BeatmapObject beatmapObjectParent))
             {
-                var parentObject = InitParentChain(beatmapObjects[beatmapObject.parent], parentObjects);
+                var parentObject = InitParentChain(beatmapObjectParent, parentObjects);
 
                 gameObject.transform.SetParent(parentObject.transform);
             }
@@ -325,8 +323,8 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             try
             {
-                if (this.cachedSequences.ContainsKey(beatmapObject.id))
-                    cachedSequences = this.cachedSequences[beatmapObject.id];
+                if (this.cachedSequences.TryGetValue(beatmapObject.id, out CachedSequences c))
+                    cachedSequences = c;
 
             }
             catch (Exception e)

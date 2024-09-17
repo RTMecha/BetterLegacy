@@ -101,7 +101,7 @@ namespace BetterLegacy.Core.Managers
             try
             {
                 var achievement = new Achievement(id, name, desc, difficulty, LoadIcon(iconFileName));
-                achievement.unlocked = unlockedGlobalAchievements.ContainsKey(id) && unlockedGlobalAchievements[id];
+                achievement.unlocked = unlockedGlobalAchievements.TryGetValue(id, out bool unlocked) && unlocked;
                 globalAchievements.Add(achievement);
             }
             catch (Exception ex)

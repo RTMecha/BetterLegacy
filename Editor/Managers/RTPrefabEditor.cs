@@ -91,9 +91,10 @@ namespace BetterLegacy.Editor.Managers
                 PrefabEditor.inst.OffsetLine = PrefabEditor.inst.OffsetLinePrefab.Duplicate(EditorManager.inst.timeline.transform, "offset line");
                 PrefabEditor.inst.OffsetLine.transform.AsRT().pivot = Vector2.one;
 
+                var prefabPopup = EditorManager.inst.GetDialog("Prefab Popup").Dialog;
                 PrefabEditor.inst.dialog = EditorManager.inst.GetDialog("Prefab Editor").Dialog;
-                PrefabEditor.inst.externalPrefabDialog = EditorManager.inst.GetDialog("Prefab Popup").Dialog.Find("external prefabs");
-                PrefabEditor.inst.internalPrefabDialog = EditorManager.inst.GetDialog("Prefab Popup").Dialog.Find("internal prefabs");
+                PrefabEditor.inst.externalPrefabDialog = prefabPopup.Find("external prefabs");
+                PrefabEditor.inst.internalPrefabDialog = prefabPopup.Find("internal prefabs");
                 PrefabEditor.inst.externalSearch = PrefabEditor.inst.externalPrefabDialog.Find("search-box/search").GetComponent<InputField>();
                 PrefabEditor.inst.internalSearch = PrefabEditor.inst.internalPrefabDialog.Find("search-box/search").GetComponent<InputField>();
                 PrefabEditor.inst.externalContent = PrefabEditor.inst.externalPrefabDialog.Find("mask/content");
@@ -522,7 +523,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     OpenPrefabTypePopup(NewPrefabTypeID, id =>
                     {
-                        PrefabEditor.inst.NewPrefabType = PrefabType.prefabTypeLSIDToIndex.ContainsKey(id) ? PrefabType.prefabTypeLSIDToIndex[id] : PrefabType.prefabTypeVGIDToIndex.ContainsKey(id) ? PrefabType.prefabTypeVGIDToIndex[id] : 0;
+                        PrefabEditor.inst.NewPrefabType = PrefabType.prefabTypeLSIDToIndex.TryGetValue(id, out int prefabTypeIndexLS) ? prefabTypeIndexLS : PrefabType.prefabTypeVGIDToIndex.TryGetValue(id, out int prefabTypeIndexVG) ? prefabTypeIndexVG : 0;
                         NewPrefabTypeID = id;
                         if (DataManager.inst.PrefabTypes.Select(x => x as PrefabType).ToList().TryFind(x => x.id == id, out PrefabType prefabType))
                         {
@@ -1197,7 +1198,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     OpenPrefabTypePopup(prefab.typeID, id =>
                     {
-                        prefab.Type = PrefabType.prefabTypeLSIDToIndex.ContainsKey(id) ? PrefabType.prefabTypeLSIDToIndex[id] : PrefabType.prefabTypeVGIDToIndex.ContainsKey(id) ? PrefabType.prefabTypeVGIDToIndex[id] : 0;
+                        prefab.Type = PrefabType.prefabTypeLSIDToIndex.TryGetValue(id, out int prefabTypeIndexLS) ? prefabTypeIndexLS : PrefabType.prefabTypeVGIDToIndex.TryGetValue(id, out int prefabTypeIndexVG) ? prefabTypeIndexVG : 0;
                         prefab.typeID = id;
                         typeSelector.button.image.color = prefab.PrefabType.Color;
                         typeSelector.text.text = prefab.PrefabType.Name;
@@ -1379,10 +1380,10 @@ namespace BetterLegacy.Editor.Managers
                     yield return CoreHelper.GetYieldInstruction(expandObjectsYieldType, ref delay);
 
                 var beatmapObjectCopy = BeatmapObject.DeepCopy((BeatmapObject)beatmapObject, false);
-                if (ids.ContainsKey(beatmapObject.id))
-                    beatmapObjectCopy.id = ids[beatmapObject.id];
-                if (ids.ContainsKey(beatmapObject.parent))
-                    beatmapObjectCopy.parent = ids[beatmapObject.parent];
+                if (ids.TryGetValue(beatmapObject.id, out string id))
+                    beatmapObjectCopy.id = id;
+                if (ids.TryGetValue(beatmapObject.parent, out string parentID))
+                    beatmapObjectCopy.parent = parentID;
                 else if (DataManager.inst.gameData.beatmapObjects.FindIndex(x => x.id == beatmapObject.parent) == -1 && beatmapObjectCopy.parent != "CAMERA_PARENT")
                     beatmapObjectCopy.parent = "";
 
@@ -1394,8 +1395,8 @@ namespace BetterLegacy.Editor.Managers
                 beatmapObjectCopy.editorData.layer = prefabObject.editorData.layer;
                 beatmapObjectCopy.editorData.Bin = Mathf.Clamp(beatmapObjectCopy.editorData.Bin, 0, 14);
 
-                if (!AssetManager.SpriteAssets.ContainsKey(beatmapObject.text) && prefab.SpriteAssets.ContainsKey(beatmapObject.text))
-                    AssetManager.SpriteAssets.Add(beatmapObject.text, prefab.SpriteAssets[beatmapObject.text]);
+                if (!AssetManager.SpriteAssets.ContainsKey(beatmapObject.text) && prefab.SpriteAssets.TryGetValue(beatmapObject.text, out Sprite sprite))
+                    AssetManager.SpriteAssets.Add(beatmapObject.text, sprite);
 
                 beatmapObjectCopy.prefabInstanceID = prefabObject.ID;
                 DataManager.inst.gameData.beatmapObjects.Add(beatmapObjectCopy);
@@ -1611,7 +1612,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 OpenPrefabTypePopup(NewPrefabTypeID, id =>
                 {
-                    PrefabEditor.inst.NewPrefabType = PrefabType.prefabTypeLSIDToIndex.ContainsKey(id) ? PrefabType.prefabTypeLSIDToIndex[id] : PrefabType.prefabTypeVGIDToIndex.ContainsKey(id) ? PrefabType.prefabTypeVGIDToIndex[id] : 0;
+                    PrefabEditor.inst.NewPrefabType = PrefabType.prefabTypeLSIDToIndex.TryGetValue(id, out int prefabTypeIndexLS) ? prefabTypeIndexLS : PrefabType.prefabTypeVGIDToIndex.TryGetValue(id, out int prefabTypeIndexVG) ? prefabTypeIndexVG : 0;
                     NewPrefabTypeID = id;
                     if (DataManager.inst.PrefabTypes.Select(x => x as PrefabType).ToList().TryFind(x => x.id == id, out PrefabType prefabType))
                     {
@@ -2033,7 +2034,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 OpenPrefabTypePopup(prefab.typeID, id =>
                 {
-                    prefab.Type = PrefabType.prefabTypeLSIDToIndex.ContainsKey(id) ? PrefabType.prefabTypeLSIDToIndex[id] : PrefabType.prefabTypeVGIDToIndex.ContainsKey(id) ? PrefabType.prefabTypeVGIDToIndex[id] : 0;
+                    prefab.Type = PrefabType.prefabTypeLSIDToIndex.TryGetValue(id, out int prefabTypeIndexLS) ? prefabTypeIndexLS : PrefabType.prefabTypeVGIDToIndex.TryGetValue(id, out int prefabTypeIndexVG) ? prefabTypeIndexVG : 0;
                     prefab.typeID = id;
                     var prefabType = prefab.PrefabType;
                     var color = prefabType.Color;
@@ -2143,10 +2144,8 @@ namespace BetterLegacy.Editor.Managers
 
             foreach (var beatmapObject in prefab.objects)
             {
-                if (!prefab.SpriteAssets.ContainsKey(beatmapObject.text) && AssetManager.SpriteAssets.ContainsKey(beatmapObject.text))
-                {
-                    prefab.SpriteAssets.Add(beatmapObject.text, AssetManager.SpriteAssets[beatmapObject.text]);
-                }
+                if (!prefab.SpriteAssets.ContainsKey(beatmapObject.text) && AssetManager.SpriteAssets.TryGetValue(beatmapObject.text, out Sprite sprite))
+                    prefab.SpriteAssets.Add(beatmapObject.text, sprite);
             }
 
             if (createInternal)

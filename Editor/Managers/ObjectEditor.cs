@@ -727,11 +727,11 @@ namespace BetterLegacy.Editor.Managers
 
                     var beatmapObjectCopy = BeatmapObject.DeepCopy((BeatmapObject)beatmapObject, false);
 
-                    if (ids.ContainsKey(beatmapObject.id) && !retainID)
-                        beatmapObjectCopy.id = ids[beatmapObject.id];
+                    if (!retainID && ids.TryGetValue(beatmapObject.id, out string id))
+                        beatmapObjectCopy.id = id;
 
-                    if (ids.ContainsKey(beatmapObject.parent) && !retainID)
-                        beatmapObjectCopy.parent = ids[beatmapObject.parent];
+                    if (!retainID && ids.TryGetValue(beatmapObject.parent, out string parentID))
+                        beatmapObjectCopy.parent = parentID;
                     else if (DataManager.inst.gameData.beatmapObjects.FindIndex(x => x.id == beatmapObject.parent) == -1 && beatmapObjectCopy.parent != "CAMERA_PARENT" && !retainID)
                         beatmapObjectCopy.parent = "";
 
@@ -750,8 +750,8 @@ namespace BetterLegacy.Editor.Managers
                     if (offset != 0.0)
                         ++beatmapObjectCopy.editorData.Bin;
 
-                    if (!AssetManager.SpriteAssets.ContainsKey(beatmapObject.text) && prefab.SpriteAssets.ContainsKey(beatmapObject.text))
-                        AssetManager.SpriteAssets.Add(beatmapObject.text, prefab.SpriteAssets[beatmapObject.text]);
+                    if (!AssetManager.SpriteAssets.ContainsKey(beatmapObject.text) && prefab.SpriteAssets.TryGetValue(beatmapObject.text, out Sprite sprite))
+                        AssetManager.SpriteAssets.Add(beatmapObject.text, sprite);
 
                     beatmapObjectCopy.editorData.layer = RTEditor.inst.Layer;
                     DataManager.inst.gameData.beatmapObjects.Add(beatmapObjectCopy);
@@ -795,8 +795,8 @@ namespace BetterLegacy.Editor.Managers
                         yield return CoreHelper.GetYieldInstruction(pasteObjectsYieldType, ref delay);
 
                     var prefabObjectCopy = PrefabObject.DeepCopy((PrefabObject)prefabObject, false);
-                    if (prefabInstanceIDs.ContainsKey(prefabObject.ID))
-                        prefabObjectCopy.ID = prefabInstanceIDs[prefabObject.ID];
+                    if (prefabInstanceIDs.TryGetValue(prefabObject.ID, out string id))
+                        prefabObjectCopy.ID = id;
                     prefabObjectCopy.prefabID = prefabObject.prefabID;
 
                     prefabObjectCopy.StartTime += offset == 0.0 ? undone ? prefab.Offset : audioTime + prefab.Offset : offset;
@@ -3100,7 +3100,8 @@ namespace BetterLegacy.Editor.Managers
                 set.onClick.ClearAll();
                 set.onClick.AddListener(() =>
                 {
-                    if (!AssetManager.SpriteAssets.ContainsKey(beatmapObject.text))
+                    var assetExists = AssetManager.SpriteAssets.ContainsKey(beatmapObject.text);
+                    if (!assetExists)
                     {
                         var regex = new System.Text.RegularExpressions.Regex(@"img\((.*?)\)");
                         var match = regex.Match(beatmapObject.text);
@@ -3143,7 +3144,7 @@ namespace BetterLegacy.Editor.Managers
                         Updater.UpdateObject(beatmapObject);
                     }
 
-                    dataText.text = !AssetManager.SpriteAssets.ContainsKey(beatmapObject.text) ? "Set Data" : "Clear Data";
+                    dataText.text = !assetExists ? "Set Data" : "Clear Data";
                 });
             }
         }
@@ -3868,11 +3869,11 @@ namespace BetterLegacy.Editor.Managers
                     curvesMulti.onValueChanged.ClearAll();
                     curvesMulti.onValueChanged.AddListener(_val =>
                     {
-                        if (!DataManager.inst.AnimationListDictionary.ContainsKey(_val))
+                        if (!DataManager.inst.AnimationListDictionary.TryGetValue(_val, out DataManager.LSAnimation anim))
                             return;
 
                         foreach (var keyframe in selected.Where(x => x.Index != 0).Select(x => x.GetData<EventKeyframe>()))
-                            keyframe.curveType = DataManager.inst.AnimationListDictionary[_val];
+                            keyframe.curveType = anim;
 
                         ResizeKeyframeTimeline(beatmapObject);
 
@@ -4160,13 +4161,15 @@ namespace BetterLegacy.Editor.Managers
             var curves = kfdialog.Find("curves").GetComponent<Dropdown>();
             curves.onValueChanged.ClearAll();
 
-            if (DataManager.inst.AnimationListDictionaryBack.ContainsKey(firstKF.GetData<EventKeyframe>().curveType))
-                curves.value = DataManager.inst.AnimationListDictionaryBack[firstKF.GetData<EventKeyframe>().curveType];
+            if (DataManager.inst.AnimationListDictionaryBack.TryGetValue(firstKF.GetData<EventKeyframe>().curveType, out int animIndex))
+                curves.value = animIndex;
 
             curves.onValueChanged.AddListener(_val =>
             {
+                if (!DataManager.inst.AnimationListDictionary.TryGetValue(_val, out DataManager.LSAnimation anim))
+
                 foreach (var keyframe in selected.Select(x => x.GetData<EventKeyframe>()))
-                    keyframe.curveType = DataManager.inst.AnimationListDictionary[_val];
+                    keyframe.curveType = anim;
 
                 // Since keyframe curve has no affect on the timeline object, we will only need to update the physical object.
                 if (UpdateObjects)

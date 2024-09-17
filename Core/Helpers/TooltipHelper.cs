@@ -46,10 +46,10 @@ namespace BetterLegacy.Core.Helpers
 
         public static void AssignTooltip(GameObject gameObject, string group, float time = 2f)
         {
-            if (!Tooltips.ContainsKey(group))
+            if (!Tooltips.TryGetValue(group, out List<HoverTooltip.Tooltip> tooltips))
                 return;
 
-            AddTooltip(gameObject, Tooltips[group], time);
+            AddTooltip(gameObject, tooltips, time);
         }
 
         public static void AddTooltip(GameObject gameObject, List<HoverTooltip.Tooltip> tooltips, float time)
@@ -60,13 +60,13 @@ namespace BetterLegacy.Core.Helpers
             tooltip.tooltips = tooltips;
         }
 
-        public static void AssignTooltip(HoverTooltip hoverTooltip, string name)
+        public static void AssignTooltip(HoverTooltip hoverTooltip, string group)
         {
-            if (!Tooltips.ContainsKey(name))
+            if (!Tooltips.TryGetValue(group, out List<HoverTooltip.Tooltip> tooltips))
                 return;
 
             hoverTooltip.tooltipLangauges.Clear();
-            hoverTooltip.tooltipLangauges.AddRange(Tooltips[name]);
+            hoverTooltip.tooltipLangauges.AddRange(tooltips);
         }
 
         public static void AddHoverTooltip(GameObject gameObject, string desc, string hint, List<string> keys = null, Language language = Language.English, bool clear = false)

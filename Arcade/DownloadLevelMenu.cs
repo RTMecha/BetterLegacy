@@ -98,7 +98,7 @@ namespace BetterLegacy.Arcade
                 id = "84682758635",
                 name = "Cover",
                 rect = RectValues.Default.AnchoredPosition(-500f, 100f).SizeDelta(600f, 600f),
-                icon = ArcadeMenu.OnlineLevelIcons.ContainsKey(jn["id"]) ? ArcadeMenu.OnlineLevelIcons[jn["id"]] : SteamWorkshop.inst.defaultSteamImageSprite,
+                icon = ArcadeMenu.OnlineLevelIcons.TryGetValue(jn["id"], out Sprite sprite) ? sprite : SteamWorkshop.inst.defaultSteamImageSprite,
                 opacity = 1f,
                 val = 40f,
                 length = 0.1f,

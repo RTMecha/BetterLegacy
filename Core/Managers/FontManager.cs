@@ -37,11 +37,11 @@ namespace BetterLegacy.Core.Managers
             get
             {
                 var key = EditorConfig.Instance.EditorFont.Value.ToString().Replace("_", " ");
-                if (allFonts.ContainsKey(key))
-                    return allFonts[key];
+                if (allFonts.TryGetValue(key, out Font font))
+                    return font;
 
-                if (allFonts.ContainsKey(defaultFont))
-                    return allFonts[defaultFont];
+                if (allFonts.TryGetValue(defaultFont, out Font defaultFontValue))
+                    return defaultFontValue;
 
                 Debug.Log($"{className}Font doesn't exist.");
                 return Font.GetDefault();

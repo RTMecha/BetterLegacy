@@ -71,8 +71,8 @@ namespace BetterLegacy.Core.Managers
                     textObject = new GameObject("Text");
                     var textObjectRT = textObject.AddComponent<RectTransform>();
                     var textObjectText = textObject.AddComponent<Text>();
-                    if (FontManager.inst && FontManager.inst.allFonts.ContainsKey("Inconsolata Variable"))
-                        textObjectText.font = FontManager.inst.allFonts["Inconsolata Variable"];
+                    if (FontManager.inst && FontManager.inst.allFonts.TryGetValue("Inconsolata Variable", out Font font))
+                        textObjectText.font = font;
                     else
                         textObjectText.font = Font.GetDefault();
 

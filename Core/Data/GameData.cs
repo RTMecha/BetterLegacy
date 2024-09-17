@@ -148,10 +148,10 @@ namespace BetterLegacy.Core.Data
 
                             foreach (var player in PlayerManager.Players)
                             {
-                                if (!player.Player || !player.Player.playerObjects.ContainsKey("RB Parent") || !player.Player.playerObjects["RB Parent"].gameObject)
+                                if (!player.Player || !player.Player.playerObjects.TryGetValue("RB Parent", out RTPlayer.PlayerObject rbParent) || !rbParent.gameObject)
                                     continue;
 
-                                var tf = player.Player.playerObjects["RB Parent"].gameObject.transform;
+                                var tf = rbParent.gameObject.transform;
 
                                 if (t == 0f)
                                 {
@@ -168,7 +168,7 @@ namespace BetterLegacy.Core.Data
                                         new Vector2Keyframe(0f, tf.localPosition, Ease.Linear),
                                         new Vector2Keyframe(t, new Vector2(x, y), Ease.Linear),
                                         new Vector2Keyframe(t + 0.02f, new Vector2(x, y), Ease.Linear),
-                                    }, delegate (Vector2 x)
+                                    }, x =>
                                     {
                                         if (!tf)
                                             return;
@@ -183,9 +183,7 @@ namespace BetterLegacy.Core.Data
                     case "playerboostlock":
                         {
                             if (modifier.commands.Count > 3 && !string.IsNullOrEmpty(modifier.commands[1]) && bool.TryParse(modifier.commands[1], out bool lockBoost))
-                            {
                                 RTPlayer.LockBoost = lockBoost;
-                            }
 
                             break;
                         }
@@ -431,16 +429,13 @@ namespace BetterLegacy.Core.Data
                     var beatmapTheme = BeatmapTheme.ParseVG(jn["themes"][i]);
 
                     if (!string.IsNullOrEmpty(beatmapTheme.VGID) && !idConversion.ContainsKey(beatmapTheme.VGID))
-                    {
                         idConversion.Add(beatmapTheme.VGID, beatmapTheme.id);
-                    }
 
                     if (!gameData.beatmapThemes.ContainsKey(beatmapTheme.id))
                         gameData.beatmapThemes.Add(beatmapTheme.id, beatmapTheme);
 
                     if (parseThemes)
                     {
-
                         DataManager.inst.CustomBeatmapThemes.Add(beatmapTheme);
                         if (DataManager.inst.BeatmapThemeIDToIndex.ContainsKey(int.Parse(beatmapTheme.id)))
                         {
@@ -490,8 +485,8 @@ namespace BetterLegacy.Core.Data
 
                     eventKeyframe.id = LSText.randomNumString(8);
 
-                    if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.ContainsKey(kfjn["ct"]))
-                        eventKeyframe.curveType = DataManager.inst.AnimationListDictionaryStr[kfjn["ct"]];
+                    if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.TryGetValue(kfjn["ct"], out DataManager.LSAnimation anim))
+                        eventKeyframe.curveType = anim;
 
                     eventKeyframe.eventTime = kfjn["t"].AsFloat;
                     eventKeyframe.SetEventValues(kfjn["ev"][0].AsFloat, kfjn["ev"][1].AsFloat);
@@ -509,8 +504,8 @@ namespace BetterLegacy.Core.Data
 
                     eventKeyframe.id = LSText.randomNumString(8);
 
-                    if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.ContainsKey(kfjn["ct"]))
-                        eventKeyframe.curveType = DataManager.inst.AnimationListDictionaryStr[kfjn["ct"]];
+                    if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.TryGetValue(kfjn["ct"], out DataManager.LSAnimation anim))
+                        eventKeyframe.curveType = anim;
 
                     eventKeyframe.eventTime = kfjn["t"].AsFloat;
                     eventKeyframe.SetEventValues(kfjn["ev"][0].AsFloat);
@@ -528,8 +523,8 @@ namespace BetterLegacy.Core.Data
 
                     eventKeyframe.id = LSText.randomNumString(8);
 
-                    if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.ContainsKey(kfjn["ct"]))
-                        eventKeyframe.curveType = DataManager.inst.AnimationListDictionaryStr[kfjn["ct"]];
+                    if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.TryGetValue(kfjn["ct"], out DataManager.LSAnimation anim))
+                        eventKeyframe.curveType = anim;
 
                     eventKeyframe.eventTime = kfjn["t"].AsFloat;
                     eventKeyframe.SetEventValues(kfjn["ev"][0].AsFloat);
@@ -547,8 +542,8 @@ namespace BetterLegacy.Core.Data
 
                     eventKeyframe.id = LSText.randomNumString(8);
 
-                    if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.ContainsKey(kfjn["ct"]))
-                        eventKeyframe.curveType = DataManager.inst.AnimationListDictionaryStr[kfjn["ct"]];
+                    if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.TryGetValue(kfjn["ct"], out DataManager.LSAnimation anim))
+                        eventKeyframe.curveType = anim;
 
                     eventKeyframe.eventTime = kfjn["t"].AsFloat;
                     eventKeyframe.SetEventValues(kfjn["ev"][0].AsFloat, 1f, 1f);
@@ -566,13 +561,13 @@ namespace BetterLegacy.Core.Data
 
                     eventKeyframe.id = LSText.randomNumString(8);
 
-                    if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.ContainsKey(kfjn["ct"]))
-                        eventKeyframe.curveType = DataManager.inst.AnimationListDictionaryStr[kfjn["ct"]];
+                    if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.TryGetValue(kfjn["ct"], out DataManager.LSAnimation anim))
+                        eventKeyframe.curveType = anim;
 
                     eventKeyframe.eventTime = kfjn["t"].AsFloat;
                     // Since theme keyframes use random string IDs as their value instead of numbers (wtf), we have to convert the new IDs to numbers.
-                    if (!string.IsNullOrEmpty(kfjn["evs"][0]) && idConversion.ContainsKey(kfjn["evs"][0]))
-                        eventKeyframe.SetEventValues(Parser.TryParse(idConversion[kfjn["evs"][0]], 0f));
+                    if (!string.IsNullOrEmpty(kfjn["evs"][0]) && idConversion.TryGetValue(kfjn["evs"][0], out string themeID))
+                        eventKeyframe.SetEventValues(Parser.TryParse(themeID, 0f));
                     else
                         eventKeyframe.SetEventValues(0f);
 
@@ -589,8 +584,8 @@ namespace BetterLegacy.Core.Data
 
                     eventKeyframe.id = LSText.randomNumString(8);
 
-                    if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.ContainsKey(kfjn["ct"]))
-                        eventKeyframe.curveType = DataManager.inst.AnimationListDictionaryStr[kfjn["ct"]];
+                    if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.TryGetValue(kfjn["ct"], out DataManager.LSAnimation anim))
+                        eventKeyframe.curveType = anim;
 
                     eventKeyframe.eventTime = kfjn["t"].AsFloat;
                     eventKeyframe.SetEventValues(kfjn["ev"][0].AsFloat);
@@ -608,8 +603,8 @@ namespace BetterLegacy.Core.Data
 
                     eventKeyframe.id = LSText.randomNumString(8);
 
-                    if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.ContainsKey(kfjn["ct"]))
-                        eventKeyframe.curveType = DataManager.inst.AnimationListDictionaryStr[kfjn["ct"]];
+                    if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.TryGetValue(kfjn["ct"], out DataManager.LSAnimation anim))
+                        eventKeyframe.curveType = anim;
 
                     eventKeyframe.eventTime = kfjn["t"].AsFloat;
                     eventKeyframe.SetEventValues(
@@ -632,8 +627,8 @@ namespace BetterLegacy.Core.Data
 
                     eventKeyframe.id = LSText.randomNumString(8);
 
-                    if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.ContainsKey(kfjn["ct"]))
-                        eventKeyframe.curveType = DataManager.inst.AnimationListDictionaryStr[kfjn["ct"]];
+                    if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.TryGetValue(kfjn["ct"], out DataManager.LSAnimation anim))
+                        eventKeyframe.curveType = anim;
 
                     eventKeyframe.eventTime = kfjn["t"].AsFloat;
                     eventKeyframe.SetEventValues(
@@ -658,8 +653,8 @@ namespace BetterLegacy.Core.Data
 
                     eventKeyframe.id = LSText.randomNumString(8);
 
-                    if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.ContainsKey(kfjn["ct"]))
-                        eventKeyframe.curveType = DataManager.inst.AnimationListDictionaryStr[kfjn["ct"]];
+                    if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.TryGetValue(kfjn["ct"], out DataManager.LSAnimation anim))
+                        eventKeyframe.curveType = anim;
 
                     eventKeyframe.eventTime = kfjn["t"].AsFloat;
                     eventKeyframe.SetEventValues(
@@ -683,8 +678,8 @@ namespace BetterLegacy.Core.Data
 
                     eventKeyframe.id = LSText.randomNumString(8);
 
-                    if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.ContainsKey(kfjn["ct"]))
-                        eventKeyframe.curveType = DataManager.inst.AnimationListDictionaryStr[kfjn["ct"]];
+                    if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.TryGetValue(kfjn["ct"], out DataManager.LSAnimation anim))
+                        eventKeyframe.curveType = anim;
 
                     eventKeyframe.eventTime = kfjn["t"].AsFloat;
                     eventKeyframe.SetEventValues(
@@ -705,8 +700,8 @@ namespace BetterLegacy.Core.Data
 
                     eventKeyframe.id = LSText.randomNumString(8);
 
-                    if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.ContainsKey(kfjn["ct"]))
-                        eventKeyframe.curveType = DataManager.inst.AnimationListDictionaryStr[kfjn["ct"]];
+                    if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.TryGetValue(kfjn["ct"], out DataManager.LSAnimation anim))
+                        eventKeyframe.curveType = anim;
 
                     eventKeyframe.eventTime = kfjn["t"].AsFloat;
                     eventKeyframe.SetEventValues(
@@ -734,8 +729,8 @@ namespace BetterLegacy.Core.Data
 
                     eventKeyframe.id = LSText.randomNumString(8);
 
-                    if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.ContainsKey(kfjn["ct"]))
-                        eventKeyframe.curveType = DataManager.inst.AnimationListDictionaryStr[kfjn["ct"]];
+                    if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.TryGetValue(kfjn["ct"], out DataManager.LSAnimation anim))
+                        eventKeyframe.curveType = anim;
 
                     eventKeyframe.eventTime = kfjn["t"].AsFloat;
                     eventKeyframe.SetEventValues(
@@ -754,17 +749,13 @@ namespace BetterLegacy.Core.Data
                     gameData.eventObjects.allEvents[i].Add(Data.EventKeyframe.DeepCopy((Data.EventKeyframe)DefaultKeyframes[i]));
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 EditorManager.inst?.DisplayNotification($"There was an error in parsing VG Event Keyframes. Parsing got caught at {breakContext}", 4f, EditorManager.NotificationType.Error);
                 if (!EditorManager.inst)
-                {
                     Debug.LogError($"There was an error in parsing VG Event Keyframes. Parsing got caught at {breakContext}.\n {ex}");
-                }
                 else
-                {
                     Debug.LogError($"{ex}");
-                }
             }
 
             CoreHelper.Log($"Checking keyframe counts");
@@ -785,9 +776,9 @@ namespace BetterLegacy.Core.Data
                     var kfjn = jn["events"][13][i];
 
                     eventKeyframe.id = LSText.randomNumString(8);
-
-                    if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.ContainsKey(kfjn["ct"]))
-                        eventKeyframe.curveType = DataManager.inst.AnimationListDictionaryStr[kfjn["ct"]];
+                    
+                    if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.TryGetValue(kfjn["ct"], out DataManager.LSAnimation anim))
+                        eventKeyframe.curveType = anim;
 
                     eventKeyframe.eventTime = kfjn["t"].AsFloat;
                     eventKeyframe.SetEventValues(
@@ -1133,7 +1124,7 @@ namespace BetterLegacy.Core.Data
                     var eventKeyframe = eventObjects.allEvents[4][i];
                     jn["events"][4][i]["ct"] = eventKeyframe.curveType.Name;
                     jn["events"][4][i]["t"] = eventKeyframe.eventTime;
-                    jn["events"][4][i]["evs"][0] = idsConverter.ContainsKey(eventKeyframe.eventValues[0].ToString()) ? idsConverter[eventKeyframe.eventValues[0].ToString()] : eventKeyframe.eventValues[0].ToString();
+                    jn["events"][4][i]["evs"][0] = idsConverter.TryGetValue(eventKeyframe.eventValues[0].ToString(), out string themeID) ? themeID : eventKeyframe.eventValues[0].ToString();
                 }
 
                 // Chroma

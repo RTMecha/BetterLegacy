@@ -32,55 +32,17 @@ namespace BetterLegacy.Core.Managers
             fontMaterial = textMeshPro.GetComponent<TextMeshProUGUI>().fontMaterial;
         }
 
-        public static void SetRectTransform(RectTransform _rt, Vector2 _anchoredPos, Vector2 _anchorMax, Vector2 _anchorMin, Vector2 _pivot, Vector2 _sizeDelta)
+        /// <summary>
+        /// Sets a RectTransforms' main values.
+        /// </summary>
+        /// <param name="rectTransform">RectTransform to apply to.</param>
+        public static void SetRectTransform(RectTransform rectTransform, Vector2 anchoredPos, Vector2 anchorMax, Vector2 anchorMin, Vector2 pivot, Vector2 sizeDelta)
         {
-            _rt.anchoredPosition = _anchoredPos;
-            _rt.anchorMax = _anchorMax;
-            _rt.anchorMin = _anchorMin;
-            _rt.pivot = _pivot;
-            _rt.sizeDelta = _sizeDelta;
-        }
-
-        public static Image GetImage(Dictionary<string, object> dictionary)
-        {
-            if (dictionary.ContainsKey("Image"))
-                return (Image)dictionary["Image"];
-            return null;
-        }
-
-        public static Text GetText(Dictionary<string, object> dictionary)
-        {
-            if (dictionary.ContainsKey("Text"))
-                return (Text)dictionary["Text"];
-            return null;
-        }
-
-        public static RectTransform GetRectTransform(Dictionary<string, object> dictionary)
-        {
-            if (dictionary.ContainsKey("RectTransform"))
-                return (RectTransform)dictionary["RectTransform"];
-            return null;
-        }
-
-        public static InputField GetInputField(Dictionary<string, object> dictionary)
-        {
-            if (dictionary.ContainsKey("InputField"))
-                return (InputField)dictionary["InputField"];
-            return null;
-        }
-
-        public static Button GetButton(Dictionary<string, object> dictionary)
-        {
-            if (dictionary.ContainsKey("Button"))
-                return (Button)dictionary["Button"];
-            return null;
-        }
-
-        public static Toggle GetToggle(Dictionary<string, object> dictionary)
-        {
-            if (dictionary.ContainsKey("Toggle"))
-                return (Toggle)dictionary["Toggle"];
-            return null;
+            rectTransform.anchoredPosition = anchoredPos;
+            rectTransform.anchorMax = anchorMax;
+            rectTransform.anchorMin = anchorMin;
+            rectTransform.pivot = pivot;
+            rectTransform.sizeDelta = sizeDelta;
         }
 
         public static Dictionary<string, object> GenerateUIImage(string _name, Transform _parent)

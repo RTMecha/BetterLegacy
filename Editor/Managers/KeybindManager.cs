@@ -1237,10 +1237,8 @@ namespace BetterLegacy.Editor.Managers
 
         public static void OpenDialog(Keybind keybind)
         {
-            if (EditorManager.inst && keybind.settings.ContainsKey("Dialog") && EditorManager.inst.EditorDialogsDictionary.ContainsKey(keybind.settings["Popup"]))
-            {
-                EditorManager.inst.ShowDialog(keybind.settings["Dialog"]);
-            }
+            if (EditorManager.inst && keybind.settings.TryGetValue("Dialog", out string dialog) && EditorManager.inst.EditorDialogsDictionary.ContainsKey(dialog))
+                EditorManager.inst.ShowDialog(dialog);
         }
 
         public static void SaveBeatmap(Keybind keybind) => EditorManager.inst.SaveBeatmap();
@@ -1249,10 +1247,8 @@ namespace BetterLegacy.Editor.Managers
 
         public static void SetLayer(Keybind keybind)
         {
-            if (keybind.settings.ContainsKey("Layer") && int.TryParse(keybind.settings["Layer"], out int num))
-            {
-                RTEditor.inst.SetLayer(num);
-            }
+            if (keybind.settings.TryGetValue("Layer", out string layerSetting) && int.TryParse(layerSetting, out int layer))
+                RTEditor.inst.SetLayer(layer);
         }
 
         public static void ToggleEventLayer(Keybind keybind)
@@ -1266,9 +1262,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.Undo();
             }
             else
-            {
                 EditorManager.inst.DisplayNotification("Wait until current task is complete!", 1f, EditorManager.NotificationType.Warning);
-            }
         }
 
         public static void Redo(Keybind keybind)
@@ -1279,19 +1273,17 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.Redo();
             }
             else
-            {
                 EditorManager.inst.DisplayNotification("Wait until current task is complete!", 1f, EditorManager.NotificationType.Warning);
-            }
         }
 
         public static void TogglePlayingSong(Keybind keybind) => EditorManager.inst.TogglePlayingSong();
 
         public static void IncreaseKeyframeValue(Keybind keybind)
         {
-            var type = keybind.settings.ContainsKey("EventType") ? Parser.TryParse(keybind.settings["EventType"], 0) : 0;
-            var index = keybind.settings.ContainsKey("EventIndex") ? Parser.TryParse(keybind.settings["EventIndex"], 0) : 0;
-            var value = keybind.settings.ContainsKey("EventValue") ? Parser.TryParse(keybind.settings["EventValue"], 0) : 0;
-            var amount = keybind.settings.ContainsKey("EventAmount") ? Parser.TryParse(keybind.settings["EventAmount"], 0f) : 0f;
+            var type = keybind.settings.TryGetValue("EventType", out string eventType) ? Parser.TryParse(eventType, 0) : 0;
+            var index = keybind.settings.TryGetValue("EventIndex", out string eventIndex) ? Parser.TryParse(eventIndex, 0) : 0;
+            var value = keybind.settings.TryGetValue("EventValue", out string eventValue) ? Parser.TryParse(eventValue, 0) : 0;
+            var amount = keybind.settings.TryGetValue("EventAmount", out string eventAmount) ? Parser.TryParse(eventAmount, 0f) : 0f;
 
             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
             {
@@ -1330,10 +1322,10 @@ namespace BetterLegacy.Editor.Managers
 
         public static void DecreaseKeyframeValue(Keybind keybind)
         {
-            var type = keybind.settings.ContainsKey("EventType") ? Parser.TryParse(keybind.settings["EventType"], 0) : 0;
-            var index = keybind.settings.ContainsKey("EventIndex") ? Parser.TryParse(keybind.settings["EventIndex"], 0) : 0;
-            var value = keybind.settings.ContainsKey("EventValue") ? Parser.TryParse(keybind.settings["EventValue"], 0) : 0;
-            var amount = keybind.settings.ContainsKey("EventAmount") ? Parser.TryParse(keybind.settings["EventAmount"], 0f) : 0f;
+            var type = keybind.settings.TryGetValue("EventType", out string eventType) ? Parser.TryParse(eventType, 0) : 0;
+            var index = keybind.settings.TryGetValue("EventIndex", out string eventIndex) ? Parser.TryParse(eventIndex, 0) : 0;
+            var value = keybind.settings.TryGetValue("EventValue", out string eventValue) ? Parser.TryParse(eventValue, 0) : 0;
+            var amount = keybind.settings.TryGetValue("EventAmount", out string eventAmount) ? Parser.TryParse(eventAmount, 0f) : 0f;
 
             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
             {
@@ -1372,10 +1364,10 @@ namespace BetterLegacy.Editor.Managers
 
         public static void SetKeyframeValue(Keybind keybind)
         {
-            var type = keybind.settings.ContainsKey("EventType") ? Parser.TryParse(keybind.settings["EventType"], 0) : 0;
-            var index = keybind.settings.ContainsKey("EventIndex") ? Parser.TryParse(keybind.settings["EventIndex"], 0) : 0;
-            var value = keybind.settings.ContainsKey("EventValue") ? Parser.TryParse(keybind.settings["EventValue"], 0) : 0;
-            var amount = keybind.settings.ContainsKey("EventAmount") ? Parser.TryParse(keybind.settings["EventAmount"], 0f) : 0f;
+            var type = keybind.settings.TryGetValue("EventType", out string eventType) ? Parser.TryParse(eventType, 0) : 0;
+            var index = keybind.settings.TryGetValue("EventIndex", out string eventIndex) ? Parser.TryParse(eventIndex, 0) : 0;
+            var value = keybind.settings.TryGetValue("EventValue", out string eventValue) ? Parser.TryParse(eventValue, 0) : 0;
+            var amount = keybind.settings.TryGetValue("EventAmount", out string eventAmount) ? Parser.TryParse(eventAmount, 0f) : 0f;
 
             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
             {
@@ -1766,24 +1758,24 @@ namespace BetterLegacy.Editor.Managers
 
         public static void SpawnPrefab(Keybind keybind)
         {
-            bool useExternal = keybind.settings.ContainsKey("External") && bool.TryParse(keybind.settings["External"], out useExternal);
+            bool useExternal = keybind.settings.TryGetValue("External", out string external) && bool.TryParse(external, out useExternal);
             var prefabs = (useExternal ? RTPrefabEditor.inst.PrefabPanels.Select(x => x.Prefab) : DataManager.inst.gameData.prefabs.Select(x => x as Prefab)).ToList();
 
-            if (keybind.settings.ContainsKey("UseID") && bool.TryParse(keybind.settings["UseID"], out bool boolean) && keybind.settings.ContainsKey("ID") && boolean)
+            if (keybind.settings.TryGetValue("UseID", out string useIDSetting) && bool.TryParse(useIDSetting, out bool boolean) && keybind.settings.TryGetValue("ID", out string id) && boolean)
             {
-                if (string.IsNullOrEmpty(keybind.settings["ID"]))
+                if (string.IsNullOrEmpty(id))
                 {
                     EditorManager.inst.DisplayNotification("Could not find any Prefab to place as the set ID was empty!", 2.5f, EditorManager.NotificationType.Error);
                     return;
                 }
 
-                if (prefabs.TryFind(x => x.ID == keybind.settings["ID"], out Prefab prefab))
+                if (prefabs.TryFind(x => x.ID == id, out Prefab prefab))
                     RTPrefabEditor.inst.AddPrefabObjectToLevel(prefab);
 
                 return;
             }
 
-            if (keybind.settings.ContainsKey("Index") && int.TryParse(keybind.settings["Index"], out int index))
+            if (keybind.settings.TryGetValue("Index", out string indexSetting) && int.TryParse(indexSetting, out int index))
             {
                 if (index < 0 || index >= prefabs.Count)
                 {
@@ -1814,9 +1806,7 @@ namespace BetterLegacy.Editor.Managers
                 RTEditor.inst.Paste(0f, regen);
             }
             else
-            {
                 EditorManager.inst.DisplayNotification("Wait until current task is complete!", 1f, EditorManager.NotificationType.Warning);
-            }
         }
 
         public static void Duplicate(Keybind keybind)
@@ -1833,17 +1823,12 @@ namespace BetterLegacy.Editor.Managers
                 RTEditor.inst.Duplicate(regen);
             }
             else
-            {
                 EditorManager.inst.DisplayNotification("Wait until current task is complete!", 1f, EditorManager.NotificationType.Warning);
-            }
         }
 
         public static void Delete(Keybind keybind) => RTEditor.inst.Delete();
 
-        public static void ToggleObjectDragger(Keybind keybind)
-        {
-            EditorConfig.Instance.ObjectDraggerEnabled.Value = !EditorConfig.Instance.ObjectDraggerEnabled.Value;
-        }
+        public static void ToggleObjectDragger(Keybind keybind) => EditorConfig.Instance.ObjectDraggerEnabled.Value = !EditorConfig.Instance.ObjectDraggerEnabled.Value;
 
         public static void ToggleZenMode(Keybind keybind)
         {
@@ -1860,14 +1845,7 @@ namespace BetterLegacy.Editor.Managers
                 num = 0;
             DataManager.inst.UpdateSettingEnum("ArcadeDifficulty", num);
 
-            string[] modes = new string[]
-            {
-                "Zen",
-                "Normal",
-                "1 Life",
-                "1 Hit",
-                "Practice",
-            };
+            string[] modes = new string[] { "Zen", "Normal", "1 Life", "1 Hit", "Practice", };
 
             EditorManager.inst.DisplayNotification($"Set Game Mode to {modes[num]} Mode!", 2f, EditorManager.NotificationType.Success);
             SaveManager.inst.UpdateSettingsFile(false);
@@ -1875,60 +1853,27 @@ namespace BetterLegacy.Editor.Managers
 
         public static void TransformPosition(Keybind keybind)
         {
-            if (keybind.settings.ContainsKey("Create Keyframe") && bool.TryParse(keybind.settings["Create Keyframe"], out bool createKeyframe))
-            {
-                inst.createKeyframe = createKeyframe;
-            }
-
-            if (keybind.settings.ContainsKey("Use Nearest") && bool.TryParse(keybind.settings["Use Nearest"], out bool useNearest))
-            {
-                inst.useNearest = useNearest;
-            }
-
-            if (keybind.settings.ContainsKey("Use Previous") && bool.TryParse(keybind.settings["Use Previous"], out bool usePrevious))
-            {
-                inst.usePrevious = usePrevious;
-            }
+            inst.createKeyframe = keybind.settings.TryGetValue("Create Keyframe", out string createKeyframeSetting) && bool.TryParse(createKeyframeSetting, out bool createKeyframe) && createKeyframe;
+            inst.useNearest = keybind.settings.TryGetValue("Use Nearest", out string useNearestSetting) && bool.TryParse(useNearestSetting, out bool useNearest) && useNearest;
+            inst.usePrevious = keybind.settings.TryGetValue("Use Previous", out string usePreviousSetting) && bool.TryParse(usePreviousSetting, out bool usePrevious) && usePrevious;
 
             inst.SetValues(0);
         }
 
         public static void TransformScale(Keybind keybind)
         {
-            if (keybind.settings.ContainsKey("Create Keyframe") && bool.TryParse(keybind.settings["Create Keyframe"], out bool createKeyframe))
-            {
-                inst.createKeyframe = createKeyframe;
-            }
-
-            if (keybind.settings.ContainsKey("Use Nearest") && bool.TryParse(keybind.settings["Use Nearest"], out bool useNearest))
-            {
-                inst.useNearest = useNearest;
-            }
-
-            if (keybind.settings.ContainsKey("Use Previous") && bool.TryParse(keybind.settings["Use Previous"], out bool usePrevious))
-            {
-                inst.usePrevious = usePrevious;
-            }
+            inst.createKeyframe = keybind.settings.TryGetValue("Create Keyframe", out string createKeyframeSetting) && bool.TryParse(createKeyframeSetting, out bool createKeyframe) && createKeyframe;
+            inst.useNearest = keybind.settings.TryGetValue("Use Nearest", out string useNearestSetting) && bool.TryParse(useNearestSetting, out bool useNearest) && useNearest;
+            inst.usePrevious = keybind.settings.TryGetValue("Use Previous", out string usePreviousSetting) && bool.TryParse(usePreviousSetting, out bool usePrevious) && usePrevious;
 
             inst.SetValues(1);
         }
 
         public static void TransformRotation(Keybind keybind)
         {
-            if (keybind.settings.ContainsKey("Create Keyframe") && bool.TryParse(keybind.settings["Create Keyframe"], out bool createKeyframe))
-            {
-                inst.createKeyframe = createKeyframe;
-            }
-
-            if (keybind.settings.ContainsKey("Use Nearest") && bool.TryParse(keybind.settings["Use Nearest"], out bool useNearest))
-            {
-                inst.useNearest = useNearest;
-            }
-
-            if (keybind.settings.ContainsKey("Use Previous") && bool.TryParse(keybind.settings["Use Previous"], out bool usePrevious))
-            {
-                inst.usePrevious = usePrevious;
-            }
+            inst.createKeyframe = keybind.settings.TryGetValue("Create Keyframe", out string createKeyframeSetting) && bool.TryParse(createKeyframeSetting, out bool createKeyframe) && createKeyframe;
+            inst.useNearest = keybind.settings.TryGetValue("Use Nearest", out string useNearestSetting) && bool.TryParse(useNearestSetting, out bool useNearest) && useNearest;
+            inst.usePrevious = keybind.settings.TryGetValue("Use Previous", out string usePreviousSetting) && bool.TryParse(usePreviousSetting, out bool usePrevious) && usePrevious;
 
             inst.SetValues(2);
         }
@@ -1944,15 +1889,10 @@ namespace BetterLegacy.Editor.Managers
         public static void ResetIntegerVariables(Keybind keybind)
         {
             foreach (var beatmapObject in GameData.Current.BeatmapObjects)
-            {
                 beatmapObject.integerVariable = 0;
-            }
         }
 
-        public static void ToggleProjectPlanner(Keybind keybind)
-        {
-            ProjectPlannerManager.inst?.ToggleState();
-        }
+        public static void ToggleProjectPlanner(Keybind keybind) => ProjectPlannerManager.inst?.ToggleState();
 
         public static void ForceSnapBPM(Keybind keybind)
         {
@@ -2014,11 +1954,8 @@ namespace BetterLegacy.Editor.Managers
 
         public static void AddLayer(Keybind keybind)
         {
-            if (keybind.settings.ContainsKey("Layer") && int.TryParse(keybind.settings["Layer"], out int num))
-            {
-                RTEditor.inst.Layer += num;
-                RTEditor.inst.SetLayer(RTEditor.inst.Layer);
-            }
+            if (keybind.settings.TryGetValue("Layer", out string layerSetting) && int.TryParse(layerSetting, out int layer))
+                RTEditor.inst.SetLayer(RTEditor.inst.Layer + layer);
         }
 
         public static void ParentPicker(Keybind keybind)

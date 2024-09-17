@@ -171,38 +171,6 @@ namespace BetterLegacy.Core
 
         public static class Reader
         {
-            public static BaseEventKeyframe ParseVGKeyframe(JSONNode jn)
-            {
-                var keyframe = new BaseEventKeyframe();
-
-                float[] ev = new float[jn["ev"].Count];
-
-                for (int k = 0; k < jn["ev"].Count; k++)
-                {
-                    ev[k] = jn["ev"].AsFloat;
-                }
-
-                keyframe.eventValues = ev;
-
-                float[] er = new float[jn["er"].Count];
-
-                for (int k = 0; k < jn["er"].Count; k++)
-                {
-                    er[k] = jn["er"].AsFloat;
-                }
-
-                keyframe.eventRandomValues = er;
-
-                keyframe.eventTime = jn["t"] != null ? jn["t"].AsFloat : 0f;
-
-                if (jn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.ContainsKey(jn["ct"]))
-                    keyframe.curveType = DataManager.inst.AnimationListDictionaryStr[jn["ct"]];
-
-                return keyframe;
-            }
-
-            public static BeatmapTheme ParseBeatmapTheme(JSONNode jn, FileType fileType) => fileType == FileType.LS ? BeatmapTheme.Parse(jn) : BeatmapTheme.ParseVG(jn);
-
             public static List<List<BaseEventKeyframe>> ParseEventkeyframes(JSONNode jn, bool clamp = true)
             {
                 var allEvents = new List<List<BaseEventKeyframe>>();
@@ -286,9 +254,7 @@ namespace BetterLegacy.Core
                 CoreHelper.Log("Saving Object Prefabs");
                 var prefabObjects = _data.prefabObjects.Where(x => x is PrefabObject prefabObject && !prefabObject.fromModifier).Select(x => x as PrefabObject).ToList();
                 for (int i = 0; i < prefabObjects.Count; i++)
-                {
                     jn["prefab_objects"][i] = prefabObjects[i].ToJSON();
-                }
 
                 CoreHelper.Log("Saving Level Data");
                 {
@@ -452,9 +418,7 @@ namespace BetterLegacy.Core
                         beatmapTheme.VGID = LSText.randomString(16);
 
                         if (!idsConverter.ContainsKey(Parser.TryParse(beatmapTheme.id, 0f).ToString()))
-                        {
                             idsConverter.Add(Parser.TryParse(beatmapTheme.id, 0f).ToString(), beatmapTheme.VGID);
-                        }
 
                         jn["themes"][themeIndex] = beatmapTheme.ToJSONVG();
                         themeIndex++;
@@ -515,7 +479,7 @@ namespace BetterLegacy.Core
                         var eventKeyframe = _data.eventObjects.allEvents[4][i];
                         jn["events"][4][i]["ct"] = eventKeyframe.curveType.Name;
                         jn["events"][4][i]["t"] = eventKeyframe.eventTime;
-                        jn["events"][4][i]["evs"][0] = idsConverter.ContainsKey(eventKeyframe.eventValues[0].ToString()) ? idsConverter[eventKeyframe.eventValues[0].ToString()] : eventKeyframe.eventValues[0].ToString();
+                        jn["events"][4][i]["evs"][0] = idsConverter.TryGetValue(eventKeyframe.eventValues[0].ToString(), out string themeID) ? themeID : eventKeyframe.eventValues[0].ToString();
                     }
 
                     // Chroma

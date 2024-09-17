@@ -28,7 +28,7 @@ namespace BetterLegacy.Core.Data.Player
 
         public string CurrentPlayerModel { get; set; } = "0";
 
-        public PlayerModel PlayerModel => PlayerManager.PlayerModels.ContainsKey(CurrentPlayerModel) ? PlayerManager.PlayerModels[CurrentPlayerModel] : PlayerManager.PlayerModels["0"];
+        public PlayerModel PlayerModel => PlayerManager.PlayerModels.TryGetValue(CurrentPlayerModel, out PlayerModel playerModel) ? playerModel : PlayerModel.DefaultPlayer;
 
         public new PlayerIndex GetPlayerIndex(int _index) => (PlayerIndex)_index;
 

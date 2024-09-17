@@ -165,10 +165,10 @@ namespace BetterLegacy.Example
 
         public void SayDialogue(string dialogueName)
         {
-            if (!dialogueDictionary.ContainsKey(dialogueName))
+            if (!dialogueDictionary.TryGetValue(dialogueName, out DialogueGroup dialogueGroup))
                 return;
 
-            var dialogues = dialogueDictionary[dialogueName].dialogues;
+            var dialogues = dialogueGroup.dialogues;
             var random = UnityEngine.Random.Range(0, dialogues.Length);
 
             while (!dialogues[random].CanSay)

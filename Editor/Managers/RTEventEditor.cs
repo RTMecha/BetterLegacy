@@ -928,14 +928,14 @@ namespace BetterLegacy.Editor.Managers
 
         Dictionary<string, GameObject> GenerateUIElement(string name, string toCopy, Transform parent, int index, params string[] labels)
         {
-            if (!uiDictionary.ContainsKey(toCopy))
+            if (!uiDictionary.TryGetValue(toCopy, out GameObject gameObjectToCopy))
                 return null;
 
             var l = uiDictionary["Label"].Duplicate(parent, "label", index);
             l.transform.localScale = Vector3.one;
             GenerateLabels(l.transform, labels);
 
-            var copy = uiDictionary[toCopy].Duplicate(parent, name, index + 1);
+            var copy = gameObjectToCopy.Duplicate(parent, name, index + 1);
             copy.transform.localScale = Vector3.one;
 
             return new Dictionary<string, GameObject>()
@@ -1988,11 +1988,11 @@ namespace BetterLegacy.Editor.Managers
             curves.onValueChanged.ClearAll();
             curves.onValueChanged.AddListener(_val =>
             {
-                if (!DataManager.inst.AnimationListDictionary.ContainsKey(_val))
+                if (!DataManager.inst.AnimationListDictionary.TryGetValue(_val, out DataManager.LSAnimation anim))
                     return;
 
                 foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0))
-                    kf.GetData<EventKeyframe>().curveType = DataManager.inst.AnimationListDictionary[_val];
+                    kf.GetData<EventKeyframe>().curveType = anim;
 
                 EventManager.inst.updateEvents();
             });
@@ -2713,16 +2713,16 @@ namespace BetterLegacy.Editor.Managers
                 if (isNotFirst)
                 {
                     curvesDropdown.onValueChanged.ClearAll();
-                    if (DataManager.inst.AnimationListDictionaryBack.ContainsKey(currentKeyframe.curveType))
-                        curvesDropdown.value = DataManager.inst.AnimationListDictionaryBack[currentKeyframe.curveType];
+                    if (DataManager.inst.AnimationListDictionaryBack.TryGetValue(currentKeyframe.curveType, out int animIndex))
+                        curvesDropdown.value = animIndex;
 
                     curvesDropdown.onValueChanged.AddListener(_val =>
                     {
-                        if (!DataManager.inst.AnimationListDictionary.ContainsKey(_val))
+                        if (!DataManager.inst.AnimationListDictionary.TryGetValue(_val, out DataManager.LSAnimation anim))
                             return;
 
                         foreach (var kf in SelectedKeyframes.Where(x => x.Index != 0 && x.Type == __instance.currentEventType))
-                            kf.GetData<EventKeyframe>().curveType = DataManager.inst.AnimationListDictionary[_val];
+                            kf.GetData<EventKeyframe>().curveType = anim;
 
                         RenderEventObjects();
                         eventManager.updateEvents();

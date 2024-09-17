@@ -194,8 +194,8 @@ namespace BetterLegacy.Menus
             {
                 var search = UIManager.GenerateUIInputField("search", parent);
                 UIManager.SetRectTransform((RectTransform)search["RectTransform"], new Vector2(16f, 316f), zeroFive, zeroFive, zeroFive, new Vector2(532.5f, 32f));
-                if (search.ContainsKey("Image"))
-                    ((Image)search["Image"]).color = new Color(0.1568f, 0.1568f, 0.1568f);
+                if (search.TryGetValue("Image", out object objImage))
+                    ((Image)objImage).color = new Color(0.1568f, 0.1568f, 0.1568f);
 
                 var placeholder = (Text)search["Placeholder"];
                 placeholder.text = "Search for branch...";
@@ -203,10 +203,7 @@ namespace BetterLegacy.Menus
                 placeholder.fontStyle = FontStyle.Italic;
 
                 var searchIF = (InputField)search["InputField"];
-                searchIF.onValueChanged.AddListener(delegate (string _val)
-                {
-                    SearchTerm = _val;
-                });
+                searchIF.onValueChanged.AddListener(_val => { SearchTerm = _val; });
             }
 
             //ScrollView

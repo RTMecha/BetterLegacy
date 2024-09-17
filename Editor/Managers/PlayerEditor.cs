@@ -1342,12 +1342,11 @@ namespace BetterLegacy.Editor.Managers
 
                 if (ui.Tab == Tab.Custom)
                 {
-                    var customActive = active && !string.IsNullOrEmpty(CustomObjectID) && currentModel.customObjects.ContainsKey(CustomObjectID);
+                    currentModel.customObjects.TryGetValue(CustomObjectID, out PlayerModel.CustomObject customObject);
+                    var customActive = active && !string.IsNullOrEmpty(CustomObjectID) && customObject != null;
                     ui.GameObject?.SetActive(customActive);
                     if (!customActive)
                         continue;
-
-                    var customObject = currentModel.customObjects[CustomObjectID];
 
                     ui.Reference = customObject;
 

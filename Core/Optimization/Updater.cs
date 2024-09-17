@@ -700,11 +700,11 @@ namespace BetterLegacy.Core.Optimization
                         var beatmapObject = BeatmapObject.DeepCopy((BeatmapObject)beatmapObj, false);
                         try
                         {
-                            if (ids.ContainsKey(beatmapObj.id))
-                                beatmapObject.id = ids[beatmapObj.id];
+                            if (ids.TryGetValue(beatmapObj.id, out string id))
+                                beatmapObject.id = id;
 
-                            if (ids.ContainsKey(beatmapObj.parent))
-                                beatmapObject.parent = ids[beatmapObj.parent];
+                            if (ids.TryGetValue(beatmapObj.parent, out string parentID))
+                                beatmapObject.parent = parentID;
                             else if (DataManager.inst.gameData.beatmapObjects.FindIndex(x => x.id == beatmapObj.parent) == -1)
                                 beatmapObject.parent = "";
                         }
@@ -748,10 +748,8 @@ namespace BetterLegacy.Core.Optimization
                             beatmapObject.autoKillOffset = prefabObject.autoKillType == PrefabObject.AutoKillType.StartTimeOffset ? prefabObject.StartTime + prefab.Offset + prefabObject.autoKillOffset : prefabObject.autoKillOffset;
                         }
 
-                        if (!Managers.AssetManager.SpriteAssets.ContainsKey(beatmapObject.text) && prefab.SpriteAssets.ContainsKey(beatmapObject.text))
-                        {
-                            Managers.AssetManager.SpriteAssets.Add(beatmapObject.text, prefab.SpriteAssets[beatmapObject.text]);
-                        }
+                        if (!Managers.AssetManager.SpriteAssets.ContainsKey(beatmapObject.text) && prefab.SpriteAssets.TryGetValue(beatmapObject.text, out Sprite sprite))
+                            Managers.AssetManager.SpriteAssets.Add(beatmapObject.text, sprite);
 
                         beatmapObject.prefabID = basePrefabObject.prefabID;
 
@@ -767,9 +765,8 @@ namespace BetterLegacy.Core.Optimization
 
             if (update)
                 foreach (var bm in list)
-                {
                     UpdateObject(bm);
-                }
+
             list.Clear();
             list = null;
         }
@@ -812,11 +809,11 @@ namespace BetterLegacy.Core.Optimization
                         var beatmapObject = BeatmapObject.DeepCopy((BeatmapObject)beatmapObj, false);
                         try
                         {
-                            if (ids.ContainsKey(beatmapObj.id))
-                                beatmapObject.id = ids[beatmapObj.id];
+                            if (ids.TryGetValue(beatmapObj.id, out string id))
+                                beatmapObject.id = id;
 
-                            if (ids.ContainsKey(beatmapObj.parent))
-                                beatmapObject.parent = ids[beatmapObj.parent];
+                            if (ids.TryGetValue(beatmapObj.parent, out string parentID))
+                                beatmapObject.parent = parentID;
                             else if (DataManager.inst.gameData.beatmapObjects.FindIndex(x => x.id == beatmapObj.parent) == -1)
                                 beatmapObject.parent = "";
                         }
@@ -860,10 +857,8 @@ namespace BetterLegacy.Core.Optimization
                             beatmapObject.autoKillOffset = prefabObject.autoKillType == PrefabObject.AutoKillType.StartTimeOffset ? prefabObject.StartTime + prefab.Offset + prefabObject.autoKillOffset : prefabObject.autoKillOffset;
                         }
 
-                        if (!Managers.AssetManager.SpriteAssets.ContainsKey(beatmapObject.text) && prefab.SpriteAssets.ContainsKey(beatmapObject.text))
-                        {
-                            Managers.AssetManager.SpriteAssets.Add(beatmapObject.text, prefab.SpriteAssets[beatmapObject.text]);
-                        }
+                        if (!Managers.AssetManager.SpriteAssets.ContainsKey(beatmapObject.text) && prefab.SpriteAssets.TryGetValue(beatmapObject.text, out Sprite sprite))
+                            Managers.AssetManager.SpriteAssets.Add(beatmapObject.text, sprite);
 
                         beatmapObject.prefabID = basePrefabObject.prefabID;
 
@@ -879,9 +874,7 @@ namespace BetterLegacy.Core.Optimization
 
             if (update)
                 foreach (var bm in list)
-                {
                     UpdateObject(bm);
-                }
 
             list.Clear();
             list = null;
@@ -910,31 +903,30 @@ namespace BetterLegacy.Core.Optimization
                     CoreHelper.StartCoroutine(RecacheSequences(beatmapObject, converter, reinsert, updateParents));
             }
 
-            if (reinsert)
+            if (!reinsert)
+                yield break;
+
+            yield return CoreHelper.StartCoroutine(converter.CacheSequence((BeatmapObject)baseBeatmapObject));
+
+            if (!TryGetObject(baseBeatmapObject, out LevelObject levelObject))
+                yield break;
+
+            if (converter.cachedSequences.TryGetValue(baseBeatmapObject.id, out ObjectConverter.CachedSequences colorSequences))
             {
-                yield return CoreHelper.StartCoroutine(converter.CacheSequence((BeatmapObject)baseBeatmapObject));
-
-                if (TryGetObject(baseBeatmapObject, out LevelObject levelObject))
-                {
-                    if (converter.cachedSequences.ContainsKey(baseBeatmapObject.id))
-                    {
-                        levelObject.colorSequence = converter.cachedSequences[baseBeatmapObject.id].ColorSequence;
-                        levelObject.secondaryColorSequence = converter.cachedSequences[baseBeatmapObject.id].SecondaryColorSequence;
-                    }
-
-                    if (updateParents)
-                        foreach (var levelParent in levelObject.parentObjects)
-                        {
-                            if (converter.cachedSequences.ContainsKey(levelParent.id))
-                            {
-                                var cachedSequences = converter.cachedSequences[levelParent.id];
-                                levelParent.position3DSequence = cachedSequences.Position3DSequence;
-                                levelParent.scaleSequence = cachedSequences.ScaleSequence;
-                                levelParent.rotationSequence = cachedSequences.RotationSequence;
-                            }
-                        }
-                }
+                levelObject.colorSequence = colorSequences.ColorSequence;
+                levelObject.secondaryColorSequence = colorSequences.SecondaryColorSequence;
             }
+
+            if (updateParents)
+                foreach (var levelParent in levelObject.parentObjects)
+                {
+                    if (converter.cachedSequences.TryGetValue(levelParent.id, out ObjectConverter.CachedSequences cachedSequences))
+                    {
+                        levelParent.position3DSequence = cachedSequences.Position3DSequence;
+                        levelParent.scaleSequence = cachedSequences.ScaleSequence;
+                        levelParent.rotationSequence = cachedSequences.RotationSequence;
+                    }
+                }
 
             yield break;
         }

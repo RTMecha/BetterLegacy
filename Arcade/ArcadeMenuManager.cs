@@ -3129,7 +3129,9 @@ namespace BetterLegacy.Arcade
                             Destroy(gameObject.transform.Find("Rank Shadow").gameObject);
                             Destroy(gameObject.transform.Find("Shine").gameObject);
 
-                            if (!ArcadeMenu.OnlineLevelIcons.ContainsKey(id))
+                            if (ArcadeMenu.OnlineLevelIcons.TryGetValue(id, out Sprite sprite))
+                                icon.sprite = sprite;
+                            else
                             {
                                 StartCoroutine(AlephNetworkManager.DownloadBytes($"{CoverURL}{id}.jpg", bytes =>
                                 {
@@ -3141,15 +3143,6 @@ namespace BetterLegacy.Arcade
                                     ArcadeMenu.OnlineLevelIcons.Add(id, SteamWorkshop.inst.defaultSteamImageSprite);
                                     icon.sprite = SteamWorkshop.inst.defaultSteamImageSprite;
                                 }));
-                            }
-                            else if (ArcadeMenu.OnlineLevelIcons.ContainsKey(id))
-                            {
-                                icon.sprite = ArcadeMenu.OnlineLevelIcons[id];
-                            }
-                            else
-                            {
-                                ArcadeMenu.OnlineLevelIcons.Add(id, SteamWorkshop.inst.defaultSteamImageSprite);
-                                icon.sprite = SteamWorkshop.inst.defaultSteamImageSprite;
                             }
 
                             var level = new OnlineLevelButton
@@ -3183,7 +3176,6 @@ namespace BetterLegacy.Arcade
                             clickable.onClick = pointerEventData =>
                             {
                                 AudioManager.inst.PlaySound("blip");
-                                //SelectOnlineLevel(level);
                                 DownloadLevelMenu.Init(item.AsObject);
                             };
 
@@ -3921,14 +3913,14 @@ namespace BetterLegacy.Arcade
                 icon.rectTransform.anchoredPosition = Vector2.zero;
                 icon.rectTransform.sizeDelta = new Vector2(48f, 48f);
 
-                if (!steamPreviews.ContainsKey(item.Id))
+                if (steamPreviews.TryGetValue(item.Id, out Sprite sprite))
+                    icon.sprite = sprite;
+                else
                 {
                     StartCoroutine(AlephNetworkManager.DownloadBytes(item.PreviewImageUrl, bytes =>
                     {
                         var sprite = SpriteHelper.LoadSprite(bytes);
-
-                        if (!steamPreviews.ContainsKey(item.Id))
-                            steamPreviews.Add(item.Id, sprite);
+                        steamPreviews[item.Id] = sprite;
 
                         try
                         {
@@ -3941,16 +3933,17 @@ namespace BetterLegacy.Arcade
                     }, onError =>
                     {
                         var sprite = SteamWorkshop.inst.defaultSteamImageSprite;
+                        steamPreviews[item.Id] = sprite;
 
-                        if (!steamPreviews.ContainsKey(item.Id))
-                            steamPreviews.Add(item.Id, sprite);
+                        try
+                        {
+                            icon.sprite = sprite;
+                        }
+                        catch
+                        {
 
-                        icon.sprite = sprite;
+                        }
                     }));
-                }
-                else
-                {
-                    icon.sprite = steamPreviews[item.Id];
                 }
 
                 Destroy(gameObject.transform.Find("Rank").gameObject);
@@ -4179,8 +4172,8 @@ namespace BetterLegacy.Arcade
         };
 
         public static T GetObject<T>(this Dictionary<string, object> dictionary)
-            => namespaceHelpers.ContainsKey(typeof(T).ToString()) && dictionary.ContainsKey(namespaceHelpers[typeof(T).ToString()]) ?
-            (T)dictionary[namespaceHelpers[typeof(T).ToString()]] : default;
+            => namespaceHelpers.TryGetValue(typeof(T).ToString(), out string namespaceName) && dictionary.TryGetValue(namespaceName, out object obj) ?
+            (T)obj : default;
     }
 }
 

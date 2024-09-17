@@ -709,24 +709,23 @@ namespace BetterLegacy.Arcade
             {
                 var id = keyValuePair.Key;
                 var button = keyValuePair.Value;
-                if (!OnlineLevelIcons.ContainsKey(id))
+                if (OnlineLevelIcons.TryGetValue(id, out Sprite sprite))
                 {
-                    yield return CoreHelper.StartCoroutine(AlephNetworkManager.DownloadBytes($"{CoverURL}{id}.jpg", bytes =>
-                    {
-                        var sprite = SpriteHelper.LoadSprite(bytes);
-                        OnlineLevelIcons.Add(id, sprite);
-                        button.icon = sprite;
-                    }, onError =>
-                    {
-                        var sprite = SteamWorkshop.inst.defaultSteamImageSprite;
-                        OnlineLevelIcons.Add(id, sprite);
-                        button.icon = sprite;
-                    }));
+                    button.icon = sprite;
+                    continue;
                 }
-                else
+
+                yield return CoreHelper.StartCoroutine(AlephNetworkManager.DownloadBytes($"{CoverURL}{id}.jpg", bytes =>
                 {
-                    button.icon = OnlineLevelIcons[id];
-                }
+                    var sprite = SpriteHelper.LoadSprite(bytes);
+                    OnlineLevelIcons.Add(id, sprite);
+                    button.icon = sprite;
+                }, onError =>
+                {
+                    var sprite = SteamWorkshop.inst.defaultSteamImageSprite;
+                    OnlineLevelIcons.Add(id, sprite);
+                    button.icon = sprite;
+                }));
             }
 
             loadingOnlineLevels = false;

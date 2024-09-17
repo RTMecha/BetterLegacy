@@ -807,11 +807,11 @@ namespace BetterLegacy.Editor.Managers
                     if (themeGroup == ThemeGroup.Null)
                         return;
 
-                    if (!theme.ColorGroups.ContainsKey(themeGroup))
+                    if (!theme.ColorGroups.TryGetValue(themeGroup, out Color color))
                         return;
 
                     if (!isSelectable)
-                        SetColor(theme.ColorGroups[themeGroup]);
+                        SetColor(color);
                     else
                     {
                         var colorBlock = new ColorBlock
@@ -827,22 +827,22 @@ namespace BetterLegacy.Editor.Managers
                         var pressedGroup = EditorTheme.GetGroup(space + " Pressed");
                         var disabledGroup = EditorTheme.GetGroup(space + " Disabled");
 
-                        if (theme.ColorGroups.ContainsKey(normalGroup))
-                            colorBlock.normalColor = theme.ColorGroups[normalGroup];
+                        if (theme.ColorGroups.TryGetValue(normalGroup, out Color normalColor))
+                            colorBlock.normalColor = normalColor;
 
-                        if (theme.ColorGroups.ContainsKey(highlightGroup))
-                            colorBlock.highlightedColor = theme.ColorGroups[highlightGroup];
+                        if (theme.ColorGroups.TryGetValue(highlightGroup, out Color highlightedColor))
+                            colorBlock.highlightedColor = highlightedColor;
 
-                        if (theme.ColorGroups.ContainsKey(selectedGroup))
-                            colorBlock.selectedColor = theme.ColorGroups[selectedGroup];
+                        if (theme.ColorGroups.TryGetValue(selectedGroup, out Color selectedColor))
+                            colorBlock.selectedColor = selectedColor;
 
-                        if (theme.ColorGroups.ContainsKey(pressedGroup))
-                            colorBlock.pressedColor = theme.ColorGroups[pressedGroup];
+                        if (theme.ColorGroups.TryGetValue(pressedGroup, out Color pressedColor))
+                            colorBlock.pressedColor = pressedColor;
 
-                        if (theme.ColorGroups.ContainsKey(disabledGroup))
-                            colorBlock.disabledColor = theme.ColorGroups[disabledGroup];
+                        if (theme.ColorGroups.TryGetValue(disabledGroup, out Color disabledColor))
+                            colorBlock.disabledColor = disabledColor;
 
-                        SetColor(theme.ColorGroups[themeGroup], colorBlock);
+                        SetColor(color, colorBlock);
                     }
                 }
                 catch

@@ -347,8 +347,8 @@ namespace BetterLegacy.Menus
                     }
 
                     int loop = 1;
-                    if (settings.ContainsKey("loop"))
-                        loop = Parser.TryParse(settings["loop"], 1);
+                    if (settings.TryGetValue("loop", out string loopSetting))
+                        loop = Parser.TryParse(loopSetting, 1);
 
                     if (jnbranch[i]["elements"][j]["data"] != null)
                     {

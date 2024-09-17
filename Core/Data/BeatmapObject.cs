@@ -347,8 +347,8 @@ namespace BetterLegacy.Core.Data
 
                         eventKeyframe.eventTime = kfjn["t"].AsFloat;
 
-                        if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.ContainsKey(kfjn["ct"]))
-                            eventKeyframe.curveType = DataManager.inst.AnimationListDictionaryStr[kfjn["ct"]];
+                        if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.TryGetValue(kfjn["ct"], out DataManager.LSAnimation anim))
+                            eventKeyframe.curveType = anim;
 
                         eventKeyframe.SetEventValues(
                             kfjn["ev"][0].AsFloat,
@@ -379,8 +379,8 @@ namespace BetterLegacy.Core.Data
 
                         eventKeyframe.eventTime = kfjn["t"].AsFloat;
 
-                        if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.ContainsKey(kfjn["ct"]))
-                            eventKeyframe.curveType = DataManager.inst.AnimationListDictionaryStr[kfjn["ct"]];
+                        if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.TryGetValue(kfjn["ct"], out DataManager.LSAnimation anim))
+                            eventKeyframe.curveType = anim;
 
                         eventKeyframe.SetEventValues(
                             kfjn["ev"][0].AsFloat,
@@ -410,8 +410,8 @@ namespace BetterLegacy.Core.Data
 
                         eventKeyframe.eventTime = kfjn["t"].AsFloat;
 
-                        if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.ContainsKey(kfjn["ct"]))
-                            eventKeyframe.curveType = DataManager.inst.AnimationListDictionaryStr[kfjn["ct"]];
+                        if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.TryGetValue(kfjn["ct"], out DataManager.LSAnimation anim))
+                            eventKeyframe.curveType = anim;
 
                         eventKeyframe.SetEventValues(
                             kfjn["ev"][0].AsFloat);
@@ -440,10 +440,9 @@ namespace BetterLegacy.Core.Data
 
                         eventKeyframe.eventTime = kfjn["t"].AsFloat;
 
-                        if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.ContainsKey(kfjn["ct"]))
-                            eventKeyframe.curveType = DataManager.inst.AnimationListDictionaryStr[kfjn["ct"]];
+                        if (kfjn["ct"] != null && DataManager.inst.AnimationListDictionaryStr.TryGetValue(kfjn["ct"], out DataManager.LSAnimation anim))
+                            eventKeyframe.curveType = anim;
 
-                     
                         // 0 = start color slot
                         // 1 = start opacity
                         // 2 = start hue
@@ -502,14 +501,10 @@ namespace BetterLegacy.Core.Data
                 beatmapObject.parentType = "111";
 
             if (jn["p_o"] != null && jn["p_id"] != "camera")
-            {
                 beatmapObject.parentOffsets = new List<float>(from n in jn["p_o"].AsArray.Children
                                                               select n.AsFloat).ToList();
-            }
             else if (jn["p_id"] == "camera")
-            {
                 beatmapObject.parentOffsets = new List<float> { 0f, 0f, 0f };
-            }
 
             if (jn["ot"] != null)
             {

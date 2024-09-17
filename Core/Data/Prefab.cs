@@ -23,7 +23,7 @@ namespace BetterLegacy.Core.Data
         {
             Name = name;
             Type = type;
-            typeID = PrefabType.prefabTypeLSIndexToID.ContainsKey(type) ? PrefabType.prefabTypeLSIndexToID[type] : null;
+            typeID = PrefabType.prefabTypeLSIndexToID.TryGetValue(type, out string prefabTypeID) ? prefabTypeID : null;
             Offset = offset;
 
             objects.AddRange(beatmapObjects.Select(x => BeatmapObject.DeepCopy(x, false)));
@@ -69,12 +69,8 @@ namespace BetterLegacy.Core.Data
             prefab.objects.AddRange(og.objects.Select(x => BeatmapObject.DeepCopy((BeatmapObject)x, false)).ToList());
 
             foreach (var beatmapObject in prefab.objects)
-            {
-                if (!prefab.SpriteAssets.ContainsKey(beatmapObject.text) && og.SpriteAssets.ContainsKey(beatmapObject.text))
-                {
-                    prefab.SpriteAssets.Add(beatmapObject.text, og.SpriteAssets[beatmapObject.text]);
-                }
-            }
+                if (!prefab.SpriteAssets.ContainsKey(beatmapObject.text) && og.SpriteAssets.TryGetValue(beatmapObject.text, out Sprite sprite))
+                    prefab.SpriteAssets.Add(beatmapObject.text, sprite);
 
             return prefab;
         }
@@ -96,7 +92,7 @@ namespace BetterLegacy.Core.Data
                 prefabObjects = new List<BasePrefabObject>(),
                 description = jn["description"],
             };
-            prefab.typeID = PrefabType.prefabTypeVGIndexToID.ContainsKey(prefab.Type) ? PrefabType.prefabTypeVGIndexToID[prefab.Type] : "";
+            prefab.typeID = PrefabType.prefabTypeVGIndexToID.TryGetValue(prefab.Type, out string prefabTypeID) ? prefabTypeID : "";
 
             return prefab;
         }
@@ -125,7 +121,7 @@ namespace BetterLegacy.Core.Data
             };
 
             if (string.IsNullOrEmpty(prefab.typeID))
-                prefab.typeID = PrefabType.prefabTypeLSIndexToID.ContainsKey(prefab.Type) ? PrefabType.prefabTypeLSIndexToID[prefab.Type] : "";
+                prefab.typeID = PrefabType.prefabTypeLSIndexToID.TryGetValue(prefab.Type, out string prefabTypeID) ? prefabTypeID : "";
 
             if (jn["assets"] != null && jn["assets"]["spr"] != null)
             {
@@ -169,7 +165,7 @@ namespace BetterLegacy.Core.Data
             jn["n"] = Name;
             if (ID != null)
                 jn["id"] = ID;
-            jn["type"] = PrefabType.prefabTypeVGIDToIndex.ContainsKey(typeID) ? PrefabType.prefabTypeVGIDToIndex[typeID] : 0;
+            jn["type"] = PrefabType.prefabTypeVGIDToIndex.TryGetValue(typeID, out int prefabType) ? prefabType : 0;
 
             jn["o"] = -Offset;
 
@@ -186,7 +182,7 @@ namespace BetterLegacy.Core.Data
         {
             var jn = JSON.Parse("{}");
             jn["name"] = Name;
-            jn["type"] = (PrefabType.prefabTypeLSIDToIndex.ContainsKey(typeID) ? PrefabType.prefabTypeLSIDToIndex[typeID] : 0).ToString();
+            jn["type"] = (PrefabType.prefabTypeLSIDToIndex.TryGetValue(typeID, out int prefabType) ? prefabType : 0).ToString();
             jn["offset"] = Offset.ToString();
 
             if (ID != null)
@@ -210,12 +206,8 @@ namespace BetterLegacy.Core.Data
             var spriteAssets = new Dictionary<string, Sprite>();
 
             foreach (var obj in objects)
-            {
-                if (AssetManager.SpriteAssets.ContainsKey(obj.text) && !spriteAssets.ContainsKey(obj.text))
-                {
-                    spriteAssets.Add(obj.text, AssetManager.SpriteAssets[obj.text]);
-                }
-            }
+                if (AssetManager.SpriteAssets.TryGetValue(obj.text, out Sprite sprite) && !spriteAssets.ContainsKey(obj.text))
+                    spriteAssets.Add(obj.text, sprite);
 
             for (int i = 0; i < spriteAssets.Count; i++)
             {

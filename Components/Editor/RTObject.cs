@@ -269,14 +269,15 @@ namespace BetterLegacy.Components.Editor
                         parentID = index != -1 ? beatmapObjects[index].id : null;
                     }
                 }
-                if (!dictionary.ContainsKey(obj.id))
-                    dictionary.Add(obj.id, canParent);
+
+                dictionary[obj.id] = canParent;
             }
 
-            if (dictionary.ContainsKey(currentSelection.ID))
-                dictionary[currentSelection.ID] = false;
+            dictionary[currentSelection.ID] = false;
 
-            if (dictionary.ContainsKey(beatmapObjectToParentTo.id) && dictionary[beatmapObjectToParentTo.id])
+            var shouldParent = dictionary.TryGetValue(beatmapObjectToParentTo.id, out bool value) && value;
+
+            if (shouldParent)
             {
                 currentSelection.GetData<BeatmapObject>().parent = beatmapObjectToParentTo.id;
                 var bm = currentSelection.GetData<BeatmapObject>();
@@ -284,7 +285,7 @@ namespace BetterLegacy.Components.Editor
                 ObjectEditor.inst.RenderParent(bm);
             }
 
-            return dictionary.ContainsKey(beatmapObjectToParentTo.id) && dictionary[beatmapObjectToParentTo.id];
+            return shouldParent;
         }
 
         void OnMouseEnter()

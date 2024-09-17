@@ -302,8 +302,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 var group = AudioManager.inst.library.musicClips[musicName];
 
                 int index = UnityEngine.Random.Range(0, group.Length);
-                if (AudioManager.inst.library.musicClipsRandomIndex.ContainsKey(musicName) && AudioManager.inst.library.musicClipsRandomIndex[musicName] < group.Length)
-                    index = AudioManager.inst.library.musicClipsRandomIndex[musicName];
+                if (AudioManager.inst.library.musicClipsRandomIndex.TryGetValue(musicName, out int randomIndex) && randomIndex < group.Length)
+                    index = randomIndex;
 
                 InterfaceManager.inst.PlayMusic(group[index]);
             }
@@ -471,11 +471,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     if (menuButton.siblingIndex >= 0 && menuButton.siblingIndex < menuButton.gameObject.transform.parent.childCount)
                         menuButton.gameObject.transform.SetSiblingIndex(menuButton.siblingIndex);
 
-                    if (menuButton.autoAlignSelectionPosition && !string.IsNullOrEmpty(element.parentLayout) && layouts.ContainsKey(element.parentLayout))
+                    if (menuButton.autoAlignSelectionPosition && !string.IsNullOrEmpty(element.parentLayout) && layouts.TryGetValue(element.parentLayout, out MenuLayoutBase menuLayoutParent))
                     {
-                        if (layouts[element.parentLayout] is MenuVerticalLayout)
+                        if (menuLayoutParent is MenuVerticalLayout)
                             menuButton.selectionPosition = new Vector2Int(0, num);
-                        if (layouts[element.parentLayout] is MenuHorizontalLayout)
+                        if (menuLayoutParent is MenuHorizontalLayout)
                             menuButton.selectionPosition = new Vector2Int(num, 0);
 
                         // idk how to handle MenuGridLayout
@@ -557,7 +557,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// <param name="element">The element to parent.</param>
         /// <param name="defaultLayout">The default GameObject to parent to if no parent is found.</param>
         /// <returns></returns>
-        public Transform GetElementParent(MenuImage element, GameObject defaultLayout) => !string.IsNullOrEmpty(element.parentLayout) && layouts.ContainsKey(element.parentLayout) ? layouts[element.parentLayout].gameObject.transform : !string.IsNullOrEmpty(element.parent) && elements.TryFind(x => x.id == element.parent, out MenuImage menuParent) && menuParent.gameObject ? menuParent.gameObject.transform : defaultLayout.transform;
+        public Transform GetElementParent(MenuImage element, GameObject defaultLayout) => !string.IsNullOrEmpty(element.parentLayout) && layouts.TryGetValue(element.parentLayout, out MenuLayoutBase menuLayoutParent) ? menuLayoutParent.gameObject.transform : !string.IsNullOrEmpty(element.parent) && elements.TryFind(x => x.id == element.parent, out MenuImage menuParent) && menuParent.gameObject ? menuParent.gameObject.transform : defaultLayout.transform;
 
         /// <summary>
         /// Initializes a <see cref="MenuGridLayout"/>s' UI.

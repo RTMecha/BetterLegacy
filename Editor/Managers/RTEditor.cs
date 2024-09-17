@@ -5660,6 +5660,8 @@ namespace BetterLegacy.Editor.Managers
                     GenerateButtons(parent, 32f, 8f,
                         new ButtonFunction("Set", () =>
                         {
+                            DataManager.LSAnimation anim = default;
+                            bool setCurve = curves.value != 0 && DataManager.inst.AnimationListDictionary.TryGetValue(curves.value - 1, out anim);
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
                                 var bm = timelineObject.GetData<BeatmapObject>();
@@ -5667,8 +5669,8 @@ namespace BetterLegacy.Editor.Managers
                                 for (int i = 0; i < bm.events[3].Count; i++)
                                 {
                                     var kf = bm.events[3][i];
-                                    if (curves.value != 0 && DataManager.inst.AnimationListDictionary.ContainsKey(curves.value - 1))
-                                        kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
+                                    if (setCurve)
+                                        kf.curveType = anim;
                                     if (currentMultiColorSelection >= 0)
                                         kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
                                     if (!string.IsNullOrEmpty(opacityIF.text))
@@ -5698,6 +5700,8 @@ namespace BetterLegacy.Editor.Managers
                         }),
                         new ButtonFunction("Add", () =>
                         {
+                            DataManager.LSAnimation anim = default;
+                            bool setCurve = curves.value != 0 && DataManager.inst.AnimationListDictionary.TryGetValue(curves.value - 1, out anim);
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
                                 var bm = timelineObject.GetData<BeatmapObject>();
@@ -5705,8 +5709,8 @@ namespace BetterLegacy.Editor.Managers
                                 for (int i = 0; i < bm.events[3].Count; i++)
                                 {
                                     var kf = bm.events[3][i];
-                                    if (curves.value != 0 && DataManager.inst.AnimationListDictionary.ContainsKey(curves.value - 1))
-                                        kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
+                                    if (setCurve)
+                                        kf.curveType = anim;
                                     if (currentMultiColorSelection >= 0)
                                         kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18); // color slots can't be added onto.
                                     if (!string.IsNullOrEmpty(opacityIF.text))
@@ -5736,6 +5740,8 @@ namespace BetterLegacy.Editor.Managers
                         }),
                         new ButtonFunction("Sub", () =>
                         {
+                            DataManager.LSAnimation anim = default;
+                            bool setCurve = curves.value != 0 && DataManager.inst.AnimationListDictionary.TryGetValue(curves.value - 1, out anim);
                             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                             {
                                 var bm = timelineObject.GetData<BeatmapObject>();
@@ -5743,8 +5749,8 @@ namespace BetterLegacy.Editor.Managers
                                 for (int i = 0; i < bm.events[3].Count; i++)
                                 {
                                     var kf = bm.events[3][i];
-                                    if (curves.value != 0 && DataManager.inst.AnimationListDictionary.ContainsKey(curves.value - 1))
-                                        kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
+                                    if (setCurve)
+                                        kf.curveType = anim;
                                     if (currentMultiColorSelection >= 0)
                                         kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18); // color slots can't be added onto.
                                     if (!string.IsNullOrEmpty(opacityIF.text))
@@ -6600,8 +6606,8 @@ namespace BetterLegacy.Editor.Managers
         public void AddKeyframeValues(EventKeyframe kf, Dropdown curves,
             string opacity, string hue, string sat, string val, string opacityGradient, string hueGradient, string satGradient, string valGradient)
         {
-            if (curves.value != 0 && DataManager.inst.AnimationListDictionary.ContainsKey(curves.value - 1))
-                kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
+            if (curves.value != 0 && DataManager.inst.AnimationListDictionary.TryGetValue(curves.value - 1, out DataManager.LSAnimation anim))
+                kf.curveType = anim;
             if (currentMultiColorSelection >= 0)
                 kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
             if (!string.IsNullOrEmpty(opacity))
@@ -10136,25 +10142,25 @@ namespace BetterLegacy.Editor.Managers
 
         public void SetDialogStatus(string dialogName, bool active, bool focus = true)
         {
-            if (!EditorManager.inst.EditorDialogsDictionary.ContainsKey(dialogName))
+            if (!EditorManager.inst.EditorDialogsDictionary.TryGetValue(dialogName, out EditorManager.EditorDialog editorDialog))
             {
                 Debug.LogError($"{EditorManager.inst.className}Can't load dialog [{dialogName}].");
                 return;
             }
 
-            PlayDialogAnimation(EditorManager.inst.EditorDialogsDictionary[dialogName].Dialog.gameObject, dialogName, active);
+            PlayDialogAnimation(editorDialog.Dialog.gameObject, dialogName, active);
 
             if (active)
             {
                 if (focus)
-                    EditorManager.inst.currentDialog = EditorManager.inst.EditorDialogsDictionary[dialogName];
-                if (!EditorManager.inst.ActiveDialogs.Contains(EditorManager.inst.EditorDialogsDictionary[dialogName]))
-                    EditorManager.inst.ActiveDialogs.Add(EditorManager.inst.EditorDialogsDictionary[dialogName]);
+                    EditorManager.inst.currentDialog = editorDialog;
+                if (!EditorManager.inst.ActiveDialogs.Contains(editorDialog))
+                    EditorManager.inst.ActiveDialogs.Add(editorDialog);
             }
             else
             {
-                EditorManager.inst.ActiveDialogs.Remove(EditorManager.inst.EditorDialogsDictionary[dialogName]);
-                if (EditorManager.inst.currentDialog == EditorManager.inst.EditorDialogsDictionary[dialogName] && focus)
+                EditorManager.inst.ActiveDialogs.Remove(editorDialog);
+                if (EditorManager.inst.currentDialog == editorDialog && focus)
                     EditorManager.inst.currentDialog = EditorManager.inst.ActiveDialogs.Count > 0 ? EditorManager.inst.ActiveDialogs.Last() : new EditorManager.EditorDialog();
             }
         }

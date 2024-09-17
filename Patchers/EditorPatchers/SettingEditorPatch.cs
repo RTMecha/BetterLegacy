@@ -247,6 +247,14 @@ namespace BetterLegacy.Patchers
             EditorThemeManager.AddGraphic(analyzeBPMStorage.text, ThemeGroup.Function_2_Text);
         }
 
+        static void SetText(string name, string text)
+        {
+            if (!info.TryGetValue(name, out Text textComponent) || !textComponent)
+                return;
+
+            textComponent.text = $"[ {text} ]  ";
+        }
+
         [HarmonyPatch(nameof(SettingEditor.Update))]
         [HarmonyPostfix]
         static void UpdatePostfix()
@@ -257,96 +265,49 @@ namespace BetterLegacy.Patchers
             {
                 var transform = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/SettingsDialog").transform;
 
-                if (info.ContainsKey("Object Count") && info["Object Count"])
+                if (!transform || !transform.gameObject.activeInHierarchy || !GameData.IsValid)
+                    return;
+
+                try
                 {
-                    info["Object Count"].text = $"[ {DataManager.inst.gameData.beatmapObjects.Where(x => !x.fromPrefab).Count()} ]  ";
-                }
-                if (info.ContainsKey("Total Object Count") && info["Total Object Count"])
-                {
-                    info["Total Object Count"].text = $"[ {DataManager.inst.gameData.beatmapObjects.Count} ]  ";
-                }
-                if (info.ContainsKey("Event Count") && info["Event Count"])
-                {
+                    SetText("Object Count", DataManager.inst.gameData.beatmapObjects.FindAll(x => !x.fromPrefab).Count.ToString());
+                    SetText("Total Object Count", DataManager.inst.gameData.beatmapObjects.Count.ToString());
+
                     int num = 0;
                     for (int i = 0; i < DataManager.inst.gameData.eventObjects.allEvents.Count; i++)
                         num += DataManager.inst.gameData.eventObjects.allEvents[i].Count;
+                    SetText("Event Count", num.ToString());
 
-                    info["Event Count"].text = $"[ {num} ]  ";
-                }
-                if (info.ContainsKey("Theme Count") && info["Theme Count"])
-                {
-                    info["Theme Count"].text = $"[ {DataManager.inst.AllThemes.Count} ]  ";
-                }
-                if (info.ContainsKey("Prefab External Count") && info["Prefab External Count"])
-                {
-                    info["Prefab External Count"].text = $"[ {RTPrefabEditor.inst.PrefabPanels.Count} ]  ";
-                }
-                if (info.ContainsKey("Prefab Internal Count") && info["Prefab Internal Count"])
-                {
-                    info["Prefab Internal Count"].text = $"[ {DataManager.inst.gameData.prefabs.Count} ]  ";
-                }
-                if (info.ContainsKey("Prefab Objects Count") && info["Prefab Objects Count"])
-                {
-                    info["Prefab Objects Count"].text = $"[ {DataManager.inst.gameData.prefabObjects.Count} ]  ";
-                }
-                if (info.ContainsKey("No Autokill Count") && info["No Autokill Count"])
-                {
-                    info["No Autokill Count"].text = $"[ {DataManager.inst.gameData.beatmapObjects.Where(x => x.autoKillType == DataManager.GameData.BeatmapObject.AutoKillType.OldStyleNoAutokill).Count()} ]  ";
-                }
-                if (info.ContainsKey("Keyframe Offsets > Song Length Count") && info["Keyframe Offsets > Song Length Count"])
-                {
-                    info["Keyframe Offsets > Song Length Count"].text = $"[ {DataManager.inst.gameData.beatmapObjects.Where(x => x.autoKillOffset > AudioManager.inst.CurrentAudioSource.clip.length).Count()} ]  ";
-                }
-                if (info.ContainsKey("Text Object Count") && info["Text Object Count"])
-                {
-                    info["Text Object Count"].text = $"[ {DataManager.inst.gameData.beatmapObjects.Where(x => x.shape == 4 && x.objectType != DataManager.GameData.BeatmapObject.ObjectType.Empty).Count()} ]  ";
-                }
-                if (info.ContainsKey("Text Symbol Total Count") && info["Text Symbol Total Count"])
-                {
-                    int num = 0;
+                    SetText("Theme Count", DataManager.inst.AllThemes.Count.ToString());
+                    SetText("Prefab External Count", RTPrefabEditor.inst.PrefabPanels.Count.ToString());
+                    SetText("Prefab Internal Count", DataManager.inst.gameData.prefabs.Count.ToString());
+                    SetText("Prefab Objects Count", DataManager.inst.gameData.prefabObjects.Count.ToString());
+                    SetText("No Autokill Count", DataManager.inst.gameData.beatmapObjects.FindAll(x => x.autoKillType == DataManager.GameData.BeatmapObject.AutoKillType.OldStyleNoAutokill).Count.ToString());
+                    SetText("Keyframe Offsets > Song Length Count", DataManager.inst.gameData.beatmapObjects.FindAll(x => x.autoKillOffset > AudioManager.inst.CurrentAudioSource.clip.length).Count.ToString());
+                    SetText("Text Object Count", DataManager.inst.gameData.beatmapObjects.FindAll(x => x.shape == 4 && x.objectType != DataManager.GameData.BeatmapObject.ObjectType.Empty).Count.ToString());
+
+                    num = 0;
                     foreach (var bm in DataManager.inst.gameData.beatmapObjects.Where(x => x.shape == 4 && x.objectType != DataManager.GameData.BeatmapObject.ObjectType.Empty))
-                    {
                         num += bm.text.Length;
-                    }
+                    SetText("Text Symbol Total Count", num.ToString());
 
-                    info["Text Symbol Total Count"].text = $"[ {num} ]  ";
-                }
-                if (info.ContainsKey("Timeline Objects in Current Layer Count") && info["Timeline Objects in Current Layer Count"])
-                {
-                    info["Timeline Objects in Current Layer Count"].text = $"[ {RTEditor.inst.timelineObjects.Where(x => x.Layer == EditorManager.inst.layer).Count()} ]  ";
-                }
-                if (info.ContainsKey("Markers Count") && info["Markers Count"])
-                {
-                    info["Markers Count"].text = $"[ {DataManager.inst.gameData.beatmapData.markers.Count} ]  ";
-                }
-                if (info.ContainsKey("Objects Alive Count") && info["Objects Alive Count"])
-                {
-                    info["Objects Alive Count"].text = $"[ {DataManager.inst.gameData.beatmapObjects.Where(x => x is BeatmapObject beatmapObject && beatmapObject.Alive).Count()} ]  ";
-                }
-                if (info.ContainsKey("Time in Editor") && info["Time in Editor"])
-                {
-                    info["Time in Editor"].text = $"[ {FontManager.TextTranslater.SecondsToTime(RTEditor.inst.timeEditing)} ]  ";
-                }
-                if (info.ContainsKey("Level opened amount") && info["Level opened amount"])
-                {
-                    info["Level opened amount"].text = $"[ {RTEditor.inst.openAmount} ]  ";
-                }
-                if (info.ContainsKey("Song Progress") && info["Song Progress"])
-                {
-                    info["Song Progress"].text = $"[ {FontManager.TextTranslater.Percentage(AudioManager.inst.CurrentAudioSource.time, AudioManager.inst.CurrentAudioSource.clip.length)}% ]  ";
-                }
+                    SetText("Timeline Objects in Current Layer Count", RTEditor.inst.timelineObjects.FindAll(x => x.Layer == EditorManager.inst.layer).Count.ToString());
+                    SetText("Markers Count", DataManager.inst.gameData.beatmapData.markers.Count.ToString());
+                    SetText("Objects Alive Count", GameData.Current.BeatmapObjects.FindAll(x => x.Alive).Count.ToString());
+                    SetText("Time in Editor", FontManager.TextTranslater.SecondsToTime(RTEditor.inst.timeEditing));
+                    SetText("Level opened amount", RTEditor.inst.openAmount.ToString());
+                    SetText("Song Progress", $"{FontManager.TextTranslater.Percentage(AudioManager.inst.CurrentAudioSource.time, AudioManager.inst.CurrentAudioSource.clip.length)}%");
+                    SetText("Camera Position", $"X: {Camera.main.transform.position.x}, Y: {Camera.main.transform.position.y}");
+                    SetText("Camera Zoom", Camera.main.orthographicSize.ToString());
+                    SetText("Camera Rotation", Camera.main.transform.rotation.eulerAngles.z.ToString());
 
-                if (info.ContainsKey("Camera Position") && info["Camera Position"])
-                    info["Camera Position"].text = $"[ X: {Camera.main.transform.position.x}, Y: {Camera.main.transform.position.y} ]  ";
-
-                if (info.ContainsKey("Camera Zoom") && info["Camera Zoom"])
-                    info["Camera Zoom"].text = $"[ {Camera.main.orthographicSize} ]  ";
-
-                if (info.ContainsKey("Camera Rotation") && info["Camera Rotation"])
-                    info["Camera Rotation"].text = $"[ {Camera.main.transform.rotation.eulerAngles.z} ]  ";
-
-                if (doggo)
-                    doggo.sprite = EditorManager.inst.loadingImage.sprite;
+                    if (doggo)
+                        doggo.sprite = EditorManager.inst.loadingImage.sprite;
+                }
+                catch (System.Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
             }
         }
 
