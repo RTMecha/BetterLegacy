@@ -521,39 +521,42 @@ namespace BetterLegacy.Editor.Managers
 
                     #region String
 
+                    case "usernameEquals":
+                        {
+                            StringGenerator(modifier, layout, "Username", 0);
+                            break;
+                        }
                     case "updateObject":
+                    case "objectCollide":
+                        {
+                            PrefabGroupOnly(modifier, layout);
+                            StringGenerator(modifier, layout, "Object Group", 0);
+
+                            break;
+                        }
+                    case "setTextOther":
+                    case "addTextOther":
+                    case "setImageOther":
+                        {
+                            PrefabGroupOnly(modifier, layout);
+                            StringGenerator(modifier, layout, "Object Group", 1);
+                            StringGenerator(modifier, layout, cmd == "setImageOther" ? "Path" : "Text", 0);
+
+                            break;
+                        }
                     case "loadLevel":
                     case "loadLevelInternal":
                     case "setText":
-                    case "setTextOther":
                     case "addText":
-                    case "addTextOther":
-                    case "objectCollide":
                     case "setImage":
-                    case "setImageOther":
-                    case "code":
                     case "setWindowTitle":
                     case "realTimeDayWeekEquals":
                     case "loadInterface":
                         {
-                            if (cmd == "setTextOther" || cmd == "addTextOther" || cmd == "setImageOther")
-                            {
-                                PrefabGroupOnly(modifier, layout);
-                                StringGenerator(modifier, layout, "Object Group", 1);
-                                StringGenerator(modifier, layout, cmd == "setImageOther" ? "Path" : "Text", 0);
-                            }
-
-                            if (cmd == "updateObject" || cmd == "objectCollide")
-                            {
-                                PrefabGroupOnly(modifier, layout);
-                                StringGenerator(modifier, layout, "Object Group", 0);
-                            }
-                            else if (cmd != "setTextOther" && cmd != "addTextOther" && cmd != "setImageOther")
-                                StringGenerator(modifier, layout, cmd == "setText" || cmd == "addText" ? "Text" :
-                                    cmd == "code" ? "Code" :
-                                    cmd == "setWindowTitle" ? "Title" :
-                                    cmd == "realTimeDayWeekEquals" ? "Day" :
-                                    "Path", 0);
+                            StringGenerator(modifier, layout, cmd == "setText" || cmd == "addText" ? "Text" :
+                                cmd == "setWindowTitle" ? "Title" :
+                                cmd == "realTimeDayWeekEquals" ? "Day" :
+                                "Path", 0);
 
                             break;
                         }
@@ -1999,6 +2002,19 @@ namespace BetterLegacy.Editor.Managers
                             IntegerGenerator(modifier, layout, "Height", 2, 512);
                             SingleGenerator(modifier, layout, "Pos X", 3, 0f);
                             SingleGenerator(modifier, layout, "Pos Y", 4, 0f);
+
+                            break;
+                        }
+                    case "languageEquals":
+                        {
+                            var options = new List<Dropdown.OptionData>();
+
+                            var keyCodes = Enum.GetValues(typeof(Language));
+
+                            for (int i = 0; i < keyCodes.Length; i++)
+                                options.Add(new Dropdown.OptionData(Enum.GetName(typeof(Language), i) ?? "Invalid Value"));
+
+                            DropdownGenerator(modifier, layout, "Language", 0, options);
 
                             break;
                         }

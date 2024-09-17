@@ -1178,18 +1178,26 @@ namespace BetterLegacy.Core.Helpers
                         return CoreHelper.InEditor || LevelManager.Levels.TryFind(x => x.id == modifier.value, out Level level) && level.playerData != null && level.playerData.Completed;
                     }
                 #endregion
+                #region Misc
                 case "inEditor":
-                    {
                         return CoreHelper.InEditor;
-                    }
+                case "configLDM":
+                    return CoreConfig.Instance.LDM.Value;
+                case "usernameEquals":
+                    return CoreConfig.Instance.DisplayName.Value == modifier.value;
+                case "languageEquals":
+                    return CoreConfig.Instance.Language.Value == (Language)Parser.TryParse(modifier.value, 0);
+                case "configShowEffects":
+                    return EventsConfig.Instance.ShowFX.Value;
+                case "configShowPlayerGUI":
+                    return EventsConfig.Instance.ShowGUI.Value;
+                case "configShowIntro":
+                    return EventsConfig.Instance.ShowIntro.Value;
                 case "requireSignal":
-                    {
                         return modifier.Result != null;
-                    }
                 case "isFullscreen":
-                    {
                         return Screen.fullScreen;
-                    }
+                    #endregion
             }
 
             modifier.Inactive?.Invoke(modifier);
@@ -3743,6 +3751,14 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+                    case "formatText":
+                        {
+                            if (modifier.reference.shape == 4 && modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null &&
+                                modifier.reference.levelObject.visualObject is TextObject textObject)
+                                textObject.SetText(FontManager.TextTranslater.FormatText(modifier.reference, textObject.text));
+
+                            break;
+                        }
                     case "textSequence":
                         {
                             if (modifier.reference.shape != 4 || !modifier.reference.levelObject || modifier.reference.levelObject.visualObject is not TextObject textObject)
@@ -4923,6 +4939,8 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     #endregion
+                    #region Misc
+
                     case "quitToMenu":
                         {
                             if (CoreHelper.InEditor && !EditorManager.inst.isEditing && ModifiersConfig.Instance.EditorLoadLevel.Value)
@@ -5279,13 +5297,19 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
 
-                        // dev only (story mode)
+                    #endregion
+
+                    #region Dev Only
+
+                    // dev only (story mode)
                     case "loadSceneDEVONLY":
                         {
                             SceneManager.inst.LoadScene(modifier.value, modifier.commands.Count > 1 ? Parser.TryParse(modifier.commands[1], true) : false);
 
                             break;
                         }
+
+                        #endregion
                 }
 
                 //if (sw != null)
