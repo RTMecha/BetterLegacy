@@ -53,6 +53,9 @@ namespace BetterLegacy.Patchers
 
             Instance.currentObj = index;
 
+            if (GameData.Current == null || GameData.Current.beatmapData == null || GameData.Current.beatmapData.checkpoints == null)
+                return false;
+
             var checkpoint = GameData.Current.beatmapData.checkpoints[index];
 
             var search = Instance.right.Find("search").GetComponent<InputField>();
@@ -123,7 +126,7 @@ namespace BetterLegacy.Patchers
             if (!isLast)
             {
                 next.onClick.AddListener(() => Instance.SetCurrentCheckpoint(index + 1));
-                last.onClick.AddListener(() => Instance.SetCurrentCheckpoint(DataManager.inst.gameData.beatmapData.checkpoints.Count - 1));
+                last.onClick.AddListener(() => Instance.SetCurrentCheckpoint(GameData.Current.beatmapData.checkpoints.Count - 1));
             }
 
             name.onValueChanged.ClearAll();
@@ -187,10 +190,11 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool CreateNewCheckpointPrefix(float __0, Vector2 __1)
         {
-            var checkpoint = new DataManager.GameData.BeatmapData.Checkpoint();
-            checkpoint.time = Mathf.Clamp(__0, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
-            checkpoint.pos = __1;
-            GameData.Current.beatmapData.checkpoints.Add(checkpoint);
+            GameData.Current.beatmapData.checkpoints.Add(new DataManager.GameData.BeatmapData.Checkpoint(
+                false,
+                "Checkpoint",
+                Mathf.Clamp(__0, 0f, AudioManager.inst.CurrentAudioSource.clip.length),
+                __1));
 
             (RTEditor.inst.layerType == RTEditor.LayerType.Events ? (Action)Instance.CreateCheckpoints : Instance.CreateGhostCheckpoints).Invoke();
 
