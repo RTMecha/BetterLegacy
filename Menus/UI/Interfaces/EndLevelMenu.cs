@@ -68,7 +68,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
                 if (metadata.song.difficulty == 6)
                     AchievementManager.inst.UnlockAchievement("complete_animation");
-                if (LevelManager.BoostCount == 0)
+                if (metadata.song.difficulty != 6 && LevelManager.BoostCount == 0)
                     AchievementManager.inst.UnlockAchievement("no_boost");
                 if (levelRank.name == "F")
                     AchievementManager.inst.UnlockAchievement("f_rank");
