@@ -394,7 +394,7 @@ namespace BetterLegacy.Components.Player
             set => canBoost = value;
         }
 
-        public bool PlayerAlive => InputDataManager.inst && InputDataManager.inst.players.Count > 0 && CustomPlayer && CustomPlayer.Health > 0 && !isDead;
+        public bool PlayerAlive => CustomPlayer && CustomPlayer.Health > 0 && !isDead;
 
         #endregion
 
