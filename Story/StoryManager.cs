@@ -335,7 +335,7 @@ namespace BetterLegacy.Story
                 }
 
                 var chapter = GetChapter();
-                if (Level != 5 && ChapterCounts.ContainsKey(chapter) && Level + 1 >= ChapterCounts[chapter])
+                if (Level != 5 && ChapterCounts.TryGetValue(chapter, out int maxLevel) && Level + 1 >= maxLevel)
                 {
                     SetChapter(chapter + 1);
                     SetLevel(0);
