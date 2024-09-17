@@ -27,16 +27,7 @@ namespace BetterLegacy.Core.Data
         }
 
         public static bool IsValid => DataManager.inst.gameData is GameData;
-        public static GameData current;
-        public static GameData Current
-        {
-            get => current ?? (GameData)DataManager.inst.gameData;
-            set
-            {
-                DataManager.inst.gameData = value;
-                current = value;
-            }
-        }
+        public static GameData Current { get => (GameData)DataManager.inst.gameData; set => DataManager.inst.gameData = value; }
 
         public Dictionary<string, BaseBeatmapTheme> beatmapThemes = new Dictionary<string, BaseBeatmapTheme>();
 

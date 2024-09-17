@@ -301,12 +301,7 @@ namespace BetterLegacy
             try
             {
                 if (DataManager.inst.gameData is GameData gameData)
-                {
-                    GameData.current = gameData;
                     gameData.moddedBeatmapObjects = gameData.beatmapObjects.Select(x => (BeatmapObject)x).ToList();
-                }
-                else
-                    GameData.current = null;
             }
             catch (Exception ex)
             {
