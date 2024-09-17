@@ -3753,7 +3753,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "formatText":
                         {
-                            if (modifier.reference.shape == 4 && modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null &&
+                            if (!CoreConfig.Instance.AllowCustomTextFormatting.Value && modifier.reference.shape == 4 && modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null &&
                                 modifier.reference.levelObject.visualObject is TextObject textObject)
                                 textObject.SetText(FontManager.TextTranslater.FormatText(modifier.reference, textObject.text));
 
