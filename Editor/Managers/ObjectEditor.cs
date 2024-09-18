@@ -4187,6 +4187,7 @@ namespace BetterLegacy.Editor.Managers
             curves.onValueChanged.AddListener(_val =>
             {
                 if (!DataManager.inst.AnimationListDictionary.TryGetValue(_val, out DataManager.LSAnimation anim))
+                    return;
 
                 foreach (var keyframe in selected.Select(x => x.GetData<EventKeyframe>()))
                     keyframe.curveType = anim;
