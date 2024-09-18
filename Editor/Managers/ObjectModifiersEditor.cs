@@ -745,6 +745,11 @@ namespace BetterLegacy.Editor.Managers
                     case "mouseButtonDown":
                     case "mouseButton":
                     case "mouseButtonUp":
+                    case "playerCountEquals":
+                    case "playerCountLesserEquals":
+                    case "playerCountGreaterEquals":
+                    case "playerCountLesser":
+                    case "playerCountGreater":
                     case "playerHealthEquals":
                     case "playerHealthLesserEquals":
                     case "playerHealthGreaterEquals":
