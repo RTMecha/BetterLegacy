@@ -1,3 +1,5 @@
+1.5.6 > [Sep 18, 2024]
+- Trim the ends of evaluated text.
 1.5.5 > [Sep 18, 2024]
 - Fixed death_hd being achieved when you exit the editor. (hopefully)
 - Updated the way most items are obtained from dictionaries. (This should hopefully mean a slight improvement in performance)
