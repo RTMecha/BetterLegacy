@@ -221,6 +221,7 @@ namespace BetterLegacy.Editor.Managers
             RTThemeEditor.Init();
             RTPrefabEditor.Init();
 
+            TextEditor.Init();
             KeybindManager.Init();
             PlayerEditor.Init();
             ObjectModifiersEditor.Init();
@@ -3969,7 +3970,6 @@ namespace BetterLegacy.Editor.Managers
 
             var close = panel.Find("x").GetComponent<Button>();
             close.onClick.ClearAll();
-            close.onClick.RemoveAllListeners();
             close.onClick.AddListener(() => { EditorManager.inst.HideDialog("Warning Popup"); });
 
             var title = panel.Find("Text").GetComponent<Text>();

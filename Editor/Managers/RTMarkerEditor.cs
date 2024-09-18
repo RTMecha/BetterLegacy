@@ -180,6 +180,21 @@ namespace BetterLegacy.Editor.Managers
             Destroy(prefabCopy.GetComponent<MarkerHelper>());
             MarkerEditor.inst.markerPrefab = prefabCopy;
 
+            var desc = MarkerEditor.inst.left.Find("desc").GetComponent<InputField>();
+
+            while (!KeybindManager.inst || !KeybindManager.inst.editSprite)
+                yield return null;
+
+            var button = EditorPrefabHolder.Instance.DeleteButton.Duplicate(desc.transform, "edit");
+            var buttonStorage = button.GetComponent<DeleteButtonStorage>();
+            buttonStorage.image.sprite = KeybindManager.inst.editSprite;
+            EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
+            EditorThemeManager.ApplyGraphic(buttonStorage.image, ThemeGroup.Function_2_Text);
+            buttonStorage.button.onClick.ClearAll();
+            buttonStorage.button.onClick.AddListener(() => { TextEditor.inst.SetInputField(desc); });
+            UIManager.SetRectTransform(buttonStorage.baseImage.rectTransform, new Vector2(171f, 51f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(22f, 22f));
+            EditorHelper.SetComplexity(button, Complexity.Advanced);
+
             yield break;
         }
 

@@ -2247,6 +2247,16 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.ApplyLightText(labelText);
             EditorThemeManager.ApplyInputField(pathInputField);
+
+            var button = EditorPrefabHolder.Instance.DeleteButton.Duplicate(path.transform, "edit");
+            var buttonStorage = button.GetComponent<DeleteButtonStorage>();
+            buttonStorage.image.sprite = KeybindManager.inst.editSprite;
+            EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
+            EditorThemeManager.ApplyGraphic(buttonStorage.image, ThemeGroup.Function_2_Text);
+            buttonStorage.button.onClick.ClearAll();
+            buttonStorage.button.onClick.AddListener(() => { TextEditor.inst.SetInputField(pathInputField); });
+            UIManager.SetRectTransform(buttonStorage.baseImage.rectTransform, new Vector2(120, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(32f, 32f));
+
             return path;
         }
 
@@ -2577,8 +2587,9 @@ namespace BetterLegacy.Editor.Managers
 
             var input = RTEditor.inst.defaultIF.Duplicate(rectTransform, "Input");
             input.transform.localScale = Vector2.one;
-            ((RectTransform)input.transform).sizeDelta = new Vector2(152f, 32f);
-            ((RectTransform)input.transform.Find("Text")).sizeDelta = Vector2.zero;
+            input.transform.AsRT().anchoredPosition = new Vector2(210f, -16f);
+            input.transform.AsRT().sizeDelta = new Vector2(120, 32f);
+            input.transform.Find("Text").AsRT().sizeDelta = Vector2.zero;
 
             return gameObject;
         }
