@@ -78,518 +78,8 @@ namespace BetterLegacy.Core.Managers
 
                 try
                 {
-                    if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject is TextObject textObject && textObject.textMeshPro)
-                    {
-                        var tmp = textObject.textMeshPro;
-
-                        var str = textObject.text;
-
-                        #region Audio
-
-                        if (beatmapObject.text.Contains("<msAudio000>"))
-                        {
-                            str = str.Replace("<msAudio000>", TextTranslater.PreciseToMilliSeconds(currentAudioTime));
-                        }
-
-                        if (beatmapObject.text.Contains("<msAudio00>"))
-                        {
-                            str = str.Replace("<msAudio00>", TextTranslater.PreciseToMilliSeconds(currentAudioTime, "{0:00}"));
-                        }
-
-                        if (beatmapObject.text.Contains("<msAudio0>"))
-                        {
-                            str = str.Replace("<msAudio0>", TextTranslater.PreciseToMilliSeconds(currentAudioTime, "{0:0}"));
-                        }
-
-                        if (beatmapObject.text.Contains("<sAudio00>"))
-                        {
-                            str = str.Replace("<sAudio00>", TextTranslater.PreciseToSeconds(currentAudioTime));
-                        }
-
-                        if (beatmapObject.text.Contains("<sAudio0>"))
-                        {
-                            str = str.Replace("<sAudio0>", TextTranslater.PreciseToSeconds(currentAudioTime, "{0:0}"));
-                        }
-
-                        if (beatmapObject.text.Contains("<mAudio00>"))
-                        {
-                            str = str.Replace("<mAudio00>", TextTranslater.PreciseToMinutes(currentAudioTime));
-                        }
-
-                        if (beatmapObject.text.Contains("<mAudio0>"))
-                        {
-                            str = str.Replace("<mAudio0>", TextTranslater.PreciseToMinutes(currentAudioTime, "{0:0}"));
-                        }
-
-                        if (beatmapObject.text.Contains("<hAudio00>"))
-                        {
-                            str = str.Replace("<hAudio00>", TextTranslater.PreciseToHours(currentAudioTime));
-                        }
-
-                        if (beatmapObject.text.Contains("<hAudio0>"))
-                        {
-                            str = str.Replace("<hAudio0>", TextTranslater.PreciseToHours(currentAudioTime, "{0:0}"));
-                        }
-
-                        #endregion
-
-                        #region Audio Left
-
-                        CoreHelper.RegexMatch(beatmapObject.text, new Regex(@"<msAudioLeftSpan=([0-9.:]+)>"), match =>
-                        {
-                            str = str.Replace(match.Groups[0].ToString(), TextTranslater.PreciseToMilliSeconds(currentAudioLength - currentAudioTime, "{" + match.Groups[1].ToString() + "}"));
-                        });
-
-                        CoreHelper.RegexMatch(beatmapObject.text, new Regex(@"<sAudioLeftSpan=([0-9.:]+)>"), match =>
-                        {
-                            str = str.Replace(match.Groups[0].ToString(), TextTranslater.PreciseToSeconds(currentAudioLength - currentAudioTime, "{" + match.Groups[1].ToString() + "}"));
-                        });
-
-                        CoreHelper.RegexMatch(beatmapObject.text, new Regex(@"<mAudioLeftSpan=([0-9.:]+)>"), match =>
-                        {
-                            str = str.Replace(match.Groups[0].ToString(), TextTranslater.PreciseToMinutes(currentAudioLength - currentAudioTime, "{" + match.Groups[1].ToString() + "}"));
-                        });
-
-                        CoreHelper.RegexMatch(beatmapObject.text, new Regex(@"<hAudioLeftSpan=([0-9.:]+)>"), match =>
-                        {
-                            str = str.Replace(match.Groups[0].ToString(), TextTranslater.PreciseToHours(currentAudioLength - currentAudioTime, "{" + match.Groups[1].ToString() + "}"));
-                        });
-
-                        // No time span
-                        CoreHelper.RegexMatch(beatmapObject.text, new Regex(@"<msAudioLeft=([0-9.:]+)>"), match =>
-                        {
-                            str = str.Replace(match.Groups[0].ToString(), string.Format("{" + match.Groups[1].ToString() + "}", (int)((currentAudioLength - currentAudioTime) * 1000)));
-                        });
-
-                        CoreHelper.RegexMatch(beatmapObject.text, new Regex(@"<sAudioLeft=([0-9.:]+)>"), match =>
-                        {
-                            str = str.Replace(match.Groups[0].ToString(), string.Format("{" + match.Groups[1].ToString() + "}", currentAudioLength - currentAudioTime));
-                        });
-
-                        CoreHelper.RegexMatch(beatmapObject.text, new Regex(@"<mAudioLeft=([0-9.:]+)>"), match =>
-                        {
-                            str = str.Replace(match.Groups[0].ToString(), string.Format("{" + match.Groups[1].ToString() + "}", (int)((currentAudioLength - currentAudioTime) / 60)));
-                        });
-
-                        CoreHelper.RegexMatch(beatmapObject.text, new Regex(@"<hAudioLeft=([0-9.:]+)>"), match =>
-                        {
-                            str = str.Replace(match.Groups[0].ToString(), string.Format("{" + match.Groups[1].ToString() + "}", (currentAudioLength - currentAudioTime) / 600));
-                        });
-
-                        #endregion
-
-                        #region Real Time
-
-                        if (beatmapObject.text.Contains("<sRTime00>"))
-                        {
-                            str = str.Replace("<sRTime00>", DateTime.Now.ToString("ss"));
-                        }
-
-                        if (beatmapObject.text.Contains("<sRTime0>"))
-                        {
-                            str = str.Replace("<sRTime0>", DateTime.Now.ToString("s"));
-                        }
-
-                        if (beatmapObject.text.Contains("<mRTime00>"))
-                        {
-                            str = str.Replace("<mRTime00>", DateTime.Now.ToString("mm"));
-                        }
-
-                        if (beatmapObject.text.Contains("<mRTime0>"))
-                        {
-                            str = str.Replace("<mRTime0>", DateTime.Now.ToString("m"));
-                        }
-
-                        if (beatmapObject.text.Contains("<hRTime0012>"))
-                        {
-                            str = str.Replace("<hRTime0012>", DateTime.Now.ToString("hh"));
-                        }
-
-                        if (beatmapObject.text.Contains("<hRTime012>"))
-                        {
-                            str = str.Replace("<hRTime012>", DateTime.Now.ToString("h"));
-                        }
-
-                        if (beatmapObject.text.Contains("<hRTime0024>"))
-                        {
-                            str = str.Replace("<hRTime0024>", DateTime.Now.ToString("HH"));
-                        }
-
-                        if (beatmapObject.text.Contains("<hRTime024>"))
-                        {
-                            str = str.Replace("<hRTime024>", DateTime.Now.ToString("H"));
-                        }
-
-                        if (beatmapObject.text.Contains("<domRTime00>"))
-                        {
-                            str = str.Replace("<domRTime00>", DateTime.Now.ToString("dd"));
-                        }
-
-                        if (beatmapObject.text.Contains("<domRTime0>"))
-                        {
-                            str = str.Replace("<domRTime0>", DateTime.Now.ToString("d"));
-                        }
-
-                        if (beatmapObject.text.Contains("<dowRTime00>"))
-                        {
-                            str = str.Replace("<dowRTime00>", DateTime.Now.ToString("dddd"));
-                        }
-
-                        if (beatmapObject.text.Contains("<dowRTime0>"))
-                        {
-                            str = str.Replace("<dowRTime0>", DateTime.Now.ToString("ddd"));
-                        }
-
-                        if (beatmapObject.text.Contains("<mmRTime00>"))
-                        {
-                            str = str.Replace("<mnRTime00>", DateTime.Now.ToString("MM"));
-                        }
-
-                        if (beatmapObject.text.Contains("<mnRTime0>"))
-                        {
-                            str = str.Replace("<mnRTime0>", DateTime.Now.ToString("M"));
-                        }
-
-                        if (beatmapObject.text.Contains("<mmRTime00>"))
-                        {
-                            str = str.Replace("<mmRTime00>", DateTime.Now.ToString("MMMM"));
-                        }
-
-                        if (beatmapObject.text.Contains("<mmRTime0>"))
-                        {
-                            str = str.Replace("<mmRTime0>", DateTime.Now.ToString("MMM"));
-                        }
-
-                        if (beatmapObject.text.Contains("<yRTime0000>"))
-                        {
-                            str = str.Replace("<yRTime0000>", DateTime.Now.ToString("yyyy"));
-                        }
-
-                        if (beatmapObject.text.Contains("<yRTime00>"))
-                        {
-                            str = str.Replace("<yRTime00>", DateTime.Now.ToString("yy"));
-                        }
-
-                        #endregion
-
-                        #region Players
-
-                        var phRegex = new Regex(@"<playerHealth=(.*?)>");
-                        var phMatch = phRegex.Match(beatmapObject.text);
-
-                        if (phMatch.Success && phMatch.Groups.Count > 1 && int.TryParse(phMatch.Groups[1].ToString(), out int num))
-                        {
-                            if (InputDataManager.inst.players.Count > num)
-                            {
-                                str = str.Replace("<playerHealth=" + num.ToString() + ">", InputDataManager.inst.players[num].health.ToString());
-                            }
-                            else
-                            {
-                                str = str.Replace("<playerHealth=" + num.ToString() + ">", "");
-                            }
-                        }
-
-                        if (beatmapObject.text.Contains("<playerHealthAll>"))
-                        {
-                            var ph = 0;
-
-                            for (int j = 0; j < InputDataManager.inst.players.Count; j++)
-                            {
-                                ph += InputDataManager.inst.players[i].health;
-                            }
-
-                            str = str.Replace("<playerHealthAll>", ph.ToString());
-                        }
-
-                        var pdRegex = new Regex(@"<playerDeaths=(.*?)>");
-                        var pdMatch = pdRegex.Match(beatmapObject.text);
-
-                        if (pdMatch.Success && pdMatch.Groups.Count > 1 && int.TryParse(pdMatch.Groups[1].ToString(), out int numDeath))
-                        {
-                            if (InputDataManager.inst.players.Count > numDeath)
-                            {
-                                str = str.Replace("<playerDeaths=" + numDeath.ToString() + ">", InputDataManager.inst.players[numDeath].PlayerDeaths.Count.ToString());
-                            }
-                            else
-                            {
-                                str = str.Replace("<playerDeaths=" + numDeath.ToString() + ">", "");
-                            }
-                        }
-
-                        if (beatmapObject.text.Contains("<playerDeathsAll>"))
-                        {
-                            var pd = GameManager.inst.deaths.Count;
-
-                            str = str.Replace("<playerDeathsAll>", pd.ToString());
-                        }
-
-                        var phiRegex = new Regex(@"<playerHits=(.*?)>");
-                        var phiMatch = phiRegex.Match(beatmapObject.text);
-
-                        if (phiMatch.Success && phiMatch.Groups.Count > 1 && int.TryParse(phiMatch.Groups[1].ToString(), out int numHit))
-                        {
-                            if (InputDataManager.inst.players.Count > numHit)
-                            {
-                                str = str.Replace("<playerHits=" + numHit.ToString() + ">", InputDataManager.inst.players[numHit].PlayerHits.Count.ToString());
-                            }
-                            else
-                            {
-                                str = str.Replace("<playerHits=" + numHit.ToString() + ">", "");
-                            }
-                        }
-
-                        if (beatmapObject.text.Contains("<playerHitsAll>"))
-                        {
-                            var pd = GameManager.inst.hits.Count;
-
-                            str = str.Replace("<playerHitsAll>", pd.ToString());
-                        }
-
-                        if (beatmapObject.text.Contains("<playerBoostCount>"))
-                        {
-                            str = str.Replace("<playerBoostCount>", LevelManager.BoostCount.ToString());
-                        }
-
-                        #endregion
-
-                        #region QuickElement
-
-                        var qeRegex = new Regex(@"<quickElement=(.*?)>");
-                        var qeMatch = qeRegex.Match(beatmapObject.text);
-
-                        if (qeMatch.Success && qeMatch.Groups.Count > 1)
-                        {
-                            str = str.Replace("<quickElement=" + qeMatch.Groups[1].ToString() + ">", QuickElementManager.ConvertQuickElement(beatmapObject, qeMatch.Groups[1].ToString()));
-                        }
-
-                        #endregion
-
-                        #region Random
-
-                        {
-                            var ratRegex = new Regex(@"<randomText=(.*?)>");
-                            var ratMatch = ratRegex.Match(beatmapObject.text);
-
-                            if (ratMatch.Success && ratMatch.Groups.Count > 1 && int.TryParse(ratMatch.Groups[1].ToString(), out int ratInt))
-                            {
-                                str = str.Replace("<randomText=" + ratMatch.Groups[1].ToString() + ">", LSText.randomString(ratInt));
-                            }
-
-                            var ranRegex = new Regex(@"<randomNumber=(.*?)>");
-                            var ranMatch = ranRegex.Match(beatmapObject.text);
-
-                            if (ranMatch.Success && ratMatch.Groups.Count > 1 && int.TryParse(ranMatch.Groups[1].ToString(), out int ranInt))
-                            {
-                                str = str.Replace("<randomNumber=" + ranMatch.Groups[1].ToString() + ">", LSText.randomNumString(ranInt));
-                            }
-                        }
-
-                        #endregion
-
-                        #region Theme
-
-                        var beatmapTheme = CoreHelper.CurrentBeatmapTheme;
-
-                        {
-                            var matchCollection = Regex.Matches(str, "<themeObject=(.*?)>");
-
-                            foreach (var obj in matchCollection)
-                            {
-                                var match = (Match)obj;
-                                if (match.Groups.Count > 1)
-                                    str = str.Replace(match.Groups[0].Value, $"<#{LSColors.ColorToHex(beatmapTheme.GetObjColor(int.Parse(match.Groups[1].ToString())))}>");
-                            }
-                        }
-
-                        {
-                            var matchCollection = Regex.Matches(str, "<themeBGs=(.*?)>");
-
-                            foreach (var obj in matchCollection)
-                            {
-                                var match = (Match)obj;
-                                if (match.Groups.Count > 1)
-                                    str = str.Replace(match.Groups[0].Value, $"<#{LSColors.ColorToHex(beatmapTheme.GetBGColor(int.Parse(match.Groups[1].ToString())))}>");
-                            }
-                        }
-
-                        {
-                            var matchCollection = Regex.Matches(str, "<themeFX=(.*?)>");
-
-                            foreach (var obj in matchCollection)
-                            {
-                                var match = (Match)obj;
-                                if (match.Groups.Count > 1)
-                                    str = str.Replace(match.Groups[0].Value, $"<#{LSColors.ColorToHex(beatmapTheme.GetFXColor(int.Parse(match.Groups[1].ToString())))}>");
-                            }
-                        }
-
-                        {
-                            var matchCollection = Regex.Matches(str, "<themePlayers=(.*?)>");
-
-                            foreach (var obj in matchCollection)
-                            {
-                                var match = (Match)obj;
-                                if (match.Groups.Count > 1)
-                                    str = str.Replace(match.Groups[0].Value, $"<#{LSColors.ColorToHex(beatmapTheme.GetPlayerColor(int.Parse(match.Groups[1].ToString())))}>");
-                            }
-                        }
-
-                        if (beatmapObject.text.Contains("<themeBG>"))
-                        {
-                            str = str.Replace("<themeBG>", LSColors.ColorToHex(beatmapTheme.backgroundColor));
-                        }
-
-                        if (beatmapObject.text.Contains("<themeGUI>"))
-                        {
-                            str = str.Replace("<themeGUI>", LSColors.ColorToHex(beatmapTheme.guiColor));
-                        }
-
-                        if (beatmapObject.text.Contains("<themeTail>"))
-                        {
-                            str = str.Replace("<themeTail>", LSColors.ColorToHex(beatmapTheme.guiAccentColor));
-                        }
-
-                        #endregion
-
-                        #region LevelRank
-
-                        if (beatmapObject.text.Contains("<levelRank>"))
-                        {
-                            var levelRank =
-                                !CoreHelper.InEditor && LevelManager.CurrentLevel != null ?
-                                    LevelManager.GetLevelRank(LevelManager.CurrentLevel) : CoreHelper.InEditor ? LevelManager.EditorRank :
-                                    DataManager.inst.levelRanks[0];
-
-                            str = str.Replace("<levelRank>", $"<color=#{LSColors.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>");
-                        }
-
-                        if (beatmapObject.text.Contains("<levelRankName>"))
-                        {
-                            var levelRank =
-                                !CoreHelper.InEditor && LevelManager.CurrentLevel != null ?
-                                    LevelManager.GetLevelRank(LevelManager.CurrentLevel) :
-                                    DataManager.inst.levelRanks[0];
-
-                            str = str.Replace("<levelRankName>", levelRank.name);
-                        }
-
-                        if (beatmapObject.text.Contains("<levelRankColor>"))
-                        {
-                            var levelRank =
-                                !CoreHelper.InEditor && LevelManager.CurrentLevel != null ?
-                                    LevelManager.GetLevelRank(LevelManager.CurrentLevel) : CoreHelper.InEditor ? LevelManager.EditorRank :
-                                    DataManager.inst.levelRanks[0];
-
-                            str = str.Replace("<levelRankColor>", $"<color=#{LSColors.ColorToHex(levelRank.color)}>");
-                        }
-                        
-                        if (beatmapObject.text.Contains("<levelRankCurrent>"))
-                        {
-                            var levelRank = !CoreHelper.InEditor ? LevelManager.GetLevelRank(GameManager.inst.hits) : LevelManager.EditorRank;
-
-                            str = str.Replace("<levelRankCurrent>", $"<color=#{LSColors.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>");
-                        }
-
-                        if (beatmapObject.text.Contains("<levelRankCurrentName>"))
-                        {
-                            var levelRank = !CoreHelper.InEditor ? LevelManager.GetLevelRank(GameManager.inst.hits) : LevelManager.EditorRank;
-
-                            str = str.Replace("<levelRankCurrentName>", levelRank.name);
-                        }
-
-                        if (beatmapObject.text.Contains("<levelRankCurrentColor>"))
-                        {
-                            var levelRank = !CoreHelper.InEditor ? LevelManager.GetLevelRank(GameManager.inst.hits) : LevelManager.EditorRank;
-
-                            str = str.Replace("<levelRankCurrentColor>", $"<color=#{LSColors.ColorToHex(levelRank.color)}>");
-                        }
-
-                        // Level Rank Other
-                        {
-                            CoreHelper.RegexMatch(beatmapObject.text, new Regex(@"<levelRankOther=([0-9]+)>"), match =>
-                            {
-                                DataManager.LevelRank levelRank;
-                                if (LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level))
-                                {
-                                    levelRank = LevelManager.GetLevelRank(level);
-                                }
-                                else
-                                {
-                                    levelRank = CoreHelper.InEditor ? LevelManager.EditorRank : DataManager.inst.levelRanks[0];
-                                }
-
-                                str = str.Replace(match.Groups[0].ToString(), $"<color=#{LSColors.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>");
-                            });
-
-                            CoreHelper.RegexMatch(beatmapObject.text, new Regex(@"<levelRankOtherName=([0-9]+)>"), match =>
-                            {
-                                DataManager.LevelRank levelRank;
-                                if (LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level))
-                                {
-                                    levelRank = LevelManager.GetLevelRank(level);
-                                }
-                                else
-                                {
-                                    levelRank = CoreHelper.InEditor ? LevelManager.EditorRank : DataManager.inst.levelRanks[0];
-                                }
-
-                                str = str.Replace(match.Groups[0].ToString(), levelRank.name);
-                            });
-
-                            CoreHelper.RegexMatch(beatmapObject.text, new Regex(@"<levelRankOtherColor=([0-9]+)>"), match =>
-                            {
-                                DataManager.LevelRank levelRank;
-                                if (LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level))
-                                {
-                                    levelRank = LevelManager.GetLevelRank(level);
-                                }
-                                else
-                                {
-                                    levelRank = CoreHelper.InEditor ? LevelManager.EditorRank : DataManager.inst.levelRanks[0];
-                                }
-
-                                str = str.Replace(match.Groups[0].ToString(), $"<color=#{LSColors.ColorToHex(levelRank.color)}>");
-                            });
-                        }
-
-                        if (beatmapObject.text.Contains("<accuracy>"))
-                            str = str.Replace("<accuracy>", $"{LevelManager.CalculateAccuracy(GameManager.inst.hits.Count, AudioManager.inst.CurrentAudioSource.clip.length)}");
-
-                        #endregion
-
-                        #region Mod stuff
-
-                        {
-                            var regex = new Regex(@"<modifierVariable=(.*?)>");
-                            var match = regex.Match(beatmapObject.text);
-
-                            if (match.Success && match.Groups.Count > 1 && DataManager.inst.gameData.beatmapObjects.TryFind(x => x.name == match.Groups[1].ToString(), out DataManager.GameData.BeatmapObject other))
-                            {
-                                str = str.Replace("<modifierVariable=" + match.Groups[1].ToString() + ">", ((BeatmapObject)other).integerVariable.ToString());
-                            }
-                        }
-
-                        {
-                            var regex = new Regex(@"<modifierVariableID=(.*?)>");
-                            var match = regex.Match(beatmapObject.text);
-
-                            if (match.Success && match.Groups.Count > 1 && DataManager.inst.gameData.beatmapObjects.TryFind(x => x.id == match.Groups[1].ToString(), out DataManager.GameData.BeatmapObject other))
-                            {
-                                str = str.Replace("<modifierVariableID=" + match.Groups[1].ToString() + ">", ((BeatmapObject)other).integerVariable.ToString());
-                            }
-                        }
-
-                        CoreHelper.RegexMatch(beatmapObject.text, new Regex(@"<math=(.*?)>"), match =>
-                        {
-                            var math = RTMath.Evaluate(RTMath.Replace(match.Groups[1].ToString()));
-
-                            str = str.Replace(match.Groups[0].ToString(), math.ToString());
-                        });
-
-                        #endregion
-
-                        textObject.SetText(str);
-                    }
+                    if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject is TextObject textObject)
+                        textObject.SetText(TextTranslater.FormatText(beatmapObject, textObject.text));
                 }
                 catch
                 {
@@ -843,6 +333,417 @@ namespace BetterLegacy.Core.Managers
 
         public static class TextTranslater
         {
+            public static string FormatText(BeatmapObject beatmapObject, string str)
+            {
+                var currentAudioTime = AudioManager.inst.CurrentAudioSource.time;
+                var currentAudioLength = AudioManager.inst.CurrentAudioSource.clip.length;
+
+                CoreHelper.RegexMatch(str, new Regex(@"<math=(.*?)>"), match =>
+                {
+                    try
+                    {
+                        var replace = RTMath.Replace(match.Groups[1].ToString());
+
+                        if (Input.GetKeyDown(KeyCode.J))
+                            CoreHelper.Log($"Match: {match.Groups[0]}\nGroup: {match.Groups[1]}\nReplace: {replace}");
+
+                        var math = RTMath.Evaluate(replace);
+
+                        str = str.Replace(match.Groups[0].ToString(), math.ToString());
+                    }
+                    catch
+                    {
+                    }
+                });
+
+                #region Audio
+
+                #region Time Span
+
+                if (str.Contains("msAudioSpan"))
+                    CoreHelper.RegexMatches(str, new Regex(@"<msAudioSpan=([0-9.:]+)>"), match =>
+                    {
+                        str = str.Replace(match.Groups[0].ToString(), PreciseToMilliSeconds(currentAudioTime, "{" + match.Groups[1].ToString() + "}"));
+                    });
+
+                if (str.Contains("sAudioSpan"))
+                    CoreHelper.RegexMatches(str, new Regex(@"<sAudioSpan=([0-9.:]+)>"), match =>
+                    {
+                        str = str.Replace(match.Groups[0].ToString(), PreciseToSeconds(currentAudioTime, "{" + match.Groups[1].ToString() + "}"));
+                    });
+
+                if (str.Contains("mAudioSpan"))
+                    CoreHelper.RegexMatches(str, new Regex(@"<mAudioSpan=([0-9.:]+)>"), match =>
+                    {
+                        str = str.Replace(match.Groups[0].ToString(), PreciseToMinutes(currentAudioTime, "{" + match.Groups[1].ToString() + "}"));
+                    });
+
+                if (str.Contains("hAudioSpan"))
+                    CoreHelper.RegexMatches(str, new Regex(@"<hAudioSpan=([0-9.:]+)>"), match =>
+                    {
+                        str = str.Replace(match.Groups[0].ToString(), PreciseToHours(currentAudioTime, "{" + match.Groups[1].ToString() + "}"));
+                    });
+
+                #endregion
+
+                #region No Time Span
+
+                if (str.Contains("msAudio"))
+                    CoreHelper.RegexMatches(str, new Regex(@"<msAudio=([0-9.:]+)>"), match =>
+                    {
+                        str = str.Replace(match.Groups[0].ToString(), string.Format("{" + match.Groups[1].ToString() + "}", (int)((currentAudioTime) * 1000)));
+                    });
+
+                if (str.Contains("sAudio"))
+                    CoreHelper.RegexMatches(str, new Regex(@"<sAudio=([0-9.:]+)>"), match =>
+                    {
+                        str = str.Replace(match.Groups[0].ToString(), string.Format("{" + match.Groups[1].ToString() + "}", currentAudioTime));
+                    });
+
+                if (str.Contains("mAudio"))
+                    CoreHelper.RegexMatches(str, new Regex(@"<mAudio=([0-9.:]+)>"), match =>
+                    {
+                        str = str.Replace(match.Groups[0].ToString(), string.Format("{" + match.Groups[1].ToString() + "}", (int)((currentAudioTime) / 60)));
+                    });
+
+                if (str.Contains("hAudio"))
+                    CoreHelper.RegexMatches(str, new Regex(@"<hAudio=([0-9.:]+)>"), match =>
+                    {
+                        str = str.Replace(match.Groups[0].ToString(), string.Format("{" + match.Groups[1].ToString() + "}", (currentAudioTime) / 600));
+                    });
+
+                #endregion
+
+                #endregion
+
+                #region Audio Left
+
+                #region Time Span
+
+                if (str.Contains("msAudioLeftSpan"))
+                    CoreHelper.RegexMatches(str, new Regex(@"<msAudioLeftSpan=([0-9.:]+)>"), match =>
+                    {
+                        str = str.Replace(match.Groups[0].ToString(), PreciseToMilliSeconds(currentAudioLength - currentAudioTime, "{" + match.Groups[1].ToString() + "}"));
+                    });
+
+                if (str.Contains("sAudioLeftSpan"))
+                    CoreHelper.RegexMatches(str, new Regex(@"<sAudioLeftSpan=([0-9.:]+)>"), match =>
+                    {
+                        str = str.Replace(match.Groups[0].ToString(), PreciseToSeconds(currentAudioLength - currentAudioTime, "{" + match.Groups[1].ToString() + "}"));
+                    });
+
+                if (str.Contains("mAudioLeftSpan"))
+                    CoreHelper.RegexMatches(str, new Regex(@"<mAudioLeftSpan=([0-9.:]+)>"), match =>
+                    {
+                        str = str.Replace(match.Groups[0].ToString(), PreciseToMinutes(currentAudioLength - currentAudioTime, "{" + match.Groups[1].ToString() + "}"));
+                    });
+
+                if (str.Contains("hAudioLeftSpan"))
+                    CoreHelper.RegexMatches(str, new Regex(@"<hAudioLeftSpan=([0-9.:]+)>"), match =>
+                    {
+                        str = str.Replace(match.Groups[0].ToString(), PreciseToHours(currentAudioLength - currentAudioTime, "{" + match.Groups[1].ToString() + "}"));
+                    });
+
+                #endregion
+
+                #region No Time Span
+
+                if (str.Contains("msAudioLeft"))
+                    CoreHelper.RegexMatches(str, new Regex(@"<msAudioLeft=([0-9.:]+)>"), match =>
+                    {
+                        str = str.Replace(match.Groups[0].ToString(), string.Format("{" + match.Groups[1].ToString() + "}", (int)((currentAudioLength - currentAudioTime) * 1000)));
+                    });
+
+                if (str.Contains("sAudioLeft"))
+                    CoreHelper.RegexMatches(str, new Regex(@"<sAudioLeft=([0-9.:]+)>"), match =>
+                    {
+                        str = str.Replace(match.Groups[0].ToString(), string.Format("{" + match.Groups[1].ToString() + "}", currentAudioLength - currentAudioTime));
+                    });
+
+                if (str.Contains("mAudioLeft"))
+                    CoreHelper.RegexMatches(str, new Regex(@"<mAudioLeft=([0-9.:]+)>"), match =>
+                    {
+                        str = str.Replace(match.Groups[0].ToString(), string.Format("{" + match.Groups[1].ToString() + "}", (int)((currentAudioLength - currentAudioTime) / 60)));
+                    });
+
+                if (str.Contains("hAudioLeft"))
+                    CoreHelper.RegexMatches(str, new Regex(@"<hAudioLeft=([0-9.:]+)>"), match =>
+                    {
+                        str = str.Replace(match.Groups[0].ToString(), string.Format("{" + match.Groups[1].ToString() + "}", (currentAudioLength - currentAudioTime) / 600));
+                    });
+
+                #endregion
+
+                #endregion
+
+                #region Real Time
+
+                if (str.Contains("realTime"))
+                    CoreHelper.RegexMatches(str, new Regex(@"<realTime=([a-z]+)>"), match =>
+                    {
+                        try
+                        {
+                            str = str.Replace(match.Groups[0].ToString(), DateTime.Now.ToString(match.Groups[1].ToString()));
+                        }
+                        catch
+                        {
+                        }
+                    });
+
+                #endregion
+
+                #region Players
+
+                if (str.Contains("playerHealth"))
+                    CoreHelper.RegexMatches(str, new Regex(@"<playerHealth=([0-9]+)>"), match =>
+                    {
+                        if (int.TryParse(match.Groups[1].ToString(), out int index) && index < InputDataManager.inst.players.Count)
+                            str = str.Replace(match.Groups[0].ToString(), InputDataManager.inst.players[index].health.ToString());
+                        else
+                            str = str.Replace(match.Groups[0].ToString(), "");
+                    });
+                
+                if (str.Contains("playerHealthBar"))
+                    CoreHelper.RegexMatches(str, new Regex(@"<playerHealthBar=([0-9]+)>"), match =>
+                    {
+                        if (int.TryParse(match.Groups[1].ToString(), out int index) && index < InputDataManager.inst.players.Count)
+                        {
+                            var player = PlayerManager.Players[index];
+                            str = str.Replace(match.Groups[0].ToString(), ConvertHealthToEquals(player.Health, player.PlayerModel.basePart.health));
+                        }
+                        else
+                            str = str.Replace(match.Groups[0].ToString(), "");
+                    });
+
+                if (str.Contains("<playerHealthTotal>"))
+                {
+                    var ph = 0;
+
+                    for (int j = 0; j < InputDataManager.inst.players.Count; j++)
+                        ph += InputDataManager.inst.players[j].health;
+
+                    str = str.Replace("<playerHealthTotal>", ph.ToString());
+                }
+
+                if (str.Contains("<deathCount>"))
+                    str = str.Replace("<deathCount>", GameManager.inst.deaths.Count.ToString());
+
+                if (str.Contains("<hitCount>"))
+                {
+                    var pd = GameManager.inst.hits.Count;
+
+                    str = str.Replace("<hitCount>", pd.ToString());
+                }
+
+                if (str.Contains("<boostCount>"))
+                    str = str.Replace("<boostCount>", LevelManager.BoostCount.ToString());
+
+                #endregion
+
+                #region QuickElement
+
+                if (str.Contains("quickElement"))
+                    CoreHelper.RegexMatches(str, new Regex(@"<quickElement=(.*?)>"), match =>
+                    {
+                        str = str.Replace(match.Groups[0].ToString(), QuickElementManager.ConvertQuickElement(beatmapObject, match.Groups[1].ToString()));
+                    });
+
+                #endregion
+
+                #region Random
+
+                if (str.Contains("randomText"))
+                    CoreHelper.RegexMatches(str, new Regex(@"<randomText=([0-9]+)>"), match =>
+                    {
+                        if (int.TryParse(match.Groups[1].ToString(), out int length))
+                            str = str.Replace(match.Groups[0].ToString(), LSText.randomString(length));
+                    });
+
+                if (str.Contains("randomNumber"))
+                    CoreHelper.RegexMatches(str, new Regex(@"<randomNumber=([0-9]+)>"), match =>
+                    {
+                        if (int.TryParse(match.Groups[1].ToString(), out int length))
+                            str = str.Replace(match.Groups[0].ToString(), LSText.randomNumString(length));
+                    });
+
+                #endregion
+
+                #region Theme
+
+                var beatmapTheme = CoreHelper.CurrentBeatmapTheme;
+
+                if (str.Contains("themeObject"))
+                    CoreHelper.RegexMatches(str, new Regex(@"<themeObject=([0-9]+)>"), match =>
+                    {
+                        if (match.Groups.Count > 1)
+                            str = str.Replace(match.Groups[0].Value, $"<#{LSColors.ColorToHex(beatmapTheme.GetObjColor(int.Parse(match.Groups[1].ToString())))}>");
+                    });
+
+                if (str.Contains("themeBGs"))
+                    CoreHelper.RegexMatches(str, new Regex(@"<themeBGs=([0-9]+)>"), match =>
+                    {
+                        if (match.Groups.Count > 1)
+                            str = str.Replace(match.Groups[0].Value, $"<#{LSColors.ColorToHex(beatmapTheme.GetBGColor(int.Parse(match.Groups[1].ToString())))}>");
+                    });
+
+                if (str.Contains("themeFX"))
+                    CoreHelper.RegexMatches(str, new Regex(@"<themeFX=([0-9]+)>"), match =>
+                    {
+                        if (match.Groups.Count > 1)
+                            str = str.Replace(match.Groups[0].Value, $"<#{LSColors.ColorToHex(beatmapTheme.GetFXColor(int.Parse(match.Groups[1].ToString())))}>");
+                    });
+
+                if (str.Contains("themePlayers"))
+                    CoreHelper.RegexMatches(str, new Regex(@"<themePlayers=([0-9]+)>"), match =>
+                    {
+                        if (match.Groups.Count > 1)
+                            str = str.Replace(match.Groups[0].Value, $"<#{LSColors.ColorToHex(beatmapTheme.GetPlayerColor(int.Parse(match.Groups[1].ToString())))}>");
+                    });
+
+                if (str.Contains("<themeBG>"))
+                    str = str.Replace("<themeBG>", LSColors.ColorToHex(beatmapTheme.backgroundColor));
+
+                if (str.Contains("<themeGUI>"))
+                    str = str.Replace("<themeGUI>", LSColors.ColorToHex(beatmapTheme.guiColor));
+
+                if (str.Contains("<themeTail>"))
+                    str = str.Replace("<themeTail>", LSColors.ColorToHex(beatmapTheme.guiAccentColor));
+
+                #endregion
+
+                #region LevelRank
+
+                if (str.Contains("<levelRank>"))
+                {
+                    var levelRank =
+                        !CoreHelper.InEditor && LevelManager.CurrentLevel != null ?
+                            LevelManager.GetLevelRank(LevelManager.CurrentLevel) : CoreHelper.InEditor ? LevelManager.EditorRank :
+                            DataManager.inst.levelRanks[0];
+
+                    str = str.Replace("<levelRank>", $"<color=#{LSColors.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>");
+                }
+
+                if (str.Contains("<levelRankName>"))
+                {
+                    var levelRank =
+                        !CoreHelper.InEditor && LevelManager.CurrentLevel != null ?
+                            LevelManager.GetLevelRank(LevelManager.CurrentLevel) :
+                            DataManager.inst.levelRanks[0];
+
+                    str = str.Replace("<levelRankName>", levelRank.name);
+                }
+
+                if (str.Contains("<levelRankColor>"))
+                {
+                    var levelRank =
+                        !CoreHelper.InEditor && LevelManager.CurrentLevel != null ?
+                            LevelManager.GetLevelRank(LevelManager.CurrentLevel) : CoreHelper.InEditor ? LevelManager.EditorRank :
+                            DataManager.inst.levelRanks[0];
+
+                    str = str.Replace("<levelRankColor>", $"<color=#{LSColors.ColorToHex(levelRank.color)}>");
+                }
+
+                if (str.Contains("<levelRankCurrent>"))
+                {
+                    var levelRank = !CoreHelper.InEditor ? LevelManager.GetLevelRank(GameManager.inst.hits) : LevelManager.EditorRank;
+
+                    str = str.Replace("<levelRankCurrent>", $"<color=#{LSColors.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>");
+                }
+
+                if (str.Contains("<levelRankCurrentName>"))
+                {
+                    var levelRank = !CoreHelper.InEditor ? LevelManager.GetLevelRank(GameManager.inst.hits) : LevelManager.EditorRank;
+
+                    str = str.Replace("<levelRankCurrentName>", levelRank.name);
+                }
+
+                if (str.Contains("<levelRankCurrentColor>"))
+                {
+                    var levelRank = !CoreHelper.InEditor ? LevelManager.GetLevelRank(GameManager.inst.hits) : LevelManager.EditorRank;
+
+                    str = str.Replace("<levelRankCurrentColor>", $"<color=#{LSColors.ColorToHex(levelRank.color)}>");
+                }
+
+                // Level Rank Other
+                {
+                    CoreHelper.RegexMatches(str, new Regex(@"<levelRankOther=([0-9]+)>"), match =>
+                    {
+                        DataManager.LevelRank levelRank;
+                        if (LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level))
+                        {
+                            levelRank = LevelManager.GetLevelRank(level);
+                        }
+                        else
+                        {
+                            levelRank = CoreHelper.InEditor ? LevelManager.EditorRank : DataManager.inst.levelRanks[0];
+                        }
+
+                        str = str.Replace(match.Groups[0].ToString(), $"<color=#{LSColors.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>");
+                    });
+
+                    CoreHelper.RegexMatches(str, new Regex(@"<levelRankOtherName=([0-9]+)>"), match =>
+                    {
+                        DataManager.LevelRank levelRank;
+                        if (LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level))
+                        {
+                            levelRank = LevelManager.GetLevelRank(level);
+                        }
+                        else
+                        {
+                            levelRank = CoreHelper.InEditor ? LevelManager.EditorRank : DataManager.inst.levelRanks[0];
+                        }
+
+                        str = str.Replace(match.Groups[0].ToString(), levelRank.name);
+                    });
+
+                    CoreHelper.RegexMatches(str, new Regex(@"<levelRankOtherColor=([0-9]+)>"), match =>
+                    {
+                        DataManager.LevelRank levelRank;
+                        if (LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level))
+                        {
+                            levelRank = LevelManager.GetLevelRank(level);
+                        }
+                        else
+                        {
+                            levelRank = CoreHelper.InEditor ? LevelManager.EditorRank : DataManager.inst.levelRanks[0];
+                        }
+
+                        str = str.Replace(match.Groups[0].ToString(), $"<color=#{LSColors.ColorToHex(levelRank.color)}>");
+                    });
+                }
+
+                if (str.Contains("<accuracy>"))
+                    str = str.Replace("<accuracy>", $"{LevelManager.CalculateAccuracy(GameManager.inst.hits.Count, AudioManager.inst.CurrentAudioSource.clip.length)}");
+
+                #endregion
+
+                #region Mod stuff
+
+                CoreHelper.RegexMatches(str, new Regex(@"<modifierVariable=(.*?)>"), match =>
+                {
+                    var beatmapObject = CoreHelper.FindObjectWithTag(match.Groups[1].ToString());
+                    if (beatmapObject)
+                        str = str.Replace(match.Groups[0].ToString(), beatmapObject.integerVariable.ToString());
+                });
+                
+                CoreHelper.RegexMatches(str, new Regex(@"<modifierVariableID=(.*?)>"), match =>
+                {
+                    var beatmapObject = GameData.Current.BeatmapObjects.Find(x => x.id == match.Groups[1].ToString());
+                    if (beatmapObject)
+                        str = str.Replace(match.Groups[0].ToString(), beatmapObject.integerVariable.ToString());
+                });
+
+                if (str.Contains("<username>"))
+                    str = str.Replace("<username>", CoreConfig.Instance.DisplayName.Value);
+                
+                if (str.Contains("<modVersion>"))
+                    str = str.Replace("<modVersion>", LegacyPlugin.ModVersion.ToString());
+
+                #endregion
+
+                return str;
+            }
+
             public static string ReplaceProperties(string str) => string.IsNullOrEmpty(str) ? str : str
                 .Replace("{{GameVersion}}", ProjectArrhythmia.GameVersion.ToString())
                 .Replace("{{ModVersion}}", LegacyPlugin.ModVersion.ToString())
@@ -867,24 +768,18 @@ namespace BetterLegacy.Core.Managers
 
             public static string Percentage(float t, float length) => string.Format("{0:000}", (int)RTMath.Percentage(t, length));
 
-            public static string ConvertHealthToEquals(int _num, int _max = 3)
+            public static string ConvertHealthToEquals(int health, int max = 3)
             {
-                string str = "[";
-                for (int i = 0; i < _num; i++)
-                {
-                    str += "=";
-                }
+                string result = "[";
+                for (int i = 0; i < health; i++)
+                    result += "=";
 
-                int e = -_num + _max;
-                if (e > 0)
-                {
-                    for (int i = 0; i < e; i++)
-                    {
-                        str += " ";
-                    }
-                }
+                int spaces = -health + max;
+                if (spaces > 0)
+                    for (int i = 0; i < spaces; i++)
+                        result += " ";
 
-                return str += "]";
+                return result += "]";
             }
 
             public static string ConvertBar(string s, float progress, int count = 10)

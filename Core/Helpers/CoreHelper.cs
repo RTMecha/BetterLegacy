@@ -428,6 +428,13 @@ namespace BetterLegacy.Core.Helpers
                 matchAction?.Invoke(match);
         }
 
+        public static void RegexMatches(string str, Regex regex, Action<Match> matchAction)
+        {
+            var matchCollection = regex.Matches(str);
+            foreach (Match match in matchCollection)
+                matchAction?.Invoke(match);
+        }
+
         public static string Flip(string str)
         {
             string s;
