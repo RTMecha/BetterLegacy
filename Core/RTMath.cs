@@ -90,7 +90,7 @@ namespace BetterLegacy.Core
 
                 try
                 {
-                    if (input.Contains("camPos"))
+                    if (input.Contains("cam"))
                     {
                         if (input.Contains("camPosX"))
                             input = input.Replace("camPosX", EventManager.inst.cam.transform.position.x.ToString());
