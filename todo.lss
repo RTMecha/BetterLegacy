@@ -12,7 +12,6 @@
 - Timeline object index order.
 - Figure out custom timeline bin system (Shows a custom amount of rows in the timeline and allows for the timeline to be navigated up and down).
 - Unclamped timeline (timeline can be navigated outside the regular range and objects can be placed before start time 0).
-- Text editor.
 - New modifiers [prizeObject, setParent, playerAction (PlayerActionSet) trigger].
 - Prefab preview image. Can set the specific capture size and position.
 - Asset sharing on the online server. (Prefabs, themes, player models, etc)
@@ -25,6 +24,7 @@
 - Add a value for spawning a prefab at the object's position.
 - MetaData settings that can be adjusted in the Play Level (Settings) menu and can be read using modifiers.
 - Allow custom player models in Global tab Player Editor. (Prevents players from loading in their own custom models).
+- Add Set Data to image shape for Custom Player objects.
 - More player model limits (move speed, boost speed, etc, allow / disallow custom models).
 - Figure out how player shooting fits in-game.
 - Add a fake Desktop thing like Rhythm Doctor for Window event keyframes.
