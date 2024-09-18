@@ -147,8 +147,8 @@ namespace BetterLegacy.Core
                                 try
                                 {
                                     var baseString = match.Groups[0].ToString();
-                                    var index = Mathf.Clamp((int)Evaluate(Replace(match.Groups[1].ToString(), false)), 0, int.MaxValue);
-                                    var tailIndex = Mathf.Clamp((int)Evaluate(Replace(match.Groups[2].ToString(), false)), 0, int.MaxValue);
+                                    var index = Mathf.Clamp((int)Evaluate(Replace(match.Groups[1].ToString().Trim(), false)), 0, int.MaxValue);
+                                    var tailIndex = Mathf.Clamp((int)Evaluate(Replace(match.Groups[2].ToString().Trim(), false)), 0, int.MaxValue);
 
                                     if (PlayerManager.Players.Count <= index || !PlayerManager.Players[index].Player || !PlayerManager.Players[index].Player.rb)
                                         input = input.Replace(baseString, "0");
@@ -166,8 +166,8 @@ namespace BetterLegacy.Core
                                 try
                                 {
                                     var baseString = match.Groups[0].ToString();
-                                    var index = Mathf.Clamp((int)Evaluate(Replace(match.Groups[1].ToString(), false)), 0, int.MaxValue);
-                                    var tailIndex = Mathf.Clamp((int)Evaluate(Replace(match.Groups[2].ToString(), false)), 0, int.MaxValue);
+                                    var index = Mathf.Clamp((int)Evaluate(Replace(match.Groups[1].ToString().Trim(), false)), 0, int.MaxValue);
+                                    var tailIndex = Mathf.Clamp((int)Evaluate(Replace(match.Groups[2].ToString().Trim(), false)), 0, int.MaxValue);
 
                                     if (PlayerManager.Players.Count <= index || !PlayerManager.Players[index].Player || !PlayerManager.Players[index].Player.rb)
                                         input = input.Replace(baseString, "0");
@@ -187,7 +187,7 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Sin((float)Evaluate(Replace(match.Groups[1].ToString(), false))).ToString());
+                                input = input.Replace(match.Groups[0].ToString(), Mathf.Sin((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
                             }
                             catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
                         });
@@ -199,7 +199,7 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Cos((float)Evaluate(Replace(match.Groups[1].ToString(), false))).ToString());
+                                input = input.Replace(match.Groups[0].ToString(), Mathf.Cos((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
                             }
                             catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
                         });
@@ -212,7 +212,7 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Atan((float)Evaluate(Replace(match.Groups[1].ToString(), false))).ToString());
+                                input = input.Replace(match.Groups[0].ToString(), Mathf.Atan((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
                             }
                             catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
                         });
@@ -224,7 +224,7 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Tan((float)Evaluate(Replace(match.Groups[1].ToString(), false))).ToString());
+                                input = input.Replace(match.Groups[0].ToString(), Mathf.Tan((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
                             }
                             catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
                         });
@@ -236,7 +236,7 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Asin((float)Evaluate(Replace(match.Groups[1].ToString(), false))).ToString());
+                                input = input.Replace(match.Groups[0].ToString(), Mathf.Asin((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
                             }
                             catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
                         });
@@ -248,7 +248,7 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Acos((float)Evaluate(Replace(match.Groups[1].ToString(), false))).ToString());
+                                input = input.Replace(match.Groups[0].ToString(), Mathf.Acos((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
                             }
                             catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
                         });
@@ -260,7 +260,7 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Sqrt((float)Evaluate(Replace(match.Groups[1].ToString(), false))).ToString());
+                                input = input.Replace(match.Groups[0].ToString(), Mathf.Sqrt((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
                             }
                             catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
                         });
@@ -272,7 +272,7 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Abs((float)Evaluate(Replace(match.Groups[1].ToString(), false))).ToString());
+                                input = input.Replace(match.Groups[0].ToString(), Mathf.Abs((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
                             }
                             catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
                         });
@@ -284,8 +284,8 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var a = (float)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var b = (float)Evaluate(Replace(match.Groups[2].ToString(), false));
+                                var a = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var b = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
                                 input = input.Replace(match.Groups[0].ToString(), Mathf.Min(a, b).ToString());
                             }
                             catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
@@ -298,8 +298,8 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var a = (float)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var b = (float)Evaluate(Replace(match.Groups[2].ToString(), false));
+                                var a = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var b = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
                                 input = input.Replace(match.Groups[0].ToString(), Mathf.Max(a, b).ToString());
                             }
                             catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
@@ -312,9 +312,9 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var a = (float)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var b = (float)Evaluate(Replace(match.Groups[2].ToString(), false));
-                                var c = (float)Evaluate(Replace(match.Groups[3].ToString(), false));
+                                var a = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var b = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
+                                var c = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
                                 input = input.Replace(match.Groups[0].ToString(), Clamp(a, b, c).ToString());
                             }
                             catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
@@ -327,9 +327,9 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var a = (float)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var b = (float)Evaluate(Replace(match.Groups[2].ToString(), false));
-                                var c = (float)Evaluate(Replace(match.Groups[3].ToString(), false));
+                                var a = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var b = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
+                                var c = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
                                 input = input.Replace(match.Groups[0].ToString(), ClampZero(a, b, c).ToString());
                             }
                             catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
@@ -342,8 +342,8 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var a = (float)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var b = (float)Evaluate(Replace(match.Groups[2].ToString(), false));
+                                var a = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var b = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
                                 input = input.Replace(match.Groups[0].ToString(), Mathf.Pow(a, b).ToString());
                             }
                             catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
@@ -356,7 +356,7 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Exp((float)Evaluate(Replace(match.Groups[1].ToString(), false))).ToString());
+                                input = input.Replace(match.Groups[0].ToString(), Mathf.Exp((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
                             }
                             catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
                         });
@@ -368,7 +368,7 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Log((float)Evaluate(Replace(match.Groups[1].ToString(), false))).ToString());
+                                input = input.Replace(match.Groups[0].ToString(), Mathf.Log((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
                             }
                             catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
                         });
@@ -376,8 +376,8 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var a = (float)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var b = (float)Evaluate(Replace(match.Groups[2].ToString(), false));
+                                var a = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var b = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
                                 input = input.Replace(match.Groups[0].ToString(), Mathf.Log(a, b).ToString());
                             }
                             catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
@@ -390,7 +390,7 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Log10((float)Evaluate(Replace(match.Groups[1].ToString(), false))).ToString());
+                                input = input.Replace(match.Groups[0].ToString(), Mathf.Log10((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
                             }
                             catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
                         });
@@ -402,7 +402,7 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Ceil((float)Evaluate(Replace(match.Groups[1].ToString(), false))).ToString());
+                                input = input.Replace(match.Groups[0].ToString(), Mathf.Ceil((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
                             }
                             catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
                         });
@@ -414,7 +414,7 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Floor((float)Evaluate(Replace(match.Groups[1].ToString(), false))).ToString());
+                                input = input.Replace(match.Groups[0].ToString(), Mathf.Floor((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
                             }
                             catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
                         });
@@ -426,7 +426,7 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Round((float)Evaluate(Replace(match.Groups[1].ToString(), false))).ToString());
+                                input = input.Replace(match.Groups[0].ToString(), Mathf.Round((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
                             }
                             catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
                         });
@@ -438,7 +438,7 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Sign((float)Evaluate(Replace(match.Groups[1].ToString(), false))).ToString());
+                                input = input.Replace(match.Groups[0].ToString(), Mathf.Sign((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
                             }
                             catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
                         });
@@ -466,9 +466,9 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var x = (float)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var y = (float)Evaluate(Replace(match.Groups[2].ToString(), false));
-                                var t = (float)Evaluate(Replace(match.Groups[3].ToString(), false));
+                                var x = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var y = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
+                                var t = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
 
                                 input = input.Replace(match.Groups[0].ToString(), Mathf.LerpAngle(x, y, t).ToString());
                             }
@@ -482,9 +482,9 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var x = (float)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var y = (float)Evaluate(Replace(match.Groups[2].ToString(), false));
-                                var t = (float)Evaluate(Replace(match.Groups[3].ToString(), false));
+                                var x = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var y = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
+                                var t = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
 
                                 input = input.Replace(match.Groups[0].ToString(), Mathf.InverseLerp(x, y, t).ToString());
                             }
@@ -498,9 +498,9 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var x = (float)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var y = (float)Evaluate(Replace(match.Groups[2].ToString(), false));
-                                var t = (float)Evaluate(Replace(match.Groups[3].ToString(), false));
+                                var x = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var y = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
+                                var t = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
 
                                 input = input.Replace(match.Groups[0].ToString(), Mathf.MoveTowards(x, y, t).ToString());
                             }
@@ -514,9 +514,9 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var x = (float)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var y = (float)Evaluate(Replace(match.Groups[2].ToString(), false));
-                                var t = (float)Evaluate(Replace(match.Groups[3].ToString(), false));
+                                var x = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var y = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
+                                var t = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
 
                                 input = input.Replace(match.Groups[0].ToString(), Mathf.MoveTowardsAngle(x, y, t).ToString());
                             }
@@ -530,9 +530,9 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var x = (float)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var y = (float)Evaluate(Replace(match.Groups[2].ToString(), false));
-                                var t = (float)Evaluate(Replace(match.Groups[3].ToString(), false));
+                                var x = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var y = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
+                                var t = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
 
                                 input = input.Replace(match.Groups[0].ToString(), Mathf.SmoothStep(x, y, t).ToString());
                             }
@@ -546,9 +546,9 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var x = (float)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var y = (float)Evaluate(Replace(match.Groups[2].ToString(), false));
-                                var t = (float)Evaluate(Replace(match.Groups[3].ToString(), false));
+                                var x = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var y = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
+                                var t = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
 
                                 input = input.Replace(match.Groups[0].ToString(), Mathf.Gamma(x, y, t).ToString());
                             }
@@ -562,8 +562,8 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var x = (float)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var y = (float)Evaluate(Replace(match.Groups[2].ToString(), false));
+                                var x = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var y = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
 
                                 input = input.Replace(match.Groups[0].ToString(), Mathf.Approximately(x, y).ToString());
                             }
@@ -577,8 +577,8 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var x = (float)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var y = (float)Evaluate(Replace(match.Groups[2].ToString(), false));
+                                var x = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var y = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
 
                                 input = input.Replace(match.Groups[0].ToString(), Mathf.Repeat(x, y).ToString());
                             }
@@ -592,8 +592,8 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var x = (float)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var y = (float)Evaluate(Replace(match.Groups[2].ToString(), false));
+                                var x = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var y = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
 
                                 input = input.Replace(match.Groups[0].ToString(), Mathf.PingPong(x, y).ToString());
                             }
@@ -607,8 +607,8 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var x = (float)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var y = (float)Evaluate(Replace(match.Groups[2].ToString(), false));
+                                var x = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var y = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
 
                                 input = input.Replace(match.Groups[0].ToString(), Mathf.DeltaAngle(x, y).ToString());
                             }
@@ -623,7 +623,7 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var seed = (int)Evaluate(Replace(match.Groups[1].ToString(), false));
+                                var seed = (int)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
 
                                 input = input.Replace(match.Groups[0].ToString(), ((float)(new System.Random(seed).NextDouble())).ToString());
                             }
@@ -633,8 +633,8 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var seed = (int)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var index = (int)Evaluate(Replace(match.Groups[2].ToString(), false));
+                                var seed = (int)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var index = (int)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
 
                                 input = input.Replace(match.Groups[0].ToString(), RandomHelper.RandomInstanceSingle(seed, index).ToString());
                             }
@@ -648,9 +648,9 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var seed = (int)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var min = (int)Evaluate(Replace(match.Groups[2].ToString(), false));
-                                var max = (int)Evaluate(Replace(match.Groups[3].ToString(), false));
+                                var seed = (int)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var min = (int)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
+                                var max = (int)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
 
                                 input = input.Replace(match.Groups[0].ToString(), RandomHelper.RandomInstanceSingleRange(seed, min, max, new System.Random().Next()).ToString());
                             }
@@ -660,10 +660,10 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var seed = (int)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var min = (int)Evaluate(Replace(match.Groups[2].ToString(), false));
-                                var max = (int)Evaluate(Replace(match.Groups[3].ToString(), false));
-                                var index = (int)Evaluate(Replace(match.Groups[4].ToString(), false));
+                                var seed = (int)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var min = (int)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
+                                var max = (int)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
+                                var index = (int)Evaluate(Replace(match.Groups[4].ToString().Trim(), false));
 
                                 input = input.Replace(match.Groups[0].ToString(), RandomHelper.RandomInstanceSingleRange(seed, min, max, index).ToString());
                             }
@@ -678,7 +678,7 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var seed = (int)Evaluate(Replace(match.Groups[1].ToString(), false));
+                                var seed = (int)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
 
                                 input = input.Replace(match.Groups[0].ToString(), new System.Random(seed).Next().ToString());
                             }
@@ -688,8 +688,8 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var seed = (int)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var index = (int)Evaluate(Replace(match.Groups[2].ToString(), false));
+                                var seed = (int)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var index = (int)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
 
                                 input = input.Replace(match.Groups[0].ToString(), RandomHelper.RandomInstance(seed, index).ToString());
                             }
@@ -703,9 +703,9 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var seed = (int)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var min = (int)Evaluate(Replace(match.Groups[2].ToString(), false));
-                                var max = (int)Evaluate(Replace(match.Groups[3].ToString(), false));
+                                var seed = (int)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var min = (int)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
+                                var max = (int)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
 
                                 input = input.Replace(match.Groups[0].ToString(), RandomHelper.RandomInstanceRange(seed, min, max, new System.Random().Next()).ToString());
                             }
@@ -715,10 +715,10 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var seed = (int)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var min = (int)Evaluate(Replace(match.Groups[2].ToString(), false));
-                                var max = (int)Evaluate(Replace(match.Groups[3].ToString(), false));
-                                var index = (int)Evaluate(Replace(match.Groups[4].ToString(), false));
+                                var seed = (int)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var min = (int)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
+                                var max = (int)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
+                                var index = (int)Evaluate(Replace(match.Groups[4].ToString().Trim(), false));
 
                                 input = input.Replace(match.Groups[0].ToString(), RandomHelper.RandomInstanceRange(seed, min, max, index).ToString());
                             }
@@ -732,8 +732,8 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var value = (float)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var multipleOf = (float)Evaluate(Replace(match.Groups[2].ToString(), false));
+                                var value = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var multipleOf = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
 
                                 input = input.Replace(match.Groups[0].ToString(), RoundToNearestNumber(value, multipleOf).ToString());
                             }
@@ -747,8 +747,8 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var value = (float)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var places = (int)Evaluate(Replace(match.Groups[2].ToString(), false));
+                                var value = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var places = (int)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
 
                                 input = input.Replace(match.Groups[0].ToString(), RoundToNearestDecimal(value, places).ToString());
                             }
@@ -762,8 +762,8 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var t = (float)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var length = (float)Evaluate(Replace(match.Groups[2].ToString(), false));
+                                var t = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var length = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
 
                                 input = input.Replace(match.Groups[0].ToString(), Percentage(t, length).ToString());
                             }
@@ -777,10 +777,10 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var a = (float)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var b = (float)Evaluate(Replace(match.Groups[2].ToString(), false));
-                                var a2 = (float)Evaluate(Replace(match.Groups[3].ToString(), false));
-                                var b2 = (float)Evaluate(Replace(match.Groups[4].ToString(), false));
+                                var a = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var b = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
+                                var a2 = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
+                                var b2 = (float)Evaluate(Replace(match.Groups[4].ToString().Trim(), false));
 
                                 input = input.Replace(match.Groups[0].ToString(), (a == b ? a2 : b2).ToString());
                             }
@@ -794,10 +794,10 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var a = (float)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var b = (float)Evaluate(Replace(match.Groups[2].ToString(), false));
-                                var a2 = (float)Evaluate(Replace(match.Groups[3].ToString(), false));
-                                var b2 = (float)Evaluate(Replace(match.Groups[4].ToString(), false));
+                                var a = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var b = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
+                                var a2 = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
+                                var b2 = (float)Evaluate(Replace(match.Groups[4].ToString().Trim(), false));
 
                                 input = input.Replace(match.Groups[0].ToString(), (a <= b ? a2 : b2).ToString());
                             }
@@ -811,10 +811,10 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var a = (float)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var b = (float)Evaluate(Replace(match.Groups[2].ToString(), false));
-                                var a2 = (float)Evaluate(Replace(match.Groups[3].ToString(), false));
-                                var b2 = (float)Evaluate(Replace(match.Groups[4].ToString(), false));
+                                var a = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var b = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
+                                var a2 = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
+                                var b2 = (float)Evaluate(Replace(match.Groups[4].ToString().Trim(), false));
 
                                 input = input.Replace(match.Groups[0].ToString(), (a >= b ? a2 : b2).ToString());
                             }
@@ -828,10 +828,10 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var a = (float)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var b = (float)Evaluate(Replace(match.Groups[2].ToString(), false));
-                                var a2 = (float)Evaluate(Replace(match.Groups[3].ToString(), false));
-                                var b2 = (float)Evaluate(Replace(match.Groups[4].ToString(), false));
+                                var a = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var b = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
+                                var a2 = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
+                                var b2 = (float)Evaluate(Replace(match.Groups[4].ToString().Trim(), false));
 
                                 input = input.Replace(match.Groups[0].ToString(), (a < b ? a2 : b2).ToString());
                             }
@@ -845,10 +845,10 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var a = (float)Evaluate(Replace(match.Groups[1].ToString(), false));
-                                var b = (float)Evaluate(Replace(match.Groups[2].ToString(), false));
-                                var a2 = (float)Evaluate(Replace(match.Groups[3].ToString(), false));
-                                var b2 = (float)Evaluate(Replace(match.Groups[4].ToString(), false));
+                                var a = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
+                                var b = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
+                                var a2 = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
+                                var b2 = (float)Evaluate(Replace(match.Groups[4].ToString().Trim(), false));
 
                                 input = input.Replace(match.Groups[0].ToString(), (a > b ? a2 : b2).ToString());
                             }
@@ -862,12 +862,12 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var tag = match.Groups[1].ToString();
+                                var tag = match.Groups[1].ToString().Trim();
 
                                 var bm = CoreHelper.FindObjectWithTag(tag);
                                 if (bm)
                                 {
-                                    var fromType = (int)Evaluate(Replace(match.Groups[2].ToString(), false));
+                                    var fromType = (int)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
 
                                     if (fromType < 0 || fromType > 2)
                                     {
@@ -875,8 +875,8 @@ namespace BetterLegacy.Core
                                         return;
                                     }
 
-                                    var fromAxis = (int)Evaluate(Replace(match.Groups[3].ToString(), false));
-                                    var time = (float)Evaluate(Replace(match.Groups[4].ToString(), false));
+                                    var fromAxis = (int)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
+                                    var time = (float)Evaluate(Replace(match.Groups[4].ToString().Trim(), false));
                                     float value = 0f;
 
                                     if (!Optimization.Updater.levelProcessor.converter.cachedSequences.TryGetValue(bm.id, out Optimization.Objects.ObjectConverter.CachedSequences cachedSequence))
@@ -923,8 +923,8 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                var curveType = Ease.GetEaseFunction(match.Groups[1].ToString());
-                                var x = (float)Evaluate(Replace(match.Groups[2].ToString(), false));
+                                var curveType = Ease.GetEaseFunction(match.Groups[1].ToString().Trim());
+                                var x = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
 
                                 input = input.Replace(match.Groups[0].ToString(), curveType(x).ToString());
                             }
@@ -938,7 +938,7 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                input = input.Replace(match.Groups[0].ToString(), ((int)Evaluate(Replace(match.Groups[1].ToString(), false))).ToString());
+                                input = input.Replace(match.Groups[0].ToString(), ((int)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
                             }
                             catch { }
                         });
@@ -950,7 +950,7 @@ namespace BetterLegacy.Core
                         {
                             try
                             {
-                                input = input.Replace(match.Groups[0].ToString(), DateTime.Now.ToString(match.Groups[1].ToString()));
+                                input = input.Replace(match.Groups[0].ToString(), DateTime.Now.ToString(match.Groups[1].ToString().Trim()));
                             }
                             catch { }
                         });
