@@ -3085,6 +3085,19 @@ namespace BetterLegacy.Editor.Managers
                     if (UpdateObjects)
                         Updater.UpdateObject(beatmapObject, "Shape");
                 });
+
+                if (!textIF.transform.Find("edit"))
+                {
+                    var button = EditorPrefabHolder.Instance.DeleteButton.Duplicate(textIF.transform, "edit");
+                    var buttonStorage = button.GetComponent<DeleteButtonStorage>();
+                    buttonStorage.image.sprite = KeybindManager.inst.editSprite;
+                    EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
+                    EditorThemeManager.ApplyGraphic(buttonStorage.image, ThemeGroup.Function_2_Text);
+                    buttonStorage.button.onClick.ClearAll();
+                    buttonStorage.button.onClick.AddListener(() => { TextEditor.inst.SetInputField(textIF); });
+                    UIManager.SetRectTransform(buttonStorage.baseImage.rectTransform, new Vector2(160f, 24f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(22f, 22f));
+                    EditorHelper.SetComplexity(button, Complexity.Advanced);
+                }
             }
             else if (beatmapObject.shape == 6)
             {
@@ -3409,18 +3422,25 @@ namespace BetterLegacy.Editor.Managers
             valueInputField.contentType = InputField.ContentType.Standard;
             valueInputField.keyboardType = TouchScreenKeyboardType.Default;
 
+            valueInputField.onEndEdit.ClearAll();
             valueInputField.onValueChanged.ClearAll();
             valueInputField.text = selected.Count() == 1 ? firstKF.GetData<EventKeyframe>().eventValues[i].ToString() : typeName == "rotation" ? "15" : "1";
             valueInputField.onValueChanged.AddListener(_val =>
             {
                 if (float.TryParse(_val, out float num) && selected.Count() == 1)
                 {
+
                     firstKF.GetData<EventKeyframe>().eventValues[current] = num;
 
                     // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                     if (UpdateObjects)
                         Updater.UpdateObject(beatmapObject, "Keyframes");
                 }
+            });
+            valueInputField.onEndEdit.AddListener(_val =>
+            {
+                if (!float.TryParse(_val, out float n) && RTMath.TryEvaluate(_val.Replace("eventTime", firstKF.GetData<EventKeyframe>().eventTime.ToString()), firstKF.GetData<EventKeyframe>().eventValues[current], out float calc))
+                    valueInputField.text = calc.ToString();
             });
 
             valueButtonLeft.onClick.ClearAll();
@@ -4045,7 +4065,7 @@ namespace BetterLegacy.Editor.Managers
             if (selected.Count() == 1 && firstKF.Index != 0 || selected.Count() > 1)
                 tet.triggers.Add(TriggerHelper.ScrollDelta(tif));
 
-            tif.onValueChanged.RemoveAllListeners();
+            tif.onValueChanged.ClearAll();
             tif.text = selected.Count() == 1 ? firstKF.Time.ToString() : "1";
             tif.onValueChanged.AddListener(_val =>
             {

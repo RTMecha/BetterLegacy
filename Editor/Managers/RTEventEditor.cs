@@ -2892,6 +2892,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
 
             var zoom = dialogTmp.Find($"{name}").GetComponent<InputField>();
+            zoom.onEndEdit.ClearAll();
             zoom.onValueChanged.ClearAll();
             zoom.text = currentKeyframe.eventValues[index].ToString();
             zoom.onValueChanged.AddListener(_val =>
@@ -2911,6 +2912,11 @@ namespace BetterLegacy.Editor.Managers
                 }
                 else
                     LogIncorrectFormat(_val);
+            });
+            zoom.onEndEdit.AddListener(_val =>
+            {
+                if (!float.TryParse(_val, out float n) && RTMath.TryEvaluate(_val.Replace("eventTime", currentKeyframe.eventTime.ToString()), currentKeyframe.eventValues[index], out float calc))
+                    zoom.text = calc.ToString();
             });
 
             if (dialogTmp.Find($"{name}/<") && dialogTmp.Find($"{name}/>"))
@@ -3073,6 +3079,7 @@ namespace BetterLegacy.Editor.Managers
             var posX = dialogTmp.Find($"{name}/x").GetComponent<InputField>();
             var posY = dialogTmp.Find($"{name}/y").GetComponent<InputField>();
 
+            posX.onEndEdit.ClearAll();
             posX.onValueChanged.ClearAll();
             posX.text = currentKeyframe.eventValues[xindex].ToString();
             posX.onValueChanged.AddListener(_val =>
@@ -3089,6 +3096,11 @@ namespace BetterLegacy.Editor.Managers
                 }
                 else
                     LogIncorrectFormat(_val);
+            });
+            posX.onEndEdit.AddListener(_val =>
+            {
+                if (!float.TryParse(_val, out float n) && RTMath.TryEvaluate(_val.Replace("eventTime", currentKeyframe.eventTime.ToString()), currentKeyframe.eventValues[xindex], out float calc))
+                    posX.text = calc.ToString();
             });
 
             posY.onValueChanged.ClearAll();
@@ -3107,6 +3119,11 @@ namespace BetterLegacy.Editor.Managers
                 }
                 else
                     LogIncorrectFormat(_val);
+            });
+            posY.onEndEdit.AddListener(_val =>
+            {
+                if (!float.TryParse(_val, out float n) && RTMath.TryEvaluate(_val.Replace("eventTime", currentKeyframe.eventTime.ToString()), currentKeyframe.eventValues[yindex], out float calc))
+                    posY.text = calc.ToString();
             });
 
             if (dialogTmp.Find($"{name}/x/<") && dialogTmp.Find($"{name}/x/>"))
