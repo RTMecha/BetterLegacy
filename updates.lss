@@ -1,3 +1,11 @@
+1.5.5 > [Sep 18, 2024]
+- Fixed death_hd being achieved when you exit the editor. (hopefully)
+- Updated the way most items are obtained from dictionaries. (This should hopefully mean a slight improvement in performance)
+- Added some config based modifiers (configLDM, usernameEquals, languageEquals, etc)
+- Added formatText action modifier. This does what Allow Custom Text Formatting config does.
+- Added playerCount trigger modifier. (apparently code for this already existed, I just never fully implemented it...)
+- Added a ton of functionality to the math evaluators (copyAxisMath, copyAxisGroup, etc). Considering how much it can do, I might add it to some modifiers later if I have any ideas on what ones to do. (also, you can type math into some input fields if you really must)
+- Added a QOL text editor for editing an input field's text at a larger scale.
 1.5.4 > [Sep 16, 2024]
 - Fixed editor levels not loading.
 1.5.3 > [Sep 16, 2024]
