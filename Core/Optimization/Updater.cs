@@ -60,6 +60,16 @@ namespace BetterLegacy.Core.Optimization
             DataManager.inst.gameData.beatmapObjects.RemoveAll(x => x.fromPrefab);
             for (int i = 0; i < DataManager.inst.gameData.prefabObjects.Count; i++)
                 AddPrefabToLevel(DataManager.inst.gameData.prefabObjects[i], false);
+            
+            try
+            {
+                if (DataManager.inst.gameData is GameData gameData)
+                    gameData.moddedBeatmapObjects = gameData.beatmapObjects.Select(x => (BeatmapObject)x).ToList();
+            }
+            catch (System.Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
 
             levelProcessor = new LevelProcessor(GameData.Current);
         }
