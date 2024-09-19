@@ -338,23 +338,38 @@ namespace BetterLegacy.Core.Managers
                 var currentAudioTime = AudioManager.inst.CurrentAudioSource.time;
                 var currentAudioLength = AudioManager.inst.CurrentAudioSource.clip.length;
 
-                CoreHelper.RegexMatch(str, new Regex(@"<math=(.*?)>"), match =>
+                if (str.Contains("math"))
                 {
-                    try
+                    CoreHelper.RegexMatch(str, new Regex(@"<math=""(.*?)>"""), match =>
                     {
-                        var replace = RTMath.Replace(match.Groups[1].ToString());
+                        try
+                        {
+                            var replace = RTMath.Replace(match.Groups[1].ToString());
 
-                        if (Input.GetKeyDown(KeyCode.J))
-                            CoreHelper.Log($"Match: {match.Groups[0]}\nGroup: {match.Groups[1]}\nReplace: {replace}");
+                            var math = RTMath.Evaluate(replace);
 
-                        var math = RTMath.Evaluate(replace);
+                            str = str.Replace(match.Groups[0].ToString(), math.ToString());
+                        }
+                        catch
+                        {
+                        }
+                    });
 
-                        str = str.Replace(match.Groups[0].ToString(), math.ToString());
-                    }
-                    catch
+                    CoreHelper.RegexMatch(str, new Regex(@"<math=(.*?)>"), match =>
                     {
-                    }
-                });
+                        try
+                        {
+                            var replace = RTMath.Replace(match.Groups[1].ToString());
+
+                            var math = RTMath.Evaluate(replace);
+
+                            str = str.Replace(match.Groups[0].ToString(), math.ToString());
+                        }
+                        catch
+                        {
+                        }
+                    });
+                }
 
                 #region Audio
 
@@ -666,50 +681,53 @@ namespace BetterLegacy.Core.Managers
 
                 // Level Rank Other
                 {
-                    CoreHelper.RegexMatches(str, new Regex(@"<levelRankOther=([0-9]+)>"), match =>
-                    {
-                        DataManager.LevelRank levelRank;
-                        if (LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level))
+                    if (str.Contains("levelRankOther"))
+                        CoreHelper.RegexMatches(str, new Regex(@"<levelRankOther=([0-9]+)>"), match =>
                         {
-                            levelRank = LevelManager.GetLevelRank(level);
-                        }
-                        else
-                        {
-                            levelRank = CoreHelper.InEditor ? LevelManager.EditorRank : DataManager.inst.levelRanks[0];
-                        }
+                            DataManager.LevelRank levelRank;
+                            if (LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level))
+                            {
+                                levelRank = LevelManager.GetLevelRank(level);
+                            }
+                            else
+                            {
+                                levelRank = CoreHelper.InEditor ? LevelManager.EditorRank : DataManager.inst.levelRanks[0];
+                            }
 
-                        str = str.Replace(match.Groups[0].ToString(), $"<color=#{LSColors.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>");
-                    });
+                            str = str.Replace(match.Groups[0].ToString(), $"<color=#{LSColors.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>");
+                        });
 
-                    CoreHelper.RegexMatches(str, new Regex(@"<levelRankOtherName=([0-9]+)>"), match =>
-                    {
-                        DataManager.LevelRank levelRank;
-                        if (LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level))
+                    if (str.Contains("levelRankOtherName"))
+                        CoreHelper.RegexMatches(str, new Regex(@"<levelRankOtherName=([0-9]+)>"), match =>
                         {
-                            levelRank = LevelManager.GetLevelRank(level);
-                        }
-                        else
-                        {
-                            levelRank = CoreHelper.InEditor ? LevelManager.EditorRank : DataManager.inst.levelRanks[0];
-                        }
+                            DataManager.LevelRank levelRank;
+                            if (LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level))
+                            {
+                                levelRank = LevelManager.GetLevelRank(level);
+                            }
+                            else
+                            {
+                                levelRank = CoreHelper.InEditor ? LevelManager.EditorRank : DataManager.inst.levelRanks[0];
+                            }
 
-                        str = str.Replace(match.Groups[0].ToString(), levelRank.name);
-                    });
+                            str = str.Replace(match.Groups[0].ToString(), levelRank.name);
+                        });
 
-                    CoreHelper.RegexMatches(str, new Regex(@"<levelRankOtherColor=([0-9]+)>"), match =>
-                    {
-                        DataManager.LevelRank levelRank;
-                        if (LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level))
+                    if (str.Contains("levelRankOtherColor"))
+                        CoreHelper.RegexMatches(str, new Regex(@"<levelRankOtherColor=([0-9]+)>"), match =>
                         {
-                            levelRank = LevelManager.GetLevelRank(level);
-                        }
-                        else
-                        {
-                            levelRank = CoreHelper.InEditor ? LevelManager.EditorRank : DataManager.inst.levelRanks[0];
-                        }
+                            DataManager.LevelRank levelRank;
+                            if (LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level))
+                            {
+                                levelRank = LevelManager.GetLevelRank(level);
+                            }
+                            else
+                            {
+                                levelRank = CoreHelper.InEditor ? LevelManager.EditorRank : DataManager.inst.levelRanks[0];
+                            }
 
-                        str = str.Replace(match.Groups[0].ToString(), $"<color=#{LSColors.ColorToHex(levelRank.color)}>");
-                    });
+                            str = str.Replace(match.Groups[0].ToString(), $"<color=#{LSColors.ColorToHex(levelRank.color)}>");
+                        });
                 }
 
                 if (str.Contains("<accuracy>"))
@@ -719,19 +737,22 @@ namespace BetterLegacy.Core.Managers
 
                 #region Mod stuff
 
-                CoreHelper.RegexMatches(str, new Regex(@"<modifierVariable=(.*?)>"), match =>
+                if (str.Contains("modifierVariable"))
                 {
-                    var beatmapObject = CoreHelper.FindObjectWithTag(match.Groups[1].ToString());
-                    if (beatmapObject)
-                        str = str.Replace(match.Groups[0].ToString(), beatmapObject.integerVariable.ToString());
-                });
-                
-                CoreHelper.RegexMatches(str, new Regex(@"<modifierVariableID=(.*?)>"), match =>
-                {
-                    var beatmapObject = GameData.Current.BeatmapObjects.Find(x => x.id == match.Groups[1].ToString());
-                    if (beatmapObject)
-                        str = str.Replace(match.Groups[0].ToString(), beatmapObject.integerVariable.ToString());
-                });
+                    CoreHelper.RegexMatches(str, new Regex(@"<modifierVariable=(.*?)>"), match =>
+                    {
+                        var beatmapObject = CoreHelper.FindObjectWithTag(match.Groups[1].ToString());
+                        if (beatmapObject)
+                            str = str.Replace(match.Groups[0].ToString(), beatmapObject.integerVariable.ToString());
+                    });
+
+                    CoreHelper.RegexMatches(str, new Regex(@"<modifierVariableID=(.*?)>"), match =>
+                    {
+                        var beatmapObject = GameData.Current.BeatmapObjects.Find(x => x.id == match.Groups[1].ToString());
+                        if (beatmapObject)
+                            str = str.Replace(match.Groups[0].ToString(), beatmapObject.integerVariable.ToString());
+                    });
+                }
 
                 if (str.Contains("<username>"))
                     str = str.Replace("<username>", CoreConfig.Instance.DisplayName.Value);
