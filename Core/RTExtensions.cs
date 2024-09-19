@@ -932,22 +932,14 @@ namespace BetterLegacy.Core
 
         public static void Save(this Sprite sprite, string path) => SpriteHelper.SaveSprite(sprite, path);
 
-        public static bool TryGetComponent<T>(this GameObject gameObject, out T result)
+        public static bool TryGetComponent<T>(this GameObject gameObject, out T result) where T : Component
         {
             var t = gameObject.GetComponent<T>();
             result = t;
-            return t != null;
+            return t;
         }
 
         public static T GetDefault<T>(this List<T> list, int index, T defaultValue) => index >= 0 && index < list.Count - 1 ? list[index] : defaultValue;
-
-        public static void AddSet<TKey, TValue>(this Dictionary<TKey, TValue> keyValuePairs, TKey key, TValue value)
-        {
-            if (!keyValuePairs.ContainsKey(key))
-                keyValuePairs.Add(key, value);
-            else
-                keyValuePairs[key] = value;
-        }
 
         public static bool TryFind<T>(this List<T> ts, Predicate<T> match, out T item)
         {

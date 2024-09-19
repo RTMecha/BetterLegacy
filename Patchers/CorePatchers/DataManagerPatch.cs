@@ -441,7 +441,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdateSettingEnumPrefix(string __0, int __1)
         {
-            ModCompatibility.sharedFunctions.AddSet(Instance.settingPrefix + __0, __1);
+            ModCompatibility.sharedFunctions[Instance.settingPrefix + __0] = __1;
             return false;
         }
 
@@ -463,7 +463,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdateSettingStringPrefix(string __0, string __1)
         {
-            ModCompatibility.sharedFunctions.AddSet(Instance.settingPrefix + __0, __1);
+            ModCompatibility.sharedFunctions[Instance.settingPrefix + __0] = __1;
             return false;
         }
 
@@ -499,7 +499,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdateSettingIntPrefix(string __0, int __1)
         {
-            ModCompatibility.sharedFunctions.AddSet(Instance.settingPrefix + __0, __1);
+            ModCompatibility.sharedFunctions[Instance.settingPrefix + __0] = __1;
 
             return false;
         }
@@ -536,7 +536,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdateSettingFloatPrefix(string __0, float __1)
         {
-            ModCompatibility.sharedFunctions.AddSet(Instance.settingPrefix + __0, __1);
+            ModCompatibility.sharedFunctions[Instance.settingPrefix + __0] = __1;
             return false;
         }
 
@@ -572,7 +572,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdateSettingBoolPrefix(string __0, bool __1)
         {
-            ModCompatibility.sharedFunctions.AddSet(Instance.settingPrefix + __0, __1);
+            ModCompatibility.sharedFunctions[Instance.settingPrefix + __0] = __1;
 
             return false;
         }
@@ -609,9 +609,9 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdateSettingVector2DPrefix(string __0, int __1, Vector2[] __2)
         {
-            ModCompatibility.sharedFunctions.AddSet(Instance.settingPrefix + __0 + "_i", __1);
-            ModCompatibility.sharedFunctions.AddSet(Instance.settingPrefix + __0 + "_x", __2[__1].x);
-            ModCompatibility.sharedFunctions.AddSet(Instance.settingPrefix + __0 + "_y", __2[__1].y);
+            ModCompatibility.sharedFunctions[Instance.settingPrefix + __0 + "_i"] = __1;
+            ModCompatibility.sharedFunctions[Instance.settingPrefix + __0 + "_x"] = __2[__1].x;
+            ModCompatibility.sharedFunctions[Instance.settingPrefix + __0 + "_y"] = __2[__1].y;
             return false;
         }
 
