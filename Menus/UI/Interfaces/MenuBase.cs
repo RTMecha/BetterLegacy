@@ -366,6 +366,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 }
             }
 
+            if (!CoreHelper.InGame)
+                CoreHelper.UpdateDiscordStatus($"Navigating {name}", "In Menu", "menu");
+
             if (loopingEvents != null)
             {
                 loopingEvents.loop = true;
@@ -540,11 +543,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         element.func?.Invoke();
                     };
             }
-
-            //if (elements.TryFind(x => x is MenuButton, out MenuImage menuImage) && menuImage is MenuButton button)
-            //{
-            //    button.OnEnter();
-            //}
 
             isOpen = true;
 
