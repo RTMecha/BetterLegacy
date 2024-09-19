@@ -18,6 +18,7 @@
 - New modifiers [prizeObject, setParent, playerAction (PlayerActionSet) trigger].
 - Add a value for spawning a prefab at the object's position.
 - Allow custom player models in Global tab Player Editor. (Prevents players from loading in their own custom models).
+- Add a "Set to Gobal" button that sets the currently opened player model to the Global Player model settings.
 - Add Set Data to image shape for Custom Player objects.
 - More player model limits (move speed, boost speed, etc, allow / disallow custom models).
 - Prefab preview image. Can set the specific capture size and position.
