@@ -44,6 +44,16 @@ namespace BetterLegacy.Editor.Managers
         void Awake()
         {
             inst = this;
+
+            try
+            {
+                PlayerManager.LoadGlobalModels();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
+
             StartCoroutine(GenerateUI());
         }
 
@@ -215,7 +225,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var label = labelPrefab.Duplicate(gameObject.transform, "label");
                     var labelText = label.GetComponent<Text>();
-                    labelText.text = "Global Lock Boost";
+                    labelText.text = name;
                     EditorThemeManager.AddLightText(labelText);
                     UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
 
@@ -435,6 +445,34 @@ namespace BetterLegacy.Editor.Managers
                         GameObject = gameObject,
                         Tab = Tab.Global,
                         ValueType = ValueType.Float,
+                        Index = -1,
+                    });
+                }
+
+                // Allow Custom Player Models
+                {
+                    var name = "Allow Custom Player Models";
+
+                    var gameObject = Creator.NewUIObject(name, content);
+                    gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 42f);
+
+                    var label = labelPrefab.Duplicate(gameObject.transform, "label");
+                    var labelText = label.GetComponent<Text>();
+                    labelText.text = name;
+                    EditorThemeManager.AddLightText(labelText);
+                    UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
+
+                    var toggle = boolInput.Duplicate(gameObject.transform, "toggle").GetComponent<Toggle>();
+                    toggle.transform.AsRT().anchoredPosition = new Vector2(725f, -21f);
+
+                    EditorThemeManager.AddToggle(toggle);
+
+                    editorUIs.Add(new PlayerEditorUI
+                    {
+                        Name = name,
+                        GameObject = gameObject,
+                        Tab = Tab.Global,
+                        ValueType = ValueType.Bool,
                         Index = -1,
                     });
                 }
@@ -1115,6 +1153,22 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorThemeManager.AddSelectable(loadStorage.button, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(loadStorage.text, ThemeGroup.Function_2_Text);
+
+                var setToGlobal = EditorPrefabHolder.Instance.Function1Button.Duplicate(layout.transform, "function");
+                setToGlobal.transform.AsRT().sizeDelta = new Vector2(92f, 43.2f);
+                var setToGlobalStorage = setToGlobal.GetComponent<FunctionButtonStorage>();
+                setToGlobalStorage.text.fontSize = 16;
+                setToGlobalStorage.text.text = "Set to Global";
+                setToGlobalStorage.button.onClick.ClearAll();
+                setToGlobalStorage.button.onClick.AddListener(() =>
+                {
+                    var currentIndex = PlayerManager.GetPlayerModelIndex(playerModelIndex);
+
+                    PlayerManager.PlayerIndexes[playerModelIndex].Value = currentIndex;
+                });
+
+                EditorThemeManager.AddSelectable(setToGlobalStorage.button, ThemeGroup.Function_2);
+                EditorThemeManager.AddGraphic(setToGlobalStorage.text, ThemeGroup.Function_2_Text);
             }
 
             LSHelpers.SetActiveChildren(content, false);
@@ -1320,6 +1374,19 @@ namespace BetterLegacy.Editor.Managers
 
                                 TriggerHelper.IncreaseDecreaseButtonsInt(inputFieldStorage, min: 3, max: int.MaxValue);
                                 TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField, min: 3, max: int.MaxValue));
+
+                                break;
+                            }
+                        case "Allow Custom Player Models":
+                            {
+                                var toggle = ui.GameObject.transform.Find("toggle").GetComponent<Toggle>();
+                                toggle.onValueChanged.ClearAll();
+                                toggle.isOn = GameData.Current.LevelBeatmapData.ModLevelData.allowCustomPlayerModels;
+                                toggle.onValueChanged.AddListener(_val =>
+                                {
+                                    GameData.Current.LevelBeatmapData.ModLevelData.allowCustomPlayerModels = _val;
+                                    RTPlayer.SetGameDataProperties();
+                                });
 
                                 break;
                             }
@@ -1894,7 +1961,10 @@ namespace BetterLegacy.Editor.Managers
                 int index = num;
                 var name = playerModel.Value.basePart.name;
                 if (!CoreHelper.SearchString(modelSearchTerm, name))
+                {
+                    num++;
                     continue;
+                }
 
                 var model = EditorManager.inst.spriteFolderButtonPrefab.Duplicate(ModelsPopup.Content, name);
                 var modelButton = model.GetComponent<Button>();

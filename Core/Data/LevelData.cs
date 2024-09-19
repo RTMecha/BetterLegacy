@@ -19,6 +19,7 @@ namespace BetterLegacy.Core.Data
         public int maxJumpCount = 10;
         public int maxJumpBoostCount = 1;
         public int maxHealth = 3;
+        public bool allowCustomPlayerModels = true;
 
         public static LevelData Parse(JSONNode jn)
         {
@@ -58,6 +59,9 @@ namespace BetterLegacy.Core.Data
             if (!string.IsNullOrEmpty(jn["max_health"]))
                 levelData.maxHealth = jn["max_health"].AsInt;
 
+            if (!string.IsNullOrEmpty(jn["allow_custom_player_models"]))
+                levelData.allowCustomPlayerModels = jn["allow_custom_player_models"].AsBool;
+
             return levelData;
         }
 
@@ -92,6 +96,9 @@ namespace BetterLegacy.Core.Data
 
             if (maxHealth != 3)
                 jn["max_health"] = maxHealth.ToString();
+
+            if (!allowCustomPlayerModels)
+                jn["allow_custom_player_models"] = allowCustomPlayerModels.ToString();
 
             return jn;
         }

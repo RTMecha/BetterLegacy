@@ -106,7 +106,7 @@ namespace BetterLegacy.Core.Managers
 
         public static void LoadLocalModels()
         {
-            if (!CoreHelper.InStory && PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
+            if (!CoreHelper.InStory && PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value && GameData.IsValid && GameData.Current.LevelBeatmapData.ModLevelData.allowCustomPlayerModels)
                 inst.StartCoroutine(ILoadGlobalModels());
             else
                 inst.StartCoroutine(ILoadLocalModels());
@@ -271,7 +271,7 @@ namespace BetterLegacy.Core.Managers
                         PlayerModels.Add(id, model);
                 }
 
-                if (EditorManager.inst || !PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
+                if (CoreHelper.InEditor || (GameData.IsValid && !GameData.Current.LevelBeatmapData.ModLevelData.allowCustomPlayerModels) || !PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
                     LoadIndexes();
                 else if (PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
                 {
@@ -282,7 +282,7 @@ namespace BetterLegacy.Core.Managers
                 }
             }
 
-            if (PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
+            if (GameData.IsValid && !GameData.Current.LevelBeatmapData.ModLevelData.allowCustomPlayerModels && PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
                 AssignPlayerModels();
 
             yield break;
@@ -310,9 +310,9 @@ namespace BetterLegacy.Core.Managers
                     }
                 }
             }
-            else if (!PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
+            else if (!PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value || (GameData.IsValid && !GameData.Current.LevelBeatmapData.ModLevelData.allowCustomPlayerModels))
             {
-                CoreHelper.LogError("player.lspl file does not exist:, setting to default player");
+                CoreHelper.LogError("player.lspl file does not exist, setting to default player");
                 for (int i = 0; i < PlayerModelsIndex.Count; i++)
                 {
                     PlayerModelsIndex[i] = "0";

@@ -92,8 +92,6 @@ namespace BetterLegacy.Patchers
                 effectColors = CoreHelper.NewColorList(18),
             };
 
-            (CoreHelper.InEditor || PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value ? (Action)PlayerManager.LoadGlobalModels : PlayerManager.LoadLocalModels).Invoke();
-
             PlayerManager.SetupImages(Instance);
 
             Instance.gameObject.AddComponent<GameStorageManager>();
