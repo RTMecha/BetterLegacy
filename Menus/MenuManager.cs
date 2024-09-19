@@ -53,48 +53,7 @@ namespace BetterLegacy.Menus
                 ic.currHoveredButton = ic.buttons[0];
                 EventSystem.current.SetSelectedGameObject(ic.buttons[0]);
             }
-
-            if (!Input.GetKeyDown(MenuConfig.Instance.LoadPageEditor.Value))
-                return;
-
-            if (GameManager.inst && !EditorManager.inst)
-            {
-                CoreHelper.LogWarning("Cannot enter Page Editor while in-game.");
-                return;
-            }
-
-            if (!EditorManager.inst)
-            {
-                PageEditor.Init();
-                return;
-            }
-
-            RTEditor.inst.ShowWarningPopup("Are you sure you want to load the Page Editor? Any unsaved changes will be lost!", () =>
-            {
-                if (EditorManager.inst.savingBeatmap)
-                {
-                    EditorManager.inst.DisplayNotification("Please wait until the beatmap finishes saving!", 2f, EditorManager.NotificationType.Error);
-                    return;
-                }
-
-                DOTween.KillAll();
-                DOTween.Clear(true);
-                EditorManager.inst.loadedLevels.Clear();
-                DataManager.inst.gameData = null;
-                DataManager.inst.gameData = new GameData();
-                DiscordController.inst.OnIconChange("");
-                DiscordController.inst.OnStateChange("");
-                CoreHelper.Log($"Quit to Main Menu");
-                InputDataManager.inst.players.Clear();
-                SceneManager.inst.LoadScene("Main Menu");
-            }, RTEditor.inst.HideWarningPopup);
         }
-
-        public static string prevScene = "Main Menu";
-        public static string prevBranch;
-        public static string prevInterface = "beatmaps/menus/menu.lsm";
-        public static bool fromPageLevel = false;
-        public static string currentInterface;
 
         public void PlayMusic()
         {
@@ -237,29 +196,6 @@ namespace BetterLegacy.Menus
         public string currentMenuMusicName;
         public AudioClip currentMenuMusic;
 
-        public IEnumerator ReturnToMenu()
-        {
-            SceneManager.inst.LoadScene(prevScene);
-
-            while (!ic || loadingFromInterfaceLoader || CoreHelper.CurrentSceneType != SceneType.Interface || ic.gameObject.scene.name != prevScene)
-                yield return null;
-
-            if (!string.IsNullOrEmpty(prevBranch))
-            {
-                loadingInterface = true;
-
-                CoreHelper.Log($"Trying to load from previous interface...\nCurrent Interface: {currentInterface}\nPrevious Interface: {prevInterface}");
-
-                InterfaceControllerPatch.LoadInterface(prevInterface, false);
-
-                while (loadingInterface || loadingFromInterfaceLoader || CoreHelper.CurrentSceneType != SceneType.Interface)
-                    yield return null;
-
-                ic.SwitchBranch(prevBranch);
-                PlayMusic();
-            }
-        }
-
         public void ApplyInterfaceTheme()
         {
             if (!ic)
@@ -292,15 +228,10 @@ namespace BetterLegacy.Menus
 
         #region Base
 
-        bool loadingInterface;
-        public bool loadingFromInterfaceLoader;
-
         public void ParseLilScript(string _json, bool switchBranch = true)
         {
             if (ic == null)
                 ic = Resources.FindObjectsOfTypeAll<InterfaceController>()[0];
-
-            loadingInterface = true;
 
             DOTween.KillAll();
             DOTween.Clear(true);
@@ -409,9 +340,6 @@ namespace BetterLegacy.Menus
                 }
             }
 
-            loadingInterface = false;
-            loadingFromInterfaceLoader = false;
-
             CoreHelper.Log($"Parsed interface with [{jn["branches"].Count}] branches");
 
             if (switchBranch)
@@ -433,9 +361,7 @@ namespace BetterLegacy.Menus
             {
                 case "if":
                     if (DataManager.inst.GetSettingBool(data[1]))
-                    {
                         ic.SwitchBranch(data[2]);
-                    }
                     break;
                 case "setting":
                     switch (data[1].ToLower())
@@ -477,11 +403,6 @@ namespace BetterLegacy.Menus
                             break;
                     }
                     break;
-                case "config":
-                    {
-                        ConfigManager.inst.Show();
-                        break;
-                    }
                 case "apply_ui_theme_with_reload":
                     {
                         Color textColor3 = ic.interfaceSettings.textColor;
@@ -519,18 +440,6 @@ namespace BetterLegacy.Menus
                         ApplyInterfaceTheme();
                         break;
                     }
-                case "apply_level_ui_theme":
-                    if (GameManager.inst != null)
-                    {
-                        Color color = LSColors.ContrastColor(LSColors.InvertColor(GameManager.inst.LiveTheme.backgroundColor));
-                        Color backgroundColor = GameManager.inst.LiveTheme.backgroundColor;
-                        ic.interfaceSettings.textHighlightColor = backgroundColor;
-                        ic.interfaceSettings.bgColor = new Color(0f, 0f, 0f, 0.3f);
-                        ic.interfaceSettings.borderHighlightColor = color;
-                        ic.interfaceSettings.textColor = color;
-                        ic.interfaceSettings.borderColor = (((data.Length > 1 && data[1].ToLower() == "true") || data.Length == 1) ? LSColors.fadeColor(color, 0.3f) : LSColors.transparent);
-                    }
-                    break;
                 case "apply_menu_music":
                     AudioManager.inst.PlayMusic(DataManager.inst.GetSettingEnumValues("MenuMusic", 0), 1f);
                     break;
@@ -551,20 +460,13 @@ namespace BetterLegacy.Menus
                         float result = 0.5f;
                         float.TryParse(data[1], out result);
                         if (ic.SpeedUp && ic.FastSpeed > 0f)
-                        {
                             yield return new WaitForSeconds(result / ic.FastSpeed);
-                        }
                         else
-                        {
                             yield return new WaitForSeconds(result);
-                        }
                     }
                     break;
                 case "branch":
                     ic.SwitchBranch(data[1]);
-                    break;
-                case "exit":
-                    Application.Quit();
                     break;
                 case "setsavedlevel":
                     Debug.LogFormat("setsavedlevel: {0} - {1}", int.Parse(data[1]), int.Parse(data[2]));
@@ -576,70 +478,15 @@ namespace BetterLegacy.Menus
                 case "loadscene":
                     Debug.Log("Try to load [" + data[1] + "]");
                     if (data.Length >= 3)
-                    {
-                        Debug.Log("Loading Scene with Loading Display off?");
                         SceneManager.inst.LoadScene(data[1], bool.Parse(data[2]));
-                    }
                     else
-                    {
                         SceneManager.inst.LoadScene(data[1]);
-                    }
                     break;
-                case "loadnextlevel":
-                    SceneManager.inst.LoadNextLevel();
-                    break;
-                case "parse":
-                    {
-                        if (data.Length >= 3 && bool.Parse(data[2]))
-                            ic.interfaceBranches.Clear();
-
-                        ic.LoadInterface(data[1]);
-
-                        break;
-                    }
-                case "loadlevel":
-                    {
-                        if (!data[1].Contains("level.lsb") && RTFile.FileExists(RTFile.ApplicationDirectory + data[1] + "/level.lsb"))
-                        {
-                            CoreHelper.Log($"Loading level from {data[1]}\nCurrent Interface: {currentInterface}");
-
-                            if (RTFile.FileExists(RTFile.ApplicationDirectory + data[1] + "/level.lsb"))
-                            {
-                                var branch = ic.interfaceBranches.Find(x => x.name == ic.currentBranch);
-
-                                prevBranch = data.Length > 3 ? data[3] :
-                                    data.Length > 2 && Parser.TryParse(data[2], false) ? ic.currentBranch : branch != null ? branch.BackBranch : ic.currentBranch;
-
-                                prevInterface = currentInterface;
-                                prevScene = ic.gameObject.scene.name;
-                                fromPageLevel = true;
-
-                                LevelManager.OnLevelEnd = () => { CoreHelper.StartCoroutine(ReturnToMenu()); };
-
-                                LevelManager.Load(RTFile.ApplicationDirectory + data[1] + "/level.lsb", false);
-                            }
-                        }
-
-                        break;
-                    }
-                case "loadlevelonline":
-                    {
-                        ic.StartCoroutine(AlephNetworkManager.DownloadJSONFile(data[1], delegate (string x)
-                        {
-
-                        }));
-
-                        break;
-                    }
                 case "deleteline":
                     if (data.Length > 2)
-                    {
                         Destroy(ic.MainPanel.GetChild(ic.MainPanel.childCount - 1 + int.Parse(data[1])).gameObject);
-                    }
                     else
-                    {
                         Destroy(ic.MainPanel.GetChild(int.Parse(data[1])).gameObject);
-                    }
                     break;
                 case "replaceline":
                     {
@@ -649,17 +496,17 @@ namespace BetterLegacy.Menus
                         dataText = ic.RunTextTransformations(dataText, childCount);
                         if (data.Length > 3)
                         {
-                            if (ic.MainPanel.GetChild(ic.MainPanel.childCount - 1 + int.Parse(data[1])).Find("text").gameObject.GetComponent<TextMeshProUGUI>())
-                                ic.MainPanel.GetChild(ic.MainPanel.childCount - 1 + int.Parse(data[1])).Find("text").gameObject.GetComponent<TextMeshProUGUI>().text = dataText;
-                            if (ic.MainPanel.GetChild(ic.MainPanel.childCount - 1 + int.Parse(data[1])).Find("text").gameObject.GetComponent<TextMeshPro>())
-                                ic.MainPanel.GetChild(ic.MainPanel.childCount - 1 + int.Parse(data[1])).Find("text").gameObject.GetComponent<TextMeshPro>().text = dataText;
+                            if (ic.MainPanel.GetChild(ic.MainPanel.childCount - 1 + int.Parse(data[1])).Find("text").gameObject.TryGetComponent(out TextMeshProUGUI textMeshProUGUI))
+                                textMeshProUGUI.text = dataText;
+                            if (ic.MainPanel.GetChild(ic.MainPanel.childCount - 1 + int.Parse(data[1])).Find("text").gameObject.TryGetComponent(out TextMeshPro textMeshPro))
+                                textMeshPro.text = dataText;
                         }
                         else
                         {
-                            if (ic.MainPanel.GetChild(int.Parse(data[1])).Find("text").gameObject.GetComponent<TextMeshProUGUI>())
-                                ic.MainPanel.GetChild(int.Parse(data[1])).Find("text").gameObject.GetComponent<TextMeshProUGUI>().text = dataText;
-                            if (ic.MainPanel.GetChild(int.Parse(data[1])).Find("text").gameObject.GetComponent<TextMeshPro>())
-                                ic.MainPanel.GetChild(int.Parse(data[1])).Find("text").gameObject.GetComponent<TextMeshPro>().text = dataText;
+                            if (ic.MainPanel.GetChild(int.Parse(data[1])).Find("text").gameObject.TryGetComponent(out TextMeshProUGUI textMeshProUGUI))
+                                textMeshProUGUI.text = dataText;
+                            if (ic.MainPanel.GetChild(int.Parse(data[1])).Find("text").gameObject.TryGetComponent(out TextMeshPro textMeshPro))
+                                textMeshPro.text = dataText;
                         }
                         break;
                     }
@@ -672,16 +519,9 @@ namespace BetterLegacy.Menus
                 case "playsound":
                     {
                         if (!RTFile.FileExists(RTFile.ApplicationDirectory + data[1]))
-                        {
                             AudioManager.inst.PlaySound(data[1]);
-                        }
                         else
-                        {
-                            ic.StartCoroutine(FileManager.inst.LoadMusicFile(data[1], delegate (AudioClip clip)
-                            {
-                                AudioManager.inst.PlaySound(clip);
-                            }));
-                        }
+                            ic.StartCoroutine(FileManager.inst.LoadMusicFile(data[1], AudioManager.inst.PlaySound));
                         break;
                     }
                 case "playsoundonline":
@@ -689,10 +529,7 @@ namespace BetterLegacy.Menus
                         try
                         {
                             if (data[1].ToLower().Substring(data[1].ToLower().Length - 4, 4) == ".ogg")
-                                ic.StartCoroutine(AlephNetworkManager.DownloadAudioClip(data[1], AudioType.OGGVORBIS, delegate (AudioClip audioClip)
-                                {
-                                    AudioManager.inst.PlaySound(audioClip);
-                                }));
+                                ic.StartCoroutine(AlephNetworkManager.DownloadAudioClip(data[1], AudioType.OGGVORBIS, AudioManager.inst.PlaySound));
                         }
                         catch
                         {
@@ -703,16 +540,9 @@ namespace BetterLegacy.Menus
                 case "playmusic":
                     {
                         if (!RTFile.FileExists(RTFile.ApplicationDirectory + data[1]))
-                        {
                             AudioManager.inst.PlayMusic(data[1], 0.5f);
-                        }
                         else
-                        {
-                            ic.StartCoroutine(FileManager.inst.LoadMusicFile(data[1], delegate (AudioClip clip)
-                            {
-                                AudioManager.inst.PlayMusic(data[1], clip, false, 0.5f);
-                            }));
-                        }
+                            ic.StartCoroutine(FileManager.inst.LoadMusicFile(data[1], clip => { AudioManager.inst.PlayMusic(data[1], clip, false, 0.5f); }));
                         break;
                     }
                 case "pausemusic":
@@ -723,35 +553,16 @@ namespace BetterLegacy.Menus
                     break;
                 case "setmusicvol":
                     if (data[1] == "back")
-                    {
                         AudioManager.inst.CurrentAudioSource.volume = AudioManager.inst.musicVol;
-                    }
                     else
-                    {
                         AudioManager.inst.CurrentAudioSource.volume = float.Parse(data[1]);
-                    }
                     break;
                 case "clearplayers":
                     if (data.Length > 1)
-                    {
                         InputDataManager.inst.ClearInputs((data[1] == "true") ? true : false);
-                    }
                     else
-                    {
                         InputDataManager.inst.ClearInputs();
-                    }
                     break;
-                case "loadarcadelevels":
-                    {
-                        ic.StartCoroutine(ArcadeManager.inst.GetFiles());
-                        break;
-                    }
-                case "openlink":
-                    {
-                        if (data[1].Contains("https://www.youtube.com") || data[1].Contains("https://www.discord.com/") || data[1].Contains(".newgrounds.com/"))
-                            Application.OpenURL(data[1]);
-                        break;
-                    }
                 case "setbg":
                     ic.interfaceSettings.bgColor = LSColors.HexToColor(data[1].Replace("#", ""));
                     ic.cam.GetComponent<Camera>().backgroundColor = ic.interfaceSettings.bgColor;
@@ -797,41 +608,6 @@ namespace BetterLegacy.Menus
                         }
                         break;
                     }
-                case "unpauselevel":
-                    if (GameManager.inst)
-                    {
-                        GameManager.inst.UnPause();
-                    }
-                    break;
-                case "restartlevel":
-                    {
-                        if (GameManager.inst)
-                        {
-                            if (ArcadeHelper.endedLevel)
-                            {
-                                AudioManager.inst.SetMusicTime(0f);
-                                GameManager.inst.hits.Clear();
-                                GameManager.inst.deaths.Clear();
-                                ArcadeHelper.endedLevel = false;
-
-                                LSHelpers.HideCursor();
-                                ic.SwitchBranch("empty");
-                                GameManager.inst.menuUI.GetComponentInChildren<Image>().enabled = false;
-                                AudioManager.inst.CurrentAudioSource.UnPause();
-                                GameManager.inst.gameState = GameManager.State.Playing;
-                                LevelManager.LevelEnded = false;
-
-                                break;
-                            }
-
-                            AudioManager.inst.SetMusicTime(0f);
-                            GameManager.inst.hits.Clear();
-                            GameManager.inst.deaths.Clear();
-                            GameManager.inst.UnPause();
-                            ArcadeHelper.endedLevel = false;
-                        }
-                        break;
-                    }
                 case "quittoarcade":
                     {
                         if (GameManager.inst != null)
@@ -839,20 +615,7 @@ namespace BetterLegacy.Menus
                             GameManager.inst.QuitToArcade();
                         }
                         break;
-                    }
-                case "subscribe_official_arcade_levels":
-                    {
-                        SteamWorkshop.inst.Subscribe(new PublishedFileId_t(1753879306uL));
-                        SteamWorkshop.inst.Subscribe(new PublishedFileId_t(1754882933uL));
-                        SteamWorkshop.inst.Subscribe(new PublishedFileId_t(1754881252uL));
-                        SteamWorkshop.inst.Subscribe(new PublishedFileId_t(1754881974uL));
-                        break;
-                    }
-                case "pageeditor":
-                    {
-                        PageEditor.Init();
-                        break;
-                    }
+                    } 
             }
             yield return null;
         }
@@ -1059,31 +822,6 @@ namespace BetterLegacy.Menus
                         var text = gameObject.transform.Find("text").gameObject;
 
                         var textMeshProUGUI = text.GetComponent<TextMeshProUGUI>();
-
-                        if (_element.settings.ContainsKey("reactiveScale"))
-                        {
-                            var audio = gameObject.AddComponent<ReactiveAudio>();
-                            audio.intensity = new float[2]
-                            {
-                                1f,
-                                1f
-                            };
-                            audio.channels = new int[2]
-                            {
-                                0,
-                                0
-                            };
-
-                            if (_element.settings.ContainsKey("reativeScaleIntensityX") && float.TryParse(_element.settings["reactiveScaleIntensityX"], out float reativeScaleIntensityX))
-                                audio.intensity[0] = reativeScaleIntensityX;
-                            if (_element.settings.ContainsKey("reactiveScaleIntensityY") && float.TryParse(_element.settings["reactiveScaleIntensityY"], out float reativeScaleIntensityY))
-                                audio.intensity[1] = reativeScaleIntensityY;
-
-                            if (_element.settings.ContainsKey("reactiveScaleChannelX") && int.TryParse(_element.settings["reactiveScaleChannelX"], out int reactiveScaleChannelX))
-                                audio.channels[0] = reactiveScaleChannelX;
-                            if (_element.settings.ContainsKey("reactiveScaleChannelY") && int.TryParse(_element.settings["reactiveScaleChannelY"], out int reactiveScaleChannelY))
-                                audio.channels[1] = reactiveScaleChannelY;
-                        }
 
                         if (_element.settings.ContainsKey("bg-color"))
                         {
@@ -1418,31 +1156,6 @@ namespace BetterLegacy.Menus
 
                             var textMeshProUGUI = gameObject2.transform.Find("text").GetComponent<TextMeshProUGUI>();
 
-                            if (_element.settings.ContainsKey("reactiveScale"))
-                            {
-                                var audio = gameObject2.AddComponent<ReactiveAudio>();
-                                audio.intensity = new float[2]
-                                {
-                                    1f,
-                                    1f
-                                };
-                                audio.channels = new int[2]
-                                {
-                                    0,
-                                    0
-                                };
-
-                                if (_element.settings.ContainsKey("reativeScaleIntensityX") && float.TryParse(_element.settings["reactiveScaleIntensityX"], out float reativeScaleIntensityX))
-                                    audio.intensity[0] = reativeScaleIntensityX;
-                                if (_element.settings.ContainsKey("reactiveScaleIntensityY") && float.TryParse(_element.settings["reactiveScaleIntensityY"], out float reativeScaleIntensityY))
-                                    audio.intensity[1] = reativeScaleIntensityY;
-
-                                if (_element.settings.ContainsKey("reactiveScaleChannelX") && int.TryParse(_element.settings["reactiveScaleChannelX"], out int reactiveScaleChannelX))
-                                    audio.channels[0] = reactiveScaleChannelX;
-                                if (_element.settings.ContainsKey("reactiveScaleChannelY") && int.TryParse(_element.settings["reactiveScaleChannelY"], out int reactiveScaleChannelY))
-                                    audio.channels[1] = reactiveScaleChannelY;
-                            }
-
                             if (_element.settings.ContainsKey("alignment"))
                             {
                                 switch (_element.settings["alignment"])
@@ -1581,25 +1294,6 @@ namespace BetterLegacy.Menus
                         yield return ic.StartCoroutine(HandleEvent(_element.branch, datum));
                     }
                     break;
-                case ElementType.Media:
-                    {
-                        var gameObject = new GameObject("Media");
-                        gameObject.transform.SetParent(ic.MainPanel);
-                        gameObject.transform.localScale = Vector3.one;
-
-                        var gameObjectRT = gameObject.AddComponent<RectTransform>();
-                        gameObjectRT.anchoredPosition = Vector3.zero;
-
-                        var gameObjectImage = gameObject.AddComponent<Image>();
-
-                        if (_element.data.Count > 2 && float.TryParse(_element.data[1], out float sizeX) && float.TryParse(_element.data[2], out float sizeY))
-                            gameObjectRT.sizeDelta = new Vector2(sizeX, sizeY);
-
-                        if (_element.data.Count > 1 && RTFile.FileExists(RTFile.ApplicationDirectory + _element.data[0]))
-                            gameObjectImage.sprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + _element.data[0]);
-
-                        break;
-                    }
             }
         }
 

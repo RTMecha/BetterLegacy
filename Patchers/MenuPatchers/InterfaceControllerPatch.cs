@@ -327,7 +327,6 @@ namespace BetterLegacy.Patchers
         {
             string text = string.IsNullOrEmpty(path) ? SaveManager.inst.CurrentStoryLevel.BeatmapJson.text : FileManager.inst.LoadJSONFile(path);
 
-            MenuManager.currentInterface = path;
             CoreHelper.Log($"Loading interface [{path}]");
             MenuManager.inst.ParseLilScript(text, switchBranch);
         }
