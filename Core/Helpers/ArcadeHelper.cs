@@ -3,6 +3,7 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Managers.Networking;
+using BetterLegacy.Core.Optimization;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
 using LSFunctions;
@@ -137,6 +138,14 @@ namespace BetterLegacy.Core.Helpers
 
             CoreHelper.Log("Quitting to arcade...");
             DG.Tweening.DOTween.Clear();
+            try
+            {
+                Updater.UpdateObjects(false);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            } // try cleanup
             DataManager.inst.gameData = null;
             DataManager.inst.gameData = new GameData();
             InputDataManager.inst.SetAllControllerRumble(0f);
