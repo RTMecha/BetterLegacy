@@ -8,11 +8,18 @@
 - Animation editor (for player animations).
 - Player modifiers.
 - Level modifiers (supports VG triggers).
+- Camera Jiggle event keyframe? (instead of a single thing that doesn't change throughout the entire level)
+- Add feedback (KinoFeedback) effect to event keyframes.
+- Add a fake Desktop thing like Rhythm Doctor for Window event keyframes. (The Desktop will look like a PA interface)
 - Color picker rework.
 - Timeline object index order.
 - Figure out custom timeline bin system (Shows a custom amount of rows in the timeline and allows for the timeline to be navigated up and down).
 - Unclamped timeline (timeline can be navigated outside the regular range and objects can be placed before start time 0).
 - New modifiers [prizeObject, setParent, playerAction (PlayerActionSet) trigger].
+- Add a value for spawning a prefab at the object's position.
+- Allow custom player models in Global tab Player Editor. (Prevents players from loading in their own custom models).
+- Add Set Data to image shape for Custom Player objects.
+- More player model limits (move speed, boost speed, etc, allow / disallow custom models).
 - Prefab preview image. Can set the specific capture size and position.
 - Asset sharing on the online server. (Prefabs, themes, player models, etc)
 - Collab sharing via server?
@@ -21,20 +28,15 @@
 - Rework arcade menu to use new interface system.
 - Possibly update input select scene to use new interface system.
 - Fix spawnPrefab modifier potential issues by not adding to the prefabObjects list, assigning a custom Prefab Object property to Beatmap Object and have ObjectConverter read from that.
-- Add a value for spawning a prefab at the object's position.
-- MetaData settings that can be adjusted in the Play Level (Settings) menu and can be read using modifiers.
-- Allow custom player models in Global tab Player Editor. (Prevents players from loading in their own custom models).
-- Add Set Data to image shape for Custom Player objects.
-- More player model limits (move speed, boost speed, etc, allow / disallow custom models).
+- MetaData settings that can be adjusted in the Play Level (Settings) menu and can be read using modifiers probably.
 - Figure out how player shooting fits in-game.
-- Add a fake Desktop thing like Rhythm Doctor for Window event keyframes.
 - Documentation & tooltips.
 - Example customization.
 - Fully implement Background Object tags.
+- Somehow figure out how to convert parallax in alpha to BG objects in BetterLegacy.
 - Custom end level function [end level screen, return to hub, return to previous, return to arcade, return to main menu].
 - loadLevel modifiers custom end function (same as above).
 - Possible multi object editor rework???
-- Add feedback (KinoFeedback) effect to event keyframes.
 - Multiplayer editor, possibly. (everyone has their own perspective of the hosts' editor but have limited functionality compared to the host)
 ### Internal
 - Clean up UIManager.
