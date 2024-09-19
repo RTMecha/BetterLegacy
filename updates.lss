@@ -1,3 +1,7 @@
+1.5.8 > [Sep 19, 2024]
+- Fixed prefabs not spawning in arcade levels.
+- Clear object data when returning to the arcade.
+- Removed Page Editor since it is no longer needed. (Will eventually add an interface editor if I can figure out how to do one)
 1.5.7 > [Sep 18, 2024]
 - Ease Type dropdown not updating keyframe hotfix.
 1.5.6 > [Sep 18, 2024]
