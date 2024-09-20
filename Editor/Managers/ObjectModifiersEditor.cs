@@ -1835,6 +1835,18 @@ namespace BetterLegacy.Editor.Managers
 
                     #endregion
 
+                    #region BG
+
+                    case "setBGActive":
+                        {
+                            BoolGenerator(modifier, layout, "Active", 0, false);
+                            StringGenerator(modifier, layout, "BG Group", 1);
+
+                            break;
+                        }
+
+                    #endregion
+
                     #region Misc
 
                     case "gameMode":
@@ -2069,7 +2081,7 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
-        public void SetObjectColors(Toggle[] toggles, int index, int currentValue, Modifier<BeatmapObject> modifier)
+        public void SetObjectColors<T>(Toggle[] toggles, int index, int currentValue, Modifier<T> modifier)
         {
             if (index == 0)
                 modifier.value = currentValue.ToString();
@@ -2119,7 +2131,7 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.ApplyToggle(prefabInstanceToggle);
         }
 
-        GameObject SingleGenerator(Modifier<BeatmapObject> modifier, Transform layout, string label, int type, float defaultValue, float amount = 0.1f, float multiply = 10f)
+        public GameObject SingleGenerator<T>(Modifier<T> modifier, Transform layout, string label, int type, float defaultValue, float amount = 0.1f, float multiply = 10f)
         {
             var single = numberInput.Duplicate(layout, label);
             single.transform.localScale = Vector3.one;
@@ -2160,7 +2172,7 @@ namespace BetterLegacy.Editor.Managers
             return single;
         }
 
-        GameObject IntegerGenerator(Modifier<BeatmapObject> modifier, Transform layout, string label, int type, int defaultValue)
+        public GameObject IntegerGenerator<T>(Modifier<T> modifier, Transform layout, string label, int type, int defaultValue)
         {
             var single = numberInput.Duplicate(layout, label);
             single.transform.localScale = Vector3.one;
@@ -2201,7 +2213,7 @@ namespace BetterLegacy.Editor.Managers
             return single;
         }
 
-        GameObject BoolGenerator(Modifier<BeatmapObject> modifier, Transform layout, string label, int type, bool defaultValue)
+        public GameObject BoolGenerator<T>(Modifier<T> modifier, Transform layout, string label, int type, bool defaultValue)
         {
             var global = booleanBar.Duplicate(layout, label);
             global.transform.localScale = Vector3.one;
@@ -2225,7 +2237,7 @@ namespace BetterLegacy.Editor.Managers
             return global;
         }
 
-        GameObject StringGenerator(Modifier<BeatmapObject> modifier, Transform layout, string label, int type)
+        public GameObject StringGenerator<T>(Modifier<T> modifier, Transform layout, string label, int type)
         {
             var path = stringInput.Duplicate(layout, label);
             path.transform.localScale = Vector3.one;
@@ -2260,7 +2272,7 @@ namespace BetterLegacy.Editor.Managers
             return path;
         }
 
-        GameObject ColorGenerator(Modifier<BeatmapObject> modifier, Transform layout, string label, int type)
+        public GameObject ColorGenerator<T>(Modifier<T> modifier, Transform layout, string label, int type)
         {
             var startColorBase = numberInput.Duplicate(layout, label);
             startColorBase.transform.localScale = Vector3.one;
@@ -2298,7 +2310,7 @@ namespace BetterLegacy.Editor.Managers
             return startColorBase;
         }
 
-        GameObject DropdownGenerator(Modifier<BeatmapObject> modifier, Transform layout, string label, int type, List<string> options)
+        public GameObject DropdownGenerator<T>(Modifier<T> modifier, Transform layout, string label, int type, List<string> options)
         {
             var dd = dropdownBar.Duplicate(layout, label);
             dd.transform.localScale = Vector3.one;
@@ -2330,7 +2342,7 @@ namespace BetterLegacy.Editor.Managers
             return dd;
         }
 
-        GameObject DropdownGenerator(Modifier<BeatmapObject> modifier, Transform layout, string label, int type, List<Dropdown.OptionData> options)
+        public GameObject DropdownGenerator<T>(Modifier<T> modifier, Transform layout, string label, int type, List<Dropdown.OptionData> options)
         {
             var dd = dropdownBar.Duplicate(layout, label);
             dd.transform.localScale = Vector3.one;
@@ -2362,7 +2374,7 @@ namespace BetterLegacy.Editor.Managers
             return dd;
         }
 
-        GameObject AddGenerator(Modifier<BeatmapObject> modifier, Transform layout, string text, Action onAdd)
+        public GameObject AddGenerator<T>(Modifier<T> modifier, Transform layout, string text, Action onAdd)
         {
             var baseAdd = new GameObject("add");
             baseAdd.transform.SetParent(layout);

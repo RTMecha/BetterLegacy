@@ -489,6 +489,28 @@ namespace BetterLegacy.Core.Data
             return jn;
         }
 
+        public void SetTransform(int toType, Vector3 value)
+        {
+            switch (toType)
+            {
+                case 0:
+                    {
+                        positionOffset = value;
+                        break;
+                    }
+                case 1:
+                    {
+                        scaleOffset = value;
+                        break;
+                    }
+                case 2:
+                    {
+                        rotationOffset = value;
+                        break;
+                    }
+            }
+        }
+
         public void SetTransform(int toType, int toAxis, float value)
         {
             switch (toType)

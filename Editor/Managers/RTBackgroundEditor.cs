@@ -1065,6 +1065,46 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
+            // Tags
+            {
+                var iLabel = label.Duplicate(BackgroundEditor.inst.left, "label", 2);
+                iLabel.transform.localScale = Vector3.one;
+                iLabel.transform.GetChild(0).GetComponent<Text>().text = "Tags";
+
+                // Tags Scroll View/Viewport/Content
+                var tagScrollView = Creator.NewUIObject("Tags Scroll View", BackgroundEditor.inst.left, 3);
+
+                tagScrollView.transform.AsRT().sizeDelta = new Vector2(522f, 40f);
+                var scroll = tagScrollView.AddComponent<ScrollRect>();
+
+                scroll.horizontal = true;
+                scroll.vertical = false;
+
+                var image = tagScrollView.AddComponent<Image>();
+                image.color = new Color(1f, 1f, 1f, 0.01f);
+
+                var mask = tagScrollView.AddComponent<Mask>();
+
+                var tagViewport = Creator.NewUIObject("Viewport", tagScrollView.transform);
+                RectValues.FullAnchored.AssignToRectTransform(tagViewport.transform.AsRT());
+
+                var tagContent = Creator.NewUIObject("Content", tagViewport.transform);
+
+                var tagContentGLG = tagContent.AddComponent<GridLayoutGroup>();
+                tagContentGLG.cellSize = new Vector2(168f, 32f);
+                tagContentGLG.constraint = GridLayoutGroup.Constraint.FixedRowCount;
+                tagContentGLG.constraintCount = 1;
+                tagContentGLG.childAlignment = TextAnchor.MiddleLeft;
+                tagContentGLG.spacing = new Vector2(8f, 0f);
+
+                var tagContentCSF = tagContent.AddComponent<ContentSizeFitter>();
+                tagContentCSF.horizontalFit = ContentSizeFitter.FitMode.MinSize;
+                tagContentCSF.verticalFit = ContentSizeFitter.FitMode.MinSize;
+
+                scroll.viewport = tagViewport.transform.AsRT();
+                scroll.content = tagContent.transform.AsRT();
+            }
+
             // Modifiers
             {
                 var eventButton = GameObject.Find("Editor Systems/Editor GUI/sizer/main/TimelineBar/GameObject/event");
@@ -1194,6 +1234,60 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
+        void RenderTags(BackgroundObject backgroundObject)
+        {
+            var tagsParent = BackgroundEditor.inst.left.Find("Tags Scroll View/Viewport/Content");
+
+            LSHelpers.DeleteChildren(tagsParent);
+
+            int num = 0;
+            foreach (var tag in backgroundObject.tags)
+            {
+                int index = num;
+                var gameObject = RTEditor.inst.tagPrefab.Duplicate(tagsParent, index.ToString());
+                gameObject.transform.localScale = Vector3.one;
+                var input = gameObject.transform.Find("Input").GetComponent<InputField>();
+                input.onValueChanged.ClearAll();
+                input.text = tag;
+                input.onValueChanged.AddListener(_val => { backgroundObject.tags[index] = _val; });
+
+                var inputFieldSwapper = gameObject.AddComponent<InputFieldSwapper>();
+                inputFieldSwapper.Init(input, InputFieldSwapper.Type.String);
+
+                var deleteStorage = gameObject.transform.Find("Delete").GetComponent<DeleteButtonStorage>();
+                deleteStorage.button.onClick.ClearAll();
+                deleteStorage.button.onClick.AddListener(() =>
+                {
+                    backgroundObject.tags.RemoveAt(index);
+                    RenderTags(backgroundObject);
+                });
+
+                EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Input_Field, true);
+
+                EditorThemeManager.ApplyInputField(input);
+
+                EditorThemeManager.ApplyGraphic(deleteStorage.baseImage, ThemeGroup.Delete, true);
+                EditorThemeManager.ApplyGraphic(deleteStorage.image, ThemeGroup.Delete_Text);
+
+                num++;
+            }
+
+            var add = PrefabEditor.inst.CreatePrefab.Duplicate(tagsParent, "Add");
+            add.transform.localScale = Vector3.one;
+            var addText = add.transform.Find("Text").GetComponent<Text>();
+            addText.text = "Add Tag";
+            var addButton = add.GetComponent<Button>();
+            addButton.onClick.ClearAll();
+            addButton.onClick.AddListener(() =>
+            {
+                backgroundObject.tags.Add("New Tag");
+                RenderTags(backgroundObject);
+            });
+
+            EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
+            EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text, true);
+        }
+
         public void OpenDialog(int index)
         {
             var __instance = BackgroundEditor.inst;
@@ -1205,6 +1299,8 @@ namespace BetterLegacy.Editor.Managers
 
             __instance.left.Find("name/active").GetComponent<Toggle>().isOn = backgroundObject.active;
             __instance.left.Find("name/name").GetComponent<InputField>().text = backgroundObject.name;
+
+            RenderTags(backgroundObject);
 
             SetSingleInputFieldInt(__instance.left, "iterations/x", backgroundObject.depth);
 
@@ -2213,7 +2309,14 @@ namespace BetterLegacy.Editor.Managers
                 {
                     case "setActive":
                         {
-                            boolGenerator("Active", 0, false);
+                            ObjectModifiersEditor.inst.BoolGenerator(modifier, layout, "Active", 0, false);
+
+                            break;
+                        }
+                    case "setActiveOther":
+                        {
+                            ObjectModifiersEditor.inst.BoolGenerator(modifier, layout, "Active", 0, false);
+                            ObjectModifiersEditor.inst.StringGenerator(modifier, layout, "BG Group", 1);
 
                             break;
                         }
@@ -2222,44 +2325,40 @@ namespace BetterLegacy.Editor.Managers
                     case "timeLesser":
                     case "timeGreater":
                         {
-                            singleGenerator("Time", 0, 0f);
+                            ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Time", 0, 0f);
 
                             break;
                         }
                     case "animateObject":
+                    case "animateObjectOther":
                         {
-                            singleGenerator("Time", 0, 1f);
-                            dropdownGenerator("Type", 1, new List<string> { "Position", "Scale", "Rotation" });
-                            singleGenerator("X", 2, 0f);
-                            singleGenerator("Y", 3, 0f);
-                            singleGenerator("Z", 4, 0f);
-                            boolGenerator("Relative", 5, true);
+                            if (cmd.Contains("Other"))
+                                ObjectModifiersEditor.inst.StringGenerator(modifier, layout, "BG Group", 7);
 
-                            dropdownGenerator2("Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
+                            ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Time", 0, 1f);
+                            ObjectModifiersEditor.inst.DropdownGenerator(modifier, layout, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                            ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "X", 2, 0f);
+                            ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Y", 3, 0f);
+                            ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Z", 4, 0f);
+                            ObjectModifiersEditor.inst.BoolGenerator(modifier, layout, "Relative", 5, true);
+                            ObjectModifiersEditor.inst.DropdownGenerator(modifier, layout, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
                             break;
                         }
                     case "copyAxis":
                         {
-                            if (cmd == "copyAxis")
-                                stringGenerator("Object Group", 0);
+                            ObjectModifiersEditor.inst.StringGenerator(modifier, layout, "Object Group", 0);
+                            ObjectModifiersEditor.inst.DropdownGenerator(modifier, layout, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                            ObjectModifiersEditor.inst.DropdownGenerator(modifier, layout, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
+                            ObjectModifiersEditor.inst.DropdownGenerator(modifier, layout, "To Type", 3, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
+                            ObjectModifiersEditor.inst.DropdownGenerator(modifier, layout, "To Axis (3D)", 4, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
-                            dropdownGenerator("From Type", 1, new List<string> { "Position", "Scale", "Rotation" });
-                            dropdownGenerator("From Axis", 2, new List<string> { "X", "Y", "Z" });
-
-                            dropdownGenerator("To Type", 3, new List<string> { "Position", "Scale", "Rotation" });
-                            dropdownGenerator("To Axis (3D)", 4, new List<string> { "X", "Y", "Z" });
-
-                            if (cmd == "copyAxis")
-                                singleGenerator("Delay", 5, 0f);
-
-                            singleGenerator("Multiply", 6, 1f);
-                            singleGenerator("Offset", 7, 0f);
-                            singleGenerator("Min", 8, -99999f);
-                            singleGenerator("Max", 9, 99999f);
-
-                            if (cmd == "copyAxis")
-                                singleGenerator("Loop", 10, 99999f);
+                            ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Delay", 5, 0f);
+                            ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Multiply", 6, 1f);
+                            ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Offset", 7, 0f);
+                            ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Min", 8, -99999f);
+                            ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Max", 9, 99999f);
+                            ObjectModifiersEditor.inst.SingleGenerator(modifier, layout, "Loop", 10, 99999f);
 
                             break;
                         }

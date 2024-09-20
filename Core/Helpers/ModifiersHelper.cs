@@ -4004,13 +4004,12 @@ namespace BetterLegacy.Core.Helpers
                                 if (int.TryParse(modifier.commands[6], out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
                                     easing = DataManager.inst.AnimationList[e].Name;
 
-                                Vector3 vector;
-                                if (type == 0)
-                                    vector = modifier.reference.positionOffset;
-                                else if (type == 1)
-                                    vector = modifier.reference.scaleOffset;
-                                else
-                                    vector = modifier.reference.rotationOffset;
+                                Vector3 vector = type switch
+                                {
+                                    0 => modifier.reference.positionOffset,
+                                    1 => modifier.reference.scaleOffset,
+                                    _ => modifier.reference.rotationOffset,
+                                };
 
                                 var setVector = new Vector3(x, y, z) + (relative ? vector : Vector3.zero);
 
@@ -4024,72 +4023,18 @@ namespace BetterLegacy.Core.Helpers
                                         {
                                             new Vector3Keyframe(0f, vector, Ease.Linear),
                                             new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.HasEaseFunction(easing) ? Ease.GetEaseFunction(easing) : Ease.Linear),
-                                        }, vector3 =>
-                                        {
-                                            switch (type)
-                                            {
-                                                case 0:
-                                                    {
-                                                modifier.reference.positionOffset = vector3;
-                                                        break;
-                                                    }
-                                                case 1:
-                                                    {
-                                                modifier.reference.scaleOffset = vector3;
-                                                        break;
-                                                    }
-                                                case 2:
-                                                    {
-                                                modifier.reference.rotationOffset = vector3;
-                                                        break;
-                                                    }
-                                            }
-                                        }),
+                                        }, vector3 => { modifier.reference.SetTransform(type, vector3); }),
                                     };
                                     animation.onComplete = () =>
                                     {
                                         AnimationManager.inst.RemoveID(animation.id);
-                                        switch (type)
-                                        {
-                                            case 0:
-                                                {
-                                                    modifier.reference.positionOffset = setVector;
-                                                    break;
-                                                }
-                                            case 1:
-                                                {
-                                                    modifier.reference.scaleOffset = setVector;
-                                                    break;
-                                                }
-                                            case 2:
-                                                {
-                                                    modifier.reference.rotationOffset = setVector;
-                                                    break;
-                                                }
-                                        }
+                                        modifier.reference.SetTransform(type, setVector);
                                     };
                                     AnimationManager.inst.Play(animation);
                                     break;
                                 }
 
-                                switch (type)
-                                {
-                                    case 0:
-                                        {
-                                            modifier.reference.positionOffset = setVector;
-                                            break;
-                                        }
-                                    case 1:
-                                        {
-                                            modifier.reference.scaleOffset = setVector;
-                                            break;
-                                        }
-                                    case 2:
-                                        {
-                                            modifier.reference.rotationOffset = setVector;
-                                            break;
-                                        }
-                                }
+                                modifier.reference.SetTransform(type, setVector);
                             }
 
                             break;
@@ -4108,13 +4053,12 @@ namespace BetterLegacy.Core.Helpers
 
                                 foreach (var bm in list)
                                 {
-                                    Vector3 vector;
-                                    if (type == 0)
-                                        vector = bm.positionOffset;
-                                    else if (type == 1)
-                                        vector = bm.scaleOffset;
-                                    else
-                                        vector = bm.rotationOffset;
+                                    Vector3 vector = type switch
+                                    {
+                                        0 => bm.positionOffset,
+                                        1 => bm.scaleOffset,
+                                        _ => bm.rotationOffset,
+                                    };
 
                                     var setVector = new Vector3(x, y, z) + (relative ? vector : Vector3.zero);
 
@@ -4130,70 +4074,19 @@ namespace BetterLegacy.Core.Helpers
                                                 new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.HasEaseFunction(easing) ? Ease.GetEaseFunction(easing) : Ease.Linear),
                                             }, vector3 =>
                                             {
-                                                switch (type)
-                                                {
-                                                    case 0:
-                                                        {
-                                                            bm.positionOffset = vector3;
-                                                            break;
-                                                        }
-                                                    case 1:
-                                                        {
-                                                            bm.scaleOffset = vector3;
-                                                            break;
-                                                        }
-                                                    case 2:
-                                                        {
-                                                            bm.rotationOffset = vector3;
-                                                            break;
-                                                        }
-                                                }
+                                                bm.SetTransform(type, vector3);
                                             }),
                                         };
                                         animation.onComplete = () =>
                                         {
                                             AnimationManager.inst.RemoveID(animation.id);
-                                            switch (type)
-                                            {
-                                                case 0:
-                                                    {
-                                                        bm.positionOffset = setVector;
-                                                        break;
-                                                    }
-                                                case 1:
-                                                    {
-                                                        bm.scaleOffset = setVector;
-                                                        break;
-                                                    }
-                                                case 2:
-                                                    {
-                                                        bm.rotationOffset = setVector;
-                                                        break;
-                                                    }
-                                            }
+                                            bm.SetTransform(type, setVector);
                                         };
                                         AnimationManager.inst.Play(animation);
                                         break;
                                     }
 
-                                    switch (type)
-                                    {
-                                        case 0:
-                                            {
-                                                bm.positionOffset = setVector;
-                                                break;
-                                            }
-                                        case 1:
-                                            {
-                                                bm.scaleOffset = setVector;
-                                                break;
-                                            }
-                                        case 2:
-                                            {
-                                                bm.rotationOffset = setVector;
-                                                break;
-                                            }
-                                    }
+                                    bm.SetTransform(type, setVector);
                                 }
                             }
 
@@ -4944,6 +4837,24 @@ namespace BetterLegacy.Core.Helpers
                                 }
                             }
 
+                            break;
+                        }
+                    #endregion
+                    #region BG Object
+                    case "setBGActive":
+                        {
+                            if (!bool.TryParse(modifier.value, out bool active))
+                                break;
+
+                            var list = GameData.Current.backgroundObjects.FindAll(x => x.tags.Contains(modifier.commands[1]));
+                            if (list.Count > 0)
+                                for (int i = 0; i < list.Count; i++)
+                                    list[i].Enabled = active;
+
+                            break;
+                        }
+                    case "animateBGObject":
+                        {
                             break;
                         }
                     #endregion
@@ -5721,6 +5632,18 @@ namespace BetterLegacy.Core.Helpers
 
                         break;
                     }
+                case "setActiveOther":
+                    {
+                        if (!bool.TryParse(modifier.value, out bool active))
+                            break;
+
+                        var list = GameData.Current.backgroundObjects.FindAll(x => x.tags.Contains(modifier.commands[1]));
+                        if (list.Count > 0)
+                            for (int i = 0; i < list.Count; i++)
+                                list[i].Enabled = active;
+
+                        break;
+                    }
                 case "animateObject":
                     {
                         if (int.TryParse(modifier.commands[1], out int type)
@@ -5731,19 +5654,18 @@ namespace BetterLegacy.Core.Helpers
                             if (int.TryParse(modifier.commands[6], out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
                                 easing = DataManager.inst.AnimationList[e].Name;
 
-                            Vector3 vector;
-                            if (type == 0)
-                                vector = modifier.reference.positionOffset;
-                            else if (type == 1)
-                                vector = modifier.reference.scaleOffset;
-                            else
-                                vector = modifier.reference.rotationOffset;
+                            Vector3 vector = type switch
+                            {
+                                0 => modifier.reference.positionOffset,
+                                1 => modifier.reference.scaleOffset,
+                                _ => modifier.reference.rotationOffset,
+                            };
 
                             var setVector = new Vector3(x, y, z) + (relative ? vector : Vector3.zero);
 
                             if (!modifier.constant)
                             {
-                                var animation = new RTAnimation("Animate Object Offset");
+                                var animation = new RTAnimation("Animate BG Object Offset");
 
                                 animation.animationHandlers = new List<AnimationHandlerBase>
                                 {
@@ -5751,60 +5673,70 @@ namespace BetterLegacy.Core.Helpers
                                     {
                                         new Vector3Keyframe(0f, vector, Ease.Linear),
                                         new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.HasEaseFunction(easing) ? Ease.GetEaseFunction(easing) : Ease.Linear),
-                                    }, vector3 =>
-                                    {
-                                        switch (type)
-                                        {
-                                            case 0:
-                                                {
-                                            modifier.reference.positionOffset = vector3;
-                                                    break;
-                                                }
-                                            case 1:
-                                                {
-                                            modifier.reference.scaleOffset = vector3;
-                                                    break;
-                                                }
-                                            case 2:
-                                                {
-                                            modifier.reference.rotationOffset = vector3;
-                                                    break;
-                                                }
-                                        }
-                                    }),
+                                    }, vector3 => { modifier.reference.SetTransform(type, vector3); }),
                                 };
                                 animation.onComplete = () =>
                                 {
                                     AnimationManager.inst.RemoveID(animation.id);
-                                    switch (type)
-                                    {
-                                        case 0:
-                                            {
-                                                modifier.reference.positionOffset = setVector;
-                                                break;
-                                            }
-                                        case 1:
-                                            {
-                                                modifier.reference.scaleOffset = setVector;
-                                                break;
-                                            }
-                                        case 2:
-                                            {
-                                                modifier.reference.rotationOffset = setVector;
-                                                break;
-                                            }
-                                    }
+                                    modifier.reference.SetTransform(type, setVector);
                                 };
                                 AnimationManager.inst.Play(animation);
                             }
                             else
+                                modifier.reference.SetTransform(type, setVector);
+                        }
+
+                        break;
+                    }
+                case "animateObjectOther":
+                    {
+                        if (int.TryParse(modifier.commands[1], out int type)
+                            && float.TryParse(modifier.commands[2], out float x) && float.TryParse(modifier.commands[3], out float y) && float.TryParse(modifier.commands[4], out float z)
+                            && bool.TryParse(modifier.commands[5], out bool relative) && float.TryParse(modifier.value, out float time))
+                        {
+                            string easing = modifier.commands[6];
+                            if (int.TryParse(modifier.commands[6], out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                                easing = DataManager.inst.AnimationList[e].Name;
+
+                            var list = GameData.Current.backgroundObjects.FindAll(x => x.tags.Contains(modifier.commands[7]));
+
+                            if (list.Count <= 0)
+                                break;
+
+                            for (int i = 0; i < list.Count; i++)
                             {
-                                if (type == 0)
-                                    modifier.reference.positionOffset = setVector;
-                                else if (type == 1)
-                                    modifier.reference.scaleOffset = setVector;
+                                var bg = list[i];
+
+                                Vector3 vector = type switch
+                                {
+                                    0 => bg.positionOffset,
+                                    1 => bg.scaleOffset,
+                                    _ => bg.rotationOffset,
+                                };
+
+                                var setVector = new Vector3(x, y, z) + (relative ? vector : Vector3.zero);
+
+                                if (!modifier.constant)
+                                {
+                                    var animation = new RTAnimation("Animate BG Object Offset");
+
+                                    animation.animationHandlers = new List<AnimationHandlerBase>
+                                    {
+                                        new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                                        {
+                                            new Vector3Keyframe(0f, vector, Ease.Linear),
+                                            new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.HasEaseFunction(easing) ? Ease.GetEaseFunction(easing) : Ease.Linear),
+                                        }, vector3 => { bg.SetTransform(type, vector3); }),
+                                    };
+                                    animation.onComplete = () =>
+                                    {
+                                        AnimationManager.inst.RemoveID(animation.id);
+                                        bg.SetTransform(type, setVector);
+                                    };
+                                    AnimationManager.inst.Play(animation);
+                                }
                                 else
-                                    modifier.reference.rotationOffset = setVector;
+                                    bg.SetTransform(type, setVector);
                             }
                         }
 

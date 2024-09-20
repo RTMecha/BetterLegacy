@@ -331,6 +331,17 @@ namespace BetterLegacy.Core.Managers
                 constant = true,
                 commands = new List<string>
                 {
+                    "setActiveOther",
+                    "BG Group",
+                },
+                value = "False"
+            }, //setOtherActive
+            new Modifier<BackgroundObject>
+            {
+                type = ModifierBase.Type.Action,
+                constant = true,
+                commands = new List<string>
+                {
                     "animateObject",
                     "0", // Pos / Sca / Rot
                     "0", // X
@@ -341,6 +352,23 @@ namespace BetterLegacy.Core.Managers
                 },
                 value = "1"
             }, //animateObject
+            new Modifier<BackgroundObject>
+            {
+                type = ModifierBase.Type.Action,
+                constant = true,
+                commands = new List<string>
+                {
+                    "animateObjectOther",
+                    "0", // Pos / Sca / Rot
+                    "0", // X
+                    "0", // Y
+                    "0", // Z
+                    "True", // Relative
+                    "0", // Easing
+                    "BG Group", // BG Group
+                },
+                value = "1"
+            }, //animateObjectOther
             new Modifier<BackgroundObject>
             {
                 type = ModifierBase.Type.Action,
