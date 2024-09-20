@@ -388,7 +388,7 @@ namespace BetterLegacy.Core.Managers
 
                 #region Camera
 
-                inst.updateShake();
+                inst.UpdateShake();
 
                 if (float.IsNaN(EventManager.inst.camRot))
                     EventManager.inst.camRot = 0f;
@@ -413,10 +413,20 @@ namespace BetterLegacy.Core.Managers
 
                 EventManager.inst.camPer.fieldOfView = inst.fieldOfView;
 
-                if (!EditorManager.inst || !editorCam)
-                    EventManager.inst.camPer.transform.localPosition = new Vector3(EventManager.inst.camPer.transform.localPosition.x, EventManager.inst.camPer.transform.localPosition.y, -(EventManager.inst.camZoom) + inst.perspectiveZoom);
+                if (!inst.bgGlobalPosition)
+                {
+                    if (!EditorManager.inst || !editorCam)
+                        EventManager.inst.camPer.transform.localPosition = new Vector3(EventManager.inst.camPer.transform.localPosition.x, EventManager.inst.camPer.transform.localPosition.y, -EventManager.inst.camZoom + inst.perspectiveZoom);
+                    else
+                        EventManager.inst.camPer.transform.localPosition = new Vector3(EventManager.inst.camPer.transform.localPosition.x, EventManager.inst.camPer.transform.localPosition.y, -inst.editorZoom + inst.perspectiveZoom);
+                }
                 else
-                    EventManager.inst.camPer.transform.localPosition = new Vector3(EventManager.inst.camPer.transform.localPosition.x, EventManager.inst.camPer.transform.localPosition.y, -(inst.editorZoom) + inst.perspectiveZoom);
+                {
+                    if (!EditorManager.inst || !editorCam)
+                        EventManager.inst.camPer.transform.position = new Vector3(EventManager.inst.camPer.transform.position.x, EventManager.inst.camPer.transform.position.y, -EventManager.inst.camZoom + inst.perspectiveZoom);
+                    else
+                        EventManager.inst.camPer.transform.position = new Vector3(EventManager.inst.camPer.transform.position.x, EventManager.inst.camPer.transform.position.y, -inst.editorZoom + inst.perspectiveZoom);
+                }
 
                 if (inst.setPerspectiveCamClip)
                     EventManager.inst.camPer.nearClipPlane = -EventManager.inst.camPer.transform.position.z + inst.camPerspectiveOffset;
@@ -744,7 +754,7 @@ namespace BetterLegacy.Core.Managers
 
         #region Update Methods
 
-        public void updateEvents(int currentEvent)
+        public void UpdateEvents(int currentEvent)
         {
             SetupShake();
             EventManager.inst.eventSequence.Kill();
@@ -754,15 +764,11 @@ namespace BetterLegacy.Core.Managers
             EventManager.inst.shakeSequence = null;
             EventManager.inst.themeSequence = null;
             for (int i = 0; i < DataManager.inst.gameData.eventObjects.allEvents.Count; i++)
-            {
                 for (int j = 0; j < DataManager.inst.gameData.eventObjects.allEvents[i].Count; j++)
-                {
                     DataManager.inst.gameData.eventObjects.allEvents[i][j].active = false;
-                }
-            }
         }
 
-        public IEnumerator updateEvents()
+        public IEnumerator UpdateEvents()
         {
             SetupShake();
             EventManager.inst.eventSequence.Kill();
@@ -771,18 +777,14 @@ namespace BetterLegacy.Core.Managers
             EventManager.inst.eventSequence = null;
             EventManager.inst.shakeSequence = null;
             EventManager.inst.themeSequence = null;
-            DOTween.Kill(false, false);
+            DOTween.Kill(false);
             for (int i = 0; i < DataManager.inst.gameData.eventObjects.allEvents.Count; i++)
-            {
                 for (int j = 0; j < DataManager.inst.gameData.eventObjects.allEvents[i].Count; j++)
-                {
                     DataManager.inst.gameData.eventObjects.allEvents[i][j].active = false;
-                }
-            }
             yield break;
         }
 
-        public void updateShake()
+        public void UpdateShake()
         {
             var vector = EventManager.inst.shakeVector * EventManager.inst.shakeMultiplier;
             vector.x *= shakeX == 0f && shakeY == 0f ? 1f : shakeX;
@@ -1403,6 +1405,8 @@ namespace BetterLegacy.Core.Managers
         public static void updateCameraDepth(float x) => inst.zPosition = x;
         // 32 - 1
         public static void updateCameraPerspectiveZoom(float x) => inst.perspectiveZoom = x;
+        // 32 - 2
+        public static void UpdateCameraPerspectiveGlobal(float x) => inst.bgGlobalPosition = x == 0f;
 
         #endregion
 
@@ -1499,6 +1503,8 @@ namespace BetterLegacy.Core.Managers
         #endregion
 
         #region Variables
+
+        public bool bgGlobalPosition = false;
 
         public bool analogGlitchEnabled;
 
@@ -1651,13 +1657,7 @@ namespace BetterLegacy.Core.Managers
 
         #region Editor Offsets
 
-        public float EditorSpeed
-        {
-            get
-            {
-                return EventsConfig.Instance.EditorCamSpeed.Value;
-            }
-        }
+        public float EditorSpeed => EventsConfig.Instance.EditorCamSpeed.Value;
 
         private Vector2 editorOffset = Vector2.zero;
         public float editorZoom = 20f;
@@ -1919,6 +1919,7 @@ namespace BetterLegacy.Core.Managers
                 {
                     0f, // Camera Depth
                     0f, // Camera Perspective Zoom
+                    0f, // Camera BG Global Position
                 },
                 new List<float>
                 {
@@ -2207,7 +2208,8 @@ namespace BetterLegacy.Core.Managers
             new KFDelegate[]
             {
                 updateCameraDepth,
-                updateCameraPerspectiveZoom
+                updateCameraPerspectiveZoom,
+                UpdateCameraPerspectiveGlobal
             }, // Camera Depth
             new KFDelegate[]
             {

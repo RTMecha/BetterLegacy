@@ -1320,6 +1320,8 @@ namespace BetterLegacy.Core.Data
 
         public int modifierCount;
 
+        #region Verifying
+
         public bool Modded => BeatmapObjectsModded || EventKeyframesModded || PrefabObjectsModded;
 
         bool BeatmapObjectsModded => BeatmapObjects.Any(x => x.modifiers.Count > 0
@@ -1798,10 +1800,11 @@ namespace BetterLegacy.Core.Data
 			new Data.EventKeyframe
             {
                 eventTime = 0f,
-                eventValues = new float[2]
+                eventValues = new float[3]
                 {
                     -10f, // Depth
 					0f, // Zoom
+					0f, // Global Position
                 },
                 id = LSText.randomNumString(8),
             }, // Camera Depth
@@ -1879,6 +1882,8 @@ namespace BetterLegacy.Core.Data
 		};
 
         public static bool SaveOpacityToThemes { get; set; } = false;
+
+        #endregion
 
         public LevelBeatmapData LevelBeatmapData => (LevelBeatmapData)beatmapData;
 

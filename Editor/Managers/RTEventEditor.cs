@@ -1406,8 +1406,13 @@ namespace BetterLegacy.Editor.Managers
                 var depth = GenerateUIElement("depth", "Single", cameraDepth.transform, 8, "Depth");
                 var perspectiveZoom = GenerateUIElement("zoom", "Single", cameraDepth.transform, 10, "Zoom");
 
+                var global = GenerateUIElement("global", "Bool", cameraDepth.transform, 12, "Set Global Position");
+                var globalText = global["UI"].transform.Find("Text").GetComponent<Text>();
+                globalText.text = "Global";
+
                 EditorThemeManager.AddInputFields(depth["UI"], true, "Event Editor");
                 EditorThemeManager.AddInputFields(perspectiveZoom["UI"], true, "Event Editor");
+                EditorThemeManager.AddToggle(global["UI"].GetComponent<Toggle>(), graphic: globalText);
             }
 
             var windowBase = GenerateEventDialog("windowbase");
@@ -2649,6 +2654,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         SetFloatInputField(dialogTmp, "depth/x", 0);
                         SetFloatInputField(dialogTmp, "zoom/x", 1);
+                        SetToggle(dialogTmp, "global", 2, 0, 1);
 
                         break;
                     }
@@ -2871,7 +2877,7 @@ namespace BetterLegacy.Editor.Managers
             var currentKeyframe = DataManager.inst.gameData.eventObjects.allEvents[__instance.currentEventType][__instance.currentEvent];
 
             var vignetteRounded = dialogTmp.Find(name).GetComponent<Toggle>();
-            vignetteRounded.onValueChanged.RemoveAllListeners();
+            vignetteRounded.onValueChanged.ClearAll();
             vignetteRounded.isOn = currentKeyframe.eventValues[index] == onValue;
             vignetteRounded.onValueChanged.AddListener(_val =>
             {
