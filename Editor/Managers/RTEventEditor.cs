@@ -601,9 +601,10 @@ namespace BetterLegacy.Editor.Managers
             if (SettingEditor.inst.SnapActive)
                 time = RTEditor.SnapToBPM(time);
 
-            if (AllEvents[type].Count != 0)
+            int num = AllEvents[type].FindLastIndex(x => x.eventTime <= time);
+
+            if (num >= 0)
             {
-                int num = AllEvents[type].FindLastIndex(x => x.eventTime <= time);
                 eventKeyframe = EventKeyframe.DeepCopy((EventKeyframe)AllEvents[type][num]);
                 eventKeyframe.eventTime = time;
             }
@@ -623,8 +624,11 @@ namespace BetterLegacy.Editor.Managers
             UpdateEventOrder();
 
             EventManager.inst.updateEvents();
-            CreateEventObjects();
-            SetCurrentEvent(type, AllEvents[type].IndexOf(eventKeyframe));
+
+            var kf = CreateEventObject(type, AllEvents[type].IndexOf(eventKeyframe));
+            RenderTimelineObject(kf);
+            RTEditor.inst.timelineKeyframes.Add(kf);
+            SetCurrentEvent(type, kf.Index);
         }
 
         public float NewKeyframeOffset { get; set; } = /*-0.1f*/0f;
@@ -636,39 +640,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            float timeTmp = EditorManager.inst.GetTimelineTime(NewKeyframeOffset);
-
-            if (SettingEditor.inst.SnapActive)
-                timeTmp = RTEditor.SnapToBPM(timeTmp);
-
-            int num = AllEvents[type].FindLastIndex(x => x.eventTime <= timeTmp);
-            Debug.Log($"{EventEditor.inst.className}Prior Index: {num}");
-
-            EventKeyframe eventKeyframe;
-
-            if (num < 0)
-            {
-                eventKeyframe = EventKeyframe.DeepCopy((EventKeyframe)GameData.DefaultKeyframes[type]);
-                eventKeyframe.eventTime = 0f;
-            }
-            else
-            {
-                eventKeyframe = EventKeyframe.DeepCopy((EventKeyframe)AllEvents[type][num], true);
-                eventKeyframe.eventTime = timeTmp;
-
-                if (type == 2 && ResetRotation)
-                    eventKeyframe.SetEventValues(new float[1]);
-            }
-
-            eventKeyframe.locked = false;
-
-            AllEvents[type].Add(eventKeyframe);
-
-            UpdateEventOrder();
-
-            EventManager.inst.updateEvents();
-            CreateEventObjects();
-            SetCurrentEvent(type, AllEvents[type].IndexOf(eventKeyframe));
+            CreateNewEventObject(EditorManager.inst.GetTimelineTime(NewKeyframeOffset), type);
         }
 
         public void AddSelectedEvent(int type, int index)
@@ -776,24 +748,24 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderTimelineObject(TimelineObject kf)
         {
-            if (AllEvents[kf.Type].Has(x => (x as EventKeyframe).id == kf.ID))
-                kf.Index = AllEvents[kf.Type].FindIndex(x => (x as EventKeyframe).id == kf.ID);
+            var events = AllEvents[kf.Type];
+            if (events.TryFindIndex(x => (x as EventKeyframe).id == kf.ID, out int index))
+                kf.Index = index;
 
-            var eventKeyframe = AllEvents[kf.Type][kf.Index];
+            var eventKeyframe = events[kf.Index];
             float eventTime = eventKeyframe.eventTime;
             int baseUnit = EditorManager.BaseUnit;
             int limit = kf.Type / EventLimit;
 
             if (limit == RTEditor.inst.Layer)
             {
-                ((RectTransform)kf.GameObject.transform).anchoredPosition = new Vector2(eventTime * EditorManager.inst.Zoom - baseUnit / 2, 0.0f);
-                // Fixes the keyframes being off center.
-                ((RectTransform)kf.GameObject.transform).pivot = new Vector2(0f, 1f);
+                kf.GameObject.transform.AsRT().anchoredPosition = new Vector2(eventTime * EditorManager.inst.Zoom - baseUnit / 2, 0.0f);
+                kf.GameObject.transform.AsRT().pivot = new Vector2(0f, 1f); // Fixes the keyframes being off center.
 
                 kf.Image.sprite =
                     RTEditor.GetKeyframeIcon(eventKeyframe.curveType,
-                    AllEvents[kf.Type].Count > kf.Index + 1 ?
-                    AllEvents[kf.Type][kf.Index + 1].curveType : DataManager.inst.AnimationList[0]);
+                    events.Count > kf.Index + 1 ?
+                    events[kf.Index + 1].curveType : DataManager.inst.AnimationList[0]);
 
                 var locked = kf.GameObject.transform.Find("lock");
                 if (locked)
@@ -3264,7 +3236,7 @@ namespace BetterLegacy.Editor.Managers
                 GameData.Current.eventObjects.allEvents[i] = GameData.Current.eventObjects.allEvents[i].OrderBy(x => x.eventTime).ToList();
                 foreach (var keyframe in RTEditor.inst.timelineKeyframes)
                 {
-                    if (GameData.Current.eventObjects.allEvents[i].TryFindIndex(x => x is EventKeyframe eventKeyframe && eventKeyframe.id == keyframe.ID, out int index))
+                    if (GameData.Current.eventObjects.allEvents[i].TryFindIndex(x => ((EventKeyframe)x).id == keyframe.ID, out int index))
                         keyframe.Index = index;
                 }
             }
