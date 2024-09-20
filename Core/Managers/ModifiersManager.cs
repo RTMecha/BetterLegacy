@@ -39,58 +39,26 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         public static void OnLevelTick()
         {
-            //if (!GameData.IsValid || GameData.Current.modifierCount <= 0 && !CoreHelper.InEditor)
-            //{
-            //    return;
-            //}
-
-            if (!GameData.IsValid)
+            if (!GameData.IsValid || !CoreHelper.Playing)
                 return;
 
             var order = GameData.Current.beatmapObjects.FindAll(x => x.modifiers.Count > 0);
 
-            if (order != null && CoreHelper.Playing)
-                for (int i = 0; i < order.Count; i++)
+            for (int i = 0; i < order.Count; i++)
+            {
+                var beatmapObject = order[i];
+
+                if (beatmapObject.modifiers.TryFindAll(x => x.Action == null && x.type == ModifierBase.Type.Action || x.Trigger == null && x.type == ModifierBase.Type.Trigger || x.Inactive == null, out List<Modifier<BeatmapObject>> nullActionModifiers))
+                    nullActionModifiers.ForEach(AssignModifierActions);
+
+                var actions = beatmapObject.modifiers.FindAll(x => x.type == ModifierBase.Type.Action);
+                var triggers = beatmapObject.modifiers.FindAll(x => x.type == ModifierBase.Type.Trigger);
+
+                if (beatmapObject.ignoreLifespan || beatmapObject.Alive)
                 {
-                    var beatmapObject = order[i];
-
-                    Predicate<Modifier<BeatmapObject>> modifierPredicate = x => x.Action == null && x.type == ModifierBase.Type.Action || x.Trigger == null && x.type == ModifierBase.Type.Trigger || x.Inactive == null;
-
-                    if (beatmapObject.modifiers.Exists(modifierPredicate))
-                        beatmapObject.modifiers.FindAll(modifierPredicate).ForEach(AssignModifierActions);
-
-                    var actions = beatmapObject.modifiers.FindAll(x => x.type == ModifierBase.Type.Action);
-                    var triggers = beatmapObject.modifiers.FindAll(x => x.type == ModifierBase.Type.Trigger);
-
-                    if (beatmapObject.ignoreLifespan || beatmapObject.Alive)
+                    if (triggers.Count > 0)
                     {
-                        if (triggers.Count > 0)
-                        {
-                            if (triggers.TrueForAll(x => !x.active && (x.Trigger(x) && !x.not || !x.Trigger(x) && x.not)))
-                            {
-                                foreach (var act in actions.FindAll(x => !x.active))
-                                {
-                                    if (!act.constant)
-                                        act.active = true;
-
-                                    act.running = true;
-                                    act.Action?.Invoke(act);
-                                }
-
-                                foreach (var trig in triggers.FindAll(x => !x.constant))
-                                    trig.active = true;
-                            }
-                            else
-                            {
-                                foreach (var act in actions.FindAll(x => x.active || x.running))
-                                {
-                                    act.active = false;
-                                    act.running = false;
-                                    act.Inactive?.Invoke(act);
-                                }
-                            }
-                        }
-                        else
+                        if (triggers.TrueForAll(x => !x.active && (x.Trigger(x) && !x.not || !x.Trigger(x) && x.not)))
                         {
                             foreach (var act in actions.FindAll(x => !x.active))
                             {
@@ -100,18 +68,42 @@ namespace BetterLegacy.Core.Managers
                                 act.running = true;
                                 act.Action?.Invoke(act);
                             }
+
+                            foreach (var trig in triggers.FindAll(x => !x.constant))
+                                trig.active = true;
+                        }
+                        else
+                        {
+                            foreach (var act in actions.FindAll(x => x.active || x.running))
+                            {
+                                act.active = false;
+                                act.running = false;
+                                act.Inactive?.Invoke(act);
+                            }
                         }
                     }
-                    else if (beatmapObject.modifiers.Any(x => x.active || x.running))
+                    else
                     {
-                        foreach (var act in beatmapObject.modifiers.FindAll(x => x.active || x.running))
+                        foreach (var act in actions.FindAll(x => !x.active))
                         {
-                            act.active = false;
-                            act.running = false;
-                            act.Inactive?.Invoke(act);
+                            if (!act.constant)
+                                act.active = true;
+
+                            act.running = true;
+                            act.Action?.Invoke(act);
                         }
                     }
                 }
+                else if (beatmapObject.modifiers.TryFindAll(x => x.active || x.running, out List<Modifier<BeatmapObject>> findAll))
+                {
+                    foreach (var act in findAll)
+                    {
+                        act.active = false;
+                        act.running = false;
+                        act.Inactive?.Invoke(act);
+                    }
+                }
+            }
 
             foreach (var audioSource in audioSources)
             {

@@ -5,7 +5,9 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
 using HarmonyLib;
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -36,29 +38,30 @@ namespace BetterLegacy.Patchers
                     {
                         var modifiers = backgroundObject.modifiers[j];
 
-                        modifiers.Where(x => x.Action == null || x.Trigger == null || x.Inactive == null).ToList().ForEach(delegate (Modifier<BackgroundObject> modifier)
-                        {
-                            modifier.Action = ModifiersHelper.BGAction;
-                            modifier.Trigger = ModifiersHelper.BGTrigger;
-                            modifier.Inactive = ModifiersHelper.BGInactive;
-                        });
+                        if (modifiers.TryFindAll(x => x.Action == null && x.type == ModifierBase.Type.Action || x.Trigger == null && x.type == ModifierBase.Type.Trigger || x.Inactive == null, out List<Modifier<BackgroundObject>> findAll))
+                            findAll.ForEach(modifier =>
+                            {
+                                modifier.Action = ModifiersHelper.BGAction;
+                                modifier.Trigger = ModifiersHelper.BGTrigger;
+                                modifier.Inactive = ModifiersHelper.BGInactive;
+                            });
 
-                        var actions = modifiers.Where(x => x.type == ModifierBase.Type.Action);
-                        var triggers = modifiers.Where(x => x.type == ModifierBase.Type.Trigger);
+                        var actions = modifiers.FindAll(x => x.type == ModifierBase.Type.Action);
+                        var triggers = modifiers.FindAll(x => x.type == ModifierBase.Type.Trigger);
 
-                        if (triggers.Count() > 0)
+                        if (triggers.Count > 0)
                         {
-                            if (triggers.All(x => !x.active && (x.Trigger(x) && !x.not || !x.Trigger(x) && x.not)))
+                            if (triggers.TrueForAll(x => !x.active && (x.Trigger(x) && !x.not || !x.Trigger(x) && x.not)))
                             {
                                 foreach (var act in actions)
                                 {
-                                    if (!act.active)
-                                    {
-                                        if (!act.constant)
-                                            act.active = true;
+                                    if (act.active)
+                                        continue;
 
-                                        act.Action?.Invoke(act);
-                                    }
+                                    if (!act.constant)
+                                        act.active = true;
+
+                                    act.Action?.Invoke(act);
                                 }
 
                                 foreach (var trig in triggers)
@@ -80,14 +83,12 @@ namespace BetterLegacy.Patchers
                         {
                             foreach (var act in actions)
                             {
-                                if (!act.active)
-                                {
-                                    if (!act.constant)
-                                    {
-                                        act.active = true;
-                                    }
-                                    act.Action?.Invoke(act);
-                                }
+                                if (act.active)
+                                    continue;
+
+                                if (!act.constant)
+                                    act.active = true;
+                                act.Action?.Invoke(act);
                             }
                         }
                     }
@@ -148,6 +149,7 @@ namespace BetterLegacy.Patchers
                         fadeColor = bgColorToLerp;
                     fadeColor.a = 1f;
 
+                    int layer = backgroundObject.depth - backgroundObject.layer;
                     for (int i = 0; i < backgroundObject.renderers.Count; i++)
                     {
                         var renderer = backgroundObject.renderers[i];
@@ -157,8 +159,7 @@ namespace BetterLegacy.Patchers
                             continue;
                         }
 
-                        int layer = backgroundObject.depth - backgroundObject.layer;
-                        float t = 1f / (float)layer * (float)i;
+                        float t = 1f / layer * i;
 
                         renderer.material.color = Color.Lerp(Color.Lerp(mainColor, fadeColor, t), fadeColor, t);
                     }
