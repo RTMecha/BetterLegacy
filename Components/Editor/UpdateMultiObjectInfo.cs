@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Editor.Managers;
+﻿using BetterLegacy.Core.Data;
+using BetterLegacy.Editor.Managers;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -28,8 +29,8 @@ namespace BetterLegacy.Components.Editor
                 ObjectEditor.inst.SelectedObjects.Count,
                 ObjectEditor.inst.SelectedPrefabObjects.Count,
                 ObjectEditor.inst.SelectedObjects.Count + ObjectEditor.inst.SelectedPrefabObjects.Count,
-                DataManager.inst.gameData.beatmapObjects.Count,
-                DataManager.inst.gameData.prefabObjects.Count);
+                GameData.Current.beatmapObjects.Count,
+                GameData.Current.prefabObjects.Count);
         }
     }
 }

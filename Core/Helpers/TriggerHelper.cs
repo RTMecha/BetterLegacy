@@ -712,7 +712,8 @@ namespace BetterLegacy.Core.Helpers
         {
             var dictionary = new Dictionary<string, bool>();
 
-            foreach (var obj in DataManager.inst.gameData.beatmapObjects)
+            var beatmapObjects = GameData.Current.beatmapObjects;
+            foreach (var obj in beatmapObjects)
             {
                 bool canParent = true;
                 if (!string.IsNullOrEmpty(obj.parent))
@@ -725,15 +726,9 @@ namespace BetterLegacy.Core.Helpers
                             canParent = false;
                             break;
                         }
-                        int num2 = DataManager.inst.gameData.beatmapObjects.FindIndex(x => x.parent == parentID);
-                        if (num2 != -1)
-                        {
-                            parentID = DataManager.inst.gameData.beatmapObjects[num2].id;
-                        }
-                        else
-                        {
-                            parentID = null;
-                        }
+
+                        int num2 = beatmapObjects.FindIndex(x => x.parent == parentID);
+                        parentID = num2 != -1 ? beatmapObjects[num2].id : null;
                     }
                 }
 
@@ -797,14 +792,14 @@ namespace BetterLegacy.Core.Helpers
                         foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
                         {
                             timelineObject.timeOffset = timelineObject.Type == kf.Type && timelineObject.Index == kf.Index ? 0f :
-                            timelineObject.Time - DataManager.inst.gameData.eventObjects.allEvents[kf.Type][kf.Index].eventTime;
+                            timelineObject.Time - GameData.Current.eventObjects.allEvents[kf.Type][kf.Index].eventTime;
                         }
                     }
                     else
                         EventEditor.inst.SetCurrentEvent(kf.Type, kf.Index);
 
                     float timelineTime = EditorManager.inst.GetTimelineTime();
-                    EventEditor.inst.mouseOffsetXForDrag = DataManager.inst.gameData.eventObjects.allEvents[kf.Type][kf.Index].eventTime - timelineTime;
+                    EventEditor.inst.mouseOffsetXForDrag = GameData.Current.eventObjects.allEvents[kf.Type][kf.Index].eventTime - timelineTime;
                     EventEditor.inst.eventDrag = true;
                 }
                 else

@@ -101,9 +101,9 @@ namespace BetterLegacy.Editor
             get
             {
                 if (IsBeatmapObject)
-                    return DataManager.inst.gameData.beatmapObjects.IndexOf(Data as BeatmapObject);
+                    return GameData.Current.beatmapObjects.IndexOf(Data as BeatmapObject);
                 if (IsPrefabObject)
-                    return DataManager.inst.gameData.prefabObjects.IndexOf(Data as PrefabObject);
+                    return GameData.Current.prefabObjects.IndexOf(Data as PrefabObject);
                 if (IsEventKeyframe)
                     return index;
                 return -1;

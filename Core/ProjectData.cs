@@ -58,26 +58,26 @@ namespace BetterLegacy.Core
                             if (baseData.beatmapData.markers == null)
                                 baseData.beatmapData.markers = new List<BaseMarker>();
 
-                            baseData.beatmapData.checkpoints.AddRange(gameDatas[i].beatmapData.checkpoints.Where(x => !baseData.beatmapData.checkpoints.Has(y => y.time == x.time)));
-                            baseData.beatmapData.markers.AddRange(gameDatas[i].beatmapData.markers.Where(x => !baseData.beatmapData.markers.Has(y => y.time == x.time)));
+                            baseData.beatmapData.checkpoints.AddRange(gameDatas[i].beatmapData.checkpoints.FindAll(x => !baseData.beatmapData.checkpoints.Has(y => y.time == x.time)));
+                            baseData.beatmapData.markers.AddRange(gameDatas[i].beatmapData.markers.FindAll(x => !baseData.beatmapData.markers.Has(y => y.time == x.time)));
                         }
 
                         if (baseData.beatmapObjects == null)
-                            baseData.beatmapObjects = new List<BaseBeatmapObject>();
+                            baseData.beatmapObjects = new List<BeatmapObject>();
 
-                        baseData.beatmapObjects.AddRange(gameDatas[i].BeatmapObjects.Where(x => !baseData.BeatmapObjects.Has(y => y.id == x.id)));
+                        baseData.beatmapObjects.AddRange(gameDatas[i].beatmapObjects.FindAll(x => !baseData.beatmapObjects.Has(y => y.id == x.id)));
 
                         if (baseData.prefabObjects == null)
-                            baseData.prefabObjects = new List<DataManager.GameData.PrefabObject>();
+                            baseData.prefabObjects = new List<PrefabObject>();
 
                         baseData.prefabObjects.AddRange(gameDatas[i].prefabObjects.Where(x => !baseData.prefabObjects.Has(y => y.ID == x.ID)));
 
                         if (baseData.prefabs == null)
-                            baseData.prefabs = new List<BasePrefab>();
+                            baseData.prefabs = new List<Prefab>();
 
-                        baseData.prefabs.AddRange(gameDatas[i].prefabs.Where(x => !baseData.prefabs.Has(y => y.ID == x.ID)));
+                        baseData.prefabs.AddRange(gameDatas[i].prefabs.FindAll(x => !baseData.prefabs.Has(y => y.ID == x.ID)));
 
-                        baseData.backgroundObjects.AddRange(gameDatas[i].BackgroundObjects.Where(x => !baseData.BackgroundObjects.Has(y =>
+                        baseData.backgroundObjects.AddRange(gameDatas[i].backgroundObjects.Where(x => !baseData.backgroundObjects.Has(y =>
                         {
                             return y.active == x.active &&
                                     y.color == x.color &&
@@ -257,9 +257,7 @@ namespace BetterLegacy.Core
                     jn["prefab_objects"][i] = prefabObjects[i].ToJSON();
 
                 CoreHelper.Log("Saving Level Data");
-                {
-                    jn["level_data"] = _data.LevelBeatmapData.ModLevelData.ToJSON();
-                }
+                jn["level_data"] = _data.beatmapData.ModLevelData.ToJSON();
 
                 CoreHelper.Log("Saving prefabs");
                 if (_data.prefabs != null)

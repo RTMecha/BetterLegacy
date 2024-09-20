@@ -113,7 +113,7 @@ namespace BetterLegacy.Components.Player
         {
             try
             {
-                var levelData = GameData.Current.LevelBeatmapData.ModLevelData;
+                var levelData = GameData.Current.beatmapData.ModLevelData;
                 LockBoost = levelData.lockBoost;
                 SpeedMultiplier = levelData.speedMultiplier;
                 GameMode = (GameMode)levelData.gameMode;

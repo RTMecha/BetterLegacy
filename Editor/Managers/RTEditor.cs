@@ -2040,7 +2040,7 @@ namespace BetterLegacy.Editor.Managers
             }
             if (isOverMainTimeline && layerType == LayerType.Objects)
             {
-                if (DataManager.inst.gameData.beatmapObjects.Count > 1 && ObjectEditor.inst.SelectedObjectCount != DataManager.inst.gameData.beatmapObjects.Count)
+                if (GameData.Current.beatmapObjects.Count > 1 && ObjectEditor.inst.SelectedObjectCount != GameData.Current.beatmapObjects.Count)
                 {
                     var list = new List<TimelineObject>();
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
@@ -2506,14 +2506,14 @@ namespace BetterLegacy.Editor.Managers
                     CoreHelper.Log($"EventHolder: {type}\nMax: {max}\nMin: {min}\nCurrent Event: {currentEvent}");
                     if (pointerEventData.button == PointerEventData.InputButton.Right)
                     {
-                        if (RTEventEditor.EventTypes.Length > currentEvent && (ShowModdedUI && DataManager.inst.gameData.eventObjects.allEvents.Count > currentEvent || 10 > currentEvent))
+                        if (RTEventEditor.EventTypes.Length > currentEvent && (ShowModdedUI && GameData.Current.eventObjects.allEvents.Count > currentEvent || 10 > currentEvent))
                             RTEventEditor.inst.NewKeyframeFromTimeline(currentEvent);
                     }
                     if (pointerEventData.button == PointerEventData.InputButton.Middle)
                     {
-                        if (RTEventEditor.EventTypes.Length > currentEvent && (ShowModdedUI && DataManager.inst.gameData.eventObjects.allEvents.Count > currentEvent || 10 > currentEvent))
+                        if (RTEventEditor.EventTypes.Length > currentEvent && (ShowModdedUI && GameData.Current.eventObjects.allEvents.Count > currentEvent || 10 > currentEvent))
                         {
-                            var index = DataManager.inst.gameData.eventObjects.allEvents[currentEvent].FindLastIndex(x => x.eventTime < EditorManager.inst.GetTimelineTime());
+                            var index = GameData.Current.eventObjects.allEvents[currentEvent].FindLastIndex(x => x.eventTime < EditorManager.inst.GetTimelineTime());
 
                             if (index >= 0)
                                 RTEventEditor.inst.SetCurrentEvent(currentEvent, index);
@@ -2679,8 +2679,8 @@ namespace BetterLegacy.Editor.Managers
             {
                 DG.Tweening.DOTween.Clear();
                 Updater.UpdateObjects(false);
-                DataManager.inst.gameData = null;
-                DataManager.inst.gameData = new GameData();
+                GameData.Current = null;
+                GameData.Current = new GameData();
                 TooltipHelper.InitTooltips();
                 SceneManager.inst.LoadScene("Editor");
             }, 7);
@@ -2956,10 +2956,10 @@ namespace BetterLegacy.Editor.Managers
                     return;
                 }
 
-                var beatmapObjects = GameData.Current.BeatmapObjects.Where(x => x.modifiers.Count > 0);
-                for (int i = 0; i < beatmapObjects.Count(); i++)
+                var beatmapObjects = GameData.Current.beatmapObjects.FindAll(x => x.modifiers.Count > 0);
+                for (int i = 0; i < beatmapObjects.Count; i++)
                 {
-                    var beatmapObject = beatmapObjects.ElementAt(i);
+                    var beatmapObject = beatmapObjects[i];
 
                     for (int j = 0; j < beatmapObject.modifiers.Count; j++)
                     {
@@ -2984,10 +2984,10 @@ namespace BetterLegacy.Editor.Managers
                     return;
                 }
 
-                var beatmapObjects = GameData.Current.BeatmapObjects.Where(x => x.integerVariable != 0);
-                for (int i = 0; i < beatmapObjects.Count(); i++)
+                var beatmapObjects = GameData.Current.beatmapObjects.FindAll(x => x.integerVariable != 0);
+                for (int i = 0; i < beatmapObjects.Count; i++)
                 {
-                    var beatmapObject = beatmapObjects.ElementAt(i);
+                    var beatmapObject = beatmapObjects[i];
 
                     beatmapObject.integerVariable = 0;
                 }
@@ -3540,7 +3540,7 @@ namespace BetterLegacy.Editor.Managers
 
         public void UpdateTimeline()
         {
-            if (!timelinePreview || !AudioManager.inst.CurrentAudioSource.clip || DataManager.inst.gameData.beatmapData == null)
+            if (!timelinePreview || !AudioManager.inst.CurrentAudioSource.clip || !GameData.IsValid || GameData.Current.beatmapData == null)
                 return;
 
             for (int i = 0; i < checkpointImages.Count; i++)
@@ -3551,7 +3551,7 @@ namespace BetterLegacy.Editor.Managers
 
             checkpointImages.Clear();
             LSHelpers.DeleteChildren(timelinePreview.Find("elements"));
-            foreach (var checkpoint in DataManager.inst.gameData.beatmapData.checkpoints)
+            foreach (var checkpoint in GameData.Current.beatmapData.checkpoints)
             {
                 if (checkpoint.time <= 0.5f)
                     continue;
@@ -4401,7 +4401,7 @@ namespace BetterLegacy.Editor.Managers
                     foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                     {
                         var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                        beatmapObject.SetAutokillToScale(DataManager.inst.gameData.beatmapObjects);
+                        beatmapObject.SetAutokillToScale(GameData.Current.beatmapObjects);
                         Updater.UpdateObject(beatmapObject, "Autokill");
                         ObjectEditor.inst.RenderTimelineObjectPosition(timelineObject);
                     }
@@ -8608,7 +8608,7 @@ namespace BetterLegacy.Editor.Managers
 
             if (GameData.IsValid)
             {
-                var bgs = GameData.Current.BackgroundObjects;
+                var bgs = GameData.Current.backgroundObjects;
                 for (int i = 0; i < bgs.Count; i++)
                 {
                     var bg = bgs[i];
@@ -8837,14 +8837,14 @@ namespace BetterLegacy.Editor.Managers
 
             themesLoading = true;
 
-            while (!EventEditor.inst || !EventEditor.inst.dialogRight || DataManager.inst.gameData is not GameData)
+            while (!EventEditor.inst || !EventEditor.inst.dialogRight || !GameData.IsValid)
                 yield return null;
 
             DataManager.inst.CustomBeatmapThemes.Clear();
             DataManager.inst.BeatmapThemeIDToIndex.Clear();
             DataManager.inst.BeatmapThemeIndexToID.Clear();
 
-            if (DataManager.inst.gameData is GameData)
+            if (GameData.IsValid)
                 GameData.Current.beatmapThemes.Clear();
 
             var dialogTmp = EventEditor.inst.dialogRight.GetChild(4);
@@ -8891,7 +8891,7 @@ namespace BetterLegacy.Editor.Managers
                 orig.filePath = file.Replace("\\", "/");
                 DataManager.inst.CustomBeatmapThemes.Add(orig);
 
-                if (jn["id"] != null && DataManager.inst.gameData is GameData && GameData.Current.beatmapThemes != null && !GameData.Current.beatmapThemes.ContainsKey(jn["id"]))
+                if (jn["id"] != null && GameData.IsValid && GameData.Current.beatmapThemes != null && !GameData.Current.beatmapThemes.ContainsKey(jn["id"]))
                     GameData.Current.beatmapThemes.Add(jn["id"], orig);
 
                 if (DataManager.inst.BeatmapThemeIDToIndex.ContainsKey(int.Parse(orig.id)))
@@ -9308,14 +9308,14 @@ namespace BetterLegacy.Editor.Managers
 
             LSHelpers.DeleteChildren(content);
 
-            var list = DataManager.inst.gameData.beatmapObjects.Where(x => !x.fromPrefab).ToList();
+            var list = GameData.Current.beatmapObjects.FindAll(x => !x.fromPrefab);
             foreach (var beatmapObject in list)
             {
                 var regex = new Regex(@"\[([0-9])\]");
                 var match = regex.Match(objectSearchTerm);
 
                 if (string.IsNullOrEmpty(objectSearchTerm) ||
-                    match.Success && int.TryParse(match.Groups[1].ToString(), out int index) && index < DataManager.inst.gameData.beatmapObjects.Count && DataManager.inst.gameData.beatmapObjects.IndexOf(beatmapObject) == index ||
+                    match.Success && int.TryParse(match.Groups[1].ToString(), out int index) && index < GameData.Current.beatmapObjects.Count && GameData.Current.beatmapObjects.IndexOf(beatmapObject) == index ||
                     beatmapObject.id == objectSearchTerm ||
                     beatmapObject.name.ToLower().Contains(objectSearchTerm.ToLower()))
                 {
@@ -9326,7 +9326,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var button = buttonPrefab.GetComponent<Button>();
                     button.onClick.ClearAll();
-                    button.onClick.AddListener(() => { onSelect?.Invoke((BeatmapObject)beatmapObject); });
+                    button.onClick.AddListener(() => { onSelect?.Invoke(beatmapObject); });
 
                     var image = buttonPrefab.transform.Find("Image").GetComponent<Image>();
                     image.color = GetObjectColor(beatmapObject, false);
@@ -9365,17 +9365,17 @@ namespace BetterLegacy.Editor.Managers
 
                         string ptr = "";
                         if (!string.IsNullOrEmpty(beatmapObject.prefabID) && !string.IsNullOrEmpty(beatmapObject.prefabInstanceID))
-                            ptr = "<br><#" + CoreHelper.ColorToHex(((BeatmapObject)beatmapObject).Prefab.PrefabType.Color) + ">PID: " + beatmapObject.prefabID + " | PIID: " + beatmapObject.prefabInstanceID + "</color>";
+                            ptr = "<br><#" + CoreHelper.ColorToHex((beatmapObject).Prefab.PrefabType.Color) + ">PID: " + beatmapObject.prefabID + " | PIID: " + beatmapObject.prefabInstanceID + "</color>";
                         else
                             ptr = "<br>Not from prefab";
 
                         desc = "N/ST: " + beatmapObject.name + " [ " + beatmapObject.StartTime + " ]";
                         hint = "ID: {" + beatmapObject.id + "}" +
                             parent +
-                            "<br>A: " + beatmapObject.TimeWithinLifespan().ToString() +
-                            "<br>O: {X: " + beatmapObject.origin.x + ", Y: " + beatmapObject.origin.y + "}" +
+                            "<br>Alive: " + beatmapObject.Alive.ToString() +
+                            "<br>Origin: {X: " + beatmapObject.origin.x + ", Y: " + beatmapObject.origin.y + "}" +
                             text +
-                            "<br>D: " + beatmapObject.Depth +
+                            "<br>Depth: " + beatmapObject.Depth +
                             "<br>ED: {L: " + beatmapObject.editorData.layer + ", B: " + beatmapObject.editorData.Bin + "}" +
                             "<br>POS: {X: " + transform.position.x + ", Y: " + transform.position.y + "}" +
                             "<br>SCA: {X: " + transform.localScale.x + ", Y: " + transform.localScale.y + "}" +
@@ -9620,12 +9620,12 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyLightText(camText);
             }
 
-            foreach (var obj in DataManager.inst.gameData.beatmapObjects)
+            foreach (var obj in GameData.Current.beatmapObjects)
             {
                 if (obj.fromPrefab)
                     continue;
 
-                int index = DataManager.inst.gameData.beatmapObjects.IndexOf(obj);
+                int index = GameData.Current.beatmapObjects.IndexOf(obj);
                 if ((string.IsNullOrEmpty(__instance.parentSearch) || (obj.name + " " + index.ToString("0000")).ToLower().Contains(__instance.parentSearch.ToLower())) && obj.id != timelineObject.ID)
                 {
                     bool canParent = true;
@@ -9640,9 +9640,9 @@ namespace BetterLegacy.Editor.Managers
                                 break;
                             }
 
-                            int parentIndex = DataManager.inst.gameData.beatmapObjects.FindIndex(x => x.parent == parentID);
+                            int parentIndex = GameData.Current.beatmapObjects.FindIndex(x => x.parent == parentID);
 
-                            parentID = parentIndex != -1 ? DataManager.inst.gameData.beatmapObjects[parentIndex].id : null;
+                            parentID = parentIndex != -1 ? GameData.Current.beatmapObjects[parentIndex].id : null;
                         }
                     }
 

@@ -263,7 +263,7 @@ namespace BetterLegacy
             {
                 Application.quitting += () =>
                 {
-                    if (EditorManager.inst && EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading && DataManager.inst.gameData is GameData)
+                    if (EditorManager.inst && EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading && GameData.IsValid)
                     {
                         string str = RTFile.BasePath;
                         string modBackup = str + "level-quit-backup.lsb";
@@ -297,16 +297,6 @@ namespace BetterLegacy
             EditorThemeManager.Update(); // Checks if editor scene has been exited, if it has it'll clear the editor theme elements.
 
             Application.runInBackground = CoreConfig.Instance.RunInBackground.Value; // If the game should continue playing in the background while you don't have the app focused.
-
-            try
-            {
-                if (DataManager.inst.gameData is GameData gameData)
-                    gameData.moddedBeatmapObjects = gameData.beatmapObjects.Select(x => (BeatmapObject)x).ToList();
-            }
-            catch (Exception ex)
-            {
-                CoreHelper.LogException(ex);
-            }
 
             DebugInfo.Update();
 

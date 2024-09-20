@@ -247,15 +247,17 @@ namespace BetterLegacy.Core.Data
             Solid
         }
 
+        public BeatmapObject Parent => GameData.Current.beatmapObjects.Find(x => x.id == parent);
+
         /// <summary>
         /// Gets the prefab reference.
         /// </summary>
-        public Prefab Prefab => (Prefab)DataManager.inst.gameData.prefabs.Find(x => x.ID == prefabID);
+        public Prefab Prefab => GameData.Current.prefabs.Find(x => x.ID == prefabID);
 
         /// <summary>
         /// Gets the prefab object reference.
         /// </summary>
-        public PrefabObject PrefabObject => (PrefabObject)DataManager.inst.gameData.prefabObjects.Find(x => x.ID == prefabInstanceID);
+        public PrefabObject PrefabObject => GameData.Current.prefabObjects.Find(x => x.ID == prefabInstanceID);
 
         #region Methods
 
@@ -1078,7 +1080,7 @@ namespace BetterLegacy.Core.Data
             CoreHelper.Log($"Set Parent Additive: {parentAdditive}");
         }
 
-        public void SetAutokillToScale(List<BaseBeatmapObject> beatmapObjects)
+        public void SetAutokillToScale(List<BeatmapObject> beatmapObjects)
         {
             try
             {
@@ -1097,7 +1099,7 @@ namespace BetterLegacy.Core.Data
 
                 while (!string.IsNullOrEmpty(parent) && beatmapObjects.Any(x => x.id == parent))
                 {
-                    beatmapObject = (BeatmapObject)beatmapObjects.Find(x => x.id == parent);
+                    beatmapObject = beatmapObjects.Find(x => x.id == parent);
                     parent = beatmapObject.parent;
 
                     if (beatmapObject.events != null && beatmapObject.events.Count > 1 && beatmapObject.events[1].Last().eventTime < GetObjectLifeLength(_oldStyle: true) &&
@@ -1115,6 +1117,35 @@ namespace BetterLegacy.Core.Data
             {
 
             }
+        }
+
+        /// <summary>
+        /// Gets the entire parent chain, including the beatmap object itself.
+        /// </summary>
+        /// <param name="beatmapObject"></param>
+        /// <returns>List of parents ordered by the current beatmap object to the base parent with no other parents.</returns>
+        public List<BeatmapObject> GetParentChain() => CoreHelper.GetParentChain(this);
+
+        /// <summary>
+        /// Gets the every child connected to the beatmap object.
+        /// </summary>
+        /// <param name="beatmapObject"></param>
+        /// <returns>A full list tree with every child object.</returns>
+        public List<List<BeatmapObject>> GetChildChain()
+        {
+            var lists = new List<List<BeatmapObject>>();
+            for (int i = 0; i < GameData.Current.beatmapObjects.Count; i++)
+            {
+                var parentChain = GameData.Current.beatmapObjects[i].GetParentChain();
+
+                if (parentChain == null || parentChain.Count < 1)
+                    continue;
+
+                if (parentChain.Has(x => x.id == id))
+                    lists.Add(parentChain);
+            }
+
+            return lists;
         }
 
         #endregion

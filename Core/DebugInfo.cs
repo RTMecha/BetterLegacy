@@ -14,7 +14,7 @@ namespace BetterLegacy.Core.Managers
     {
         public static void TogglePlay() => (AudioManager.inst.CurrentAudioSource.isPlaying ? (Action)AudioManager.inst.CurrentAudioSource.Pause : AudioManager.inst.CurrentAudioSource.Play).Invoke();
 
-        public static int BeatmapObjectAliveCount() => !GameData.IsValid ? 0 : GameData.Current.BeatmapObjects.Where(x => x.objectType != BeatmapObject.ObjectType.Empty && x.TimeWithinLifespan()).Count();
+        public static int BeatmapObjectAliveCount() => !GameData.IsValid ? 0 : GameData.Current.beatmapObjects.FindAll(x => x.objectType != BeatmapObject.ObjectType.Empty && x.Alive).Count;
 
         public static void LogColor(Color color) => Debug.Log($"[<color=#{CoreHelper.ColorToHex(color)}>▓▓▓▓▓▓▓▓▓▓▓▓▓</color>]");
         public static void LogColor(string color) => Debug.Log($"[<color={color}>▓▓▓▓▓▓▓▓▓▓▓▓▓</color>]");

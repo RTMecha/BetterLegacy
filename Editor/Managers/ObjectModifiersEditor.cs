@@ -1466,7 +1466,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 if (int.TryParse(_val, out int result))
                                 {
-                                    modifier.value = Mathf.Clamp(result, 0, DataManager.inst.gameData.prefabObjects.Count - 1).ToString();
+                                    modifier.value = Mathf.Clamp(result, 0, GameData.Current.prefabObjects.Count - 1).ToString();
                                     modifier.active = false;
                                 }
                             });
@@ -1480,8 +1480,8 @@ namespace BetterLegacy.Editor.Managers
                             EditorThemeManager.ApplySelectable(prefabIndexLeftButton, ThemeGroup.Function_2, false);
                             EditorThemeManager.ApplySelectable(prefabIndexRightButton, ThemeGroup.Function_2, false);
 
-                            TriggerHelper.IncreaseDecreaseButtonsInt(prefabIndexIF, 1, 0, DataManager.inst.gameData.prefabObjects.Count - 1, prefabIndex.transform);
-                            TriggerHelper.AddEventTriggers(prefabIndexIF.gameObject, TriggerHelper.ScrollDeltaInt(prefabIndexIF, 1, 0, DataManager.inst.gameData.prefabObjects.Count - 1));
+                            TriggerHelper.IncreaseDecreaseButtonsInt(prefabIndexIF, 1, 0, GameData.Current.prefabObjects.Count - 1, prefabIndex.transform);
+                            TriggerHelper.AddEventTriggers(prefabIndexIF.gameObject, TriggerHelper.ScrollDeltaInt(prefabIndexIF, 1, 0, GameData.Current.prefabObjects.Count - 1));
 
                             SingleGenerator(modifier, layout, "Position X", 1, 0f);
                             SingleGenerator(modifier, layout, "Position Y", 2, 0f);

@@ -1,6 +1,7 @@
 ﻿using BetterLegacy.Components;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Prefabs;
@@ -21,7 +22,7 @@ namespace BetterLegacy.Patchers
     {
         static MarkerEditor Instance { get => MarkerEditor.inst; set => MarkerEditor.inst = value; }
 
-        static List<DataManager.GameData.BeatmapData.Marker> Markers => DataManager.inst.gameData.beatmapData.markers;
+        static List<DataManager.GameData.BeatmapData.Marker> Markers => GameData.Current.beatmapData.markers;
 
         static string className = "[<color=#FFAF38>MarkerEditor</color>] \n";
 

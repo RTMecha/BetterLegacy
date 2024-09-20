@@ -260,40 +260,37 @@ namespace BetterLegacy.Patchers
         static void UpdatePostfix()
         {
             if (EditorManager.inst && EditorManager.inst.isEditing && EditorManager.inst.hasLoadedLevel &&
-                DataManager.inst.gameData != null && DataManager.inst.gameData.eventObjects != null &&
+                GameData.IsValid && GameData.Current.eventObjects != null &&
                 RTPrefabEditor.inst)
             {
                 var transform = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/SettingsDialog").transform;
 
-                if (!transform || !transform.gameObject.activeInHierarchy || !GameData.IsValid)
+                if (!transform || !transform.gameObject.activeInHierarchy)
                     return;
 
                 try
                 {
-                    SetText("Object Count", DataManager.inst.gameData.beatmapObjects.FindAll(x => !x.fromPrefab).Count.ToString());
-                    SetText("Total Object Count", DataManager.inst.gameData.beatmapObjects.Count.ToString());
+                    SetText("Object Count", GameData.Current.beatmapObjects.FindAll(x => !x.fromPrefab).Count.ToString());
+                    SetText("Total Object Count", GameData.Current.beatmapObjects.Count.ToString());
 
-                    int num = 0;
-                    for (int i = 0; i < DataManager.inst.gameData.eventObjects.allEvents.Count; i++)
-                        num += DataManager.inst.gameData.eventObjects.allEvents[i].Count;
-                    SetText("Event Count", num.ToString());
+                    SetText("Event Count", GameData.Current.eventObjects.allEvents.Sum(x => x.Count).ToString());
 
                     SetText("Theme Count", DataManager.inst.AllThemes.Count.ToString());
                     SetText("Prefab External Count", RTPrefabEditor.inst.PrefabPanels.Count.ToString());
-                    SetText("Prefab Internal Count", DataManager.inst.gameData.prefabs.Count.ToString());
-                    SetText("Prefab Objects Count", DataManager.inst.gameData.prefabObjects.Count.ToString());
-                    SetText("No Autokill Count", DataManager.inst.gameData.beatmapObjects.FindAll(x => x.autoKillType == DataManager.GameData.BeatmapObject.AutoKillType.OldStyleNoAutokill).Count.ToString());
-                    SetText("Keyframe Offsets > Song Length Count", DataManager.inst.gameData.beatmapObjects.FindAll(x => x.autoKillOffset > AudioManager.inst.CurrentAudioSource.clip.length).Count.ToString());
-                    SetText("Text Object Count", DataManager.inst.gameData.beatmapObjects.FindAll(x => x.shape == 4 && x.objectType != DataManager.GameData.BeatmapObject.ObjectType.Empty).Count.ToString());
+                    SetText("Prefab Internal Count", GameData.Current.prefabs.Count.ToString());
+                    SetText("Prefab Objects Count", GameData.Current.prefabObjects.Count.ToString());
+                    SetText("No Autokill Count", GameData.Current.beatmapObjects.FindAll(x => x.autoKillType == DataManager.GameData.BeatmapObject.AutoKillType.OldStyleNoAutokill).Count.ToString());
+                    SetText("Keyframe Offsets > Song Length Count", GameData.Current.beatmapObjects.FindAll(x => x.autoKillOffset > AudioManager.inst.CurrentAudioSource.clip.length).Count.ToString());
+                    SetText("Text Object Count", GameData.Current.beatmapObjects.FindAll(x => x.shape == 4 && x.objectType != BeatmapObject.ObjectType.Empty).Count.ToString());
 
-                    num = 0;
-                    foreach (var bm in DataManager.inst.gameData.beatmapObjects.Where(x => x.shape == 4 && x.objectType != DataManager.GameData.BeatmapObject.ObjectType.Empty))
+                    int num = 0;
+                    foreach (var bm in GameData.Current.beatmapObjects.Where(x => x.shape == 4 && x.objectType != BeatmapObject.ObjectType.Empty))
                         num += bm.text.Length;
                     SetText("Text Symbol Total Count", num.ToString());
 
                     SetText("Timeline Objects in Current Layer Count", RTEditor.inst.timelineObjects.FindAll(x => x.Layer == EditorManager.inst.layer).Count.ToString());
-                    SetText("Markers Count", DataManager.inst.gameData.beatmapData.markers.Count.ToString());
-                    SetText("Objects Alive Count", GameData.Current.BeatmapObjects.FindAll(x => x.Alive).Count.ToString());
+                    SetText("Markers Count", GameData.Current.beatmapData.markers.Count.ToString());
+                    SetText("Objects Alive Count", GameData.Current.beatmapObjects.FindAll(x => x.Alive).Count.ToString());
                     SetText("Time in Editor", FontManager.TextTranslater.SecondsToTime(RTEditor.inst.timeEditing));
                     SetText("Level opened amount", RTEditor.inst.openAmount.ToString());
                     SetText("Song Progress", $"{FontManager.TextTranslater.Percentage(AudioManager.inst.CurrentAudioSource.time, AudioManager.inst.CurrentAudioSource.clip.length)}%");

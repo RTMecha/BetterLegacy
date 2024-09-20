@@ -1846,11 +1846,11 @@ namespace BetterLegacy.Patchers
 
                 var objects = new List<BaseBeatmapObject>();
                 for (int i = 0; i < jn["objects"].Count; ++i)
-                    objects.Add(BaseBeatmapObject.ParseGameObject(jn["objects"][i]));
+                    objects.Add(BeatmapObject.Parse(jn["objects"][i]));
 
                 var prefabObjects = new List<BasePrefabObject>();
                 for (int i = 0; i < jn["prefab_objects"].Count; ++i)
-                    prefabObjects.Add(DataManager.inst.gameData.ParsePrefabObject(jn["prefab_objects"][i]));
+                    prefabObjects.Add(PrefabObject.Parse(jn["prefab_objects"][i]));
 
                 Instance.beatmapObjCopy = new BasePrefab(jn["name"], jn["type"].AsInt, jn["offset"].AsFloat, objects, prefabObjects);
                 Instance.hasCopiedObject = true;

@@ -55,7 +55,7 @@ namespace BetterLegacy.Editor.Managers
 
             var config = EditorConfig.Instance;
 
-            if (!config.MarkerLoopActive.Value || DataManager.inst.gameData.beatmapData.markers.Count <= 0)
+            if (!config.MarkerLoopActive.Value || GameData.Current.beatmapData.markers.Count <= 0)
                 return;
 
             int markerStart = config.MarkerLoopBegin.Value;
@@ -63,16 +63,16 @@ namespace BetterLegacy.Editor.Managers
 
             if (markerStart < 0)
                 markerStart = 0;
-            if (markerStart > DataManager.inst.gameData.beatmapData.markers.Count - 1)
-                markerStart = DataManager.inst.gameData.beatmapData.markers.Count - 1;
+            if (markerStart > GameData.Current.beatmapData.markers.Count - 1)
+                markerStart = GameData.Current.beatmapData.markers.Count - 1;
 
             if (markerEnd < 0)
                 markerEnd = 0;
-            if (markerEnd > DataManager.inst.gameData.beatmapData.markers.Count - 1)
-                markerEnd = DataManager.inst.gameData.beatmapData.markers.Count - 1;
+            if (markerEnd > GameData.Current.beatmapData.markers.Count - 1)
+                markerEnd = GameData.Current.beatmapData.markers.Count - 1;
 
-            if (AudioManager.inst.CurrentAudioSource.time > DataManager.inst.gameData.beatmapData.markers[markerEnd].time)
-                AudioManager.inst.SetMusicTime(DataManager.inst.gameData.beatmapData.markers[markerStart].time);
+            if (AudioManager.inst.CurrentAudioSource.time > GameData.Current.beatmapData.markers[markerEnd].time)
+                AudioManager.inst.SetMusicTime(GameData.Current.beatmapData.markers[markerStart].time);
         }
 
         public IEnumerator SetupUI()
@@ -503,7 +503,7 @@ namespace BetterLegacy.Editor.Managers
             }
 
             int num = 0;
-            foreach (var marker in DataManager.inst.gameData.beatmapData.markers)
+            foreach (var marker in GameData.Current.beatmapData.markers)
             {
                 int index = num;
                 CreateMarker(index);
@@ -540,11 +540,11 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderMarkers()
         {
-            if (GameData.IsValid && DataManager.inst.gameData.beatmapData != null && DataManager.inst.gameData.beatmapData.markers != null)
+            if (GameData.IsValid && GameData.Current.beatmapData != null && GameData.Current.beatmapData.markers != null)
             {
-                for (int i = 0; i < DataManager.inst.gameData.beatmapData.markers.Count; i++)
+                for (int i = 0; i < GameData.Current.beatmapData.markers.Count; i++)
                 {
-                    var marker = (Marker)DataManager.inst.gameData.beatmapData.markers[i];
+                    var marker = (Marker)GameData.Current.beatmapData.markers[i];
                     if (timelineMarkers.TryFind(x => x.Marker != null && x.Marker.id == marker.id, out TimelineMarker timelineMarker))
                     {
                         timelineMarker.Index = i;

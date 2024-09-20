@@ -46,7 +46,7 @@ namespace BetterLegacy.Core.Optimization.Objects
         {
             this.gameData = gameData;
 
-            var beatmapObjects = gameData.BeatmapObjects;
+            var beatmapObjects = gameData.beatmapObjects;
             for (int i = 0; i < beatmapObjects.Count; i++)
             {
                 if (this.beatmapObjects.ContainsKey(beatmapObjects[i].id))
@@ -88,7 +88,7 @@ namespace BetterLegacy.Core.Optimization.Objects
 
         public IEnumerable<ILevelObject> ToLevelObjects()
         {
-            foreach (var beatmapObject in gameData.BeatmapObjects)
+            foreach (var beatmapObject in gameData.beatmapObjects)
             {
                 if (VerifyObject(beatmapObject))
                 {

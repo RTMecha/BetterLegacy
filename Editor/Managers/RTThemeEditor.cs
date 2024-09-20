@@ -590,9 +590,9 @@ namespace BetterLegacy.Editor.Managers
                                 foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
                                     timelineObject.GetData<EventKeyframe>().eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
                             else if (EventEditor.inst.currentEventType == 4)
-                                DataManager.inst.gameData.eventObjects.allEvents[4][EventEditor.inst.currentEvent].eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
-                            else if (DataManager.inst.gameData.eventObjects.allEvents[4].Count > 0)
-                                DataManager.inst.gameData.eventObjects.allEvents[4].FindLast(x => x.eventTime < AudioManager.inst.CurrentAudioSource.time).eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
+                                GameData.Current.eventObjects.allEvents[4][EventEditor.inst.currentEvent].eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
+                            else if (GameData.Current.eventObjects.allEvents[4].Count > 0)
+                                GameData.Current.eventObjects.allEvents[4].FindLast(x => x.eventTime < AudioManager.inst.CurrentAudioSource.time).eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
 
                             EventManager.inst.updateEvents();
                         });

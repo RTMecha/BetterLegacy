@@ -500,7 +500,7 @@ namespace BetterLegacy.Patchers
 
             CoreHelper.StartCoroutine(AlephNetworkManager.DownloadJSONFile("https://drive.google.com/uc?export=download&id=1QJUeviLerCX1tZXW7QxpBC6K1BjtG1KT", json =>
             {
-                DataManager.inst.gameData = GameData.Parse(JSON.Parse(json));
+                GameData.Current = GameData.Parse(JSON.Parse(json));
 
                 CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip("https://drive.google.com/uc?export=download&id=1BDrRqX1IDk7bKo2hhYDqDqWLncMy7FkP", AudioType.OGGVORBIS, audioClip =>
                 {
@@ -516,7 +516,7 @@ namespace BetterLegacy.Patchers
 
         static void AssignGameData()
         {
-            DataManager.inst.gameData = RTEditor.inst.CreateBaseBeatmap();
+            GameData.Current = RTEditor.inst.CreateBaseBeatmap();
             AudioManager.inst.PlayMusic(null, Instance.baseSong, true, 0f);
             GameManager.inst.gameState = GameManager.State.Playing;
         }
@@ -929,8 +929,8 @@ namespace BetterLegacy.Patchers
                 DG.Tweening.DOTween.KillAll(false);
                 DG.Tweening.DOTween.Clear(true);
                 Instance.loadedLevels.Clear();
-                DataManager.inst.gameData = null;
-                DataManager.inst.gameData = new GameData();
+                GameData.Current = null;
+                GameData.Current = new GameData();
                 DiscordController.inst.OnIconChange("");
                 DiscordController.inst.OnStateChange("");
                 Debug.Log($"{Instance.className}Quit to Main Menu");

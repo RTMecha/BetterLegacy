@@ -687,10 +687,10 @@ namespace BetterLegacy.Editor.Managers
 
         public IEnumerator UpdatePrefabObjectTimes(PrefabObject currentPrefab)
         {
-            var prefabObjects = DataManager.inst.gameData.prefabObjects.Where(x => x.prefabID == currentPrefab.prefabID).ToList();
+            var prefabObjects = GameData.Current.prefabObjects.FindAll(x => x.prefabID == currentPrefab.prefabID);
             for (int i = 0; i < prefabObjects.Count; i++)
             {
-                var prefabObject = prefabObjects[i] as PrefabObject;
+                var prefabObject = prefabObjects[i];
 
                 if (prefabObject.editorData.layer == EditorManager.inst.layer)
                     ObjectEditor.inst.RenderTimelineObjectPosition(GetTimelineObject(prefabObject));
@@ -760,9 +760,9 @@ namespace BetterLegacy.Editor.Managers
 
             string p = null;
 
-            if (DataManager.inst.gameData.beatmapObjects.Has(x => x.id == parent))
+            if (GameData.Current.beatmapObjects.TryFind(x => x.id == parent, out BeatmapObject beatmapObjectParent))
             {
-                p = DataManager.inst.gameData.beatmapObjects.Find(x => x.id == parent).name;
+                p = beatmapObjectParent.name;
                 parentInfo.tooltipLangauges[0].hint = "Currently selected parent.";
             }
             else if (parent == "CAMERA_PARENT")
@@ -800,7 +800,7 @@ namespace BetterLegacy.Editor.Managers
             parentText.onClick.ClearAll();
             parentText.onClick.AddListener(() =>
             {
-                if (DataManager.inst.gameData.beatmapObjects.Find(x => x.id == parent) != null &&
+                if (GameData.Current.beatmapObjects.Find(x => x.id == parent) != null &&
                     parent != "CAMERA_PARENT" &&
                     RTEditor.inst.timelineObjects.TryFind(x => x.ID == parent, out TimelineObject timelineObject))
                     ObjectEditor.inst.SetCurrentObject(timelineObject);
@@ -903,8 +903,7 @@ namespace BetterLegacy.Editor.Managers
 
             #region Original Code
 
-            var currentPrefab = prefabObject;
-            var prefab = (Prefab)currentPrefab.GetPrefab();
+            var prefab = prefabObject.Prefab;
 
             var right = EditorManager.inst.GetDialog("Prefab Selector").Dialog.Find("data/right");
 
@@ -916,7 +915,7 @@ namespace BetterLegacy.Editor.Managers
                 if (float.TryParse(_val, out float offset))
                 {
                     prefab.Offset = offset;
-                    StartCoroutine(UpdatePrefabObjectTimes(currentPrefab));
+                    StartCoroutine(UpdatePrefabObjectTimes(prefabObject));
                 }
             });
             TriggerHelper.IncreaseDecreaseButtons(offsetTime, t: right.transform.Find("time"));
@@ -937,11 +936,11 @@ namespace BetterLegacy.Editor.Managers
                 var todDropdown = prefabSelectorLeft.Find("tod-dropdown").GetComponent<Dropdown>();
 
                 todDropdown.onValueChanged.ClearAll();
-                todDropdown.value = (int)currentPrefab.autoKillType;
+                todDropdown.value = (int)prefabObject.autoKillType;
                 todDropdown.onValueChanged.AddListener(_val =>
                 {
-                    currentPrefab.autoKillType = (PrefabObject.AutoKillType)_val;
-                    Updater.UpdatePrefab(currentPrefab, "autokill");
+                    prefabObject.autoKillType = (PrefabObject.AutoKillType)_val;
+                    Updater.UpdatePrefab(prefabObject, "autokill");
                 });
 
                 var akoffset = prefabSelectorLeft.Find("akoffset").GetComponent<InputField>();
@@ -950,14 +949,14 @@ namespace BetterLegacy.Editor.Managers
                 akoffset.characterValidation = InputField.CharacterValidation.None;
                 akoffset.contentType = InputField.ContentType.Standard;
                 akoffset.characterLimit = 0;
-                akoffset.text = currentPrefab.autoKillOffset.ToString();
+                akoffset.text = prefabObject.autoKillOffset.ToString();
                 akoffset.onValueChanged.AddListener(_val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
-                        currentPrefab.autoKillOffset = num;
-                        if (currentPrefab.autoKillType != PrefabObject.AutoKillType.Regular)
-                            Updater.UpdatePrefab(currentPrefab, "autokill");
+                        prefabObject.autoKillOffset = num;
+                        if (prefabObject.autoKillType != PrefabObject.AutoKillType.Regular)
+                            Updater.UpdatePrefab(prefabObject, "autokill");
                     }
                 });
 
@@ -968,8 +967,8 @@ namespace BetterLegacy.Editor.Managers
                 setAutokill.onClick.ClearAll();
                 setAutokill.onClick.AddListener(() =>
                 {
-                    currentPrefab.autoKillOffset = currentPrefab.autoKillType == PrefabObject.AutoKillType.StartTimeOffset ? currentPrefab.StartTime + prefab.Offset :
-                                                    currentPrefab.autoKillType == PrefabObject.AutoKillType.SongTime ? AudioManager.inst.CurrentAudioSource.time : -1f;
+                    prefabObject.autoKillOffset = prefabObject.autoKillType == PrefabObject.AutoKillType.StartTimeOffset ? prefabObject.StartTime + prefab.Offset :
+                                                    prefabObject.autoKillType == PrefabObject.AutoKillType.SongTime ? AudioManager.inst.CurrentAudioSource.time : -1f;
                 });
 
                 RenderPrefabObjectParent(prefabObject);
@@ -980,35 +979,35 @@ namespace BetterLegacy.Editor.Managers
             var parent = startTime.transform.parent;
             var locked = parent.Find("lock").GetComponent<Toggle>();
             locked.onValueChanged.ClearAll();
-            locked.isOn = currentPrefab.editorData.locked;
+            locked.isOn = prefabObject.editorData.locked;
             locked.onValueChanged.AddListener(_val =>
             {
-                currentPrefab.editorData.locked = _val;
-                ObjectEditor.inst.RenderTimelineObject(GetTimelineObject(currentPrefab));
+                prefabObject.editorData.locked = _val;
+                ObjectEditor.inst.RenderTimelineObject(GetTimelineObject(prefabObject));
             });
 
             var collapse = parent.Find("collapse").GetComponent<Toggle>();
             collapse.onValueChanged.ClearAll();
-            collapse.isOn = currentPrefab.editorData.collapse;
+            collapse.isOn = prefabObject.editorData.collapse;
             collapse.onValueChanged.AddListener(_val =>
             {
-                currentPrefab.editorData.collapse = _val;
-                ObjectEditor.inst.RenderTimelineObject(GetTimelineObject(currentPrefab));
+                prefabObject.editorData.collapse = _val;
+                ObjectEditor.inst.RenderTimelineObject(GetTimelineObject(prefabObject));
             });
 
             startTime.onValueChanged.ClearAll();
-            startTime.text = currentPrefab.StartTime.ToString();
+            startTime.text = prefabObject.StartTime.ToString();
             startTime.onValueChanged.AddListener(_val =>
             {
-                if (currentPrefab.editorData.locked)
+                if (prefabObject.editorData.locked)
                     return;
 
                 if (float.TryParse(_val, out float n))
                 {
                     n = Mathf.Clamp(n, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
-                    currentPrefab.StartTime = n;
-                    Updater.UpdatePrefab(currentPrefab, "starttime");
-                    ObjectEditor.inst.RenderTimelineObject(GetTimelineObject(currentPrefab));
+                    prefabObject.StartTime = n;
+                    Updater.UpdatePrefab(prefabObject, "starttime");
+                    ObjectEditor.inst.RenderTimelineObject(GetTimelineObject(prefabObject));
                 }
                 else
                     EditorManager.inst.DisplayNotification("Text is not correct format!", 1f, EditorManager.NotificationType.Error);
@@ -1021,7 +1020,7 @@ namespace BetterLegacy.Editor.Managers
             startTimeSet.onClick.ClearAll();
             startTimeSet.onClick.AddListener(() =>
             {
-                if (currentPrefab.editorData.locked)
+                if (prefabObject.editorData.locked)
                     return;
 
                 startTime.text = AudioManager.inst.CurrentAudioSource.time.ToString();
@@ -1029,25 +1028,25 @@ namespace BetterLegacy.Editor.Managers
 
             //Layer
             {
-                int currentLayer = currentPrefab.editorData.layer;
+                int currentLayer = prefabObject.editorData.layer;
 
                 var layers = prefabSelectorLeft.Find("editor/layers").GetComponent<InputField>();
 
-                layers.image.color = RTEditor.GetLayerColor(currentPrefab.editorData.layer);
+                layers.image.color = RTEditor.GetLayerColor(prefabObject.editorData.layer);
                 layers.onValueChanged.ClearAll();
-                layers.text = (currentPrefab.editorData.layer + 1).ToString();
+                layers.text = (prefabObject.editorData.layer + 1).ToString();
                 layers.onValueChanged.AddListener(_val =>
                 {
                     if (int.TryParse(_val, out int n))
                     {
-                        currentLayer = currentPrefab.editorData.layer;
+                        currentLayer = prefabObject.editorData.layer;
                         int a = n - 1;
                         if (a < 0)
                             layers.text = "1";
 
-                        currentPrefab.editorData.layer = RTEditor.GetLayer(a);
+                        prefabObject.editorData.layer = RTEditor.GetLayer(a);
                         layers.image.color = RTEditor.GetLayerColor(RTEditor.GetLayer(a));
-                        ObjectEditor.inst.RenderTimelineObject(GetTimelineObject(currentPrefab));
+                        ObjectEditor.inst.RenderTimelineObject(GetTimelineObject(prefabObject));
                     }
                     else
                         EditorManager.inst.DisplayNotification("Text is not correct format!", 1f, EditorManager.NotificationType.Error);
@@ -1072,7 +1071,7 @@ namespace BetterLegacy.Editor.Managers
                 string inx = "/x";
                 string iny = "/y";
 
-                var currentKeyframe = currentPrefab.events[index];
+                var currentKeyframe = prefabObject.events[index];
 
                 var inputField = prefabSelectorLeft.Find(type + inx).GetComponent<InputField>();
 
@@ -1083,7 +1082,7 @@ namespace BetterLegacy.Editor.Managers
                     if (float.TryParse(_val, out float num))
                     {
                         currentKeyframe.eventValues[0] = num;
-                        Updater.UpdatePrefab(currentPrefab, "offset");
+                        Updater.UpdatePrefab(prefabObject, "offset");
                     }
                 });
 
@@ -1100,7 +1099,7 @@ namespace BetterLegacy.Editor.Managers
                         if (float.TryParse(_val, out float num))
                         {
                             currentKeyframe.eventValues[1] = num;
-                            Updater.UpdatePrefab(currentPrefab, "offset");
+                            Updater.UpdatePrefab(prefabObject, "offset");
                         }
                     });
 
@@ -1124,14 +1123,14 @@ namespace BetterLegacy.Editor.Managers
                 repeatCount.contentType = InputField.ContentType.Standard;
                 repeatCount.characterLimit = 5;
                 repeatCount.onValueChanged.ClearAll();
-                repeatCount.text = Mathf.Clamp(currentPrefab.RepeatCount, 0, 1000).ToString();
+                repeatCount.text = Mathf.Clamp(prefabObject.RepeatCount, 0, 1000).ToString();
                 repeatCount.onValueChanged.AddListener(_val =>
                 {
                     if (int.TryParse(_val, out int num))
                     {
                         num = Mathf.Clamp(num, 0, 1000);
-                        currentPrefab.RepeatCount = num;
-                        Updater.UpdatePrefab(currentPrefab);
+                        prefabObject.RepeatCount = num;
+                        Updater.UpdatePrefab(prefabObject);
                     }
                 });
 
@@ -1144,14 +1143,14 @@ namespace BetterLegacy.Editor.Managers
                 repeatOffsetTime.contentType = InputField.ContentType.Standard;
                 repeatOffsetTime.characterLimit = 0;
                 repeatOffsetTime.onValueChanged.ClearAll();
-                repeatOffsetTime.text = Mathf.Clamp(currentPrefab.RepeatOffsetTime, 0f, 60f).ToString();
+                repeatOffsetTime.text = Mathf.Clamp(prefabObject.RepeatOffsetTime, 0f, 60f).ToString();
                 repeatOffsetTime.onValueChanged.AddListener(_val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         num = Mathf.Clamp(num, 0f, 60f);
-                        currentPrefab.RepeatOffsetTime = num;
-                        Updater.UpdatePrefab(currentPrefab, "Start Time");
+                        prefabObject.RepeatOffsetTime = num;
+                        Updater.UpdatePrefab(prefabObject, "Start Time");
                     }
                 });
 
@@ -1164,14 +1163,14 @@ namespace BetterLegacy.Editor.Managers
                 speed.contentType = InputField.ContentType.Standard;
                 speed.characterLimit = 0;
                 speed.onValueChanged.ClearAll();
-                speed.text = Mathf.Clamp(currentPrefab.speed, 0.1f, Updater.MaxFastSpeed).ToString();
+                speed.text = Mathf.Clamp(prefabObject.speed, 0.1f, Updater.MaxFastSpeed).ToString();
                 speed.onValueChanged.AddListener(_val =>
                 {
                     if (float.TryParse(_val, out float num))
                     {
                         num = Mathf.Clamp(num, 0.1f, Updater.MaxFastSpeed);
-                        currentPrefab.speed = num;
-                        Updater.UpdatePrefab(currentPrefab, "Speed");
+                        prefabObject.speed = num;
+                        Updater.UpdatePrefab(prefabObject, "Speed");
                     }
                 });
 
@@ -1186,9 +1185,8 @@ namespace BetterLegacy.Editor.Managers
                 nameIF.onValueChanged.AddListener(_val =>
                 {
                     prefab.Name = _val;
-                    foreach (var prefabObject in DataManager.inst.gameData.prefabObjects)
-                        if (prefabObject.prefabID == prefab.ID)
-                            ObjectEditor.inst.RenderTimelineObject(GetTimelineObject((PrefabObject)prefabObject));
+                    foreach (var prefabObject in GameData.Current.prefabObjects.FindAll(x => x.prefabID == prefab.ID))
+                        ObjectEditor.inst.RenderTimelineObject(GetTimelineObject(prefabObject));
                 });
 
                 typeSelector.button.image.color = prefab.PrefabType.Color;
@@ -1225,7 +1223,7 @@ namespace BetterLegacy.Editor.Managers
 
                 objectCount.text = "Object Count: " + prefab.objects.Count.ToString();
                 prefabObjectCount.text = "Prefab Object Count: " + prefab.prefabObjects.Count;
-                prefabObjectTimelineCount.text = "Prefab Object (Timeline) Count: " + DataManager.inst.gameData.prefabObjects.FindAll(x => x.prefabID == prefab.ID).Count;
+                prefabObjectTimelineCount.text = "Prefab Object (Timeline) Count: " + GameData.Current.prefabObjects.FindAll(x => x.prefabID == prefab.ID).Count;
             }
 
             #endregion
@@ -1249,20 +1247,20 @@ namespace BetterLegacy.Editor.Managers
 
             var editorData = bm.editorData;
             string prefabInstanceID = bm.prefabInstanceID;
-            float startTime = DataManager.inst.gameData.beatmapObjects.Where(x => x.prefabInstanceID == prefabInstanceID).Min(x => x.StartTime);
+            float startTime = GameData.Current.beatmapObjects.Where(x => x.prefabInstanceID == prefabInstanceID).Min(x => x.StartTime);
 
-            var prefab = (Prefab)DataManager.inst.gameData.prefabs.Find(x => x.ID == bm.prefabID);
+            var prefab = GameData.Current.prefabs.Find(x => x.ID == bm.prefabID);
 
             var prefabObject = new PrefabObject(prefab.ID, startTime - prefab.Offset);
             prefabObject.editorData.Bin = editorData.Bin;
             prefabObject.editorData.layer = editorData.layer;
-            var prefab2 = new Prefab(prefab.Name, prefab.Type, prefab.Offset, DataManager.inst.gameData.beatmapObjects.FindAll(x => x.prefabInstanceID == prefabInstanceID).Select(x => (BeatmapObject)x).ToList(), new List<PrefabObject>());
+            var prefab2 = new Prefab(prefab.Name, prefab.Type, prefab.Offset, GameData.Current.beatmapObjects.FindAll(x => x.prefabInstanceID == prefabInstanceID), new List<PrefabObject>());
 
             prefab2.ID = prefab.ID;
             prefab2.typeID = prefab.typeID;
 
-            int index = DataManager.inst.gameData.prefabs.FindIndex(x => x.ID == bm.prefabID);
-            DataManager.inst.gameData.prefabs[index] = prefab2;
+            int index = GameData.Current.prefabs.FindIndex(x => x.ID == bm.prefabID);
+            GameData.Current.prefabs[index] = prefab2;
             var list = RTEditor.inst.TimelineBeatmapObjects.FindAll(x => x.GetData<BeatmapObject>().prefabInstanceID == prefabInstanceID);
             foreach (var timelineObject in list)
             {
@@ -1272,13 +1270,13 @@ namespace BetterLegacy.Editor.Managers
                     RTEditor.inst.timelineObjects.RemoveAt(a);
             }
 
-            DataManager.inst.gameData.beatmapObjects.Where(x => x.prefabInstanceID == prefabInstanceID && !x.fromPrefab).ToList().ForEach(x => Updater.UpdateObject(x, reinsert: false));
-            DataManager.inst.gameData.beatmapObjects.RemoveAll(x => x.prefabInstanceID == prefabInstanceID && !x.fromPrefab);
-            DataManager.inst.gameData.prefabObjects.Add(prefabObject);
+            GameData.Current.beatmapObjects.Where(x => x.prefabInstanceID == prefabInstanceID && !x.fromPrefab).ToList().ForEach(x => Updater.UpdateObject(x, reinsert: false));
+            GameData.Current.beatmapObjects.RemoveAll(x => x.prefabInstanceID == prefabInstanceID && !x.fromPrefab);
+            GameData.Current.prefabObjects.Add(prefabObject);
 
             StartCoroutine(Updater.IAddPrefabToLevel(prefabObject));
 
-            DataManager.inst.gameData.prefabObjects.Where(x => x.prefabID == prefab.ID).ToList().ForEach(x => Updater.UpdatePrefab(x));
+            GameData.Current.prefabObjects.FindAll(x => x.prefabID == prefab.ID).ForEach(x => Updater.UpdatePrefab(x));
 
             ObjectEditor.inst.SetCurrentObject(GetTimelineObject(prefabObject));
 
@@ -1303,8 +1301,8 @@ namespace BetterLegacy.Editor.Managers
 
             RTEditor.inst.RemoveTimelineObject(RTEditor.inst.timelineObjects.Find(x => x.ID == id));
 
-            DataManager.inst.gameData.prefabObjects.RemoveAll(x => x.ID == id);
-            DataManager.inst.gameData.beatmapObjects.RemoveAll(x => x.prefabInstanceID == id && x.fromPrefab);
+            GameData.Current.prefabObjects.RemoveAll(x => x.ID == id);
+            GameData.Current.beatmapObjects.RemoveAll(x => x.prefabInstanceID == id && x.fromPrefab);
             ObjectEditor.inst.DeselectAllObjects();
 
             Debug.Log($"{PrefabEditor.inst.className}Expanding Prefab Object.");
@@ -1343,7 +1341,7 @@ namespace BetterLegacy.Editor.Managers
             prefabObject.events[1].eventValues[0] = 1f;
             prefabObject.events[1].eventValues[1] = 1f;
 
-            DataManager.inst.gameData.prefabObjects.Add(prefabObject);
+            GameData.Current.prefabObjects.Add(prefabObject);
 
             Updater.AddPrefabToLevel(prefabObject);
 
@@ -1384,7 +1382,7 @@ namespace BetterLegacy.Editor.Managers
                     beatmapObjectCopy.id = id;
                 if (ids.TryGetValue(beatmapObject.parent, out string parentID))
                     beatmapObjectCopy.parent = parentID;
-                else if (DataManager.inst.gameData.beatmapObjects.FindIndex(x => x.id == beatmapObject.parent) == -1 && beatmapObjectCopy.parent != "CAMERA_PARENT")
+                else if (GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.parent) == -1 && beatmapObjectCopy.parent != "CAMERA_PARENT")
                     beatmapObjectCopy.parent = "";
 
                 beatmapObjectCopy.active = false;
@@ -1399,7 +1397,7 @@ namespace BetterLegacy.Editor.Managers
                     AssetManager.SpriteAssets.Add(beatmapObject.text, sprite);
 
                 beatmapObjectCopy.prefabInstanceID = prefabObject.ID;
-                DataManager.inst.gameData.beatmapObjects.Add(beatmapObjectCopy);
+                GameData.Current.beatmapObjects.Add(beatmapObjectCopy);
                 if (Updater.levelProcessor && Updater.levelProcessor.converter != null && !Updater.levelProcessor.converter.beatmapObjects.ContainsKey(beatmapObjectCopy.id))
                     Updater.levelProcessor.converter.beatmapObjects.Add(beatmapObjectCopy.id, beatmapObjectCopy);
 
@@ -2222,11 +2220,11 @@ namespace BetterLegacy.Editor.Managers
 
         public void DeleteInternalPrefab(int __0)
         {
-            string id = DataManager.inst.gameData.prefabs[__0].ID;
+            string id = GameData.Current.prefabs[__0].ID;
 
-            DataManager.inst.gameData.prefabs.RemoveAt(__0);
+            GameData.Current.prefabs.RemoveAt(__0);
 
-            DataManager.inst.gameData.prefabObjects.Where(x => x.prefabID == id).ToList().ForEach(x =>
+            GameData.Current.prefabObjects.FindAll(x => x.prefabID == id).ForEach(x =>
             {
                 Updater.UpdatePrefab(x, false);
 
@@ -2237,7 +2235,7 @@ namespace BetterLegacy.Editor.Managers
                     RTEditor.inst.timelineObjects.RemoveAt(index);
                 }
             });
-            DataManager.inst.gameData.prefabObjects.RemoveAll(x => x.prefabID == id);
+            GameData.Current.prefabObjects.RemoveAll(x => x.prefabID == id);
 
             PrefabEditor.inst.ReloadInternalPrefabsInPopup();
         }
@@ -2283,7 +2281,7 @@ namespace BetterLegacy.Editor.Managers
         {
             LSHelpers.DeleteChildren(PrefabEditor.inst.gridContent, false);
             int num = 0;
-            foreach (var beatmapObject in DataManager.inst.gameData.beatmapObjects.Where(x => !x.fromPrefab))
+            foreach (var beatmapObject in GameData.Current.beatmapObjects.FindAll(x => !x.fromPrefab))
             {
                 if (CoreHelper.SearchString(PrefabEditor.inst.gridSearch.text, beatmapObject.name))
                 {
@@ -2379,8 +2377,8 @@ namespace BetterLegacy.Editor.Managers
             var config = EditorConfig.Instance;
 
             // Here we add the Example prefab provided to you.
-            if (!DataManager.inst.gameData.prefabs.Exists(x => x.ID == LegacyPlugin.ExamplePrefab.ID) && config.PrefabExampleTemplate.Value)
-                DataManager.inst.gameData.prefabs.Add(Prefab.DeepCopy(LegacyPlugin.ExamplePrefab, false));
+            if (!GameData.Current.prefabs.Exists(x => x.ID == LegacyPlugin.ExamplePrefab.ID) && config.PrefabExampleTemplate.Value)
+                GameData.Current.prefabs.Add(Prefab.DeepCopy(LegacyPlugin.ExamplePrefab, false));
 
             yield return new WaitForSeconds(0.03f);
 
@@ -2658,11 +2656,11 @@ namespace BetterLegacy.Editor.Managers
         {
             Debug.Log($"{PrefabEditor.inst.className}Adding Prefab: [{_prefab.Name}]");
             var tmpPrefab = Prefab.DeepCopy((Prefab)_prefab);
-            int num = DataManager.inst.gameData.prefabs.FindAll(x => Regex.Replace(x.Name, "( +\\[\\d+])", string.Empty) == tmpPrefab.Name).Count();
+            int num = GameData.Current.prefabs.FindAll(x => Regex.Replace(x.Name, "( +\\[\\d+])", string.Empty) == tmpPrefab.Name).Count;
             if (num > 0)
                 tmpPrefab.Name = $"{tmpPrefab.Name} [{num}]";
 
-            DataManager.inst.gameData.prefabs.Add(tmpPrefab);
+            GameData.Current.prefabs.Add(tmpPrefab);
             PrefabEditor.inst.ReloadInternalPrefabsInPopup();
         }
 

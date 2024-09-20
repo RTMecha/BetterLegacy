@@ -178,11 +178,11 @@ namespace BetterLegacy.Patchers
             __instance.playingCheckpointAnimation = true;
             __instance.isReversing = true;
 
-            int index = DataManager.inst.gameData.beatmapData.checkpoints.FindLastIndex(x => x.time < AudioManager.inst.CurrentAudioSource.time);
+            int index = GameData.Current.beatmapData.checkpoints.FindLastIndex(x => x.time < AudioManager.inst.CurrentAudioSource.time);
             if (index < 0)
                 index = 0;
 
-            var checkpoint = DataManager.inst.gameData.beatmapData.checkpoints[index];
+            var checkpoint = GameData.Current.beatmapData.checkpoints[index];
 
             var animation = new RTAnimation("Reverse");
             animation.animationHandlers = new List<AnimationHandlerBase>
@@ -237,13 +237,13 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool FixedUpdatePrefix()
         {
-            if (DataManager.inst && DataManager.inst.gameData != null && DataManager.inst.gameData.beatmapData != null && DataManager.inst.gameData.beatmapData.checkpoints != null &&
-                DataManager.inst.gameData.beatmapData.checkpoints.Count > 0 && (CoreHelper.Playing || CoreHelper.Reversing))
+            if (DataManager.inst && GameData.IsValid && GameData.Current.beatmapData != null && GameData.Current.beatmapData.checkpoints != null &&
+                GameData.Current.beatmapData.checkpoints.Count > 0 && (CoreHelper.Playing || CoreHelper.Reversing))
             {
                 if (!CoreHelper.Reversing)
                 {
-                    Instance.UpcomingCheckpoint = Instance.GetClosestIndex(DataManager.inst.gameData.beatmapData.checkpoints, AudioManager.inst.CurrentAudioSource.time);
-                    Instance.UpcomingCheckpointIndex = DataManager.inst.gameData.beatmapData.checkpoints.FindIndex(x => x == Instance.UpcomingCheckpoint);
+                    Instance.UpcomingCheckpoint = Instance.GetClosestIndex(GameData.Current.beatmapData.checkpoints, AudioManager.inst.CurrentAudioSource.time);
+                    Instance.UpcomingCheckpointIndex = GameData.Current.beatmapData.checkpoints.FindIndex(x => x == Instance.UpcomingCheckpoint);
                 }
                 if (Instance.timeline && AudioManager.inst.CurrentAudioSource.clip != null)
                 {
@@ -255,7 +255,7 @@ namespace BetterLegacy.Patchers
                 }
 
                 if (!CoreHelper.Reversing)
-                    Instance.lastCheckpointState = DataManager.inst.gameData.beatmapData.GetWhichCheckpointBasedOnTime(AudioManager.inst.CurrentAudioSource.time);
+                    Instance.lastCheckpointState = GameData.Current.beatmapData.GetWhichCheckpointBasedOnTime(AudioManager.inst.CurrentAudioSource.time);
             }
             Instance.playerGUI.SetActive(CoreHelper.InEditorPreview);
             return false;
@@ -400,14 +400,14 @@ namespace BetterLegacy.Patchers
         {
             RTEditor.inst?.UpdateTimeline();
 
-            if (!Instance.timeline || !AudioManager.inst.CurrentAudioSource.clip || DataManager.inst.gameData.beatmapData == null)
+            if (!Instance.timeline || !AudioManager.inst.CurrentAudioSource.clip || GameData.Current.beatmapData == null)
                 return false;
 
             if (GameStorageManager.inst)
                 GameStorageManager.inst.checkpointImages.Clear();
             var parent = Instance.timeline.transform.Find("elements");
             LSHelpers.DeleteChildren(parent, true);
-            foreach (var checkpoint in DataManager.inst.gameData.beatmapData.checkpoints)
+            foreach (var checkpoint in GameData.Current.beatmapData.checkpoints)
             {
                 if (checkpoint.time <= 0.5f)
                     continue;

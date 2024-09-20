@@ -167,74 +167,6 @@ namespace BetterLegacy.Core
         #region Data
 
         /// <summary>
-        /// Gets the entire parent chain, including the beatmap object itself.
-        /// </summary>
-        /// <param name="beatmapObject"></param>
-        /// <returns>List of parents ordered by the current beatmap object to the base parent with no other parents.</returns>
-        public static List<BaseBeatmapObject> GetParentChain(this BaseBeatmapObject beatmapObject) => Helpers.CoreHelper.GetParentChain(beatmapObject);
-
-        /// <summary>
-        /// Gets the every child connected to the beatmap object.
-        /// </summary>
-        /// <param name="beatmapObject"></param>
-        /// <returns>A full list tree with every child object.</returns>
-        public static List<List<BaseBeatmapObject>> GetChildChain(this BaseBeatmapObject beatmapObject)
-        {
-            var lists = new List<List<BaseBeatmapObject>>();
-            for (int i = 0; i < DataManager.inst.gameData.beatmapObjects.Count; i++)
-            {
-                var parentChain = DataManager.inst.gameData.beatmapObjects[i].GetParentChain();
-
-                if (parentChain == null || parentChain.Count < 1)
-                    continue;
-
-                if (parentChain.Has(x => x.id == beatmapObject.id))
-                    lists.Add(parentChain);
-
-                //foreach (var parent in parentChain)
-                //{
-                //	if (parent.id == beatmapObject.id)
-                //	{
-                //		lists.Add(parentChain);
-                //	}
-                //}
-            }
-
-            return lists;
-        }
-
-        /// <summary>
-        /// Checks whether the current time is within the objects' lifespan / if the object is alive.
-        /// </summary>
-        /// <returns>If alive returns true, otherwise returns false.</returns>
-        public static bool TimeWithinLifespan(this BaseBeatmapObject beatmapObject)
-        {
-            var time = AudioManager.inst.CurrentAudioSource.time;
-            var st = beatmapObject.StartTime;
-            var akt = beatmapObject.autoKillType;
-            var ako = beatmapObject.autoKillOffset;
-            var l = beatmapObject.GetObjectLifeLength(_oldStyle: true);
-            return time >= st && (time <= l + st && akt != AutoKillType.OldStyleNoAutokill && akt != AutoKillType.SongTime || akt == AutoKillType.OldStyleNoAutokill || time < ako && beatmapObject.autoKillType == AutoKillType.SongTime);
-        }
-
-        /// <summary>
-        /// Gets beatmap object by id from any beatmap object list.
-        /// </summary>
-        /// <param name="beatmapObjects"></param>
-        /// <param name="_id"></param>
-        /// <returns>Beatmap object from list.</returns>
-        public static BaseBeatmapObject ID(this List<BaseBeatmapObject> beatmapObjects, string _id) => beatmapObjects.Find(x => x.id == _id);
-
-        /// <summary>
-        /// Gets the parent of the beatmap object.
-        /// </summary>
-        /// <param name="beatmapObject"></param>
-        /// <returns>Parent of the beatmap object.</returns>
-        public static BaseBeatmapObject GetParent(this BaseBeatmapObject beatmapObject) => DataManager.inst.gameData.beatmapObjects.Find(x => x.id == beatmapObject.parent);
-
-        public static BasePrefab GetPrefab(this BasePrefabObject prefabObject) => DataManager.inst.gameData.prefabs.Find(x => x.ID == prefabObject.prefabID);
-
-        /// <summary>
         /// Creates a new list with all the same element instances as the parent list.
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -304,8 +236,6 @@ namespace BetterLegacy.Core
         public static BaseEventKeyframe GetEventKeyframe(this List<List<BaseEventKeyframe>> eventKeyframes, int type, int index) => eventKeyframes[RTMath.Clamp(type, 0, eventKeyframes.Count - 1)].GetEventKeyframe(index);
         public static BaseEventKeyframe GetEventKeyframe(this List<BaseEventKeyframe> eventKeyframes, int index) => eventKeyframes[RTMath.Clamp(index, 0, eventKeyframes.Count - 1)];
 
-        public static BaseEventKeyframe ClosestEventKeyframe(int _type, object n = null) => DataManager.inst.gameData.eventObjects.allEvents[_type][ClosestEventKeyframe(_type)];
-
         /// <summary>
         /// Gets closest event keyframe to current time.
         /// </summary>
@@ -313,7 +243,7 @@ namespace BetterLegacy.Core
         /// <returns>Event Keyframe Index</returns>
         public static int ClosestEventKeyframe(int _type)
         {
-            var allEvents = DataManager.inst.gameData.eventObjects.allEvents;
+            var allEvents = GameData.Current.eventObjects.allEvents;
             float time = AudioManager.inst.CurrentAudioSource.time;
             if (allEvents[_type].Has(x => x.eventTime > time))
             {
@@ -449,20 +379,14 @@ namespace BetterLegacy.Core
 
         static void Test()
         {
-            DataManager.inst.gameData.beatmapObjects.ToDictionary(x => x.id, x => x);
+            GameData.Current.beatmapObjects.ToDictionary(x => x.id, x => x);
 
-            DataManager.inst.gameData.beatmapObjects.ToDictionary(x => x.id);
-
-            var dictionary = new Dictionary<string, object>();
-
-            dictionary.Get<string, Component>("test");
+            GameData.Current.beatmapObjects.ToDictionary(x => x.id);
         }
 
         public static string[] GetLinesArray(this string str) => str.Split(new string[] { "\n", "\n\r", "\r" }, StringSplitOptions.RemoveEmptyEntries);
 
         public static List<string> GetLines(this string str) => str.Split(new string[] { "\n", "\n\r", "\r" }, StringSplitOptions.RemoveEmptyEntries).ToList();
-
-        public static T Get<TKey, T>(this Dictionary<TKey, object> keyValuePairs, TKey key) => (T)keyValuePairs[key];
 
         public static Vector2 ToVector2(this Vector3 _v) => new Vector2(_v.x, _v.y);
 

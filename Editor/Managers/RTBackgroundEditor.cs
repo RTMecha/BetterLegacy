@@ -22,7 +22,7 @@ namespace BetterLegacy.Editor.Managers
     {
         public static RTBackgroundEditor inst;
 
-        public static BackgroundObject CurrentSelectedBG => BackgroundEditor.inst == null ? null : (BackgroundObject)DataManager.inst.gameData.backgroundObjects[BackgroundEditor.inst.currentObj];
+        public static BackgroundObject CurrentSelectedBG => BackgroundEditor.inst == null ? null : GameData.Current.backgroundObjects[BackgroundEditor.inst.currentObj];
 
         public List<BackgroundObject> copiedBackgroundObjects = new List<BackgroundObject>();
 
@@ -61,7 +61,7 @@ namespace BetterLegacy.Editor.Managers
             destroyAllButtons.onClick.ClearAll();
             destroyAllButtons.onClick.AddListener(() =>
             {
-                if (DataManager.inst.gameData.backgroundObjects.Count <= 1)
+                if (GameData.Current.backgroundObjects.Count <= 1)
                 {
                     EditorManager.inst.DisplayNotification("Cannot delete only background object.", 2f, EditorManager.NotificationType.Warning);
                     return;
@@ -95,7 +95,7 @@ namespace BetterLegacy.Editor.Managers
             copyButtons.onClick.AddListener(() =>
             {
                 copiedBackgroundObjects.Clear();
-                copiedBackgroundObjects.AddRange(GameData.Current.BackgroundObjects.Select(x => BackgroundObject.DeepCopy(x)));
+                copiedBackgroundObjects.AddRange(GameData.Current.backgroundObjects.Select(x => BackgroundObject.DeepCopy(x)));
             });
 
             var copyTip = copy.GetComponent<HoverTooltip>();
@@ -1201,7 +1201,7 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.ClearDialogs();
             EditorManager.inst.ShowDialog("Background Editor");
 
-            var backgroundObject = (BackgroundObject)DataManager.inst.gameData.backgroundObjects[index];
+            var backgroundObject = GameData.Current.backgroundObjects[index];
 
             __instance.left.Find("name/active").GetComponent<Toggle>().isOn = backgroundObject.active;
             __instance.left.Find("name/name").GetComponent<InputField>().text = backgroundObject.name;
@@ -1672,7 +1672,7 @@ namespace BetterLegacy.Editor.Managers
 
                 backgroundObject.shape = ShapeManager.inst.Shapes3D[randomShape][randomShapeOption];
 
-                DataManager.inst.gameData.backgroundObjects.Add(backgroundObject);
+                GameData.Current.backgroundObjects.Add(backgroundObject);
             }
 
             BackgroundManager.inst.UpdateBackgrounds();
@@ -1681,12 +1681,12 @@ namespace BetterLegacy.Editor.Managers
 
         public void DeleteAllBackgrounds()
         {
-            int num = DataManager.inst.gameData.backgroundObjects.Count;
+            int num = GameData.Current.backgroundObjects.Count;
 
             for (int i = 1; i < num; i++)
             {
-                int nooo = Mathf.Clamp(i, 1, DataManager.inst.gameData.backgroundObjects.Count - 1);
-                DataManager.inst.gameData.backgroundObjects.RemoveAt(nooo);
+                int nooo = Mathf.Clamp(i, 1, GameData.Current.backgroundObjects.Count - 1);
+                GameData.Current.backgroundObjects.RemoveAt(nooo);
             }
 
             BackgroundEditor.inst.SetCurrentBackground(0);

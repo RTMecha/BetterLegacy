@@ -67,7 +67,7 @@ namespace BetterLegacy.Core.Managers
             if (!AudioManager.inst.CurrentAudioSource.clip || !CoreConfig.Instance.AllowCustomTextFormatting.Value)
                 return;
 
-            var beatmapObjects = GameData.Current.BeatmapObjects.FindAll(x => x.shape == 4 && x.Alive && x.objectType != BeatmapObject.ObjectType.Empty);
+            var beatmapObjects = GameData.Current.beatmapObjects.FindAll(x => x.shape == 4 && x.Alive && x.objectType != BeatmapObject.ObjectType.Empty);
 
             var currentAudioTime = AudioManager.inst.CurrentAudioSource.time;
             var currentAudioLength = AudioManager.inst.CurrentAudioSource.clip.length;
@@ -748,7 +748,7 @@ namespace BetterLegacy.Core.Managers
 
                     CoreHelper.RegexMatches(str, new Regex(@"<modifierVariableID=(.*?)>"), match =>
                     {
-                        var beatmapObject = GameData.Current.BeatmapObjects.Find(x => x.id == match.Groups[1].ToString());
+                        var beatmapObject = GameData.Current.beatmapObjects.Find(x => x.id == match.Groups[1].ToString());
                         if (beatmapObject)
                             str = str.Replace(match.Groups[0].ToString(), beatmapObject.integerVariable.ToString());
                     });

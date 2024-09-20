@@ -44,7 +44,10 @@ namespace BetterLegacy.Core.Managers
             //    return;
             //}
 
-            var order = DataManager.inst.gameData is GameData gameData ? gameData.BeatmapObjects.FindAll(x => x.modifiers.Count > 0) : null;
+            if (!GameData.IsValid)
+                return;
+
+            var order = GameData.Current.beatmapObjects.FindAll(x => x.modifiers.Count > 0);
 
             if (order != null && CoreHelper.Playing)
                 for (int i = 0; i < order.Count; i++)
@@ -114,7 +117,7 @@ namespace BetterLegacy.Core.Managers
             {
                 try
                 {
-                    if (DataManager.inst.gameData.beatmapObjects.ID(audioSource.Key) == null || !DataManager.inst.gameData.beatmapObjects.ID(audioSource.Key).TimeWithinLifespan())
+                    if (GameData.Current.beatmapObjects.Find(x => x.id == audioSource.Key) == null || !GameData.Current.beatmapObjects.Find(x => x.id == audioSource.Key).Alive)
                         DeleteKey(audioSource.Key, audioSource.Value);
                 }
                 catch

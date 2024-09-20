@@ -465,7 +465,7 @@ namespace BetterLegacy.Core.Helpers
                             int.TryParse(modifier.value, out int num) &&
                             modifier.reference &&
                             !string.IsNullOrEmpty(modifier.commands[1]) &&
-                            GameData.Current.BeatmapObjects.Any(x => x.tags.Contains(modifier.commands[1]) && x.integerVariable == num);
+                            GameData.Current.beatmapObjects.Any(x => x.tags.Contains(modifier.commands[1]) && x.integerVariable == num);
                     }
                 case "variableOtherLesserEquals":
                     {
@@ -473,7 +473,7 @@ namespace BetterLegacy.Core.Helpers
                             int.TryParse(modifier.value, out int num) &&
                             modifier.reference &&
                             !string.IsNullOrEmpty(modifier.commands[1]) &&
-                            GameData.Current.BeatmapObjects.Any(x => x.tags.Contains(modifier.commands[1]) && x.integerVariable <= num);
+                            GameData.Current.beatmapObjects.Any(x => x.tags.Contains(modifier.commands[1]) && x.integerVariable <= num);
                     }
                 case "variableOtherGreaterEquals":
                     {
@@ -481,7 +481,7 @@ namespace BetterLegacy.Core.Helpers
                             int.TryParse(modifier.value, out int num) &&
                             modifier.reference &&
                             !string.IsNullOrEmpty(modifier.commands[1]) &&
-                            GameData.Current.BeatmapObjects.Any(x => x.tags.Contains(modifier.commands[1]) && x.integerVariable >= num);
+                            GameData.Current.beatmapObjects.Any(x => x.tags.Contains(modifier.commands[1]) && x.integerVariable >= num);
                     }
                 case "variableOtherLesser":
                     {
@@ -489,7 +489,7 @@ namespace BetterLegacy.Core.Helpers
                             int.TryParse(modifier.value, out int num) &&
                             modifier.reference &&
                             !string.IsNullOrEmpty(modifier.commands[1]) &&
-                            GameData.Current.BeatmapObjects.Any(x => x.tags.Contains(modifier.commands[1]) && x.integerVariable < num);
+                            GameData.Current.beatmapObjects.Any(x => x.tags.Contains(modifier.commands[1]) && x.integerVariable < num);
                     }
                 case "variableOtherGreater":
                     {
@@ -497,7 +497,7 @@ namespace BetterLegacy.Core.Helpers
                             int.TryParse(modifier.value, out int num) &&
                             modifier.reference &&
                             !string.IsNullOrEmpty(modifier.commands[1]) &&
-                            GameData.Current.BeatmapObjects.Any(x => x.tags.Contains(modifier.commands[1]) && x.integerVariable > num);
+                            GameData.Current.beatmapObjects.Any(x => x.tags.Contains(modifier.commands[1]) && x.integerVariable > num);
                     }
                 #endregion
                 #region Audio
@@ -2633,7 +2633,7 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
-                                var resultList = new List<List<DataManager.GameData.BeatmapObject>>();
+                                var resultList = new List<List<BeatmapObject>>();
                                 foreach (var bm in beatmapObjects)
                                 {
                                     var beatmapObject = Parser.TryParse(modifier.value, true) ? bm : bm.GetParentChain().Last();
@@ -2643,7 +2643,7 @@ namespace BetterLegacy.Core.Helpers
                                 modifier.Result = resultList;
                             }
 
-                            var list = (List<List<DataManager.GameData.BeatmapObject>>)modifier.Result;
+                            var list = (List<List<BeatmapObject>>)modifier.Result;
 
                             for (int i = 0; i < list.Count; i++)
                             {
@@ -2707,7 +2707,7 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
-                                var resultList = new List<List<DataManager.GameData.BeatmapObject>>();
+                                var resultList = new List<List<BeatmapObject>>();
                                 foreach (var bm in beatmapObjects)
                                 {
                                     var beatmapObject = Parser.TryParse(modifier.value, true) ? bm : bm.GetParentChain().Last();
@@ -2717,7 +2717,7 @@ namespace BetterLegacy.Core.Helpers
                                 modifier.Result = resultList;
                             }
 
-                            var list = (List<List<DataManager.GameData.BeatmapObject>>)modifier.Result;
+                            var list = (List<List<BeatmapObject>>)modifier.Result;
 
                             for (int i = 0; i < list.Count; i++)
                             {
@@ -4728,7 +4728,7 @@ namespace BetterLegacy.Core.Helpers
                             try
                             {
                                 var cachedSequences = Updater.levelProcessor.converter.cachedSequences;
-                                var beatmapObjects = GameData.Current.BeatmapObjects;
+                                var beatmapObjects = GameData.Current.beatmapObjects;
                                 var prefabObjects = GameData.Current.prefabObjects;
 
                                 var time = Updater.CurrentTime;
@@ -4961,8 +4961,8 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 DOTween.KillAll();
                                 DOTween.Clear(true);
-                                DataManager.inst.gameData = null;
-                                DataManager.inst.gameData = new GameData();
+                                GameData.Current = null;
+                                GameData.Current = new GameData();
                                 DiscordController.inst.OnIconChange("");
                                 DiscordController.inst.OnStateChange("");
                                 CoreHelper.Log($"Quit to Main Menu");
@@ -4997,18 +4997,18 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "spawnPrefab":
                         {
-                            if (!modifier.constant && int.TryParse(modifier.value, out int num) && DataManager.inst.gameData.prefabs.Count > num
+                            if (!modifier.constant && int.TryParse(modifier.value, out int num) && GameData.Current.prefabs.Count > num
                                 && float.TryParse(modifier.commands[1], out float posX) && float.TryParse(modifier.commands[2], out float posY)
                                 && float.TryParse(modifier.commands[3], out float scaX) && float.TryParse(modifier.commands[4], out float scaY) && float.TryParse(modifier.commands[5], out float rot)
                                 && int.TryParse(modifier.commands[6], out int repeatCount) && float.TryParse(modifier.commands[7], out float repeatOffsetTime) && float.TryParse(modifier.commands[8], out float speed))
                             {
-                                modifier.Result = ModifiersManager.AddPrefabObjectToLevel(DataManager.inst.gameData.prefabs[num],
+                                modifier.Result = ModifiersManager.AddPrefabObjectToLevel(GameData.Current.prefabs[num],
                                     AudioManager.inst.CurrentAudioSource.time,
                                     new Vector2(posX, posY),
                                     new Vector2(scaX, scaY),
                                     rot, repeatCount, repeatOffsetTime, speed);
 
-                                DataManager.inst.gameData.prefabObjects.Add((PrefabObject)modifier.Result);
+                                GameData.Current.prefabObjects.Add((PrefabObject)modifier.Result);
 
                                 CoreHelper.StartCoroutine(Updater.IAddPrefabToLevel((PrefabObject)modifier.Result));
                             }
@@ -5382,7 +5382,7 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 Updater.UpdatePrefab((PrefabObject)modifier.Result, false);
 
-                                DataManager.inst.gameData.prefabObjects.RemoveAll(x => ((PrefabObject)x).fromModifier && x.ID == ((PrefabObject)modifier.Result).ID);
+                                GameData.Current.prefabObjects.RemoveAll(x => x.fromModifier && x.ID == ((PrefabObject)modifier.Result).ID);
 
                                 modifier.Result = null;
                             }
@@ -5448,7 +5448,7 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
-                                var resultList = new List<List<DataManager.GameData.BeatmapObject>>();
+                                var resultList = new List<List<BeatmapObject>>();
                                 foreach (var bm in beatmapObjects)
                                 {
                                     var beatmapObject = Parser.TryParse(modifier.value, true) ? bm : bm.GetParentChain().Last();
@@ -5458,7 +5458,7 @@ namespace BetterLegacy.Core.Helpers
                                 modifier.Result = resultList;
                             }
 
-                            var list = (List<List<DataManager.GameData.BeatmapObject>>)modifier.Result;
+                            var list = (List<List<BeatmapObject>>)modifier.Result;
 
                             for (int i = 0; i < list.Count; i++)
                             {
@@ -5543,7 +5543,7 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
-                                var resultList = new List<List<DataManager.GameData.BeatmapObject>>();
+                                var resultList = new List<List<BeatmapObject>>();
                                 foreach (var bm in beatmapObjects)
                                 {
                                     var beatmapObject = Parser.TryParse(modifier.value, true) ? bm : bm.GetParentChain().Last();
@@ -5553,7 +5553,7 @@ namespace BetterLegacy.Core.Helpers
                                 modifier.Result = resultList;
                             }
 
-                            var list = (List<List<DataManager.GameData.BeatmapObject>>)modifier.Result;
+                            var list = (List<List<BeatmapObject>>)modifier.Result;
 
                             for (int i = 0; i < list.Count; i++)
                             {
@@ -5817,7 +5817,7 @@ namespace BetterLegacy.Core.Helpers
                             && float.TryParse(modifier.commands[5], out float delay) && float.TryParse(modifier.commands[6], out float multiply)
                             && float.TryParse(modifier.commands[7], out float offset) && float.TryParse(modifier.commands[8], out float min) && float.TryParse(modifier.commands[9], out float max)
                             && float.TryParse(modifier.commands[10], out float loop)
-                            && GameData.Current.BeatmapObjects.TryFind(x => x.tags.Contains(modifier.value), out BeatmapObject bm))
+                            && GameData.Current.beatmapObjects.TryFind(x => x.tags.Contains(modifier.value), out BeatmapObject bm))
                         {
                             var time = Updater.CurrentTime;
 

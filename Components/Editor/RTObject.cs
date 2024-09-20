@@ -249,7 +249,7 @@ namespace BetterLegacy.Components.Editor
         public static bool SetParent(TimelineObject currentSelection, BeatmapObject beatmapObjectToParentTo)
         {
             var dictionary = new Dictionary<string, bool>();
-            var beatmapObjects = DataManager.inst.gameData.beatmapObjects;
+            var beatmapObjects = GameData.Current.beatmapObjects;
 
             foreach (var obj in beatmapObjects)
             {
@@ -472,16 +472,16 @@ namespace BetterLegacy.Components.Editor
                 if (string.IsNullOrEmpty(beatmapObject.prefabInstanceID))
                     return;
 
-                var prefabObject = DataManager.inst.gameData.prefabObjects.Find(x => x.ID == beatmapObject.prefabInstanceID);
+                var prefabObject = GameData.Current.prefabObjects.Find(x => x.ID == beatmapObject.prefabInstanceID);
 
                 if (prefabObject == null || !(HighlightObjects && hovered || ShowObjectsOnlyOnLayer && prefabObject.editorData.layer != RTEditor.inst.Layer))
                     return;
 
-                var beatmapObjects = DataManager.inst.gameData.beatmapObjects
+                var beatmapObjects = GameData.Current.beatmapObjects
                     .FindAll(x =>
                                 x.fromPrefab &&
                                 x.prefabInstanceID == beatmapObject.prefabInstanceID &&
-                                x.objectType != DataManager.GameData.BeatmapObject.ObjectType.Empty);
+                                x.objectType != BeatmapObject.ObjectType.Empty);
 
                 for (int i = 0; i < beatmapObjects.Count; i++)
                 {

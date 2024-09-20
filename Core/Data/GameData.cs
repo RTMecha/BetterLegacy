@@ -310,18 +310,14 @@ namespace BetterLegacy.Core.Data
         public static GameData DeepCopy(GameData orig)
         {
             if (orig.beatmapObjects == null)
-                orig.beatmapObjects = new List<BaseBeatmapObject>();
+                orig.beatmapObjects = new List<Data.BeatmapObject>();
             if (orig.eventObjects == null)
-            {
                 orig.eventObjects = new EventObjects();
-            }
             if (orig.backgroundObjects == null)
-            {
-                orig.backgroundObjects = new List<BaseBackgroundObject>();
-            }
+                orig.backgroundObjects = new List<Data.BackgroundObject>();
 
             var gameData = new GameData();
-            var beatmapData = new BeatmapData();
+            var beatmapData = new LevelBeatmapData();
             beatmapData.editorData = new BeatmapData.EditorData
             {
                 timelinePos = orig.beatmapData.editorData.timelinePos,
@@ -335,13 +331,14 @@ namespace BetterLegacy.Core.Data
                 showIntro = orig.beatmapData.levelData.showIntro
             };
             beatmapData.checkpoints = orig.beatmapData.checkpoints.Select(x => BeatmapData.Checkpoint.DeepCopy(x)).ToList();
-            beatmapData.markers = orig.beatmapData.markers.Select(x => new BeatmapData.Marker(x.active, x.name, x.desc, x.color, x.time)).ToList();
+            beatmapData.markers = new List<BeatmapData.Marker>();
+            beatmapData.markers.AddRange(orig.beatmapData.markers.Select(x => new Marker(x.active, x.name, x.desc, x.color, x.time)));
 
             gameData.beatmapData = beatmapData;
-            gameData.beatmapObjects = new List<BaseBeatmapObject>((from obj in orig.beatmapObjects
-                                                                   select Data.BeatmapObject.DeepCopy((Data.BeatmapObject)obj, false)).ToList());
-            gameData.backgroundObjects = new List<BaseBackgroundObject>((from obj in orig.backgroundObjects
-                                                                         select Data.BackgroundObject.DeepCopy((Data.BackgroundObject)obj)).ToList());
+            gameData.beatmapObjects = new List<Data.BeatmapObject>((from obj in orig.beatmapObjects
+                                                                   select Data.BeatmapObject.DeepCopy(obj, false)).ToList());
+            gameData.backgroundObjects = new List<Data.BackgroundObject>((from obj in orig.backgroundObjects
+                                                                         select Data.BackgroundObject.DeepCopy(obj)).ToList());
             gameData.eventObjects = EventObjects.DeepCopy(orig.eventObjects);
             return gameData;
         }
@@ -401,7 +398,7 @@ namespace BetterLegacy.Core.Data
 
             if (parseOptimizations)
                 for (int i = 0; i < gameData.beatmapObjects.Count; i++)
-                    ((Data.BeatmapObject)gameData.beatmapObjects[i]).SetAutokillToScale(gameData.beatmapObjects);
+                    gameData.beatmapObjects[i].SetAutokillToScale(gameData.beatmapObjects);
 
             CoreHelper.Log($"Parsing Prefab Objects");
             for (int i = 0; i < jn["prefab_objects"].Count; i++)
@@ -1258,13 +1255,14 @@ namespace BetterLegacy.Core.Data
             }
 
             for (int i = 0; i < prefabObjects.Count; i++)
-                if (!((Data.PrefabObject)prefabObjects[i]).fromModifier)
-                    jn["prefab_objects"][i] = ((Data.PrefabObject)prefabObjects[i]).ToJSON();
+                if (!prefabObjects[i].fromModifier)
+                    jn["prefab_objects"][i] = prefabObjects[i].ToJSON();
 
-            jn["level_data"] = LevelBeatmapData.ModLevelData.ToJSON();
+            jn["level_data"] = beatmapData.ModLevelData.ToJSON();
 
             for (int i = 0; i < prefabs.Count; i++)
-                jn["prefabs"][i] = ((Data.Prefab)prefabs[i]).ToJSON();
+                jn["prefabs"][i] = prefabs[i].ToJSON();
+
             if (beatmapThemes != null)
             {
                 var levelThemes = new List<BaseBeatmapTheme>();
@@ -1275,7 +1273,7 @@ namespace BetterLegacy.Core.Data
 
                     string id = beatmapTheme.id;
 
-                    foreach (var keyframe in DataManager.inst.gameData.eventObjects.allEvents[4])
+                    foreach (var keyframe in eventObjects.allEvents[4])
                     {
                         var eventValue = keyframe.eventValues[0].ToString();
 
@@ -1304,10 +1302,10 @@ namespace BetterLegacy.Core.Data
             }
 
             for (int i = 0; i < beatmapObjects.Count; i++)
-                jn["beatmap_objects"][i] = BeatmapObjects[i].ToJSON();
+                jn["beatmap_objects"][i] = beatmapObjects[i].ToJSON();
 
             for (int i = 0; i < backgroundObjects.Count; i++)
-                jn["bg_objects"][i] = BackgroundObjects[i].ToJSON();
+                jn["bg_objects"][i] = backgroundObjects[i].ToJSON();
 
             for (int i = 0; i < eventObjects.allEvents.Count; i++)
                 for (int j = 0; j < eventObjects.allEvents[i].Count; j++)
@@ -1324,7 +1322,7 @@ namespace BetterLegacy.Core.Data
 
         public bool Modded => BeatmapObjectsModded || EventKeyframesModded || PrefabObjectsModded;
 
-        bool BeatmapObjectsModded => BeatmapObjects.Any(x => x.modifiers.Count > 0
+        bool BeatmapObjectsModded => beatmapObjects.Any(x => x.modifiers.Count > 0
                     || x.objectType == Data.BeatmapObject.ObjectType.Solid
                     || x.desync
                     || x.background
@@ -1371,7 +1369,7 @@ namespace BetterLegacy.Core.Data
             }
         }
 
-        bool PrefabObjectsModded => PrefabObjects.Any(x => x.RepeatCount > 0 || x.speed != 1f || !string.IsNullOrEmpty(x.parent) || x.autoKillType != Data.PrefabObject.AutoKillType.Regular);
+        bool PrefabObjectsModded => prefabObjects.Any(x => x.RepeatCount > 0 || x.speed != 1f || !string.IsNullOrEmpty(x.parent) || x.autoKillType != Data.PrefabObject.AutoKillType.Regular);
 
         static bool ArePositionKeyframesModded(List<BaseEventKeyframe> eventKeyframes)
             => eventKeyframes.Any(x => x.random > 4 || x.eventValues.Length > 2 && x.eventValues[2] != 0f || ((Data.EventKeyframe)x).relative);
@@ -1885,49 +1883,19 @@ namespace BetterLegacy.Core.Data
 
         #endregion
 
-        public LevelBeatmapData LevelBeatmapData => (LevelBeatmapData)beatmapData;
+        public new LevelBeatmapData beatmapData;
 
-        public List<Data.Prefab> Prefabs
-        {
-            get => prefabs.Select(x => (Data.Prefab)x).ToList();
-            set
-            {
-                prefabs.Clear();
-                prefabs.AddRange(value);
-            }
-        }
-        
-        public List<Data.PrefabObject> PrefabObjects
-        {
-            get => prefabObjects.Select(x => (Data.PrefabObject)x).ToList();
-            set
-            {
-                prefabObjects.Clear();
-                prefabObjects.AddRange(value);
-            }
-        }
+        public new List<Data.BeatmapObject> beatmapObjects = new List<Data.BeatmapObject>();
 
-        public List<Data.BeatmapObject> moddedBeatmapObjects;
+        public new List<Data.PrefabObject> prefabObjects = new List<Data.PrefabObject>();
 
-        public List<Data.BeatmapObject> BeatmapObjects
-        {
-            //get => beatmapObjects.Select(x => (Data.BeatmapObject)x).ToList();
-            get => moddedBeatmapObjects ?? beatmapObjects.Select(x => (Data.BeatmapObject)x).ToList();
-            set
-            {
-                beatmapObjects.Clear();
-                beatmapObjects.AddRange(value);
-            }
-        }
+        public new List<Data.Prefab> prefabs = new List<Data.Prefab>();
 
-        public List<Data.BackgroundObject> BackgroundObjects
+        public new List<Data.BackgroundObject> backgroundObjects = new List<Data.BackgroundObject>();
+
+        static void test()
         {
-            get => backgroundObjects.Select(x => (Data.BackgroundObject)x).ToList();
-            set
-            {
-                backgroundObjects.Clear();
-                backgroundObjects.AddRange(value);
-            }
+            DataManager.inst.gameData.beatmapObjects = new List<BaseBeatmapObject>();
         }
 
         [NonSerialized]

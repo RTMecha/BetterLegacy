@@ -298,7 +298,7 @@ namespace BetterLegacy.Core.Managers
             RTPlayer.GameMode = GameMode.Regular;
 
             GameManager.inst.introAnimator.SetTrigger("play");
-            GameManager.inst.SpawnPlayers(DataManager.inst.gameData.beatmapData.checkpoints[0].pos);
+            GameManager.inst.SpawnPlayers(GameData.Current.beatmapData.checkpoints[0].pos);
 
             RTPlayer.SetGameDataProperties();
 
@@ -400,8 +400,8 @@ namespace BetterLegacy.Core.Managers
         public static void Clear()
         {
             DG.Tweening.DOTween.Clear();
-            DataManager.inst.gameData = null;
-            DataManager.inst.gameData = new GameData();
+            GameData.Current = null;
+            GameData.Current = new GameData();
             InputDataManager.inst.SetAllControllerRumble(0f);
         }
 

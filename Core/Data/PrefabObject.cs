@@ -44,9 +44,9 @@ namespace BetterLegacy.Core.Data
         /// <summary>
         /// Gets the prefab reference.
         /// </summary>
-        public Prefab Prefab => (Prefab)DataManager.inst.gameData.prefabs.Find(x => x.ID == prefabID);
+        public Prefab Prefab => (Prefab)GameData.Current.prefabs.Find(x => x.ID == prefabID);
 
-        public List<BeatmapObject> ExpandedObjects => DataManager.inst.gameData.beatmapObjects.Where(x => x is BeatmapObject && x.fromPrefab && x.prefabInstanceID == ID).Select(x => x as BeatmapObject).ToList();
+        public List<BeatmapObject> ExpandedObjects => GameData.Current.beatmapObjects.FindAll(x => x.fromPrefab && x.prefabInstanceID == ID);
 
         public enum AutoKillType
         {

@@ -76,9 +76,9 @@ namespace BetterLegacy.Core.Managers
             GameManager.inst &&
             (CoreHelper.Playing || CoreHelper.Reversing || LevelManager.LevelEnded) &&
             GameData.IsValid &&
-            DataManager.inst.gameData.eventObjects != null &&
-            DataManager.inst.gameData.eventObjects.allEvents != null &&
-            DataManager.inst.gameData.eventObjects.allEvents.Count > 0;
+            GameData.Current.eventObjects != null &&
+            GameData.Current.eventObjects.allEvents != null &&
+            GameData.Current.eventObjects.allEvents.Count > 0;
 
         void EditorCameraHandler()
         {
@@ -201,7 +201,7 @@ namespace BetterLegacy.Core.Managers
 
         void Interpolate()
         {
-            var allEvents = DataManager.inst.gameData.eventObjects.allEvents;
+            var allEvents = GameData.Current.eventObjects.allEvents;
             var time = currentTime;
 
             if (shakeSequence != null && shakeSequence.keyframes != null && shakeSequence.keyframes.Length > 0 && EventsConfig.Instance.ShakeEventMode.Value == ShakeType.Catalyst)
@@ -634,7 +634,7 @@ namespace BetterLegacy.Core.Managers
 
         void FindColors()
         {
-            var allEvents = DataManager.inst.gameData.eventObjects.allEvents;
+            var allEvents = GameData.Current.eventObjects.allEvents;
             var time = currentTime;
 
             FindColor(time, allEvents, ref EventManager.inst.LastTheme, ref EventManager.inst.NewTheme, 4, 0);
@@ -763,9 +763,9 @@ namespace BetterLegacy.Core.Managers
             EventManager.inst.eventSequence = null;
             EventManager.inst.shakeSequence = null;
             EventManager.inst.themeSequence = null;
-            for (int i = 0; i < DataManager.inst.gameData.eventObjects.allEvents.Count; i++)
-                for (int j = 0; j < DataManager.inst.gameData.eventObjects.allEvents[i].Count; j++)
-                    DataManager.inst.gameData.eventObjects.allEvents[i][j].active = false;
+            for (int i = 0; i < GameData.Current.eventObjects.allEvents.Count; i++)
+                for (int j = 0; j < GameData.Current.eventObjects.allEvents[i].Count; j++)
+                    GameData.Current.eventObjects.allEvents[i][j].active = false;
         }
 
         public IEnumerator UpdateEvents()
@@ -778,9 +778,9 @@ namespace BetterLegacy.Core.Managers
             EventManager.inst.shakeSequence = null;
             EventManager.inst.themeSequence = null;
             DOTween.Kill(false);
-            for (int i = 0; i < DataManager.inst.gameData.eventObjects.allEvents.Count; i++)
-                for (int j = 0; j < DataManager.inst.gameData.eventObjects.allEvents[i].Count; j++)
-                    DataManager.inst.gameData.eventObjects.allEvents[i][j].active = false;
+            for (int i = 0; i < GameData.Current.eventObjects.allEvents.Count; i++)
+                for (int j = 0; j < GameData.Current.eventObjects.allEvents[i].Count; j++)
+                    GameData.Current.eventObjects.allEvents[i][j].active = false;
             yield break;
         }
 

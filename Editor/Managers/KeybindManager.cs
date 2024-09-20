@@ -1664,7 +1664,7 @@ namespace BetterLegacy.Editor.Managers
             if (RTEditor.inst.layerType == RTEditor.LayerType.Events)
             {
                 EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, 0);
-                AudioManager.inst.SetMusicTime(DataManager.inst.gameData.eventObjects.allEvents[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].eventTime);
+                AudioManager.inst.SetMusicTime(GameData.Current.eventObjects.allEvents[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].eventTime);
             }
         }
 
@@ -1681,8 +1681,8 @@ namespace BetterLegacy.Editor.Managers
             }
             if (RTEditor.inst.layerType == RTEditor.LayerType.Events)
             {
-                EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, DataManager.inst.gameData.eventObjects.allEvents[EventEditor.inst.currentEventType].Count - 1);
-                AudioManager.inst.SetMusicTime(DataManager.inst.gameData.eventObjects.allEvents[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].eventTime);
+                EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, GameData.Current.eventObjects.allEvents[EventEditor.inst.currentEventType].Count - 1);
+                AudioManager.inst.SetMusicTime(GameData.Current.eventObjects.allEvents[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].eventTime);
             }
         }
 
@@ -1699,12 +1699,12 @@ namespace BetterLegacy.Editor.Managers
             }
             if (RTEditor.inst.layerType == RTEditor.LayerType.Events)
             {
-                var allEvents = DataManager.inst.gameData.eventObjects.allEvents;
+                var allEvents = GameData.Current.eventObjects.allEvents;
                 int count = allEvents[EventEditor.inst.currentEventType].Count;
                 int num = EventEditor.inst.currentEvent + 1 >= count ? count - 1 : EventEditor.inst.currentEvent + 1;
 
                 EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, num);
-                AudioManager.inst.SetMusicTime(DataManager.inst.gameData.eventObjects.allEvents[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].eventTime);
+                AudioManager.inst.SetMusicTime(GameData.Current.eventObjects.allEvents[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].eventTime);
             }
         }
 
@@ -1724,7 +1724,7 @@ namespace BetterLegacy.Editor.Managers
                 int num = EventEditor.inst.currentEvent - 1 < 0 ? 0 : EventEditor.inst.currentEvent - 1;
 
                 EventEditor.inst.SetCurrentEvent(EventEditor.inst.currentEventType, num);
-                AudioManager.inst.SetMusicTime(DataManager.inst.gameData.eventObjects.allEvents[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].eventTime);
+                AudioManager.inst.SetMusicTime(GameData.Current.eventObjects.allEvents[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent].eventTime);
             }
         }
 
@@ -1759,7 +1759,7 @@ namespace BetterLegacy.Editor.Managers
         public static void SpawnPrefab(Keybind keybind)
         {
             bool useExternal = keybind.settings.TryGetValue("External", out string external) && bool.TryParse(external, out useExternal);
-            var prefabs = (useExternal ? RTPrefabEditor.inst.PrefabPanels.Select(x => x.Prefab) : DataManager.inst.gameData.prefabs.Select(x => x as Prefab)).ToList();
+            var prefabs = (useExternal ? RTPrefabEditor.inst.PrefabPanels.Select(x => x.Prefab).ToList() : GameData.Current.prefabs);
 
             if (keybind.settings.TryGetValue("UseID", out string useIDSetting) && bool.TryParse(useIDSetting, out bool boolean) && keybind.settings.TryGetValue("ID", out string id) && boolean)
             {
@@ -1888,7 +1888,7 @@ namespace BetterLegacy.Editor.Managers
 
         public static void ResetIntegerVariables(Keybind keybind)
         {
-            foreach (var beatmapObject in GameData.Current.BeatmapObjects)
+            foreach (var beatmapObject in GameData.Current.beatmapObjects)
                 beatmapObject.integerVariable = 0;
         }
 
@@ -1896,7 +1896,7 @@ namespace BetterLegacy.Editor.Managers
 
         public static void ForceSnapBPM(Keybind keybind)
         {
-            var markers = DataManager.inst.gameData.beatmapData.markers;
+            var markers = GameData.Current.beatmapData.markers;
             var currentMarker = MarkerEditor.inst.currentMarker;
             if (EditorManager.inst.IsDialogActive(EditorManager.EditorDialog.DialogType.Marker) && currentMarker >= 0 && currentMarker < markers.Count)
             {

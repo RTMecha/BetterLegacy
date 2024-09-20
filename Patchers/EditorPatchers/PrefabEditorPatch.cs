@@ -285,11 +285,11 @@ namespace BetterLegacy.Patchers
             CoreHelper.Log($"Adding Prefab [{__0.Name}]");
 
             var tmpPrefab = Prefab.DeepCopy((Prefab)__0);
-            int num = DataManager.inst.gameData.prefabs.FindAll(x => Regex.Replace(x.Name, "( +\\[\\d+])", string.Empty) == tmpPrefab.Name).Count();
+            int num = GameData.Current.prefabs.FindAll(x => Regex.Replace(x.Name, "( +\\[\\d+])", string.Empty) == tmpPrefab.Name).Count;
             if (num > 0)
                 tmpPrefab.Name = $"{tmpPrefab.Name}[{num}]";
 
-            DataManager.inst.gameData.prefabs.Add(tmpPrefab);
+            GameData.Current.prefabs.Add(tmpPrefab);
             __instance.ReloadInternalPrefabsInPopup();
 
             return false;

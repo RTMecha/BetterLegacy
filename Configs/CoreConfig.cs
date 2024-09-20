@@ -496,11 +496,9 @@ namespace BetterLegacy.Configs
             if (!EditorManager.inst)
                 return;
 
-            var list = GameData.Current.BeatmapObjects.Where(x => x.LDM).ToList();
+            var list = GameData.Current.beatmapObjects.FindAll(x => x.LDM);
             for (int i = 0; i < list.Count; i++)
-            {
                 Updater.UpdateObject(list[i]);
-            }
         }
 
         void DefaultSettingsChanged()

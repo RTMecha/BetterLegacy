@@ -5,6 +5,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
 using HarmonyLib;
+using System.Collections;
 using System.Linq;
 using UnityEngine;
 
@@ -21,7 +22,10 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static void UpdatePrefix()
         {
-            var list = DataManager.inst.gameData is GameData gameData && gameData.backgroundObjects != null ? gameData.BackgroundObjects.FindAll(x => x.modifiers.Count > 0) : null;
+            if (!GameData.IsValid || GameData.Current.backgroundObjects == null)
+                return;
+
+            var list = GameData.Current.backgroundObjects.FindAll(x => x.modifiers.Count > 0);
 
             if (CoreHelper.Playing)
                 for (int i = 0; i < list.Count; i++)
@@ -112,9 +116,9 @@ namespace BetterLegacy.Patchers
 
                 var beatmapTheme = CoreHelper.CurrentBeatmapTheme;
 
-                for (int bg = 0; bg < DataManager.inst.gameData.backgroundObjects.Count; bg++)
+                for (int bg = 0; bg < GameData.Current.backgroundObjects.Count; bg++)
                 {
-                    var backgroundObject = (BackgroundObject)DataManager.inst.gameData.backgroundObjects[bg];
+                    var backgroundObject = GameData.Current.backgroundObjects[bg];
 
                     if (backgroundObject.active)
                         backgroundObject.BaseObject?.SetActive(backgroundObject.Enabled);
@@ -217,6 +221,43 @@ namespace BetterLegacy.Patchers
             }
 
             return false;
+        }
+
+        [HarmonyPatch(nameof(BackgroundManager.UpdateBackgrounds))]
+        [HarmonyPrefix]
+        static bool UpdateBackgrounds()
+        {
+            foreach (var gameObject in Instance.backgroundObjects)
+                CoreHelper.Destroy(gameObject);
+            Instance.backgroundObjects.Clear();
+
+            foreach (var backgroundObject in GameData.Current.backgroundObjects)
+                Instance.CreateBackgroundObject(backgroundObject);
+            return false;
+        }
+
+        [HarmonyPatch(nameof(BackgroundManager.LoadBackground))]
+        [HarmonyPrefix]
+        static bool LoadBackgroundPrefix(ref IEnumerator __result)
+        {
+            __result = LoadBackgrounds();
+            return false;
+        }
+
+        static IEnumerator LoadBackgrounds()
+        {
+            while (!GameData.IsValid || GameManager.inst.gameState != GameManager.State.Playing)
+                yield return null;
+
+            Instance.audio = AudioManager.inst.CurrentAudioSource;
+            Instance.samples = new float[256];
+            if (Instance.audio.clip != null)
+                Instance.audio.clip.GetData(Instance.samples, 0);
+
+            foreach (var backgroundObject in GameData.Current.backgroundObjects)
+                Instance.CreateBackgroundObject(backgroundObject);
+
+            yield break;
         }
     }
 }

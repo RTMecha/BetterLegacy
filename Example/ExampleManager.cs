@@ -260,7 +260,7 @@ namespace BetterLegacy.Example
 
         public static bool SayAnyways() => true;
 
-        public static bool ObjectsAliveCountHigherThan900() => DataManager.inst.gameData != null && DataManager.inst.gameData.beatmapObjects.FindAll(x => x.TimeWithinLifespan()).Count > 900;
+        public static bool ObjectsAliveCountHigherThan900() => GameData.IsValid && GameData.Current.beatmapObjects.FindAll(x => x.Alive).Count > 900;
 
         public static bool LevelCountIsZero() => EditorManager.inst && EditorManager.inst.loadedLevels.Count <= 0;
 

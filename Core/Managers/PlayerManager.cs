@@ -106,7 +106,7 @@ namespace BetterLegacy.Core.Managers
 
         public static void LoadLocalModels()
         {
-            if (!CoreHelper.InStory && PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value && GameData.IsValid && GameData.Current.LevelBeatmapData.ModLevelData.allowCustomPlayerModels)
+            if (!CoreHelper.InStory && PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value && GameData.IsValid && GameData.Current.beatmapData.ModLevelData.allowCustomPlayerModels)
                 inst.StartCoroutine(ILoadGlobalModels());
             else
                 inst.StartCoroutine(ILoadLocalModels());
@@ -271,7 +271,7 @@ namespace BetterLegacy.Core.Managers
                         PlayerModels.Add(id, model);
                 }
 
-                if (CoreHelper.InEditor || (GameData.IsValid && !GameData.Current.LevelBeatmapData.ModLevelData.allowCustomPlayerModels) || !PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
+                if (CoreHelper.InEditor || (GameData.IsValid && !GameData.Current.beatmapData.ModLevelData.allowCustomPlayerModels) || !PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
                     LoadIndexes();
                 else if (PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
                 {
@@ -282,7 +282,7 @@ namespace BetterLegacy.Core.Managers
                 }
             }
 
-            if (GameData.IsValid && !GameData.Current.LevelBeatmapData.ModLevelData.allowCustomPlayerModels && PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
+            if (GameData.IsValid && !GameData.Current.beatmapData.ModLevelData.allowCustomPlayerModels && PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value)
                 AssignPlayerModels();
 
             yield break;
@@ -310,7 +310,7 @@ namespace BetterLegacy.Core.Managers
                     }
                 }
             }
-            else if (!PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value || (GameData.IsValid && !GameData.Current.LevelBeatmapData.ModLevelData.allowCustomPlayerModels))
+            else if (!PlayerConfig.Instance.LoadFromGlobalPlayersInArcade.Value || (GameData.IsValid && !GameData.Current.beatmapData.ModLevelData.allowCustomPlayerModels))
             {
                 CoreHelper.LogError("player.lspl file does not exist, setting to default player");
                 for (int i = 0; i < PlayerModelsIndex.Count; i++)
@@ -608,13 +608,13 @@ namespace BetterLegacy.Core.Managers
 
             AssignPlayerModels();
 
-            var nextIndex = DataManager.inst.gameData.beatmapData.checkpoints.FindIndex(x => x.time > AudioManager.inst.CurrentAudioSource.time);
+            var nextIndex = GameData.Current.beatmapData.checkpoints.FindIndex(x => x.time > AudioManager.inst.CurrentAudioSource.time);
             var prevIndex = nextIndex - 1;
             if (prevIndex < 0)
                 prevIndex = 0;
 
-            GameManager.inst.SpawnPlayers(DataManager.inst.gameData.beatmapData.checkpoints.Count > prevIndex && DataManager.inst.gameData.beatmapData.checkpoints[prevIndex] != null ?
-                DataManager.inst.gameData.beatmapData.checkpoints[prevIndex].pos : EventManager.inst.cam.transform.position);
+            GameManager.inst.SpawnPlayers(GameData.Current.beatmapData.checkpoints.Count > prevIndex && GameData.Current.beatmapData.checkpoints[prevIndex] != null ?
+                GameData.Current.beatmapData.checkpoints[prevIndex].pos : EventManager.inst.cam.transform.position);
         }
 
         public static void RespawnPlayer(int index)
@@ -625,13 +625,13 @@ namespace BetterLegacy.Core.Managers
             if (PlayerModelsIndex.Count > index && PlayerModels.ContainsKey(PlayerModelsIndex[index]))
                 Players[index].CurrentPlayerModel = PlayerModelsIndex[index];
 
-            var nextIndex = DataManager.inst.gameData.beatmapData.checkpoints.FindIndex(x => x.time > AudioManager.inst.CurrentAudioSource.time);
+            var nextIndex = GameData.Current.beatmapData.checkpoints.FindIndex(x => x.time > AudioManager.inst.CurrentAudioSource.time);
             var prevIndex = nextIndex - 1;
             if (prevIndex < 0)
                 prevIndex = 0;
 
-            GameManager.inst.SpawnPlayers(DataManager.inst.gameData.beatmapData.checkpoints.Count > prevIndex && DataManager.inst.gameData.beatmapData.checkpoints[prevIndex] != null ?
-                DataManager.inst.gameData.beatmapData.checkpoints[prevIndex].pos : EventManager.inst.cam.transform.position);
+            GameManager.inst.SpawnPlayers(GameData.Current.beatmapData.checkpoints.Count > prevIndex && GameData.Current.beatmapData.checkpoints[prevIndex] != null ?
+                GameData.Current.beatmapData.checkpoints[prevIndex].pos : EventManager.inst.cam.transform.position);
         }
 
         #endregion

@@ -57,20 +57,10 @@ namespace BetterLegacy.Core.Optimization
             audioTimeVelocity = 0.0f;
 
             // Removing and reinserting prefabs.
-            DataManager.inst.gameData.beatmapObjects.RemoveAll(x => x.fromPrefab);
-            for (int i = 0; i < DataManager.inst.gameData.prefabObjects.Count; i++)
-                AddPrefabToLevel(DataManager.inst.gameData.prefabObjects[i], false);
+            GameData.Current.beatmapObjects.RemoveAll(x => x.fromPrefab);
+            for (int i = 0; i < GameData.Current.prefabObjects.Count; i++)
+                AddPrefabToLevel(GameData.Current.prefabObjects[i], false);
             
-            try
-            {
-                if (DataManager.inst.gameData is GameData gameData)
-                    gameData.moddedBeatmapObjects = gameData.beatmapObjects.Select(x => (BeatmapObject)x).ToList();
-            }
-            catch (System.Exception ex)
-            {
-                CoreHelper.LogException(ex);
-            }
-
             levelProcessor = new LevelProcessor(GameData.Current);
         }
 
@@ -162,7 +152,7 @@ namespace BetterLegacy.Core.Optimization
         /// </summary>
         /// <param name="beatmapObject">The BeatmapObject to update.</param>
         /// <param name="context">The specific context to update under.</param>
-        public static void UpdateObject(BaseBeatmapObject beatmapObject, string context)
+        public static void UpdateObject(BeatmapObject beatmapObject, string context)
         {
             context = context.ToLower().Replace(" ", "").Replace("_", "");
             if (TryGetObject(beatmapObject, out LevelObject levelObject))
@@ -190,7 +180,7 @@ namespace BetterLegacy.Core.Optimization
                             spawner.deactivateList.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
                             spawner.RecalculateObjectStates();
 
-                            levelObject.SetActive(beatmapObject.TimeWithinLifespan());
+                            levelObject.SetActive(beatmapObject.Alive);
 
                             foreach (var levelParent in levelObject.parentObjects)
                                 levelParent.timeOffset = levelParent.BeatmapObject.StartTime;
@@ -228,7 +218,7 @@ namespace BetterLegacy.Core.Optimization
 
                                 foreach (var id in ids)
                                 {
-                                    var child = DataManager.inst.gameData.beatmapObjects.Find(x => x.id == id);
+                                    var child = GameData.Current.beatmapObjects.Find(x => x.id == id);
                                     if (TryGetObject(child, out LevelObject childLevelObject))
                                     {
                                         childLevelObject.cameraParent = beatmapParent.parent == "CAMERA_PARENT";
@@ -237,9 +227,9 @@ namespace BetterLegacy.Core.Optimization
                                         childLevelObject.scaleParent = beatmapParent.GetParentType(1);
                                         childLevelObject.rotationParent = beatmapParent.GetParentType(2);
 
-                                        childLevelObject.positionParentOffset = ((BeatmapObject)beatmapParent).parallaxSettings[0];
-                                        childLevelObject.scaleParentOffset = ((BeatmapObject)beatmapParent).parallaxSettings[1];
-                                        childLevelObject.rotationParentOffset = ((BeatmapObject)beatmapParent).parallaxSettings[2];
+                                        childLevelObject.positionParentOffset = beatmapParent.parallaxSettings[0];
+                                        childLevelObject.scaleParentOffset = beatmapParent.parallaxSettings[1];
+                                        childLevelObject.rotationParentOffset = beatmapParent.parallaxSettings[2];
                                     }
                                 }
                             }
@@ -266,7 +256,7 @@ namespace BetterLegacy.Core.Optimization
 
                                 foreach (var id in ids)
                                 {
-                                    var child = DataManager.inst.gameData.beatmapObjects.Find(x => x.id == id);
+                                    var child = GameData.Current.beatmapObjects.Find(x => x.id == id);
                                     if (TryGetObject(child, out LevelObject childLevelObject))
                                     {
                                         childLevelObject.cameraParent = beatmapParent.parent == "CAMERA_PARENT";
@@ -275,16 +265,16 @@ namespace BetterLegacy.Core.Optimization
                                         childLevelObject.scaleParent = beatmapParent.GetParentType(1);
                                         childLevelObject.rotationParent = beatmapParent.GetParentType(2);
 
-                                        childLevelObject.positionParentOffset = ((BeatmapObject)beatmapParent).parallaxSettings[0];
-                                        childLevelObject.scaleParentOffset = ((BeatmapObject)beatmapParent).parallaxSettings[1];
-                                        childLevelObject.rotationParentOffset = ((BeatmapObject)beatmapParent).parallaxSettings[2];
+                                        childLevelObject.positionParentOffset = beatmapParent.parallaxSettings[0];
+                                        childLevelObject.scaleParentOffset = beatmapParent.parallaxSettings[1];
+                                        childLevelObject.rotationParentOffset = beatmapParent.parallaxSettings[2];
                                     }
                                 }
                             }
 
                             foreach (var levelParent in levelObject.parentObjects)
                             {
-                                if (DataManager.inst.gameData.beatmapObjects.TryFind(x => x.id == levelParent.id, out BaseBeatmapObject parent))
+                                if (GameData.Current.beatmapObjects.TryFind(x => x.id == levelParent.id, out BeatmapObject parent))
                                 {
                                     levelParent.parentAnimatePosition = parent.GetParentType(0);
                                     levelParent.parentAnimateScale = parent.GetParentType(1);
@@ -355,9 +345,9 @@ namespace BetterLegacy.Core.Optimization
         /// <param name="reinsert">If the object should be updated or removed.</param>
         public static void UpdatePrefab(BasePrefabObject prefabObject, bool reinsert = true)
         {
-            DataManager.inst.gameData.beatmapObjects.Where(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID).ToList().ForEach(x => UpdateObject(x, reinsert: false));
+            GameData.Current.beatmapObjects.FindAll(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID).ForEach(x => UpdateObject(x, reinsert: false));
 
-            DataManager.inst.gameData.beatmapObjects.RemoveAll(x => x.prefabInstanceID == prefabObject.ID);
+            GameData.Current.beatmapObjects.RemoveAll(x => x.prefabInstanceID == prefabObject.ID);
 
             if (reinsert)
                 CoreHelper.StartCoroutine(IAddPrefabToLevel(prefabObject));
@@ -376,7 +366,7 @@ namespace BetterLegacy.Core.Optimization
                 case "offset":
                 case "transformoffset":
                     {
-                        foreach (var beatmapObject in DataManager.inst.gameData.beatmapObjects.Where(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID && x is BeatmapObject).Select(x => x as BeatmapObject))
+                        foreach (var beatmapObject in GameData.Current.beatmapObjects.FindAll(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID))
                         {
                             if (beatmapObject.levelObject && beatmapObject.levelObject.visualObject != null && beatmapObject.levelObject.top)
                             {
@@ -437,11 +427,11 @@ namespace BetterLegacy.Core.Optimization
 
                         float timeToAdd = 0f;
 
-                        var prefab = DataManager.inst.gameData.prefabs.Find(x => x.ID == prefabObject.prefabID);
+                        var prefab = GameData.Current.prefabs.Find(x => x.ID == prefabObject.prefabID);
 
                         for (int i = 0; i < prefabObject.RepeatCount + 1; i++)
                         {
-                            foreach (var beatmapObject in DataManager.inst.gameData.beatmapObjects.Where(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID).Select(x => x as BeatmapObject))
+                            foreach (var beatmapObject in GameData.Current.beatmapObjects.FindAll(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID))
                             {
                                 if (prefab.objects.TryFind(x => x.id == beatmapObject.originalID, out BaseBeatmapObject original))
                                 {
@@ -459,8 +449,6 @@ namespace BetterLegacy.Core.Optimization
 
                                         UpdateObject(beatmapObject, "Keyframes");
                                     }
-
-                                    //UpdateObject(beatmapObject, "Start Time");
 
                                     // Update Start Time
                                     if (TryGetObject(beatmapObject, out LevelObject levelObject))
@@ -497,7 +485,7 @@ namespace BetterLegacy.Core.Optimization
                     }
                 case "autokill":
                     {
-                        foreach (var beatmapObject in DataManager.inst.gameData.beatmapObjects.Where(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID))
+                        foreach (var beatmapObject in GameData.Current.beatmapObjects.Where(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID))
                         {
                             if (prefabObject.autoKillType != PrefabObject.AutoKillType.Regular && prefabObject.StartTime + prefabObject.Prefab?.Offset + beatmapObject.GetObjectLifeLength(_oldStyle: true) > prefabObject.autoKillOffset)
                             {
@@ -526,7 +514,7 @@ namespace BetterLegacy.Core.Optimization
                 case "offset":
                 case "transformoffset":
                     {
-                        foreach (var beatmapObject in DataManager.inst.gameData.beatmapObjects.Where(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID && x is BeatmapObject).Select(x => x as BeatmapObject))
+                        foreach (var beatmapObject in GameData.Current.beatmapObjects.Where(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID))
                         {
                             if (beatmapObject.levelObject && beatmapObject.levelObject.visualObject != null && beatmapObject.levelObject.top)
                             {
@@ -587,11 +575,11 @@ namespace BetterLegacy.Core.Optimization
 
                         float timeToAdd = 0f;
 
-                        var prefab = DataManager.inst.gameData.prefabs.Find(x => x.ID == prefabObject.prefabID);
+                        var prefab = GameData.Current.prefabs.Find(x => x.ID == prefabObject.prefabID);
 
                         for (int i = 0; i < prefabObject.RepeatCount + 1; i++)
                         {
-                            foreach (var beatmapObject in DataManager.inst.gameData.beatmapObjects.Where(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID).Select(x => x as BeatmapObject))
+                            foreach (var beatmapObject in GameData.Current.beatmapObjects.Where(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID))
                             {
                                 if (prefab.objects.TryFind(x => x.id == beatmapObject.originalID, out BaseBeatmapObject original))
                                 {
@@ -609,8 +597,6 @@ namespace BetterLegacy.Core.Optimization
 
                                         UpdateObject(beatmapObject, "Keyframes");
                                     }
-
-                                    //UpdateObject(beatmapObject, "Start Time");
 
                                     // Update Start Time
                                     if (TryGetObject(beatmapObject, out LevelObject levelObject))
@@ -647,7 +633,7 @@ namespace BetterLegacy.Core.Optimization
                     }
                 case "autokill":
                     {
-                        foreach (var beatmapObject in DataManager.inst.gameData.beatmapObjects.Where(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID))
+                        foreach (var beatmapObject in GameData.Current.beatmapObjects.FindAll(x => x.fromPrefab && x.prefabInstanceID == prefabObject.ID))
                         {
                             if (prefabObject.autoKillType != PrefabObject.AutoKillType.Regular && prefabObject.StartTime + prefabObject.Prefab?.Offset + beatmapObject.GetObjectLifeLength(_oldStyle: true) > prefabObject.autoKillOffset)
                             {
@@ -682,10 +668,10 @@ namespace BetterLegacy.Core.Optimization
             var prefabObject = (PrefabObject)basePrefabObject;
 
             // Checks if prefab exists.
-            bool prefabExists = DataManager.inst.gameData.prefabs.FindIndex(x => x.ID == basePrefabObject.prefabID) != -1;
+            bool prefabExists = GameData.Current.prefabs.FindIndex(x => x.ID == basePrefabObject.prefabID) != -1;
             if (string.IsNullOrEmpty(basePrefabObject.prefabID) || !prefabExists)
             {
-                DataManager.inst.gameData.prefabObjects.RemoveAll(x => x.prefabID == basePrefabObject.prefabID);
+                GameData.Current.prefabObjects.RemoveAll(x => x.prefabID == basePrefabObject.prefabID);
                 return;
             }
 
@@ -696,7 +682,7 @@ namespace BetterLegacy.Core.Optimization
 
             float timeToAdd = 0f;
 
-            var prefab = (Prefab)DataManager.inst.gameData.prefabs.Find(x => x.ID == basePrefabObject.prefabID);
+            var prefab = GameData.Current.prefabs.Find(x => x.ID == basePrefabObject.prefabID);
 
             var list = new List<BeatmapObject>();
             if (prefab.objects.Count > 0)
@@ -715,7 +701,7 @@ namespace BetterLegacy.Core.Optimization
 
                             if (ids.TryGetValue(beatmapObj.parent, out string parentID))
                                 beatmapObject.parent = parentID;
-                            else if (DataManager.inst.gameData.beatmapObjects.FindIndex(x => x.id == beatmapObj.parent) == -1)
+                            else if (GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObj.parent) == -1)
                                 beatmapObject.parent = "";
                         }
                         catch (System.Exception ex)
@@ -764,7 +750,7 @@ namespace BetterLegacy.Core.Optimization
                         beatmapObject.prefabID = basePrefabObject.prefabID;
 
                         beatmapObject.originalID = beatmapObj.id;
-                        DataManager.inst.gameData.beatmapObjects.Add(beatmapObject);
+                        GameData.Current.beatmapObjects.Add(beatmapObject);
                         if (levelProcessor && levelProcessor.converter != null && !levelProcessor.converter.beatmapObjects.ContainsKey(beatmapObject.id))
                             levelProcessor.converter.beatmapObjects.Add(beatmapObject.id, beatmapObject);
                         list.Add(beatmapObject);
@@ -791,10 +777,10 @@ namespace BetterLegacy.Core.Optimization
             var prefabObject = (PrefabObject)basePrefabObject;
 
             // Checks if prefab exists.
-            bool prefabExists = DataManager.inst.gameData.prefabs.FindIndex(x => x.ID == basePrefabObject.prefabID) != -1;
+            bool prefabExists = GameData.Current.prefabs.FindIndex(x => x.ID == basePrefabObject.prefabID) != -1;
             if (string.IsNullOrEmpty(basePrefabObject.prefabID) || !prefabExists)
             {
-                DataManager.inst.gameData.prefabObjects.RemoveAll(x => x.prefabID == basePrefabObject.prefabID);
+                GameData.Current.prefabObjects.RemoveAll(x => x.prefabID == basePrefabObject.prefabID);
                 yield break;
             }
 
@@ -805,7 +791,7 @@ namespace BetterLegacy.Core.Optimization
 
             float timeToAdd = 0f;
 
-            var prefab = (Prefab)DataManager.inst.gameData.prefabs.Find(x => x.ID == basePrefabObject.prefabID);
+            var prefab = GameData.Current.prefabs.Find(x => x.ID == basePrefabObject.prefabID);
 
             var list = new List<BeatmapObject>();
             if (prefab.objects.Count > 0)
@@ -824,7 +810,7 @@ namespace BetterLegacy.Core.Optimization
 
                             if (ids.TryGetValue(beatmapObj.parent, out string parentID))
                                 beatmapObject.parent = parentID;
-                            else if (DataManager.inst.gameData.beatmapObjects.FindIndex(x => x.id == beatmapObj.parent) == -1)
+                            else if (GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObj.parent) == -1)
                                 beatmapObject.parent = "";
                         }
                         catch (System.Exception ex)
@@ -873,7 +859,7 @@ namespace BetterLegacy.Core.Optimization
                         beatmapObject.prefabID = basePrefabObject.prefabID;
 
                         beatmapObject.originalID = beatmapObj.id;
-                        DataManager.inst.gameData.beatmapObjects.Add(beatmapObject);
+                        GameData.Current.beatmapObjects.Add(beatmapObject);
                         if (levelProcessor && levelProcessor.converter != null && !levelProcessor.converter.beatmapObjects.ContainsKey(beatmapObject.id))
                             levelProcessor.converter.beatmapObjects.Add(beatmapObject.id, beatmapObject);
                         list.Add(beatmapObject);
@@ -907,7 +893,7 @@ namespace BetterLegacy.Core.Optimization
             }
 
             // Recursive recaching.
-            foreach (var beatmapObject in DataManager.inst.gameData.beatmapObjects)
+            foreach (var beatmapObject in GameData.Current.beatmapObjects)
             {
                 if (beatmapObject.parent == baseBeatmapObject.id)
                     CoreHelper.StartCoroutine(RecacheSequences(beatmapObject, converter, reinsert, updateParents));
@@ -966,7 +952,7 @@ namespace BetterLegacy.Core.Optimization
             }
 
             // Recursing updating.
-            foreach (var beatmapObject in DataManager.inst.gameData.beatmapObjects)
+            foreach (var beatmapObject in GameData.Current.beatmapObjects)
             {
                 if (beatmapObject.parent == id)
                     CoreHelper.StartCoroutine(UpdateObjects(beatmapObject, level, objects, converter, spawner, reinsert));
@@ -1076,20 +1062,17 @@ namespace BetterLegacy.Core.Optimization
 
         static void ResetOffsets()
         {
-            if (DataManager.inst.gameData is not GameData)
+            if (!GameData.IsValid)
                 return;
 
-            foreach (var bm in GameData.Current.beatmapObjects)
+            foreach (var beatmapObject in GameData.Current.beatmapObjects)
             {
-                if (bm is BeatmapObject modObject)
-                {
-                    modObject.reactivePositionOffset = Vector3.zero;
-                    modObject.reactiveScaleOffset = Vector3.zero;
-                    modObject.reactiveRotationOffset = 0f;
-                    modObject.positionOffset = Vector3.zero;
-                    modObject.scaleOffset = Vector3.zero;
-                    modObject.rotationOffset = Vector3.zero;
-                }
+                beatmapObject.reactivePositionOffset = Vector3.zero;
+                beatmapObject.reactiveScaleOffset = Vector3.zero;
+                beatmapObject.reactiveRotationOffset = 0f;
+                beatmapObject.positionOffset = Vector3.zero;
+                beatmapObject.scaleOffset = Vector3.zero;
+                beatmapObject.rotationOffset = Vector3.zero;
             }
         }
 

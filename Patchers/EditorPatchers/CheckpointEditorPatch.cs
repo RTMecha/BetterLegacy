@@ -36,6 +36,42 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
+        [HarmonyPatch(nameof(CheckpointEditor.Update))]
+        [HarmonyPrefix]
+        static bool UpdatePrefix()
+        {
+            if (!GameData.IsValid)
+                return false;
+
+            if (EditorManager.inst.IsDialogActive(EditorManager.EditorDialog.DialogType.Checkpoint) && EditorManager.inst.isEditing)
+            {
+                if (GameData.Current.beatmapData.checkpoints != null)
+                {
+                    Vector3 vector = GameData.Current.beatmapData.checkpoints[Instance.currentObj].pos;
+                    vector.z = -1f;
+                    LSRenderManager.inst.CreateSprite("checkpoint_view", "checkpoint", vector, new Vector2(6f, 6f), 0f, LSColors.gray500);
+                }
+            }
+            else
+                LSRenderManager.inst.DeleteSprite("checkpoint_view");
+
+            if (Input.GetMouseButtonUp(0))
+                for (int i = 0; i < Instance.checkpointsDrag.Count; i++)
+                    Instance.checkpointsDrag[i] = false;
+
+            for (int j = 0; j < Instance.checkpointsDrag.Count; j++)
+            {
+                if (Instance.checkpointsDrag[j])
+                {
+                    DataManager.inst.gameData.beatmapData.checkpoints[j].time = Mathf.Clamp(EditorManager.inst.GetTimelineTime(0f), 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                    Instance.left.Find("time/time").GetComponent<InputField>().text = GameData.Current.beatmapData.checkpoints[j].time.ToString("f3");
+                    Instance.RenderCheckpoint(j);
+                }
+            }
+
+            return false;
+        }
+
         [HarmonyPatch(nameof(CheckpointEditor.OpenDialog))]
         [HarmonyPrefix]
         static bool OpenDialogPrefix(int __0)
@@ -232,6 +268,71 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
+        [HarmonyPatch(nameof(CheckpointEditor.CreateGhostCheckpoints))]
+        [HarmonyPrefix]
+        static bool CreateGhostCheckpointsPrefix()
+        {
+            if (Instance.checkpoints.Count > 0)
+            {
+                foreach (var gameObject in Instance.checkpoints)
+                    CoreHelper.Destroy(gameObject);
+                Instance.checkpoints.Clear();
+                Instance.checkpointsDrag.Clear();
+            }
+
+            int num = 0;
+            foreach (var checkpoint in GameData.Current.beatmapData.checkpoints)
+            {
+                var gameObject = Instance.ghostCheckpointPrefab.Duplicate(EditorManager.inst.timeline.transform, "Checkpoint " + num);
+                gameObject.transform.localScale = Vector3.one;
+
+                Instance.checkpoints.Insert(num, gameObject);
+
+                float time = checkpoint.time;
+                gameObject.transform.AsRT().sizeDelta = new Vector2(8f, 300f);
+                gameObject.transform.AsRT().anchoredPosition = new Vector2(time * EditorManager.inst.Zoom - (float)(EditorManager.BaseUnit / 2), 0f);
+                gameObject.SetActive(true);
+                num++;
+            }
+            Instance.RenderCheckpoints();
+            return false;
+        }
+
+        [HarmonyPatch(nameof(CheckpointEditor.CreateCheckpoints))]
+        [HarmonyPrefix]
+        static bool CreateCheckpointsPrefix()
+        {
+            if (Instance.checkpoints.Count > 0)
+            {
+                foreach (var gameObject in Instance.checkpoints)
+                    CoreHelper.Destroy(gameObject);
+                Instance.checkpoints.Clear();
+                Instance.checkpointsDrag.Clear();
+            }
+
+            var parent = EventEditor.inst.EventHolders.transform.GetChild(14);
+            int num = 0;
+            foreach (var checkpoint in GameData.Current.beatmapData.checkpoints)
+            {
+                GameObject gameObject2 = Instance.checkpointPrefab.Duplicate(parent, "Checkpoint " + num);
+                gameObject2.transform.localScale = Vector3.one;
+
+                Instance.checkpoints.Insert(num, gameObject2);
+                Instance.checkpointsDrag.Add(false);
+
+                gameObject2.transform.AsRT().sizeDelta = new Vector2(8f, 20f);
+
+                TriggerHelper.AddEventTriggers(gameObject2,
+                    Instance.CreateCheckpointTrigger(EventTriggerType.Submit, num),
+                    Instance.CreateCheckpointTrigger(EventTriggerType.PointerClick, num),
+                    Instance.CreateEventStartDragTrigger(EventTriggerType.BeginDrag, num),
+                    Instance.CreateEventEndDragTrigger(EventTriggerType.EndDrag, num));
+                num++;
+            }
+            Instance.RenderCheckpoints();
+            return false;
+        }
+
         [HarmonyPatch(nameof(CheckpointEditor.RenderCheckpoint))]
         [HarmonyPrefix]
         static bool RenderCheckpointPrefix(int __0)
@@ -268,7 +369,7 @@ namespace BetterLegacy.Patchers
             if (!GameData.IsValid || GameData.Current.beatmapData == null || GameData.Current.beatmapData.checkpoints == null)
                 return false;
 
-            for (int i = 0; i < DataManager.inst.gameData.beatmapData.checkpoints.Count; i++)
+            for (int i = 0; i < GameData.Current.beatmapData.checkpoints.Count; i++)
                 Instance.RenderCheckpoint(i);
 
             return false;

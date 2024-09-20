@@ -146,8 +146,8 @@ namespace BetterLegacy.Core.Helpers
             {
                 CoreHelper.LogException(ex);
             } // try cleanup
-            DataManager.inst.gameData = null;
-            DataManager.inst.gameData = new GameData();
+            GameData.Current = null;
+            GameData.Current = new GameData();
             InputDataManager.inst.SetAllControllerRumble(0f);
 
             LevelManager.LevelEnded = false;
