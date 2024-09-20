@@ -346,6 +346,12 @@ namespace BetterLegacy.Core
 
         #region Data Extensions
 
+        public static bool TryFindAll<T>(this List<T> ts, Predicate<T> match, out List<T> findAll)
+        {
+            findAll = ts.FindAll(match);
+            return findAll.Count > 0;
+        }
+
         public static bool Has<T>(this List<T> ts, Predicate<T> predicate) => ts.Find(predicate) != null;
 
         public static void For<T>(this T[] ts, Action<T, int> action)
