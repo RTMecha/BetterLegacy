@@ -24,62 +24,33 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static void UpdatePrefix()
         {
-            if (!GameData.IsValid || GameData.Current.backgroundObjects == null)
+            if (!CoreHelper.Playing || !GameData.IsValid || GameData.Current.backgroundObjects == null)
                 return;
 
             var list = GameData.Current.backgroundObjects.FindAll(x => x.modifiers.Count > 0);
 
-            if (CoreHelper.Playing)
-                for (int i = 0; i < list.Count; i++)
+            for (int i = 0; i < list.Count; i++)
+            {
+                var backgroundObject = list[i];
+
+                for (int j = 0; j < backgroundObject.modifiers.Count; j++)
                 {
-                    var backgroundObject = list[i];
+                    var modifiers = backgroundObject.modifiers[j];
 
-                    for (int j = 0; j < backgroundObject.modifiers.Count; j++)
-                    {
-                        var modifiers = backgroundObject.modifiers[j];
-
-                        if (modifiers.TryFindAll(x => x.Action == null && x.type == ModifierBase.Type.Action || x.Trigger == null && x.type == ModifierBase.Type.Trigger || x.Inactive == null, out List<Modifier<BackgroundObject>> findAll))
-                            findAll.ForEach(modifier =>
-                            {
-                                modifier.Action = ModifiersHelper.BGAction;
-                                modifier.Trigger = ModifiersHelper.BGTrigger;
-                                modifier.Inactive = ModifiersHelper.BGInactive;
-                            });
-
-                        var actions = modifiers.FindAll(x => x.type == ModifierBase.Type.Action);
-                        var triggers = modifiers.FindAll(x => x.type == ModifierBase.Type.Trigger);
-
-                        if (triggers.Count > 0)
+                    if (modifiers.TryFindAll(x => x.Action == null && x.type == ModifierBase.Type.Action || x.Trigger == null && x.type == ModifierBase.Type.Trigger || x.Inactive == null, out List<Modifier<BackgroundObject>> findAll))
+                        findAll.ForEach(modifier =>
                         {
-                            if (triggers.TrueForAll(x => !x.active && (x.Trigger(x) && !x.not || !x.Trigger(x) && x.not)))
-                            {
-                                foreach (var act in actions)
-                                {
-                                    if (act.active)
-                                        continue;
+                            modifier.Action = ModifiersHelper.BGAction;
+                            modifier.Trigger = ModifiersHelper.BGTrigger;
+                            modifier.Inactive = ModifiersHelper.BGInactive;
+                        });
 
-                                    if (!act.constant)
-                                        act.active = true;
+                    var actions = modifiers.FindAll(x => x.type == ModifierBase.Type.Action);
+                    var triggers = modifiers.FindAll(x => x.type == ModifierBase.Type.Trigger);
 
-                                    act.Action?.Invoke(act);
-                                }
-
-                                foreach (var trig in triggers)
-                                {
-                                    if (!trig.constant)
-                                        trig.active = true;
-                                }
-                            }
-                            else
-                            {
-                                foreach (var act in actions)
-                                {
-                                    act.active = false;
-                                    act.Inactive?.Invoke(act);
-                                }
-                            }
-                        }
-                        else
+                    if (triggers.Count > 0)
+                    {
+                        if (triggers.TrueForAll(x => !x.active && (x.Trigger(x) && !x.not || !x.Trigger(x) && x.not)))
                         {
                             foreach (var act in actions)
                             {
@@ -88,11 +59,39 @@ namespace BetterLegacy.Patchers
 
                                 if (!act.constant)
                                     act.active = true;
+
                                 act.Action?.Invoke(act);
+                            }
+
+                            foreach (var trig in triggers)
+                            {
+                                if (!trig.constant)
+                                    trig.active = true;
+                            }
+                        }
+                        else
+                        {
+                            foreach (var act in actions)
+                            {
+                                act.active = false;
+                                act.Inactive?.Invoke(act);
                             }
                         }
                     }
+                    else
+                    {
+                        foreach (var act in actions)
+                        {
+                            if (act.active)
+                                continue;
+
+                            if (!act.constant)
+                                act.active = true;
+                            act.Action?.Invoke(act);
+                        }
+                    }
                 }
+            }
         }
 
         [HarmonyPatch(nameof(BackgroundManager.CreateBackgroundObject))]
