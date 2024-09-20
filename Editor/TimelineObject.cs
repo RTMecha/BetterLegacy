@@ -71,6 +71,8 @@ namespace BetterLegacy.Editor
         /// </summary>
         public TextMeshProUGUI Text { get; set; }
 
+        public bool verified = false;
+
         /// <summary>
         /// Gets the ID of the object.
         /// </summary>
@@ -269,5 +271,27 @@ namespace BetterLegacy.Editor
         /// The internal keyframes an object stores. Only used for Beatmap Objects.
         /// </summary>
         public List<TimelineObject> InternalSelections { get; set; } = new List<TimelineObject>();
+
+        public TimelineObjectType ObjectType
+        {
+            get
+            {
+                if (IsBeatmapObject)
+                    return TimelineObjectType.BeatmapObject;
+                if (IsPrefabObject)
+                    return TimelineObjectType.PrefabObject;
+                if (IsEventKeyframe)
+                    return TimelineObjectType.EventKeyframe;
+                return TimelineObjectType.Null;
+            }
+        }
+
+        public enum TimelineObjectType
+        {
+            Null,
+            BeatmapObject,
+            PrefabObject,
+            EventKeyframe
+        }
     }
 }

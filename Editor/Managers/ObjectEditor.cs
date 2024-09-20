@@ -1387,8 +1387,11 @@ namespace BetterLegacy.Editor.Managers
 
         public void SetCurrentObject(TimelineObject timelineObject, bool bringTo = false, bool openDialog = true)
         {
-            if (!RTEditor.inst.timelineObjects.Has(x => x.ID == timelineObject.ID))
+            if (!timelineObject.verified && !RTEditor.inst.timelineObjects.Has(x => x.ID == timelineObject.ID))
+            {
+                timelineObject.verified = true;
                 RenderTimelineObject(timelineObject);
+            }
 
             if (CurrentSelection.IsBeatmapObject && CurrentSelection.ID != timelineObject.ID)
                 for (int i = 0; i < ObjEditor.inst.TimelineParents.Count; i++)
@@ -1496,9 +1499,7 @@ namespace BetterLegacy.Editor.Managers
         public TimelineObject GetTimelineObject(BeatmapObject beatmapObject)
         {
             if (beatmapObject.fromPrefab && RTEditor.inst.timelineObjects.TryFind(x => x.IsPrefabObject && x.ID == beatmapObject.prefabInstanceID, out TimelineObject timelineObject))
-            {
                 return timelineObject;
-            }
 
             if (!beatmapObject.timelineObject)
                 beatmapObject.timelineObject = new TimelineObject(beatmapObject);
@@ -1510,10 +1511,11 @@ namespace BetterLegacy.Editor.Managers
         {
             GameObject gameObject = null;
 
-            if (!RTEditor.inst.timelineObjects.Has(x => x.ID == timelineObject.ID))
+            if (!timelineObject.verified && !RTEditor.inst.timelineObjects.Has(x => x.ID == timelineObject.ID))
+            {
+                timelineObject.verified = true;
                 RTEditor.inst.timelineObjects.Add(timelineObject);
-            else
-                timelineObject = RTEditor.inst.timelineObjects.Find(x => x.ID == timelineObject.ID);
+            }
 
             gameObject = !timelineObject.GameObject ? CreateTimelineObject(timelineObject) : timelineObject.GameObject;
 
@@ -1532,6 +1534,15 @@ namespace BetterLegacy.Editor.Managers
 
                 var color = ObjEditor.inst.NormalColor;
 
+                Prefab prefab = timelineObject.ObjectType switch
+                {
+                    TimelineObject.TimelineObjectType.BeatmapObject => timelineObject.GetData<BeatmapObject>().Prefab,
+                    TimelineObject.TimelineObjectType.PrefabObject => timelineObject.GetData<PrefabObject>().Prefab,
+                    _ => null,
+                };
+
+                var prefabExists = prefab != null;
+
                 if (timelineObject.IsBeatmapObject)
                 {
                     var beatmapObject = timelineObject.GetData<BeatmapObject>();
@@ -1547,22 +1558,18 @@ namespace BetterLegacy.Editor.Managers
                     image.type = GetObjectTypePattern(beatmapObject.objectType);
                     image.sprite = GetObjectTypeSprite(beatmapObject.objectType);
 
-                    if (!string.IsNullOrEmpty(beatmapObject.prefabID))
+                    if (prefabExists)
+                        color = prefab.PrefabType.Color;
+                    else
                     {
-                        if (GameData.Current.prefabs.TryFind(x => x.ID == beatmapObject.prefabID, out Prefab prefab))
-                            color = prefab.PrefabType.Color;
-                        else
-                        {
-                            beatmapObject.prefabID = null;
-                            beatmapObject.prefabInstanceID = null;
-                        }
+                        beatmapObject.prefabID = null;
+                        beatmapObject.prefabInstanceID = null;
                     }
                 }
 
                 if (timelineObject.IsPrefabObject)
                 {
                     var prefabObject = timelineObject.GetData<PrefabObject>();
-                    var prefab = GameData.Current.prefabs.Find(x => x.ID == prefabObject.prefabID);
 
                     locked = prefabObject.editorData.locked;
                     collapsed = prefabObject.editorData.collapse;
@@ -1586,27 +1593,20 @@ namespace BetterLegacy.Editor.Managers
                     textMeshNoob.color = LSColors.white;
                 }
 
-                bool isBeatmapObject = timelineObject.IsBeatmapObject && !string.IsNullOrEmpty(timelineObject.GetData<BeatmapObject>().prefabID) && GameData.Current.prefabs.Has(x => x.ID == timelineObject.GetData<BeatmapObject>().prefabID);
-                bool isPrefab = timelineObject.IsPrefabObject && timelineObject.GetData<PrefabObject>().Prefab != null;
-
                 gameObject.transform.Find("icons/lock").gameObject.SetActive(locked);
                 gameObject.transform.Find("icons/dots").gameObject.SetActive(collapsed);
-                gameObject.transform.Find("icons/type").gameObject.SetActive(RenderPrefabTypeIcon && (isBeatmapObject || isPrefab));
+                var typeIcon = gameObject.transform.Find("icons/type").gameObject;
 
-                if (RenderPrefabTypeIcon && (isBeatmapObject || isPrefab))
-                {
-                    var iconImage = gameObject.transform.Find("icons/type/type").GetComponent<Image>();
-                    var prefab =
-                        isBeatmapObject ? timelineObject.GetData<BeatmapObject>().Prefab : timelineObject.GetData<PrefabObject>().Prefab;
-
-                    iconImage.sprite = prefab.PrefabType.icon;
-                }
+                var renderTypeIcon = prefabExists && RenderPrefabTypeIcon;
+                typeIcon.SetActive(renderTypeIcon);
+                if (renderTypeIcon)
+                    gameObject.transform.Find("icons/type/type").GetComponent<Image>().sprite = prefab.PrefabType.icon;
 
                 float zoom = EditorManager.inst.Zoom;
 
                 offset = offset <= TimelineCollapseLength ? TimelineCollapseLength * zoom : offset * zoom;
 
-                var rectTransform = (RectTransform)gameObject.transform;
+                var rectTransform = gameObject.transform.AsRT();
                 rectTransform.sizeDelta = new Vector2(offset, 20f);
                 rectTransform.anchoredPosition = new Vector2(startTime * zoom, (-20 * Mathf.Clamp(bin, 0, 14)));
                 if (timelineObject.Hover)
@@ -1666,10 +1666,11 @@ namespace BetterLegacy.Editor.Managers
         {
             GameObject gameObject = null;
 
-            if (!RTEditor.inst.timelineObjects.Has(x => x.ID == timelineObject.ID))
+            if (!timelineObject.verified && !RTEditor.inst.timelineObjects.Has(x => x.ID == timelineObject.ID))
+            {
+                timelineObject.verified = true;
                 RTEditor.inst.timelineObjects.Add(timelineObject);
-            else
-                timelineObject = RTEditor.inst.timelineObjects.Find(x => x.ID == timelineObject.ID);
+            }
 
             if (timelineObject.GameObject)
                 Destroy(timelineObject.GameObject);
