@@ -383,8 +383,8 @@ namespace BetterLegacy.Core.Managers
 
             CurrentLevel.playerData.Update(GameManager.inst.deaths.Count, GameManager.inst.hits.Count, BoostCount, true);
 
-            if (Saves.Has(x => x.ID == CurrentLevel.id))
-                Saves[Saves.FindIndex(x => x.ID == CurrentLevel.id)] = CurrentLevel.playerData;
+            if (Saves.TryFindIndex(x => x.ID == CurrentLevel.id, out int saveIndex))
+                Saves[saveIndex] = CurrentLevel.playerData;
             else
                 Saves.Add(CurrentLevel.playerData);
 
@@ -663,7 +663,7 @@ namespace BetterLegacy.Core.Managers
         /// <param name="level">Level to get a rank from.</param>
         /// <returns>A levels' stored rank.</returns>
         public static DataManager.LevelRank GetLevelRank(Level level)
-            => CoreHelper.InEditor ? EditorRank : level.playerData != null && DataManager.inst.levelRanks.Has(LevelRankPredicate(level)) ? DataManager.inst.levelRanks.Find(LevelRankPredicate(level)) : DataManager.inst.levelRanks[0];
+            => CoreHelper.InEditor ? EditorRank : level.playerData != null && DataManager.inst.levelRanks.TryFind(LevelRankPredicate(level), out DataManager.LevelRank levelRank) ? levelRank : DataManager.inst.levelRanks[0];
 
         /// <summary>
         /// Gets a levels' rank.

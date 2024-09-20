@@ -2402,9 +2402,9 @@ namespace BetterLegacy.Editor.Managers
 
             string p = null;
 
-            if (GameData.Current.beatmapObjects.Has(x => x.id == parent))
+            if (GameData.Current.beatmapObjects.TryFindIndex(x => x.id == parent, out int pa))
             {
-                p = GameData.Current.beatmapObjects.Find(x => x.id == parent).name;
+                p = GameData.Current.beatmapObjects[pa].name;
                 ((HoverTooltip)ObjectUIElements["Parent Info"]).tooltipLangauges[0].hint = string.Format("Parent chain count: [{0}]\n(Inclusive)", beatmapObject.GetParentChain().Count);
             }
             else if (parent == "CAMERA_PARENT")
@@ -2451,7 +2451,7 @@ namespace BetterLegacy.Editor.Managers
                 else if (parent == "CAMERA_PARENT")
                 {
                     RTEditor.inst.SetLayer(RTEditor.LayerType.Events);
-                    EventEditor.inst.SetCurrentEvent(0, RTExtensions.ClosestEventKeyframe(0));
+                    EventEditor.inst.SetCurrentEvent(0, CoreHelper.ClosestEventKeyframe(0));
                 }
             });
 
@@ -4235,6 +4235,7 @@ namespace BetterLegacy.Editor.Managers
                 case 3:
                     {
                         bool showModifiedColors = EditorConfig.Instance.ShowModifiedColors.Value;
+                        var eventTime = firstKF.GetData<EventKeyframe>().eventTime;
                         int index = 0;
                         foreach (var toggle in ObjEditor.inst.colorButtons)
                         {
@@ -4253,9 +4254,9 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 var color = CoreHelper.CurrentBeatmapTheme.GetObjColor(tmpIndex);
 
-                                float hueNum = beatmapObject.Interpolate(type, 2);
-                                float satNum = beatmapObject.Interpolate(type, 3);
-                                float valNum = beatmapObject.Interpolate(type, 4);
+                                float hueNum = beatmapObject.Interpolate(eventTime, type, 2);
+                                float satNum = beatmapObject.Interpolate(eventTime, type, 3);
+                                float valNum = beatmapObject.Interpolate(eventTime, type, 4);
 
                                 toggle.image.color = CoreHelper.ChangeColorHSV(color, hueNum, satNum, valNum);
                             }
@@ -4354,9 +4355,9 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 var color = CoreHelper.CurrentBeatmapTheme.GetObjColor(tmpIndex);
 
-                                float hueNum = beatmapObject.Interpolate(type, 7);
-                                float satNum = beatmapObject.Interpolate(type, 8);
-                                float valNum = beatmapObject.Interpolate(type, 9);
+                                float hueNum = beatmapObject.Interpolate(eventTime, type, 7);
+                                float satNum = beatmapObject.Interpolate(eventTime, type, 8);
+                                float valNum = beatmapObject.Interpolate(eventTime, type, 9);
 
                                 toggle.image.color = CoreHelper.ChangeColorHSV(color, hueNum, satNum, valNum);
                             }
@@ -4795,8 +4796,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void RenderKeyframe(BeatmapObject beatmapObject, TimelineObject timelineObject)
         {
-            if (beatmapObject.events[timelineObject.Type].Has(x => (x as EventKeyframe).id == timelineObject.ID))
-                timelineObject.Index = beatmapObject.events[timelineObject.Type].FindIndex(x => (x as EventKeyframe).id == timelineObject.ID);
+            if (beatmapObject.events[timelineObject.Type].TryFindIndex(x => (x as EventKeyframe).id == timelineObject.ID, out int kfIndex))
+                timelineObject.Index = kfIndex;
 
             var eventKeyframe = timelineObject.GetData<EventKeyframe>();
             timelineObject.Image.sprite =

@@ -859,7 +859,7 @@ namespace BetterLegacy.Core.Managers
         /// </summary>
         /// <param name="id">Finds the BeatmapTheme with the matching ID.</param>
         /// <returns>The current BeatmapTheme.</returns>
-        public static DataManager.BeatmapTheme GetTheme(int id) => DataManager.inst.AllThemes.Has(x => Parser.TryParse(x.id, 0) == id) ? DataManager.inst.AllThemes.Find(x => Parser.TryParse(x.id, 0) == id) : DataManager.inst.AllThemes[0];
+        public static DataManager.BeatmapTheme GetTheme(int id) => DataManager.inst.AllThemes.TryFind(x => Parser.TryParse(x.id, 0) == id, out DataManager.BeatmapTheme beatmapTheme) ? beatmapTheme : DataManager.inst.AllThemes[0];
 
         #endregion
 

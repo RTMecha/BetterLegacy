@@ -645,10 +645,14 @@ namespace BetterLegacy.Editor.Managers
 
         public void AddSelectedEvent(int type, int index)
         {
-            if (!RTEditor.inst.timelineKeyframes.Has(x => x.Type == type && x.Index == index))
+            int kfIndex = 0;
+            if (!RTEditor.inst.timelineKeyframes.TryFindIndex(x => x.Type == type && x.Index == index, out kfIndex))
+            {
                 CreateEventObjects();
+                kfIndex = RTEditor.inst.timelineKeyframes.FindIndex(x => x.Type == type && x.Index == index);
+            }
 
-            var kf = RTEditor.inst.timelineKeyframes.Find(x => x.Type == type && x.Index == index);
+            var kf = RTEditor.inst.timelineKeyframes[kfIndex];
 
             kf.selected = SelectedKeyframes.Count <= 1 || !kf.selected;
 

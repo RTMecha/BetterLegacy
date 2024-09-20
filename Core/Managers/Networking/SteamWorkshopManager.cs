@@ -125,8 +125,8 @@ namespace BetterLegacy.Core.Managers.Networking
                 if (level.InvalidID)
                     level.id = publishedFileID.Value.ToString();
 
-                if (LevelManager.Saves.Has(x => x.ID == level.id))
-                    level.playerData = LevelManager.Saves.Find(x => x.ID == level.id);
+                if (LevelManager.Saves.TryFindIndex(x => x.ID == level.id, out int saveIndex))
+                    level.playerData = LevelManager.Saves[saveIndex];
 
                 onLoad?.Invoke(level, i);
 

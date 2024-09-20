@@ -25,6 +25,9 @@ using Ease = BetterLegacy.Core.Animation.Ease;
 
 namespace BetterLegacy.Core.Helpers
 {
+    /// <summary>
+    /// Helper class for modifier actions.
+    /// </summary>
     public static class ModifiersHelper
     {
         public static bool Trigger(Modifier<BeatmapObject> modifier)
@@ -35,7 +38,7 @@ namespace BetterLegacy.Core.Helpers
                 modifier.VerifyModifier(ModifiersManager.defaultBeatmapObjectModifiers);
             }
 
-            if (!modifier.IsValid(ModifiersManager.defaultBeatmapObjectModifiers))
+            if (modifier.commands.Count <= 0)
                 return false;
 
             switch (modifier.commands[0])
@@ -47,7 +50,23 @@ namespace BetterLegacy.Core.Helpers
                 #region Player
                 case "playerCollide":
                     {
-                        return modifier.reference.IsTouchingPlayer();
+                        var list = new List<bool>();
+
+                        if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.Collider)
+                        {
+                            var collider = levelObject.visualObject.Collider;
+
+                            for (int i = 0; i < GameManager.inst.players.transform.childCount; i++)
+                            {
+                                if (GameManager.inst.players.transform.Find(string.Format("Player {0}", i + 1)))
+                                {
+                                    var player = GameManager.inst.players.transform.Find(string.Format("Player {0}/Player", i + 1));
+                                    list.Add(player.GetComponent<Collider2D>().IsTouching(collider));
+                                }
+                            }
+                        }
+
+                        return list.Any(x => x == true);
                     }
                 case "playerHealthEquals":
                     {
@@ -1218,7 +1237,7 @@ namespace BetterLegacy.Core.Helpers
                     modifier.VerifyModifier(ModifiersManager.defaultBeatmapObjectModifiers);
             }
 
-            if (modifier.commands.Count > 0 && !modifier.commands[0].Contains("DEVONLY") && !modifier.IsValid(ModifiersManager.defaultBeatmapObjectModifiers))
+            if (modifier.commands.Count < 0)
                 return;
 
             try
@@ -1402,12 +1421,9 @@ namespace BetterLegacy.Core.Helpers
                                 }, RTEditor.inst.HideWarningPopup);
                             }
 
-                            if (!CoreHelper.InEditor && LevelManager.Levels.Has(x => x.id == modifier.value))
-                            {
-                                var level = LevelManager.Levels.Find(x => x.id == modifier.value);
-
+                            if (!CoreHelper.InEditor && LevelManager.Levels.TryFind(x => x.id == modifier.value, out Level level))
                                 CoreHelper.StartCoroutine(LevelManager.Play(level));
-                            }
+
                             break;
                         }
                     case "loadLevelInternal":
@@ -1916,40 +1932,36 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "rigidbody":
                         {
-                            if (modifier.reference.levelObject && modifier.reference.levelObject.visualObject != null
+                            if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject
                                 && float.TryParse(modifier.commands[1], out float gravity)
                                 && int.TryParse(modifier.commands[2], out int collisionMode)
                                 && float.TryParse(modifier.commands[3], out float drag)
                                 && float.TryParse(modifier.commands[4], out float velocityX)
                                 && float.TryParse(modifier.commands[5], out float velocityY))
                             {
-                                modifier.reference.components.RemoveAll(x => x == null);
+                                modifier.reference.components.RemoveAll(x => !x);
 
-                                if (!modifier.reference.components.Has(x => x is Rigidbody2D))
+                                if (!modifier.reference.components.TryFind(x => x is Rigidbody2D, out Component component))
                                 {
-                                    var rigidbody = modifier.reference.levelObject.visualObject.GameObject.GetComponent<Rigidbody2D>();
+                                    var gameObject = levelObject.visualObject.GameObject;
 
-                                    if (!rigidbody)
-                                        rigidbody = modifier.reference.levelObject.visualObject.GameObject.AddComponent<Rigidbody2D>();
+                                    var rigidbody2d = gameObject.GetComponent<Rigidbody2D>();
 
-                                    modifier.reference.components.Add(rigidbody);
+                                    if (!rigidbody2d)
+                                        rigidbody2d = gameObject.AddComponent<Rigidbody2D>();
 
-                                    rigidbody.gravityScale = gravity;
-                                    rigidbody.collisionDetectionMode = (CollisionDetectionMode2D)Mathf.Clamp(collisionMode, 0, 1);
-                                    rigidbody.drag = drag;
+                                    modifier.reference.components.Add(rigidbody2d);
 
-                                    rigidbody.bodyType = (RigidbodyType2D)Parser.TryParse(modifier.commands[6], 0);
+                                    rigidbody2d.gravityScale = gravity;
+                                    rigidbody2d.collisionDetectionMode = (CollisionDetectionMode2D)Mathf.Clamp(collisionMode, 0, 1);
+                                    rigidbody2d.drag = drag;
 
-                                    var velocity = rigidbody.velocity;
-                                    velocity.x += velocityX;
-                                    velocity.y += velocityY;
-                                    rigidbody.velocity = velocity;
+                                    rigidbody2d.bodyType = (RigidbodyType2D)Parser.TryParse(modifier.commands[6], 0);
+
+                                    rigidbody2d.velocity += new Vector2(velocityX, velocityY);
                                 }
-
-                                if (!modifier.constant && modifier.reference.components.Has(x => x is Rigidbody2D))
+                                else if (component is Rigidbody2D rigidbody)
                                 {
-                                    var rigidbody = (Rigidbody2D)modifier.reference.components.Find(x => x is Rigidbody2D);
-
                                     rigidbody.gravityScale = gravity;
                                     rigidbody.collisionDetectionMode = (CollisionDetectionMode2D)Mathf.Clamp(collisionMode, 0, 1);
                                     rigidbody.drag = drag;
@@ -1974,16 +1986,18 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 foreach (var bm in list)
                                 {
-                                    if (bm.levelObject && bm.levelObject.visualObject != null)
+                                    if (Updater.TryGetObject(bm, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
                                     {
-                                        bm.components.RemoveAll(x => x == null);
+                                        bm.components.RemoveAll(x => !x);
 
-                                        if (!bm.components.Has(x => x is Rigidbody2D))
+                                        if (!bm.components.TryFind(x => x is Rigidbody2D, out Component component))
                                         {
-                                            var rigidbody = bm.levelObject.visualObject.GameObject.GetComponent<Rigidbody2D>();
+                                            var gameObject = levelObject.visualObject.GameObject;
+
+                                            var rigidbody = gameObject.GetComponent<Rigidbody2D>();
 
                                             if (!rigidbody)
-                                                rigidbody = bm.levelObject.visualObject.GameObject.AddComponent<Rigidbody2D>();
+                                                rigidbody = gameObject.AddComponent<Rigidbody2D>();
 
                                             bm.components.Add(rigidbody);
 
@@ -1993,16 +2007,10 @@ namespace BetterLegacy.Core.Helpers
 
                                             rigidbody.bodyType = (RigidbodyType2D)Parser.TryParse(modifier.commands[6], 0);
 
-                                            var velocity = rigidbody.velocity;
-                                            velocity.x += velocityX;
-                                            velocity.y += velocityY;
-                                            rigidbody.velocity = velocity;
+                                            rigidbody.velocity += new Vector2(velocityX, velocityY);
                                         }
-
-                                        if (bm.components.Has(x => x is Rigidbody2D))
+                                        else if (component is Rigidbody2D rigidbody)
                                         {
-                                            var rigidbody = (Rigidbody2D)bm.components.Find(x => x is Rigidbody2D);
-
                                             rigidbody.gravityScale = gravity;
                                             rigidbody.collisionDetectionMode = (CollisionDetectionMode2D)Mathf.Clamp(collisionMode, 0, 1);
                                             rigidbody.drag = drag;
@@ -5333,7 +5341,7 @@ namespace BetterLegacy.Core.Helpers
                 modifier.VerifyModifier(ModifiersManager.defaultBeatmapObjectModifiers);
             }
 
-            if (!modifier.IsValid(ModifiersManager.defaultBeatmapObjectModifiers))
+            if (modifier.commands.Count < 0)
                 return;
 
             try
@@ -5666,7 +5674,7 @@ namespace BetterLegacy.Core.Helpers
                 modifier.VerifyModifier(ModifiersManager.defaultBackgroundObjectModifiers);
             }
 
-            if (!modifier.IsValid(ModifiersManager.defaultBackgroundObjectModifiers))
+            if (modifier.commands.Count < 0)
                 return false;
 
             switch (modifier.commands[0])
@@ -5700,7 +5708,7 @@ namespace BetterLegacy.Core.Helpers
                 modifier.VerifyModifier(ModifiersManager.defaultBackgroundObjectModifiers);
             }
 
-            if (!modifier.IsValid(ModifiersManager.defaultBackgroundObjectModifiers))
+            if (modifier.commands.Count < 0)
                 return;
 
             modifier.hasChanged = false;
@@ -5868,7 +5876,7 @@ namespace BetterLegacy.Core.Helpers
                 modifier.VerifyModifier(ModifiersManager.defaultBackgroundObjectModifiers);
             }
 
-            if (!modifier.IsValid(ModifiersManager.defaultBackgroundObjectModifiers))
+            if (modifier.commands.Count < 0)
                 return;
         }
 
@@ -5879,8 +5887,8 @@ namespace BetterLegacy.Core.Helpers
                 modifier.verified = true;
                 modifier.VerifyModifier(null);
             }
-
-            if (!modifier.IsValid(ModifiersManager.defaultPlayerModifiers) || modifier.reference == null)
+            
+            if (modifier.commands.Count < 0 || modifier.reference == null)
                 return false;
 
             modifier.hasChanged = false;
@@ -5966,7 +5974,7 @@ namespace BetterLegacy.Core.Helpers
                 modifier.VerifyModifier(ModifiersManager.defaultPlayerModifiers);
             }
 
-            if (!modifier.IsValid(ModifiersManager.defaultPlayerModifiers) || modifier.reference == null)
+            if (modifier.commands.Count < 0 || modifier.reference == null)
                 return;
 
             modifier.hasChanged = false;
@@ -6015,7 +6023,7 @@ namespace BetterLegacy.Core.Helpers
                 modifier.VerifyModifier(ModifiersManager.defaultPlayerModifiers);
             }
 
-            if (!modifier.IsValid(ModifiersManager.defaultPlayerModifiers) || modifier.reference == null)
+            if (modifier.commands.Count < 0 || modifier.reference == null)
                 return;
 
             switch (modifier.commands[0])

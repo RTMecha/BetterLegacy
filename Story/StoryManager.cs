@@ -135,8 +135,8 @@ namespace BetterLegacy.Story
 
             storyLevel.playerData.Update(GameManager.inst.deaths.Count, GameManager.inst.hits.Count, LevelManager.BoostCount, true);
 
-            if (Saves.Has(x => x.ID == storyLevel.id))
-                Saves[Saves.FindIndex(x => x.ID == storyLevel.id)] = storyLevel.playerData;
+            if (Saves.TryFindIndex(x => x.ID == storyLevel.id, out int saveIndex))
+                Saves[saveIndex] = storyLevel.playerData;
             else
                 Saves.Add(storyLevel.playerData);
 

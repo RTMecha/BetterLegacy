@@ -1,5 +1,6 @@
 ﻿using BetterLegacy.Components;
 using BetterLegacy.Components.Editor;
+using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Editor;
 using LSFunctions;
@@ -1116,6 +1117,90 @@ namespace BetterLegacy.Core.Data
             catch
             {
 
+            }
+        }
+
+        public void SetTransform(int toType, int toAxis, float value)
+        {
+            switch (toType)
+            {
+                case 0:
+                    {
+                        if (toAxis == 0)
+                            positionOffset.x = value;
+                        if (toAxis == 1)
+                            positionOffset.y = value;
+                        if (toAxis == 2)
+                            positionOffset.z = value;
+
+                        break;
+                    }
+                case 1:
+                    {
+                        if (toAxis == 0)
+                            scaleOffset.x = value;
+                        if (toAxis == 1)
+                            scaleOffset.y = value;
+                        if (toAxis == 2)
+                            scaleOffset.z = value;
+
+                        break;
+                    }
+                case 2:
+                    {
+                        if (toAxis == 0)
+                            rotationOffset.x = value;
+                        if (toAxis == 1)
+                            rotationOffset.y = value;
+                        if (toAxis == 2)
+                            rotationOffset.z = value;
+
+                        break;
+                    }
+            }
+        }
+
+        public float Interpolate(int type, int value) => Interpolate(AudioManager.inst.CurrentAudioSource.time, type, value);
+        
+        public float Interpolate(float t, int type, int value)
+        {
+            var time = t - StartTime;
+
+            var nextKFIndex = events[type].FindIndex(x => x.eventTime > time);
+
+            if (nextKFIndex >= 0)
+            {
+                var prevKFIndex = nextKFIndex - 1;
+                if (prevKFIndex < 0)
+                    prevKFIndex = 0;
+
+                var nextKF = events[type][nextKFIndex];
+                var prevKF = events[type][prevKFIndex];
+
+                var next = nextKF.eventValues[value];
+                var prev = prevKF.eventValues[value];
+
+                if (float.IsNaN(prev))
+                    prev = 0f;
+
+                if (float.IsNaN(next))
+                    next = 0f;
+
+                var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curveType.Name)(RTMath.InverseLerp(prevKF.eventTime, nextKF.eventTime, time)));
+
+                if (prevKFIndex == nextKFIndex || float.IsNaN(x) || float.IsInfinity(x))
+                    x = next;
+
+                return x;
+            }
+            else
+            {
+                var x = events[type][events[type].Count - 1].eventValues[value];
+
+                if (float.IsNaN(x))
+                    x = 0f;
+
+                return x;
             }
         }
 

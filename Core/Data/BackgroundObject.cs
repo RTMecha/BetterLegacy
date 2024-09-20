@@ -489,6 +489,46 @@ namespace BetterLegacy.Core.Data
             return jn;
         }
 
+        public void SetTransform(int toType, int toAxis, float value)
+        {
+            switch (toType)
+            {
+                case 0:
+                    {
+                        if (toAxis == 0)
+                            positionOffset.x = value;
+                        if (toAxis == 1)
+                            positionOffset.y = value;
+                        if (toAxis == 2)
+                            positionOffset.z = value;
+
+                        break;
+                    }
+                case 1:
+                    {
+                        if (toAxis == 0)
+                            scaleOffset.x = value;
+                        if (toAxis == 1)
+                            scaleOffset.y = value;
+                        if (toAxis == 2)
+                            scaleOffset.z = value;
+
+                        break;
+                    }
+                case 2:
+                    {
+                        if (toAxis == 0)
+                            rotationOffset.x = value;
+                        if (toAxis == 1)
+                            rotationOffset.y = value;
+                        if (toAxis == 2)
+                            rotationOffset.z = value;
+
+                        break;
+                    }
+            }
+        }
+
         public void ResetOffsets()
         {
             positionOffset = Vector3.zero;

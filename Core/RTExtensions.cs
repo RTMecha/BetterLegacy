@@ -1,22 +1,13 @@
-﻿using BetterLegacy.Core.Animation;
-using BetterLegacy.Core.Data;
+﻿using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Managers;
-using BetterLegacy.Core.Optimization;
-using BetterLegacy.Core.Optimization.Objects;
 using LSFunctions;
 using SimpleJSON;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
-using AutoKillType = DataManager.GameData.BeatmapObject.AutoKillType;
-using BaseBeatmapObject = DataManager.GameData.BeatmapObject;
-using BaseEventKeyframe = DataManager.GameData.EventKeyframe;
-using BasePrefab = DataManager.GameData.Prefab;
-using BasePrefabObject = DataManager.GameData.PrefabObject;
 using Object = UnityEngine.Object;
 
 namespace BetterLegacy.Core
@@ -29,14 +20,14 @@ namespace BetterLegacy.Core
         {
             var e = GameObject.Find(find);
             result = e;
-            return e != null;
+            return e;
         }
 
         public static bool TryFind(this Transform tf, string find, out Transform result)
         {
             var e = tf.Find(find);
             result = e;
-            return e != null;
+            return e;
         }
 
         public static List<Transform> ChildList(this Transform transform)
@@ -68,8 +59,7 @@ namespace BetterLegacy.Core
 
         public static GameObject Duplicate(this GameObject gameObject, Transform parent, string name, int index)
         {
-            var copy = gameObject.Duplicate(parent);
-            copy.name = name;
+            var copy = gameObject.Duplicate(parent, name);
             copy.transform.SetSiblingIndex(index);
             return copy;
         }
@@ -162,6 +152,13 @@ namespace BetterLegacy.Core
 
         public static RectValues GetRectValues(this RectTransform rectTransform) => RectValues.FromRectTransform(rectTransform);
 
+        public static bool TryGetComponent<T>(this GameObject gameObject, out T result) where T : Component
+        {
+            var t = gameObject.GetComponent<T>();
+            result = t;
+            return t;
+        }
+
         #endregion
 
         #region Data
@@ -187,164 +184,21 @@ namespace BetterLegacy.Core
             return array;
         }
 
-        public static float Interpolate(this BaseBeatmapObject beatmapObject, int type, int value)
+        public static T GetDefault<T>(this List<T> list, int index, T defaultValue) => index >= 0 && index < list.Count - 1 ? list[index] : defaultValue;
+
+        public static bool TryFind<T>(this List<T> ts, Predicate<T> match, out T item)
         {
-            var time = AudioManager.inst.CurrentAudioSource.time - beatmapObject.StartTime;
-
-            var nextKFIndex = beatmapObject.events[type].FindIndex(x => x.eventTime > time);
-
-            if (nextKFIndex >= 0)
-            {
-                var prevKFIndex = nextKFIndex - 1;
-                if (prevKFIndex < 0)
-                    prevKFIndex = 0;
-
-                var nextKF = beatmapObject.events[type][nextKFIndex];
-                var prevKF = beatmapObject.events[type][prevKFIndex];
-
-                var next = nextKF.eventValues[value];
-                var prev = prevKF.eventValues[value];
-
-                if (float.IsNaN(prev))
-                    prev = 0f;
-
-                if (float.IsNaN(next))
-                    next = 0f;
-
-                var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curveType.Name)(RTMath.InverseLerp(prevKF.eventTime, nextKF.eventTime, time)));
-
-                if (prevKFIndex == nextKFIndex || float.IsNaN(x) || float.IsInfinity(x))
-                    x = next;
-
-                return x;
-            }
-            else
-            {
-                var x = beatmapObject.events[type][beatmapObject.events[type].Count - 1].eventValues[value];
-
-                if (float.IsNaN(x))
-                    x = 0f;
-
-                return x;
-            }
+            var t = ts.Find(match);
+            item = t;
+            return t != null;
         }
 
-        #endregion
-
-        #region Event Keyframes
-
-        public static BaseEventKeyframe GetEventKeyframe(this List<List<BaseEventKeyframe>> eventKeyframes, int type, int index) => eventKeyframes[RTMath.Clamp(type, 0, eventKeyframes.Count - 1)].GetEventKeyframe(index);
-        public static BaseEventKeyframe GetEventKeyframe(this List<BaseEventKeyframe> eventKeyframes, int index) => eventKeyframes[RTMath.Clamp(index, 0, eventKeyframes.Count - 1)];
-
-        /// <summary>
-        /// Gets closest event keyframe to current time.
-        /// </summary>
-        /// <param name="_type">Event Keyframe Type</param>
-        /// <returns>Event Keyframe Index</returns>
-        public static int ClosestEventKeyframe(int _type)
+        public static bool TryFindIndex<T>(this List<T> ts, Predicate<T> match, out int index)
         {
-            var allEvents = GameData.Current.eventObjects.allEvents;
-            float time = AudioManager.inst.CurrentAudioSource.time;
-            if (allEvents[_type].Has(x => x.eventTime > time))
-            {
-                var nextKFE = allEvents[_type].Find(x => x.eventTime > time);
-                var nextKF = allEvents[_type].IndexOf(nextKFE);
-                var prevKF = nextKF - 1;
-
-                if (nextKF == 0)
-                {
-                    prevKF = 0;
-                }
-                else
-                {
-                    var v1 = new Vector2(allEvents[_type][prevKF].eventTime, 0f);
-                    var v2 = new Vector2(allEvents[_type][nextKF].eventTime, 0f);
-
-                    float dis = Vector2.Distance(v1, v2) / 2f;
-
-                    bool prevClose = time > dis + allEvents[_type][prevKF].eventTime;
-                    bool nextClose = time < allEvents[_type][nextKF].eventTime - dis;
-
-                    if (!prevClose)
-                    {
-                        return prevKF;
-                    }
-                    if (!nextClose)
-                    {
-                        return nextKF;
-                    }
-                }
-            }
-            return 0;
+            var i = ts.FindIndex(match);
+            index = i;
+            return index >= 0 && index < ts.Count;
         }
-
-        public static BaseEventKeyframe ClosestKeyframe(this BaseBeatmapObject beatmapObject, int _type, object n = null) => beatmapObject.events[_type][beatmapObject.ClosestKeyframe(_type)];
-
-        /// <summary>
-        /// Gets closest event keyframe to current time within a beatmap object.
-        /// </summary>
-        /// <param name="beatmapObject"></param>
-        /// <param name="_type">Event Keyframe Type</param>
-        /// <returns>Event Keyframe Index</returns>
-        public static int ClosestKeyframe(this BaseBeatmapObject beatmapObject, int _type)
-        {
-            if (beatmapObject.events[_type].Find(x => x.eventTime > AudioManager.inst.CurrentAudioSource.time - beatmapObject.StartTime) != null)
-            {
-                var nextKFE = beatmapObject.events[_type].Find(x => x.eventTime > AudioManager.inst.CurrentAudioSource.time - beatmapObject.StartTime);
-                var nextKF = beatmapObject.events[_type].IndexOf(nextKFE);
-                var prevKF = nextKF - 1;
-
-                if (prevKF < 0)
-                    prevKF = 0;
-
-                var prevKFE = beatmapObject.events[_type][prevKF];
-
-                if (nextKF == 0)
-                {
-                    prevKF = 0;
-                }
-                else
-                {
-                    var v1 = new Vector2(beatmapObject.events[_type][prevKF].eventTime, 0f);
-                    var v2 = new Vector2(beatmapObject.events[_type][nextKF].eventTime, 0f);
-
-                    float dis = Vector2.Distance(v1, v2);
-                    float time = AudioManager.inst.CurrentAudioSource.time - beatmapObject.StartTime;
-
-                    bool prevClose = time > dis + beatmapObject.events[_type][prevKF].eventTime / 2f;
-                    bool nextClose = time < beatmapObject.events[_type][nextKF].eventTime - dis / 2f;
-
-                    if (!prevClose)
-                    {
-                        return prevKF;
-                    }
-                    if (!nextClose)
-                    {
-                        return nextKF;
-                    }
-                }
-                {
-                    var dis = RTMath.Distance(nextKFE.eventTime, prevKFE.eventTime);
-                    var time = AudioManager.inst.CurrentAudioSource.time - beatmapObject.StartTime;
-
-                    var prevClose = time > dis + prevKFE.eventTime / 2f;
-                    var nextClose = time < nextKFE.eventTime - dis / 2f;
-
-
-                }
-            }
-            return 0;
-        }
-
-        public static bool TryGetValue(this BaseEventKeyframe eventKeyframe, int index, out float result)
-        {
-            result = eventKeyframe.eventValues.Length > index ? eventKeyframe.eventValues[index] : 0f;
-            return eventKeyframe.eventValues.Length > index;
-        }
-
-        #endregion
-
-        #region Data Extensions
 
         public static bool TryFindAll<T>(this List<T> ts, Predicate<T> match, out List<T> findAll)
         {
@@ -643,144 +497,6 @@ namespace BetterLegacy.Core
 
         #region Misc
 
-        public static int ClosestPlayer(GameObject _gm)
-        {
-            if (InputDataManager.inst.players.Count > 0)
-            {
-                float distance = float.MaxValue;
-                for (int i = 0; i < InputDataManager.inst.players.Count; i++)
-                {
-                    if (GameManager.inst.players.transform.Find(string.Format("Player {0}", i + 1)))
-                    {
-                        var player = GameManager.inst.players.transform.Find(string.Format("Player {0}", i + 1));
-
-                        if (Vector2.Distance(player.Find("Player").position, _gm.transform.position) < distance)
-                        {
-                            distance = Vector2.Distance(player.Find("Player").position, _gm.transform.position);
-                        }
-                    }
-                }
-                for (int i = 0; i < InputDataManager.inst.players.Count; i++)
-                {
-                    if (GameManager.inst.players.transform.Find(string.Format("Player {0}", i + 1)))
-                    {
-                        var player = GameManager.inst.players.transform.Find(string.Format("Player {0}", i + 1));
-
-                        if (Vector2.Distance(player.Find("Player").position, _gm.transform.position) < distance)
-                        {
-                            return i;
-                        }
-                    }
-                }
-            }
-
-            return 0;
-        }
-
-        public static bool IsTouchingPlayer(this BaseBeatmapObject beatmapObject)
-        {
-            var list = new List<bool>();
-
-            if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject.Collider)
-            {
-                if (levelObject.visualObject.Collider)
-                {
-                    var collider = levelObject.visualObject.Collider;
-
-                    for (int i = 0; i < GameManager.inst.players.transform.childCount; i++)
-                    {
-                        if (GameManager.inst.players.transform.Find(string.Format("Player {0}", i + 1)))
-                        {
-                            var player = GameManager.inst.players.transform.Find(string.Format("Player {0}/Player", i + 1));
-                            list.Add(player.GetComponent<Collider2D>().IsTouching(collider));
-                        }
-                    }
-                }
-            }
-
-            return list.Any(x => x == true);
-        }
-
-        public static void SetTransform(this BeatmapObject beatmapObject, int toType, int toAxis, float value)
-        {
-            switch (toType)
-            {
-                case 0:
-                    {
-                        if (toAxis == 0)
-                            beatmapObject.positionOffset.x = value;
-                        if (toAxis == 1)
-                            beatmapObject.positionOffset.y = value;
-                        if (toAxis == 2)
-                            beatmapObject.positionOffset.z = value;
-
-                        break;
-                    }
-                case 1:
-                    {
-                        if (toAxis == 0)
-                            beatmapObject.scaleOffset.x = value;
-                        if (toAxis == 1)
-                            beatmapObject.scaleOffset.y = value;
-                        if (toAxis == 2)
-                            beatmapObject.scaleOffset.z = value;
-
-                        break;
-                    }
-                case 2:
-                    {
-                        if (toAxis == 0)
-                            beatmapObject.rotationOffset.x = value;
-                        if (toAxis == 1)
-                            beatmapObject.rotationOffset.y = value;
-                        if (toAxis == 2)
-                            beatmapObject.rotationOffset.z = value;
-
-                        break;
-                    }
-            }
-        }
-        
-        public static void SetTransform(this BackgroundObject backgroundObject, int toType, int toAxis, float value)
-        {
-            switch (toType)
-            {
-                case 0:
-                    {
-                        if (toAxis == 0)
-                            backgroundObject.positionOffset.x = value;
-                        if (toAxis == 1)
-                            backgroundObject.positionOffset.y = value;
-                        if (toAxis == 2)
-                            backgroundObject.positionOffset.z = value;
-
-                        break;
-                    }
-                case 1:
-                    {
-                        if (toAxis == 0)
-                            backgroundObject.scaleOffset.x = value;
-                        if (toAxis == 1)
-                            backgroundObject.scaleOffset.y = value;
-                        if (toAxis == 2)
-                            backgroundObject.scaleOffset.z = value;
-
-                        break;
-                    }
-                case 2:
-                    {
-                        if (toAxis == 0)
-                            backgroundObject.rotationOffset.x = value;
-                        if (toAxis == 1)
-                            backgroundObject.rotationOffset.y = value;
-                        if (toAxis == 2)
-                            backgroundObject.rotationOffset.z = value;
-
-                        break;
-                    }
-            }
-        }
-
         public static void CreateCollider(this PolygonCollider2D polygonCollider, MeshFilter meshFilter)
         {
             if (meshFilter.mesh == null)
@@ -861,29 +577,6 @@ namespace BetterLegacy.Core
         }
 
         public static void Save(this Sprite sprite, string path) => SpriteHelper.SaveSprite(sprite, path);
-
-        public static bool TryGetComponent<T>(this GameObject gameObject, out T result) where T : Component
-        {
-            var t = gameObject.GetComponent<T>();
-            result = t;
-            return t;
-        }
-
-        public static T GetDefault<T>(this List<T> list, int index, T defaultValue) => index >= 0 && index < list.Count - 1 ? list[index] : defaultValue;
-
-        public static bool TryFind<T>(this List<T> ts, Predicate<T> match, out T item)
-        {
-            var t = ts.Find(match);
-            item = t;
-            return t != null;
-        }
-
-        public static bool TryFindIndex<T>(this List<T> ts, Predicate<T> match, out int index)
-        {
-            var i = ts.FindIndex(match);
-            index = i;
-            return index >= 0 && index < ts.Count;
-        }
 
         public static Vector3 X(this Vector3 vector3) => new Vector3(vector3.x, 0f, 0f);
         public static Vector3 Y(this Vector3 vector3) => new Vector3(0f, vector3.y, 0f);

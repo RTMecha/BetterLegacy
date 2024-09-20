@@ -41,8 +41,7 @@ namespace BetterLegacy.Core.Data
         public bool relative;
         public bool locked;
 
-        public void SetCurve(string ease)
-            => curveType = DataManager.inst.AnimationList.Has(x => x.Name == ease) ? DataManager.inst.AnimationList.Find(x => x.Name == ease) : DataManager.inst.AnimationList[0];
+        public void SetCurve(string ease) => curveType = DataManager.inst.AnimationList.TryFind(x => x.Name == ease, out DataManager.LSAnimation anim) ? anim : DataManager.inst.AnimationList[0];
         public void SetCurve(int ease) => curveType = DataManager.inst.AnimationList[Mathf.Clamp(ease, 0, DataManager.inst.AnimationList.Count - 1)];
         public new void SetEventRandomValues(params float[] _vals)
         {

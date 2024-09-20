@@ -215,10 +215,8 @@ namespace BetterLegacy.Core.Optimization.Objects
             var prefabOffsetScale = Vector3.one;
             var prefabOffsetRotation = Vector3.zero;
 
-            if (beatmapObject.fromPrefab && !string.IsNullOrEmpty(beatmapObject.prefabInstanceID) && gameData.prefabObjects.Has(x => x.ID == beatmapObject.prefabInstanceID))
+            if (beatmapObject.fromPrefab && !string.IsNullOrEmpty(beatmapObject.prefabInstanceID) && gameData.prefabObjects.TryFind(x => x.ID == beatmapObject.prefabInstanceID, out PrefabObject prefabObject))
             {
-                var prefabObject = gameData.prefabObjects.Find(x => x.ID == beatmapObject.prefabInstanceID);
-
                 bool hasPosX = prefabObject.events.Count > 0 && prefabObject.events[0] != null && prefabObject.events[0].eventValues.Length > 0;
                 bool hasPosY = prefabObject.events.Count > 0 && prefabObject.events[0] != null && prefabObject.events[0].eventValues.Length > 1;
 

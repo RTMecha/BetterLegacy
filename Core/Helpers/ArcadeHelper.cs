@@ -338,9 +338,12 @@ namespace BetterLegacy.Core.Helpers
             for (int i = 0; i < LevelManager.ArcadeQueue.Count; i++)
             {
                 jn["queue"][i]["id"] = LevelManager.ArcadeQueue[i].id;
+
+                if (LevelManager.ArcadeQueue[i].metadata && LevelManager.ArcadeQueue[i].metadata.beatmap is LevelBeatmap levelBeatmap)
+                    jn["queue"][i]["name"] = levelBeatmap.name;
             }
 
-            LSText.CopyToClipboard(jn.ToString());
+            LSText.CopyToClipboard(jn.ToString(3));
         }
 
         public static void PasteArcadeQueue()
@@ -363,20 +366,17 @@ namespace BetterLegacy.Core.Helpers
                 {
                     var jnQueue = jn["queue"][i];
 
-                    var hasLocal = LevelManager.Levels.Has(x => x.id == jnQueue["id"]);
-                    var hasSteam = SteamWorkshopManager.inst.Levels.Has(x => x.id == jnQueue["id"]);
+                    var hasLocal = LevelManager.Levels.TryFindIndex(x => x.id == jnQueue["id"], out int localIndex);
+                    var hasSteam = SteamWorkshopManager.inst.Levels.TryFindIndex(x => x.id == jnQueue["id"], out int steamIndex);
 
                     if ((hasLocal || hasSteam) && !LevelManager.ArcadeQueue.Has(x => x.id == jnQueue["id"]))
                     {
-                        var currentLevel = hasSteam ? SteamWorkshopManager.inst.Levels.Find(x => x.id == jnQueue["id"]) :
-                            LevelManager.Levels.Find(x => x.id == jnQueue["id"]);
+                        var currentLevel = hasSteam ? SteamWorkshopManager.inst.Levels[steamIndex] : LevelManager.Levels[localIndex];
 
                         LevelManager.ArcadeQueue.Add(currentLevel);
                     }
                     else if (!hasLocal && !hasSteam)
-                    {
-                        CoreHelper.LogError($"Level with ID {jnQueue["id"]} does not currently exist in your Local folder / Steam subscribed items.");
-                    }
+                        CoreHelper.LogError($"Level with ID {jnQueue["id"]} (Name: {jnQueue["name"]}) does not currently exist in your Local folder / Steam subscribed items.");
                 }
 
                 if (ArcadeMenuManager.inst && ArcadeMenuManager.inst.CurrentTab == 4)

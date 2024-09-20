@@ -622,6 +622,46 @@ namespace BetterLegacy.Core.Helpers
 
         #region Misc
 
+        /// <summary>
+        /// Gets closest event keyframe to current time.
+        /// </summary>
+        /// <param name="_type">Event Keyframe Type</param>
+        /// <returns>Event Keyframe Index</returns>
+        public static int ClosestEventKeyframe(int _type)
+        {
+            var allEvents = GameData.Current.eventObjects.allEvents;
+            float time = AudioManager.inst.CurrentAudioSource.time;
+            if (allEvents[_type].TryFindIndex(x => x.eventTime > time, out int nextKF))
+            {
+                var prevKF = nextKF - 1;
+
+                if (nextKF == 0)
+                {
+                    prevKF = 0;
+                }
+                else
+                {
+                    var v1 = new Vector2(allEvents[_type][prevKF].eventTime, 0f);
+                    var v2 = new Vector2(allEvents[_type][nextKF].eventTime, 0f);
+
+                    float dis = Vector2.Distance(v1, v2) / 2f;
+
+                    bool prevClose = time > dis + allEvents[_type][prevKF].eventTime;
+                    bool nextClose = time < allEvents[_type][nextKF].eventTime - dis;
+
+                    if (!prevClose)
+                    {
+                        return prevKF;
+                    }
+                    if (!nextClose)
+                    {
+                        return nextKF;
+                    }
+                }
+            }
+            return 0;
+        }
+
         public static bool TryFindObjectWithTag(Modifier<BeatmapObject> modifier, string tag, out BeatmapObject result)
         {
             result = FindObjectWithTag(modifier, tag);

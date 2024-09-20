@@ -305,7 +305,7 @@ namespace BetterLegacy.Editor.Managers
         public void CreateNewMarker(float time)
         {
             Marker marker;
-            if (!Markers.Has(x => time > x.time - 0.01f && time < x.time + 0.01f))
+            if (!Markers.TryFind(x => time > x.time - 0.01f && time < x.time + 0.01f, out BaseMarker baseMarker))
             {
                 Markers.Add(new Marker
                 {
@@ -317,7 +317,7 @@ namespace BetterLegacy.Editor.Managers
                 marker = (Marker)Markers[Markers.Count - 1];
             }
             else
-                marker = (Marker)Markers.Find(x => time > x.time - 0.01f && time < x.time + 0.01f);
+                marker = (Marker)baseMarker;
 
             OrderMarkers();
 

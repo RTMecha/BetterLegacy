@@ -899,10 +899,8 @@ namespace BetterLegacy.Editor.Managers
                 var beatmapTheme = BeatmapTheme.DeepCopy(PreviewTheme, true);
 
                 SaveTheme(beatmapTheme);
-                if (DataManager.inst.CustomBeatmapThemes.Has(x => x.id == __0.ToString()))
-                {
-                    DataManager.inst.CustomBeatmapThemes[DataManager.inst.CustomBeatmapThemes.FindIndex(x => x.id == __0.ToString())] = beatmapTheme;
-                }
+                if (DataManager.inst.CustomBeatmapThemes.TryFindIndex(x => x.id == __0.ToString(), out int themeIndex))
+                    DataManager.inst.CustomBeatmapThemes[themeIndex] = beatmapTheme;
 
                 if (themePanel != null)
                 {
@@ -952,10 +950,8 @@ namespace BetterLegacy.Editor.Managers
                 if (__0 < DataManager.inst.BeatmapThemes.Count)
                     Instance.StartCoroutine(RTEditor.inst.LoadThemes(true));
 
-                if (DataManager.inst.CustomBeatmapThemes.Has(x => x.id == __0.ToString()))
-                {
-                    DataManager.inst.CustomBeatmapThemes[DataManager.inst.CustomBeatmapThemes.FindIndex(x => x.id == __0.ToString())] = beatmapTheme;
-                }
+                if (DataManager.inst.CustomBeatmapThemes.TryFindIndex(x => x.id == __0.ToString(), out int themeIndex))
+                    DataManager.inst.CustomBeatmapThemes[themeIndex] = beatmapTheme;
 
                 if (!(__0 < DataManager.inst.BeatmapThemes.Count) && ThemePanels.TryFind(x => x.Theme.id == __0.ToString(), out ThemePanel themePanel))
                 {
