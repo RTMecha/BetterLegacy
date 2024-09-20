@@ -398,8 +398,6 @@ namespace BetterLegacy.Patchers
                 EditorThemeManager.AddInputFields(opacity, true, "");
             }
 
-            CoreHelper.Log($"Before Gradient");
-
             // Gradient
             {
                 try
@@ -860,13 +858,9 @@ namespace BetterLegacy.Patchers
                 label.transform.GetChild(0).GetComponent<Text>().text = "Tags";
 
                 // Tags Scroll View/Viewport/Content
-                var tagScrollView = new GameObject("Tags Scroll View");
-                tagScrollView.transform.SetParent(objectView);
-                tagScrollView.transform.SetSiblingIndex(index + 1);
-                tagScrollView.transform.localScale = Vector3.one;
+                var tagScrollView = Creator.NewUIObject("Tags Scroll View", objectView, index + 1);
 
-                var tagScrollViewRT = tagScrollView.AddComponent<RectTransform>();
-                tagScrollViewRT.sizeDelta = new Vector2(522f, 40f);
+                tagScrollView.transform.AsRT().sizeDelta = new Vector2(522f, 40f);
                 var scroll = tagScrollView.AddComponent<ScrollRect>();
 
                 scroll.horizontal = true;
@@ -877,21 +871,10 @@ namespace BetterLegacy.Patchers
 
                 var mask = tagScrollView.AddComponent<Mask>();
 
-                var tagViewport = new GameObject("Viewport");
-                tagViewport.transform.SetParent(tagScrollViewRT);
-                tagViewport.transform.localScale = Vector3.one;
+                var tagViewport = Creator.NewUIObject("Viewport", tagScrollView.transform);
+                RectValues.FullAnchored.AssignToRectTransform(tagViewport.transform.AsRT());
 
-                var tagViewPortRT = tagViewport.AddComponent<RectTransform>();
-                tagViewPortRT.anchoredPosition = Vector2.zero;
-                tagViewPortRT.anchorMax = Vector2.one;
-                tagViewPortRT.anchorMin = Vector2.zero;
-                tagViewPortRT.sizeDelta = Vector2.zero;
-
-                var tagContent = new GameObject("Content");
-                tagContent.transform.SetParent(tagViewPortRT);
-                tagContent.transform.localScale = Vector3.one;
-
-                var tagContentRT = tagContent.AddComponent<RectTransform>();
+                var tagContent = Creator.NewUIObject("Content", tagViewport.transform);
 
                 var tagContentGLG = tagContent.AddComponent<GridLayoutGroup>();
                 tagContentGLG.cellSize = new Vector2(168f, 32f);
@@ -904,8 +887,8 @@ namespace BetterLegacy.Patchers
                 tagContentCSF.horizontalFit = ContentSizeFitter.FitMode.MinSize;
                 tagContentCSF.verticalFit = ContentSizeFitter.FitMode.MinSize;
 
-                scroll.viewport = tagViewPortRT;
-                scroll.content = tagContentRT;
+                scroll.viewport = tagViewport.transform.AsRT();
+                scroll.content = tagContent.transform.AsRT();
             }
 
             // Render Type
