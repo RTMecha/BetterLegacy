@@ -8565,6 +8565,7 @@ namespace BetterLegacy.Editor.Managers
             // i have no idea what is causing the memory issue here
 
             EditorManager.inst.loading = true;
+            var sw = CoreHelper.StartNewStopwatch();
 
             RTPlayer.GameMode = GameMode.Regular;
 
@@ -8579,6 +8580,8 @@ namespace BetterLegacy.Editor.Managers
             SetLayer(0, LayerType.Objects);
 
             WindowController.ResetTitle();
+
+            CoreHelper.Log("Clearing data...");
 
             for (int i = 0; i < timelineObjects.Count; i++)
             {
@@ -8630,6 +8633,8 @@ namespace BetterLegacy.Editor.Managers
             EditorManager.inst.CancelInvoke("LoadingIconUpdate");
             EditorManager.inst.InvokeRepeating("LoadingIconUpdate", 0f, 0.05f);
 
+            CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
+
             var name = Path.GetFileName(fullPath);
 
             EditorManager.inst.currentLoadedLevel = name;
@@ -8646,10 +8651,16 @@ namespace BetterLegacy.Editor.Managers
 
             if (EditorManager.inst.hasLoadedLevel && EditorConfig.Instance.BackupPreviousLoadedLevel.Value && RTFile.DirectoryExists(GameManager.inst.path.Replace("/level.lsb", "")))
             {
+                CoreHelper.Log("Backing up previous level...");
+
                 SetFileInfo($"Backing up previous level [ {Path.GetFileName(GameManager.inst.path.Replace("/level.lsb", ""))} ]");
 
                 this.StartCoroutineAsync(ProjectData.Writer.SaveData(GameManager.inst.path.Replace("level.lsb", "level-open-backup.lsb"), GameData.Current));
+
+                CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
             }
+
+            CoreHelper.Log("Loading data...");
 
             SetFileInfo($"Loading Level Data for [ {name} ]");
 
@@ -8696,9 +8707,14 @@ namespace BetterLegacy.Editor.Managers
                 yield break;
             }
 
+            CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
+
+            CoreHelper.Log("Setting up Video...");
             yield return StartCoroutine(RTVideoManager.inst.Setup(fullPath));
+            CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
             GameManager.inst.gameState = GameManager.State.Parsing;
+            CoreHelper.Log("Parsing data...");
             SetFileInfo($"Parsing Level Data for [ {name} ]");
             if (!string.IsNullOrEmpty(rawJSON) && !string.IsNullOrEmpty(rawMetadataJSON))
             {
@@ -8742,50 +8758,67 @@ namespace BetterLegacy.Editor.Managers
 
                 yield break;
             }
+            CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
             PreviewCover?.gameObject?.SetActive(false);
 
+            CoreHelper.Log("Playing level music...");
             SetFileInfo($"Playing Music for [ {name} ]\n\nIf it doesn't, then something went wrong!");
             AudioManager.inst.PlayMusic(null, song, true, 0f, true);
+            CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
             if (EditorConfig.Instance.WaveformGenerate.Value)
             {
+                CoreHelper.Log("Assigning waveform textures...");
                 SetFileInfo($"Assigning Waveform Textures for [ {name} ]");
                 SetTimelineSprite(null);
                 StartCoroutine(AssignTimelineTexture());
+                CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
             }
             else
             {
+                CoreHelper.Log("Skipping waveform textures...");
                 SetFileInfo($"Skipping Waveform Textures for [ {name} ]");
                 SetTimelineSprite(null);
+                CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
             }
 
+            CoreHelper.Log("Updating timeline...");
             SetFileInfo($"Updating Timeline for [ {name} ]");
             EditorManager.inst.UpdateTimelineSizes();
             GameManager.inst.UpdateTimeline();
             MetadataEditor.inst.Render();
+            CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
             CheckpointEditor.inst.CreateGhostCheckpoints();
 
             SetFileInfo($"Updating states for [ {name} ]");
             CoreHelper.UpdateDiscordStatus($"Editing: {DataManager.inst.metaData.song.title}", "In Editor", "editor");
 
+            CoreHelper.Log("Spawning players...");
             PlayerManager.LoadGlobalModels();
             PlayerManager.RespawnPlayers();
 
             RTPlayer.SetGameDataProperties();
+            CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
+            CoreHelper.Log("Updating objects...");
             StartCoroutine(Updater.IUpdateObjects(true));
+            CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
+            CoreHelper.Log("Updating timeline objects...");
             EventEditor.inst.CreateEventObjects();
             BackgroundManager.inst.UpdateBackgrounds();
             GameManager.inst.UpdateTheme();
             RTMarkerEditor.inst.CreateMarkers();
             EventManager.inst.updateEvents();
+            CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
             RTEventManager.inst.SetResetOffsets();
 
+            CoreHelper.Log("Creating timeline objects...");
             SetFileInfo($"Setting first object of [ {name} ]");
             StartCoroutine(ObjectEditor.inst.ICreateTimelineObjects());
+            CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
             CheckpointEditor.inst.SetCurrentCheckpoint(0);
 
@@ -8825,6 +8858,9 @@ namespace BetterLegacy.Editor.Managers
             rawJSON = null;
             rawMetadataJSON = null;
             song = null;
+
+            CoreHelper.StopAndLogStopwatch(sw, $"Finished loading {name}");
+            sw = null;
 
             yield break;
         }
