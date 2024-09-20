@@ -10,7 +10,7 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.UI;
 
-using Axis = BetterLegacy.Components.Editor.RTObject.Axis;
+using Axis = BetterLegacy.Components.Editor.SelectObject.Axis;
 
 namespace BetterLegacy.Core.Managers
 {
@@ -43,7 +43,7 @@ namespace BetterLegacy.Core.Managers
             rotatorRenderer.enabled = true;
             rotatorRenderer.material.color = new Color(0f, 0f, 1f);
             rotator.GetComponent<Collider2D>().enabled = true;
-            objectRotator = rotator.AddComponent<RTRotator>();
+            objectRotator = rotator.AddComponent<SelectObjectRotator>();
 
             rotator.SetActive(true);
 
@@ -63,10 +63,10 @@ namespace BetterLegacy.Core.Managers
             objectDragger.gameObject.SetActive(CoreHelper.InEditor && EditorManager.inst.isEditing &&
                 ObjectEditor.inst.SelectedObjectCount == 1 &&
                 (ObjectEditor.inst.CurrentSelection.IsBeatmapObject && ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>().objectType != BeatmapObject.ObjectType.Empty || ObjectEditor.inst.CurrentSelection.IsPrefabObject) &&
-                RTObject.Enabled);
+                SelectObject.Enabled);
         }
 
-        RTScaler CreateScaler(Axis axis, Color color)
+        SelectObjectScaler CreateScaler(Axis axis, Color color)
         {
             var scaler = ObjectManager.inst.objectPrefabs[3].options[0].transform.GetChild(0).gameObject.Duplicate(objectDragger, "Scaler");
             Destroy(scaler.GetComponent<SelectObjectInEditor>());
@@ -78,7 +78,7 @@ namespace BetterLegacy.Core.Managers
             scalerRenderer.enabled = true;
             scalerRenderer.material.color = color;
 
-            var s = scaler.AddComponent<RTScaler>();
+            var s = scaler.AddComponent<SelectObjectScaler>();
             s.axis = axis;
 
             scaler.SetActive(true);
@@ -86,11 +86,11 @@ namespace BetterLegacy.Core.Managers
             return s;
         }
 
-        public RTRotator objectRotator;
-        public RTScaler objectScalerTop;
-        public RTScaler objectScalerLeft;
-        public RTScaler objectScalerRight;
-        public RTScaler objectScalerBottom;
+        public SelectObjectRotator objectRotator;
+        public SelectObjectScaler objectScalerTop;
+        public SelectObjectScaler objectScalerLeft;
+        public SelectObjectScaler objectScalerRight;
+        public SelectObjectScaler objectScalerBottom;
 
         public Transform objectDragger;
 

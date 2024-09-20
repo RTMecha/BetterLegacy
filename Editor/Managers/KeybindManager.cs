@@ -2143,7 +2143,7 @@ namespace BetterLegacy.Editor.Managers
 
             setKeyframeValues = false;
 
-            firstDirection = RTObject.Axis.Static;
+            firstDirection = SelectObject.Axis.Static;
 
             currentType = type;
 
@@ -2173,46 +2173,46 @@ namespace BetterLegacy.Editor.Managers
 
                         var finalVector = Input.GetKey(KeyCode.LeftShift) ? vector3 : vector2;
 
-                        if (Input.GetKey(KeyCode.LeftControl) && firstDirection == RTObject.Axis.Static)
+                        if (Input.GetKey(KeyCode.LeftControl) && firstDirection == SelectObject.Axis.Static)
                         {
                             if (dragOffset.x > finalVector.x)
-                                firstDirection = RTObject.Axis.PosX;
+                                firstDirection = SelectObject.Axis.PosX;
 
                             if (dragOffset.x < finalVector.x)
-                                firstDirection = RTObject.Axis.NegX;
+                                firstDirection = SelectObject.Axis.NegX;
 
                             if (dragOffset.y > finalVector.y)
-                                firstDirection = RTObject.Axis.PosY;
+                                firstDirection = SelectObject.Axis.PosY;
 
                             if (dragOffset.y < finalVector.y)
-                                firstDirection = RTObject.Axis.NegY;
+                                firstDirection = SelectObject.Axis.NegY;
                         }
 
                         if (Input.GetKey(KeyCode.X))
                         {
                             if (dragOffset.x > finalVector.x)
-                                firstDirection = RTObject.Axis.PosX;
+                                firstDirection = SelectObject.Axis.PosX;
                             if (dragOffset.x < finalVector.x)
-                                firstDirection = RTObject.Axis.NegX;
+                                firstDirection = SelectObject.Axis.NegX;
                         }
 
                         if (Input.GetKey(KeyCode.Y))
                         {
                             if (dragOffset.x > finalVector.x)
-                                firstDirection = RTObject.Axis.PosY;
+                                firstDirection = SelectObject.Axis.PosY;
                             if (dragOffset.x < finalVector.x)
-                                firstDirection = RTObject.Axis.NegY;
+                                firstDirection = SelectObject.Axis.NegY;
                         }
 
-                        if (firstDirection == RTObject.Axis.NegX || firstDirection == RTObject.Axis.PosX)
+                        if (firstDirection == SelectObject.Axis.NegX || firstDirection == SelectObject.Axis.PosX)
                             selectedKeyframe.eventValues[1] = dragKeyframeValues.y;
 
-                        if (firstDirection == RTObject.Axis.NegY || firstDirection == RTObject.Axis.PosY)
+                        if (firstDirection == SelectObject.Axis.NegY || firstDirection == SelectObject.Axis.PosY)
                             selectedKeyframe.eventValues[0] = dragKeyframeValues.x;
 
-                        if (firstDirection == RTObject.Axis.Static || firstDirection == RTObject.Axis.PosX || firstDirection == RTObject.Axis.NegX)
+                        if (firstDirection == SelectObject.Axis.Static || firstDirection == SelectObject.Axis.PosX || firstDirection == SelectObject.Axis.NegX)
                             selectedKeyframe.eventValues[0] = dragKeyframeValues.x - dragOffset.x + (Input.GetKey(KeyCode.LeftShift) ? vector3.x : vector2.x);
-                        if (firstDirection == RTObject.Axis.Static || firstDirection == RTObject.Axis.PosY || firstDirection == RTObject.Axis.NegY)
+                        if (firstDirection == SelectObject.Axis.Static || firstDirection == SelectObject.Axis.PosY || firstDirection == SelectObject.Axis.NegY)
                             selectedKeyframe.eventValues[1] = dragKeyframeValues.y - dragOffset.y + (Input.GetKey(KeyCode.LeftShift) ? vector3.y : vector2.y);
 
                         break;
@@ -2326,7 +2326,7 @@ namespace BetterLegacy.Editor.Managers
         public Vector2 dragOffset;
         float dragOffsetFloat;
         float dragKeyframeValuesFloat;
-        public RTObject.Axis firstDirection = RTObject.Axis.Static;
+        public SelectObject.Axis firstDirection = SelectObject.Axis.Static;
 
         public SelectionType selectionType;
 

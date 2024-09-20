@@ -1962,7 +1962,7 @@ namespace BetterLegacy.Components.Player
                 healthBase = bae.GetComponentInChildren<MeshRenderer>();
                 healthBase.enabled = true;
 
-                Destroy(bae.GetComponentInChildren<RTObject>());
+                Destroy(bae.GetComponentInChildren<SelectObject>());
                 Destroy(bae.GetComponentInChildren<SelectObjectInEditor>());
                 Destroy(bae.GetComponentInChildren<Collider2D>());
 
@@ -2756,7 +2756,7 @@ namespace BetterLegacy.Components.Player
                 Destroy(pulse.transform.GetChild(0).GetComponent<SelectObjectInEditor>());
                 Destroy(pulse.transform.GetChild(0).GetComponent<BoxCollider2D>());
                 Destroy(pulse.transform.GetChild(0).GetComponent<PolygonCollider2D>());
-                Destroy(pulse.transform.GetChild(0).gameObject.GetComponent<RTObject>());
+                Destroy(pulse.transform.GetChild(0).gameObject.GetComponent<SelectObject>());
             }
 
             var obj = new PlayerObject("Pulse", pulse.transform.GetChild(0).gameObject);
@@ -2904,7 +2904,7 @@ namespace BetterLegacy.Components.Player
             //Destroy
             {
                 Destroy(pulse.transform.GetChild(0).GetComponent<SelectObjectInEditor>());
-                Destroy(pulse.transform.GetChild(0).GetComponent<RTObject>());
+                Destroy(pulse.transform.GetChild(0).GetComponent<SelectObject>());
             }
 
             var obj = new PlayerObject("Bullet", pulse.transform.GetChild(0).gameObject);

@@ -9,7 +9,7 @@ namespace BetterLegacy.Components.Editor
     /// <summary>
     /// Component for handling drag scale.
     /// </summary>
-    public class RTScaler : MonoBehaviour
+    public class SelectObjectScaler : MonoBehaviour
     {
         /// <summary>
         /// The offset position of the scaler.
@@ -27,25 +27,25 @@ namespace BetterLegacy.Components.Editor
         Vector2 dragKeyframeValues;
         Vector2 dragOffset;
 
-        public RTObject.Axis axis = RTObject.Axis.Static;
+        public SelectObject.Axis axis = SelectObject.Axis.Static;
 
         void Update()
         {
             switch (axis)
             {
-                case RTObject.Axis.PosX:
+                case SelectObject.Axis.PosX:
                     transform.localPosition = new Vector3(ScalerOffset, 0f);
                     transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
                     break;
-                case RTObject.Axis.PosY:
+                case SelectObject.Axis.PosY:
                     transform.localPosition = new Vector3(0f, ScalerOffset);
                     transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
                     break;
-                case RTObject.Axis.NegX:
+                case SelectObject.Axis.NegX:
                     transform.localPosition = new Vector3(-ScalerOffset, 0f);
                     transform.localRotation = Quaternion.Euler(0f, 0f, 180f);
                     break;
-                case RTObject.Axis.NegY:
+                case SelectObject.Axis.NegY:
                     transform.localPosition = new Vector3(0f, -ScalerOffset);
                     transform.localRotation = Quaternion.Euler(0f, 0f, -90f);
                     break;
@@ -94,7 +94,7 @@ namespace BetterLegacy.Components.Editor
             if (!dragging)
             {
                 dragging = true;
-                selectedKeyframe = RTObject.SetCurrentKeyframe(1, ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>());
+                selectedKeyframe = SelectObject.SetCurrentKeyframe(1, ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>());
             }
 
             Drag(vector2, vector3);
@@ -118,16 +118,16 @@ namespace BetterLegacy.Components.Editor
             {
                 float total = Vector2.Distance(finalVector, dragOffset);
 
-                if (axis == RTObject.Axis.PosX && dragOffset.x - finalVector.x > 0f)
+                if (axis == SelectObject.Axis.PosX && dragOffset.x - finalVector.x > 0f)
                     total = -total;
 
-                if (axis == RTObject.Axis.PosY && dragOffset.y - finalVector.y > 0f)
+                if (axis == SelectObject.Axis.PosY && dragOffset.y - finalVector.y > 0f)
                     total = -total;
 
-                if (axis == RTObject.Axis.NegX && dragOffset.x - finalVector.x < 0f)
+                if (axis == SelectObject.Axis.NegX && dragOffset.x - finalVector.x < 0f)
                     total = -total;
 
-                if (axis == RTObject.Axis.NegY && dragOffset.y - finalVector.y < 0f)
+                if (axis == SelectObject.Axis.NegY && dragOffset.y - finalVector.y < 0f)
                     total = -total;
 
                 selectedKeyframe.eventValues[0] = dragKeyframeValues.x + total;
@@ -135,13 +135,13 @@ namespace BetterLegacy.Components.Editor
             }
             else
             {
-                if (axis == RTObject.Axis.PosX)
+                if (axis == SelectObject.Axis.PosX)
                     selectedKeyframe.eventValues[0] = dragKeyframeValues.x - dragOffset.x + finalVector.x;
-                if (axis == RTObject.Axis.NegX)
+                if (axis == SelectObject.Axis.NegX)
                     selectedKeyframe.eventValues[0] = dragKeyframeValues.x + dragOffset.x - finalVector.x;
-                if (axis == RTObject.Axis.PosY)
+                if (axis == SelectObject.Axis.PosY)
                     selectedKeyframe.eventValues[1] = dragKeyframeValues.y - dragOffset.y + finalVector.y;
-                if (axis == RTObject.Axis.NegY)
+                if (axis == SelectObject.Axis.NegY)
                     selectedKeyframe.eventValues[1] = dragKeyframeValues.y + dragOffset.y - finalVector.y;
             }
 

@@ -278,9 +278,9 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             if (EditorManager.inst && shape != 9)
             {
-                var obj = visualObject.AddComponent<RTObject>();
+                var obj = visualObject.AddComponent<SelectObject>();
                 obj.SetObject(beatmapObject);
-                beatmapObject.RTObject = obj;
+                beatmapObject.selector = obj;
             }
 
             Object.Destroy(visualObject.GetComponent<SelectObjectInEditor>());

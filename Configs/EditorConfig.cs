@@ -2735,17 +2735,17 @@ namespace BetterLegacy.Configs
 
         void SetPreviewConfig()
         {
-            RTObject.Enabled = ObjectDraggerEnabled.Value;
-            RTObject.CreateKeyframe = ObjectDraggerCreatesKeyframe.Value;
-            RTObject.HighlightColor = ObjectHighlightAmount.Value;
-            RTObject.HighlightDoubleColor = ObjectHighlightDoubleAmount.Value;
-            RTObject.HighlightObjects = HighlightObjects.Value;
-            RTObject.ShowObjectsOnlyOnLayer = OnlyObjectsOnCurrentLayerVisible.Value;
-            RTObject.LayerOpacity = VisibleObjectOpacity.Value;
+            SelectObject.Enabled = ObjectDraggerEnabled.Value;
+            SelectObject.CreateKeyframe = ObjectDraggerCreatesKeyframe.Value;
+            SelectObject.HighlightColor = ObjectHighlightAmount.Value;
+            SelectObject.HighlightDoubleColor = ObjectHighlightDoubleAmount.Value;
+            SelectObject.HighlightObjects = HighlightObjects.Value;
+            SelectObject.ShowObjectsOnlyOnLayer = OnlyObjectsOnCurrentLayerVisible.Value;
+            SelectObject.LayerOpacity = VisibleObjectOpacity.Value;
 
-            RTRotator.RotatorRadius = ObjectDraggerRotatorRadius.Value;
-            RTScaler.ScalerOffset = ObjectDraggerScalerOffset.Value;
-            RTScaler.ScalerScale = ObjectDraggerScalerScale.Value;
+            SelectObjectRotator.RotatorRadius = ObjectDraggerRotatorRadius.Value;
+            SelectObjectScaler.ScalerOffset = ObjectDraggerScalerOffset.Value;
+            SelectObjectScaler.ScalerScale = ObjectDraggerScalerScale.Value;
 
             RTPlayer.ZenModeInEditor = EditorZenMode.Value;
 

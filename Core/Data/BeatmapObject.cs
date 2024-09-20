@@ -136,7 +136,7 @@ namespace BetterLegacy.Core.Data
         /// <summary>
         /// Used for editor optimization.
         /// </summary>
-        public RTObject RTObject { get; set; }
+        public SelectObject selector;
 
         /// <summary>
         /// Used for optimization.

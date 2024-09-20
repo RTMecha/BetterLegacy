@@ -9,7 +9,7 @@ namespace BetterLegacy.Components.Editor
     /// <summary>
     /// Component for handling drag rotation.
     /// </summary>
-    public class RTRotator : MonoBehaviour
+    public class SelectObjectRotator : MonoBehaviour
     {
         /// <summary>
         /// How large the ring radius should be.
@@ -64,7 +64,7 @@ namespace BetterLegacy.Components.Editor
             if (!dragging)
             {
                 dragging = true;
-                selectedKeyframe = RTObject.SetCurrentKeyframe(2, ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>());
+                selectedKeyframe = SelectObject.SetCurrentKeyframe(2, ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>());
             }
 
             Drag(vector2);

@@ -17,7 +17,7 @@ namespace BetterLegacy.Components.Editor
     /// <summary>
     /// Component for selecting and dragging objects.
     /// </summary>
-    public class RTObject : MonoBehaviour
+    public class SelectObject : MonoBehaviour
     {
         /// <summary>
         /// If user is only looking at one object, then allow drag.
@@ -115,7 +115,7 @@ namespace BetterLegacy.Components.Editor
         /// <param name="beatmapObject"></param>
         public void SetObject(BeatmapObject beatmapObject)
         {
-            beatmapObject.RTObject = this;
+            beatmapObject.selector = this;
             this.beatmapObject = beatmapObject;
         }
 
