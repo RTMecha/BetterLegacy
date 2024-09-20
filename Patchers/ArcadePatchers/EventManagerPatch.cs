@@ -19,7 +19,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool updateShakePrefix()
         {
-            RTEventManager.inst.updateShake();
+            RTEventManager.inst.UpdateShake();
             return false;
         }
 
@@ -27,7 +27,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool EventManagerUpdateEventsPrefix1(int __0)
         {
-            RTEventManager.inst.updateEvents(__0);
+            RTEventManager.inst.UpdateEvents(__0);
             return false;
         }
 
@@ -35,7 +35,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool EventManagerUpdateEventsPrefix2(EventManager __instance)
         {
-            __instance.StartCoroutine(RTEventManager.inst.updateEvents());
+            __instance.StartCoroutine(RTEventManager.inst.UpdateEvents());
 
             return false;
         }
