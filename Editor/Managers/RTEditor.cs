@@ -1060,9 +1060,8 @@ namespace BetterLegacy.Editor.Managers
 
         public void RemoveTimelineObject(TimelineObject timelineObject)
         {
-            if (timelineObjects.Has(x => x.ID == timelineObject.ID))
+            if (timelineObjects.TryFindIndex(x => x.ID == timelineObject.ID, out int a))
             {
-                int a = timelineObjects.FindIndex(x => x.ID == timelineObject.ID);
                 timelineObject.selected = false;
                 Destroy(timelineObject.GameObject);
                 timelineObjects.RemoveAt(a);
@@ -10025,10 +10024,12 @@ namespace BetterLegacy.Editor.Managers
         public void PlayDialogAnimation(GameObject gameObject, string dialogName, bool active)
         {
             var play = EditorConfig.Instance.PlayEditorAnimations.Value;
-            if (play && DialogAnimations.Has(x => x.name == dialogName) && gameObject.activeSelf != active)
-            {
-                var dialogAnimation = DialogAnimations.Find(x => x.name == dialogName);
 
+            DialogAnimation dialogAnimation = null;
+            var hasAnimation = DialogAnimations.TryFind(x => x.name == dialogName, out dialogAnimation);
+
+            if (play && hasAnimation && gameObject.activeSelf != active)
+            {
                 if (!dialogAnimation.Active)
                 {
                     gameObject.SetActive(active);
@@ -10136,7 +10137,7 @@ namespace BetterLegacy.Editor.Managers
                 AnimationManager.inst.Play(animation);
             }
 
-            if (!play || !DialogAnimations.Has(x => x.name == dialogName) || active)
+            if (!play || !hasAnimation || active)
                 gameObject.SetActive(active);
         }
 
@@ -10622,37 +10623,37 @@ namespace BetterLegacy.Editor.Managers
                 RotOpenEaseConfig = EditorConfig.Instance.WarningPopupRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.WarningPopupRotCloseEase,
             },
-            new DialogAnimation("REPL Editor Popup")
+            new DialogAnimation("Text Editor")
             {
-                ActiveConfig = EditorConfig.Instance.REPLEditorPopupActive,
+                ActiveConfig = EditorConfig.Instance.TextEditorActive,
 
-                PosActiveConfig = EditorConfig.Instance.REPLEditorPopupPosActive,
-                PosOpenConfig = EditorConfig.Instance.REPLEditorPopupPosOpen,
-                PosCloseConfig = EditorConfig.Instance.REPLEditorPopupPosClose,
-                PosOpenDurationConfig = EditorConfig.Instance.REPLEditorPopupPosOpenDuration,
-                PosCloseDurationConfig = EditorConfig.Instance.REPLEditorPopupPosCloseDuration,
-                PosXOpenEaseConfig = EditorConfig.Instance.REPLEditorPopupPosXOpenEase,
-                PosYOpenEaseConfig = EditorConfig.Instance.REPLEditorPopupPosYOpenEase,
-                PosXCloseEaseConfig = EditorConfig.Instance.REPLEditorPopupPosXCloseEase,
-                PosYCloseEaseConfig = EditorConfig.Instance.REPLEditorPopupPosYCloseEase,
+                PosActiveConfig = EditorConfig.Instance.TextEditorPosActive,
+                PosOpenConfig = EditorConfig.Instance.TextEditorPosOpen,
+                PosCloseConfig = EditorConfig.Instance.TextEditorPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.TextEditorPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.TextEditorPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.TextEditorPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.TextEditorPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.TextEditorPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.TextEditorPosYCloseEase,
 
-                ScaActiveConfig = EditorConfig.Instance.REPLEditorPopupScaActive,
-                ScaOpenConfig = EditorConfig.Instance.REPLEditorPopupScaOpen,
-                ScaCloseConfig = EditorConfig.Instance.REPLEditorPopupScaClose,
-                ScaOpenDurationConfig = EditorConfig.Instance.REPLEditorPopupScaOpenDuration,
-                ScaCloseDurationConfig = EditorConfig.Instance.REPLEditorPopupScaCloseDuration,
-                ScaXOpenEaseConfig = EditorConfig.Instance.REPLEditorPopupScaXOpenEase,
-                ScaYOpenEaseConfig = EditorConfig.Instance.REPLEditorPopupScaYOpenEase,
-                ScaXCloseEaseConfig = EditorConfig.Instance.REPLEditorPopupScaXCloseEase,
-                ScaYCloseEaseConfig = EditorConfig.Instance.REPLEditorPopupScaYCloseEase,
+                ScaActiveConfig = EditorConfig.Instance.TextEditorScaActive,
+                ScaOpenConfig = EditorConfig.Instance.TextEditorScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.TextEditorScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.TextEditorScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.TextEditorScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.TextEditorScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.TextEditorScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.TextEditorScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.TextEditorScaYCloseEase,
 
-                RotActiveConfig = EditorConfig.Instance.REPLEditorPopupRotActive,
-                RotOpenConfig = EditorConfig.Instance.REPLEditorPopupRotOpen,
-                RotCloseConfig = EditorConfig.Instance.REPLEditorPopupRotClose,
-                RotOpenDurationConfig = EditorConfig.Instance.REPLEditorPopupRotOpenDuration,
-                RotCloseDurationConfig = EditorConfig.Instance.REPLEditorPopupRotCloseDuration,
-                RotOpenEaseConfig = EditorConfig.Instance.REPLEditorPopupRotOpenEase,
-                RotCloseEaseConfig = EditorConfig.Instance.REPLEditorPopupRotCloseEase,
+                RotActiveConfig = EditorConfig.Instance.TextEditorRotActive,
+                RotOpenConfig = EditorConfig.Instance.TextEditorRotOpen,
+                RotCloseConfig = EditorConfig.Instance.TextEditorRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.TextEditorRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.TextEditorRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.TextEditorRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.TextEditorRotCloseEase,
             },
             new DialogAnimation("Editor Properties Popup")
             {

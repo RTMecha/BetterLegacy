@@ -696,37 +696,37 @@ namespace BetterLegacy.Configs
 
         #endregion
 
-        #region REPL Editor Popup
+        #region Text Editor
 
-        public Setting<bool> REPLEditorPopupActive { get; set; }
+        public Setting<bool> TextEditorActive { get; set; }
 
-        public Setting<bool> REPLEditorPopupPosActive { get; set; }
-        public Setting<Vector2> REPLEditorPopupPosOpen { get; set; }
-        public Setting<Vector2> REPLEditorPopupPosClose { get; set; }
-        public Setting<Vector2> REPLEditorPopupPosOpenDuration { get; set; }
-        public Setting<Vector2> REPLEditorPopupPosCloseDuration { get; set; }
-        public Setting<Easings> REPLEditorPopupPosXOpenEase { get; set; }
-        public Setting<Easings> REPLEditorPopupPosXCloseEase { get; set; }
-        public Setting<Easings> REPLEditorPopupPosYOpenEase { get; set; }
-        public Setting<Easings> REPLEditorPopupPosYCloseEase { get; set; }
+        public Setting<bool> TextEditorPosActive { get; set; }
+        public Setting<Vector2> TextEditorPosOpen { get; set; }
+        public Setting<Vector2> TextEditorPosClose { get; set; }
+        public Setting<Vector2> TextEditorPosOpenDuration { get; set; }
+        public Setting<Vector2> TextEditorPosCloseDuration { get; set; }
+        public Setting<Easings> TextEditorPosXOpenEase { get; set; }
+        public Setting<Easings> TextEditorPosXCloseEase { get; set; }
+        public Setting<Easings> TextEditorPosYOpenEase { get; set; }
+        public Setting<Easings> TextEditorPosYCloseEase { get; set; }
 
-        public Setting<bool> REPLEditorPopupScaActive { get; set; }
-        public Setting<Vector2> REPLEditorPopupScaOpen { get; set; }
-        public Setting<Vector2> REPLEditorPopupScaClose { get; set; }
-        public Setting<Vector2> REPLEditorPopupScaOpenDuration { get; set; }
-        public Setting<Vector2> REPLEditorPopupScaCloseDuration { get; set; }
-        public Setting<Easings> REPLEditorPopupScaXOpenEase { get; set; }
-        public Setting<Easings> REPLEditorPopupScaXCloseEase { get; set; }
-        public Setting<Easings> REPLEditorPopupScaYOpenEase { get; set; }
-        public Setting<Easings> REPLEditorPopupScaYCloseEase { get; set; }
+        public Setting<bool> TextEditorScaActive { get; set; }
+        public Setting<Vector2> TextEditorScaOpen { get; set; }
+        public Setting<Vector2> TextEditorScaClose { get; set; }
+        public Setting<Vector2> TextEditorScaOpenDuration { get; set; }
+        public Setting<Vector2> TextEditorScaCloseDuration { get; set; }
+        public Setting<Easings> TextEditorScaXOpenEase { get; set; }
+        public Setting<Easings> TextEditorScaXCloseEase { get; set; }
+        public Setting<Easings> TextEditorScaYOpenEase { get; set; }
+        public Setting<Easings> TextEditorScaYCloseEase { get; set; }
 
-        public Setting<bool> REPLEditorPopupRotActive { get; set; }
-        public Setting<float> REPLEditorPopupRotOpen { get; set; }
-        public Setting<float> REPLEditorPopupRotClose { get; set; }
-        public Setting<float> REPLEditorPopupRotOpenDuration { get; set; }
-        public Setting<float> REPLEditorPopupRotCloseDuration { get; set; }
-        public Setting<Easings> REPLEditorPopupRotOpenEase { get; set; }
-        public Setting<Easings> REPLEditorPopupRotCloseEase { get; set; }
+        public Setting<bool> TextEditorRotActive { get; set; }
+        public Setting<float> TextEditorRotOpen { get; set; }
+        public Setting<float> TextEditorRotClose { get; set; }
+        public Setting<float> TextEditorRotOpenDuration { get; set; }
+        public Setting<float> TextEditorRotCloseDuration { get; set; }
+        public Setting<Easings> TextEditorRotOpenEase { get; set; }
+        public Setting<Easings> TextEditorRotCloseEase { get; set; }
 
         #endregion
 
@@ -1854,37 +1854,37 @@ namespace BetterLegacy.Configs
 
             #endregion
 
-            #region REPL Editor Popup
+            #region Text Editor
 
-            REPLEditorPopupActive = Bind(this, "Animations", "REPL Editor Popup Active", true, "If the popup animation should play.");
+            TextEditorActive = Bind(this, "Animations", "Text Editor Active", true, "If the popup animation should play.");
 
-            REPLEditorPopupPosActive = Bind(this, "Animations", "REPL Editor Popup Animate Position", false, "If position should be animated.");
-            REPLEditorPopupPosOpen = Bind(this, "Animations", "REPL Editor Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            REPLEditorPopupPosClose = Bind(this, "Animations", "REPL Editor Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            REPLEditorPopupPosOpenDuration = Bind(this, "Animations", "REPL Editor Popup Open Position Duration", Vector2.zero, "The duration of opening.");
-            REPLEditorPopupPosCloseDuration = Bind(this, "Animations", "REPL Editor Popup Close Position Duration", Vector2.zero, "The duration of closing.");
-            REPLEditorPopupPosXOpenEase = BindEnum(this, "Animations", "REPL Editor Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
-            REPLEditorPopupPosXCloseEase = BindEnum(this, "Animations", "REPL Editor Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
-            REPLEditorPopupPosYOpenEase = BindEnum(this, "Animations", "REPL Editor Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
-            REPLEditorPopupPosYCloseEase = BindEnum(this, "Animations", "REPL Editor Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+            TextEditorPosActive = Bind(this, "Animations", "Text Editor Animate Position", false, "If position should be animated.");
+            TextEditorPosOpen = Bind(this, "Animations", "Text Editor Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            TextEditorPosClose = Bind(this, "Animations", "Text Editor Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            TextEditorPosOpenDuration = Bind(this, "Animations", "Text Editor Open Position Duration", Vector2.zero, "The duration of opening.");
+            TextEditorPosCloseDuration = Bind(this, "Animations", "Text Editor Close Position Duration", Vector2.zero, "The duration of closing.");
+            TextEditorPosXOpenEase = BindEnum(this, "Animations", "Text Editor Open Position X Ease", Easings.Linear, "The easing of opening.");
+            TextEditorPosXCloseEase = BindEnum(this, "Animations", "Text Editor Close Position X Ease", Easings.Linear, "The easing of opening.");
+            TextEditorPosYOpenEase = BindEnum(this, "Animations", "Text Editor Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            TextEditorPosYCloseEase = BindEnum(this, "Animations", "Text Editor Close Position Y Ease", Easings.Linear, "The easing of opening.");
 
-            REPLEditorPopupScaActive = Bind(this, "Animations", "REPL Editor Popup Animate Scale", true, "If scale should be animated.");
-            REPLEditorPopupScaOpen = Bind(this, "Animations", "REPL Editor Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            REPLEditorPopupScaClose = Bind(this, "Animations", "REPL Editor Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            REPLEditorPopupScaOpenDuration = Bind(this, "Animations", "REPL Editor Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
-            REPLEditorPopupScaCloseDuration = Bind(this, "Animations", "REPL Editor Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
-            REPLEditorPopupScaXOpenEase = BindEnum(this, "Animations", "REPL Editor Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
-            REPLEditorPopupScaXCloseEase = BindEnum(this, "Animations", "REPL Editor Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
-            REPLEditorPopupScaYOpenEase = BindEnum(this, "Animations", "REPL Editor Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
-            REPLEditorPopupScaYCloseEase = BindEnum(this, "Animations", "REPL Editor Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+            TextEditorScaActive = Bind(this, "Animations", "Text Editor Animate Scale", true, "If scale should be animated.");
+            TextEditorScaOpen = Bind(this, "Animations", "Text Editor Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            TextEditorScaClose = Bind(this, "Animations", "Text Editor Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            TextEditorScaOpenDuration = Bind(this, "Animations", "Text Editor Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            TextEditorScaCloseDuration = Bind(this, "Animations", "Text Editor Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            TextEditorScaXOpenEase = BindEnum(this, "Animations", "Text Editor Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            TextEditorScaXCloseEase = BindEnum(this, "Animations", "Text Editor Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            TextEditorScaYOpenEase = BindEnum(this, "Animations", "Text Editor Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            TextEditorScaYCloseEase = BindEnum(this, "Animations", "Text Editor Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
 
-            REPLEditorPopupRotActive = Bind(this, "Animations", "REPL Editor Popup Animate Rotation", false, "If rotation should be animated.");
-            REPLEditorPopupRotOpen = Bind(this, "Animations", "REPL Editor Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
-            REPLEditorPopupRotClose = Bind(this, "Animations", "REPL Editor Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
-            REPLEditorPopupRotOpenDuration = Bind(this, "Animations", "REPL Editor Popup Open Rotation Duration", 0f, "The duration of opening.");
-            REPLEditorPopupRotCloseDuration = Bind(this, "Animations", "REPL Editor Popup Close Rotation Duration", 0f, "The duration of closing.");
-            REPLEditorPopupRotOpenEase = BindEnum(this, "Animations", "REPL Editor Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
-            REPLEditorPopupRotCloseEase = BindEnum(this, "Animations", "REPL Editor Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+            TextEditorRotActive = Bind(this, "Animations", "Text Editor Animate Rotation", false, "If rotation should be animated.");
+            TextEditorRotOpen = Bind(this, "Animations", "Text Editor Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            TextEditorRotClose = Bind(this, "Animations", "Text Editor Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            TextEditorRotOpenDuration = Bind(this, "Animations", "Text Editor Open Rotation Duration", 0f, "The duration of opening.");
+            TextEditorRotCloseDuration = Bind(this, "Animations", "Text Editor Close Rotation Duration", 0f, "The duration of closing.");
+            TextEditorRotOpenEase = BindEnum(this, "Animations", "Text Editor Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            TextEditorRotCloseEase = BindEnum(this, "Animations", "Text Editor Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
