@@ -31,7 +31,6 @@
 - Figure out how player shooting fits in-game.
 - Documentation & tooltips.
 - Example customization.
-- Fully implement Background Object tags.
 - Somehow figure out how to convert parallax in alpha to BG objects in BetterLegacy.
 - Custom end level function [end level screen, return to hub, return to previous, return to arcade, return to main menu].
 - loadLevel modifiers custom end function (same as above).
