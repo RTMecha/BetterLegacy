@@ -1227,7 +1227,7 @@ namespace BetterLegacy.Editor.Managers
             if (_select)
                 SetCurrentObject(timelineObject);
 
-            if (ExampleManager.inst && ExampleManager.inst.Visible && UnityEngine.Random.Range(0, 100) > 80)
+            if (ExampleManager.inst && ExampleManager.inst.Visible && RandomHelper.PercentChance(20))
                 ExampleManager.inst.SayDialogue("CreateObject");
 
             return timelineObject;
@@ -1389,7 +1389,6 @@ namespace BetterLegacy.Editor.Managers
         {
             if (!timelineObject.verified && !RTEditor.inst.timelineObjects.Has(x => x.ID == timelineObject.ID))
             {
-                timelineObject.verified = true;
                 RenderTimelineObject(timelineObject);
             }
 
