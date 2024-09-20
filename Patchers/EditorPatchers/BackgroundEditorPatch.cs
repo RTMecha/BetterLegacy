@@ -195,6 +195,16 @@ namespace BetterLegacy.Patchers
             return false;
         }
 
+        [HarmonyPatch(nameof(BackgroundEditor.UpdateColorSelection))]
+        [HarmonyPrefix]
+        static bool UpdateColorSelectionPrefix()
+        {
+            var backgroundObject = GameData.Current.backgroundObjects[Instance.currentObj];
+            for (int i = 0; i < GameManager.inst.LiveTheme.backgroundColors.Count; i++)
+                Instance.left.Find("color").GetChild(i).Find("Image").gameObject.SetActive(backgroundObject.color == i);
+            return false;
+        }
+
         [HarmonyPatch(nameof(BackgroundEditor.SetName))]
         [HarmonyPrefix]
         static bool SetNamePrefix(string __0)

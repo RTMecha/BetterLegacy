@@ -1365,6 +1365,8 @@ namespace BetterLegacy.Editor.Managers
                 var shapeToggle = obj.GetComponent<Toggle>();
                 EditorThemeManager.ApplyToggle(shapeToggle, ThemeGroup.Background_1);
 
+                shapeToggle.group = null;
+
                 if (i != 4 && i != 6)
                 {
                     if (!shapeSettings.Find((i + 1).ToString()))
@@ -1404,6 +1406,7 @@ namespace BetterLegacy.Editor.Managers
                         ((RectTransform)opt.transform).sizeDelta = new Vector2(32f, 32f);
 
                         var shapeOptionToggle = opt.GetComponent<Toggle>();
+                        shapeOptionToggle.group = null;
                         EditorThemeManager.ApplyToggle(shapeOptionToggle, checkGroup: ThemeGroup.Background_1);
 
                         if (!opt.GetComponent<HoverUI>())
