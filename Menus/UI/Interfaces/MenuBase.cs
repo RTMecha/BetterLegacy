@@ -325,12 +325,16 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         #region Generate UI
 
+        public bool generating = false;
+
         /// <summary>
         /// IEnumerator Coroutine used to Generate all the menus' elements. Can be overridden if needed.
         /// </summary>
         /// <returns></returns>
         public virtual IEnumerator GenerateUI()
         {
+            generating = true;
+
             if (regenerate || this.canvas == null || !this.canvas.GameObject)
             {
                 if (this.canvas != null && this.canvas.GameObject)
@@ -545,6 +549,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
             }
 
             isOpen = true;
+
+            generating = false;
 
             yield break;
         }
