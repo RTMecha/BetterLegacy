@@ -26,6 +26,7 @@
 ### Misc
 - Rework arcade menu to use new interface system.
 - Possibly update input select scene to use new interface system.
+- Optimize timeline objects by replacing TextMeshPro with UnityEngine.UI.Text. See if it could be optional?
 - Fix spawnPrefab modifier potential issues by not adding to the prefabObjects list, assigning a custom Prefab Object property to Beatmap Object and have ObjectConverter read from that.
 - MetaData settings that can be adjusted in the Play Level (Settings) menu and can be read using modifiers probably.
 - Figure out how player shooting fits in-game.
