@@ -21,13 +21,17 @@ using LSFunctions;
 using System.Collections;
 using BetterLegacy.Core.Managers.Networking;
 using SimpleJSON;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+using System.IO;
+using InControl;
 
 namespace BetterLegacy.Arcade
 {
     // Probably not gonna use this
     public class ArcadeMenu : MenuBase
     {
-        public static bool useThisUI = false;
+        public static bool useThisUI = true;
 
         public static ArcadeMenu Current { get; set; }
 
@@ -127,8 +131,7 @@ namespace BetterLegacy.Arcade
                 });
             }
 
-            var currentPage = Pages[(int)CurrentTab] + 1;
-            int max = currentPage * MAX_LEVELS_PER_PAGE;
+            var currentPage = Pages[(int)CurrentTab];
             var currentSearch = Searches[(int)CurrentTab];
 
             switch (CurrentTab)
@@ -148,8 +151,7 @@ namespace BetterLegacy.Arcade
                             id = "842848",
                             name = "Search Bar",
                             parentLayout = "local settings",
-                            //rect = RectValues.HorizontalAnchored.AnchoredPosition(0f, 350f).SizeDelta(-126f, 64f),
-                            rect = RectValues.Default.SizeDelta(1500, 64f),
+                            rect = RectValues.Default.SizeDelta(1368f, 64f),
                             text = currentSearch,
                             valueChangedFunc = SearchLocalLevels,
                             placeholder = "Search levels...",
@@ -162,6 +164,52 @@ namespace BetterLegacy.Arcade
                             regenerate = false,
                         });
 
+                        var pageField = new MenuInputField
+                        {
+                            id = "842848",
+                            name = "Page Bar",
+                            parentLayout = "local settings",
+                            rect = RectValues.Default.SizeDelta(132f, 64f),
+                            text = currentPage.ToString(),
+                            textAnchor = TextAnchor.MiddleCenter,
+                            valueChangedFunc = _val => SetLocalLevelsPage(Parser.TryParse(_val, Pages[(int)CurrentTab])),
+                            placeholder = "Set page...",
+                            color = 6,
+                            opacity = 0.1f,
+                            textColor = 6,
+                            placeholderColor = 6,
+                            length = 0.1f,
+                            wait = false,
+                            regenerate = false,
+                        };
+                        pageField.triggers = new EventTrigger.Entry[]
+                        {
+                            TriggerHelper.CreateEntry(EventTriggerType.Scroll, eventData =>
+                            {
+                                var pointerEventData = (PointerEventData)eventData;
+
+                                var inputField = pageField.inputField;
+                                if (!inputField)
+                                    return;
+
+                                if (int.TryParse(inputField.text, out int result))
+                                {
+                                    bool large = Input.GetKey(KeyCode.LeftControl);
+
+                                    if (pointerEventData.scrollDelta.y < 0f)
+                                        result -= 1 * (large ? 10 : 1);
+                                    if (pointerEventData.scrollDelta.y > 0f)
+                                        result += 1 * (large ? 10 : 1);
+
+                                    if (LocalLevelPageCount != 0)
+                                        result = Mathf.Clamp(result, 0, LocalLevelPageCount);
+
+                                    if (inputField.text != result.ToString())
+                                        inputField.text = result.ToString();
+                                }
+                            }),
+                        };
+
                         elements.Add(new MenuButton
                         {
                             id = "32848924",
@@ -172,8 +220,8 @@ namespace BetterLegacy.Arcade
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
-                                if (Pages[(int)CurrentTab] != 0)
-                                    SetLocalLevelsPage(Pages[(int)CurrentTab] - 1);
+                                if (Pages[(int)CurrentTab] != 0 && pageField.inputField)
+                                    pageField.inputField.text = (Pages[(int)CurrentTab] - 1).ToString();
                                 else
                                     AudioManager.inst.PlaySound("Block");
                             },
@@ -186,7 +234,9 @@ namespace BetterLegacy.Arcade
                             length = 0.1f,
                             regenerate = false,
                         });
-                        
+
+                        elements.Add(pageField);
+
                         elements.Add(new MenuButton
                         {
                             id = "32848924",
@@ -198,7 +248,7 @@ namespace BetterLegacy.Arcade
                             func = () =>
                             {
                                 if (Pages[(int)CurrentTab] != LocalLevelPageCount)
-                                    SetLocalLevelsPage(Pages[(int)CurrentTab] + 1);
+                                    pageField.inputField.text = (Pages[(int)CurrentTab] + 1).ToString();
                                 else
                                     AudioManager.inst.PlaySound("Block");
                             },
@@ -336,6 +386,143 @@ namespace BetterLegacy.Arcade
                     }
                 case Tab.Browser:
                     {
+                        layouts.Add("browser settings", new MenuHorizontalLayout
+                        {
+                            name = "browser settings",
+                            rect = RectValues.HorizontalAnchored.AnchoredPosition(0f, 350f).SizeDelta(-126f, 64f),
+                            childForceExpandWidth = true,
+                            regenerate = false,
+                        });
+
+                        elements.Add(new MenuInputField
+                        {
+                            id = "842848",
+                            name = "Search Bar",
+                            parentLayout = "browser settings",
+                            rect = RectValues.Default.SizeDelta(1368f, 64f),
+                            text = currentSearch,
+                            valueChangedFunc = SearchBrowser,
+                            placeholder = "Search files...",
+                            color = 6,
+                            opacity = 0.1f,
+                            textColor = 6,
+                            placeholderColor = 6,
+                            length = 0.1f,
+                            wait = false,
+                            regenerate = false,
+                        });
+
+                        var pageField = new MenuInputField
+                        {
+                            id = "842848",
+                            name = "Page Bar",
+                            parentLayout = "browser settings",
+                            rect = RectValues.Default.SizeDelta(132f, 64f),
+                            text = currentPage.ToString(),
+                            textAnchor = TextAnchor.MiddleCenter,
+                            valueChangedFunc = _val => SetBrowserPage(Parser.TryParse(_val, Pages[(int)CurrentTab])),
+                            placeholder = "Set page...",
+                            color = 6,
+                            opacity = 0.1f,
+                            textColor = 6,
+                            placeholderColor = 6,
+                            length = 0.1f,
+                            wait = false,
+                            regenerate = false,
+                        };
+                        pageField.triggers = new EventTrigger.Entry[]
+                        {
+                            TriggerHelper.CreateEntry(EventTriggerType.Scroll, eventData =>
+                            {
+                                var pointerEventData = (PointerEventData)eventData;
+
+                                var inputField = pageField.inputField;
+                                if (!inputField)
+                                    return;
+
+                                if (int.TryParse(inputField.text, out int result))
+                                {
+                                    bool large = Input.GetKey(KeyCode.LeftControl);
+
+                                    if (pointerEventData.scrollDelta.y < 0f)
+                                        result -= 1 * (large ? 10 : 1);
+                                    if (pointerEventData.scrollDelta.y > 0f)
+                                        result += 1 * (large ? 10 : 1);
+
+                                    if (BrowserPageCount != 0)
+                                        result = Mathf.Clamp(result, 0, BrowserPageCount);
+
+                                    if (inputField.text != result.ToString())
+                                        inputField.text = result.ToString();
+                                }
+                            }),
+                        };
+
+                        elements.Add(new MenuButton
+                        {
+                            id = "32848924",
+                            name = "Prev Page",
+                            text = "<align=center><b><",
+                            parentLayout = "browser settings",
+                            selectionPosition = new Vector2Int(0, 1),
+                            rect = RectValues.Default.SizeDelta(132f, 64f),
+                            func = () =>
+                            {
+                                if (Pages[(int)CurrentTab] != 0 && pageField.inputField)
+                                    pageField.inputField.text = (Pages[(int)CurrentTab] - 1).ToString();
+                                else
+                                    AudioManager.inst.PlaySound("Block");
+                            },
+                            color = 6,
+                            opacity = 0.1f,
+                            textColor = 6,
+                            selectedColor = 6,
+                            selectedOpacity = 1f,
+                            selectedTextColor = 7,
+                            length = 0.1f,
+                            regenerate = false,
+                        });
+
+                        elements.Add(pageField);
+
+                        elements.Add(new MenuButton
+                        {
+                            id = "32848924",
+                            name = "Next Page",
+                            text = "<align=center><b>>",
+                            parentLayout = "browser settings",
+                            selectionPosition = new Vector2Int(1, 1),
+                            rect = RectValues.Default.SizeDelta(132f, 64f),
+                            func = () =>
+                            {
+                                if (Pages[(int)CurrentTab] != LocalLevelPageCount)
+                                    pageField.inputField.text = (Pages[(int)CurrentTab] + 1).ToString();
+                                else
+                                    AudioManager.inst.PlaySound("Block");
+                            },
+                            color = 6,
+                            opacity = 0.1f,
+                            textColor = 6,
+                            selectedColor = 6,
+                            selectedOpacity = 1f,
+                            selectedTextColor = 7,
+                            length = 0.1f,
+                            regenerate = false,
+                        });
+
+                        layouts.Add("levels", new MenuGridLayout
+                        {
+                            name = "levels",
+                            rect = RectValues.Default.AnchoredPosition(-500f, 100f).SizeDelta(800f, 400f),
+                            cellSize = new Vector2(350f, 180f),
+                            spacing = new Vector2(12f, 12f),
+                            constraint = GridLayoutGroup.Constraint.FixedColumnCount,
+                            constraintCount = 5,
+                            regenerate = false,
+                        });
+
+                        RefreshBrowserLevels(false);
+
                         // todo: make browser download zip levels and also browse local files for a level.
                         break;
                     }
@@ -362,7 +549,7 @@ namespace BetterLegacy.Arcade
         public static string LocalSearch => Searches[0];
         public static List<Level> LocalLevels => LevelManager.Levels.Where(level => !level.fromCollection && (string.IsNullOrEmpty(LocalSearch)
                         || level.id == LocalSearch
-                        || level.metadata.LevelSong.tags.Contains(LocalSearch)
+                        || level.metadata.LevelSong.tags.Contains(LocalSearch.ToLower())
                         || level.metadata.artist.Name.ToLower().Contains(LocalSearch.ToLower())
                         || level.metadata.creator.steam_name.ToLower().Contains(LocalSearch.ToLower())
                         || level.metadata.song.title.ToLower().Contains(LocalSearch.ToLower())
@@ -591,7 +778,7 @@ namespace BetterLegacy.Arcade
             if (loadingOnlineLevels)
                 yield break;
 
-            var levelButtons = elements.Where(x => x.name == "Level Button" || x.name == "Difficulty").ToList();
+            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty");
 
             for (int i = 0; i < levelButtons.Count; i++)
             {
@@ -615,16 +802,12 @@ namespace BetterLegacy.Arcade
             CoreHelper.Log($"Search query: {query}");
 
             if (string.IsNullOrEmpty(query))
-            {
                 yield break;
-            }
 
             loadingOnlineLevels = true;
             var headers = new Dictionary<string, string>();
             if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null)
                 headers["Authorization"] = $"Bearer {LegacyPlugin.authData["access_token"].Value}";
-
-            Dictionary<string, MenuImage> ids = new Dictionary<string, MenuImage>();
 
             yield return CoreHelper.StartCoroutine(AlephNetworkManager.DownloadJSONFile(query, json =>
             {
@@ -634,6 +817,7 @@ namespace BetterLegacy.Arcade
 
                     if (jn["items"] != null)
                     {
+                        int num = 0;
                         for (int i = 0; i < jn["items"].Count; i++)
                         {
                             var item = jn["items"][i];
@@ -651,8 +835,8 @@ namespace BetterLegacy.Arcade
                                 continue;
 
                             int index = i;
-                            int column = (index % MAX_LEVELS_PER_PAGE) % 5;
-                            int row = (int)((index % MAX_LEVELS_PER_PAGE) / 5) + 2;
+                            int column = (num % MAX_LEVELS_PER_PAGE) % 5;
+                            int row = (int)((num % MAX_LEVELS_PER_PAGE) / 5) + 2;
 
                             var button = new MenuButton
                             {
@@ -665,6 +849,7 @@ namespace BetterLegacy.Arcade
                                 text = "<size=24>" + name,
                                 textRect = RectValues.FullAnchored.AnchoredPosition(20f, -50f),
                                 enableWordWrapping = true,
+                                icon = SteamWorkshop.inst.defaultSteamImageSprite,
                                 color = 6,
                                 opacity = 0.1f,
                                 textColor = 6,
@@ -689,8 +874,28 @@ namespace BetterLegacy.Arcade
                                 wait = false,
                             });
 
-                            ids.Add(id, button);
+                            if (OnlineLevelIcons.TryGetValue(id, out Sprite sprite))
+                                button.icon = sprite;
+                            else
+                            {
+                                CoreHelper.StartCoroutine(AlephNetworkManager.DownloadBytes($"{CoverURL}{id}.jpg", bytes =>
+                                {
+                                    var sprite = SpriteHelper.LoadSprite(bytes);
+                                    OnlineLevelIcons.Add(id, sprite);
+                                    button.icon = sprite;
+                                    if (button.iconUI)
+                                        button.iconUI.sprite = sprite;
+                                }, onError =>
+                                {
+                                    var sprite = SteamWorkshop.inst.defaultSteamImageSprite;
+                                    OnlineLevelIcons.Add(id, sprite);
+                                    button.icon = sprite;
+                                    if (button.iconUI)
+                                        button.iconUI.sprite = sprite;
+                                }));
+                            }
 
+                            num++;
                         }
                     }
 
@@ -701,53 +906,275 @@ namespace BetterLegacy.Arcade
                 }
                 catch (Exception ex)
                 {
-                    CoreHelper.LogError($"{ex}");
+                    CoreHelper.LogException(ex);
                 }
             }, headers));
 
-            foreach (var keyValuePair in ids)
-            {
-                var id = keyValuePair.Key;
-                var button = keyValuePair.Value;
-                if (OnlineLevelIcons.TryGetValue(id, out Sprite sprite))
-                {
-                    button.icon = sprite;
-                    continue;
-                }
-
-                yield return CoreHelper.StartCoroutine(AlephNetworkManager.DownloadBytes($"{CoverURL}{id}.jpg", bytes =>
-                {
-                    var sprite = SpriteHelper.LoadSprite(bytes);
-                    OnlineLevelIcons.Add(id, sprite);
-                    button.icon = sprite;
-                }, onError =>
-                {
-                    var sprite = SteamWorkshop.inst.defaultSteamImageSprite;
-                    OnlineLevelIcons.Add(id, sprite);
-                    button.icon = sprite;
-                }));
-            }
-
             loadingOnlineLevels = false;
             CoreHelper.StartCoroutine(GenerateUI());
+            while (generating)
+                yield return null;
         }
 
         public bool loadingOnlineLevels;
 
-        public void SelectOnlineLevel(JSONObject onlineLevel)
-        {
-            if (LevelManager.Levels.TryFind(x => x.metadata != null && x.metadata.serverID == onlineLevel["id"], out Level level))
-            {
-                CoreHelper.StartCoroutine(SelectLocalLevel(level));
-                return;
-            }
-
-            DownloadLevelMenu.Init(onlineLevel);
-        }
+        public void SelectOnlineLevel(JSONObject onlineLevel) => DownloadLevelMenu.Init(onlineLevel);
 
         #endregion
 
         #region Browser
+
+        public static int BrowserPageCount => BrowserFolders.Length / MAX_LEVELS_PER_PAGE;
+        public static string BrowserSearch => Searches[2];
+        public static string BrowserCurrentDirectory { get; set; } = RTFile.ApplicationDirectory;
+        public static string[] BrowserFolders =>
+            Directory.GetDirectories(BrowserCurrentDirectory)
+                    .Where(x => string.IsNullOrEmpty(BrowserSearch) || Path.GetFileName(x).ToLower().Contains(BrowserSearch.ToLower()) || Level.TryVerify(x + "/", false, out Level level) &&
+                        (level.id == BrowserSearch
+                        || level.metadata.LevelSong.tags.Contains(BrowserSearch.ToLower())
+                        || level.metadata.artist.Name.ToLower().Contains(BrowserSearch.ToLower())
+                        || level.metadata.creator.steam_name.ToLower().Contains(BrowserSearch.ToLower())
+                        || level.metadata.song.title.ToLower().Contains(BrowserSearch.ToLower())
+                        || level.metadata.song.getDifficulty().ToLower().Contains(BrowserSearch.ToLower()))).ToArray();
+
+        public void SearchBrowser(string search)
+        {
+            Searches[2] = search;
+            Pages[2] = 0;
+
+            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
+
+            for (int i = 0; i < levelButtons.Count; i++)
+            {
+                var levelButton = levelButtons[i];
+                levelButton.Clear();
+                CoreHelper.Destroy(levelButton.gameObject);
+            }
+            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
+            RefreshBrowserLevels(true);
+        }
+
+        public void SetBrowserPage(int page)
+        {
+            Pages[2] = Mathf.Clamp(page, 0, BrowserPageCount);
+
+            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
+
+            for (int i = 0; i < levelButtons.Count; i++)
+            {
+                var levelButton = levelButtons[i];
+                levelButton.Clear();
+                CoreHelper.Destroy(levelButton.gameObject);
+            }
+            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
+            RefreshBrowserLevels(true);
+        }
+
+        public void RefreshBrowserLevels(bool regenerateUI)
+        {
+            var currentPage = Pages[(int)CurrentTab] + 1;
+            int max = currentPage * (MAX_LEVELS_PER_PAGE - 1);
+            var currentSearch = Searches[(int)CurrentTab];
+
+            var directoryInfo = new DirectoryInfo(BrowserCurrentDirectory);
+
+            // Return
+            if (directoryInfo.Parent != null)
+            {
+                elements.Add(new MenuButton
+                {
+                    id = "525",
+                    name = "Level Button",
+                    parentLayout = "levels",
+                    selectionPosition = new Vector2Int(0, 2),
+                    func = () =>
+                    {
+                        BrowserCurrentDirectory = directoryInfo.Parent.FullName;
+                        SetBrowserPage(0);
+                    },
+                    text = "<size=24> < UP A FOLDER",
+                    textRect = RectValues.FullAnchored.AnchoredPosition(20f, -50f),
+                    enableWordWrapping = true,
+                    color = 6,
+                    opacity = 0.1f,
+                    textColor = 6,
+                    selectedColor = 6,
+                    selectedOpacity = 1f,
+                    selectedTextColor = 7,
+                    length = regenerateUI ? 0f : 0.01f,
+                    wait = !regenerateUI,
+                    mask = true,
+                });
+            }
+
+            var folders = BrowserFolders;
+            int num = 1;
+            for (int i = 0; i < folders.Length; i++)
+            {
+                int index = i;
+                if (index < max - (MAX_LEVELS_PER_PAGE - 1) || index >= max)
+                    continue;
+
+                int column = (num % (MAX_LEVELS_PER_PAGE)) % 5;
+                int row = (int)((num % (MAX_LEVELS_PER_PAGE)) / 5) + 2;
+
+                var folder = folders[index].Replace("\\", "/");
+
+                if (Level.TryVerify(folder + "/", true, out Level level))
+                {
+                    var isSSRank = LevelManager.GetLevelRank(level).name == "SS";
+
+                    MenuImage shine = null;
+
+                    var button = new MenuButton
+                    {
+                        id = level.id,
+                        name = "Level Button",
+                        parentLayout = "levels",
+                        selectionPosition = new Vector2Int(column, row),
+                        func = () => { CoreHelper.StartCoroutine(SelectLocalLevel(level)); },
+                        icon = level.icon,
+                        iconRect = RectValues.Default.AnchoredPosition(-90, 30f),
+                        text = "<size=24>" + level.metadata?.LevelBeatmap?.name,
+                        textRect = RectValues.FullAnchored.AnchoredPosition(20f, -50f),
+                        enableWordWrapping = true,
+                        color = 6,
+                        opacity = 0.1f,
+                        textColor = 6,
+                        selectedColor = 6,
+                        selectedOpacity = 1f,
+                        selectedTextColor = 7,
+                        length = regenerateUI ? 0f : 0.01f,
+                        wait = !regenerateUI,
+                        mask = true,
+
+                        allowOriginalHoverMethods = true,
+                        enterFunc = () =>
+                        {
+                            if (!isSSRank)
+                                return;
+
+                            var animation = new RTAnimation("Level Shine")
+                            {
+                                animationHandlers = new List<AnimationHandlerBase>
+                            {
+                                new AnimationHandler<float>(new List<IKeyframe<float>>
+                                {
+                                    new FloatKeyframe(0f, -240f, Ease.Linear),
+                                    new FloatKeyframe(1f, 240f, Ease.CircInOut),
+                                }, x => { if (shine != null && shine.gameObject) shine.gameObject.transform.AsRT().anchoredPosition = new Vector2(x, 0f); }),
+                            },
+                                loop = true,
+                            };
+
+                            AnimationManager.inst.Play(animation);
+                        },
+                        exitFunc = () =>
+                        {
+                            if (!isSSRank)
+                                return;
+
+                            if (AnimationManager.inst.animations.TryFind(x => x.name.Contains("Level Shine"), out RTAnimation animation))
+                                AnimationManager.inst.RemoveID(animation.id);
+
+                            if (shine != null && shine.gameObject)
+                                shine.gameObject.transform.AsRT().anchoredPosition = new Vector2(-240f, 0f);
+                        },
+                    };
+                    elements.Add(button);
+
+                    elements.Add(new MenuImage
+                    {
+                        id = "0",
+                        name = "Difficulty",
+                        parent = level.id,
+                        rect = new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(8f, 0f)),
+                        overrideColor = CoreHelper.GetDifficulty(level.metadata.song.difficulty).color,
+                        useOverrideColor = true,
+                        opacity = 1f,
+                        roundedSide = SpriteHelper.RoundedSide.Left,
+                        length = 0f,
+                        wait = false,
+                    });
+
+                    if (isSSRank)
+                    {
+                        shine = new MenuImage
+                        {
+                            id = LSText.randomNumString(16),
+                            name = "Shine Base",
+                            parent = level.id,
+                            rect = RectValues.Default.AnchoredPosition(-240f, 0f).Rotation(15f),
+                            opacity = 0f,
+                            length = 0f,
+                            wait = false,
+                        };
+
+                        var shine1 = new MenuImage
+                        {
+                            id = "0",
+                            name = "Shine 1",
+                            parent = shine.id,
+                            rect = RectValues.Default.AnchoredPosition(-12f, 0f).SizeDelta(8f, 400f),
+                            overrideColor = ArcadeConfig.Instance.ShineColor.Value,
+                            useOverrideColor = true,
+                            opacity = 1f,
+                            length = 0f,
+                            wait = false,
+                        };
+
+                        var shine2 = new MenuImage
+                        {
+                            id = "0",
+                            name = "Shine 2",
+                            parent = shine.id,
+                            rect = RectValues.Default.AnchoredPosition(12f, 0f).SizeDelta(20f, 400f),
+                            overrideColor = ArcadeConfig.Instance.ShineColor.Value,
+                            useOverrideColor = true,
+                            opacity = 1f,
+                            length = 0f,
+                            wait = false,
+                        };
+
+                        elements.Add(shine);
+                        elements.Add(shine1);
+                        elements.Add(shine2);
+                    }
+                }
+                else
+                {
+                    elements.Add(new MenuButton
+                    {
+                        id = "525",
+                        name = "Level Button",
+                        parentLayout = "levels",
+                        selectionPosition = new Vector2Int(column, row),
+                        func = () =>
+                        {
+                            BrowserCurrentDirectory = folder;
+                            SetBrowserPage(0);
+                        },
+                        text = "<size=24>" + Path.GetFileName(folder),
+                        textRect = RectValues.FullAnchored.AnchoredPosition(20f, -50f),
+                        enableWordWrapping = true,
+                        color = 6,
+                        opacity = 0.1f,
+                        textColor = 6,
+                        selectedColor = 6,
+                        selectedOpacity = 1f,
+                        selectedTextColor = 7,
+                        length = regenerateUI ? 0f : 0.01f,
+                        wait = !regenerateUI,
+                        mask = true,
+                    });
+                }
+
+                num++;
+            }
+
+            if (regenerateUI)
+                CoreHelper.StartCoroutine(GenerateUI());
+        }
 
         #endregion
 

@@ -18,7 +18,7 @@ namespace BetterLegacy.Core
     {
         public Level() { }
 
-        public Level(string path)
+        public Level(string path, bool loadIcon = true)
         {
             this.path = path;
             if (RTFile.FileExists($"{path}metadata.lsb"))
@@ -26,7 +26,8 @@ namespace BetterLegacy.Core
             else if (RTFile.FileExists($"{path}metadata.vgm"))
                 metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile($"{path}metadata.vgm")));
 
-            icon = RTFile.FileExists($"{path}level.jpg") ? SpriteHelper.LoadSprite($"{path}level.jpg") : RTFile.FileExists($"{path}cover.jpg") ? SpriteHelper.LoadSprite($"{path}cover.jpg") : SteamWorkshop.inst.defaultSteamImageSprite;
+            if (loadIcon)
+                icon = RTFile.FileExists($"{path}level.jpg") ? SpriteHelper.LoadSprite($"{path}level.jpg") : RTFile.FileExists($"{path}cover.jpg") ? SpriteHelper.LoadSprite($"{path}cover.jpg") : SteamWorkshop.inst.defaultSteamImageSprite;
 
             UpdateDefaults();
         }
@@ -188,6 +189,13 @@ namespace BetterLegacy.Core
         /// <param name="folder">The folder to check. Must end with a /.</param>
         /// <returns>True if all files are validated, otherwise false.</returns>
         public static bool Verify(string folder) => VerifySong(folder) && VerifyMetadata(folder) && VerifyLevel(folder);
+
+        public static bool TryVerify(string folder, bool loadIcon, out Level level)
+        {
+            var verify = Verify(folder);
+            level = verify ? new Level(folder, loadIcon) : null;
+            return verify;
+        }
 
         /// <summary>
         /// Checks if the level has a song. Includes all audio types and LS / VG names.

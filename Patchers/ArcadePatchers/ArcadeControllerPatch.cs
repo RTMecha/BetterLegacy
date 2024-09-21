@@ -24,7 +24,7 @@ namespace BetterLegacy.Patchers
             InputDataManager.inst.playersCanJoin = false;
             ArcadeHelper.ReloadMenu();
 
-            return true;
+            return false;
         }
     }
 }

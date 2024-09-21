@@ -6,6 +6,7 @@ using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
+using InControl;
 using LSFunctions;
 using SimpleJSON;
 using System;
@@ -14,6 +15,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace BetterLegacy.Core.Helpers
@@ -183,10 +185,27 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool fromLevel = false;
 
+        public static void DeleteComponents()
+        {
+            CoreHelper.Destroy(GameObject.Find("Interface"));
+            CoreHelper.Destroy(GameObject.Find("EventSystem").GetComponent<InControlInputModule>());
+            CoreHelper.Destroy(GameObject.Find("EventSystem").GetComponent<BaseInput>());
+            GameObject.Find("EventSystem").AddComponent<StandaloneInputModule>();
+            CoreHelper.Destroy(GameObject.Find("Main Camera").GetComponent<InterfaceLoader>());
+            CoreHelper.Destroy(GameObject.Find("Main Camera").GetComponent<ArcadeController>());
+            CoreHelper.Destroy(GameObject.Find("Main Camera").GetComponent<FlareLayer>());
+            CoreHelper.Destroy(GameObject.Find("Main Camera").GetComponent<GUILayer>());
+        }
+
         public static void ReloadMenu()
         {
             if (fromLevel)
+            {
+                DeleteComponents();
+                if (MenuManager.inst)
+                    AudioManager.inst.PlayMusic(MenuManager.inst.currentMenuMusicName, MenuManager.inst.currentMenuMusic);
                 LoadArcadeMenu();
+            }
             else
             {
                 var menu = new GameObject("Load Level System");
