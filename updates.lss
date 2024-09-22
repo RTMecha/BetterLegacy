@@ -1,3 +1,15 @@
+1.6.1 > [Sep 23, 2024]
+- Fixed themes on some older levels breaking the game.
+- Added context menus to timeline objects.
+- Fixed some layer issues with alpha levels.
+- Fixed Arcade Browser next page button not allowing itself to be pressed.
+- Folder creator now disappears when you create a folder.
+- You can now rename levels and folders via the level context menu.
+- Added animation config for the Folder Creator (aka File Popup).
+- Changed level button text formatting, replaced song title with level name.
+- Made dev player model the default on alpha levels.
+- Changed dev player model boost cooldown to 0.
+- Fixed VG layering (hopefully).
 1.6.0 > [Sep 22, 2024]
 - GAME OPTIMIZATIONS!
   - Optimized a ton of level data code.
