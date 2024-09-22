@@ -31,7 +31,7 @@
 - Fix spawnPrefab modifier potential issues by not adding to the prefabObjects list, assigning a custom Prefab Object property to Beatmap Object and have ObjectConverter read from that.
 - MetaData settings that can be adjusted in the Play Level (Settings) menu and can be read using modifiers probably.
 - Figure out how player shooting fits in-game.
-- Make VG levels have the dev player by default.
+- Update dev+ player to have current properties.
 - Documentation & tooltips.
 - Child objects list via parent context menu.
 - Example customization.
