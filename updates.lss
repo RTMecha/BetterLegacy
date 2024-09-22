@@ -1,3 +1,19 @@
+1.6.0 > [Sep 22, 2024]
+- GAME OPTIMIZATIONS!
+  - Optimized a ton of level data code.
+  - Modifiers are a lot more optimized now (1.7x-ish FPS boost).
+  - Timeline Object rendering is also now more optimized. Which basically means switching between layers shouldn't freeze the game as hard as it did before.
+  - Creating an event keyframe should no longer freeze the game.
+- Reworked the arcade menus to be more consistent with other interfaces in the mod. Still missing a few features but I'll be adding them throughout the next few patches.
+- Fixed Background Object shape toggles not being selected.
+- Finally implemented Background Object tags. This includes two new modifiers for BG objects: setActiveOther and animateObjectOther. Also includes a new regular object modifier: setBGActive.
+- Added BG Global Position toggle to Camera Depth event keyframes. This is to support vanilla Legacy levels that rely on the BG camera being at a specific position. If you made any levels before this change, please do turn the toggle off.
+- Added Allow Custom Player Models to the Global tab of the Player Editor. Having it off will force the player to use the player model you set in the editor.
+- Added a button that sets the global player model config to the currently selected player model. This is so you can a bit more easily play as a custom player model in whatever level you choose (as long as the feature above is on)
+- Changed REPL Editor animation to Text Editor animation. (Completely forgot there was animation configs for a REPL Editor... what)
+- Added Context Menus to specific areas of the editor (such as the level list, prefab list, etc). Right click something to open the menu.
+- Sub-folders in the prefabs folder can now be navigated via the External Prefabs popup.
+- Player boost can now be queued while boost cooldown is on. Includes a config located Config Manager > Player > General.
 1.5.8 > [Sep 19, 2024]
 - Fixed prefabs not spawning in arcade levels.
 - Clear object data when returning to the arcade.
@@ -45,30 +61,30 @@ Custom achievements will come later once I figure out how to do them.
 Do note achievements do not *currently* stack, so if you get multiple at once, you will only see one of them.
 You also can't currently view achievements anywhere. Eventually it'll be added to the profile menu.
 Here's a list of the current achievements (some names are more obvious than others, so you will need to search around for what these are for)
--- welcome
--- editor
--- no_boost
--- complete_animation
--- costume_party
--- f_rank
--- expert_plus_ss_rank
--- master_ss_rank
--- editor_reverse_speed
--- editor_layer_lol
--- editor_layer_funny
--- example_chat
--- editor_zoom_break
--- no_volume
--- queue_ten
--- friendship
--- holy_keyframes
--- serious_dedication
--- true_dedication
--- upload_level
--- youve_been_trolled
--- ten_levels
--- fifty_levels
--- one_hundred_levels
+ - welcome
+ - editor
+ - no_boost
+ - complete_animation
+ - costume_party
+ - f_rank
+ - expert_plus_ss_rank
+ - master_ss_rank
+ - editor_reverse_speed
+ - editor_layer_lol
+ - editor_layer_funny
+ - example_chat
+ - editor_zoom_break
+ - no_volume
+ - queue_ten
+ - friendship
+ - holy_keyframes
+ - serious_dedication
+ - true_dedication
+ - upload_level
+ - youve_been_trolled
+ - ten_levels
+ - fifty_levels
+ - one_hundred_levels
 - Added gradient objects.
 - Fixed cases where the menu music would continue playing in the editor.
 - Added translateShape modifier. This can move, scale and rotate the mesh (shape) of the object. Good for offsetting gradient rendering or modifying the dimensions of a shape without needing to make another parent.
@@ -152,9 +168,9 @@ Here's a list of the current achievements (some names are more obvious than othe
 - Fixed timeline zoom not zooming in on the correct area. (I have no idea why it wouldn't before but ok)
 - Removed Editor Preferences as the Config Manager serves the same purpose, but better.
 - Implemented Editor Complexity.
--- Render depth slider and origin offset returns to their original forms in the Simple Complexity setting.
--- Any feature that only shows with the now removed "Show Modded Features in Editor" toggle now only show in Advanced complexity.
--- Solid object type only now show in Advanced complexity.
+ - Render depth slider and origin offset returns to their original forms in the Simple Complexity setting.
+ - Any feature that only shows with the now removed "Show Modded Features in Editor" toggle now only show in Advanced complexity.
+ - Solid object type only now show in Advanced complexity.
 1.3.6 > [Aug 26, 2024]
 - Fixed multi object editor color slots being incorrect.
 - Multi object color editing now has Add and Sub buttons.
@@ -179,9 +195,9 @@ Here's a list of the current achievements (some names are more obvious than othe
 1.3.1 > [Aug 24, 2024]
 - Fixed the metadata.lsb file not saving in some cases.
 - Homing keyframe behavior should now be more consistent across all homing types.
--- Fixed dynamic homing rotation keyframe resetting after a regular rotation keyframe starts.
--- Homing keyframes now properly re-target when the object respawns. (Plus there is now a setting in Config Manager > Editor > General for updating homing keyframes when time is changed)
--- Going from dynamic to static homing should now be more consistent, however going the other way around isn't yet.
+ - Fixed dynamic homing rotation keyframe resetting after a regular rotation keyframe starts.
+ - Homing keyframes now properly re-target when the object respawns. (Plus there is now a setting in Config Manager > Editor > General for updating homing keyframes when time is changed)
+ - Going from dynamic to static homing should now be more consistent, however going the other way around isn't yet.
 1.3.0 > [Aug 24, 2024]
 - Completely reworked the menus to use a new & improved system that is far more capable compared to the original.
 - Updated play level menu to use the new system. The main arcade system will remain the same as it is for the time being.
@@ -297,16 +313,16 @@ Here's a list of the current achievements (some names are more obvious than othe
 - Optimized a ton of stuff compared to the unmerged versions of the mods. (I.E. a level with quite a few modifiers in objects goes from 30 FPS to 100+ FPS)
 - Configs now use a custom system with a brand new config menu, which decreases the load times and halving the file size.
 - The following notes are smaller updates to each mod:
--- Decreased level.lsb file sizes by comparing default values and only saving values when a default value does not equal the current one. (RTFunctions)
--- Background Objects now has Z position. They also have hue, saturation and value for both the base color and the fade color. (RTFunctions)
--- Fixed Background Objects and players not properly clearing and respawning when loading from one level to another. (RTFunctions)
--- Added some new fonts (Pixellet, File Deletion, Sans Sans, Monomaniac One and RocknRoll One).
--- All keyframes can now have their times locked. (EditorManagement)
--- Newly created markers now have their times snapped to BPM if BPM snap is active. (EditorManagement)
--- Made the editor.lse file more readable on the user end.
--- Added the glitch effects Analog Glitch and Digital Glitch. While this was added to EventsCore, I added it to BetterLegacy first. (EventsCore)
--- Example is now more integrated with the mods than before the merge. (ExampleCompanion)
--- Fixed up loadlevel command and added listlevels::path to interface. (PageCreator)
--- Added setMousePosition modifier. (Moves the mouse to the center of the screen at an offset)
--- Added followMousePosition modifier. (Makes the object track the mouse)
--- Added textSequence modifier. (Works like the interface text but more advanced and customizable)
+ - Decreased level.lsb file sizes by comparing default values and only saving values when a default value does not equal the current one. (RTFunctions)
+ - Background Objects now has Z position. They also have hue, saturation and value for both the base color and the fade color. (RTFunctions)
+ - Fixed Background Objects and players not properly clearing and respawning when loading from one level to another. (RTFunctions)
+ - Added some new fonts (Pixellet, File Deletion, Sans Sans, Monomaniac One and RocknRoll One).
+ - All keyframes can now have their times locked. (EditorManagement)
+ - Newly created markers now have their times snapped to BPM if BPM snap is active. (EditorManagement)
+ - Made the editor.lse file more readable on the user end.
+ - Added the glitch effects Analog Glitch and Digital Glitch. While this was added to EventsCore, I added it to BetterLegacy first. (EventsCore)
+ - Example is now more integrated with the mods than before the merge. (ExampleCompanion)
+ - Fixed up loadlevel command and added listlevels::path to interface. (PageCreator)
+ - Added setMousePosition modifier. (Moves the mouse to the center of the screen at an offset)
+ - Added followMousePosition modifier. (Makes the object track the mouse)
+ - Added textSequence modifier. (Works like the interface text but more advanced and customizable)
