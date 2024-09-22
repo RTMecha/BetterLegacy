@@ -8530,6 +8530,18 @@ namespace BetterLegacy.Editor.Managers
                                 }),
                                 new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
                                 new ButtonFunction(true),
+                                new ButtonFunction("Rename", () =>
+                                {
+                                    ShowNameEditor("Folder Renamer", "Folder name", "Rename", () =>
+                                    {
+                                        var destination = path.Replace(name, RTFile.ValidateDirectory(folderCreatorName.text)).Replace("\\", "/");
+                                        if (path != destination)
+                                            Directory.Move(path, destination);
+
+                                        UpdateEditorPath(true);
+                                        HideNameEditor();
+                                    });
+                                }),
                                 new ButtonFunction("Paste", PasteLevel),
                                 new ButtonFunction("Delete", () =>
                                 {
@@ -8580,12 +8592,15 @@ namespace BetterLegacy.Editor.Managers
 
                 folderButtonStorage.text.text = string.Format(format,
                     LSText.ClampString(name, foldClamp),
-                    LSText.ClampString(metadata.song.title, songClamp),
+                    LSText.ClampString(metadata.LevelBeatmap.name, songClamp),
                     LSText.ClampString(metadata.artist.Name, artiClamp),
                     LSText.ClampString(metadata.creator.steam_name, creaClamp),
                     metadata.song.difficulty,
                     LSText.ClampString(metadata.song.description, descClamp),
-                    LSText.ClampString(metadata.beatmap.date_edited, dateClamp));
+                    LSText.ClampString(metadata.beatmap.date_edited, dateClamp),
+                    LSText.ClampString(metadata.LevelBeatmap.date_created, dateClamp),
+                    LSText.ClampString(metadata.LevelBeatmap.date_published, dateClamp),
+                    LSText.ClampString(metadata.song.title, dateClamp));
 
                 folderButtonStorage.text.horizontalOverflow = horizontalOverflow;
                 folderButtonStorage.text.verticalOverflow = verticalOverflow;
@@ -8721,6 +8736,20 @@ namespace BetterLegacy.Editor.Managers
                             }),
                             new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
                             new ButtonFunction(true),
+                            new ButtonFunction("Rename", () =>
+                            {
+                                ShowNameEditor("Folder Renamer", "Folder name", "Rename", () =>
+                                {
+                                    var destination = path.Replace(name, RTFile.ValidateDirectory(folderCreatorName.text)).Replace("\\", "/");
+                                    if (path != destination)
+                                        Directory.Move(path, destination);
+                                    metadata.LevelBeatmap.name = folderCreatorName.text;
+                                    RTFile.WriteToFile(Path.Combine(destination, "metadata.lsb"), metadata.ToJSON().ToString());
+
+                                    UpdateEditorPath(true);
+                                    HideNameEditor();
+                                });
+                            }),
                             new ButtonFunction("Cut", () =>
                             {
                                 shouldCutLevel = true;
