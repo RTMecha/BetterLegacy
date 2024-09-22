@@ -23,9 +23,14 @@ namespace BetterLegacy.Components
 
         public Action<Vector2> draggingAction;
 
+        void Start()
+        {
+            ogPos = transform.position;
+        }
+
         public void OnPointerUp(PointerEventData eventData)
         {
-            if (!CanDrag)
+            if (!CanDrag || eventData.button == PointerEventData.InputButton.Right)
                 return;
 
             AudioManager.inst.PlaySound("blip");
@@ -35,10 +40,10 @@ namespace BetterLegacy.Components
 
         public void OnPointerDown(PointerEventData eventData)
         {
-            if (!CanDrag)
+            if (!CanDrag || eventData.button == PointerEventData.InputButton.Right)
                 return;
 
-            if (!Input.GetMouseButtonDown(2))
+            if (eventData.button == PointerEventData.InputButton.Left)
             {
                 AudioManager.inst.PlaySound("Click");
                 target.localScale = new Vector3(scale, scale, 1f);
