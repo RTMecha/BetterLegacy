@@ -95,6 +95,23 @@ namespace BetterLegacy.Editor.Managers
                 PrefabEditor.inst.dialog = EditorManager.inst.GetDialog("Prefab Editor").Dialog;
                 PrefabEditor.inst.externalPrefabDialog = prefabPopup.Find("external prefabs");
                 PrefabEditor.inst.internalPrefabDialog = prefabPopup.Find("internal prefabs");
+
+                var contextClickable = PrefabEditor.inst.externalPrefabDialog.gameObject.AddComponent<ContextClickable>();
+                contextClickable.onClick = eventData =>
+                {
+                    if (eventData.button != PointerEventData.InputButton.Right)
+                        return;
+
+                    RTEditor.inst.RefreshContextMenu(300f,
+                        new RTEditor.ButtonFunction("Create folder", () =>
+                        {
+                            EditorManager.inst.ShowDialog("Folder Creator Popup");
+                            RTEditor.inst.RefreshFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}", () => RTEditor.inst.UpdatePrefabPath(true));
+                        }),
+                        new RTEditor.ButtonFunction("Paste", PastePrefab)
+                        );
+                };
+
                 PrefabEditor.inst.externalSearch = PrefabEditor.inst.externalPrefabDialog.Find("search-box/search").GetComponent<InputField>();
                 PrefabEditor.inst.internalSearch = PrefabEditor.inst.internalPrefabDialog.Find("search-box/search").GetComponent<InputField>();
                 PrefabEditor.inst.externalContent = PrefabEditor.inst.externalPrefabDialog.Find("mask/content");
@@ -1858,6 +1875,9 @@ namespace BetterLegacy.Editor.Managers
 
         #region Prefabs
 
+        public bool shouldCutPrefab;
+        public string copiedPrefabPath;
+
         public Button externalType;
         public Image externalTypeImage;
         public Text externalTypeText;
@@ -2372,6 +2392,41 @@ namespace BetterLegacy.Editor.Managers
             selectQuickPrefabText.text = (!prefabExists ? "-Select Prefab-" : "<color=#669e37>-Prefab-</color>") + "\n" + (!prefabExists ? "n/a" : PrefabEditor.inst.currentPrefab.Name);
         }
 
+        public void PastePrefab()
+        {
+            var copiedPrefabsFolder = Path.GetDirectoryName(copiedPrefabPath).Replace("\\", "/");
+            CoreHelper.Log($"Copied Folder: {copiedPrefabsFolder}");
+
+            if (copiedPrefabsFolder == $"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}")
+            {
+                EditorManager.inst.DisplayNotification("Source and destination are the same.", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
+            var destination = copiedPrefabPath.Replace(copiedPrefabsFolder, $"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}");
+            CoreHelper.Log($"Destination: {destination}");
+            if (RTFile.FileExists(destination))
+            {
+                EditorManager.inst.DisplayNotification("File already exists.", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
+            if (shouldCutPrefab)
+            {
+                File.Move(copiedPrefabPath, destination);
+                var prefab = Prefab.Parse(JSON.Parse(RTFile.ReadFromFile(destination)));
+                EditorManager.inst.DisplayNotification($"Succesfully moved {prefab.Name}!", 2f, EditorManager.NotificationType.Success);
+            }
+            else
+            {
+                File.Copy(copiedPrefabPath, destination, true);
+                var prefab = Prefab.Parse(JSON.Parse(RTFile.ReadFromFile(destination)));
+                EditorManager.inst.DisplayNotification($"Succesfully pasted {prefab.Name}!", 2f, EditorManager.NotificationType.Success);
+            }
+
+            RTEditor.inst.UpdatePrefabPath(true);
+        }
+
         public IEnumerator InternalPrefabs(bool _toggle = false)
         {
             var config = EditorConfig.Instance;
@@ -2442,7 +2497,10 @@ namespace BetterLegacy.Editor.Managers
         {
             foreach (var prefabPanel in PrefabPanels.Where(x => x.Dialog == PrefabDialog.External))
             {
-                prefabPanel.SetActive(ContainsName(prefabPanel.Prefab, PrefabDialog.External));
+                prefabPanel.SetActive(
+                    prefabPanel.isFolder ?
+                        CoreHelper.SearchString(PrefabEditor.inst.externalSearchStr, Path.GetFileName(prefabPanel.FilePath)) :
+                        ContainsName(prefabPanel.Prefab, PrefabDialog.External));
             }
 
             yield break;
@@ -2590,6 +2648,11 @@ namespace BetterLegacy.Editor.Managers
                 });
                 addPrefabObject.onClick.AddListener(() =>
                 {
+                });
+
+                var clickable = gameObject.AddComponent<ContextClickable>();
+                clickable.onClick = eventData =>
+                {
                     if (RTEditor.inst.prefabPickerEnabled)
                         RTEditor.inst.prefabPickerEnabled = false;
 
@@ -2629,6 +2692,48 @@ namespace BetterLegacy.Editor.Managers
                         return;
                     }
 
+                    if (eventData.button == PointerEventData.InputButton.Right)
+                    {
+                        RTEditor.inst.RefreshContextMenu(300f,
+                            new RTEditor.ButtonFunction("Import", () => { ImportPrefabIntoLevel(prefabPanel.Prefab); }),
+                            new RTEditor.ButtonFunction("Open", () =>
+                            {
+                                EditorManager.inst.ShowDialog("Prefab External Dialog");
+                                RenderPrefabExternalDialog(prefabPanel);
+                            }),
+                            new RTEditor.ButtonFunction("Create folder", () =>
+                            {
+                                EditorManager.inst.ShowDialog("Folder Creator Popup");
+                                RTEditor.inst.RefreshFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}", () => RTEditor.inst.UpdatePrefabPath(true));
+                            }),
+                            new RTEditor.ButtonFunction("Cut", () =>
+                            {
+                                shouldCutPrefab = true;
+                                copiedPrefabPath = file;
+                                EditorManager.inst.DisplayNotification($"Cut {prefab.Name}!", 1.5f, EditorManager.NotificationType.Success);
+                                CoreHelper.Log($"Cut prefab: {copiedPrefabPath}");
+                            }),
+                            new RTEditor.ButtonFunction("Copy", () =>
+                            {
+                                shouldCutPrefab = false;
+                                copiedPrefabPath = file;
+                                EditorManager.inst.DisplayNotification($"Copied {prefab.Name}!", 1.5f, EditorManager.NotificationType.Success);
+                                CoreHelper.Log($"Copied prefab: {copiedPrefabPath}");
+                            }),
+                            new RTEditor.ButtonFunction("Paste", PastePrefab),
+                            new RTEditor.ButtonFunction("Delete", () =>
+                            {
+                                RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this prefab? (This is permanent!)", () =>
+                                {
+                                    DeleteExternalPrefab(prefabPanel);
+                                    RTEditor.inst.HideWarningPopup();
+                                }, RTEditor.inst.HideWarningPopup);
+                            })
+                            );
+
+                        return;
+                    }
+
                     if (!ImportPrefabsDirectly)
                     {
                         EditorManager.inst.ShowDialog("Prefab External Dialog");
@@ -2636,7 +2741,7 @@ namespace BetterLegacy.Editor.Managers
                     }
                     else
                         ImportPrefabIntoLevel(prefabPanel.Prefab);
-                });
+                };
 
                 prefabPanel.SetActive(ContainsName(prefabPanel.Prefab, PrefabDialog.External));
             }

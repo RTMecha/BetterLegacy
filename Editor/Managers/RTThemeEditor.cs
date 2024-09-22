@@ -127,7 +127,7 @@ namespace BetterLegacy.Editor.Managers
                 // Prefab
                 {
                     var gameObject = EventEditor.inst.ThemePanel.Duplicate(transform, "theme-panel");
-
+                    gameObject.AddComponent<Button>();
                     var storage = gameObject.AddComponent<ThemePanelStorage>();
 
                     var image = gameObject.transform.Find("image");
@@ -144,14 +144,29 @@ namespace BetterLegacy.Editor.Managers
 
                         col.AddComponent<RectTransform>();
 
-                        if (i == 0)
-                            storage.color1 = col.AddComponent<Image>();
-                        if (i == 1)
-                            storage.color2 = col.AddComponent<Image>();
-                        if (i == 2)
-                            storage.color3 = col.AddComponent<Image>();
-                        if (i == 3)
-                            storage.color4 = col.AddComponent<Image>();
+                        switch (i)
+                        {
+                            case 0:
+                                {
+                                    storage.color1 = col.AddComponent<Image>();
+                                    break;
+                                }
+                            case 1:
+                                {
+                                    storage.color2 = col.AddComponent<Image>();
+                                    break;
+                                }
+                            case 2:
+                                {
+                                    storage.color3 = col.AddComponent<Image>();
+                                    break;
+                                }
+                            case 3:
+                                {
+                                    storage.color4 = col.AddComponent<Image>();
+                                    break;
+                                }
+                        }
                     }
 
                     storage.button = image.GetComponent<Button>();
@@ -656,6 +671,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 GameObject = gameObject,
                 UseButton = storage.button,
+                ContextClickable = gameObject.AddComponent<ContextClickable>(),
                 EditButton = storage.edit,
                 DeleteButton = storage.delete,
                 Name = storage.text,
@@ -761,6 +777,63 @@ namespace BetterLegacy.Editor.Managers
                 EventManager.inst.updateEvents();
                 EventEditor.inst.RenderThemePreview(themeKeyframe);
             });
+
+            themePanel.ContextClickable.onClick = eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                RTEditor.inst.RefreshContextMenu(400f,
+                    new RTEditor.ButtonFunction("Use", () =>
+                    {
+                        if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => RTEventEditor.inst.SelectedKeyframes.Min(y => y.Type) == x.Type))
+                        {
+                            foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
+                                timelineObject.GetData<EventKeyframe>().eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
+                        }
+                        else
+                            RTEventEditor.inst.CurrentSelectedKeyframe.eventValues[0] = Parser.TryParse(beatmapTheme.id, 0);
+
+                        EventManager.inst.updateEvents();
+                        EventEditor.inst.RenderThemePreview(themeKeyframe);
+                    }),
+                    new RTEditor.ButtonFunction("Edit", () => { RenderThemeEditor(Parser.TryParse(beatmapTheme.id, 0)); }),
+                    new RTEditor.ButtonFunction("Convert", () =>
+                    {
+                        var exportPath = EditorConfig.Instance.ConvertThemeLSToVGExportPath.Value;
+
+                        if (string.IsNullOrEmpty(exportPath))
+                        {
+                            if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/exports"))
+                                Directory.CreateDirectory(RTFile.ApplicationDirectory + "beatmaps/exports");
+                            exportPath = RTFile.ApplicationDirectory + "beatmaps/exports/";
+                        }
+
+                        if (!string.IsNullOrEmpty(exportPath) && exportPath[exportPath.Length - 1] != '/')
+                            exportPath += "/";
+
+                        if (!RTFile.DirectoryExists(Path.GetDirectoryName(exportPath)))
+                        {
+                            EditorManager.inst.DisplayNotification("Directory does not exist.", 2f, EditorManager.NotificationType.Error);
+                            return;
+                        }
+
+                        var vgjn = beatmapTheme.ToJSONVG();
+
+                        RTFile.WriteToFile($"{exportPath}{beatmapTheme.name.ToLower()}.vgt", vgjn.ToString());
+
+                        EditorManager.inst.DisplayNotification($"Converted Theme {beatmapTheme.name.ToLower()}.lst from LS format to VG format and saved to {beatmapTheme.name.ToLower()}.vgt!", 4f, EditorManager.NotificationType.Success);
+
+                        AchievementManager.inst.UnlockAchievement("time_machine");
+                    }),
+                    new RTEditor.ButtonFunction("Delete", () =>
+                    {
+                        if (!defaultTheme)
+                            DeleteThemeDelegate(beatmapTheme);
+                        else
+                            EditorManager.inst.DisplayNotification("Cannot delete a default theme!", 2f, EditorManager.NotificationType.Warning);
+                    }));
+            };
 
             themePanel.EditButton.onClick.ClearAll();
             themePanel.EditButton.onClick.AddListener(() => { RenderThemeEditor(Parser.TryParse(beatmapTheme.id, 0)); });

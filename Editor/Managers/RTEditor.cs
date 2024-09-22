@@ -283,6 +283,9 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddLightText(mouseTooltipText);
             EditorThemeManager.AddGraphic(mouseTooltipRT.Find("bg/Image").GetComponent<Image>(), ThemeGroup.Light_Text);
             EditorThemeManager.AddLightText(mouseTooltipRT.Find("bg/title").GetComponent<Text>());
+
+            CreateContextMenu();
+            CreateFolderCreator();
         }
 
         void Update()
@@ -291,15 +294,17 @@ namespace BetterLegacy.Editor.Managers
 
             UpdateTimelineObjectColors();
 
-            if (Input.GetMouseButtonDown(1) && (parentPickerEnabled || prefabPickerEnabled))
+            if (Input.GetMouseButtonDown(1) && (parentPickerEnabled || prefabPickerEnabled || onSelectTimelineObject != null))
             {
                 parentPickerEnabled = false;
                 prefabPickerEnabled = false;
+                onSelectTimelineObject = null;
             }
 
-            mousePicker?.SetActive(parentPickerEnabled || prefabPickerEnabled);
+            var pickerActive = parentPickerEnabled || prefabPickerEnabled || onSelectTimelineObject != null;
+            mousePicker?.SetActive(pickerActive);
 
-            if (mousePicker && mousePickerRT && (parentPickerEnabled || prefabPickerEnabled))
+            if (mousePicker && mousePickerRT && pickerActive)
                 mousePickerRT.anchoredPosition = Input.mousePosition * CoreHelper.ScreenScaleInverse;
             UpdateTooltip();
 
@@ -471,6 +476,8 @@ namespace BetterLegacy.Editor.Managers
 
         #region Variables
 
+        public Action<TimelineObject> onSelectTimelineObject;
+
         public GridRenderer previewGrid;
 
         public GameObject timeDefault;
@@ -478,6 +485,9 @@ namespace BetterLegacy.Editor.Managers
         public Transform popups;
 
         public GameObject tagPrefab;
+
+        public bool shouldCutLevel;
+        public string copiedLevelPath;
 
         public EditorThemeManager.Element PreviewCover { get; set; }
 
@@ -3111,6 +3121,21 @@ namespace BetterLegacy.Editor.Managers
 
             TooltipHelper.AddHoverTooltip(levelAscendToggle.gameObject, new List<HoverTooltip.Tooltip> { sortListTip.tooltipLangauges[0] });
 
+            var contextClickable = EditorManager.inst.GetDialog("Open File Popup").Dialog.gameObject.AddComponent<ContextClickable>();
+            contextClickable.onClick = eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                RefreshContextMenu(300f,
+                    new ButtonFunction("Create folder", () =>
+                    {
+                        EditorManager.inst.ShowDialog("Folder Creator Popup");
+                        RefreshFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => UpdateEditorPath(true));
+                    }),
+                    new ButtonFunction("Paste", PasteLevel));
+            };
+
             #region Level Path
 
             var levelPathGameObject = defaultIF.Duplicate(EditorManager.inst.GetDialog("Open File Popup").Dialog, "editor path");
@@ -3143,20 +3168,24 @@ namespace BetterLegacy.Editor.Managers
                 if (pointerEventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                EditorManager.inst.ShowDialog("Browser Popup");
-                RTFileBrowser.inst.UpdateBrowser(RTFile.ApplicationDirectory + "beatmaps", onSelectFolder: _val =>
-                {
-                    if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
+                RefreshContextMenu(300f,
+                    new ButtonFunction("Set Level folder", () =>
                     {
-                        EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                        return;
-                    }
+                        EditorManager.inst.ShowDialog("Browser Popup");
+                        RTFileBrowser.inst.UpdateBrowser(RTFile.ApplicationDirectory + "beatmaps", onSelectFolder: _val =>
+                        {
+                            if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
+                            {
+                                EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                                return;
+                            }
 
-                    editorPathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
-                    EditorManager.inst.DisplayNotification($"Set Editor path to {EditorPath}!", 2f, EditorManager.NotificationType.Success);
-                    EditorManager.inst.HideDialog("Browser Popup");
-                    UpdateEditorPath(false);
-                });
+                            editorPathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
+                            EditorManager.inst.DisplayNotification($"Set Editor path to {EditorPath}!", 2f, EditorManager.NotificationType.Success);
+                            EditorManager.inst.HideDialog("Browser Popup");
+                            UpdateEditorPath(false);
+                        });
+                    }));
             };
 
             var levelListReloader = GameObject.Find("TimelineBar/GameObject/play")
@@ -3214,20 +3243,24 @@ namespace BetterLegacy.Editor.Managers
                 if (pointerEventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                EditorManager.inst.ShowDialog("Browser Popup");
-                RTFileBrowser.inst.UpdateBrowser(RTFile.ApplicationDirectory + "beatmaps", onSelectFolder: _val =>
-                {
-                    if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
+                RefreshContextMenu(300f,
+                    new ButtonFunction("Set Theme folder", () =>
                     {
-                        EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                        return;
-                    }
+                        EditorManager.inst.ShowDialog("Browser Popup");
+                        RTFileBrowser.inst.UpdateBrowser(RTFile.ApplicationDirectory + "beatmaps", onSelectFolder: _val =>
+                        {
+                            if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
+                            {
+                                EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                                return;
+                            }
 
-                    themePathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
-                    EditorManager.inst.DisplayNotification($"Set Theme path to {ThemePath}!", 2f, EditorManager.NotificationType.Success);
-                    EditorManager.inst.HideDialog("Browser Popup");
-                    UpdateThemePath(false);
-                });
+                            themePathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
+                            EditorManager.inst.DisplayNotification($"Set Theme path to {ThemePath}!", 2f, EditorManager.NotificationType.Success);
+                            EditorManager.inst.HideDialog("Browser Popup");
+                            UpdateThemePath(false);
+                        });
+                    }));
             };
 
             var themeListReload = GameObject.Find("TimelineBar/GameObject/play").Duplicate(themePathBase.transform, "reload themes");
@@ -3333,20 +3366,24 @@ namespace BetterLegacy.Editor.Managers
                 if (pointerEventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                EditorManager.inst.ShowDialog("Browser Popup");
-                RTFileBrowser.inst.UpdateBrowser(RTFile.ApplicationDirectory + "beatmaps", onSelectFolder: _val =>
-                {
-                    if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
+                RefreshContextMenu(300f,
+                    new ButtonFunction("Set Prefab folder", () =>
                     {
-                        EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                        return;
-                    }
+                        EditorManager.inst.ShowDialog("Browser Popup");
+                        RTFileBrowser.inst.UpdateBrowser(RTFile.ApplicationDirectory + "beatmaps", onSelectFolder: _val =>
+                        {
+                            if (!_val.Replace("\\", "/").Contains(RTFile.ApplicationDirectory + "beatmaps/"))
+                            {
+                                EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                                return;
+                            }
 
-                    prefabPathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
-                    EditorManager.inst.DisplayNotification($"Set Prefab path to {PrefabPath}!", 2f, EditorManager.NotificationType.Success);
-                    EditorManager.inst.HideDialog("Browser Popup");
-                    UpdatePrefabPath(false);
-                });
+                            prefabPathField.text = _val.Replace("\\", "/").Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
+                            EditorManager.inst.DisplayNotification($"Set Prefab path to {PrefabPath}!", 2f, EditorManager.NotificationType.Success);
+                            EditorManager.inst.HideDialog("Browser Popup");
+                            UpdatePrefabPath(false);
+                        });
+                    }));
             };
 
             var prefabListReload = GameObject.Find("TimelineBar/GameObject/play")
@@ -4522,6 +4559,40 @@ namespace BetterLegacy.Editor.Managers
                     }));
             }
 
+            // Parent Desync
+            {
+                GenerateLabels(parent, 32f, "Modify parent desync");
+
+                GenerateButtons(parent, 32f, 8f,
+                    new ButtonFunction("On", () =>
+                    {
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.FindAll(x => x.IsBeatmapObject))
+                        {
+                            timelineObject.GetData<BeatmapObject>().desync = true;
+
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                        }
+                    }),
+                    new ButtonFunction("Off", () =>
+                    {
+                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.FindAll(x => x.IsBeatmapObject))
+                        {
+                            timelineObject.GetData<BeatmapObject>().desync = false;
+
+                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                        }
+                    }));
+                GenerateButtons(parent, 32f, 0f, new ButtonFunction("Swap", () =>
+                {
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.FindAll(x => x.IsBeatmapObject))
+                    {
+                        timelineObject.GetData<BeatmapObject>().desync = !timelineObject.GetData<BeatmapObject>().desync;
+
+                        ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                    }
+                }));
+            }
+
             // Force Snap BPM
             {
                 GenerateLabels(parent, 32f, "Force Snap Start Time to BPM");
@@ -4910,265 +4981,162 @@ namespace BetterLegacy.Editor.Managers
                 multiSyncGLG.spacing = new Vector2(4f, 4f);
                 multiSyncGLG.cellSize = new Vector2(61.6f, 49f);
 
-                GenerateButton(syncLayout.transform, new ButtonFunction("ST", () =>
+                GenerateButton(syncLayout.transform, new ButtonFunction("ST", eventData =>
                 {
-                    ShowObjectSearch(beatmapObject =>
+                    SyncObjectData("Start Time", eventData, (timelineObject, beatmapObject) =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                        {
-                            timelineObject.Time = beatmapObject.StartTime;
-                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "StartTime");
-                        }
-                        EditorManager.inst.HideDialog("Object Search Popup");
-                    });
+                        timelineObject.GetData<BeatmapObject>().StartTime = beatmapObject.StartTime;
+                    }, true, true, "StartTime");
                 })); // Start Time
-                GenerateButton(syncLayout.transform, new ButtonFunction("N", () =>
+                GenerateButton(syncLayout.transform, new ButtonFunction("N", eventData =>
                 {
-                    ShowObjectSearch(beatmapObject =>
+                    SyncObjectData("Name", eventData, (timelineObject, beatmapObject) =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                        {
-                            timelineObject.GetData<BeatmapObject>().name = beatmapObject.name;
-                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                        }
-                        EditorManager.inst.HideDialog("Object Search Popup");
-                    });
+                        timelineObject.GetData<BeatmapObject>().name = beatmapObject.name;
+                    }, true, false);
                 })); // Name
-                GenerateButton(syncLayout.transform, new ButtonFunction("OT", () =>
+                GenerateButton(syncLayout.transform, new ButtonFunction("OT", eventData =>
                 {
-                    ShowObjectSearch(beatmapObject =>
+                    SyncObjectData("Object Type", eventData, (timelineObject, beatmapObject) =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                        {
-                            timelineObject.GetData<BeatmapObject>().objectType = beatmapObject.objectType;
-                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "ObjectType");
-                        }
-                        EditorManager.inst.HideDialog("Object Search Popup");
-                    });
+                        timelineObject.GetData<BeatmapObject>().objectType = beatmapObject.objectType;
+                    }, true, true, "ObjectType");
                 })); // Object Type
-                GenerateButton(syncLayout.transform, new ButtonFunction("AKT", () =>
+                GenerateButton(syncLayout.transform, new ButtonFunction("AKT", eventData =>
                 {
-                    ShowObjectSearch(beatmapObject =>
+                    SyncObjectData("AutoKill Type", eventData, (timelineObject, beatmapObject) =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                        {
-                            timelineObject.GetData<BeatmapObject>().autoKillType = beatmapObject.autoKillType;
-                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "AutoKill");
-                        }
-                        EditorManager.inst.HideDialog("Object Search Popup");
-                    });
+                        timelineObject.GetData<BeatmapObject>().autoKillType = beatmapObject.autoKillType;
+                    }, true, true, "AutoKill");
                 })); // Autokill Type
-                GenerateButton(syncLayout.transform, new ButtonFunction("AKO", () =>
+                GenerateButton(syncLayout.transform, new ButtonFunction("AKO", eventData =>
                 {
-                    ShowObjectSearch(beatmapObject =>
+                    SyncObjectData("AutoKill Offset", eventData, (timelineObject, beatmapObject) =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                        {
-                            timelineObject.GetData<BeatmapObject>().autoKillOffset = beatmapObject.autoKillOffset;
-                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "AutoKill");
-                        }
-                        EditorManager.inst.HideDialog("Object Search Popup");
-                    });
+                        timelineObject.GetData<BeatmapObject>().autoKillOffset = beatmapObject.autoKillOffset;
+                    }, true, true, "AutoKill");
                 })); // Autokill Offset
-                GenerateButton(syncLayout.transform, new ButtonFunction("P", () =>
+                GenerateButton(syncLayout.transform, new ButtonFunction("P", eventData =>
                 {
-                    ShowObjectSearch(beatmapObject =>
-                    {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                        {
-                            timelineObject.GetData<BeatmapObject>().parent = beatmapObject.parent;
-                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Parent");
-                        }
-                        EditorManager.inst.HideDialog("Object Search Popup");
-                    });
+                    SyncObjectData("Parent", eventData, SelectObject.SetParent, false, true, "Parent");
                 })); // Parent
-                GenerateButton(syncLayout.transform, new ButtonFunction("PD", () =>
+                GenerateButton(syncLayout.transform, new ButtonFunction("PD", eventData =>
                 {
-                    ShowObjectSearch(beatmapObject =>
+                    SyncObjectData("Parent Desync", eventData, (timelineObject, beatmapObject) =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                        {
-                            timelineObject.GetData<BeatmapObject>().desync = beatmapObject.desync;
-                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Parent");
-                        }
-                        EditorManager.inst.HideDialog("Object Search Popup");
-                    });
+                        timelineObject.GetData<BeatmapObject>().desync = beatmapObject.desync;
+                    }, false, true, "Parent");
                 })); // Parent Desync
-                GenerateButton(syncLayout.transform, new ButtonFunction("PT", () =>
+                GenerateButton(syncLayout.transform, new ButtonFunction("PT", eventData =>
                 {
-                    ShowObjectSearch(beatmapObject =>
+                    SyncObjectData("Parent Types", eventData, (timelineObject, beatmapObject) =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                        {
-                            timelineObject.GetData<BeatmapObject>().parentType = beatmapObject.parentType;
-                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "ParentType");
-                        }
-                        EditorManager.inst.HideDialog("Object Search Popup");
-                    });
+                        timelineObject.GetData<BeatmapObject>().parentType = beatmapObject.parentType;
+                    }, false, true, "ParentType");
                 })); // Parent Type
-                GenerateButton(syncLayout.transform, new ButtonFunction("PO", () =>
+                GenerateButton(syncLayout.transform, new ButtonFunction("PO", eventData =>
                 {
-                    ShowObjectSearch(beatmapObject =>
+                    SyncObjectData("Parent Offsets", eventData, (timelineObject, beatmapObject) =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                        {
-                            timelineObject.GetData<BeatmapObject>().parentOffsets = beatmapObject.parentOffsets.Clone();
-                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "ParentOffset");
-                        }
-                        EditorManager.inst.HideDialog("Object Search Popup");
-                    });
+                        timelineObject.GetData<BeatmapObject>().parentOffsets = beatmapObject.parentOffsets.Clone();
+                    }, false, true, "ParentOffset");
                 })); // Parent Offset
-                GenerateButton(syncLayout.transform, new ButtonFunction("PA", () =>
+                GenerateButton(syncLayout.transform, new ButtonFunction("PA", eventData =>
                 {
-                    ShowObjectSearch(beatmapObject =>
+                    SyncObjectData("Parent Additive", eventData, (timelineObject, beatmapObject) =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                        {
-                            timelineObject.GetData<BeatmapObject>().parentAdditive = beatmapObject.parentAdditive;
-                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "ParentOffset");
-                        }
-                        EditorManager.inst.HideDialog("Object Search Popup");
-                    });
+                        timelineObject.GetData<BeatmapObject>().parentAdditive = beatmapObject.parentAdditive;
+                    }, false, true, "ParentOffset");
                 })); // Parent Additive
-                GenerateButton(syncLayout.transform, new ButtonFunction("PP", () =>
+                GenerateButton(syncLayout.transform, new ButtonFunction("PP", eventData =>
                 {
-                    ShowObjectSearch(beatmapObject =>
+                    SyncObjectData("Parent Parallax", eventData, (timelineObject, beatmapObject) =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                        {
-                            timelineObject.GetData<BeatmapObject>().parallaxSettings = beatmapObject.parallaxSettings.Copy();
-                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "ParentOffset");
-                        }
-                        EditorManager.inst.HideDialog("Object Search Popup");
-                    });
+                        timelineObject.GetData<BeatmapObject>().parallaxSettings = beatmapObject.parallaxSettings.Copy();
+                    }, false, true, "ParentOffset");
                 })); // Parent Parallax
-                GenerateButton(syncLayout.transform, new ButtonFunction("O", () =>
+                GenerateButton(syncLayout.transform, new ButtonFunction("O", eventData =>
                 {
-                    ShowObjectSearch(beatmapObject =>
+                    SyncObjectData("Origin", eventData, (timelineObject, beatmapObject) =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                        {
-                            timelineObject.GetData<BeatmapObject>().origin = beatmapObject.origin;
-                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Origin");
-                        }
-                        EditorManager.inst.HideDialog("Object Search Popup");
-                    });
+                        timelineObject.GetData<BeatmapObject>().origin = beatmapObject.origin;
+                    }, false, true, "Origin");
                 })); // Origin
-                GenerateButton(syncLayout.transform, new ButtonFunction("S", () =>
+                GenerateButton(syncLayout.transform, new ButtonFunction("S", eventData =>
                 {
-                    ShowObjectSearch(beatmapObject =>
+                    SyncObjectData("Shape", eventData, (timelineObject, beatmapObject) =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                        {
-                            timelineObject.GetData<BeatmapObject>().shape = beatmapObject.shape;
-                            timelineObject.GetData<BeatmapObject>().shapeOption = beatmapObject.shapeOption;
-                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Shape");
-                        }
-                        EditorManager.inst.HideDialog("Object Search Popup");
-                    });
+                        timelineObject.GetData<BeatmapObject>().shape = beatmapObject.shape;
+                        timelineObject.GetData<BeatmapObject>().shapeOption = beatmapObject.shapeOption;
+                    }, false, true, "Shape");
                 })); // Shape
-                GenerateButton(syncLayout.transform, new ButtonFunction("T", () =>
+                GenerateButton(syncLayout.transform, new ButtonFunction("T", eventData =>
                 {
-                    ShowObjectSearch(beatmapObject =>
+                    SyncObjectData("Text", eventData, (timelineObject, beatmapObject) =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                        {
-                            timelineObject.GetData<BeatmapObject>().text = beatmapObject.text;
-                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Text");
-                        }
-                        EditorManager.inst.HideDialog("Object Search Popup");
-                    });
+                        timelineObject.GetData<BeatmapObject>().text = beatmapObject.text;
+                    }, false, true, "Text");
                 })); // Text
-                GenerateButton(syncLayout.transform, new ButtonFunction("D", () =>
+                GenerateButton(syncLayout.transform, new ButtonFunction("D", eventData =>
                 {
-                    ShowObjectSearch(beatmapObject =>
+                    SyncObjectData("Depth", eventData, (timelineObject, beatmapObject) =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                        {
-                            timelineObject.GetData<BeatmapObject>().Depth = beatmapObject.Depth;
-                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Depth");
-                        }
-                        EditorManager.inst.HideDialog("Object Search Popup");
-                    });
+                        timelineObject.GetData<BeatmapObject>().Depth = beatmapObject.Depth;
+                    }, false, true, "Depth");
                 })); // Depth
-                GenerateButton(syncLayout.transform, new ButtonFunction("KF", () =>
+                GenerateButton(syncLayout.transform, new ButtonFunction("KF", eventData =>
                 {
-                    ShowObjectSearch(beatmapObject =>
+                    SyncObjectData("Keyframes", eventData, (timelineObject, beatmapObject) =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        var bm = timelineObject.GetData<BeatmapObject>();
+
+                        for (int i = 0; i < bm.events.Count; i++)
                         {
-                            var bm = timelineObject.GetData<BeatmapObject>();
-
-                            for (int i = 0; i < bm.events.Count; i++)
-                            {
-                                bm.events[i].Clear();
-                                for (int j = 0; j < beatmapObject.events[i].Count; j++)
-                                    bm.events[i].Add(EventKeyframe.DeepCopy((EventKeyframe)beatmapObject.events[i][j]));
-                            }
-
-                            Updater.UpdateObject(bm, "Keyframes");
+                            bm.events[i].Clear();
+                            for (int j = 0; j < beatmapObject.events[i].Count; j++)
+                                bm.events[i].Add(EventKeyframe.DeepCopy((EventKeyframe)beatmapObject.events[i][j]));
                         }
-                        EditorManager.inst.HideDialog("Object Search Popup");
-                    });
+
+                    }, false, true, "Keyframes");
                 })); // Keyframes
-                GenerateButton(syncLayout.transform, new ButtonFunction("MOD", () =>
+                GenerateButton(syncLayout.transform, new ButtonFunction("MOD", eventData =>
                 {
-                    ShowObjectSearch(beatmapObject =>
+                    SyncObjectData("Modifiers", eventData, (timelineObject, beatmapObject) =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                        {
-                            var bm = timelineObject.GetData<BeatmapObject>();
+                        var bm = timelineObject.GetData<BeatmapObject>();
 
-                            bm.modifiers.AddRange(beatmapObject.modifiers.Select(x => Modifier<BeatmapObject>.DeepCopy(x, bm)));
-
-                            Updater.UpdateObject(bm);
-                        }
-                        EditorManager.inst.HideDialog("Object Search Popup");
-                    });
+                        bm.modifiers.AddRange(beatmapObject.modifiers.Select(x => Modifier<BeatmapObject>.DeepCopy(x, bm)));
+                    }, false, true);
                 })); // Modifiers
-                GenerateButton(syncLayout.transform, new ButtonFunction("IGN", () =>
+                GenerateButton(syncLayout.transform, new ButtonFunction("IGN", eventData =>
                 {
-                    ShowObjectSearch(beatmapObject =>
+                    SyncObjectData("Ignore Lifespan", eventData, (timelineObject, beatmapObject) =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            timelineObject.GetData<BeatmapObject>().ignoreLifespan = beatmapObject.ignoreLifespan;
-                        EditorManager.inst.HideDialog("Object Search Popup");
-                    });
+                        timelineObject.GetData<BeatmapObject>().ignoreLifespan = beatmapObject.ignoreLifespan;
+                    }, false, false);
                 })); // Ignore lifespan
-                GenerateButton(syncLayout.transform, new ButtonFunction("TAG", () =>
+                GenerateButton(syncLayout.transform, new ButtonFunction("TAG", eventData =>
                 {
-                    ShowObjectSearch(beatmapObject =>
+                    SyncObjectData("Tags", eventData, (timelineObject, beatmapObject) =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            timelineObject.GetData<BeatmapObject>().tags = beatmapObject.tags.Clone();
-                        EditorManager.inst.HideDialog("Object Search Popup");
-                    });
+                        timelineObject.GetData<BeatmapObject>().tags = beatmapObject.tags.Clone();
+                    }, false, false);
                 })); // Tags
-                GenerateButton(syncLayout.transform, new ButtonFunction("RT", () =>
+                GenerateButton(syncLayout.transform, new ButtonFunction("RT", eventData =>
                 {
-                    ShowObjectSearch(beatmapObject =>
+                    SyncObjectData("Render Type", eventData, (timelineObject, beatmapObject) =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                            timelineObject.GetData<BeatmapObject>().background = beatmapObject.background;
-                        EditorManager.inst.HideDialog("Object Search Popup");
-                    });
+                        timelineObject.GetData<BeatmapObject>().background = beatmapObject.background;
+                    }, false, true);
                 })); // Render Type
-                GenerateButton(syncLayout.transform, new ButtonFunction("PR", () =>
+                GenerateButton(syncLayout.transform, new ButtonFunction("PR", eventData =>
                 {
-                    ShowObjectSearch(beatmapObject =>
+                    SyncObjectData("Prefab Reference", eventData, (timelineObject, beatmapObject) =>
                     {
-                        foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                        {
-                            var bm = timelineObject.GetData<BeatmapObject>();
-                            bm.prefabID = beatmapObject.prefabID;
-                            bm.prefabInstanceID = beatmapObject.prefabInstanceID;
-                        }
-                        EditorManager.inst.HideDialog("Object Search Popup");
-                    });
+                        var bm = timelineObject.GetData<BeatmapObject>();
+                        bm.prefabID = beatmapObject.prefabID;
+                        bm.prefabInstanceID = beatmapObject.prefabInstanceID;
+                    }, true, false);
                 })); // Prefab
             }
 
@@ -6573,6 +6541,57 @@ namespace BetterLegacy.Editor.Managers
             multiObjectEditorDialog.Find("data/left").AsRT().sizeDelta = new Vector2(355f, 730f);
         }
 
+        void SyncObjectData(string nameContext, PointerEventData eventData, Action<TimelineObject, BeatmapObject> update, bool renderTimelineObject = false, bool updateObject = true, string updateContext = "")
+        {
+            if (eventData.button == PointerEventData.InputButton.Right)
+            {
+                RefreshContextMenu(600f,
+                    new ButtonFunction($"Sync {nameContext} via Search", () =>
+                    {
+                        ShowObjectSearch(beatmapObject =>
+                        {
+                            SyncObjectData(timelineObject => { update?.Invoke(timelineObject, beatmapObject); }, renderTimelineObject, updateObject, updateContext);
+                            EditorManager.inst.HideDialog("Object Search Popup");
+                        });
+                    }),
+                    new ButtonFunction($"Sync {nameContext} via Picker", () =>
+                    {
+                        onSelectTimelineObject = to =>
+                        {
+                            var beatmapObject = to.GetData<BeatmapObject>();
+                            SyncObjectData(timelineObject => { update?.Invoke(timelineObject, beatmapObject); }, renderTimelineObject, updateObject, updateContext);
+                        };
+                    }));
+
+                return;
+            }
+
+            ShowObjectSearch(beatmapObject =>
+            {
+                SyncObjectData(timelineObject => { update?.Invoke(timelineObject, beatmapObject); }, renderTimelineObject, updateObject, updateContext);
+                EditorManager.inst.HideDialog("Object Search Popup");
+            });
+        }
+
+        void SyncObjectData(Action<TimelineObject> update, bool renderTimelineObject = false, bool updateObject = true, string updateContext = "")
+        {
+            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+            {
+                update?.Invoke(timelineObject);
+
+                if (renderTimelineObject)
+                    ObjectEditor.inst.RenderTimelineObject(timelineObject);
+
+                if (!updateObject)
+                    continue;
+
+                if (!string.IsNullOrEmpty(updateContext))
+                    Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), updateContext);
+                else
+                    Updater.UpdateObject(timelineObject.GetData<BeatmapObject>());
+            }
+        }
+
         public void SetKeyframeValues(EventKeyframe kf, Dropdown curves,
             string opacity, string hue, string sat, string val, string opacityGradient, string hueGradient, string satGradient, string valGradient)
         {
@@ -6730,9 +6749,7 @@ namespace BetterLegacy.Editor.Managers
             pHLG.spacing = spacing;
 
             for (int i = 0; i < buttons.Length; i++)
-            {
                 GenerateButton(p.transform, buttons[i]);
-            }
 
             return p;
         }
@@ -6741,8 +6758,16 @@ namespace BetterLegacy.Editor.Managers
         {
             var button = EditorPrefabHolder.Instance.Function1Button.Duplicate(parent, buttonFunction.Name);
             var buttonStorage = button.GetComponent<FunctionButtonStorage>();
-            buttonStorage.button.onClick.ClearAll();
-            buttonStorage.button.onClick.AddListener(() => { buttonFunction.Action?.Invoke(); });
+            if (buttonFunction.OnClick != null)
+            {
+                var clickable = button.AddComponent<ContextClickable>();
+                clickable.onClick = buttonFunction.OnClick;
+            }
+            else
+            {
+                buttonStorage.button.onClick.ClearAll();
+                buttonStorage.button.onClick.AddListener(() => { buttonFunction.Action?.Invoke(); });
+            }
             buttonStorage.text.fontSize = buttonFunction.FontSize;
             buttonStorage.text.text = buttonFunction.Name;
 
@@ -8206,6 +8231,91 @@ namespace BetterLegacy.Editor.Managers
             });
         }
 
+        GameObject contextMenu;
+        RectTransform contextMenuLayout;
+
+        void CreateContextMenu()
+        {
+            try
+            {
+                var parent = EditorManager.inst.dialogs.parent;
+
+                contextMenu = Creator.NewUIObject("Context Menu", parent);
+                RectValues.Default.AnchorMax(0f, 0f).AnchorMin(0f, 0f).Pivot(0f, 1f).SizeDelta(126f, 300f).AssignToRectTransform(contextMenu.transform.AsRT());
+                var contextMenuImage = contextMenu.AddComponent<Image>();
+
+                var contextMenuLayout = Creator.NewUIObject("Context Menu Layout", contextMenu.transform);
+                RectValues.FullAnchored.SizeDelta(-8f, -8f).AssignToRectTransform(contextMenuLayout.transform.AsRT());
+                this.contextMenuLayout = contextMenuLayout.transform.AsRT();
+
+                var contextMenuLayoutVLG = contextMenuLayout.AddComponent<VerticalLayoutGroup>();
+                contextMenuLayoutVLG.childControlHeight = false;
+                contextMenuLayoutVLG.childForceExpandHeight = false;
+                contextMenuLayoutVLG.spacing = 4f;
+
+                var disable = contextMenu.AddComponent<Clickable>();
+                disable.onExit = pointerEventData => { contextMenu.SetActive(false); };
+
+                EditorThemeManager.AddGraphic(contextMenuImage, ThemeGroup.Background_2, true);
+                contextMenu.SetActive(false);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
+        }
+
+        void CreateFolderCreator()
+        {
+            try
+            {
+                var folderCreator = EditorManager.inst.GetDialog("Save As Popup").Dialog.gameObject
+                    .Duplicate(EditorManager.inst.GetDialog("Save As Popup").Dialog.GetParent(), "Folder Creator Popup");
+                folderCreator.transform.localPosition = Vector3.zero;
+
+                var folderCreatorPopup = folderCreator.transform.GetChild(0);
+
+                var folderCreatorPopupPanel = folderCreatorPopup.Find("Panel");
+                var folderCreatorPopupPanelTitle = folderCreatorPopupPanel.Find("Text").GetComponent<Text>();
+                folderCreatorPopupPanelTitle.text = "Folder Creator";
+
+                var close = folderCreatorPopupPanel.Find("x").GetComponent<Button>();
+                close.onClick.ClearAll();
+                close.onClick.AddListener(() => EditorManager.inst.HideDialog("Folder Creator Popup"));
+
+                var folderNameLabel = folderCreatorPopup.Find("Level Name").GetComponent<Text>();
+                folderNameLabel.text = "New folder name";
+
+                var folderName = folderCreatorPopup.Find("level-name").GetComponent<InputField>();
+                folderName.onValueChanged.ClearAll();
+                folderName.text = "New Folder";
+                folderName.characterLimit = 0;
+
+                var submitImage = folderCreatorPopup.Find("submit").GetComponent<Image>();
+                var submitText = folderCreatorPopup.Find("submit/text").GetComponent<Text>();
+                submitText.text = "Create Folder";
+
+                EditorThemeManager.AddGraphic(folderCreatorPopup.GetComponent<Image>(), ThemeGroup.Background_1, true);
+                EditorThemeManager.AddGraphic(folderCreatorPopupPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
+
+                EditorThemeManager.AddSelectable(close, ThemeGroup.Close, true);
+                EditorThemeManager.AddGraphic(close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
+
+                EditorThemeManager.AddLightText(folderCreatorPopupPanelTitle);
+                EditorThemeManager.AddLightText(folderNameLabel);
+                EditorThemeManager.AddInputField(folderName);
+
+                EditorThemeManager.AddGraphic(submitImage, ThemeGroup.Function_1, true);
+                EditorThemeManager.AddGraphic(submitText, ThemeGroup.Function_1_Text);
+
+                EditorHelper.AddEditorPopup("Folder Creator Popup", folderCreator);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
+        }
+
         #endregion
 
         #region Saving / Loading
@@ -8216,6 +8326,49 @@ namespace BetterLegacy.Editor.Managers
                 CoreHelper.Log(text);
 
             fileInfoText?.SetText(text);
+        }
+
+        public void PasteLevel()
+        {
+            var folderName = Path.GetFileName(copiedLevelPath);
+            var directory = Path.GetDirectoryName(copiedLevelPath).Replace("\\", "/");
+
+            if (shouldCutLevel)
+            {
+                if (RTFile.DirectoryExists(copiedLevelPath.Replace(directory, $"{RTFile.ApplicationDirectory}{editorListPath}")))
+                {
+                    EditorManager.inst.DisplayNotification($"Level with the name \"{folderName}\" already exists in this location.", 2f, EditorManager.NotificationType.Warning);
+                    return;
+                }
+
+                Directory.Move(copiedLevelPath, copiedLevelPath.Replace(directory, $"{RTFile.ApplicationDirectory}{editorListPath}"));
+                UpdateEditorPath(true);
+                EditorManager.inst.DisplayNotification($"Succesfully moved {folderName}!", 2f, EditorManager.NotificationType.Success);
+
+                return;
+            }
+
+            var result = copiedLevelPath;
+            int num = 0;
+            while (Directory.Exists(result.Replace(directory, $"{RTFile.ApplicationDirectory}{editorListPath}")))
+            {
+                result = $"{copiedLevelPath} [{num}]";
+                num++;
+            }
+
+            var files = Directory.GetFiles(copiedLevelPath, "*", SearchOption.AllDirectories);
+            for (int i = 0; i < files.Length; i++)
+            {
+                var file = files[i].Replace("\\", "/").Replace(copiedLevelPath, result).Replace(directory, $"{RTFile.ApplicationDirectory}{editorListPath}");
+                var copyToDirectory = Path.GetDirectoryName(file);
+                if (!RTFile.DirectoryExists(copyToDirectory))
+                    Directory.CreateDirectory(copyToDirectory);
+
+                File.Copy(files[i], file, true);
+            }
+
+            UpdateEditorPath(true);
+            EditorManager.inst.DisplayNotification($"Succesfully pasted {folderName}!", 2f, EditorManager.NotificationType.Success);
         }
 
         public IEnumerator LoadLevels()
@@ -8283,6 +8436,19 @@ namespace BetterLegacy.Editor.Managers
                 folderButtonStorageFolder.button.onClick.ClearAll();
                 folderButtonFunctionFolder.onClick = eventData =>
                 {
+                    if (eventData.button == PointerEventData.InputButton.Right)
+                    {
+                        RefreshContextMenu(300f,
+                            new ButtonFunction("Create folder", () =>
+                            {
+                                EditorManager.inst.ShowDialog("Folder Creator Popup");
+                                RefreshFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => UpdateEditorPath(true));
+                            }),
+                            new ButtonFunction("Paste", PasteLevel));
+
+                        return;
+                    }
+
                     if (editorPathField.text == currentPath)
                     {
                         editorPathField.text = Path.GetDirectoryName(RTFile.ApplicationDirectory + editorListPath).Replace("\\", "/").Replace(RTFile.ApplicationDirectory + "beatmaps/", "");
@@ -8330,6 +8496,20 @@ namespace BetterLegacy.Editor.Managers
                             EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
                             return;
                         }
+
+                        if (eventData.button == PointerEventData.InputButton.Right)
+                        {
+                            RefreshContextMenu(300f,
+                                new ButtonFunction("Create folder", () =>
+                                {
+                                    EditorManager.inst.ShowDialog("Folder Creator Popup");
+                                    RefreshFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => UpdateEditorPath(true));
+                                }),
+                                new ButtonFunction("Paste", PasteLevel));
+
+                            return;
+                        }
+
                         editorPathField.text = path.Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
                         UpdateEditorPath(false);
                     };
@@ -8441,8 +8621,119 @@ namespace BetterLegacy.Editor.Managers
 
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
-                        EditorManager.inst.ShowDialog("Autosave Popup");
-                        RefreshAutosaveList(editorWrapper);
+                        RefreshContextMenu(300f,
+                            new ButtonFunction("Show Autosaves", () =>
+                            {
+                                EditorManager.inst.ShowDialog("Autosave Popup");
+                                RefreshAutosaveList(editorWrapper);
+                            }),
+                            new ButtonFunction("Create folder", () =>
+                            {
+                                EditorManager.inst.ShowDialog("Folder Creator Popup");
+                                RefreshFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => UpdateEditorPath(true));
+                            }),
+                            new ButtonFunction("Create template", () =>
+                            {
+                                if (string.IsNullOrEmpty(nameInput.text))
+                                {
+                                    EditorManager.inst.DisplayNotification($"Level template name is empty. Name it something unique via the input field in the Level Template editor.", 3f, EditorManager.NotificationType.Error);
+                                    return;
+                                }
+
+                                if (nameInput.text[nameInput.text.Length - 1] == '/' || nameInput.text[nameInput.text.Length - 1] == '\\')
+                                {
+                                    EditorManager.inst.DisplayNotification($"Name cannot end with a / or a \\.", 3f, EditorManager.NotificationType.Error);
+                                    return;
+                                }
+
+                                if (RTFile.DirectoryExists($"{RTFile.ApplicationDirectory}beatmaps/templates/{nameInput.text}"))
+                                {
+                                    EditorManager.inst.DisplayNotification($"Level template with the name \"{nameInput.text}\" already exists! Set the name to something else.", 3f, EditorManager.NotificationType.Error);
+                                    return;
+                                }
+
+                                EditorManager.inst.HideDialog("Open File Popup");
+
+                                ShowWarningPopup("Are you sure you want to make a new level template?", () =>
+                                {
+                                    choosingLevelTemplate = false;
+
+                                    var copyTo = $"{RTFile.ApplicationDirectory}beatmaps/templates/{RTFile.ValidateDirectory(nameInput.text)}";
+                                    if (RTFile.DirectoryExists(copyTo))
+                                    {
+                                        EditorManager.inst.DisplayNotification($"Level template with the name \"{nameInput.text}\" already exists!", 3f, EditorManager.NotificationType.Error);
+                                        return;
+                                    }
+
+                                    Directory.CreateDirectory(copyTo);
+                                    File.Copy(file + "/level.lsb", copyTo + "/level.lsb");
+
+                                    if (currentTemplateSprite)
+                                        currentTemplateSprite.Save(copyTo + "/preview.png");
+
+                                    RefreshNewLevelTemplates();
+                                    HideWarningPopup();
+                                }, () =>
+                                {
+                                    EditorManager.inst.ShowDialog("Open File Popup");
+                                    HideWarningPopup();
+                                });
+                            }),
+                            new ButtonFunction("Cut", () =>
+                            {
+                                shouldCutLevel = true;
+                                copiedLevelPath = editorWrapper.folder;
+                                EditorManager.inst.DisplayNotification($"Cut {name}!", 1.5f, EditorManager.NotificationType.Success);
+                                CoreHelper.Log($"Cut level: {copiedLevelPath}");
+                            }),
+                            new ButtonFunction("Copy", () =>
+                            {
+                                shouldCutLevel = false;
+                                copiedLevelPath = editorWrapper.folder;
+                                EditorManager.inst.DisplayNotification($"Copied {name}!", 1.5f, EditorManager.NotificationType.Success);
+                                CoreHelper.Log($"Copied level: {copiedLevelPath}");
+                            }),
+                            new ButtonFunction("Paste", PasteLevel),
+                            new ButtonFunction("Delete", () =>
+                            {
+                                ShowWarningPopup("Are you sure you want to delete this level? This CANNOT be undone!", () =>
+                                {
+                                    Directory.Delete(editorWrapper.folder, true);
+                                    UpdateEditorPath(true);
+                                    EditorManager.inst.DisplayNotification("Deleted level!", 2f, EditorManager.NotificationType.Success);
+                                    HideWarningPopup();
+                                }, HideWarningPopup);
+                            }),
+                            new ButtonFunction("Copy Arcade ID", () =>
+                            {
+                                if (editorWrapper.metadata is MetaData metadata)
+                                {
+                                    if (string.IsNullOrEmpty(metadata.arcadeID) || metadata.arcadeID == "0")
+                                    {
+                                        EditorManager.inst.DisplayNotification($"Level does not have an ID assigned to it yet. Open the level, save it and try again.", 3.3f, EditorManager.NotificationType.Warning);
+                                        return;
+                                    }
+
+                                    LSText.CopyToClipboard(metadata.arcadeID);
+                                    EditorManager.inst.DisplayNotification($"Copied Arcade ID ({metadata.arcadeID}) to your clipboard.", 2f, EditorManager.NotificationType.Success);
+                                }
+                            }),
+                            new ButtonFunction("Copy Server ID", () =>
+                            {
+                                if (editorWrapper.metadata is MetaData metadata)
+                                {
+                                    if (string.IsNullOrEmpty(metadata.serverID) || metadata.serverID == "0")
+                                    {
+                                        EditorManager.inst.DisplayNotification($"Your level needs to be uploaded to the arcade server before you can copy the server ID.", 3.5f, EditorManager.NotificationType.Warning);
+                                        return;
+                                    }
+
+                                    LSText.CopyToClipboard(metadata.serverID);
+                                    EditorManager.inst.DisplayNotification($"Copied Server ID ({metadata.serverID}) to your clipboard.", 2f, EditorManager.NotificationType.Success);
+                                }
+                            })
+                        );
+
                         return;
                     }
 
@@ -8966,6 +9257,7 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
+        GameObject prefabExternalUpAFolderButton;
         public IEnumerator LoadPrefabs(PrefabEditor __instance)
         {
             if (prefabsLoading)
@@ -8976,7 +9268,7 @@ namespace BetterLegacy.Editor.Managers
             while (!PrefabEditor.inst || !PrefabEditor.inst.externalContent)
                 yield return null;
 
-            RTPrefabEditor.inst.PrefabPanels.Where(x => x.Dialog == PrefabDialog.External).ToList().ForEach(x => Destroy(x.GameObject));
+            RTPrefabEditor.inst.PrefabPanels.FindAll(x => x.Dialog == PrefabDialog.External).ForEach(x => Destroy(x.GameObject));
             RTPrefabEditor.inst.PrefabPanels.RemoveAll(x => x.Dialog == PrefabDialog.External);
 
             var config = EditorConfig.Instance;
@@ -8998,8 +9290,24 @@ namespace BetterLegacy.Editor.Managers
 
                 var button = prefabExternalAddButton.GetComponent<Button>();
                 button.onClick.ClearAll();
-                button.onClick.AddListener(() =>
+
+                var contextClickable = prefabExternalAddButton.AddComponent<ContextClickable>();
+                contextClickable.onClick = eventData =>
                 {
+                    if (eventData.button == PointerEventData.InputButton.Right)
+                    {
+                        RTEditor.inst.RefreshContextMenu(300f,
+                            new RTEditor.ButtonFunction("Create folder", () =>
+                            {
+                                EditorManager.inst.ShowDialog("Folder Creator Popup");
+                                RTEditor.inst.RefreshFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}", () => RTEditor.inst.UpdatePrefabPath(true));
+                            }),
+                            new RTEditor.ButtonFunction("Paste", RTPrefabEditor.inst.PastePrefab)
+                            );
+
+                        return;
+                    }
+
                     if (RTPrefabEditor.inst.savingToPrefab && RTPrefabEditor.inst.prefabToSaveFrom != null)
                     {
                         RTPrefabEditor.inst.savingToPrefab = false;
@@ -9016,7 +9324,7 @@ namespace BetterLegacy.Editor.Managers
 
                     PrefabEditor.inst.OpenDialog();
                     RTPrefabEditor.inst.createInternal = false;
-                });
+                };
 
                 EditorThemeManager.AddGraphic(button.image, ThemeGroup.Add, true);
                 EditorThemeManager.AddGraphic(text, ThemeGroup.Add_Text);
@@ -9048,6 +9356,106 @@ namespace BetterLegacy.Editor.Managers
 
             while (RTPrefabEditor.loadingPrefabTypes)
                 yield return null;
+
+            //while (!EditorManager.inst.folderButtonPrefab.GetComponent<FunctionButtonStorage>())
+            //    yield return null;
+
+            // Back
+            if (!prefabExternalUpAFolderButton)
+            {
+                prefabExternalUpAFolderButton = EditorManager.inst.folderButtonPrefab.Duplicate(PrefabEditor.inst.externalContent, "back");
+                var folderButtonStorageFolder = prefabExternalUpAFolderButton.GetComponent<FunctionButtonStorage>();
+                var folderButtonFunctionFolder = prefabExternalUpAFolderButton.AddComponent<FolderButtonFunction>();
+
+                var hoverUIFolder = prefabExternalUpAFolderButton.AddComponent<HoverUI>();
+                hoverUIFolder.size = hoverSize;
+                hoverUIFolder.animatePos = false;
+                hoverUIFolder.animateSca = true;
+
+                folderButtonStorageFolder.text.text = "< Up a folder";
+
+                folderButtonStorageFolder.button.onClick.ClearAll();
+                folderButtonFunctionFolder.onClick = eventData =>
+                {
+                    if (eventData.button == PointerEventData.InputButton.Right)
+                    {
+                        RefreshContextMenu(300f,
+                            new ButtonFunction("Create folder", () =>
+                            {
+                                EditorManager.inst.ShowDialog("Folder Creator Popup");
+                                RefreshFolderCreator($"{RTFile.ApplicationDirectory}{prefabListPath}", () => UpdatePrefabPath(true));
+                            }),
+                            new ButtonFunction("Paste", RTPrefabEditor.inst.PastePrefab));
+
+                        return;
+                    }
+
+                    if (prefabPathField.text == prefabPath)
+                    {
+                        prefabPathField.text = Path.GetDirectoryName(RTFile.ApplicationDirectory + prefabListPath).Replace("\\", "/").Replace(RTFile.ApplicationDirectory + "beatmaps/", "");
+                        UpdatePrefabPath(false);
+                    }
+                };
+
+                EditorThemeManager.ApplySelectable(folderButtonStorageFolder.button, ThemeGroup.List_Button_1);
+                EditorThemeManager.ApplyLightText(folderButtonStorageFolder.text);
+            }
+
+            prefabExternalUpAFolderButton.SetActive(Path.GetDirectoryName(RTFile.ApplicationDirectory + prefabListPath).Replace("\\", "/") != RTFile.ApplicationDirectory + "beatmaps");
+
+            foreach (var directory in Directory.GetDirectories(RTFile.ApplicationDirectory + prefabListPath, "*", SearchOption.TopDirectoryOnly))
+            {
+                var path = directory.Replace("\\", "/");
+                var fileName = Path.GetFileName(directory);
+
+                var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(PrefabEditor.inst.externalContent, $"Folder [{fileName}]");
+                var folderButtonStorageFolder = gameObjectFolder.GetComponent<FunctionButtonStorage>();
+                var folderButtonFunctionFolder = gameObjectFolder.AddComponent<FolderButtonFunction>();
+
+                var hoverUIFolder = gameObjectFolder.AddComponent<HoverUI>();
+                hoverUIFolder.size = hoverSize;
+                hoverUIFolder.animatePos = false;
+                hoverUIFolder.animateSca = true;
+
+                folderButtonStorageFolder.text.text = fileName;
+
+                folderButtonStorageFolder.button.onClick.ClearAll();
+                folderButtonFunctionFolder.onClick = eventData =>
+                {
+                    if (!path.Contains(RTFile.ApplicationDirectory + "beatmaps/"))
+                    {
+                        EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                        return;
+                    }
+
+                    if (eventData.button == PointerEventData.InputButton.Right)
+                    {
+                        RefreshContextMenu(300f,
+                            new ButtonFunction("Create folder", () =>
+                            {
+                                EditorManager.inst.ShowDialog("Folder Creator Popup");
+                                RefreshFolderCreator($"{RTFile.ApplicationDirectory}{prefabListPath}", () => UpdatePrefabPath(true));
+                            }),
+                            new ButtonFunction("Paste", () => { }));
+
+                        return;
+                    }
+
+                    prefabPathField.text = path.Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
+                    UpdatePrefabPath(false);
+                };
+
+                EditorThemeManager.ApplySelectable(folderButtonStorageFolder.button, ThemeGroup.List_Button_1);
+                EditorThemeManager.ApplyLightText(folderButtonStorageFolder.text);
+
+                RTPrefabEditor.inst.PrefabPanels.Add(new PrefabPanel
+                {
+                    GameObject = gameObjectFolder,
+                    FilePath = directory,
+                    Dialog = PrefabDialog.External,
+                    isFolder = true,
+                });
+            }
 
             int num = 0;
             foreach (var file in Directory.GetFiles(RTFile.ApplicationDirectory + prefabListPath, "*.lsp", SearchOption.TopDirectoryOnly))
@@ -9299,6 +9707,50 @@ namespace BetterLegacy.Editor.Managers
         #endregion
 
         #region Refresh Popups / Dialogs
+
+        public void RefreshContextMenu(float width, params ButtonFunction[] buttonFunctions)
+        {
+            contextMenu.transform.AsRT().anchoredPosition = Input.mousePosition * CoreHelper.ScreenScaleInverse;
+            contextMenu.transform.AsRT().sizeDelta = new Vector2(width, 37f * buttonFunctions.Length);
+            contextMenu.SetActive(true);
+            LSHelpers.DeleteChildren(contextMenuLayout);
+            for (int i = 0; i < buttonFunctions.Length; i++)
+            {
+                var buttonFunction = buttonFunctions[i];
+                var gameObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(contextMenuLayout);
+                var buttonStorage = gameObject.GetComponent<FunctionButtonStorage>();
+
+                buttonStorage.button.onClick.ClearAll();
+                buttonStorage.button.onClick.AddListener(() =>
+                {
+                    contextMenu.SetActive(false);
+                    buttonFunction.Action?.Invoke();
+                });
+                buttonStorage.text.alignment = TextAnchor.MiddleLeft;
+                buttonStorage.text.text = buttonFunction.Name;
+                buttonStorage.text.rectTransform.sizeDelta = new Vector2(-12f, 0f);
+
+                EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
+                EditorThemeManager.ApplyGraphic(buttonStorage.text, ThemeGroup.Function_2_Text);
+            }
+        }
+
+        public void RefreshFolderCreator(string path, Action onSubmit)
+        {
+            var folderCreatorPopup = EditorManager.inst.GetDialog("Folder Creator Popup").Dialog.GetChild(0);
+            var folderName = folderCreatorPopup.Find("level-name").GetComponent<InputField>();
+            var submit = folderCreatorPopup.Find("submit").GetComponent<Button>();
+            submit.onClick.ClearAll();
+            submit.onClick.AddListener(() =>
+            {
+                var directory = Path.Combine(path, RTFile.ValidateDirectory(folderName.text));
+                if (RTFile.DirectoryExists(directory))
+                    return;
+
+                Directory.CreateDirectory(directory);
+                onSubmit?.Invoke();
+            });
+        }
 
         public void ShowObjectSearch(Action<BeatmapObject> onSelect, bool clearParent = false)
         {
@@ -11134,10 +11586,17 @@ namespace BetterLegacy.Editor.Managers
                 Name = name;
                 Action = action;
             }
+            
+            public ButtonFunction(string name, Action<PointerEventData> onClick)
+            {
+                Name = name;
+                OnClick = onClick;
+            }
 
             public string Name { get; set; }
             public int FontSize { get; set; } = 20;
             public Action Action { get; set; }
+            public Action<PointerEventData> OnClick { get; set; }
         }
 
         public class DialogAnimation : Exists

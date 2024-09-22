@@ -10,6 +10,7 @@ namespace BetterLegacy.Editor
         public List<Image> Colors { get; set; } = new List<Image>();
 
         public GameObject GameObject { get; set; }
+        public Components.ContextClickable ContextClickable { get; set; }
         public Button UseButton { get; set; }
         public Button EditButton { get; set; }
         public Button DeleteButton { get; set; }

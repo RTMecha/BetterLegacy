@@ -29,5 +29,7 @@ namespace BetterLegacy.Editor
         public string FilePath { get; set; }
 
         public void SetActive(bool active) => GameObject?.SetActive(active);
+
+        public bool isFolder;
     }
 }
