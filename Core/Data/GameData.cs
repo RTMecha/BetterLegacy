@@ -345,10 +345,12 @@ namespace BetterLegacy.Core.Data
 
         public static GameData ConvertedGameData { get; set; }
 
-        public static GameData ParseVG(JSONNode jn, bool parseThemes = true)
+        public static GameData ParseVG(JSONNode jn, bool parseThemes = true, Version version = default)
         {
             var gameData = new GameData();
             var parseOptimizations = CoreConfig.Instance.ParseOptimizations.Value;
+
+            CoreHelper.Log($"Parsing Version: {version}");
 
             for (int i = 0; i < jn["triggers"].Count; i++)
             {
@@ -394,7 +396,7 @@ namespace BetterLegacy.Core.Data
 
             CoreHelper.Log($"Parsing Objects");
             for (int i = 0; i < jn["objects"].Count; i++)
-                gameData.beatmapObjects.Add(Data.BeatmapObject.ParseVG(jn["objects"][i]));
+                gameData.beatmapObjects.Add(Data.BeatmapObject.ParseVG(jn["objects"][i], version));
 
             if (parseOptimizations)
                 for (int i = 0; i < gameData.beatmapObjects.Count; i++)
@@ -406,7 +408,7 @@ namespace BetterLegacy.Core.Data
 
             CoreHelper.Log($"Parsing Prefabs");
             for (int i = 0; i < jn["prefabs"].Count; i++)
-                gameData.prefabs.Add(Data.Prefab.ParseVG(jn["prefabs"][i]));
+                gameData.prefabs.Add(Data.Prefab.ParseVG(jn["prefabs"][i], version));
 
             Dictionary<string, string> idConversion = new Dictionary<string, string>();
 

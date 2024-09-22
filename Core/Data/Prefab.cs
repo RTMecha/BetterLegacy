@@ -75,11 +75,11 @@ namespace BetterLegacy.Core.Data
             return prefab;
         }
 
-        public static Prefab ParseVG(JSONNode jn)
+        public static Prefab ParseVG(JSONNode jn, Version version = default)
         {
             var beatmapObjects = new List<BaseBeatmapObject>();
             for (int i = 0; i < jn["objs"].Count; i++)
-                beatmapObjects.Add(BeatmapObject.ParseVG(jn["objs"][i]));
+                beatmapObjects.Add(BeatmapObject.ParseVG(jn["objs"][i], version));
 
             var prefab = new Prefab
             {

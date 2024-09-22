@@ -327,7 +327,7 @@ namespace BetterLegacy.Core.Data
         /// </summary>
         /// <param name="jn">VG JSON.</param>
         /// <returns>Returns a parsed Beatmap Object.</returns>
-        public static BeatmapObject ParseVG(JSONNode jn)
+        public static BeatmapObject ParseVG(JSONNode jn, Version version = default)
         {
             var beatmapObject = new BeatmapObject();
 
@@ -336,6 +336,8 @@ namespace BetterLegacy.Core.Data
             events.Add(new List<BaseEventKeyframe>());
             events.Add(new List<BaseEventKeyframe>());
             events.Add(new List<BaseEventKeyframe>());
+
+            var isCameraParented = jn["p_id"] == "camera";
 
             if (jn["e"] != null)
             {
@@ -356,7 +358,7 @@ namespace BetterLegacy.Core.Data
                         eventKeyframe.SetEventValues(
                             kfjn["ev"][0].AsFloat,
                             kfjn["ev"][1].AsFloat,
-                            0f);
+                            isCameraParented ? -10f : 0f);
 
                         eventKeyframe.random = kfjn["r"].AsInt;
 
@@ -496,16 +498,15 @@ namespace BetterLegacy.Core.Data
                 beatmapObject.prefabID = jn["pre_id"];
 
             if (jn["p_id"] != null)
-                beatmapObject.parent = jn["p_id"] == "camera" ? "CAMERA_PARENT" : jn["p_id"];
+                beatmapObject.parent = isCameraParented ? "CAMERA_PARENT" : jn["p_id"];
 
-            if (jn["p_t"] != null)
+            if (!isCameraParented && jn["p_t"] != null)
                 beatmapObject.parentType = jn["p_t"];
-            if (jn["p_id"] == "camera")
+            if (isCameraParented)
                 beatmapObject.parentType = "111";
 
             if (jn["p_o"] != null && jn["p_id"] != "camera")
-                beatmapObject.parentOffsets = new List<float>(from n in jn["p_o"].AsArray.Children
-                                                              select n.AsFloat).ToList();
+                beatmapObject.parentOffsets = jn["p_o"].AsArray.Children.Select(x => x.AsFloat).ToList();
             else if (jn["p_id"] == "camera")
                 beatmapObject.parentOffsets = new List<float> { 0f, 0f, 0f };
 
@@ -525,7 +526,7 @@ namespace BetterLegacy.Core.Data
             if (jn["d"] != null)
                 beatmapObject.Depth = jn["d"].AsInt;
             else
-                beatmapObject.Depth = 20; // fixes default depth not being correct
+                beatmapObject.Depth = version == new Version("23.1.4") ? 0 : 20; // fixes default depth not being correct
 
             if (jn["s"] != null)
                 beatmapObject.shape = jn["s"].AsInt;

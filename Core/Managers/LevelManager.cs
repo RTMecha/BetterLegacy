@@ -230,7 +230,7 @@ namespace BetterLegacy.Core.Managers
                 if (level.IsVG)
                     AchievementManager.inst.UnlockAchievement("time_traveler");
 
-                GameData.Current = level.IsVG ? GameData.ParseVG(JSON.Parse(rawJSON)) : GameData.Parse(JSONNode.Parse(rawJSON));
+                GameData.Current = level.IsVG ? GameData.ParseVG(JSON.Parse(rawJSON), version: level.metadata.Version) : GameData.Parse(JSONNode.Parse(rawJSON));
             }
 
             Debug.Log($"{className}Setting paths...");

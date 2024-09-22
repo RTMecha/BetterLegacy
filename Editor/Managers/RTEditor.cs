@@ -2854,7 +2854,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 var levelVGJN = JSON.Parse(levelVGJSON);
 
-                                var level = GameData.ParseVG(levelVGJN, false);
+                                var level = GameData.ParseVG(levelVGJN, false, metadata.Version);
 
                                 StartCoroutine(ProjectData.Writer.SaveData(copyTo + "/level.lsb", level, () =>
                                 {

@@ -21,7 +21,10 @@ namespace BetterLegacy.Core
         public Level(string path, bool loadIcon = true)
         {
             this.path = path;
-            if (RTFile.FileExists($"{path}metadata.lsb"))
+
+            if (CoreConfig.Instance.PrioritizeVG.Value && RTFile.FileExists($"{path}metadata.vgm"))
+                metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile($"{path}metadata.vgm")));
+            else if (RTFile.FileExists($"{path}metadata.lsb"))
                 metadata = MetaData.Parse(JSON.Parse(RTFile.ReadFromFile($"{path}metadata.lsb")), false);
             else if (RTFile.FileExists($"{path}metadata.vgm"))
                 metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile($"{path}metadata.vgm")));
