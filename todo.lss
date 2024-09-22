@@ -31,7 +31,9 @@
 - Fix spawnPrefab modifier potential issues by not adding to the prefabObjects list, assigning a custom Prefab Object property to Beatmap Object and have ObjectConverter read from that.
 - MetaData settings that can be adjusted in the Play Level (Settings) menu and can be read using modifiers probably.
 - Figure out how player shooting fits in-game.
+- Make VG levels have the dev player by default.
 - Documentation & tooltips.
+- Child objects list via parent context menu.
 - Example customization.
 - Somehow figure out how to convert parallax in alpha to BG objects in BetterLegacy.
 - Custom end level function [end level screen, return to hub, return to previous, return to arcade, return to main menu].
