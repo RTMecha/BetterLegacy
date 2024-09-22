@@ -8330,6 +8330,18 @@ namespace BetterLegacy.Editor.Managers
 
         public void PasteLevel()
         {
+            if (string.IsNullOrEmpty(copiedLevelPath))
+            {
+                EditorManager.inst.DisplayNotification("No level has been copied yet!", 2f, EditorManager.NotificationType.Error);
+                return;
+            }
+            
+            if (!RTFile.DirectoryExists(copiedLevelPath))
+            {
+                EditorManager.inst.DisplayNotification("Copied level no longer exists.", 2f, EditorManager.NotificationType.Error);
+                return;
+            }
+
             var folderName = Path.GetFileName(copiedLevelPath);
             var directory = Path.GetDirectoryName(copiedLevelPath).Replace("\\", "/");
 
@@ -8418,7 +8430,7 @@ namespace BetterLegacy.Editor.Managers
             // Back
             if (showLevelFolders && Path.GetDirectoryName(RTFile.ApplicationDirectory + editorListPath).Replace("\\", "/") != RTFile.ApplicationDirectory + "beatmaps")
             {
-                var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(transform, $"back");
+                var gameObjectFolder = EditorManager.inst.folderButtonPrefab.Duplicate(transform, "back");
                 var folderButtonStorageFolder = gameObjectFolder.GetComponent<FunctionButtonStorage>();
                 var folderButtonFunctionFolder = gameObjectFolder.AddComponent<FolderButtonFunction>();
 
@@ -8622,6 +8634,11 @@ namespace BetterLegacy.Editor.Managers
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
                         RefreshContextMenu(300f,
+                            new ButtonFunction("Open", () =>
+                            {
+                                StartCoroutine(LoadLevel(path));
+                                EditorManager.inst.HideDialog("Open File Popup");
+                            }),
                             new ButtonFunction("Show Autosaves", () =>
                             {
                                 EditorManager.inst.ShowDialog("Autosave Popup");
@@ -8814,35 +8831,28 @@ namespace BetterLegacy.Editor.Managers
             }
 
             if (list.Count >= 1)
-                yield return StartCoroutine(LSHelpers.WaitForMultipleCoroutines(list, () =>
-                {
-                    if (anyFailed && config.ShowLevelsWithoutCoverNotification.Value)
-                        EditorManager.inst.DisplayNotification($"Levels {FontManager.TextTranslater.ArrayToString(failedLevels.ToArray())} do not have covers!", 2f * (failedLevels.Count * 0.10f), EditorManager.NotificationType.Error);
-                    if (EditorManager.inst.loadedLevels.Count > 0)
-                    {
-                        EditorManager.inst.ShowDialog("Open File Popup");
-                        EditorManager.inst.RenderOpenBeatmapPopup();
-                    }
-                    else
-                        EditorManager.inst.OpenNewLevelPopup();
-                }));
+                yield return StartCoroutine(LSHelpers.WaitForMultipleCoroutines(list, () => { OpenLevelPopup(anyFailed, failedLevels); }));
             else
-            {
-                if (anyFailed && config.ShowLevelsWithoutCoverNotification.Value)
-                    EditorManager.inst.DisplayNotification($"Levels {FontManager.TextTranslater.ArrayToString(failedLevels.ToArray())} do not have covers!", 2f * (failedLevels.Count * 0.10f), EditorManager.NotificationType.Error);
-                if (EditorManager.inst.loadedLevels.Count > 0)
-                {
-                    EditorManager.inst.ShowDialog("Open File Popup");
-                    EditorManager.inst.RenderOpenBeatmapPopup();
-                }
-                else
-                    EditorManager.inst.OpenNewLevelPopup();
-            }
+                OpenLevelPopup(anyFailed, failedLevels);
 
             failedLevels.Clear();
             failedLevels = null;
 
             yield break;
+        }
+
+        void OpenLevelPopup(bool anyFailed, List<string> failedLevels)
+        {
+            if (anyFailed && EditorConfig.Instance.ShowLevelsWithoutCoverNotification.Value)
+                EditorManager.inst.DisplayNotification($"Levels {FontManager.TextTranslater.ArrayToString(failedLevels.ToArray())} do not have covers!", 2f * (failedLevels.Count * 0.10f), EditorManager.NotificationType.Error);
+
+            if (!EditorConfig.Instance.OpenNewLevelCreatorIfNoLevels.Value || EditorManager.inst.loadedLevels.Count > 0)
+            {
+                EditorManager.inst.ShowDialog("Open File Popup");
+                EditorManager.inst.RenderOpenBeatmapPopup();
+            }
+            else
+                EditorManager.inst.OpenNewLevelPopup();
         }
 
         /// <summary>
@@ -9927,6 +9937,8 @@ namespace BetterLegacy.Editor.Managers
 
         public IEnumerator RefreshLevelList()
         {
+            CoreHelper.Log($"Level Search: {EditorManager.inst.openFileSearch}\nLevel Sort: {levelAscend} - {levelFilter}");
+
             #region Sorting
 
             Func<MetadataWrapper, bool> editorFolderSelector = x => x is EditorWrapper editorWrapper && !editorWrapper.isFolder;
@@ -10021,6 +10033,7 @@ namespace BetterLegacy.Editor.Managers
 
             if (transform.Find("back"))
             {
+                yield return null;
                 transform.Find("back").SetAsFirstSibling();
             }
 

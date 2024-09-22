@@ -2394,6 +2394,18 @@ namespace BetterLegacy.Editor.Managers
 
         public void PastePrefab()
         {
+            if (string.IsNullOrEmpty(copiedPrefabPath))
+            {
+                EditorManager.inst.DisplayNotification("No prefab has been copied yet!", 2f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            if (!RTFile.DirectoryExists(copiedPrefabPath))
+            {
+                EditorManager.inst.DisplayNotification("Copied prefab no longer exists.", 2f, EditorManager.NotificationType.Error);
+                return;
+            }
+
             var copiedPrefabsFolder = Path.GetDirectoryName(copiedPrefabPath).Replace("\\", "/");
             CoreHelper.Log($"Copied Folder: {copiedPrefabsFolder}");
 
