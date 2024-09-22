@@ -580,6 +580,13 @@ namespace BetterLegacy.Core.Helpers
 
                 CoreHelper.Log($"Selecting [ {timelineObject.ID} ]");
 
+                if (RTEditor.inst.onSelectTimelineObject != null)
+                {
+                    RTEditor.inst.onSelectTimelineObject(timelineObject);
+                    RTEditor.inst.onSelectTimelineObject = null;
+                    return;
+                }
+
                 if (!RTEditor.inst.parentPickerEnabled && !RTEditor.inst.prefabPickerEnabled)
                 {
                     if (InputDataManager.inst.editorActions.MultiSelect.IsPressed)

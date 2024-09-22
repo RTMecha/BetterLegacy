@@ -134,10 +134,18 @@ namespace BetterLegacy.Components.Editor
 
             startDragTime = Time.time;
 
+            if (RTEditor.inst.onSelectTimelineObject != null)
+            {
+                var timelineObject = ObjectEditor.inst.GetTimelineObject(beatmapObject);
+                RTEditor.inst.onSelectTimelineObject(timelineObject);
+                RTEditor.inst.onSelectTimelineObject = null;
+                return;
+            }
+
             // select object if picker is not currently active.
             if (!RTEditor.inst.parentPickerEnabled && !RTEditor.inst.prefabPickerEnabled)
             {
-                TimelineObject timelineObject = ObjectEditor.inst.GetTimelineObject(beatmapObject);
+                var timelineObject = ObjectEditor.inst.GetTimelineObject(beatmapObject);
                 ObjectEditor.inst.RenderTimelineObject(timelineObject);
                 if (!Input.GetKey(KeyCode.LeftShift))
                 {
@@ -208,7 +216,7 @@ namespace BetterLegacy.Components.Editor
                         success = true;
                         continue;
                     }
-                    success = SetParent(otherTimelineObject, beatmapObject);
+                    success = TrySetParent(otherTimelineObject, beatmapObject);
                 }
 
                 if (!success)
@@ -232,7 +240,7 @@ namespace BetterLegacy.Components.Editor
             }
 
             // set single parent
-            var tryParent = SetParent(currentSelection, beatmapObject);
+            var tryParent = TrySetParent(currentSelection, beatmapObject);
 
             if (!tryParent)
                 EditorManager.inst.DisplayNotification("Cannot set parent to child / self!", 1f, EditorManager.NotificationType.Warning);
@@ -240,13 +248,15 @@ namespace BetterLegacy.Components.Editor
                 RTEditor.inst.parentPickerEnabled = false;
         }
 
+        public static void SetParent(TimelineObject currentSelection, BeatmapObject beatmapObjectToParentTo) => TrySetParent(currentSelection, beatmapObjectToParentTo);
+
         /// <summary>
         /// Tries to set an objects' parent. If the parent the user is trying to assign an object to a child of the object, then don't set parent.
         /// </summary>
         /// <param name="currentSelection"></param>
         /// <param name="beatmapObjectToParentTo"></param>
         /// <returns></returns>
-        public static bool SetParent(TimelineObject currentSelection, BeatmapObject beatmapObjectToParentTo)
+        public static bool TrySetParent(TimelineObject currentSelection, BeatmapObject beatmapObjectToParentTo)
         {
             var dictionary = new Dictionary<string, bool>();
             var beatmapObjects = GameData.Current.beatmapObjects;
