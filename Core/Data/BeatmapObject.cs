@@ -523,7 +523,9 @@ namespace BetterLegacy.Core.Data
                 beatmapObject.name = jn["n"];
 
             if (jn["d"] != null)
-                beatmapObject.depth = jn["d"].AsInt;
+                beatmapObject.Depth = jn["d"].AsInt;
+            else
+                beatmapObject.Depth = 20; // fixes default depth not being correct
 
             if (jn["s"] != null)
                 beatmapObject.shape = jn["s"].AsInt;
@@ -749,7 +751,7 @@ namespace BetterLegacy.Core.Data
                 beatmapObject.parentAdditive = jn["pa"];
 
             if (jn["d"] != null)
-                beatmapObject.depth = jn["d"].AsInt;
+                beatmapObject.Depth = jn["d"].AsInt;
 
             if (jn["rdt"] != null)
                 beatmapObject.background = jn["rdt"].AsInt == 1;
@@ -861,7 +863,7 @@ namespace BetterLegacy.Core.Data
             if (!string.IsNullOrEmpty(parent))
                 jn["p_id"] = parent == "CAMERA_PARENT" ? "camera" : parent;
 
-            jn["d"] = depth;
+            jn["d"] = Depth;
 
             jn["st"] = StartTime;
 
@@ -1002,7 +1004,8 @@ namespace BetterLegacy.Core.Data
             if (!string.IsNullOrEmpty(parent))
                 jn["p"] = parent;
 
-            jn["d"] = depth.ToString();
+            if (Depth != 15)
+                jn["d"] = Depth.ToString();
             if (background)
                 jn["rdt"] = "1";
             if (opacityCollision)
