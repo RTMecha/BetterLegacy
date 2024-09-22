@@ -3127,12 +3127,13 @@ namespace BetterLegacy.Editor.Managers
                 if (eventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                RefreshContextMenu(300f,
+                ShowContextMenu(300f,
                     new ButtonFunction("Create folder", () =>
                     {
                         EditorManager.inst.ShowDialog("Folder Creator Popup");
                         RefreshFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => UpdateEditorPath(true));
                     }),
+                    new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
                     new ButtonFunction("Paste", PasteLevel));
             };
 
@@ -3168,7 +3169,7 @@ namespace BetterLegacy.Editor.Managers
                 if (pointerEventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                RefreshContextMenu(300f,
+                ShowContextMenu(300f,
                     new ButtonFunction("Set Level folder", () =>
                     {
                         EditorManager.inst.ShowDialog("Browser Popup");
@@ -3243,7 +3244,7 @@ namespace BetterLegacy.Editor.Managers
                 if (pointerEventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                RefreshContextMenu(300f,
+                ShowContextMenu(300f,
                     new ButtonFunction("Set Theme folder", () =>
                     {
                         EditorManager.inst.ShowDialog("Browser Popup");
@@ -3366,7 +3367,7 @@ namespace BetterLegacy.Editor.Managers
                 if (pointerEventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                RefreshContextMenu(300f,
+                ShowContextMenu(300f,
                     new ButtonFunction("Set Prefab folder", () =>
                     {
                         EditorManager.inst.ShowDialog("Browser Popup");
@@ -6545,7 +6546,7 @@ namespace BetterLegacy.Editor.Managers
         {
             if (eventData.button == PointerEventData.InputButton.Right)
             {
-                RefreshContextMenu(600f,
+                ShowContextMenu(600f,
                     new ButtonFunction($"Sync {nameContext} via Search", () =>
                     {
                         ShowObjectSearch(beatmapObject =>
@@ -8450,12 +8451,13 @@ namespace BetterLegacy.Editor.Managers
                 {
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
-                        RefreshContextMenu(300f,
+                        ShowContextMenu(300f,
                             new ButtonFunction("Create folder", () =>
                             {
                                 EditorManager.inst.ShowDialog("Folder Creator Popup");
                                 RefreshFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => UpdateEditorPath(true));
                             }),
+                            new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
                             new ButtonFunction("Paste", PasteLevel));
 
                         return;
@@ -8511,13 +8513,30 @@ namespace BetterLegacy.Editor.Managers
 
                         if (eventData.button == PointerEventData.InputButton.Right)
                         {
-                            RefreshContextMenu(300f,
+                            ShowContextMenu(300f,
+                                new ButtonFunction("Open folder", () =>
+                                {
+                                    editorPathField.text = path.Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
+                                    UpdateEditorPath(false);
+                                }),
                                 new ButtonFunction("Create folder", () =>
                                 {
                                     EditorManager.inst.ShowDialog("Folder Creator Popup");
                                     RefreshFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => UpdateEditorPath(true));
                                 }),
-                                new ButtonFunction("Paste", PasteLevel));
+                                new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
+                                new ButtonFunction(true),
+                                new ButtonFunction("Paste", PasteLevel),
+                                new ButtonFunction("Delete", () =>
+                                {
+                                    ShowWarningPopup("Are you <b>100%</b> sure you want to delete this folder? This <b>CANNOT</b> be undone! Always make sure you have backups.", () =>
+                                    {
+                                        Directory.Delete(file, true);
+                                        UpdateEditorPath(true);
+                                        EditorManager.inst.DisplayNotification("Deleted folder!", 2f, EditorManager.NotificationType.Success);
+                                        HideWarningPopup();
+                                    }, HideWarningPopup);
+                                }));
 
                             return;
                         }
@@ -8633,7 +8652,7 @@ namespace BetterLegacy.Editor.Managers
 
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
-                        RefreshContextMenu(300f,
+                        ShowContextMenu(300f,
                             new ButtonFunction("Open", () =>
                             {
                                 StartCoroutine(LoadLevel(path));
@@ -8644,6 +8663,7 @@ namespace BetterLegacy.Editor.Managers
                                 EditorManager.inst.ShowDialog("Autosave Popup");
                                 RefreshAutosaveList(editorWrapper);
                             }),
+                            new ButtonFunction(true),
                             new ButtonFunction("Create folder", () =>
                             {
                                 EditorManager.inst.ShowDialog("Folder Creator Popup");
@@ -8696,6 +8716,8 @@ namespace BetterLegacy.Editor.Managers
                                     HideWarningPopup();
                                 });
                             }),
+                            new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
+                            new ButtonFunction(true),
                             new ButtonFunction("Cut", () =>
                             {
                                 shouldCutLevel = true;
@@ -8721,6 +8743,7 @@ namespace BetterLegacy.Editor.Managers
                                     HideWarningPopup();
                                 }, HideWarningPopup);
                             }),
+                            new ButtonFunction(true),
                             new ButtonFunction("Copy Arcade ID", () =>
                             {
                                 if (editorWrapper.metadata is MetaData metadata)
@@ -9306,13 +9329,18 @@ namespace BetterLegacy.Editor.Managers
                 {
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
-                        RTEditor.inst.RefreshContextMenu(300f,
-                            new RTEditor.ButtonFunction("Create folder", () =>
+                        ShowContextMenu(300f,
+                            new ButtonFunction("Create folder", () =>
                             {
                                 EditorManager.inst.ShowDialog("Folder Creator Popup");
-                                RTEditor.inst.RefreshFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}", () => RTEditor.inst.UpdatePrefabPath(true));
+                                RefreshFolderCreator($"{RTFile.ApplicationDirectory}{prefabListPath}", () => UpdatePrefabPath(true));
                             }),
-                            new RTEditor.ButtonFunction("Paste", RTPrefabEditor.inst.PastePrefab)
+                            new ButtonFunction("Create prefab", () =>
+                            {
+                                PrefabEditor.inst.OpenDialog();
+                                RTPrefabEditor.inst.createInternal = false;
+                            }),
+                            new ButtonFunction("Paste", RTPrefabEditor.inst.PastePrefab)
                             );
 
                         return;
@@ -9367,9 +9395,6 @@ namespace BetterLegacy.Editor.Managers
             while (RTPrefabEditor.loadingPrefabTypes)
                 yield return null;
 
-            //while (!EditorManager.inst.folderButtonPrefab.GetComponent<FunctionButtonStorage>())
-            //    yield return null;
-
             // Back
             if (!prefabExternalUpAFolderButton)
             {
@@ -9389,7 +9414,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
-                        RefreshContextMenu(300f,
+                        ShowContextMenu(300f,
                             new ButtonFunction("Create folder", () =>
                             {
                                 EditorManager.inst.ShowDialog("Folder Creator Popup");
@@ -9440,13 +9465,29 @@ namespace BetterLegacy.Editor.Managers
 
                     if (eventData.button == PointerEventData.InputButton.Right)
                     {
-                        RefreshContextMenu(300f,
+                        ShowContextMenu(300f,
+                            new ButtonFunction("Open folder", () =>
+                            {
+                                prefabPathField.text = path.Replace(RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/", "");
+                                UpdatePrefabPath(false);
+                            }),
                             new ButtonFunction("Create folder", () =>
                             {
                                 EditorManager.inst.ShowDialog("Folder Creator Popup");
                                 RefreshFolderCreator($"{RTFile.ApplicationDirectory}{prefabListPath}", () => UpdatePrefabPath(true));
                             }),
-                            new ButtonFunction("Paste", () => { }));
+                            new ButtonFunction(true),
+                            new ButtonFunction("Paste", () => { }),
+                            new ButtonFunction("Delete", () =>
+                            {
+                                ShowWarningPopup("Are you <b>100%</b> sure you want to delete this folder? This <b>CANNOT</b> be undone! Always make sure you have backups.", () =>
+                                {
+                                    Directory.Delete(path, true);
+                                    UpdatePrefabPath(true);
+                                    EditorManager.inst.DisplayNotification("Deleted folder!", 2f, EditorManager.NotificationType.Success);
+                                    HideWarningPopup();
+                                }, HideWarningPopup);
+                            }));
 
                         return;
                     }
@@ -9718,15 +9759,28 @@ namespace BetterLegacy.Editor.Managers
 
         #region Refresh Popups / Dialogs
 
-        public void RefreshContextMenu(float width, params ButtonFunction[] buttonFunctions)
+        public float contextButtonHeight = 37f;
+        public float contextSpacerHeight = 6f;
+        public void ShowContextMenu(float width, params ButtonFunction[] buttonFunctions)
         {
             contextMenu.transform.AsRT().anchoredPosition = Input.mousePosition * CoreHelper.ScreenScaleInverse;
-            contextMenu.transform.AsRT().sizeDelta = new Vector2(width, 37f * buttonFunctions.Length);
+            float height = 0f;
             contextMenu.SetActive(true);
             LSHelpers.DeleteChildren(contextMenuLayout);
             for (int i = 0; i < buttonFunctions.Length; i++)
             {
                 var buttonFunction = buttonFunctions[i];
+
+                if (buttonFunction.IsSpacer)
+                {
+                    var g = Creator.NewUIObject("sp", contextMenuLayout);
+                    var image = g.AddComponent<Image>();
+                    image.rectTransform.sizeDelta = new Vector2(0f, buttonFunction.SpacerSize);
+                    EditorThemeManager.ApplyGraphic(image, ThemeGroup.Background_3);
+                    height += contextSpacerHeight;
+                    continue;
+                }
+
                 var gameObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(contextMenuLayout);
                 var buttonStorage = gameObject.GetComponent<FunctionButtonStorage>();
 
@@ -9742,7 +9796,9 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
                 EditorThemeManager.ApplyGraphic(buttonStorage.text, ThemeGroup.Function_2_Text);
+                height += contextButtonHeight;
             }
+            contextMenu.transform.AsRT().sizeDelta = new Vector2(width, height);
         }
 
         public void RefreshFolderCreator(string path, Action onSubmit)
@@ -11594,6 +11650,12 @@ namespace BetterLegacy.Editor.Managers
 
         public class ButtonFunction
         {
+            public ButtonFunction(bool isSpacer, float spacerSize = 4f)
+            {
+                IsSpacer = isSpacer;
+                SpacerSize = spacerSize;
+            }
+
             public ButtonFunction(string name, Action action)
             {
                 Name = name;
@@ -11606,6 +11668,8 @@ namespace BetterLegacy.Editor.Managers
                 OnClick = onClick;
             }
 
+            public bool IsSpacer { get; set; }
+            public float SpacerSize { get; set; } = 4f;
             public string Name { get; set; }
             public int FontSize { get; set; } = 20;
             public Action Action { get; set; }

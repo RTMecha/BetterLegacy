@@ -783,7 +783,7 @@ namespace BetterLegacy.Editor.Managers
                 if (eventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                RTEditor.inst.RefreshContextMenu(400f,
+                RTEditor.inst.ShowContextMenu(400f,
                     new RTEditor.ButtonFunction("Use", () =>
                     {
                         if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => RTEventEditor.inst.SelectedKeyframes.Min(y => y.Type) == x.Type))
