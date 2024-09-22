@@ -1032,6 +1032,8 @@ namespace BetterLegacy.Components.Player
             }
         }
 
+        bool queuedBoost;
+
         void UpdateControls()
         {
             if (!CustomPlayer || !PlayerModel || !PlayerAlive)
@@ -1039,8 +1041,15 @@ namespace BetterLegacy.Components.Player
 
             if (CanMove && Actions != null)
             {
-                if (Actions.Boost.WasPressed && (JumpMode || CanBoost) && !LockBoost && (!JumpMode || (jumpCount == 0 || !colliding) && (currentJumpCount == Mathf.Clamp(jumpCount, -1, MaxJumpCount) || jumpBoostCount == -1 || currentJumpBoostCount < Mathf.Clamp(jumpBoostCount, -1, MaxJumpBoostCount))))
+                var boostWasPressed = Actions.Boost.WasPressed;
+
+                if (boostWasPressed && !CanBoost && !LockBoost)
+                    queuedBoost = true;
+
+                if ((boostWasPressed || queuedBoost) && (JumpMode || CanBoost) && !LockBoost && (!JumpMode || (jumpCount == 0 || !colliding) && (currentJumpCount == Mathf.Clamp(jumpCount, -1, MaxJumpCount) || jumpBoostCount == -1 || currentJumpBoostCount < Mathf.Clamp(jumpBoostCount, -1, MaxJumpBoostCount))))
                 {
+                    queuedBoost = false;
+
                     if (JumpMode)
                     {
                         if (PlayBoostSound && CanBoost)
