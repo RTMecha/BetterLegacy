@@ -32,6 +32,11 @@ namespace BetterLegacy.Configs
         public Setting<RTPlayer.TailUpdateMode> TailUpdateMode { get; set; }
 
         /// <summary>
+        /// If boosting should be queued when you press it during boost cooldown.
+        /// </summary>
+        public Setting<bool> QueueBoost { get; set; }
+        
+        /// <summary>
         /// Plays a little sound when you boost.
         /// </summary>
         public Setting<bool> PlaySoundB { get; set; }
@@ -104,6 +109,7 @@ namespace BetterLegacy.Configs
             #region General
 
             TailUpdateMode = BindEnum(this, "General", "Tail Update Mode", RTPlayer.TailUpdateMode.FixedUpdate, "Changes the way the tail updates movement. FixedUpdate is recommended if the game gets laggy, but otherwise Update / LateUpdate is good for a smooth tail.");
+            QueueBoost = Bind(this, "General", "Queue Boost", true, "If boosting should be queued when you press it during boost cooldown.");
 
             PlaySoundB = Bind(this, "General", "Play Boost Sound", true, "Plays a little sound when you boost.");
             PlaySoundR = Bind(this, "General", "Play Boost Recover Sound", false, "Plays a little sound when you can boost again.");

@@ -1043,8 +1043,10 @@ namespace BetterLegacy.Components.Player
             {
                 var boostWasPressed = Actions.Boost.WasPressed;
 
-                if (boostWasPressed && !CanBoost && !LockBoost)
+                if (boostWasPressed && !CanBoost && !LockBoost && PlayerConfig.Instance.QueueBoost.Value)
                     queuedBoost = true;
+                if (Actions.Boost.WasReleased)
+                    queuedBoost = false;
 
                 if ((boostWasPressed || queuedBoost) && (JumpMode || CanBoost) && !LockBoost && (!JumpMode || (jumpCount == 0 || !colliding) && (currentJumpCount == Mathf.Clamp(jumpCount, -1, MaxJumpCount) || jumpBoostCount == -1 || currentJumpBoostCount < Mathf.Clamp(jumpBoostCount, -1, MaxJumpBoostCount))))
                 {
