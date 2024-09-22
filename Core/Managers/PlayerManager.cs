@@ -126,7 +126,7 @@ namespace BetterLegacy.Core.Managers
             {
                 for (int i = 0; i < PlayerModelsIndex.Count; i++)
                 {
-                    PlayerModelsIndex[i] = "0";
+                    PlayerModelsIndex[i] = CoreHelper.InEditor ? "0" : LevelManager.CurrentLevel != null && LevelManager.CurrentLevel.IsVG ? "4" : "0";
                 }
                 yield break;
             }
@@ -315,7 +315,7 @@ namespace BetterLegacy.Core.Managers
                 CoreHelper.LogError("player.lspl file does not exist, setting to default player");
                 for (int i = 0; i < PlayerModelsIndex.Count; i++)
                 {
-                    PlayerModelsIndex[i] = "0";
+                    PlayerModelsIndex[i] = CoreHelper.InEditor ? "0" : LevelManager.CurrentLevel != null && LevelManager.CurrentLevel.IsVG ? "4" : "0";
                 }
             }
 
