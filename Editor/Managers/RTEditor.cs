@@ -3130,8 +3130,7 @@ namespace BetterLegacy.Editor.Managers
                 ShowContextMenu(300f,
                     new ButtonFunction("Create folder", () =>
                     {
-                        EditorManager.inst.ShowDialog("Folder Creator Popup");
-                        RefreshFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => UpdateEditorPath(true));
+                        ShowFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => { UpdateEditorPath(true); HideNameEditor(); });
                     }),
                     new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
                     new ButtonFunction("Paste", PasteLevel));
@@ -5098,7 +5097,7 @@ namespace BetterLegacy.Editor.Managers
                                 bm.events[i].Add(EventKeyframe.DeepCopy((EventKeyframe)beatmapObject.events[i][j]));
                         }
 
-                    }, false, true, "Keyframes");
+                    }, true, true, "Keyframes");
                 })); // Keyframes
                 GenerateButton(syncLayout.transform, new ButtonFunction("MOD", eventData =>
                 {
@@ -6546,7 +6545,7 @@ namespace BetterLegacy.Editor.Managers
         {
             if (eventData.button == PointerEventData.InputButton.Right)
             {
-                ShowContextMenu(600f,
+                ShowContextMenu(300f,
                     new ButtonFunction($"Sync {nameContext} via Search", () =>
                     {
                         ShowObjectSearch(beatmapObject =>
@@ -8266,6 +8265,12 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        Text folderCreatorTitle;
+        Text folderCreatorNameLabel;
+        InputField folderCreatorName;
+        Button folderCreatorSubmit;
+        Text folderCreatorSubmitText;
+
         void CreateFolderCreator()
         {
             try
@@ -8277,24 +8282,25 @@ namespace BetterLegacy.Editor.Managers
                 var folderCreatorPopup = folderCreator.transform.GetChild(0);
 
                 var folderCreatorPopupPanel = folderCreatorPopup.Find("Panel");
-                var folderCreatorPopupPanelTitle = folderCreatorPopupPanel.Find("Text").GetComponent<Text>();
-                folderCreatorPopupPanelTitle.text = "Folder Creator";
+                folderCreatorTitle = folderCreatorPopupPanel.Find("Text").GetComponent<Text>();
+                folderCreatorTitle.text = "Folder Creator";
 
                 var close = folderCreatorPopupPanel.Find("x").GetComponent<Button>();
                 close.onClick.ClearAll();
                 close.onClick.AddListener(() => EditorManager.inst.HideDialog("Folder Creator Popup"));
 
-                var folderNameLabel = folderCreatorPopup.Find("Level Name").GetComponent<Text>();
-                folderNameLabel.text = "New folder name";
+                folderCreatorNameLabel = folderCreatorPopup.Find("Level Name").GetComponent<Text>();
+                folderCreatorNameLabel.text = "New folder name";
 
-                var folderName = folderCreatorPopup.Find("level-name").GetComponent<InputField>();
-                folderName.onValueChanged.ClearAll();
-                folderName.text = "New Folder";
-                folderName.characterLimit = 0;
+                folderCreatorName = folderCreatorPopup.Find("level-name").GetComponent<InputField>();
+                folderCreatorName.onValueChanged.ClearAll();
+                folderCreatorName.text = "New Folder";
+                folderCreatorName.characterLimit = 0;
 
+                folderCreatorSubmit = folderCreatorPopup.Find("submit").GetComponent<Button>();
                 var submitImage = folderCreatorPopup.Find("submit").GetComponent<Image>();
-                var submitText = folderCreatorPopup.Find("submit/text").GetComponent<Text>();
-                submitText.text = "Create Folder";
+                folderCreatorSubmitText = folderCreatorPopup.Find("submit/text").GetComponent<Text>();
+                folderCreatorSubmitText.text = "Create Folder";
 
                 EditorThemeManager.AddGraphic(folderCreatorPopup.GetComponent<Image>(), ThemeGroup.Background_1, true);
                 EditorThemeManager.AddGraphic(folderCreatorPopupPanel.GetComponent<Image>(), ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
@@ -8302,12 +8308,12 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.AddSelectable(close, ThemeGroup.Close, true);
                 EditorThemeManager.AddGraphic(close.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Close_X);
 
-                EditorThemeManager.AddLightText(folderCreatorPopupPanelTitle);
-                EditorThemeManager.AddLightText(folderNameLabel);
-                EditorThemeManager.AddInputField(folderName);
+                EditorThemeManager.AddLightText(folderCreatorTitle);
+                EditorThemeManager.AddLightText(folderCreatorNameLabel);
+                EditorThemeManager.AddInputField(folderCreatorName);
 
                 EditorThemeManager.AddGraphic(submitImage, ThemeGroup.Function_1, true);
-                EditorThemeManager.AddGraphic(submitText, ThemeGroup.Function_1_Text);
+                EditorThemeManager.AddGraphic(folderCreatorSubmitText, ThemeGroup.Function_1_Text);
 
                 EditorHelper.AddEditorPopup("Folder Creator Popup", folderCreator);
             }
@@ -8454,8 +8460,7 @@ namespace BetterLegacy.Editor.Managers
                         ShowContextMenu(300f,
                             new ButtonFunction("Create folder", () =>
                             {
-                                EditorManager.inst.ShowDialog("Folder Creator Popup");
-                                RefreshFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => UpdateEditorPath(true));
+                                ShowFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => { UpdateEditorPath(true); HideNameEditor(); });
                             }),
                             new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
                             new ButtonFunction("Paste", PasteLevel));
@@ -8521,8 +8526,7 @@ namespace BetterLegacy.Editor.Managers
                                 }),
                                 new ButtonFunction("Create folder", () =>
                                 {
-                                    EditorManager.inst.ShowDialog("Folder Creator Popup");
-                                    RefreshFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => UpdateEditorPath(true));
+                                    ShowFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => { UpdateEditorPath(true); HideNameEditor(); });
                                 }),
                                 new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
                                 new ButtonFunction(true),
@@ -8666,8 +8670,7 @@ namespace BetterLegacy.Editor.Managers
                             new ButtonFunction(true),
                             new ButtonFunction("Create folder", () =>
                             {
-                                EditorManager.inst.ShowDialog("Folder Creator Popup");
-                                RefreshFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => UpdateEditorPath(true));
+                                ShowFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => { UpdateEditorPath(true); HideNameEditor(); });
                             }),
                             new ButtonFunction("Create template", () =>
                             {
@@ -9332,8 +9335,7 @@ namespace BetterLegacy.Editor.Managers
                         ShowContextMenu(300f,
                             new ButtonFunction("Create folder", () =>
                             {
-                                EditorManager.inst.ShowDialog("Folder Creator Popup");
-                                RefreshFolderCreator($"{RTFile.ApplicationDirectory}{prefabListPath}", () => UpdatePrefabPath(true));
+                                ShowFolderCreator($"{RTFile.ApplicationDirectory}{prefabListPath}", () => { UpdatePrefabPath(true); HideNameEditor(); });
                             }),
                             new ButtonFunction("Create prefab", () =>
                             {
@@ -9417,8 +9419,7 @@ namespace BetterLegacy.Editor.Managers
                         ShowContextMenu(300f,
                             new ButtonFunction("Create folder", () =>
                             {
-                                EditorManager.inst.ShowDialog("Folder Creator Popup");
-                                RefreshFolderCreator($"{RTFile.ApplicationDirectory}{prefabListPath}", () => UpdatePrefabPath(true));
+                                ShowFolderCreator($"{RTFile.ApplicationDirectory}{prefabListPath}", () => { UpdatePrefabPath(true); HideNameEditor(); });
                             }),
                             new ButtonFunction("Paste", RTPrefabEditor.inst.PastePrefab));
 
@@ -9473,8 +9474,7 @@ namespace BetterLegacy.Editor.Managers
                             }),
                             new ButtonFunction("Create folder", () =>
                             {
-                                EditorManager.inst.ShowDialog("Folder Creator Popup");
-                                RefreshFolderCreator($"{RTFile.ApplicationDirectory}{prefabListPath}", () => UpdatePrefabPath(true));
+                                ShowFolderCreator($"{RTFile.ApplicationDirectory}{prefabListPath}", () => { UpdatePrefabPath(true); HideNameEditor(); });
                             }),
                             new ButtonFunction(true),
                             new ButtonFunction("Paste", () => { }),
@@ -9804,21 +9804,42 @@ namespace BetterLegacy.Editor.Managers
             contextMenu.transform.AsRT().sizeDelta = new Vector2(width, height);
         }
 
+        public void ShowFolderCreator(string path, Action onSubmit)
+        {
+            EditorManager.inst.ShowDialog("Folder Creator Popup");
+            RefreshFolderCreator(path, onSubmit);
+        }
+
         public void RefreshFolderCreator(string path, Action onSubmit)
         {
-            var folderCreatorPopup = EditorManager.inst.GetDialog("Folder Creator Popup").Dialog.GetChild(0);
-            var folderName = folderCreatorPopup.Find("level-name").GetComponent<InputField>();
-            var submit = folderCreatorPopup.Find("submit").GetComponent<Button>();
-            submit.onClick.ClearAll();
-            submit.onClick.AddListener(() =>
+            RefreshNameEditor("Folder Creator", "New folder name", "Create Folder", () =>
             {
-                var directory = Path.Combine(path, RTFile.ValidateDirectory(folderName.text));
+                var directory = Path.Combine(path, RTFile.ValidateDirectory(folderCreatorName.text));
                 if (RTFile.DirectoryExists(directory))
                     return;
 
                 Directory.CreateDirectory(directory);
                 onSubmit?.Invoke();
             });
+        }
+
+        public void HideNameEditor() => EditorManager.inst.HideDialog("Folder Creator Popup");
+
+        public void ShowNameEditor(string title, string nameLabel, string submitText, Action onSubmit)
+        {
+            EditorManager.inst.ShowDialog("Folder Creator Popup");
+            RefreshNameEditor(title, nameLabel, submitText, onSubmit);
+        }
+
+        public void RefreshNameEditor(string title, string nameLabel, string submitText, Action onSubmit)
+        {
+            folderCreatorTitle.text = title;
+            folderCreatorNameLabel.text = nameLabel;
+            folderCreatorSubmitText.text = submitText;
+
+            folderCreatorSubmit.onClick.ClearAll();
+            folderCreatorSubmit.onClick.AddListener(() => { onSubmit?.Invoke(); });
+
         }
 
         public void ShowObjectSearch(Action<BeatmapObject> onSelect, bool clearParent = false)
@@ -11182,6 +11203,38 @@ namespace BetterLegacy.Editor.Managers
                 RotCloseDurationConfig = EditorConfig.Instance.WarningPopupRotCloseDuration,
                 RotOpenEaseConfig = EditorConfig.Instance.WarningPopupRotOpenEase,
                 RotCloseEaseConfig = EditorConfig.Instance.WarningPopupRotCloseEase,
+            },
+            new DialogAnimation("Folder Creator Popup")
+            {
+                ActiveConfig = EditorConfig.Instance.FilePopupActive,
+
+                PosActiveConfig = EditorConfig.Instance.FilePopupPosActive,
+                PosOpenConfig = EditorConfig.Instance.FilePopupPosOpen,
+                PosCloseConfig = EditorConfig.Instance.FilePopupPosClose,
+                PosOpenDurationConfig = EditorConfig.Instance.FilePopupPosOpenDuration,
+                PosCloseDurationConfig = EditorConfig.Instance.FilePopupPosCloseDuration,
+                PosXOpenEaseConfig = EditorConfig.Instance.FilePopupPosXOpenEase,
+                PosYOpenEaseConfig = EditorConfig.Instance.FilePopupPosYOpenEase,
+                PosXCloseEaseConfig = EditorConfig.Instance.FilePopupPosXCloseEase,
+                PosYCloseEaseConfig = EditorConfig.Instance.FilePopupPosYCloseEase,
+
+                ScaActiveConfig = EditorConfig.Instance.FilePopupScaActive,
+                ScaOpenConfig = EditorConfig.Instance.FilePopupScaOpen,
+                ScaCloseConfig = EditorConfig.Instance.FilePopupScaClose,
+                ScaOpenDurationConfig = EditorConfig.Instance.FilePopupScaOpenDuration,
+                ScaCloseDurationConfig = EditorConfig.Instance.FilePopupScaCloseDuration,
+                ScaXOpenEaseConfig = EditorConfig.Instance.FilePopupScaXOpenEase,
+                ScaYOpenEaseConfig = EditorConfig.Instance.FilePopupScaYOpenEase,
+                ScaXCloseEaseConfig = EditorConfig.Instance.FilePopupScaXCloseEase,
+                ScaYCloseEaseConfig = EditorConfig.Instance.FilePopupScaYCloseEase,
+
+                RotActiveConfig = EditorConfig.Instance.FilePopupRotActive,
+                RotOpenConfig = EditorConfig.Instance.FilePopupRotOpen,
+                RotCloseConfig = EditorConfig.Instance.FilePopupRotClose,
+                RotOpenDurationConfig = EditorConfig.Instance.FilePopupRotOpenDuration,
+                RotCloseDurationConfig = EditorConfig.Instance.FilePopupRotCloseDuration,
+                RotOpenEaseConfig = EditorConfig.Instance.FilePopupRotOpenEase,
+                RotCloseEaseConfig = EditorConfig.Instance.FilePopupRotCloseEase,
             },
             new DialogAnimation("Text Editor")
             {

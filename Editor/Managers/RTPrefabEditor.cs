@@ -105,8 +105,7 @@ namespace BetterLegacy.Editor.Managers
                     RTEditor.inst.ShowContextMenu(300f,
                         new RTEditor.ButtonFunction("Create folder", () =>
                         {
-                            EditorManager.inst.ShowDialog("Folder Creator Popup");
-                            RTEditor.inst.RefreshFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}", () => RTEditor.inst.UpdatePrefabPath(true));
+                            RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}", () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); });
                         }),
                         new RTEditor.ButtonFunction("Paste", PastePrefab)
                         );
@@ -2802,8 +2801,7 @@ namespace BetterLegacy.Editor.Managers
                             new RTEditor.ButtonFunction(true),
                             new RTEditor.ButtonFunction("Create folder", () =>
                             {
-                                EditorManager.inst.ShowDialog("Folder Creator Popup");
-                                RTEditor.inst.RefreshFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}", () => RTEditor.inst.UpdatePrefabPath(true));
+                                RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}", () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); });
                             }),
                             new RTEditor.ButtonFunction("Create prefab", () =>
                             {
