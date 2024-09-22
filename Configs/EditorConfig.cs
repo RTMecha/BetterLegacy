@@ -168,6 +168,7 @@ namespace BetterLegacy.Configs
         public Setting<bool> HideVisualElementsWhenObjectIsEmpty { get; set; }
         public Setting<Vector2Int> RenderDepthRange { get; set; }
         public Setting<bool> ShowMarkersInObjectEditor { get; set; }
+        public Setting<bool> OpenNewLevelCreatorIfNoLevels { get; set; }
 
         public Setting<Vector2> OpenLevelPosition { get; set; }
         public Setting<Vector2> OpenLevelScale { get; set; }
@@ -1327,6 +1328,7 @@ namespace BetterLegacy.Configs
             HideVisualElementsWhenObjectIsEmpty = Bind(this, "Editor GUI", "Hide Visual Elements When Object Is Empty", true, "If the Beatmap Object is empty, anything related to the visuals of the object doesn't show.");
             RenderDepthRange = Bind(this, "Editor GUI", "Render Depth Range", new Vector2Int(219, -98), "The range the Render Depth slider will show. Vanilla Legacy range is 30 and 0.");
             ShowMarkersInObjectEditor = Bind(this, "Editor GUI", "Show Markers in Object Editor", false, "If markers should display in the object editor. (Experimental)");
+            OpenNewLevelCreatorIfNoLevels = Bind(this, "Editor GUI", "Open New Level Creator If No Levels", false, "If the New Level Creator popup should open when there are no levels in a level folder.");
 
             OpenLevelPosition = Bind(this, "Editor GUI", "Open Level Position", Vector2.zero, "The position of the Open Level popup.");
             OpenLevelScale = Bind(this, "Editor GUI", "Open Level Scale", new Vector2(600f, 400f), "The size of the Open Level popup.");
