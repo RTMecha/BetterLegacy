@@ -22,7 +22,7 @@ namespace BetterLegacy
     /// <summary>
     /// Core plugin class.
     /// </summary>
-    [BepInPlugin("com.mecha.betterlegacy", "Better Legacy", "1.6.1")]
+    [BepInPlugin("com.mecha.betterlegacy", "Better Legacy", "1.6.2")]
     [BepInProcess("Project Arrhythmia.exe")]
     public class LegacyPlugin : BaseUnityPlugin
     {
@@ -37,6 +37,7 @@ namespace BetterLegacy
         public static List<BaseConfig> configs = new List<BaseConfig>();
 
         public static Sprite PALogoSprite { get; set; }
+        public static Sprite PAVGLogoSprite { get; set; }
         public static Sprite LockSprite { get; set; }
         public static Sprite EmptyObjectSprite { get; set; }
         public static Sprite AtanPlaceholder { get; set; }
@@ -141,6 +142,7 @@ namespace BetterLegacy
                 EmptyObjectSprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_empty.png");
                 AtanPlaceholder = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}atan-placeholder.png");
                 PALogoSprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}pa_logo.png");
+                PAVGLogoSprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}pa_logo_vg.png");
             }
             catch (Exception ex)
             {
