@@ -9763,7 +9763,6 @@ namespace BetterLegacy.Editor.Managers
         public float contextSpacerHeight = 6f;
         public void ShowContextMenu(float width, params ButtonFunction[] buttonFunctions)
         {
-            contextMenu.transform.AsRT().anchoredPosition = Input.mousePosition * CoreHelper.ScreenScaleInverse;
             float height = 0f;
             contextMenu.SetActive(true);
             LSHelpers.DeleteChildren(contextMenuLayout);
@@ -9798,6 +9797,10 @@ namespace BetterLegacy.Editor.Managers
                 EditorThemeManager.ApplyGraphic(buttonStorage.text, ThemeGroup.Function_2_Text);
                 height += contextButtonHeight;
             }
+
+            var pos = Input.mousePosition * CoreHelper.ScreenScaleInverse;
+            pos.y = Mathf.Clamp(pos.y, height, float.PositiveInfinity);
+            contextMenu.transform.AsRT().anchoredPosition = pos;
             contextMenu.transform.AsRT().sizeDelta = new Vector2(width, height);
         }
 
