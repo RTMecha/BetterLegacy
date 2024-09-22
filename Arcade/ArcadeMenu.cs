@@ -497,7 +497,7 @@ namespace BetterLegacy.Arcade
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
-                                if (Pages[(int)CurrentTab] != LocalLevelPageCount)
+                                if (Pages[(int)CurrentTab] != BrowserPageCount)
                                     pageField.inputField.text = (Pages[(int)CurrentTab] + 1).ToString();
                                 else
                                     AudioManager.inst.PlaySound("Block");
