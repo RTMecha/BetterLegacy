@@ -58,17 +58,14 @@ namespace BetterLegacy.Core
 
         public int this[int index]
         {
-            get
+            get => index switch
             {
-                switch (index)
-                {
-                    case 0: return Major;
-                    case 1: return Minor;
-                    case 2: return Patch;
-                    case 3: return IterationIndex;
-                    default: throw new IndexOutOfRangeException("Invalid Version index!");
-                }
-            }
+                0 => Major,
+                1 => Minor,
+                2 => Patch,
+                3 => IterationIndex,
+                _ => throw new IndexOutOfRangeException("Invalid Version index!"),
+            };
             set
             {
                 switch (index)
@@ -187,7 +184,7 @@ namespace BetterLegacy.Core
                 return true;
             if (a.Patch == b.Patch)
                 return true;
-            if (a.IterationIndex == b.IterationIndex)
+            if (!string.IsNullOrEmpty(a.Iteration) && !string.IsNullOrEmpty(b.Iteration) && a.IterationIndex == b.IterationIndex)
                 return true;
 
             return false;
