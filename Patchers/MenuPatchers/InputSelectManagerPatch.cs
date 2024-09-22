@@ -94,7 +94,7 @@ namespace BetterLegacy.Patchers
             __instance.randomStrings.Clear();
             for (int i = 0; i < 8; i++)
             {
-                __instance.randomStrings.Add($"<color=>{LSText.randomHex("666666")}{LSText.randomString(___randomLength)}</color>");
+                __instance.randomStrings.Add($"<color={LSText.randomHex("666666")}>{LSText.randomString(___randomLength)}</color>");
                 __instance.randomStrings2.Add(LSText.randomHex("666666"));
             }
             return false;
@@ -114,7 +114,7 @@ namespace BetterLegacy.Patchers
             {
                 if (Random.value < 0.5f)
                 {
-                    __instance.randomStrings[i] = $"<color=>{LSText.randomHex("666666")}{LSText.randomString(___randomLength)}</color>";
+                    __instance.randomStrings[i] = $"<color={LSText.randomHex("666666")}>{LSText.randomString(___randomLength)}</color>";
                     __instance.randomStrings2[i] = LSText.randomHex("666666");
                 }
             }
