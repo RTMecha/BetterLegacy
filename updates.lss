@@ -9,7 +9,6 @@
 - Changed level button text formatting, replaced song title with level name.
 - Made dev player model the default on alpha levels.
 - Changed dev player model boost cooldown to 0.
-- Fixed VG layering (hopefully).
 1.6.0 > [Sep 22, 2024]
 - GAME OPTIMIZATIONS!
   - Optimized a ton of level data code.
