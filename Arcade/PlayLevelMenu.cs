@@ -108,6 +108,18 @@ namespace BetterLegacy.Arcade
 
             elements.Add(new MenuImage
             {
+                id = "526526526",
+                name = "Type",
+                rect = RectValues.Default.AnchoredPosition(650f, 350f).SizeDelta(64f, 64f),
+                useOverrideColor = true,
+                overrideColor = Color.white,
+                opacity = 1f,
+                length = 0f,
+                icon = CurrentLevel.IsVG ? LegacyPlugin.PAVGLogoSprite : LegacyPlugin.PALogoSprite,
+            });
+
+            elements.Add(new MenuImage
+            {
                 id = "84682758635",
                 name = "Cover",
                 rect = RectValues.Default.AnchoredPosition(-500f, 100f).SizeDelta(600f, 600f),
