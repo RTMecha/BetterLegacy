@@ -870,7 +870,7 @@ namespace BetterLegacy.Core.Data
                     DataManager.inst.BeatmapThemeIDToIndex.Add(int.Parse(beatmapTheme.id), DataManager.inst.AllThemes.Count - 1);
                 }
 
-                if (!gameData.beatmapThemes.ContainsKey(jn["themes"][i]["id"]))
+                if (!string.IsNullOrEmpty(jn["themes"][i]["id"]) && !gameData.beatmapThemes.ContainsKey(jn["themes"][i]["id"]))
                     gameData.beatmapThemes.Add(jn["themes"][i]["id"], beatmapTheme);
             }
 
