@@ -697,6 +697,40 @@ namespace BetterLegacy.Configs
 
         #endregion
 
+        #region File Popup
+
+        public Setting<bool> FilePopupActive { get; set; }
+
+        public Setting<bool> FilePopupPosActive { get; set; }
+        public Setting<Vector2> FilePopupPosOpen { get; set; }
+        public Setting<Vector2> FilePopupPosClose { get; set; }
+        public Setting<Vector2> FilePopupPosOpenDuration { get; set; }
+        public Setting<Vector2> FilePopupPosCloseDuration { get; set; }
+        public Setting<Easings> FilePopupPosXOpenEase { get; set; }
+        public Setting<Easings> FilePopupPosXCloseEase { get; set; }
+        public Setting<Easings> FilePopupPosYOpenEase { get; set; }
+        public Setting<Easings> FilePopupPosYCloseEase { get; set; }
+
+        public Setting<bool> FilePopupScaActive { get; set; }
+        public Setting<Vector2> FilePopupScaOpen { get; set; }
+        public Setting<Vector2> FilePopupScaClose { get; set; }
+        public Setting<Vector2> FilePopupScaOpenDuration { get; set; }
+        public Setting<Vector2> FilePopupScaCloseDuration { get; set; }
+        public Setting<Easings> FilePopupScaXOpenEase { get; set; }
+        public Setting<Easings> FilePopupScaXCloseEase { get; set; }
+        public Setting<Easings> FilePopupScaYOpenEase { get; set; }
+        public Setting<Easings> FilePopupScaYCloseEase { get; set; }
+
+        public Setting<bool> FilePopupRotActive { get; set; }
+        public Setting<float> FilePopupRotOpen { get; set; }
+        public Setting<float> FilePopupRotClose { get; set; }
+        public Setting<float> FilePopupRotOpenDuration { get; set; }
+        public Setting<float> FilePopupRotCloseDuration { get; set; }
+        public Setting<Easings> FilePopupRotOpenEase { get; set; }
+        public Setting<Easings> FilePopupRotCloseEase { get; set; }
+
+        #endregion
+
         #region Text Editor
 
         public Setting<bool> TextEditorActive { get; set; }
@@ -1853,6 +1887,40 @@ namespace BetterLegacy.Configs
             WarningPopupRotCloseDuration = Bind(this, "Animations", "Warning Popup Close Rotation Duration", 0f, "The duration of closing.");
             WarningPopupRotOpenEase = BindEnum(this, "Animations", "Warning Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
             WarningPopupRotCloseEase = BindEnum(this, "Animations", "Warning Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
+
+            #endregion
+
+            #region Warning Popup
+
+            FilePopupActive = Bind(this, "Animations", "File Popup Active", true, "If the popup animation should play.");
+
+            FilePopupPosActive = Bind(this, "Animations", "File Popup Animate Position", false, "If position should be animated.");
+            FilePopupPosOpen = Bind(this, "Animations", "File Popup Open Position", Vector2.zero, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            FilePopupPosClose = Bind(this, "Animations", "File Popup Close Position", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            FilePopupPosOpenDuration = Bind(this, "Animations", "File Popup Open Position Duration", Vector2.zero, "The duration of opening.");
+            FilePopupPosCloseDuration = Bind(this, "Animations", "File Popup Close Position Duration", Vector2.zero, "The duration of closing.");
+            FilePopupPosXOpenEase = BindEnum(this, "Animations", "File Popup Open Position X Ease", Easings.Linear, "The easing of opening.");
+            FilePopupPosXCloseEase = BindEnum(this, "Animations", "File Popup Close Position X Ease", Easings.Linear, "The easing of opening.");
+            FilePopupPosYOpenEase = BindEnum(this, "Animations", "File Popup Open Position Y Ease", Easings.Linear, "The easing of opening.");
+            FilePopupPosYCloseEase = BindEnum(this, "Animations", "File Popup Close Position Y Ease", Easings.Linear, "The easing of opening.");
+
+            FilePopupScaActive = Bind(this, "Animations", "File Popup Animate Scale", true, "If scale should be animated.");
+            FilePopupScaOpen = Bind(this, "Animations", "File Popup Open Scale", Vector2.one, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            FilePopupScaClose = Bind(this, "Animations", "File Popup Close Scale", Vector2.zero, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            FilePopupScaOpenDuration = Bind(this, "Animations", "File Popup Open Scale Duration", new Vector2(0.6f, 0.6f), "The duration of opening.");
+            FilePopupScaCloseDuration = Bind(this, "Animations", "File Popup Close Scale Duration", new Vector2(0.1f, 0.1f), "The duration of closing.");
+            FilePopupScaXOpenEase = BindEnum(this, "Animations", "File Popup Open Scale X Ease", Easings.OutElastic, "The easing of opening.");
+            FilePopupScaXCloseEase = BindEnum(this, "Animations", "File Popup Close Scale X Ease", Easings.InCirc, "The easing of opening.");
+            FilePopupScaYOpenEase = BindEnum(this, "Animations", "File Popup Open Scale Y Ease", Easings.OutElastic, "The easing of opening.");
+            FilePopupScaYCloseEase = BindEnum(this, "Animations", "File Popup Close Scale Y Ease", Easings.InCirc, "The easing of opening.");
+
+            FilePopupRotActive = Bind(this, "Animations", "File Popup Animate Rotation", false, "If rotation should be animated.");
+            FilePopupRotOpen = Bind(this, "Animations", "File Popup Open Rotation", 0f, "Where the animation starts when the popup is closing and ends when the popup is opening.");
+            FilePopupRotClose = Bind(this, "Animations", "File Popup Close Rotation", 0f, "Where the animation starts when the popup is opening and ends when the popup is closing.");
+            FilePopupRotOpenDuration = Bind(this, "Animations", "File Popup Open Rotation Duration", 0f, "The duration of opening.");
+            FilePopupRotCloseDuration = Bind(this, "Animations", "File Popup Close Rotation Duration", 0f, "The duration of closing.");
+            FilePopupRotOpenEase = BindEnum(this, "Animations", "File Popup Open Rotation Ease", Easings.Linear, "The easing of opening.");
+            FilePopupRotCloseEase = BindEnum(this, "Animations", "File Popup Close Rotation Ease", Easings.Linear, "The easing of opening.");
 
             #endregion
 
