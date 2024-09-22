@@ -187,6 +187,7 @@ namespace BetterLegacy.Core.Data.Player
                     devPlayer.basePart.id = "4";
                     devPlayer.basePart.name = "DevPlus";
                     devPlayer.tailBase.mode = TailBase.TailMode.DevPlus;
+                    devPlayer.basePart.boostCooldown = 0f;
                 }
 
                 return devPlayer;
