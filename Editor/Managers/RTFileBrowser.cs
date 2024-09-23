@@ -410,7 +410,7 @@ namespace BetterLegacy.Editor.Managers
             }));
         }
 
-        void DestroyAudioPreviewAfterSeconds(float t) => currentDestroyPreviewCoroutine = CoreHelper.StartCoroutine(CoreHelper.PerformActionAfterSeconds(t, DestroyAudioPreview));
+        void DestroyAudioPreviewAfterSeconds(float t) => currentDestroyPreviewCoroutine = CoreHelper.StartCoroutine(CoreHelper.IPerformActionAfterSeconds(t, DestroyAudioPreview));
 
         void DestroyAudioPreview()
         {

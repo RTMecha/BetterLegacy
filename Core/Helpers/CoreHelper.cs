@@ -244,9 +244,19 @@ namespace BetterLegacy.Core.Helpers
         /// <returns>Returns a list of <see cref="Dropdown.OptionData"/> based on the string array.</returns>
         public static List<Dropdown.OptionData> StringToOptionData(params string[] str) => str.Select(x => new Dropdown.OptionData(x)).ToList();
 
-        public static IEnumerator PerformActionAfterSeconds(float t, Action action)
+        public static void PerformActionAfterSeconds(float t, Action action) => StartCoroutine(IPerformActionAfterSeconds(t, action));
+        
+        public static IEnumerator IPerformActionAfterSeconds(float t, Action action)
         {
             yield return new WaitForSeconds(t);
+            action?.Invoke();
+        }
+
+        public static void WaitUntil(Func<bool> func, Action action) => StartCoroutine(IWaitUntil(func, action));
+
+        public static IEnumerator IWaitUntil(Func<bool> func, Action action)
+        {
+            yield return new WaitUntil(func);
             action?.Invoke();
         }
 
