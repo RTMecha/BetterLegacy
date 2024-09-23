@@ -1,3 +1,9 @@
+1.6.3 > [Sep 23, 2024]
+- Fixed image objects having their origin break when they appear.
+- Added theme folder navigation.
+- Removed old arcade menus.
+- Re-implemented online Steam level viewing and the rest of the functions to the arcade menus.
+- Online Steam search, subscribing and unsubscribing now has better functionality.
 1.6.2 > [Sep 23, 2024]
 - Alpha layer hotfix.
 - Fixed Input select screen text not displaying correctly.
