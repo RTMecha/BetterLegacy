@@ -1,7 +1,9 @@
 ﻿using BetterLegacy.Components;
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Managers.Networking;
 using BetterLegacy.Core.Prefabs;
 using LSFunctions;
 using System;
@@ -26,15 +28,40 @@ namespace BetterLegacy.Editor.Managers
         {
             inst = this;
             title = transform.Find("Panel/Text").GetComponent<TextMeshProUGUI>();
+
+            try
+            {
+                transform.Find("content").gameObject.AddComponent<Button>();
+                contentContextMenu = transform.Find("content").gameObject.AddComponent<ContextClickable>();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
         }
+
+        ContextClickable contentContextMenu;
 
         public void UpdateBrowser(string _folder, string[] fileExtensions, Action<string> onSelectFile = null)
         {
+            contentContextMenu.onClick = null;
             if (!RTFile.DirectoryExists(_folder))
             {
                 EditorManager.inst.DisplayNotification("Folder doesn't exist.", 2f, EditorManager.NotificationType.Error);
                 return;
             }
+
+            contentContextMenu.onClick = eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                RTEditor.inst.ShowContextMenu(300f,
+                    new RTEditor.ButtonFunction("Create folder", () =>
+                    {
+                        RTEditor.inst.ShowFolderCreator(_folder, () => { UpdateBrowser(_folder, fileExtensions, onSelectFile); });
+                    }));
+            };
 
             title.text = $"<b>File Browser</b> ({FontManager.TextTranslater.ArrayToString(fileExtensions).ToLower()})";
 
@@ -73,6 +100,26 @@ namespace BetterLegacy.Editor.Managers
                 folderPrefabStorage.button.onClick.ClearAll();
                 folderPrefabStorage.button.onClick.AddListener(() => { UpdateBrowser(folder, fileExtensions, onSelectFile); });
 
+                var contextClickable = gameObject.AddComponent<ContextClickable>();
+                contextClickable.onClick = eventData =>
+                {
+                    if (eventData.button != PointerEventData.InputButton.Right)
+                        return;
+
+                    RTEditor.inst.ShowContextMenu(300f,
+                        new RTEditor.ButtonFunction("Open", () => { UpdateBrowser(folder, fileExtensions, onSelectFile); }),
+                        new RTEditor.ButtonFunction(true),
+                        new RTEditor.ButtonFunction("Create folder", () =>
+                        {
+                            RTEditor.inst.ShowFolderCreator(_folder, () => { UpdateBrowser(_folder, fileExtensions, onSelectFile); });
+                        }),
+                        new RTEditor.ButtonFunction("Create folder inside", () =>
+                        {
+                            RTEditor.inst.ShowFolderCreator(folder, () => { UpdateBrowser(folder, fileExtensions, onSelectFile); });
+                        })
+                        );
+                };
+
                 EditorThemeManager.ApplyGraphic(folderPrefabStorage.button.image, ThemeGroup.Folder_Button, true);
                 EditorThemeManager.ApplyGraphic(folderPrefabStorage.text, ThemeGroup.Folder_Button_Text);
             }
@@ -92,6 +139,31 @@ namespace BetterLegacy.Editor.Managers
                 folderPrefabStorage.button.onClick.ClearAll();
                 folderPrefabStorage.button.onClick.AddListener(() => { onSelectFile?.Invoke(fileInfoFolder.FullName); });
 
+                var contextClickable = gameObject.AddComponent<ContextClickable>();
+                contextClickable.onClick = eventData =>
+                {
+                    if (eventData.button != PointerEventData.InputButton.Right)
+                        return;
+
+                    if (fileExtensions.Any(x => x.ToLower() == ".wav" || x.ToLower() == ".ogg" || x.ToLower() == ".mp3"))
+                        RTEditor.inst.ShowContextMenu(300f,
+                            new RTEditor.ButtonFunction("Use", () => { onSelectFile?.Invoke(fileInfoFolder.FullName); }),
+                            new RTEditor.ButtonFunction("Preview", () => { PreviewAudio(fileInfoFolder.FullName); }),
+                            new RTEditor.ButtonFunction("Create folder", () =>
+                            {
+                                RTEditor.inst.ShowFolderCreator(_folder, () => { UpdateBrowser(_folder, fileExtensions, onSelectFile); });
+                            })
+                            );
+                    else
+                        RTEditor.inst.ShowContextMenu(300f,
+                            new RTEditor.ButtonFunction("Use", () => { onSelectFile?.Invoke(fileInfoFolder.FullName); }),
+                            new RTEditor.ButtonFunction("Create folder", () =>
+                            {
+                                RTEditor.inst.ShowFolderCreator(_folder, () => { UpdateBrowser(_folder, fileExtensions, onSelectFile); });
+                            })
+                            );
+                };
+
                 EditorThemeManager.ApplyGraphic(folderPrefabStorage.button.image, ThemeGroup.File_Button, true);
                 EditorThemeManager.ApplyGraphic(folderPrefabStorage.text, ThemeGroup.File_Button_Text);
             }
@@ -101,11 +173,24 @@ namespace BetterLegacy.Editor.Managers
 
         public void UpdateBrowser(string _folder, string fileExtension, string specificName = "", Action<string> onSelectFile = null)
         {
+            contentContextMenu.onClick = null;
             if (!RTFile.DirectoryExists(_folder))
             {
                 EditorManager.inst.DisplayNotification("Folder doesn't exist.", 2f, EditorManager.NotificationType.Error);
                 return;
             }
+
+            contentContextMenu.onClick = eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                RTEditor.inst.ShowContextMenu(300f,
+                    new RTEditor.ButtonFunction("Create folder", () =>
+                    {
+                        RTEditor.inst.ShowFolderCreator(_folder, () => { UpdateBrowser(_folder, fileExtension, specificName, onSelectFile); });
+                    }));
+            };
 
             title.text = $"<b>File Browser</b> ({fileExtension.ToLower()})";
 
@@ -145,6 +230,26 @@ namespace BetterLegacy.Editor.Managers
                 folderPrefabStorage.button.onClick.ClearAll();
                 folderPrefabStorage.button.onClick.AddListener(() => { UpdateBrowser(folder, fileExtension, specificName, onSelectFile); });
 
+                var contextClickable = gameObject.AddComponent<ContextClickable>();
+                contextClickable.onClick = eventData =>
+                {
+                    if (eventData.button != PointerEventData.InputButton.Right)
+                        return;
+
+                    RTEditor.inst.ShowContextMenu(300f,
+                        new RTEditor.ButtonFunction("Open", () => { UpdateBrowser(folder, fileExtension, specificName, onSelectFile); }),
+                        new RTEditor.ButtonFunction(true),
+                        new RTEditor.ButtonFunction("Create folder", () =>
+                        {
+                            RTEditor.inst.ShowFolderCreator(_folder, () => { UpdateBrowser(_folder, fileExtension, specificName, onSelectFile); });
+                        }),
+                        new RTEditor.ButtonFunction("Create folder inside", () =>
+                        {
+                            RTEditor.inst.ShowFolderCreator(folder, () => { UpdateBrowser(folder, fileExtension, specificName, onSelectFile); });
+                        })
+                        );
+                };
+
                 EditorThemeManager.ApplyGraphic(folderPrefabStorage.button.image, ThemeGroup.Folder_Button, true);
                 EditorThemeManager.ApplyGraphic(folderPrefabStorage.text, ThemeGroup.Folder_Button_Text);
             }
@@ -158,11 +263,36 @@ namespace BetterLegacy.Editor.Managers
                 if (fileInfoFolder.Extension.ToLower() != fileExtension.ToLower() || !(specificName == "" || specificName.ToLower() + fileExtension.ToLower() == name.ToLower()))
                     continue;
 
-                    var gameObject = filePrefab.Duplicate(viewport, name);
-                    var folderPrefabStorage = gameObject.GetComponent<FunctionButtonStorage>();
-                    folderPrefabStorage.text.text = name;
-                    folderPrefabStorage.button.onClick.ClearAll();
-                    folderPrefabStorage.button.onClick.AddListener(() => { onSelectFile?.Invoke(fileInfoFolder.FullName); });
+                var gameObject = filePrefab.Duplicate(viewport, name);
+                var folderPrefabStorage = gameObject.GetComponent<FunctionButtonStorage>();
+                folderPrefabStorage.text.text = name;
+                folderPrefabStorage.button.onClick.ClearAll();
+                folderPrefabStorage.button.onClick.AddListener(() => { onSelectFile?.Invoke(fileInfoFolder.FullName); });
+
+                var contextClickable = gameObject.AddComponent<ContextClickable>();
+                contextClickable.onClick = eventData =>
+                {
+                    if (eventData.button != PointerEventData.InputButton.Right)
+                        return;
+
+                    if (fileExtension.ToLower() == ".wav" || fileExtension.ToLower() == ".ogg" || fileExtension.ToLower() == ".mp3")
+                        RTEditor.inst.ShowContextMenu(300f,
+                            new RTEditor.ButtonFunction("Use", () => { onSelectFile?.Invoke(fileInfoFolder.FullName); }),
+                            new RTEditor.ButtonFunction("Preview", () => { PreviewAudio(fileInfoFolder.FullName); }),
+                            new RTEditor.ButtonFunction("Create folder", () =>
+                            {
+                                RTEditor.inst.ShowFolderCreator(_folder, () => { UpdateBrowser(_folder, fileExtension, specificName, onSelectFile); });
+                            })
+                            );
+                    else
+                        RTEditor.inst.ShowContextMenu(300f,
+                            new RTEditor.ButtonFunction("Use", () => { onSelectFile?.Invoke(fileInfoFolder.FullName); }),
+                            new RTEditor.ButtonFunction("Create folder", () =>
+                            {
+                                RTEditor.inst.ShowFolderCreator(_folder, () => { UpdateBrowser(_folder, fileExtension, specificName, onSelectFile); });
+                            })
+                            );
+                };
 
                 EditorThemeManager.ApplyGraphic(folderPrefabStorage.button.image, ThemeGroup.File_Button, true);
                 EditorThemeManager.ApplyGraphic(folderPrefabStorage.text, ThemeGroup.File_Button_Text);
@@ -173,11 +303,24 @@ namespace BetterLegacy.Editor.Managers
 
         public void UpdateBrowser(string _folder, string specificName = "", Action<string> onSelectFolder = null)
         {
+            contentContextMenu.onClick = null;
             if (!RTFile.DirectoryExists(_folder))
             {
                 EditorManager.inst.DisplayNotification("Folder doesn't exist.", 2f, EditorManager.NotificationType.Error);
                 return;
             }
+
+            contentContextMenu.onClick = eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                RTEditor.inst.ShowContextMenu(300f,
+                    new RTEditor.ButtonFunction("Create folder", () =>
+                    {
+                        RTEditor.inst.ShowFolderCreator(_folder, () => { UpdateBrowser(_folder, specificName, onSelectFolder); });
+                    }));
+            };
 
             title.text = $"<b>File Browser</b> (Right click on a folder to use)";
 
@@ -216,11 +359,25 @@ namespace BetterLegacy.Editor.Managers
                 folderPrefabStorage.button.onClick.ClearAll();
                 folderPrefabStorage.button.onClick.AddListener(() => { UpdateBrowser(folder, specificName, onSelectFolder); });
 
-                var clickable = gameObject.AddComponent<Clickable>();
-                clickable.onDown = pointerEventData =>
+                var contextClickable = gameObject.AddComponent<ContextClickable>();
+                contextClickable.onClick = eventData =>
                 {
-                    if (pointerEventData.button == PointerEventData.InputButton.Right)
-                        onSelectFolder?.Invoke(folder);
+                    if (eventData.button != PointerEventData.InputButton.Right)
+                        return;
+
+                    RTEditor.inst.ShowContextMenu(300f,
+                        new RTEditor.ButtonFunction("Use", () => { onSelectFolder?.Invoke(folder); }),
+                        new RTEditor.ButtonFunction("Open", () => { UpdateBrowser(folder, specificName, onSelectFolder); }),
+                        new RTEditor.ButtonFunction(true),
+                        new RTEditor.ButtonFunction("Create folder", () =>
+                        {
+                            RTEditor.inst.ShowFolderCreator(_folder, () => { UpdateBrowser(_folder, specificName, onSelectFolder); });
+                        }),
+                        new RTEditor.ButtonFunction("Create folder inside", () =>
+                        {
+                            RTEditor.inst.ShowFolderCreator(folder, () => { UpdateBrowser(folder, specificName, onSelectFolder); });
+                        })
+                        );
                 };
 
                 EditorThemeManager.ApplyGraphic(folderPrefabStorage.button.image, ThemeGroup.Folder_Button, true);
@@ -229,6 +386,45 @@ namespace BetterLegacy.Editor.Managers
 
             folderBar.text = defaultDir;
         }
+
+        void PreviewAudio(string file)
+        {
+            CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip($"file://{file}", RTFile.GetAudioType(file), audioClip =>
+            {
+                CoreHelper.ReturnToUnity(() =>
+                {
+                    var length = EditorConfig.Instance.FileBrowserAudioPreviewLength.Value;
+                    DestroyAudioPreview();
+                    if (currentDestroyPreviewCoroutine != null)
+                        StopCoroutine(currentDestroyPreviewCoroutine);
+                    currentDestroyPreviewCoroutine = null;
+                    currentPreview = Camera.main.gameObject.AddComponent<AudioSource>();
+                    currentPreview.clip = audioClip;
+                    currentPreview.playOnAwake = true;
+                    currentPreview.loop = true;
+                    currentPreview.volume = AudioManager.inst.sfxVol;
+                    currentPreview.time = length < 0f || audioClip.length <= length ? 0f : UnityEngine.Random.Range(0f, audioClip.length);
+                    currentPreview.Play();
+                    DestroyAudioPreviewAfterSeconds(Mathf.Clamp(length, 0f, audioClip.length));
+                });
+            }));
+        }
+
+        void DestroyAudioPreviewAfterSeconds(float t) => currentDestroyPreviewCoroutine = CoreHelper.StartCoroutine(CoreHelper.PerformActionAfterSeconds(t, DestroyAudioPreview));
+
+        void DestroyAudioPreview()
+        {
+            if (!currentPreview)
+                return;
+
+            CoreHelper.Destroy(currentPreview);
+            currentPreview = null;
+            currentDestroyPreviewCoroutine = null;
+        }
+
+        Coroutine currentDestroyPreviewCoroutine;
+
+        AudioSource currentPreview;
 
         public Transform viewport;
 
