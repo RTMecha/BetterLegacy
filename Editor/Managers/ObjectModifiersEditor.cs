@@ -350,6 +350,47 @@ namespace BetterLegacy.Editor.Managers
                     continue;
                 }
 
+                gameObject.AddComponent<Button>();
+                var modifierContextMenu = gameObject.AddComponent<ContextClickable>();
+                modifierContextMenu.onClick = eventData =>
+                {
+                    if (eventData.button != PointerEventData.InputButton.Right)
+                        return;
+
+                    RTEditor.inst.ShowContextMenu(300f,
+                        new RTEditor.ButtonFunction("Add", () =>
+                        {
+                            EditorManager.inst.ShowDialog("Default Modifiers Popup");
+                            RefreshDefaultModifiersList(beatmapObject);
+                        }),
+                        new RTEditor.ButtonFunction("Copy", () =>
+                        {
+                            copiedModifier = Modifier<BeatmapObject>.DeepCopy(modifier, beatmapObject);
+                            StartCoroutine(RenderModifiers(beatmapObject));
+                            EditorManager.inst.DisplayNotification("Copied Modifier!", 1.5f, EditorManager.NotificationType.Success);
+                        }),
+                        new RTEditor.ButtonFunction("Paste", () =>
+                        {
+                            if (copiedModifier == null)
+                                return;
+
+                            beatmapObject.modifiers.Add(Modifier<BeatmapObject>.DeepCopy(copiedModifier, beatmapObject));
+                            StartCoroutine(RenderModifiers(beatmapObject));
+                            EditorManager.inst.DisplayNotification("Pasted Modifier!", 1.5f, EditorManager.NotificationType.Success);
+                        }),
+                        new RTEditor.ButtonFunction("Delete", () =>
+                        {
+                            beatmapObject.modifiers.RemoveAt(index);
+                            beatmapObject.reactivePositionOffset = Vector3.zero;
+                            beatmapObject.reactiveScaleOffset = Vector3.zero;
+                            beatmapObject.reactiveRotationOffset = 0f;
+                            Updater.UpdateObject(beatmapObject);
+                            StartCoroutine(RenderModifiers(beatmapObject));
+                        }),
+                        new RTEditor.ButtonFunction(true),
+                        new RTEditor.ButtonFunction("Update Modifier", () => { modifier.active = false; }));
+                };
+
                 var cmd = modifier.commands[0];
                 switch (cmd)
                 {
@@ -393,37 +434,69 @@ namespace BetterLegacy.Editor.Managers
                     case "playSound":
                         {
                             var str = StringGenerator(modifier, layout, "Path", 0);
-                            var search = str.transform.Find("Input").gameObject.AddComponent<Clickable>();
+                            var search = str.transform.Find("Input").gameObject.AddComponent<ContextClickable>();
                             search.onClick = pointerEventData =>
                             {
                                 if (pointerEventData.button != PointerEventData.InputButton.Right)
                                     return;
 
-                                EditorManager.inst.ShowDialog("Browser Popup");
-
-                                var isGlobal = modifier.commands.Count > 1 && Parser.TryParse(modifier.commands[1], false);
-                                var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/soundlibrary") ?
-                                                RTFile.ApplicationDirectory + "beatmaps/soundlibrary" : System.IO.Path.GetDirectoryName(RTFile.BasePath);
-
-                                if (isGlobal && !RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/soundlibrary"))
-                                {
-                                    EditorManager.inst.DisplayNotification("soundlibrary folder does not exist! If you want to have audio take from a global folder, make sure you create a soundlibrary folder inside your beatmaps folder and put your sounds in there.", 12f, EditorManager.NotificationType.Error);
-                                    return;
-                                }
-
-                                RTFileBrowser.inst.UpdateBrowser(directory, new string[] { ".wav", ".ogg", ".mp3" }, onSelectFile: _val =>
-                                {
-                                    var global = Parser.TryParse(modifier.commands[1], false);
-
-                                    if (_val.Replace("\\", "/").Contains(global ? RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/soundlibrary/" : GameManager.inst.basePath.Replace("\\", "/")))
+                                RTEditor.inst.ShowContextMenu(300f,
+                                    new RTEditor.ButtonFunction("Use Local Browser", () =>
                                     {
-                                        layout.Find("Path/Input").GetComponent<InputField>().text = _val.Replace("\\", "/").Replace(global ? RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/soundlibrary/" : GameManager.inst.basePath.Replace("\\", "/"), "");
-                                        EditorManager.inst.HideDialog("Browser Popup");
-                                        return;
-                                    }
+                                        var isGlobal = modifier.commands.Count > 1 && Parser.TryParse(modifier.commands[1], false);
+                                        var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/soundlibrary") ?
+                                                        RTFile.ApplicationDirectory + "beatmaps/soundlibrary" : System.IO.Path.GetDirectoryName(RTFile.BasePath);
 
-                                    EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                                });
+                                        if (isGlobal && !RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/soundlibrary"))
+                                        {
+                                            EditorManager.inst.DisplayNotification("soundlibrary folder does not exist! If you want to have audio take from a global folder, make sure you create a soundlibrary folder inside your beatmaps folder and put your sounds in there.", 12f, EditorManager.NotificationType.Error);
+                                            return;
+                                        }
+
+                                        var result = Crosstales.FB.FileBrowser.OpenSingleFile("Select a sound to use!", directory, "wav", "ogg", "mp3");
+                                        if (string.IsNullOrEmpty(result))
+                                            return;
+
+                                        var global = Parser.TryParse(modifier.commands[1], false);
+
+                                        if (result.Replace("\\", "/").Contains(global ? RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/soundlibrary/" : GameManager.inst.basePath.Replace("\\", "/")))
+                                        {
+                                            str.transform.Find("Input").GetComponent<InputField>().text = result.Replace("\\", "/").Replace(global ? RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/soundlibrary/" : GameManager.inst.basePath.Replace("\\", "/"), "");
+                                            EditorManager.inst.HideDialog("Browser Popup");
+                                            return;
+                                        }
+
+                                        EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                                    }),
+                                    new RTEditor.ButtonFunction("Use In-game Browser", () =>
+                                    {
+                                        EditorManager.inst.ShowDialog("Browser Popup");
+
+                                        var isGlobal = modifier.commands.Count > 1 && Parser.TryParse(modifier.commands[1], false);
+                                        var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/soundlibrary") ?
+                                                        RTFile.ApplicationDirectory + "beatmaps/soundlibrary" : System.IO.Path.GetDirectoryName(RTFile.BasePath);
+
+                                        if (isGlobal && !RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/soundlibrary"))
+                                        {
+                                            EditorManager.inst.DisplayNotification("soundlibrary folder does not exist! If you want to have audio take from a global folder, make sure you create a soundlibrary folder inside your beatmaps folder and put your sounds in there.", 12f, EditorManager.NotificationType.Error);
+                                            return;
+                                        }
+
+                                        RTFileBrowser.inst.UpdateBrowser(directory, new string[] { ".wav", ".ogg", ".mp3" }, onSelectFile: _val =>
+                                        {
+                                            var global = Parser.TryParse(modifier.commands[1], false);
+
+                                            if (_val.Replace("\\", "/").Contains(global ? RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/soundlibrary/" : GameManager.inst.basePath.Replace("\\", "/")))
+                                            {
+                                                str.transform.Find("Input").GetComponent<InputField>().text = _val.Replace("\\", "/").Replace(global ? RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/soundlibrary/" : GameManager.inst.basePath.Replace("\\", "/"), "");
+                                                EditorManager.inst.HideDialog("Browser Popup");
+                                                return;
+                                            }
+
+                                            EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                                        });
+                                    })
+                                    );
                             };
                             BoolGenerator(modifier, layout, "Global", 1, false);
                             SingleGenerator(modifier, layout, "Pitch", 2, 1f);
@@ -435,9 +508,9 @@ namespace BetterLegacy.Editor.Managers
                     case "playSoundOnline":
                         {
                             StringGenerator(modifier, layout, "URL", 0);
-                            SingleGenerator(modifier, layout, "Pitch", 2, 1f);
-                            SingleGenerator(modifier, layout, "Volume", 3, 1f);
-                            BoolGenerator(modifier, layout, "Loop", 4, false);
+                            SingleGenerator(modifier, layout, "Pitch", 1, 1f);
+                            SingleGenerator(modifier, layout, "Volume", 2, 1f);
+                            BoolGenerator(modifier, layout, "Loop", 3, false);
 
                             break;
                         }
@@ -478,40 +551,70 @@ namespace BetterLegacy.Editor.Managers
                         }
                     case "audioSource":
                         {
-                            var path = StringGenerator(modifier, layout, "Path", 0);
+                            var str = StringGenerator(modifier, layout, "Path", 0);
+                            var search = str.transform.Find("Input").gameObject.AddComponent<Clickable>();
+                            search.onClick = pointerEventData =>
                             {
-                                var search = path.transform.Find("Input").gameObject.AddComponent<Clickable>();
-                                search.onClick = pointerEventData =>
-                                {
-                                    if (pointerEventData.button != PointerEventData.InputButton.Right)
-                                        return;
-
-                                    EditorManager.inst.ShowDialog("Browser Popup");
-
-                                    var isGlobal = modifier.commands.Count > 1 && Parser.TryParse(modifier.commands[1], false);
-                                    var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/soundlibrary") ?
-                                                    RTFile.ApplicationDirectory + "beatmaps/soundlibrary" : System.IO.Path.GetDirectoryName(RTFile.BasePath);
-
-                                    if (isGlobal && !RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/soundlibrary"))
+                                if (pointerEventData.button != PointerEventData.InputButton.Right)
+                                    return;
+                                RTEditor.inst.ShowContextMenu(300f,
+                                    new RTEditor.ButtonFunction("Use Local Browser", () =>
                                     {
-                                        EditorManager.inst.DisplayNotification("soundlibrary folder does not exist! If you want to have audio take from a global folder, make sure you create a soundlibrary folder inside your beatmaps folder and put your sounds in there.", 12f, EditorManager.NotificationType.Error);
-                                    }
+                                        var isGlobal = modifier.commands.Count > 1 && Parser.TryParse(modifier.commands[1], false);
+                                        var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/soundlibrary") ?
+                                                        RTFile.ApplicationDirectory + "beatmaps/soundlibrary" : System.IO.Path.GetDirectoryName(RTFile.BasePath);
 
-                                    RTFileBrowser.inst.UpdateBrowser(directory, new string[] { ".wav", ".ogg", ".mp3" }, onSelectFile: _val =>
-                                    {
+                                        if (isGlobal && !RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/soundlibrary"))
+                                        {
+                                            EditorManager.inst.DisplayNotification("soundlibrary folder does not exist! If you want to have audio take from a global folder, make sure you create a soundlibrary folder inside your beatmaps folder and put your sounds in there.", 12f, EditorManager.NotificationType.Error);
+                                            return;
+                                        }
+
+                                        var result = Crosstales.FB.FileBrowser.OpenSingleFile("Select a sound to use!", directory, "wav", "ogg", "mp3");
+                                        if (string.IsNullOrEmpty(result))
+                                            return;
+
                                         var global = Parser.TryParse(modifier.commands[1], false);
 
-                                        if (_val.Replace("\\", "/").Contains(global ? RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/soundlibrary/" : GameManager.inst.basePath.Replace("\\", "/")))
+                                        if (result.Replace("\\", "/").Contains(global ? RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/soundlibrary/" : GameManager.inst.basePath.Replace("\\", "/")))
                                         {
-                                            layout.Find("Path/Input").GetComponent<InputField>().text = _val.Replace("\\", "/").Replace(global ? RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/soundlibrary/" : GameManager.inst.basePath.Replace("\\", "/"), "");
+                                            str.transform.Find("Input").GetComponent<InputField>().text = result.Replace("\\", "/").Replace(global ? RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/soundlibrary/" : GameManager.inst.basePath.Replace("\\", "/"), "");
                                             EditorManager.inst.HideDialog("Browser Popup");
                                             return;
                                         }
 
                                         EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
-                                    });
-                                };
-                            }
+                                    }),
+                                    new RTEditor.ButtonFunction("Use In-game Browser", () =>
+                                    {
+                                        EditorManager.inst.ShowDialog("Browser Popup");
+
+                                        var isGlobal = modifier.commands.Count > 1 && Parser.TryParse(modifier.commands[1], false);
+                                        var directory = isGlobal && RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/soundlibrary") ?
+                                                        RTFile.ApplicationDirectory + "beatmaps/soundlibrary" : System.IO.Path.GetDirectoryName(RTFile.BasePath);
+
+                                        if (isGlobal && !RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/soundlibrary"))
+                                        {
+                                            EditorManager.inst.DisplayNotification("soundlibrary folder does not exist! If you want to have audio take from a global folder, make sure you create a soundlibrary folder inside your beatmaps folder and put your sounds in there.", 12f, EditorManager.NotificationType.Error);
+                                            return;
+                                        }
+
+                                        RTFileBrowser.inst.UpdateBrowser(directory, new string[] { ".wav", ".ogg", ".mp3" }, onSelectFile: _val =>
+                                        {
+                                            var global = Parser.TryParse(modifier.commands[1], false);
+
+                                            if (_val.Replace("\\", "/").Contains(global ? RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/soundlibrary/" : GameManager.inst.basePath.Replace("\\", "/")))
+                                            {
+                                                str.transform.Find("Input").GetComponent<InputField>().text = _val.Replace("\\", "/").Replace(global ? RTFile.ApplicationDirectory.Replace("\\", "/") + "beatmaps/soundlibrary/" : GameManager.inst.basePath.Replace("\\", "/"), "");
+                                                EditorManager.inst.HideDialog("Browser Popup");
+                                                return;
+                                            }
+
+                                            EditorManager.inst.DisplayNotification($"Path does not contain the proper directory.", 2f, EditorManager.NotificationType.Warning);
+                                        });
+                                    })
+                                    );
+                            };
                             BoolGenerator(modifier, layout, "Global", 1, false);
 
                             break;
