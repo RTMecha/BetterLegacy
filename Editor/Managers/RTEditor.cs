@@ -4085,6 +4085,7 @@ namespace BetterLegacy.Editor.Managers
             var scrollView = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View").Duplicate(dataLeft);
 
             var parent = scrollView.transform.Find("Viewport/Content");
+            multiObjectContent = parent;
 
             LSHelpers.DeleteChildren(parent);
 
@@ -4117,9 +4118,10 @@ namespace BetterLegacy.Editor.Managers
 
             Destroy(dataLeft.GetComponent<VerticalLayoutGroup>());
 
+            GenerateLabels(parent, 32f, new LabelSettings("- Main Properties -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
             // Layers
             {
-                GenerateLabels(parent, 32f, "Set Group Layer");
+                GenerateLabels(parent, 32f, "Set Group Editor Layer");
 
                 var inputFieldStorage = GenerateInputField(parent, "layer", "1", "Enter layer...", true, true);
                 inputFieldStorage.GetComponent<HorizontalLayoutGroup>().spacing = 0f;
@@ -4156,7 +4158,7 @@ namespace BetterLegacy.Editor.Managers
 
             // Depth
             {
-                GenerateLabels(parent, 32f, "Set Group Depth");
+                GenerateLabels(parent, 32f, "Set Group Render Depth");
 
                 var inputFieldStorage = GenerateInputField(parent, "depth", "1", "Enter depth...", true);
                 inputFieldStorage.leftButton.onClick.NewListener(() =>
@@ -4413,6 +4415,9 @@ namespace BetterLegacy.Editor.Managers
                 EditorHelper.SetComplexity(multiNameSet, Complexity.Advanced);
             }
 
+            GeneratePad(parent);
+            GenerateLabels(parent, 32f, new LabelSettings("- Actions -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
+
             // Clear data
             {
                 var labels = GenerateLabels(parent, 32f, "Clear data from objects");
@@ -4526,6 +4531,9 @@ namespace BetterLegacy.Editor.Managers
                 EditorHelper.SetComplexity(labels, Complexity.Normal);
                 EditorHelper.SetComplexity(buttons1, Complexity.Normal);
             }
+
+            GeneratePad(parent);
+            GenerateLabels(parent, 32f, new LabelSettings("- Object Properties -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
 
             // Autokill Type
             {
@@ -4882,6 +4890,12 @@ namespace BetterLegacy.Editor.Managers
                 EditorHelper.SetComplexity(buttons2, Complexity.Normal);
             }
 
+            // Shape
+            {
+                GenerateLabels(parent, 32f, "Shape");
+                RenderMultiShape();
+            }
+
             // Assign Objects to Prefab
             {
                 var labels = GenerateLabels(parent, 32f, "Assign Objects to Prefab");
@@ -4905,6 +4919,9 @@ namespace BetterLegacy.Editor.Managers
                 EditorHelper.SetComplexity(labels, Complexity.Normal);
                 EditorHelper.SetComplexity(buttons1, Complexity.Normal);
             }
+
+            GeneratePad(parent);
+            GenerateLabels(parent, 32f, new LabelSettings("- Toggles -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
 
             // Lock
             {
@@ -5047,6 +5064,9 @@ namespace BetterLegacy.Editor.Managers
                 EditorHelper.SetComplexity(buttons2, Complexity.Advanced);
             }
 
+            GeneratePad(parent);
+            GenerateLabels(parent, 32f, new LabelSettings("- Pasting -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
+
             // Paste Modifier
             {
                 var labels = GenerateLabels(parent, 32f, "Paste Modifier to Selected");
@@ -5073,53 +5093,34 @@ namespace BetterLegacy.Editor.Managers
             {
                 var labels = GenerateLabels(parent, 32f, "Paste Keyframes to Selected");
                 var buttons1 = GenerateButtons(parent, 32f, 8f,
-                    new ButtonFunction("Paste", () =>
-                    {
-                        var kfs = ObjectEditor.inst.copiedObjectKeyframes;
-
-                        if (kfs.Count <= 0)
-                        {
-                            EditorManager.inst.DisplayNotification("No copied keyframes yet!", 2f, EditorManager.NotificationType.Warning);
-                            return;
-                        }
-                        foreach (var beatmapObject in ObjectEditor.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
-                        {
-                            var ids = new List<string>();
-                            for (int i = 0; i < beatmapObject.events.Count; i++)
-                                beatmapObject.events[i].AddRange(kfs.Where(x => x.Type == i).Select(x =>
-                                {
-                                    var kf = ObjectEditor.inst.PasteKF(beatmapObject, x);
-                                    ids.Add(kf.id);
-                                    return kf;
-                                }));
-
-                            for (int i = 0; i < beatmapObject.events.Count; i++)
-                            {
-                                beatmapObject.events[i] = (from x in beatmapObject.events[i]
-                                                           orderby x.eventTime
-                                                           select x).ToList();
-                            }
-
-                            var timelineObject = ObjectEditor.inst.GetTimelineObject(beatmapObject);
-                            if (EditorConfig.Instance.SelectPasted.Value)
-                            {
-                                foreach (var kf in timelineObject.InternalSelections)
-                                    kf.selected = ids.Contains(kf.ID);
-                            }
-
-                            ObjectEditor.inst.RenderTimelineObject(timelineObject);
-
-                            if (ObjectEditor.UpdateObjects)
-                            {
-                                Updater.UpdateObject(beatmapObject, "Keyframes");
-                                Updater.UpdateObject(beatmapObject, "Autokill");
-                            }
-                        }
-                    }));
+                    new ButtonFunction("Paste", EditorHelper.PasteKeyframes));
 
                 EditorHelper.SetComplexity(labels, Complexity.Normal);
                 EditorHelper.SetComplexity(buttons1, Complexity.Normal);
             }
+            
+            // Repeat Paste Keyframes
+            {
+                var labels = GenerateLabels(parent, 32f, "Repeat Paste Keyframes to Selected");
+
+                var repeatCountInputField = GenerateInputField(parent, "repeat count", "1", "Enter count...", false, false);
+                TriggerHelper.IncreaseDecreaseButtonsInt(repeatCountInputField);
+                TriggerHelper.AddEventTriggers(repeatCountInputField.inputField.gameObject, TriggerHelper.ScrollDeltaInt(repeatCountInputField.inputField));
+                var repeatOffsetTimeInputField = GenerateInputField(parent, "repeat offset time", "1", "Enter offset time...", false, false);
+                TriggerHelper.IncreaseDecreaseButtons(repeatOffsetTimeInputField);
+                TriggerHelper.AddEventTriggers(repeatOffsetTimeInputField.inputField.gameObject, TriggerHelper.ScrollDelta(repeatOffsetTimeInputField.inputField));
+
+                var buttons1 = GenerateButtons(parent, 32f, 8f,
+                    new ButtonFunction("Paste", () => { EditorHelper.RepeatPasteKeyframes(Parser.TryParse(repeatCountInputField.inputField.text, 0), Parser.TryParse(repeatOffsetTimeInputField.inputField.text, 1f)); }));
+
+                EditorHelper.SetComplexity(repeatCountInputField.gameObject, Complexity.Advanced);
+                EditorHelper.SetComplexity(repeatOffsetTimeInputField.gameObject, Complexity.Advanced);
+
+                EditorHelper.SetComplexity(labels, Complexity.Advanced);
+                EditorHelper.SetComplexity(buttons1, Complexity.Advanced);
+            }
+
+            GeneratePad(parent);
 
             // Sync object selection
             {
@@ -5292,6 +5293,11 @@ namespace BetterLegacy.Editor.Managers
                 EditorHelper.SetComplexity(labels, Complexity.Advanced);
                 EditorHelper.SetComplexity(syncLayout, Complexity.Advanced);
             }
+
+            GeneratePad(parent, Complexity.Advanced);
+
+            var replaceLabels = GenerateLabels(parent, 32f, new LabelSettings("- Replace strings -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
+            EditorHelper.SetComplexity(replaceLabels, Complexity.Advanced);
 
             // Replace Name
             {
@@ -5615,9 +5621,11 @@ namespace BetterLegacy.Editor.Managers
                 EditorHelper.SetComplexity(replaceName, Complexity.Advanced);
             }
 
+            GeneratePad(parent);
+
             // Assign Colors
             {
-                var labels1 = GenerateLabels(parent, 32f, "<b> - Assign colors -");
+                var labels1 = GenerateLabels(parent, 32f, new LabelSettings("- Assign colors -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
 
                 var labelsColor = GenerateLabels(parent, 32f, "Primary Color");
 
@@ -5674,22 +5682,22 @@ namespace BetterLegacy.Editor.Managers
                     });
                 }
 
-                var labels2 = GenerateLabels(parent, 32f, "Opacity");
+                var labels2 = GenerateLabels(parent, 32f, "Primary Opacity");
 
                 var opacityIF = CreateInputField("opacity", "", "Enter value... (Keep empty to not set)", parent, isInteger: false);
                 ((Text)opacityIF.placeholder).fontSize = 13;
 
-                var labels3 = GenerateLabels(parent, 32f, "Hue");
+                var labels3 = GenerateLabels(parent, 32f, "Primary Hue");
 
                 var hueIF = CreateInputField("hue", "", "Enter value... (Keep empty to not set)", parent, isInteger: false);
                 ((Text)hueIF.placeholder).fontSize = 13;
 
-                var labels4 = GenerateLabels(parent, 32f, "Saturation");
+                var labels4 = GenerateLabels(parent, 32f, "Primary Saturation");
 
                 var satIF = CreateInputField("sat", "", "Enter value... (Keep empty to not set)", parent, isInteger: false);
                 ((Text)satIF.placeholder).fontSize = 13;
 
-                var labels5 = GenerateLabels(parent, 32f, "Value (Brightness)");
+                var labels5 = GenerateLabels(parent, 32f, "Primary Value (Brightness)");
 
                 var valIF = CreateInputField("val", "", "Enter value... (Keep empty to not set)", parent, isInteger: false);
                 ((Text)valIF.placeholder).fontSize = 13;
@@ -5749,22 +5757,22 @@ namespace BetterLegacy.Editor.Managers
                     });
                 }
 
-                var labels6 = GenerateLabels(parent, 32f, "Gradient Opacity");
+                var labels6 = GenerateLabels(parent, 32f, "Secondary Opacity");
 
                 var opacityGradientIF = CreateInputField("opacity", "", "Enter value... (Keep empty to not set)", parent, isInteger: false);
                 ((Text)opacityGradientIF.placeholder).fontSize = 13;
 
-                var labels7 = GenerateLabels(parent, 32f, "Gradient Hue");
+                var labels7 = GenerateLabels(parent, 32f, "Secondary Hue");
 
                 var hueGradientIF = CreateInputField("hue", "", "Enter value... (Keep empty to not set)", parent, isInteger: false);
                 ((Text)hueGradientIF.placeholder).fontSize = 13;
 
-                var labels8 = GenerateLabels(parent, 32f, "Gradient Saturation");
+                var labels8 = GenerateLabels(parent, 32f, "Secondary Saturation");
 
                 var satGradientIF = CreateInputField("sat", "", "Enter value... (Keep empty to not set)", parent, isInteger: false);
                 ((Text)satGradientIF.placeholder).fontSize = 13;
 
-                var labels9 = GenerateLabels(parent, 32f, "Gradient Value (Brightness)");
+                var labels9 = GenerateLabels(parent, 32f, "Secondary Value (Brightness)");
 
                 var valGradientIF = CreateInputField("val", "", "Enter value... (Keep empty to not set)", parent, isInteger: false);
                 ((Text)valGradientIF.placeholder).fontSize = 13;
@@ -6145,6 +6153,10 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
+            GeneratePad(parent, Complexity.Normal);
+            var pastingDataLabels = GenerateLabels(parent, 32f, new LabelSettings("- Pasting Data -", 22, FontStyle.Bold, TextAnchor.MiddleCenter));
+            EditorHelper.SetComplexity(pastingDataLabels, Complexity.Normal);
+
             // Paste Data
             {
                 var allTypesLabel = GenerateLabels(parent, 32f, "Paste Keyframe data (All types)");
@@ -6226,6 +6238,437 @@ namespace BetterLegacy.Editor.Managers
 
             multiObjectEditorDialog.Find("data").AsRT().sizeDelta = new Vector2(810f, 730.11f);
             multiObjectEditorDialog.Find("data/left").AsRT().sizeDelta = new Vector2(355f, 730f);
+        }
+
+        bool updatedShapes = false;
+        bool updatedText = false;
+        public List<Toggle> shapeToggles = new List<Toggle>();
+        public List<List<Toggle>> shapeOptionToggles = new List<List<Toggle>>();
+
+        Transform multiShapes;
+        Transform multiShapeSettings;
+        public Vector2Int multiShapeSelection;
+        public Transform multiObjectContent;
+
+        /// <summary>
+        /// Renders the Shape ToggleGroup.
+        /// </summary>
+        public void RenderMultiShape()
+        {
+            CoreHelper.Log($"Running {nameof(RenderMultiShape)}");
+            if (!ObjectEditor.inst || !ObjectEditor.inst.shapeButtonPrefab || !ShapeManager.inst.loadedShapes)
+            {
+                CoreHelper.WaitUntil(() => ObjectEditor.inst && ObjectEditor.inst.shapeButtonPrefab && ShapeManager.inst.loadedShapes, RenderMultiShape);
+                return;
+            }
+
+            if (!multiShapes)
+            {
+                var shapes = ObjEditor.inst.ObjectView.transform.Find("shape").gameObject.Duplicate(multiObjectContent, "shape", 39);
+                var shapeOption = ObjEditor.inst.ObjectView.transform.Find("shapesettings").gameObject.Duplicate(multiObjectContent, "shapesettings", 40);
+                multiShapes = shapes.transform;
+                multiShapeSettings = shapeOption.transform;
+
+                multiShapes.AsRT().sizeDelta = new Vector2(388.4f, 32f);
+                multiShapeSettings.AsRT().sizeDelta = new Vector2(351f, 32f);
+            }
+
+            var shape = multiShapes;
+            var shapeSettings = multiShapeSettings;
+
+            var shapeGLG = shape.GetComponent<GridLayoutGroup>();
+            shapeGLG.constraint = GridLayoutGroup.Constraint.FixedRowCount;
+            shapeGLG.constraintCount = 1;
+            shapeGLG.spacing = new Vector2(7.6f, 0f);
+
+            if (!updatedShapes)
+            {
+                // Initial removing
+                DestroyImmediate(shape.GetComponent<ToggleGroup>());
+
+                var toDestroy = new List<GameObject>();
+
+                for (int i = 0; i < shape.childCount; i++)
+                {
+                    toDestroy.Add(shape.GetChild(i).gameObject);
+                }
+
+                for (int i = 0; i < shapeSettings.childCount; i++)
+                {
+                    if (i != 4 && i != 6)
+                        for (int j = 0; j < shapeSettings.GetChild(i).childCount; j++)
+                        {
+                            toDestroy.Add(shapeSettings.GetChild(i).GetChild(j).gameObject);
+                        }
+                }
+
+                foreach (var obj in toDestroy)
+                    DestroyImmediate(obj);
+
+                toDestroy = null;
+
+                for (int i = 0; i < ShapeManager.inst.Shapes2D.Count; i++)
+                {
+                    var obj = ObjectEditor.inst.shapeButtonPrefab.Duplicate(shape, (i + 1).ToString(), i);
+                    if (obj.transform.Find("Image") && obj.transform.Find("Image").gameObject.TryGetComponent(out Image image))
+                    {
+                        image.sprite = ShapeManager.inst.Shapes2D[i][0].Icon;
+                        EditorThemeManager.ApplyGraphic(image, ThemeGroup.Toggle_1_Check);
+                    }
+
+                    if (!obj.GetComponent<HoverUI>())
+                    {
+                        var hoverUI = obj.AddComponent<HoverUI>();
+                        hoverUI.animatePos = false;
+                        hoverUI.animateSca = true;
+                        hoverUI.size = 1.1f;
+                    }
+
+                    var shapeToggle = obj.GetComponent<Toggle>();
+                    EditorThemeManager.ApplyToggle(shapeToggle, ThemeGroup.Background_1);
+
+                    shapeToggles.Add(shapeToggle);
+
+                    shapeOptionToggles.Add(new List<Toggle>());
+
+                    if (i != 4 && i != 6)
+                    {
+                        if (!shapeSettings.Find((i + 1).ToString()))
+                        {
+                            var sh = shapeSettings.Find("6").gameObject.Duplicate(shapeSettings, (i + 1).ToString());
+                            LSHelpers.DeleteChildren(sh.transform, true);
+
+                            var d = new List<GameObject>();
+                            for (int j = 0; j < sh.transform.childCount; j++)
+                            {
+                                d.Add(sh.transform.GetChild(j).gameObject);
+                            }
+                            foreach (var go in d)
+                                DestroyImmediate(go);
+                            d.Clear();
+                            d = null;
+                        }
+
+                        var so = shapeSettings.Find((i + 1).ToString());
+
+                        var rect = (RectTransform)so;
+                        if (!so.GetComponent<ScrollRect>())
+                        {
+                            var scroll = so.gameObject.AddComponent<ScrollRect>();
+                            so.gameObject.AddComponent<Mask>();
+                            var ad = so.gameObject.AddComponent<Image>();
+
+                            scroll.horizontal = true;
+                            scroll.vertical = false;
+                            scroll.content = rect;
+                            scroll.viewport = rect;
+                            ad.color = new Color(1f, 1f, 1f, 0.01f);
+                        }
+
+                        for (int j = 0; j < ShapeManager.inst.Shapes2D[i].Count; j++)
+                        {
+                            var opt = ObjectEditor.inst.shapeButtonPrefab.Duplicate(shapeSettings.GetChild(i), (j + 1).ToString(), j);
+                            if (opt.transform.Find("Image") && opt.transform.Find("Image").gameObject.TryGetComponent(out Image image1))
+                            {
+                                image1.sprite = ShapeManager.inst.Shapes2D[i][j].Icon;
+                                EditorThemeManager.ApplyGraphic(image1, ThemeGroup.Toggle_1_Check);
+                            }
+
+                            if (!opt.GetComponent<HoverUI>())
+                            {
+                                var hoverUI = opt.AddComponent<HoverUI>();
+                                hoverUI.animatePos = false;
+                                hoverUI.animateSca = true;
+                                hoverUI.size = 1.1f;
+                            }
+
+                            var shapeOptionToggle = opt.GetComponent<Toggle>();
+                            EditorThemeManager.ApplyToggle(shapeOptionToggle, ThemeGroup.Background_1);
+
+                            shapeOptionToggles[i].Add(shapeOptionToggle);
+
+                            var layoutElement = opt.AddComponent<LayoutElement>();
+                            layoutElement.layoutPriority = 1;
+                            layoutElement.minWidth = 32f;
+
+                            ((RectTransform)opt.transform).sizeDelta = new Vector2(32f, 32f);
+
+                            if (!opt.GetComponent<HoverUI>())
+                            {
+                                var he = opt.AddComponent<HoverUI>();
+                                he.animatePos = false;
+                                he.animateSca = true;
+                                he.size = 1.1f;
+                            }
+                        }
+
+                        ObjectEditor.inst.LastGameObject(shapeSettings.GetChild(i));
+                    }
+                }
+
+                if (ObjectManager.inst.objectPrefabs.Count > 9)
+                {
+                    var playerSprite = SpriteHelper.LoadSprite(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets/editor_gui_player.png");
+                    int i = shape.childCount;
+                    var obj = ObjectEditor.inst.shapeButtonPrefab.Duplicate(shape, (i + 1).ToString());
+                    if (obj.transform.Find("Image") && obj.transform.Find("Image").gameObject.TryGetComponent(out Image image))
+                    {
+                        image.sprite = playerSprite;
+                        EditorThemeManager.ApplyGraphic(image, ThemeGroup.Toggle_1_Check);
+                    }
+
+                    var so = shapeSettings.Find((i + 1).ToString());
+
+                    if (!so)
+                    {
+                        so = shapeSettings.Find("6").gameObject.Duplicate(shapeSettings, (i + 1).ToString()).transform;
+                        LSHelpers.DeleteChildren(so, true);
+
+                        var d = new List<GameObject>();
+                        for (int j = 0; j < so.transform.childCount; j++)
+                        {
+                            d.Add(so.transform.GetChild(j).gameObject);
+                        }
+                        foreach (var go in d)
+                            DestroyImmediate(go);
+                        d.Clear();
+                        d = null;
+                    }
+
+                    var rect = (RectTransform)so;
+                    if (!so.GetComponent<ScrollRect>())
+                    {
+                        var scroll = so.gameObject.AddComponent<ScrollRect>();
+                        so.gameObject.AddComponent<Mask>();
+                        var ad = so.gameObject.AddComponent<Image>();
+
+                        scroll.horizontal = true;
+                        scroll.vertical = false;
+                        scroll.content = rect;
+                        scroll.viewport = rect;
+                        ad.color = new Color(1f, 1f, 1f, 0.01f);
+                    }
+
+                    var shapeToggle = obj.GetComponent<Toggle>();
+                    shapeToggles.Add(shapeToggle);
+                    EditorThemeManager.ApplyToggle(shapeToggle, ThemeGroup.Background_1);
+
+                    shapeOptionToggles.Add(new List<Toggle>());
+
+                    for (int j = 0; j < ObjectManager.inst.objectPrefabs[9].options.Count; j++)
+                    {
+                        var opt = ObjectEditor.inst.shapeButtonPrefab.Duplicate(shapeSettings.GetChild(i), (j + 1).ToString(), j);
+                        if (opt.transform.Find("Image") && opt.transform.Find("Image").gameObject.TryGetComponent(out Image image1))
+                        {
+                            image1.sprite = playerSprite;
+                            EditorThemeManager.ApplyGraphic(image1, ThemeGroup.Toggle_1_Check);
+                        }
+
+                        var shapeOptionToggle = opt.GetComponent<Toggle>();
+                        EditorThemeManager.ApplyToggle(shapeOptionToggle, ThemeGroup.Background_1);
+
+                        shapeOptionToggles[i].Add(shapeOptionToggle);
+
+                        var layoutElement = opt.AddComponent<LayoutElement>();
+                        layoutElement.layoutPriority = 1;
+                        layoutElement.minWidth = 32f;
+
+                        ((RectTransform)opt.transform).sizeDelta = new Vector2(32f, 32f);
+
+                        if (!opt.GetComponent<HoverUI>())
+                        {
+                            var he = opt.AddComponent<HoverUI>();
+                            he.animatePos = false;
+                            he.animateSca = true;
+                            he.size = 1.1f;
+                        }
+                    }
+
+                    ObjectEditor.inst.LastGameObject(shapeSettings.GetChild(i));
+                }
+
+                updatedShapes = true;
+            }
+
+            LSHelpers.SetActiveChildren(shapeSettings, false);
+
+            if (multiShapeSelection.x == 4)
+            {
+                shapeSettings.AsRT().sizeDelta = new Vector2(351f, 74f);
+                var child = shapeSettings.GetChild(4);
+                child.AsRT().sizeDelta = new Vector2(351f, 74f);
+                child.Find("Text").GetComponent<Text>().alignment = TextAnchor.UpperLeft;
+                child.Find("Placeholder").GetComponent<Text>().alignment = TextAnchor.UpperLeft;
+                child.GetComponent<InputField>().lineType = InputField.LineType.MultiLineNewline;
+            }
+            else
+            {
+                shapeSettings.AsRT().sizeDelta = new Vector2(351f, 32f);
+                shapeSettings.GetChild(4).AsRT().sizeDelta = new Vector2(351f, 32f);
+            }
+
+            shapeSettings.GetChild(multiShapeSelection.x).gameObject.SetActive(true);
+
+            int num = 0;
+            foreach (var toggle in shapeToggles)
+            {
+                int index = num;
+                toggle.onValueChanged.ClearAll();
+                toggle.isOn = multiShapeSelection.x == index;
+                toggle.gameObject.SetActive(ShowModdedUI || index < ObjectEditor.UnmoddedShapeCounts.Length);
+
+                if (ShowModdedUI || index < ObjectEditor.UnmoddedShapeCounts.Length)
+                    toggle.onValueChanged.AddListener(_val =>
+                    {
+                        multiShapeSelection = new Vector2Int(index, 0);
+
+                        foreach (var beatmapObject in ObjectEditor.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
+                        {
+                            beatmapObject.shape = multiShapeSelection.x;
+                            beatmapObject.shapeOption = multiShapeSelection.y;
+
+                            if (beatmapObject.gradientType != BeatmapObject.GradientType.Normal && (index == 4 || index == 6 || index == 10))
+                                beatmapObject.shape = 0;
+
+                            Updater.UpdateObject(beatmapObject, "Shape");
+                        }
+
+                        RenderMultiShape();
+                    });
+
+
+                num++;
+            }
+
+            if (multiShapeSelection.x != 4 && multiShapeSelection.x != 6)
+            {
+                num = 0;
+                foreach (var toggle in shapeOptionToggles[multiShapeSelection.x])
+                {
+                    int index = num;
+                    toggle.onValueChanged.ClearAll();
+                    toggle.isOn = multiShapeSelection.y == index;
+                    toggle.gameObject.SetActive(ShowModdedUI || index < ObjectEditor.UnmoddedShapeCounts[multiShapeSelection.x]);
+
+                    if (ShowModdedUI || index < ObjectEditor.UnmoddedShapeCounts[multiShapeSelection.x])
+                        toggle.onValueChanged.AddListener(_val =>
+                        {
+                            multiShapeSelection.y = index;
+
+                            foreach (var beatmapObject in ObjectEditor.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
+                            {
+                                beatmapObject.shape = multiShapeSelection.x;
+                                beatmapObject.shapeOption = multiShapeSelection.y;
+
+                                if (beatmapObject.gradientType != BeatmapObject.GradientType.Normal && (index == 4 || index == 6 || index == 10))
+                                    beatmapObject.shape = 0;
+
+                                Updater.UpdateObject(beatmapObject, "Shape");
+                            }
+
+                            RenderMultiShape();
+                        });
+
+                    num++;
+                }
+            }
+            else if (multiShapeSelection.x == 4)
+            {
+                var textIF = shapeSettings.Find("5").GetComponent<InputField>();
+                textIF.onValueChanged.ClearAll();
+                if (!updatedText)
+                {
+                    updatedText = true;
+                    textIF.text = "";
+                }
+                textIF.onValueChanged.AddListener(_val =>
+                {
+                    foreach (var beatmapObject in ObjectEditor.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
+                    {
+                        beatmapObject.text = _val;
+
+                        Updater.UpdateObject(beatmapObject, "Shape");
+                    }
+                });
+
+                if (!textIF.transform.Find("edit"))
+                {
+                    var button = EditorPrefabHolder.Instance.DeleteButton.Duplicate(textIF.transform, "edit");
+                    var buttonStorage = button.GetComponent<DeleteButtonStorage>();
+                    buttonStorage.image.sprite = KeybindManager.inst.editSprite;
+                    EditorThemeManager.ApplySelectable(buttonStorage.button, ThemeGroup.Function_2);
+                    EditorThemeManager.ApplyGraphic(buttonStorage.image, ThemeGroup.Function_2_Text);
+                    buttonStorage.button.onClick.ClearAll();
+                    buttonStorage.button.onClick.AddListener(() => { TextEditor.inst.SetInputField(textIF); });
+                    UIManager.SetRectTransform(buttonStorage.baseImage.rectTransform, new Vector2(160f, 24f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(22f, 22f));
+                    EditorHelper.SetComplexity(button, Complexity.Advanced);
+                }
+                else
+                {
+                    var button = textIF.transform.Find("edit").gameObject;
+                    var buttonStorage = button.GetComponent<DeleteButtonStorage>();
+                    buttonStorage.button.onClick.ClearAll();
+                    buttonStorage.button.onClick.AddListener(() => { TextEditor.inst.SetInputField(textIF); });
+                }
+            }
+            else if (multiShapeSelection.x == 6)
+            {
+                var select = shapeSettings.Find("7/select").GetComponent<Button>();
+                select.onClick.ClearAll();
+                select.onClick.AddListener(() =>
+                {
+                    var editorPath = RTFile.ApplicationDirectory + RTEditor.editorListSlash + EditorManager.inst.currentLoadedLevel;
+                    string jpgFile = FileBrowser.OpenSingleFile("Select an image!", editorPath, new string[] { "png", "jpg" });
+                    CoreHelper.Log($"Selected file: {jpgFile}");
+                    if (!string.IsNullOrEmpty(jpgFile))
+                    {
+                        string jpgFileLocation = editorPath + "/" + Path.GetFileName(jpgFile);
+                        CoreHelper.Log($"jpgFileLocation: {jpgFileLocation}");
+
+                        var levelPath = jpgFile.Replace("\\", "/").Replace(editorPath + "/", "");
+                        CoreHelper.Log($"levelPath: {levelPath}");
+
+                        if (!RTFile.FileExists(jpgFileLocation) && !jpgFile.Replace("\\", "/").Contains(editorPath))
+                        {
+                            File.Copy(jpgFile, jpgFileLocation);
+                            CoreHelper.Log($"Copied file to : {jpgFileLocation}");
+                        }
+                        else
+                            jpgFileLocation = editorPath + "/" + levelPath;
+
+                        CoreHelper.Log($"jpgFileLocation: {jpgFileLocation}");
+
+                        foreach (var beatmapObject in ObjectEditor.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
+                        {
+                            beatmapObject.text = jpgFileLocation.Replace(jpgFileLocation.Substring(0, jpgFileLocation.LastIndexOf('/') + 1), "");
+
+                            Updater.UpdateObject(beatmapObject, "Shape");
+                        }
+                        RenderMultiShape();
+                    }
+                });
+                shapeSettings.Find("7/text").GetComponent<Text>().text = "Select an image";
+
+                if (shapeSettings.Find("7/set"))
+                    CoreHelper.Destroy(shapeSettings.Find("7/set").gameObject);
+            }
+        }
+
+        void GeneratePad(Transform parent)
+        {
+            var gameObject = Creator.NewUIObject("padder", parent);
+            var image = gameObject.AddComponent<Image>();
+            image.rectTransform.sizeDelta = new Vector2(395f, 4f);
+            EditorThemeManager.AddGraphic(image, ThemeGroup.Background_3);
+        }
+        
+        void GeneratePad(Transform parent, Complexity complexity, bool onlySpecificComplexity = false)
+        {
+            var gameObject = Creator.NewUIObject("padder", parent);
+            var image = gameObject.AddComponent<Image>();
+            image.rectTransform.sizeDelta = new Vector2(395f, 4f);
+            EditorThemeManager.AddGraphic(image, ThemeGroup.Background_3);
+            EditorHelper.SetComplexity(gameObject, complexity, onlySpecificComplexity);
         }
 
         void GeneratePasteKeyframeData(Transform parent, int type, string name)
@@ -6498,6 +6941,66 @@ namespace BetterLegacy.Editor.Managers
             }
 
             return labelBase;
+        }
+        
+        public GameObject GenerateLabels(Transform parent, float sizeY, params LabelSettings[] labels)
+        {
+            var labelBase = Creator.NewUIObject("label", parent);
+            labelBase.transform.AsRT().sizeDelta = new Vector2(0f, sizeY);
+            labelBase.AddComponent<HorizontalLayoutGroup>();
+            var labelPrefab = EditorManager.inst.folderButtonPrefab.transform.GetChild(0).gameObject;
+
+            for (int i = 0; i < labels.Length; i++)
+            {
+                var label = labelPrefab.Duplicate(labelBase.transform, "text");
+                var labelText = label.GetComponent<Text>();
+                labels[i].Apply(labelText);
+                EditorThemeManager.AddLightText(labelText);
+            }
+
+            return labelBase;
+        }
+
+        public class LabelSettings
+        {
+            public LabelSettings(string text)
+            {
+                this.text = text;
+            }
+            
+            public LabelSettings(string text, int fontSize) : this(text)
+            {
+                this.fontSize = fontSize;
+            }
+            
+            public LabelSettings(string text, int fontSize, FontStyle fontStyle) : this(text, fontSize)
+            {
+                this.fontStyle = fontStyle;
+            }
+            
+            public LabelSettings(string text, int fontSize, FontStyle fontStyle, TextAnchor alignment) : this(text, fontSize, fontStyle)
+            {
+                this.alignment = alignment;
+            }
+
+            public TextAnchor alignment = TextAnchor.MiddleLeft;
+            public string text;
+            public int fontSize = 20;
+            public FontStyle fontStyle = FontStyle.Normal;
+            public HorizontalWrapMode horizontalWrap = HorizontalWrapMode.Overflow;
+            public VerticalWrapMode verticalWrap = VerticalWrapMode.Truncate;
+
+            public void Apply(Text text)
+            {
+                text.text = this;
+                text.alignment = alignment;
+                text.fontSize = fontSize;
+                text.fontStyle = fontStyle;
+                text.horizontalOverflow = horizontalWrap;
+                text.verticalOverflow = verticalWrap;
+            }
+
+            public static implicit operator string(LabelSettings labelSettings) => labelSettings.text;
         }
 
         public InputFieldStorage GenerateInputField(Transform parent, string name, string defaultValue, string placeholder, bool doMiddle = false, bool doLeftGreater = false, bool doRightGreater = false)
