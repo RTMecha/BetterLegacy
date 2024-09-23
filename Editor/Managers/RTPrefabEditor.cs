@@ -2242,9 +2242,9 @@ namespace BetterLegacy.Editor.Managers
             var deleteAnchoredPosition = config.PrefabExternalDeleteButtonPos.Value;
             var deleteSizeDelta = config.PrefabExternalDeleteButtonSca.Value;
 
-            StartCoroutine(CreatePrefabButton(prefab, count, PrefabDialog.External, $"{RTFile.ApplicationDirectory}{RTEditor.prefabListSlash}{prefab.Name.ToLower().Replace(" ", "_")}.lsp",
+            CreatePrefabButton(prefab, count, PrefabDialog.External, $"{RTFile.ApplicationDirectory}{RTEditor.prefabListSlash}{prefab.Name.ToLower().Replace(" ", "_")}.lsp",
                 false, hoverSize, nameHorizontalOverflow, nameVerticalOverflow, nameFontSize,
-                typeHorizontalOverflow, typeVerticalOverflow, typeFontSize, deleteAnchoredPosition, deleteSizeDelta));
+                typeHorizontalOverflow, typeVerticalOverflow, typeFontSize, deleteAnchoredPosition, deleteSizeDelta);
 
             RTFile.WriteToFile(file, prefab.ToJSON().ToString());
             EditorManager.inst.DisplayNotification($"Saved prefab [{prefab.Name}]!", 2f, EditorManager.NotificationType.Success);
@@ -2544,17 +2544,15 @@ namespace BetterLegacy.Editor.Managers
             var deleteAnchoredPosition = config.PrefabInternalDeleteButtonPos.Value;
             var deleteSizeDelta = config.PrefabInternalDeleteButtonSca.Value;
 
-            var list = new List<Coroutine>();
-
             var prefabs = GameData.Current.prefabs;
             for (int i = 0; i < prefabs.Count; i++)
             {
-                var prefab = (Prefab)prefabs[i];
+                var prefab = prefabs[i];
                 if (ContainsName(prefab, PrefabDialog.Internal))
-                    list.Add(StartCoroutine(CreatePrefabButton(prefab, i, PrefabDialog.Internal, null, _toggle, hoverSize,
+                    CreatePrefabButton(prefab, i, PrefabDialog.Internal, null, _toggle, hoverSize,
                         nameHorizontalOverflow, nameVerticalOverflow, nameFontSize,
                         typeHorizontalOverflow, typeVerticalOverflow, typeFontSize,
-                        deleteAnchoredPosition, deleteSizeDelta)));
+                        deleteAnchoredPosition, deleteSizeDelta);
             }
 
             yield break;
@@ -2573,7 +2571,7 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
-        public IEnumerator CreatePrefabButton(Prefab prefab, int index, PrefabDialog dialog, string file, bool _toggle, float hoversize,
+        public void CreatePrefabButton(Prefab prefab, int index, PrefabDialog dialog, string file, bool _toggle, float hoversize,
             HorizontalWrapMode nameHorizontalWrapMode, VerticalWrapMode nameVerticalWrapMode, int nameFontSize,
             HorizontalWrapMode typeHorizontalWrapMode, VerticalWrapMode typeVerticalWrapMode, int typeFontSize,
             Vector2 deleteAnchoredPosition, Vector2 deleteSizeDelta)
@@ -2848,8 +2846,6 @@ namespace BetterLegacy.Editor.Managers
 
                 prefabPanel.SetActive(ContainsName(prefabPanel.Prefab, PrefabDialog.External));
             }
-
-            yield break;
         }
 
         public bool ContainsName(Prefab _p, PrefabDialog _d)
