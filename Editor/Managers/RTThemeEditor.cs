@@ -198,6 +198,56 @@ namespace BetterLegacy.Editor.Managers
                 EventEditor.inst.showTheme = false;
         }
 
+        public bool shouldCutTheme;
+        public string copiedThemePath;
+
+        public void PasteTheme()
+        {
+            if (string.IsNullOrEmpty(copiedThemePath))
+            {
+                EditorManager.inst.DisplayNotification("No theme has been copied yet!", 2f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            if (!RTFile.FileExists(copiedThemePath))
+            {
+                EditorManager.inst.DisplayNotification("Copied theme no longer exists.", 2f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            var copiedThemesFolder = Path.GetDirectoryName(copiedThemePath).Replace("\\", "/");
+            CoreHelper.Log($"Copied Folder: {copiedThemesFolder}");
+
+            if (copiedThemesFolder == $"{RTFile.ApplicationDirectory}{RTEditor.themeListPath}")
+            {
+                EditorManager.inst.DisplayNotification("Source and destination are the same.", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
+            var destination = copiedThemePath.Replace(copiedThemesFolder, $"{RTFile.ApplicationDirectory}{RTEditor.themeListPath}");
+            CoreHelper.Log($"Destination: {destination}");
+            if (RTFile.FileExists(destination))
+            {
+                EditorManager.inst.DisplayNotification("File already exists.", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
+            if (shouldCutTheme)
+            {
+                File.Move(copiedThemePath, destination);
+                var theme = BeatmapTheme.Parse(JSON.Parse(RTFile.ReadFromFile(destination)));
+                EditorManager.inst.DisplayNotification($"Succesfully moved {theme.name}!", 2f, EditorManager.NotificationType.Success);
+            }
+            else
+            {
+                File.Copy(copiedThemePath, destination, true);
+                var theme = BeatmapTheme.Parse(JSON.Parse(RTFile.ReadFromFile(destination)));
+                EditorManager.inst.DisplayNotification($"Succesfully pasted {theme.name}!", 2f, EditorManager.NotificationType.Success);
+            }
+
+            RTEditor.inst.UpdateThemePath(true);
+        }
+
         public Transform themeKeyframe;
         public Transform themeKeyframeContent;
 
@@ -722,7 +772,7 @@ namespace BetterLegacy.Editor.Managers
         public int CurrentEventThemePage => eventThemePage + 1;
         public int MinEventTheme => MaxEventTheme - eventThemesPerPage;
         public int MaxEventTheme => CurrentEventThemePage * eventThemesPerPage;
-        public int ThemesCount => ThemePanels.Where(x => CoreHelper.SearchString(searchTerm, x.Theme.name)).Count();
+        public int ThemesCount => ThemePanels.FindAll(x => CoreHelper.SearchString(searchTerm, x.isFolder ? Path.GetFileName(x.FilePath) : x.Theme.name)).Count;
         public IEnumerator RenderThemeList(string search)
         {
             if (!loadingThemes && !EventEditor.inst.eventDrag)
@@ -734,7 +784,8 @@ namespace BetterLegacy.Editor.Managers
                 int num = 0;
                 for (int i = 0; i < ThemePanels.Count; i++)
                 {
-                    var searchBool = CoreHelper.SearchString(search, ThemePanels[i].Theme.name);
+                    var themePanel = ThemePanels[i];
+                    var searchBool = CoreHelper.SearchString(search, themePanel.isFolder ? Path.GetFileName(themePanel.FilePath) : themePanel.Theme.name);
                     if (searchBool)
                         num++;
 
@@ -757,7 +808,7 @@ namespace BetterLegacy.Editor.Managers
             var themePanel = GenerateThemePanel(themeKeyframeContent);
             themePanel.Theme = beatmapTheme;
             if (!string.IsNullOrEmpty(beatmapTheme.filePath))
-                themePanel.Path = beatmapTheme.filePath.Replace("\\", "/");
+                themePanel.FilePath = beatmapTheme.filePath.Replace("\\", "/");
             themePanel.OriginalID = beatmapTheme.id;
 
             for (int j = 0; j < themePanel.Colors.Count; j++)
@@ -826,6 +877,40 @@ namespace BetterLegacy.Editor.Managers
 
                         AchievementManager.inst.UnlockAchievement("time_machine");
                     }),
+                    new RTEditor.ButtonFunction(true),
+                    new RTEditor.ButtonFunction("Create folder", () =>
+                    {
+                        RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.themeListPath}", () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); });
+                    }),
+                    new RTEditor.ButtonFunction("Create theme", () => { RenderThemeEditor(); }),
+                    new RTEditor.ButtonFunction(true),
+                    new RTEditor.ButtonFunction("Cut", () =>
+                    {
+                        if (defaultTheme)
+                        {
+                            EditorManager.inst.DisplayNotification($"Cannot cut a default theme!", 1.5f, EditorManager.NotificationType.Warning);
+                            return;
+                        }
+
+                        shouldCutTheme = true;
+                        copiedThemePath = beatmapTheme.filePath;
+                        EditorManager.inst.DisplayNotification($"Cut {beatmapTheme.name}!", 1.5f, EditorManager.NotificationType.Success);
+                        CoreHelper.Log($"Cut theme: {copiedThemePath}");
+                    }),
+                    new RTEditor.ButtonFunction("Copy", () =>
+                    {
+                        if (defaultTheme)
+                        {
+                            EditorManager.inst.DisplayNotification($"Cannot copy a default theme!", 1.5f, EditorManager.NotificationType.Warning);
+                            return;
+                        }
+
+                        shouldCutTheme = false;
+                        copiedThemePath = beatmapTheme.filePath;
+                        EditorManager.inst.DisplayNotification($"Copied {beatmapTheme.name}!", 1.5f, EditorManager.NotificationType.Success);
+                        CoreHelper.Log($"Copied theme: {copiedThemePath}");
+                    }),
+                    new RTEditor.ButtonFunction("Paste", PasteTheme),
                     new RTEditor.ButtonFunction("Delete", () =>
                     {
                         if (!defaultTheme)
@@ -950,10 +1035,10 @@ namespace BetterLegacy.Editor.Managers
 
             update.onClick.AddListener(() =>
             {
-                if (ThemePanels.TryFind(x => x.Theme.id == PreviewTheme.id, out ThemePanel themePanel) && RTFile.FileExists(themePanel.Path))
+                if (ThemePanels.TryFind(x => x.Theme != null && x.Theme.id == PreviewTheme.id, out ThemePanel themePanel) && RTFile.FileExists(themePanel.FilePath))
                 {
                     CoreHelper.Log($"Deleting original theme...");
-                    File.Delete(themePanel.Path);
+                    File.Delete(themePanel.FilePath);
                 }
                 else
                 {
@@ -997,10 +1082,10 @@ namespace BetterLegacy.Editor.Managers
                 }
                 else
                 {
-                    if (ThemePanels.TryFind(x => x.Theme.id == PreviewTheme.id, out ThemePanel themePanel1) && RTFile.FileExists(themePanel1.Path))
+                    if (ThemePanels.TryFind(x => x.Theme != null && x.Theme.id == PreviewTheme.id, out ThemePanel themePanel1) && RTFile.FileExists(themePanel1.FilePath))
                     {
                         CoreHelper.Log($"Deleting original theme...");
-                        File.Delete(themePanel1.Path);
+                        File.Delete(themePanel1.FilePath);
                     }
                     else
                     {
@@ -1026,7 +1111,7 @@ namespace BetterLegacy.Editor.Managers
                 if (DataManager.inst.CustomBeatmapThemes.TryFindIndex(x => x.id == __0.ToString(), out int themeIndex))
                     DataManager.inst.CustomBeatmapThemes[themeIndex] = beatmapTheme;
 
-                if (!(__0 < DataManager.inst.BeatmapThemes.Count) && ThemePanels.TryFind(x => x.Theme.id == __0.ToString(), out ThemePanel themePanel))
+                if (!(__0 < DataManager.inst.BeatmapThemes.Count) && ThemePanels.TryFind(x => x.Theme != null && x.Theme.id == __0.ToString(), out ThemePanel themePanel))
                 {
                     var dialogTmp = EventEditor.inst.dialogRight.GetChild(4);
 
@@ -1184,11 +1269,11 @@ namespace BetterLegacy.Editor.Managers
 
             File.Delete(theme.filePath);
 
-            Predicate<ThemePanel> predicate = x => x.Theme.id == theme.id;
-            if (ThemePanels.TryFind(predicate, out ThemePanel themePanel))
+            if (ThemePanels.TryFindIndex(x => x.Theme != null && x.Theme.id == theme.id, out int themePanelIndex))
             {
+                var themePanel = ThemePanels[themePanelIndex];
                 Destroy(themePanel.GameObject);
-                ThemePanels.RemoveAt(ThemePanels.FindIndex(predicate));
+                ThemePanels.RemoveAt(themePanelIndex);
             }
 
             RTEditor.inst.EnableThemeWatcher();

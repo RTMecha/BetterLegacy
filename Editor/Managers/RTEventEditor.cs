@@ -238,6 +238,23 @@ namespace BetterLegacy.Editor.Managers
 
                             var themes = dialog.Find("themes").GetComponent<Image>();
 
+                            var contextClickable = themes.gameObject.AddComponent<ContextClickable>();
+                            contextClickable.onClick = eventData =>
+                            {
+                                if (eventData.button != PointerEventData.InputButton.Right)
+                                    return;
+
+                                RTEditor.inst.ShowContextMenu(300f,
+                                    new RTEditor.ButtonFunction("Create folder", () =>
+                                    {
+                                        RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.themeListPath}", () => { RTEditor.inst.UpdateThemePath(true); RTEditor.inst.HideNameEditor(); });
+                                    }),
+                                    new RTEditor.ButtonFunction("Create theme", () => { RTThemeEditor.inst.RenderThemeEditor(); }),
+                                    new RTEditor.ButtonFunction(true),
+                                    new RTEditor.ButtonFunction("Paste", RTThemeEditor.inst.PasteTheme));
+                            };
+                            themes.gameObject.AddComponent<Button>();
+
                             EditorThemeManager.AddGraphic(themes, ThemeGroup.Background_3);
                             EditorThemeManager.AddGraphic(dialog.Find("themes/viewport").GetComponent<Image>(), ThemeGroup.Null, true);
 
