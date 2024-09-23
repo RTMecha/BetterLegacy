@@ -15,6 +15,14 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
 
         public abstract void SetColor(Color color);
 
+        public void SetOrigin(Vector3 origin)
+        {
+            if (!GameObject)
+                return;
+
+            GameObject.transform.localPosition = origin;
+        }
+
         public abstract void Clear();
     }
 }

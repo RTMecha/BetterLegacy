@@ -27,6 +27,7 @@ namespace BetterLegacy.Core.Optimization.Objects
         public bool scaleParent;
         public bool rotationParent;
 
+        public bool isImage;
         public bool isGradient;
         public float positionParentOffset;
         public float scaleParentOffset;
@@ -93,7 +94,8 @@ namespace BetterLegacy.Core.Optimization.Objects
             this.isGradient = this.secondaryColorSequence != null;
             if (isGradient)
                 gradientObject = (GradientObject)visualObject;
-            
+            isImage = visualObject is ImageObject;
+
             this.prefabOffsetPosition = prefabOffsetPosition;
             this.prefabOffsetScale = prefabOffsetScale;
             this.prefabOffsetRotation = prefabOffsetRotation;
@@ -164,6 +166,9 @@ namespace BetterLegacy.Core.Optimization.Objects
                 visualObject.SetColor(colorSequence.Interpolate(time - StartTime));
             else
                 gradientObject.SetColor(colorSequence.Interpolate(time - StartTime), secondaryColorSequence.Interpolate(time - StartTime));
+            
+            if (isImage)
+                visualObject.SetOrigin(new Vector3(beatmapObject.origin.x, beatmapObject.origin.y, beatmapObject.depth * 0.1f)); // fixes origin being off.
 
             // Update Camera Parent
             if (positionParent && cameraParent)
