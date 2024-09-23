@@ -1189,6 +1189,18 @@ namespace BetterLegacy.Example
                             new FloatKeyframe(0.1f, handRight.GetChild(0).localPosition.y, Ease.Linear),
                             new FloatKeyframe(0.7f, -80f, Ease.BounceOut),
                         }, handRight.GetChild(0).SetLocalPositionY),
+                        new AnimationHandler<float>(new List<IKeyframe<float>>
+                        {
+                            new FloatKeyframe(0f, handLeft.localRotation.eulerAngles.z, Ease.Linear),
+                            new FloatKeyframe(0.1f, handLeft.localRotation.eulerAngles.z, Ease.Linear),
+                            new FloatKeyframe(0.7f, 0f, Ease.BounceOut),
+                        }, handLeft.SetLocalRotationEulerZ),
+                        new AnimationHandler<float>(new List<IKeyframe<float>>
+                        {
+                            new FloatKeyframe(0f, handRight.localRotation.eulerAngles.z, Ease.Linear),
+                            new FloatKeyframe(0.1f, handRight.localRotation.eulerAngles.z, Ease.Linear),
+                            new FloatKeyframe(0.7f, 0f, Ease.BounceOut),
+                        }, handRight.SetLocalRotationEulerZ),
 
 						// Brows
 						new AnimationHandler<float>(new List<IKeyframe<float>>
