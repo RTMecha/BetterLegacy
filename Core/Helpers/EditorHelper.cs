@@ -3,6 +3,7 @@ using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Editor.Managers;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -223,6 +224,102 @@ namespace BetterLegacy.Core.Helpers
                 gameData.eventObjects.allEvents[3][i].eventValues[3] = 0f;
 
             return true;
+        }
+
+        public static void PasteKeyframes()
+        {
+            var kfs = ObjectEditor.inst.copiedObjectKeyframes;
+
+            if (kfs.Count <= 0)
+            {
+                EditorManager.inst.DisplayNotification("No copied keyframes yet!", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
+            foreach (var beatmapObject in ObjectEditor.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
+            {
+                var ids = new List<string>();
+                for (int i = 0; i < beatmapObject.events.Count; i++)
+                    beatmapObject.events[i].AddRange(kfs.Where(x => x.Type == i).Select(x =>
+                    {
+                        var kf = ObjectEditor.inst.PasteKF(beatmapObject, x);
+                        ids.Add(kf.id);
+                        return kf;
+                    }));
+
+                for (int i = 0; i < beatmapObject.events.Count; i++)
+                {
+                    beatmapObject.events[i] = (from x in beatmapObject.events[i]
+                                               orderby x.eventTime
+                                               select x).ToList();
+                }
+
+                var timelineObject = ObjectEditor.inst.GetTimelineObject(beatmapObject);
+                if (EditorConfig.Instance.SelectPasted.Value)
+                {
+                    foreach (var kf in timelineObject.InternalSelections)
+                        kf.selected = ids.Contains(kf.ID);
+                }
+
+                ObjectEditor.inst.RenderTimelineObject(timelineObject);
+
+                if (ObjectEditor.UpdateObjects)
+                {
+                    Updater.UpdateObject(beatmapObject, "Keyframes");
+                    Updater.UpdateObject(beatmapObject, "Autokill");
+                }
+            }
+        }
+
+        public static void RepeatPasteKeyframes(int repeatCount, float repeatOffsetTime)
+        {
+            var kfs = ObjectEditor.inst.copiedObjectKeyframes;
+
+            if (kfs.Count <= 0)
+            {
+                EditorManager.inst.DisplayNotification("No copied keyframes yet!", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
+            foreach (var beatmapObject in ObjectEditor.inst.SelectedBeatmapObjects.Select(x => x.GetData<BeatmapObject>()))
+            {
+                float t = 0f;
+                var ids = new List<string>();
+                for (int repeat = 0; repeat < Mathf.Clamp(repeatCount + 1, 0, int.MaxValue); repeat++)
+                {
+                    for (int i = 0; i < beatmapObject.events.Count; i++)
+                        beatmapObject.events[i].AddRange(kfs.Where(x => x.Type == i).Select(x =>
+                        {
+                            var kf = ObjectEditor.inst.PasteKF(beatmapObject, x);
+                            kf.eventTime += t;
+                            ids.Add(kf.id);
+                            return kf;
+                        }));
+
+                    t += Mathf.Clamp(repeatOffsetTime, 0f, float.PositiveInfinity);
+                }
+
+                for (int i = 0; i < beatmapObject.events.Count; i++)
+                {
+                    beatmapObject.events[i] = (from x in beatmapObject.events[i]
+                                               orderby x.eventTime
+                                               select x).ToList();
+                }
+
+                var timelineObject = ObjectEditor.inst.GetTimelineObject(beatmapObject);
+                if (EditorConfig.Instance.SelectPasted.Value)
+                {
+                    foreach (var kf in timelineObject.InternalSelections)
+                        kf.selected = ids.Contains(kf.ID);
+                }
+
+                ObjectEditor.inst.RenderTimelineObject(timelineObject);
+
+                if (ObjectEditor.UpdateObjects)
+                {
+                    Updater.UpdateObject(beatmapObject, "Keyframes");
+                    Updater.UpdateObject(beatmapObject, "Autokill");
+                }
+            }
         }
     }
 }
