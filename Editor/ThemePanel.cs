@@ -22,8 +22,10 @@ namespace BetterLegacy.Editor
 
         public BeatmapTheme Theme { get; set; }
 
-        public string Path { get; set; }
+        public string FilePath { get; set; }
 
         public string OriginalID { get; set; }
+
+        public bool isFolder;
     }
 }
