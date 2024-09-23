@@ -647,7 +647,7 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        EventKeyframe PasteKF(BeatmapObject beatmapObject, TimelineObject timelineObject, bool setTime = true)
+        public EventKeyframe PasteKF(BeatmapObject beatmapObject, TimelineObject timelineObject, bool setTime = true)
         {
             var eventKeyframe = EventKeyframe.DeepCopy(timelineObject.GetData<EventKeyframe>());
 
@@ -678,6 +678,15 @@ namespace BetterLegacy.Editor.Managers
 
             StartCoroutine(AddPrefabExpandedToLevel((Prefab)ObjEditor.inst.beatmapObjCopy, true, _offsetTime, false, _regen));
         }
+
+        public EventKeyframe GetCopiedData(int type) => type switch
+        {
+            0 => CopiedPositionData,
+            1 => CopiedScaleData,
+            2 => CopiedRotationData,
+            3 => CopiedColorData,
+            _ => null,
+        };
 
         #endregion
 
