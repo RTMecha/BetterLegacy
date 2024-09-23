@@ -1409,8 +1409,8 @@ namespace BetterLegacy.Editor.Managers
 
                 if (ui.Tab == Tab.Custom)
                 {
-                    currentModel.customObjects.TryGetValue(CustomObjectID, out PlayerModel.CustomObject customObject);
-                    var customActive = active && !string.IsNullOrEmpty(CustomObjectID) && customObject != null;
+                    PlayerModel.CustomObject customObject = null;
+                    var customActive = active && !string.IsNullOrEmpty(CustomObjectID) && currentModel.customObjects.TryGetValue(CustomObjectID, out customObject);
                     ui.GameObject?.SetActive(customActive);
                     if (!customActive)
                         continue;
