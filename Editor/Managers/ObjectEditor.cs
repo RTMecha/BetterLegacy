@@ -2966,7 +2966,10 @@ namespace BetterLegacy.Editor.Managers
                     {
                         var opt = shapeButtonPrefab.Duplicate(shapeSettings.GetChild(i), (j + 1).ToString(), j);
                         if (opt.transform.Find("Image") && opt.transform.Find("Image").gameObject.TryGetComponent(out Image image1))
+                        {
                             image1.sprite = playerSprite;
+                            EditorThemeManager.ApplyGraphic(image1, ThemeGroup.Toggle_1_Check);
+                        }
 
                         var shapeOptionToggle = opt.GetComponent<Toggle>();
                         EditorThemeManager.ApplyToggle(shapeOptionToggle, ThemeGroup.Background_1);
