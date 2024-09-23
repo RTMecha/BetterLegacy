@@ -422,10 +422,7 @@ namespace BetterLegacy.Core.Helpers
             }
 
             var menu = new GameObject("Arcade Menu System");
-            if (ArcadeConfig.Instance.UseNewArcadeUI.Value)
-                menu.AddComponent<ArcadeMenuManager>();
-            else
-                menu.AddComponent<LevelMenuManager>();
+            menu.AddComponent<ArcadeMenuManager>();
         }
 
         public static IEnumerator OnLoadingEnd()

@@ -109,13 +109,13 @@ namespace BetterLegacy.Arcade
 
             inter.AddComponent<GraphicRaycaster>();
 
-            var openFilePopup = LevelMenuManager.GenerateUIImage("Loading Popup", inter.transform);
+            var openFilePopup = UIManager.GenerateUIImage("Loading Popup", inter.transform);
             var parent = ((GameObject)openFilePopup["GameObject"]).transform;
             parent.localScale = Vector3.one;
 
             var openFilePopupRT = (RectTransform)openFilePopup["RectTransform"];
             var zeroFive = new Vector2(0.5f, 0.5f);
-            LevelMenuManager.SetRectTransform(openFilePopupRT, Vector2.zero, zeroFive, zeroFive, zeroFive, new Vector2(800f, 600f));
+            UIManager.SetRectTransform(openFilePopupRT, Vector2.zero, zeroFive, zeroFive, zeroFive, new Vector2(800f, 600f));
 
             baseImage = ((Image)openFilePopup["Image"]);
 
@@ -164,11 +164,11 @@ namespace BetterLegacy.Arcade
             loadText.fontSize = 30;
             loadText.alignment = TextAlignmentOptions.Center;
 
-            LevelMenuManager.SetRectTransform((RectTransform)title["RectTransform"], new Vector2(0f, -40f), Vector2.one, Vector2.zero, new Vector2(0f, 0.5f), new Vector2(32f, 32f));
+            UIManager.SetRectTransform((RectTransform)title["RectTransform"], new Vector2(0f, -40f), Vector2.one, Vector2.zero, new Vector2(0f, 0.5f), new Vector2(32f, 32f));
             ((GameObject)title["GameObject"]).transform.localScale = Vector3.one;
 
-            var loaderBase = LevelMenuManager.GenerateUIImage("LoaderBase", parent);
-            LevelMenuManager.SetRectTransform((RectTransform)loaderBase["RectTransform"], new Vector2(-300f, -140f), zeroFive, zeroFive, new Vector2(0f, 0.5f), new Vector2(600f, 32f));
+            var loaderBase = UIManager.GenerateUIImage("LoaderBase", parent);
+            UIManager.SetRectTransform((RectTransform)loaderBase["RectTransform"], new Vector2(-300f, -140f), zeroFive, zeroFive, new Vector2(0f, 0.5f), new Vector2(600f, 32f));
             ((GameObject)loaderBase["GameObject"]).transform.localScale = Vector3.one;
             ((GameObject)loaderBase["GameObject"]).AddComponent<Mask>();
 
@@ -177,9 +177,9 @@ namespace BetterLegacy.Arcade
             else
                 ((Image)loaderBase["Image"]).sprite = null;
 
-            var loader = LevelMenuManager.GenerateUIImage("Loader", ((GameObject)loaderBase["GameObject"]).transform);
+            var loader = UIManager.GenerateUIImage("Loader", ((GameObject)loaderBase["GameObject"]).transform);
             loadingBar = (RectTransform)loader["RectTransform"];
-            LevelMenuManager.SetRectTransform(loadingBar, new Vector2(-300f, 0f), zeroFive, zeroFive, new Vector2(0f, 0.5f), new Vector2(0f, 32f));
+            UIManager.SetRectTransform(loadingBar, new Vector2(-300f, 0f), zeroFive, zeroFive, new Vector2(0f, 0.5f), new Vector2(0f, 32f));
 
             loadingBar.localScale = Vector3.one;
 
@@ -200,13 +200,6 @@ namespace BetterLegacy.Arcade
             Destroy(GameObject.Find("Main Camera").GetComponent<ArcadeController>());
             Destroy(GameObject.Find("Main Camera").GetComponent<FlareLayer>());
             Destroy(GameObject.Find("Main Camera").GetComponent<GUILayer>());
-
-            if (LevelMenuManager.inst)
-            {
-                Destroy(GameObject.Find("VideoPlayer"));
-                Destroy(GameObject.Find("folder"));
-                Destroy(LevelMenuManager.inst.gameObject);
-            }
 
             if (ArcadeMenuManager.inst)
             {

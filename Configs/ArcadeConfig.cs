@@ -71,11 +71,6 @@ namespace BetterLegacy.Configs
         #region UI
 
         /// <summary>
-        /// If the arcade should use the new UI or not. The old modded UI should always be accessible if you want to use it.
-        /// </summary>
-        public Setting<bool> UseNewArcadeUI { get; set; }
-
-        /// <summary>
         /// The roundness of the tabs at the top of the Arcade UI. (New UI Only)
         /// </summary>
         public Setting<int> TabsRoundedness { get; set; }
@@ -209,8 +204,6 @@ namespace BetterLegacy.Configs
 
             #region UI
 
-            UseNewArcadeUI = Bind(this, "UI", "Use New UI", true, "If the arcade should use the new UI or not. The old modded UI should always be accessible if you want to use it.");
-
             TabsRoundedness = Bind(this, "UI", "Tabs Roundness", 1, "The roundness of the tabs at the top of the Arcade UI. (New UI Only)", 0, 5);
 
             LoadingBackRoundness = Bind(this, "UI", "Loading Back Roundness", 2, "The roundness of the loading screens' back.", 0, 5);
@@ -300,34 +293,6 @@ namespace BetterLegacy.Configs
         void LocalLevelSortChanged()
         {
             LevelManager.Sort(LocalLevelOrderby.Value, LocalLevelAscend.Value);
-
-            if (LevelMenuManager.inst)
-            {
-                LevelMenuManager.levelFilter = (int)LocalLevelOrderby.Value;
-                LevelMenuManager.levelAscend = LocalLevelAscend.Value;
-
-                var toggleClone = LevelMenuManager.levelList.transform.Find("toggle/toggle").GetComponent<Toggle>();
-                toggleClone.onValueChanged.RemoveAllListeners();
-                toggleClone.isOn = LevelMenuManager.levelAscend;
-                toggleClone.onValueChanged.AddListener(delegate (bool _val)
-                {
-                    LevelMenuManager.levelAscend = _val;
-                    LevelMenuManager.Sort();
-                    CoreHelper.StartCoroutine(LevelMenuManager.GenerateUIList());
-                });
-
-                var dropdownClone = LevelMenuManager.levelList.transform.Find("orderby dropdown").GetComponent<Dropdown>();
-                dropdownClone.onValueChanged.RemoveAllListeners();
-                dropdownClone.value = LevelMenuManager.levelFilter;
-                dropdownClone.onValueChanged.AddListener(delegate (int _val)
-                {
-                    LevelMenuManager.levelFilter = _val;
-                    LevelMenuManager.Sort();
-                    CoreHelper.StartCoroutine(LevelMenuManager.GenerateUIList());
-                });
-
-                CoreHelper.StartCoroutine(LevelMenuManager.GenerateUIList());
-            }
 
             if (ArcadeMenuManager.inst)
             {
