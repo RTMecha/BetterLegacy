@@ -75,6 +75,10 @@ namespace BetterLegacy.Core
                 };
         }
 
+        public SteamworksFacepunch.Ugc.Item steamItem;
+        public bool isSteamLevel;
+        public bool steamLevelInit;
+
         public string path;
 
         public Sprite icon;

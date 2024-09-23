@@ -1,4 +1,5 @@
-﻿using LSFunctions;
+﻿using BetterLegacy.Core.Helpers;
+using LSFunctions;
 using SimpleJSON;
 using SteamworksFacepunch;
 using SteamworksFacepunch.Data;
@@ -122,8 +123,9 @@ namespace BetterLegacy.Core.Managers.Networking
                     yield break;
 
                 var level = new Level(pchFolder + "/");
-                if (level.InvalidID)
-                    level.id = publishedFileID.Value.ToString();
+                level.id = publishedFileID.Value.ToString();
+                level.isSteamLevel = true;
+                Task.Run(() => { GetItem(publishedFileID, level); });
 
                 if (LevelManager.Saves.TryFindIndex(x => x.ID == level.id, out int saveIndex))
                     level.playerData = LevelManager.Saves[saveIndex];
@@ -134,6 +136,13 @@ namespace BetterLegacy.Core.Managers.Networking
 
                 yield break;
             }
+        }
+
+        async void GetItem(PublishedFileId publishedFileID, Level level)
+        {
+            var item = await Item.GetAsync(publishedFileID);
+            level.steamItem = item.Value;
+            level.steamLevelInit = true;
         }
 
         public void CreateEntry(Item entry)

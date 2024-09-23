@@ -359,7 +359,13 @@ namespace BetterLegacy.Core.Helpers
                 jn["queue"][i]["id"] = LevelManager.ArcadeQueue[i].id;
 
                 if (LevelManager.ArcadeQueue[i].metadata && LevelManager.ArcadeQueue[i].metadata.beatmap is LevelBeatmap levelBeatmap)
+                {
+                    if (!string.IsNullOrEmpty(LevelManager.ArcadeQueue[i].metadata.serverID))
+                        jn["queue"][i]["server_id"] = LevelManager.ArcadeQueue[i].metadata.serverID;
+                    if (!string.IsNullOrEmpty(LevelManager.ArcadeQueue[i].metadata.serverID))
+                        jn["queue"][i]["workhsop_id"] = levelBeatmap.beatmap_id;
                     jn["queue"][i]["name"] = levelBeatmap.name;
+                }
             }
 
             LSText.CopyToClipboard(jn.ToString(3));
@@ -398,13 +404,8 @@ namespace BetterLegacy.Core.Helpers
                         CoreHelper.LogError($"Level with ID {jnQueue["id"]} (Name: {jnQueue["name"]}) does not currently exist in your Local folder / Steam subscribed items.");
                 }
 
-                if (ArcadeMenuManager.inst && ArcadeMenuManager.inst.CurrentTab == 4)
-                {
-                    if (ArcadeMenuManager.inst.queuePageField.text != "0")
-                        ArcadeMenuManager.inst.queuePageField.text = "0";
-                    else
-                        CoreHelper.StartCoroutine(ArcadeMenuManager.inst.RefreshQueuedLevels());
-                }
+                if (ArcadeMenu.Current != null)
+                    ArcadeMenu.Current.RefreshQueueLevels(true);
             }
             catch (Exception ex)
             {
@@ -413,17 +414,7 @@ namespace BetterLegacy.Core.Helpers
 
         }
 
-        public static void LoadArcadeMenu()
-        {
-            if (ArcadeMenu.useThisUI)
-            {
-                ArcadeMenu.Init();
-                return;
-            }
-
-            var menu = new GameObject("Arcade Menu System");
-            menu.AddComponent<ArcadeMenuManager>();
-        }
+        public static void LoadArcadeMenu() => ArcadeMenu.Init();
 
         public static IEnumerator OnLoadingEnd()
         {

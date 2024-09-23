@@ -238,6 +238,8 @@ namespace BetterLegacy.Menus
             ArcadeMenu.Current = null;
             PlayLevelMenu.Current = null;
             DownloadLevelMenu.Current = null;
+            SteamLevelMenu.Current = null;
+            ProgressMenu.Current = null;
 
             if (CurrentGenerateUICoroutine != null)
             {

@@ -897,7 +897,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// <summary>
         /// Control system.
         /// </summary>
-        public void UpdateControls()
+        public virtual void UpdateControls()
         {
             var actions = InputDataManager.inst.menuActions;
 

@@ -71,11 +71,6 @@ namespace BetterLegacy.Configs
         #region UI
 
         /// <summary>
-        /// The roundness of the tabs at the top of the Arcade UI. (New UI Only)
-        /// </summary>
-        public Setting<int> TabsRoundedness { get; set; }
-
-        /// <summary>
         /// The roundness of the loading screens' back.
         /// </summary>
         public Setting<int> LoadingBackRoundness { get; set; }
@@ -89,46 +84,6 @@ namespace BetterLegacy.Configs
         /// The roundness of the loading screens' loading bar.
         /// </summary>
         public Setting<int> LoadingBarRoundness { get; set; }
-
-        /// <summary>
-        /// The roundness of the levels.
-        /// </summary>
-        public Setting<int> LocalLevelsRoundness { get; set; }
-
-        /// <summary>
-        /// The roundness of the levels' icon.
-        /// </summary>
-        public Setting<int> LocalLevelsIconRoundness { get; set; }
-
-        /// <summary>
-        /// The roundness of the Steam levels.
-        /// </summary>
-        public Setting<int> SteamLevelsRoundness { get; set; }
-
-        /// <summary>
-        /// The roundness of the Steam levels' icon.
-        /// </summary>
-        public Setting<int> SteamLevelsIconRoundness { get; set; }
-
-        /// <summary>
-        /// The roundness of the Page Input Field.
-        /// </summary>
-        public Setting<int> PageFieldRoundness { get; set; }
-
-        /// <summary>
-        /// The roundness of the Play Menu Buttons.
-        /// </summary>
-        public Setting<int> PlayLevelMenuButtonsRoundness { get; set; }
-
-        /// <summary>
-        /// The roundness of the Play Menu icon.
-        /// </summary>
-        public Setting<int> PlayLevelMenuIconRoundness { get; set; }
-
-        /// <summary>
-        /// If some random elements should be rounded in the UI.
-        /// </summary>
-        public Setting<bool> MiscRounded { get; set; }
 
         /// <summary>
         /// If the SS rank shine should only show on the current selected level with an SS rank or on all levels with an SS rank.
@@ -204,25 +159,9 @@ namespace BetterLegacy.Configs
 
             #region UI
 
-            TabsRoundedness = Bind(this, "UI", "Tabs Roundness", 1, "The roundness of the tabs at the top of the Arcade UI. (New UI Only)", 0, 5);
-
             LoadingBackRoundness = Bind(this, "UI", "Loading Back Roundness", 2, "The roundness of the loading screens' back.", 0, 5);
             LoadingIconRoundness = Bind(this, "UI", "Loading Icon Roundness", 1, "The roundness of the loading screens' icon.", 0, 5);
             LoadingBarRoundness = Bind(this, "UI", "Loading Bar Roundness", 1, "The roundness of the loading screens' loading bar.", 0, 5);
-
-            LocalLevelsRoundness = Bind(this, "UI", "Local Levels Roundness", 1, "The roundness of the levels. (New UI Only)", 0, 5);
-            LocalLevelsIconRoundness = Bind(this, "UI", "Local Levels Icon Roundness", 0, "The roundness of the levels' icon. (New UI Only)", 0, 5);
-
-            SteamLevelsRoundness = Bind(this, "UI", "Steam Levels Roundness", 1, "The roundness of the Steam levels. (New UI Only)", 0, 5);
-            SteamLevelsIconRoundness = Bind(this, "UI", "Steam Levels Icon Roundness", 0, "The roundness of the Steam levels' icon. (New UI Only)", 0, 5);
-
-            PageFieldRoundness = Bind(this, "UI", "Page Field Roundness", 1, "The roundness of the Page Input Field. (New UI Only)", 0, 5);
-
-            PlayLevelMenuButtonsRoundness = Bind(this, "UI", "Play Level Menu Buttons Roundness", 1, "The roundness of the Play Menu Buttons. (New UI Only)", 0, 5);
-
-            PlayLevelMenuIconRoundness = Bind(this, "UI", "Play Level Menu Icon Roundness", 2, "The roundness of the Play Menu icon. (New UI Only)", 0, 5);
-
-            MiscRounded = Bind(this, "UI", "Misc Rounded", true, "If some random elements should be rounded in the UI. (New UI Only)");
 
             OnlyShowShineOnSelected = Bind(this, "UI", "Only Show Shine on Selected", true, "If the SS rank shine should only show on the current selected level with an SS rank or on all levels with an SS rank.");
             ShineSpeed = Bind(this, "UI", "SS Rank Shine Speed", 0.7f, "How fast the shine goes by.", 0.1f, 3f);
@@ -251,22 +190,6 @@ namespace BetterLegacy.Configs
         {
             CurrentLevelMode.SettingChanged += CurrentLevelModeChanged;
 
-            TabsRoundedness.SettingChanged += TabsRoundnessChanged;
-
-            LocalLevelsRoundness.SettingChanged += LocalLevelPanelsRoundnessChanged;
-            LocalLevelsIconRoundness.SettingChanged += LocalLevelPanelsRoundnessChanged;
-
-            SteamLevelsRoundness.SettingChanged += SteamLevelPanelsRoundnessChanged;
-            SteamLevelsIconRoundness.SettingChanged += SteamLevelPanelsRoundnessChanged;
-
-            MiscRounded.SettingChanged += MiscRoundedChanged;
-
-            PageFieldRoundness.SettingChanged += MiscRoundedChanged;
-
-            //PlayLevelMenuButtonsRoundness.SettingChanged += PlayLevelMenuRoundnessChanged;
-
-            //PlayLevelMenuIconRoundness.SettingChanged += PlayLevelMenuRoundnessChanged;
-
             LocalLevelOrderby.SettingChanged += LocalLevelSortChanged;
             LocalLevelAscend.SettingChanged += LocalLevelSortChanged;
 
@@ -280,13 +203,10 @@ namespace BetterLegacy.Configs
         {
             SteamWorkshopManager.inst.Levels = LevelManager.SortLevels(SteamWorkshopManager.inst.Levels, SteamLevelOrderby.Value, SteamLevelAscend.Value);
 
-            if (ArcadeMenuManager.inst && ArcadeMenuManager.inst.CurrentTab == 5 && ArcadeMenuManager.inst.steamViewType == ArcadeMenuManager.SteamViewType.Subscribed)
+            if (ArcadeMenu.Current != null && ArcadeMenu.CurrentTab == ArcadeMenu.Tab.Steam && !ArcadeMenu.ViewOnline)
             {
-                ArcadeMenuManager.inst.selected = new Vector2Int(0, 2);
-                if (ArcadeMenuManager.inst.steamPageField.text != "0")
-                    ArcadeMenuManager.inst.steamPageField.text = "0";
-                else
-                    CoreHelper.StartCoroutine(ArcadeMenuManager.inst.RefreshSubscribedSteamLevels());
+                ArcadeMenu.Pages[(int)ArcadeMenu.Tab.Steam] = 0;
+                ArcadeMenu.Current.RefreshSubscribedSteamLevels(true);
             }
         }
 
@@ -294,35 +214,16 @@ namespace BetterLegacy.Configs
         {
             LevelManager.Sort(LocalLevelOrderby.Value, LocalLevelAscend.Value);
 
-            if (ArcadeMenuManager.inst)
+            if (ArcadeMenu.Current != null && ArcadeMenu.CurrentTab == ArcadeMenu.Tab.Steam && !ArcadeMenu.ViewOnline)
             {
-                ArcadeMenuManager.inst.selected = new Vector2Int(0, 2);
-                if (ArcadeMenuManager.inst.localPageField.text != "0")
-                    ArcadeMenuManager.inst.localPageField.text = "0";
-                else
-                    CoreHelper.StartCoroutine(ArcadeMenuManager.inst.RefreshLocalLevels());
+                ArcadeMenu.Pages[(int)ArcadeMenu.Tab.Local] = 0;
+                ArcadeMenu.Current.RefreshLocalLevels(true);
             }
         }
 
-        //void PlayLevelMenuRoundnessChanged() => PlayLevelMenuManager.inst?.UpdateRoundness();
+        void CurrentLevelModeChanged() => LevelManager.CurrentLevelMode = CurrentLevelMode.Value;
 
-        void MiscRoundedChanged() => ArcadeMenuManager.inst?.UpdateMiscRoundness();
-
-        void LocalLevelPanelsRoundnessChanged() => ArcadeMenuManager.inst?.UpdateLocalLevelsRoundness();
-
-        void SteamLevelPanelsRoundnessChanged() => ArcadeMenuManager.inst?.UpdateSteamLevelsRoundness();
-
-        void TabsRoundnessChanged() => ArcadeMenuManager.inst?.UpdateTabRoundness();
-
-        void CurrentLevelModeChanged()
-        {
-            LevelManager.CurrentLevelMode = CurrentLevelMode.Value;
-        }
-
-        void LocalLevelsPathChanged()
-        {
-            LevelManager.Path = LocalLevelsPath.Value;
-        }
+        void LocalLevelsPathChanged() => LevelManager.Path = LocalLevelsPath.Value;
 
         #endregion
     }

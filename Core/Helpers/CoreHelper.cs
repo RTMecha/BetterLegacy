@@ -244,6 +244,25 @@ namespace BetterLegacy.Core.Helpers
         /// <returns>Returns a list of <see cref="Dropdown.OptionData"/> based on the string array.</returns>
         public static List<Dropdown.OptionData> StringToOptionData(params string[] str) => str.Select(x => new Dropdown.OptionData(x)).ToList();
 
+        public static IEnumerator PerformActionAfterSeconds(float t, Action action)
+        {
+            yield return new WaitForSeconds(t);
+            action?.Invoke();
+        }
+
+        public static void ReturnToUnity(Action action) => StartCoroutine(IReturnToUnity(action));
+
+        public static IEnumerator IReturnToUnity(Action action)
+        {
+            yield return Ninja.JumpToUnity;
+            action?.Invoke();
+        }
+
+        public static void LogOnMainThread(string message)
+        {
+            StartCoroutine(IReturnToUnity(() => { Log(message); }));
+        }
+
         #endregion
 
         /// <summary>
@@ -295,6 +314,8 @@ namespace BetterLegacy.Core.Helpers
                 $"---------------------------------------------------------------------\n" +
                 $"---------------------------- INITIALIZED ----------------------------\n" +
                 $"---------------------------------------------------------------------\n");
+
+        public static void LogSeparator() => Debug.Log("---------------------------------------------------------------------");
 
         #endregion
 
@@ -781,23 +802,6 @@ namespace BetterLegacy.Core.Helpers
         public static IEnumerator Empty()
         {
             yield break;
-        }
-
-        public static IEnumerator PerformActionAfterSeconds(float t, Action action)
-        {
-            yield return new WaitForSeconds(t);
-            action?.Invoke();
-        }
-
-        public static IEnumerator ReturnToUnity(Action action)
-        {
-            yield return Ninja.JumpToUnity;
-            action?.Invoke();
-        }
-
-        public static void LogOnMainThread(string message)
-        {
-            StartCoroutine(ReturnToUnity(() => { Log(message); }));
         }
 
         public static string currentPopupID;

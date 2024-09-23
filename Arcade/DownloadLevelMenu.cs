@@ -381,8 +381,7 @@ namespace BetterLegacy.Arcade
             CurrentOnlineLevel = null;
             InterfaceManager.inst.CloseMenus();
 
-            if (ArcadeMenu.useThisUI)
-                ArcadeMenu.Init();
+            ArcadeMenu.Init();
         }
 
         public override void Clear()

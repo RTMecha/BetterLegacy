@@ -331,8 +331,6 @@ namespace BetterLegacy.Arcade
                     else
                         LevelManager.CurrentLevel = CurrentLevel;
 
-                    if (ArcadeMenuManager.inst)
-                        ArcadeMenuManager.inst.menuUI.SetActive(false);
                     InterfaceManager.inst.CloseMenus();
                     LevelManager.OnLevelEnd = ArcadeHelper.EndOfLevel;
                     CoreHelper.StartCoroutine(LevelManager.Play(LevelManager.CurrentLevel));
@@ -605,8 +603,7 @@ namespace BetterLegacy.Arcade
             LevelManager.CurrentLevelCollection = null;
             InterfaceManager.inst.CloseMenus();
 
-            if (ArcadeMenu.useThisUI)
-                ArcadeMenu.Init();
+            ArcadeMenu.Init();
         }
 
         public override void Clear()

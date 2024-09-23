@@ -25,14 +25,13 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using System.IO;
 using InControl;
+using SteamworksFacepunch.Ugc;
 
 namespace BetterLegacy.Arcade
 {
     // Probably not gonna use this
     public class ArcadeMenu : MenuBase
     {
-        public static bool useThisUI = true;
-
         public static ArcadeMenu Current { get; set; }
 
         public enum Tab
@@ -54,9 +53,12 @@ namespace BetterLegacy.Arcade
             0, // Steam
         };
 
+        public static bool ViewOnline { get; set; }
+
         public const int MAX_LEVELS_PER_PAGE = 20;
-        public const int MAX_QUEUED_PER_PAGE = 5;
+        public const int MAX_QUEUED_PER_PAGE = 6;
         public const int MAX_STEAM_LEVELS_PER_PAGE = 35;
+        public const int MAX_STEAM_ONLINE_LEVELS_PER_PAGE = 50;
 
         public static string[] Searches { get; set; } = new string[]
         {
@@ -153,7 +155,7 @@ namespace BetterLegacy.Arcade
                             id = "842848",
                             name = "Search Bar",
                             parentLayout = "local settings",
-                            rect = RectValues.Default.SizeDelta(1368f, 64f),
+                            rect = RectValues.Default.SizeDelta(1168f, 64f),
                             text = currentSearch,
                             valueChangedFunc = SearchLocalLevels,
                             placeholder = "Search levels...",
@@ -163,6 +165,28 @@ namespace BetterLegacy.Arcade
                             placeholderColor = 6,
                             length = 0.1f,
                             wait = false,
+                            regenerate = false,
+                        });
+
+                        elements.Add(new MenuButton
+                        {
+                            id = "25428852",
+                            name = "Reload Button",
+                            text = "<align=center><b>[ RELOAD ]",
+                            parentLayout = "local settings",
+                            selectionPosition = new Vector2Int(0, 1),
+                            rect = RectValues.Default.SizeDelta(200f, 64f),
+                            func = () =>
+                            {
+                                new GameObject("Load Level System").AddComponent<LoadLevelsManager>();
+                            },
+                            color = 6,
+                            opacity = 0.1f,
+                            textColor = 6,
+                            selectedColor = 6,
+                            selectedOpacity = 1f,
+                            selectedTextColor = 7,
+                            length = 0.1f,
                             regenerate = false,
                         });
 
@@ -218,7 +242,7 @@ namespace BetterLegacy.Arcade
                             name = "Prev Page",
                             text = "<align=center><b><",
                             parentLayout = "local settings",
-                            selectionPosition = new Vector2Int(0, 1),
+                            selectionPosition = new Vector2Int(1, 1),
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
@@ -245,7 +269,7 @@ namespace BetterLegacy.Arcade
                             name = "Next Page",
                             text = "<align=center><b>>",
                             parentLayout = "local settings",
-                            selectionPosition = new Vector2Int(1, 1),
+                            selectionPosition = new Vector2Int(2, 1),
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
@@ -543,7 +567,7 @@ namespace BetterLegacy.Arcade
                             id = "842848",
                             name = "Search Bar",
                             parentLayout = "queue settings",
-                            rect = RectValues.Default.SizeDelta(1368f, 64f),
+                            rect = RectValues.Default.SizeDelta(368f, 64f),
                             text = currentSearch,
                             valueChangedFunc = SearchQueuedLevels,
                             placeholder = "Search levels...",
@@ -553,6 +577,105 @@ namespace BetterLegacy.Arcade
                             placeholderColor = 6,
                             length = 0.1f,
                             wait = false,
+                            regenerate = false,
+                        });
+
+                        elements.Add(new MenuButton
+                        {
+                            id = "25428852",
+                            name = "Shuffle Button",
+                            text = "<align=center><b>[ SHUFFLE ]",
+                            parentLayout = "queue settings",
+                            selectionPosition = new Vector2Int(0, 1),
+                            rect = RectValues.Default.SizeDelta(200f, 64f),
+                            func = () => { ShuffleQueue(false); },
+                            color = 6,
+                            opacity = 0.1f,
+                            textColor = 6,
+                            selectedColor = 6,
+                            selectedOpacity = 1f,
+                            selectedTextColor = 7,
+                            length = 0.1f,
+                            regenerate = false,
+                        });
+                        
+                        elements.Add(new MenuButton
+                        {
+                            id = "25428852",
+                            name = "Shuffle Button",
+                            text = "<align=center><b>[ PLAY ]",
+                            parentLayout = "queue settings",
+                            selectionPosition = new Vector2Int(1, 1),
+                            rect = RectValues.Default.SizeDelta(200f, 64f),
+                            func = StartQueue,
+                            color = 6,
+                            opacity = 0.1f,
+                            textColor = 6,
+                            selectedColor = 6,
+                            selectedOpacity = 1f,
+                            selectedTextColor = 7,
+                            length = 0.1f,
+                            regenerate = false,
+                        });
+
+                        elements.Add(new MenuButton
+                        {
+                            id = "25428852",
+                            name = "Clear Button",
+                            text = "<align=center><b>[ CLEAR ]",
+                            parentLayout = "queue settings",
+                            selectionPosition = new Vector2Int(2, 1),
+                            rect = RectValues.Default.SizeDelta(200f, 64f),
+                            func = () =>
+                            {
+                                LevelManager.ArcadeQueue.Clear();
+                                RefreshQueueLevels(true);
+                            },
+                            color = 6,
+                            opacity = 0.1f,
+                            textColor = 6,
+                            selectedColor = 6,
+                            selectedOpacity = 1f,
+                            selectedTextColor = 7,
+                            length = 0.1f,
+                            regenerate = false,
+                        });
+                        
+                        elements.Add(new MenuButton
+                        {
+                            id = "25428852",
+                            name = "Copy Button",
+                            text = "<align=center><b>[ COPY ]",
+                            parentLayout = "queue settings",
+                            selectionPosition = new Vector2Int(3, 1),
+                            rect = RectValues.Default.SizeDelta(200f, 64f),
+                            func = ArcadeHelper.CopyArcadeQueue,
+                            color = 6,
+                            opacity = 0.1f,
+                            textColor = 6,
+                            selectedColor = 6,
+                            selectedOpacity = 1f,
+                            selectedTextColor = 7,
+                            length = 0.1f,
+                            regenerate = false,
+                        });
+                        
+                        elements.Add(new MenuButton
+                        {
+                            id = "25428852",
+                            name = "Copy Button",
+                            text = "<align=center><b>[ PASTE ]",
+                            parentLayout = "queue settings",
+                            selectionPosition = new Vector2Int(4, 1),
+                            rect = RectValues.Default.SizeDelta(200f, 64f),
+                            func = ArcadeHelper.PasteArcadeQueue,
+                            color = 6,
+                            opacity = 0.1f,
+                            textColor = 6,
+                            selectedColor = 6,
+                            selectedOpacity = 1f,
+                            selectedTextColor = 7,
+                            length = 0.1f,
                             regenerate = false,
                         });
 
@@ -608,7 +731,7 @@ namespace BetterLegacy.Arcade
                             name = "Prev Page",
                             text = "<align=center><b><",
                             parentLayout = "queue settings",
-                            selectionPosition = new Vector2Int(0, 1),
+                            selectionPosition = new Vector2Int(5, 1),
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
@@ -635,7 +758,7 @@ namespace BetterLegacy.Arcade
                             name = "Next Page",
                             text = "<align=center><b>>",
                             parentLayout = "queue settings",
-                            selectionPosition = new Vector2Int(1, 1),
+                            selectionPosition = new Vector2Int(6, 1),
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
@@ -657,7 +780,7 @@ namespace BetterLegacy.Arcade
                         layouts.Add("levels", new MenuVerticalLayout
                         {
                             name = "levels",
-                            rect = RectValues.Default.AnchoredPosition(100f, 100f).SizeDelta(800f, 400f),
+                            rect = RectValues.Default.AnchoredPosition(-100f, 100f).SizeDelta(800f, 400f),
                             spacing = 12f,
                             childControlHeight = false,
                             childControlWidth = false,
@@ -667,7 +790,7 @@ namespace BetterLegacy.Arcade
                         layouts.Add("deletes", new MenuVerticalLayout
                         {
                             name = "deletes",
-                            rect = RectValues.Default.AnchoredPosition(960f, 100f).SizeDelta(800f, 400f),
+                            rect = RectValues.Default.AnchoredPosition(760f, 100f).SizeDelta(800f, 400f),
                             spacing = 12f,
                             childControlHeight = false,
                             childControlWidth = false,
@@ -693,9 +816,9 @@ namespace BetterLegacy.Arcade
                             id = "842848",
                             name = "Search Bar",
                             parentLayout = "steam settings",
-                            rect = RectValues.Default.SizeDelta(1068f, 64f),
+                            rect = RectValues.Default.SizeDelta(868f, 64f),
                             text = currentSearch,
-                            valueChangedFunc = SearchSubscribedSteamLevels,
+                            valueChangedFunc = ViewOnline ? SearchOnlineSteamLevels : SearchSubscribedSteamLevels,
                             placeholder = "Search levels...",
                             color = 6,
                             opacity = 0.1f,
@@ -706,6 +829,49 @@ namespace BetterLegacy.Arcade
                             regenerate = false,
                         });
 
+                        if (ViewOnline)
+                        {
+                            elements.Add(new MenuButton
+                            {
+                                id = "25428852",
+                                name = "Search Button",
+                                text = "<align=center><b>[ SEARCH ]",
+                                parentLayout = "steam settings",
+                                selectionPosition = new Vector2Int(0, 1),
+                                rect = RectValues.Default.SizeDelta(200f, 64f),
+                                func = () => { CoreHelper.StartCoroutine(RefreshOnlineSteamLevels()); },
+                                color = 6,
+                                opacity = 0.1f,
+                                textColor = 6,
+                                selectedColor = 6,
+                                selectedOpacity = 1f,
+                                selectedTextColor = 7,
+                                length = 0.1f,
+                                regenerate = false,
+                            });
+                        }
+                        else
+                        {
+                            elements.Add(new MenuButton
+                            {
+                                id = "25428852",
+                                name = "Reload Button",
+                                text = "<align=center><b>[ RELOAD ]",
+                                parentLayout = "steam settings",
+                                selectionPosition = new Vector2Int(0, 1),
+                                rect = RectValues.Default.SizeDelta(200f, 64f),
+                                func = () => { new GameObject("Load Level System").AddComponent<LoadLevelsManager>(); },
+                                color = 6,
+                                opacity = 0.1f,
+                                textColor = 6,
+                                selectedColor = 6,
+                                selectedOpacity = 1f,
+                                selectedTextColor = 7,
+                                length = 0.1f,
+                                regenerate = false,
+                            });
+                        }
+
                         var pageField = new MenuInputField
                         {
                             id = "842848",
@@ -714,7 +880,13 @@ namespace BetterLegacy.Arcade
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             text = currentPage.ToString(),
                             textAnchor = TextAnchor.MiddleCenter,
-                            valueChangedFunc = _val => SetSubscribedSteamLevelsPage(Parser.TryParse(_val, Pages[(int)CurrentTab])),
+                            valueChangedFunc = _val =>
+                            {
+                                if (ViewOnline)
+                                    SetOnlineSteamLevelsPage(Parser.TryParse(_val, Pages[(int)CurrentTab]));
+                                else
+                                    SetSubscribedSteamLevelsPage(Parser.TryParse(_val, Pages[(int)CurrentTab]));
+                            },
                             placeholder = "Set page...",
                             color = 6,
                             opacity = 0.1f,
@@ -743,7 +915,7 @@ namespace BetterLegacy.Arcade
                                     if (pointerEventData.scrollDelta.y > 0f)
                                         result += 1 * (large ? 10 : 1);
 
-                                    if (SubscribedSteamLevelPageCount != 0)
+                                    if (!ViewOnline && SubscribedSteamLevelPageCount != 0)
                                         result = Mathf.Clamp(result, 0, SubscribedSteamLevelPageCount);
 
                                     if (inputField.text != result.ToString())
@@ -758,7 +930,7 @@ namespace BetterLegacy.Arcade
                             name = "Prev Page",
                             text = "<align=center><b><",
                             parentLayout = "steam settings",
-                            selectionPosition = new Vector2Int(0, 1),
+                            selectionPosition = new Vector2Int(1, 1),
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
@@ -785,11 +957,11 @@ namespace BetterLegacy.Arcade
                             name = "Next Page",
                             text = "<align=center><b>>",
                             parentLayout = "steam settings",
-                            selectionPosition = new Vector2Int(1, 1),
+                            selectionPosition = new Vector2Int(2, 1),
                             rect = RectValues.Default.SizeDelta(132f, 64f),
                             func = () =>
                             {
-                                if (Pages[(int)CurrentTab] != SubscribedSteamLevelPageCount)
+                                if (ViewOnline || Pages[(int)CurrentTab] != SubscribedSteamLevelPageCount)
                                     pageField.inputField.text = (Pages[(int)CurrentTab] + 1).ToString();
                                 else
                                     AudioManager.inst.PlaySound("Block");
@@ -808,13 +980,15 @@ namespace BetterLegacy.Arcade
                         {
                             id = "32848924",
                             name = "Next Page",
-                            text = "<align=center><b>[ VIEW ONLINE ]",
+                            text = $"<align=center><b>[ {(ViewOnline ? "VIEW SUBSCRIBED" : "VIEW ONLINE")} ]",
                             parentLayout = "steam settings",
-                            selectionPosition = new Vector2Int(2, 1),
+                            selectionPosition = new Vector2Int(3, 1),
                             rect = RectValues.Default.SizeDelta(300f, 64f),
                             func = () =>
                             {
-
+                                ViewOnline = !ViewOnline;
+                                Pages[(int)CurrentTab] = 0;
+                                Init();
                             },
                             color = 6,
                             opacity = 0.1f,
@@ -830,22 +1004,25 @@ namespace BetterLegacy.Arcade
                         {
                             name = "levels",
                             rect = RectValues.Default.AnchoredPosition(-500f, 100f).SizeDelta(800f, 400f),
-                            cellSize = new Vector2(350f, 105f),
+                            cellSize = new Vector2(350f, ViewOnline ? 70f : 105f),
                             spacing = new Vector2(12f, 12f),
                             constraint = GridLayoutGroup.Constraint.FixedColumnCount,
                             constraintCount = 5,
                             regenerate = false,
                         });
 
-                        RefreshSubscribedSteamLevels(false);
+                        if (ViewOnline)
+                            CoreHelper.StartCoroutine(RefreshOnlineSteamLevels());
+                        else
+                            RefreshSubscribedSteamLevels(false);
 
                         break;
                     }
             }
 
             exitFunc = () => SceneManager.inst.LoadScene("Input Select");
-
-            CoreHelper.StartCoroutine(GenerateUI());
+            if (CurrentTab != Tab.Steam || !ViewOnline)
+                CoreHelper.StartCoroutine(GenerateUI());
         }
 
         #region Local
@@ -1504,32 +1681,12 @@ namespace BetterLegacy.Arcade
         {
             Searches[3] = search;
             Pages[3] = 0;
-
-            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name == "Delete Queue Button" || x.name.Contains("Shine"));
-
-            for (int i = 0; i < levelButtons.Count; i++)
-            {
-                var levelButton = levelButtons[i];
-                levelButton.Clear();
-                CoreHelper.Destroy(levelButton.gameObject);
-            }
-            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name == "Delete Queue Button" || x.name.Contains("Shine"));
             RefreshQueueLevels(true);
         }
 
         public void SetQueuedLevelsPage(int page)
         {
             Pages[3] = Mathf.Clamp(page, 0, QueuePageCount);
-
-            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name == "Delete Queue Button" || x.name.Contains("Shine"));
-
-            for (int i = 0; i < levelButtons.Count; i++)
-            {
-                var levelButton = levelButtons[i];
-                levelButton.Clear();
-                CoreHelper.Destroy(levelButton.gameObject);
-            }
-            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name == "Delete Queue Button" || x.name.Contains("Shine"));
             RefreshQueueLevels(true);
         }
 
@@ -1537,6 +1694,16 @@ namespace BetterLegacy.Arcade
         {
             // x = 800f
             // y = 180f
+
+            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name == "Delete Queue Button" || x.name.Contains("Shine"));
+
+            for (int i = 0; i < levelButtons.Count; i++)
+            {
+                var levelButton = levelButtons[i];
+                levelButton.Clear();
+                CoreHelper.Destroy(levelButton.gameObject);
+            }
+            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name == "Delete Queue Button" || x.name.Contains("Shine"));
 
             var currentPage = Pages[(int)CurrentTab] + 1;
             int max = currentPage * MAX_QUEUED_PER_PAGE;
@@ -1708,6 +1875,62 @@ namespace BetterLegacy.Arcade
                 CoreHelper.StartCoroutine(GenerateUI());
         }
 
+        public void StartQueue()
+        {
+            InterfaceManager.inst.CloseMenus();
+            LevelManager.OnLevelEnd = ArcadeHelper.EndOfLevel;
+            CoreHelper.StartCoroutine(LevelManager.Play(LevelManager.ArcadeQueue[0]));
+        }
+
+        public void ShuffleQueue(bool play)
+        {
+            if (LevelManager.Levels.Count < 1)
+            {
+                CoreHelper.LogError($"No levels to shuffle!");
+                return;
+            }
+
+            LevelManager.ArcadeQueue.Clear();
+
+            var queueRandom = new List<int>();
+            var queue = new List<Level>();
+
+            var levels = LevelManager.Levels.Union(SteamWorkshopManager.inst.Levels).ToList();
+
+            for (int i = 0; i < levels.Count; i++)
+            {
+                queueRandom.Add(i);
+            }
+
+            queueRandom = queueRandom.OrderBy(x => -(x - UnityEngine.Random.Range(0, levels.Count))).ToList();
+
+            var shuffleQueueAmount = ArcadeConfig.Instance.ShuffleQueueAmount.Value;
+
+            var minRandom = UnityEngine.Random.Range(0, levels.Count - shuffleQueueAmount);
+
+            for (int i = 0; i < queueRandom.Count; i++)
+            {
+                if (i >= minRandom && i - shuffleQueueAmount < minRandom)
+                {
+                    queue.Add(levels[queueRandom[i]]);
+                }
+            }
+
+            LevelManager.currentQueueIndex = 0;
+            LevelManager.ArcadeQueue.AddRange(queue);
+
+            if (play)
+                StartQueue();
+            else
+            {
+                Pages[3] = 0;
+                RefreshQueueLevels(true);
+            }
+
+            queueRandom.Clear();
+            queueRandom = null;
+        }
+
         #endregion
 
         #region Steam
@@ -1721,6 +1944,7 @@ namespace BetterLegacy.Arcade
                         || level.metadata.creator.steam_name.ToLower().Contains(SteamSearch.ToLower())
                         || level.metadata.song.title.ToLower().Contains(SteamSearch.ToLower())
                         || level.metadata.song.getDifficulty().ToLower().Contains(SteamSearch.ToLower())));
+        public static Dictionary<string, Sprite> OnlineSteamLevelIcons { get; set; } = new Dictionary<string, Sprite>();
 
         public void SearchSubscribedSteamLevels(string search)
         {
@@ -1902,7 +2126,120 @@ namespace BetterLegacy.Arcade
                 CoreHelper.StartCoroutine(GenerateUI());
         }
 
+        public void SearchOnlineSteamLevels(string search)
+        {
+            Searches[4] = search;
+            Pages[4] = 0;
+        }
+        
+        public void SetOnlineSteamLevelsPage(int page)
+        {
+            Pages[4] = Mathf.Clamp(page, 0, int.MaxValue);
+            CoreHelper.StartCoroutine(RefreshOnlineSteamLevels());
+        }
+
+        public IEnumerator RefreshOnlineSteamLevels()
+        {
+            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
+
+            for (int i = 0; i < levelButtons.Count; i++)
+            {
+                var levelButton = levelButtons[i];
+                levelButton.Clear();
+                CoreHelper.Destroy(levelButton.gameObject);
+            }
+            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
+
+            yield return new WaitUntil(() => SteamWorkshopManager.inst.SearchAsync(SteamSearch, Pages[(int)CurrentTab] + 1, (Item item, int index) =>
+            {
+                int column = (index % MAX_STEAM_ONLINE_LEVELS_PER_PAGE) % 5;
+                int row = (int)((index % MAX_STEAM_ONLINE_LEVELS_PER_PAGE) / 5) + 2;
+                var id = item.Id.ToString();
+
+                CoreHelper.Log($"Item: {id}\nTitle: {item.Title}");
+
+                var button = new MenuButton
+                {
+                    id = id,
+                    name = "Level Button",
+                    parentLayout = "levels",
+                    selectionPosition = new Vector2Int(column, row),
+                    func = () => { SelectOnlineSteamLevel(item); },
+                    iconRect = RectValues.Default.AnchoredPosition(-134f, 0f).SizeDelta(64f, 64f),
+                    text = "<size=24>" + $"{item.Title}",
+                    textRect = RectValues.FullAnchored.AnchorMin(0.24f, 0f),
+                    enableWordWrapping = true,
+                    icon = SteamWorkshop.inst.defaultSteamImageSprite,
+                    color = 6,
+                    opacity = 0.1f,
+                    textColor = 6,
+                    selectedColor = 6,
+                    selectedOpacity = 1f,
+                    selectedTextColor = 7,
+                    length = 0.01f,
+                };
+                elements.Add(button);
+
+                //elements.Add(new MenuImage
+                //{
+                //    id = "0",
+                //    name = "Difficulty",
+                //    parent = id,
+                //    rect = new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(8f, 0f)),
+                //    overrideColor = CoreHelper.GetDifficulty(difficulty).color,
+                //    useOverrideColor = true,
+                //    opacity = 1f,
+                //    roundedSide = SpriteHelper.RoundedSide.Left,
+                //    length = 0f,
+                //    wait = false,
+                //});
+
+                if (!string.IsNullOrEmpty(id) && OnlineSteamLevelIcons.TryGetValue(id, out Sprite sprite))
+                    button.icon = sprite;
+                else
+                {
+                    CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadBytes(item.PreviewImageUrl, bytes =>
+                    {
+                        CoreHelper.ReturnToUnity(() =>
+                        {
+                            var sprite = SpriteHelper.LoadSprite(bytes);
+                            OnlineSteamLevelIcons[id] = sprite;
+                            button.icon = sprite;
+                            if (button.iconUI)
+                                button.iconUI.sprite = sprite;
+                        });
+                    }, onError =>
+                    {
+                        CoreHelper.ReturnToUnity(() =>
+                        {
+                            var sprite = SteamWorkshop.inst.defaultSteamImageSprite;
+                            OnlineSteamLevelIcons[id] = sprite;
+                            button.icon = sprite;
+                            if (button.iconUI)
+                                button.iconUI.sprite = sprite;
+                        });
+                    }));
+                }
+            }).IsCompleted);
+            CoreHelper.StartCoroutine(GenerateUI());
+        }
+
+        public void SelectOnlineSteamLevel(Item item) => SteamLevelMenu.Init(item);
+
         #endregion
+
+        public override void UpdateControls()
+        {
+            if (CurrentTab == Tab.Queue && !CoreHelper.IsUsingInputField && isOpen && !generating)
+            {
+                if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.LeftControl)) && Input.GetKeyDown(KeyCode.C))
+                    ArcadeHelper.CopyArcadeQueue();
+                if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.LeftControl)) && Input.GetKeyDown(KeyCode.V))
+                    ArcadeHelper.PasteArcadeQueue();
+            }
+
+            base.UpdateControls();
+        }
 
         public override void UpdateTheme()
         {
@@ -1917,13 +2254,6 @@ namespace BetterLegacy.Arcade
         public static void Init()
         {
             InterfaceManager.inst.CloseMenus();
-            // testing
-            if (ArcadeMenuManager.inst)
-            {
-                CoreHelper.Destroy(ArcadeMenuManager.inst);
-                CoreHelper.Destroy(ArcadeMenuManager.inst.menuUI);
-            }
-
             Current = new ArcadeMenu();
         }
     }

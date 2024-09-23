@@ -2,6 +2,7 @@
 using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Menus;
 using InControl;
 using LSFunctions;
 using System.Collections;
@@ -19,8 +20,6 @@ namespace BetterLegacy.Arcade
     {
         public static LoadLevelsManager inst;
         public static GameObject menuUI;
-        public static float screenScale;
-        public static float screenScaleInverse;
 
         public static GameObject textMeshPro;
 
@@ -44,17 +43,12 @@ namespace BetterLegacy.Arcade
         {
             inst = this;
 
-            screenScale = (float)Screen.width / 1920f;
-            screenScaleInverse = 1f / screenScale;
-
+            InterfaceManager.inst.CloseMenus();
             StartCoroutine(CreateDialog());
         }
 
         void Update()
         {
-            screenScale = (float)Screen.width / 1920f;
-            screenScaleInverse = 1f / screenScale;
-
             var currentTheme = DataManager.inst.interfaceSettings["UITheme"][SaveManager.inst.settings.Video.UITheme];
 
             Camera.main.backgroundColor = LSColors.HexToColor(currentTheme["values"]["bg"]);
@@ -68,9 +62,7 @@ namespace BetterLegacy.Arcade
                 loadText.color = textColor;
 
             if (InputDataManager.inst.menuActions.Cancel.WasPressed && !CoreHelper.IsUsingInputField)
-            {
                 cancelled = true;
-            }
         }
 
         public Image baseImage;
@@ -85,31 +77,10 @@ namespace BetterLegacy.Arcade
 
             textMeshPro = findButton[0].transform.GetChild(1).gameObject;
 
-            var inter = new GameObject("Loading UI");
-            inter.transform.localScale = Vector3.one * screenScale;
-            menuUI = inter;
-            var interfaceRT = inter.AddComponent<RectTransform>();
-            interfaceRT.anchoredPosition = new Vector2(960f, 540f);
-            interfaceRT.sizeDelta = new Vector2(1920f, 1080f);
-            interfaceRT.pivot = new Vector2(0.5f, 0.5f);
-            interfaceRT.anchorMin = Vector2.zero;
-            interfaceRT.anchorMax = Vector2.zero;
+            var uiCanvas = UIManager.GenerateUICanvas("Loading UI", null);
+            menuUI = uiCanvas.GameObject;
 
-            var canvas = inter.AddComponent<Canvas>();
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.None;
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.TexCoord1;
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.Tangent;
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.Normal;
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.scaleFactor = screenScale;
-
-            var canvasScaler = inter.AddComponent<CanvasScaler>();
-            canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            canvasScaler.referenceResolution = new Vector2(Screen.width, Screen.height);
-
-            inter.AddComponent<GraphicRaycaster>();
-
-            var openFilePopup = UIManager.GenerateUIImage("Loading Popup", inter.transform);
+            var openFilePopup = UIManager.GenerateUIImage("Loading Popup", menuUI.transform);
             var parent = ((GameObject)openFilePopup["GameObject"]).transform;
             parent.localScale = Vector3.one;
 
@@ -200,12 +171,6 @@ namespace BetterLegacy.Arcade
             Destroy(GameObject.Find("Main Camera").GetComponent<ArcadeController>());
             Destroy(GameObject.Find("Main Camera").GetComponent<FlareLayer>());
             Destroy(GameObject.Find("Main Camera").GetComponent<GUILayer>());
-
-            if (ArcadeMenuManager.inst)
-            {
-                Destroy(ArcadeMenuManager.inst.menuUI);
-                Destroy(ArcadeMenuManager.inst.gameObject);
-            }
 
             yield break;
         }
