@@ -595,6 +595,13 @@ namespace BetterLegacy.Core.Helpers
                             new RTEditor.ButtonFunction("Select", () => { ObjectEditor.inst.SetCurrentObject(timelineObject); }),
                             new RTEditor.ButtonFunction("Add to Selection", () => { ObjectEditor.inst.AddSelectedObject(timelineObject); }),
                             new RTEditor.ButtonFunction("Create New", () => { ObjectEditor.inst.CreateNewNormalObject(); }),
+                            new RTEditor.ButtonFunction("Update Object", () =>
+                            {
+                                if (timelineObject.IsBeatmapObject)
+                                    Updater.UpdateObject(timelineObject.GetData<BeatmapObject>());
+                                if (timelineObject.IsPrefabObject)
+                                    Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
+                            }),
                             new RTEditor.ButtonFunction(true),
                             new RTEditor.ButtonFunction("Cut", () =>
                             {
@@ -602,10 +609,7 @@ namespace BetterLegacy.Core.Helpers
                                 CoreHelper.StartCoroutine(ObjectEditor.inst.DeleteObjects());
                             }),
                             new RTEditor.ButtonFunction("Copy", ObjEditor.inst.CopyObject),
-                            new RTEditor.ButtonFunction("Paste", () =>
-                            {
-                                ObjectEditor.inst.PasteObject();
-                            }),
+                            new RTEditor.ButtonFunction("Paste", () => { ObjectEditor.inst.PasteObject(); }),
                             new RTEditor.ButtonFunction("Duplicate", () =>
                             {
                                 var offsetTime = ObjectEditor.inst.SelectedObjects.Min(x => x.Time);
@@ -613,10 +617,7 @@ namespace BetterLegacy.Core.Helpers
                                 ObjEditor.inst.CopyObject();
                                 ObjectEditor.inst.PasteObject(offsetTime);
                             }),
-                            new RTEditor.ButtonFunction("Paste (Keep Prefab)", () =>
-                            {
-                                ObjectEditor.inst.PasteObject(0f, false);
-                            }),
+                            new RTEditor.ButtonFunction("Paste (Keep Prefab)", () => { ObjectEditor.inst.PasteObject(0f, false); }),
                             new RTEditor.ButtonFunction("Duplicate (Keep Prefab)", () =>
                             {
                                 var offsetTime = ObjectEditor.inst.SelectedObjects.Min(x => x.Time);
@@ -624,10 +625,7 @@ namespace BetterLegacy.Core.Helpers
                                 ObjEditor.inst.CopyObject();
                                 ObjectEditor.inst.PasteObject(offsetTime, false);
                             }),
-                            new RTEditor.ButtonFunction("Delete", () =>
-                            {
-                                CoreHelper.StartCoroutine(ObjectEditor.inst.DeleteObjects());
-                            })
+                            new RTEditor.ButtonFunction("Delete", () => { CoreHelper.StartCoroutine(ObjectEditor.inst.DeleteObjects()); })
                             );
 
                         return;
