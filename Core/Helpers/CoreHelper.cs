@@ -443,10 +443,10 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool RegexMatch(string str, Regex regex, out Match match)
         {
-            if (regex != null && regex.Match(str).Success)
+            if (regex != null)
             {
                 match = regex.Match(str);
-                return true;
+                return match.Success;
             }
 
             match = null;
