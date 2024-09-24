@@ -462,19 +462,22 @@ namespace BetterLegacy.Components.Editor
             if (!beatmapObject)
                 return;
 
-            var currentSelection = ObjectEditor.inst.CurrentSelection;
-
-            if (!beatmapObject.fromPrefab && currentSelection.ID == beatmapObject.id)
+            if (Enabled)
             {
-                GameStorageManager.inst.objectDragger.position = new Vector3(transform.parent.position.x, transform.parent.position.y, transform.parent.position.z - 10f);
-                GameStorageManager.inst.objectDragger.rotation = transform.parent.rotation;
-            }
+                var currentSelection = ObjectEditor.inst.CurrentSelection;
 
-            if (beatmapObject.fromPrefab && currentSelection.ID == beatmapObject.prefabInstanceID)
-            {
-                var prefabObject = currentSelection.GetData<PrefabObject>();
-                GameStorageManager.inst.objectDragger.position = new Vector3(prefabObject.events[0].eventValues[0], prefabObject.events[0].eventValues[1], -90f);
-                GameStorageManager.inst.objectDragger.rotation = Quaternion.Euler(0f, 0f, prefabObject.events[2].eventValues[0]);
+                if (!beatmapObject.fromPrefab && currentSelection.ID == beatmapObject.id)
+                {
+                    GameStorageManager.inst.objectDragger.position = new Vector3(transform.parent.position.x, transform.parent.position.y, transform.parent.position.z - 10f);
+                    GameStorageManager.inst.objectDragger.rotation = transform.parent.rotation;
+                }
+
+                if (beatmapObject.fromPrefab && currentSelection.ID == beatmapObject.prefabInstanceID)
+                {
+                    var prefabObject = currentSelection.GetData<PrefabObject>();
+                    GameStorageManager.inst.objectDragger.position = new Vector3(prefabObject.events[0].eventValues[0], prefabObject.events[0].eventValues[1], -90f);
+                    GameStorageManager.inst.objectDragger.rotation = Quaternion.Euler(0f, 0f, prefabObject.events[2].eventValues[0]);
+                }
             }
 
             if (beatmapObject.fromPrefab)
@@ -487,11 +490,8 @@ namespace BetterLegacy.Components.Editor
                 if (prefabObject == null || !(HighlightObjects && hovered || ShowObjectsOnlyOnLayer && prefabObject.editorData.layer != RTEditor.inst.Layer))
                     return;
 
-                var beatmapObjects = GameData.Current.beatmapObjects
-                    .FindAll(x =>
-                                x.fromPrefab &&
-                                x.prefabInstanceID == beatmapObject.prefabInstanceID &&
-                                x.objectType != BeatmapObject.ObjectType.Empty);
+                var beatmapObjects = prefabObject.ExpandedObjects.FindAll(x => x.objectType != BeatmapObject.ObjectType.Empty)
+                    .FindAll(x => x.objectType != BeatmapObject.ObjectType.Empty);
 
                 for (int i = 0; i < beatmapObjects.Count; i++)
                 {
@@ -503,7 +503,7 @@ namespace BetterLegacy.Components.Editor
                             continue;
 
                         SetHoverColor(renderer);
-                        SetLayerColor(renderer, prefabObject.editorData.Layer);
+                        SetLayerColor(renderer, prefabObject.editorData.layer);
                     }
                 }
 
@@ -557,7 +557,11 @@ namespace BetterLegacy.Components.Editor
         void SetLayerColor(Renderer renderer, int layer)
         {
             if (ShowObjectsOnlyOnLayer && layer != EditorManager.inst.layer)
-                renderer.material.color = LSColors.fadeColor(renderer.material.color, renderer.material.color.a * LayerOpacity);
+            {
+                var color = LSColors.fadeColor(renderer.material.color, renderer.material.color.a * LayerOpacity);
+                if (renderer.material.color != color)
+                    renderer.material.color = color;
+            }
         }
 
         void SetTooltip()
