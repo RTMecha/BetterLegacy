@@ -1667,6 +1667,14 @@ namespace BetterLegacy.Core.Helpers
                                 var ps = gameObject.GetComponent<ParticleSystem>() ?? gameObject.AddComponent<ParticleSystem>();
                                 var psr = gameObject.GetComponent<ParticleSystemRenderer>();
 
+                                var s = Parser.TryParse(modifier.commands[1], 0);
+                                var so = Parser.TryParse(modifier.commands[2], 0);
+
+                                s = Mathf.Clamp(s, 0, ObjectManager.inst.objectPrefabs.Count - 1);
+                                so = Mathf.Clamp(so, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
+
+                                psr.mesh = ObjectManager.inst.objectPrefabs[s == 4 ? 0 : s == 6 ? 0 : s].options[so].GetComponentInChildren<MeshFilter>().mesh;
+
                                 psr.material = GameManager.inst.PlayerPrefabs[0].transform.GetChild(0).GetChild(0).GetComponent<TrailRenderer>().material;
                                 psr.material.color = Color.white;
                                 psr.trailMaterial = psr.material;
@@ -1695,14 +1703,6 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 var ps = particleSystems.Key;
                                 var psr = particleSystems.Value;
-
-                                var s = Parser.TryParse(modifier.commands[1], 0);
-                                var so = Parser.TryParse(modifier.commands[2], 0);
-
-                                s = Mathf.Clamp(s, 0, ObjectManager.inst.objectPrefabs.Count - 1);
-                                so = Mathf.Clamp(so, 0, ObjectManager.inst.objectPrefabs[s].options.Count - 1);
-
-                                psr.mesh = ObjectManager.inst.objectPrefabs[s == 4 ? 0 : s == 6 ? 0 : s].options[so].GetComponentInChildren<MeshFilter>().mesh;
 
                                 var psMain = ps.main;
                                 var psEmission = ps.emission;
