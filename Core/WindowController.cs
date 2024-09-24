@@ -1,5 +1,6 @@
 ﻿using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Helpers;
 using System;
 using System.Runtime.InteropServices;
 
@@ -44,7 +45,7 @@ namespace BetterLegacy.Core
         {
             CurrentResolution = new UnityEngine.Vector2Int(x, y);
 
-            if (GameManager.inst && !EditorManager.inst && (GameManager.inst.gameState == GameManager.State.Paused || GameManager.inst.gameState == GameManager.State.Finish))
+            if (GameManager.inst && !CoreHelper.InEditor && (CoreHelper.Paused || CoreHelper.Finished))
                 ResetResolution();
 
             UnityEngine.Screen.SetResolution(x < 0 ? 1280 : x, y < 0 ? 720 : y, fullScreen);

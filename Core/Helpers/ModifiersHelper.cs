@@ -556,7 +556,7 @@ namespace BetterLegacy.Core.Helpers
                 #region Challenge Mode
                 case "inZenMode":
                     {
-                        return PlayerManager.IsZenMode && (EditorManager.inst == null || RTPlayer.ZenModeInEditor);
+                        return PlayerManager.Invincible;
                     }
                 case "inNormal":
                     {
@@ -2029,7 +2029,7 @@ namespace BetterLegacy.Core.Helpers
                     #region Player
                     case "playerHit":
                         {
-                            if (!((!CoreHelper.InEditor && !PlayerManager.IsZenMode || !CoreHelper.IsEditing) && !modifier.constant) ||
+                            if (PlayerManager.Invincible || modifier.constant ||
                                 !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject || !int.TryParse(modifier.value, out int hit))
                                 break;
 
@@ -2051,7 +2051,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playerHitAll":
                         {
-                            if ((!CoreHelper.InEditor && !PlayerManager.IsZenMode || !EditorManager.inst.isEditing) && !modifier.constant && int.TryParse(modifier.value, out int hit))
+                            if (!PlayerManager.Invincible && !modifier.constant && int.TryParse(modifier.value, out int hit))
                                 foreach (var player in PlayerManager.Players.Where(x => x.Player))
                                 {
                                     player.Player.Hit();
@@ -2064,7 +2064,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playerHeal":
                         {
-                            if ((!CoreHelper.InEditor && !PlayerManager.IsZenMode || !EditorManager.inst.isEditing) && !modifier.constant)
+                            if (!PlayerManager.Invincible && !modifier.constant)
                                 if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject && int.TryParse(modifier.value, out int hit))
                                 {
                                     var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
@@ -2076,7 +2076,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playerHealAll":
                         {
-                            if ((!CoreHelper.InEditor && !PlayerManager.IsZenMode || !EditorManager.inst.isEditing) && !modifier.constant && int.TryParse(modifier.value, out int hit))
+                            if (!PlayerManager.Invincible && !modifier.constant && int.TryParse(modifier.value, out int hit))
                                 foreach (var player in PlayerManager.Players.Where(x => x.Player))
                                 {
                                     player.Health += hit;
@@ -2085,7 +2085,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playerKill":
                         {
-                            if ((!CoreHelper.InEditor || !EditorManager.inst.isEditing) && !PlayerManager.IsZenMode && !modifier.constant)
+                            if (!PlayerManager.Invincible && !modifier.constant)
                                 if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
                                 {
                                     var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
@@ -2098,7 +2098,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playerKillAll":
                         {
-                            if ((!CoreHelper.InEditor || !EditorManager.inst.isEditing) && !PlayerManager.IsZenMode && !modifier.constant)
+                            if (!PlayerManager.Invincible && !modifier.constant)
                             {
                                 foreach (var player in PlayerManager.Players.Where(x => x.Player))
                                 {
@@ -2422,7 +2422,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "hideMouse":
                         {
-                            if (!EditorManager.inst || !EditorManager.inst.isEditing)
+                            if (CoreHelper.InEditorPreview)
                                 LSHelpers.HideCursor();
                             break;
                         }
@@ -2743,21 +2743,21 @@ namespace BetterLegacy.Core.Helpers
                     #region JSON
                     case "saveFloat":
                         {
-                            if ((EditorManager.inst == null || !EditorManager.inst.isEditing) && float.TryParse(modifier.value, out float num))
+                            if (CoreHelper.InEditorPreview && float.TryParse(modifier.value, out float num))
                                 ModifiersManager.SaveProgress(modifier.commands[1], modifier.commands[2], modifier.commands[3], num);
 
                             break;
                         }
                     case "saveString":
                         {
-                            if (EditorManager.inst == null || !EditorManager.inst.isEditing)
+                            if (CoreHelper.InEditorPreview)
                                 ModifiersManager.SaveProgress(modifier.commands[1], modifier.commands[2], modifier.commands[3], modifier.value);
 
                             break;
                         }
                     case "saveText":
                         {
-                            if ((EditorManager.inst == null || !EditorManager.inst.isEditing) && modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject)
+                            if (CoreHelper.InEditorPreview && modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject)
                                 && levelObject.visualObject is TextObject textObject)
                                 ModifiersManager.SaveProgress(modifier.commands[1], modifier.commands[2], modifier.commands[3], textObject.textMeshPro.text);
 
@@ -2765,7 +2765,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "saveVariable":
                         {
-                            if (EditorManager.inst == null || !EditorManager.inst.isEditing)
+                            if (CoreHelper.InEditorPreview)
                                 ModifiersManager.SaveProgress(modifier.commands[1], modifier.commands[2], modifier.commands[3], modifier.reference.integerVariable);
 
                             break;
@@ -5084,15 +5084,15 @@ namespace BetterLegacy.Core.Helpers
 
                             if (int.TryParse(modifier.commands[2], out int discordSubIcon) && int.TryParse(modifier.commands[3], out int discordIcon))
                                 CoreHelper.UpdateDiscordStatus(
-                                    string.Format(modifier.value, MetaData.Current.song.title, $"{(EditorManager.inst == null ? "Game" : "Editor")}", $"{(EditorManager.inst == null ? "Level" : "Editing")}", $"{(EditorManager.inst == null ? "Arcade" : "Editor")}"),
-                                    string.Format(modifier.commands[1], MetaData.Current.song.title, $"{(EditorManager.inst == null ? "Game" : "Editor")}", $"{(EditorManager.inst == null ? "Level" : "Editing")}", $"{(EditorManager.inst == null ? "Arcade" : "Editor")}"),
+                                    string.Format(modifier.value, MetaData.Current.song.title, $"{(!CoreHelper.InEditor ? "Game" : "Editor")}", $"{(!CoreHelper.InEditor ? "Level" : "Editing")}", $"{(!CoreHelper.InEditor ? "Arcade" : "Editor")}"),
+                                    string.Format(modifier.commands[1], MetaData.Current.song.title, $"{(!CoreHelper.InEditor ? "Game" : "Editor")}", $"{(!CoreHelper.InEditor ? "Level" : "Editing")}", $"{(!CoreHelper.InEditor ? "Arcade" : "Editor")}"),
                                     discordSubIcons[Mathf.Clamp(discordSubIcon, 0, discordSubIcons.Length - 1)], discordIcons[Mathf.Clamp(discordIcon, 0, discordIcons.Length - 1)]);
 
                             break;
                         }
                     case "saveLevelRank":
                         {
-                            if (EditorManager.inst || modifier.constant || !LevelManager.CurrentLevel)
+                            if (CoreHelper.InEditor || modifier.constant || !LevelManager.CurrentLevel)
                                 break;
 
                             LevelManager.UpdateCurrentLevelProgress();

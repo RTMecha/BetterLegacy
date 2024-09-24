@@ -20,7 +20,7 @@ namespace BetterLegacy.Editor.Managers
     {
         public static void Update()
         {
-            if (EditorManager.inst == null && EditorGUIElements.Count > 0)
+            if (!CoreHelper.InEditor && EditorGUIElements.Count > 0)
                 Clear();
         }
 

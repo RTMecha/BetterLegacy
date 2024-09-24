@@ -1,5 +1,6 @@
 ﻿using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Editor.Managers;
 using UnityEngine;
@@ -73,7 +74,7 @@ namespace BetterLegacy.Components.Editor
 
         void OnMouseDrag()
         {
-            if (!EditorManager.inst || !EditorManager.inst.isEditing)
+            if (CoreHelper.InEditorPreview)
                 return;
 
             var vector = new Vector3(Input.mousePosition.x, Input.mousePosition.y, transform.localPosition.z);

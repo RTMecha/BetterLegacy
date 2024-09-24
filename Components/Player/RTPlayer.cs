@@ -449,11 +449,11 @@ namespace BetterLegacy.Components.Player
 
             playerObjects["Head"].values.Add("MeshRenderer", head.GetComponent<MeshRenderer>());
 
-            polygonCollider.isTrigger = EditorManager.inst != null && ZenEditorIncludesSolid;
+            polygonCollider.isTrigger = CoreHelper.InEditor && ZenEditorIncludesSolid;
             polygonCollider.enabled = false;
             circleCollider.enabled = true;
 
-            circleCollider.isTrigger = EditorManager.inst != null && ZenEditorIncludesSolid;
+            circleCollider.isTrigger = CoreHelper.InEditor && ZenEditorIncludesSolid;
             rb.GetComponent<Rigidbody2D>().collisionDetectionMode = CollisionDetectionMode2D.Continuous;
 
             DestroyImmediate(rb.GetComponent<OnTriggerEnterPass>());
@@ -1249,9 +1249,9 @@ namespace BetterLegacy.Components.Player
             }
 
             // Currently unused.
-            if (PlayerAlive && CustomPlayer.active && CanMove && !CoreHelper.Paused && !CoreHelper.IsUsingInputField && movementMode == MovementMode.Mouse && (EditorManager.inst == null || !EditorManager.inst.isEditing) && Application.isFocused && isKeyboard && !EventsConfig.Instance.EditorCamEnabled.Value)
+            if (PlayerAlive && CustomPlayer.active && CanMove && !CoreHelper.Paused && !CoreHelper.IsUsingInputField && movementMode == MovementMode.Mouse && CoreHelper.InEditorPreview && Application.isFocused && isKeyboard && !EventsConfig.Instance.EditorCamEnabled.Value)
             {
-                Vector2 screenCenter = new Vector2(1920 / 2 * (int)EditorManager.inst.ScreenScale, 1080 / 2 * (int)EditorManager.inst.ScreenScale);
+                Vector2 screenCenter = new Vector2(1920 / 2 * (int)CoreHelper.ScreenScale, 1080 / 2 * (int)CoreHelper.ScreenScale);
                 Vector2 mousePos = new Vector2(System.Windows.Forms.Cursor.Position.X - screenCenter.x, -(System.Windows.Forms.Cursor.Position.Y - (screenCenter.y * 2)) - screenCenter.y);
 
                 if (lastMousePos != new Vector2(System.Windows.Forms.Cursor.Position.X, System.Windows.Forms.Cursor.Position.Y))
@@ -2648,7 +2648,7 @@ namespace BetterLegacy.Components.Player
                     return
                     x.command == "isBoosting" && (!x.not && isBoosting || x.not && !isBoosting) ||
                     x.command == "isTakingHit" && (!x.not && isTakingHit || x.not && !isTakingHit) ||
-                    x.command == "isZenMode" && (!x.not && (EditorManager.inst == null && DataManager.inst.GetSettingEnum("ArcadeDifficulty", 1) == 0 || ZenModeInEditor) || x.not && (EditorManager.inst == null && DataManager.inst.GetSettingEnum("ArcadeDifficulty", 1) != 0 || !ZenModeInEditor)) ||
+                    x.command == "isZenMode" && (!x.not && PlayerManager.Invincible || x.not && !PlayerManager.Invincible) ||
                     x.command == "isHealthPercentageGreater" && (!x.not && (float)CustomPlayer.health / (float)initialHealthCount * 100f >= x.value || x.not && (float)CustomPlayer.health / (float)initialHealthCount * 100f < x.value) ||
                     x.command == "isHealthGreaterEquals" && (!x.not && CustomPlayer.health >= x.value || x.not && CustomPlayer.health < x.value) ||
                     x.command == "isHealthEquals" && (!x.not && CustomPlayer.health == x.value || x.not && CustomPlayer.health != x.value) ||

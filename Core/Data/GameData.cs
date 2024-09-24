@@ -447,7 +447,7 @@ namespace BetterLegacy.Core.Data
                                     str += ", ";
                             }
 
-                            if (EditorManager.inst != null)
+                            if (CoreHelper.InEditor)
                                 EditorManager.inst.DisplayNotification($"Unable to Load theme [{beatmapTheme.name}] due to conflicting themes: {str}", 2f, EditorManager.NotificationType.Error);
                         }
                         else
@@ -750,8 +750,9 @@ namespace BetterLegacy.Core.Data
             }
             catch (Exception ex)
             {
-                EditorManager.inst?.DisplayNotification($"There was an error in parsing VG Event Keyframes. Parsing got caught at {breakContext}", 4f, EditorManager.NotificationType.Error);
-                if (!EditorManager.inst)
+                if (CoreHelper.InEditor)
+                    EditorManager.inst.DisplayNotification($"There was an error in parsing VG Event Keyframes. Parsing got caught at {breakContext}", 4f, EditorManager.NotificationType.Error);
+                if (!CoreHelper.InEditor)
                     Debug.LogError($"There was an error in parsing VG Event Keyframes. Parsing got caught at {breakContext}.\n {ex}");
                 else
                     Debug.LogError($"{ex}");
@@ -863,7 +864,7 @@ namespace BetterLegacy.Core.Data
                             str += ", ";
                     }
 
-                    if (EditorManager.inst != null)
+                    if (CoreHelper.InEditor)
                         EditorManager.inst.DisplayNotification($"Unable to Load theme [{beatmapTheme.name}] due to conflicting themes: {str}", 2f, EditorManager.NotificationType.Error);
                 }
                 else if (parseThemes)

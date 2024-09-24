@@ -265,7 +265,7 @@ namespace BetterLegacy
             {
                 Application.quitting += () =>
                 {
-                    if (EditorManager.inst && EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading && GameData.IsValid)
+                    if (CoreHelper.InEditor && EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading && GameData.IsValid)
                     {
                         string str = RTFile.BasePath;
                         string modBackup = str + "level-quit-backup.lsb";

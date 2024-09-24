@@ -204,7 +204,7 @@ namespace BetterLegacy.Core.Managers
         public static bool SaveGlobalModels()
         {
             bool success = true;
-            if (EditorManager.inst != null)
+            if (CoreHelper.InEditor)
                 EditorManager.inst.DisplayNotification("Saving Player Models...", 1f, EditorManager.NotificationType.Warning);
 
             foreach (var model in PlayerModels)
@@ -221,7 +221,7 @@ namespace BetterLegacy.Core.Managers
                     }
                 }
             }
-            if (EditorManager.inst)
+            if (CoreHelper.InEditor)
                 EditorManager.inst.DisplayNotification("Saved Player Models!", 1f, EditorManager.NotificationType.Success);
             return success;
         }
@@ -457,6 +457,8 @@ namespace BetterLegacy.Core.Managers
 
         public static void SetGameSpeed(int speed) => DataManager.inst.UpdateSettingEnum("ArcadeGameSpeed", speed);
 
+        public static bool Invincible => CoreHelper.InEditor && (EditorManager.inst.isEditing || RTPlayer.ZenModeInEditor) || IsZenMode;
+
         #endregion
 
         #region Spawning
@@ -491,9 +493,9 @@ namespace BetterLegacy.Core.Managers
 
             if (customPlayer.device == null)
             {
-                player.Actions = (EditorManager.inst || allowController) && InputDataManager.inst.players.Count == 1 ? CoreHelper.CreateWithBothBindings() : InputDataManager.inst.keyboardListener;
+                player.Actions = (CoreHelper.InEditor || allowController) && InputDataManager.inst.players.Count == 1 ? CoreHelper.CreateWithBothBindings() : InputDataManager.inst.keyboardListener;
                 player.isKeyboard = true;
-                player.faceController = (EditorManager.inst || allowController) && InputDataManager.inst.players.Count == 1 ? FaceController.CreateWithBothBindings() : FaceController.CreateWithKeyboardBindings();
+                player.faceController = (CoreHelper.InEditor || allowController) && InputDataManager.inst.players.Count == 1 ? FaceController.CreateWithBothBindings() : FaceController.CreateWithKeyboardBindings();
             }
             else
             {
@@ -524,7 +526,7 @@ namespace BetterLegacy.Core.Managers
                     {
                         GameManager.inst.lastCheckpointState = -1;
                         GameManager.inst.ResetCheckpoints();
-                        if (!EditorManager.inst)
+                        if (!CoreHelper.InEditor)
                         {
                             GameManager.inst.hits.Clear();
                             GameManager.inst.deaths.Clear();

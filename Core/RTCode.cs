@@ -176,7 +176,7 @@ namespace BetterLegacy.Core
             if (!CoreConfig.Instance.NotifyREPL.Value)
                 return;
 
-            if (EditorManager.inst && EditorManager.inst.isEditing)
+            if (Helpers.CoreHelper.InEditor && EditorManager.inst.isEditing)
             {
                 EditorManager.inst.DisplayNotification(rep, 1f, notificationType);
             }

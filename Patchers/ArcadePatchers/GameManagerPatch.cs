@@ -148,14 +148,14 @@ namespace BetterLegacy.Patchers
             }
             else if (CoreHelper.Playing)
             {
-                if (AudioManager.inst.CurrentAudioSource.clip && !EditorManager.inst
+                if (AudioManager.inst.CurrentAudioSource.clip && !CoreHelper.InEditor
                     && AudioManager.inst.CurrentAudioSource.time >= __instance.songLength - 0.1f)
                     if (!LevelManager.LevelEnded)
                         __instance.GoToNextLevel();
             }
             else if (CoreHelper.Finished)
             {
-                if (AudioManager.inst.CurrentAudioSource.clip && !EditorManager.inst
+                if (AudioManager.inst.CurrentAudioSource.clip && !CoreHelper.InEditor
                     && AudioManager.inst.CurrentAudioSource.time >= __instance.songLength - 0.1f
                     && CoreConfig.Instance.ReplayLevel.Value && LevelManager.LevelEnded)
                     AudioManager.inst.SetMusicTime(0f);
@@ -212,7 +212,7 @@ namespace BetterLegacy.Patchers
             yield return new WaitForSeconds(2f);
 
             float time = Mathf.Clamp(checkpoint.time + 0.01f, 0.1f, AudioManager.inst.CurrentAudioSource.clip.length);
-            if (EditorManager.inst == null && (DataManager.inst.GetSettingInt("ArcadeDifficulty", 0) == 2 || DataManager.inst.GetSettingInt("ArcadeDifficulty", 0) == 3))
+            if (!CoreHelper.InEditor && (PlayerManager.Is1Life || PlayerManager.IsNoHit))
                 time = 0.1f;
 
             AudioManager.inst.SetMusicTime(time);

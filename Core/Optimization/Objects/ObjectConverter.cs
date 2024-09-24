@@ -274,7 +274,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                 beatmapObject.gradientType != BeatmapObject.GradientType.Normal ? new GradientObject(visualObject, opacity, hasCollider, isSolid, isBackground, beatmapObject.opacityCollision, (int)beatmapObject.gradientType) : 
                 new SolidObject(visualObject, opacity, hasCollider, isSolid, isBackground, beatmapObject.opacityCollision);
 
-            if (EditorManager.inst && shape != 9)
+            if (CoreHelper.InEditor && shape != 9)
             {
                 var obj = visualObject.AddComponent<SelectObject>();
                 obj.SetObject(beatmapObject);

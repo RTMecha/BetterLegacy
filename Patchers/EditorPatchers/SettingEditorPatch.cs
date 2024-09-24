@@ -259,7 +259,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPostfix]
         static void UpdatePostfix()
         {
-            if (EditorManager.inst && EditorManager.inst.isEditing && EditorManager.inst.hasLoadedLevel &&
+            if (CoreHelper.InEditor && EditorManager.inst.isEditing && EditorManager.inst.hasLoadedLevel &&
                 GameData.IsValid && GameData.Current.eventObjects != null &&
                 RTPrefabEditor.inst)
             {

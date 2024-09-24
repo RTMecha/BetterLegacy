@@ -33,7 +33,7 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
             if (Renderer)
                 material = Renderer.material;
 
-            if (EditorManager.inst)
+            if (CoreHelper.InEditor)
             {
                 var collider = gameObject.AddComponent<BoxCollider2D>();
                 gameObject.tag = "Helper";

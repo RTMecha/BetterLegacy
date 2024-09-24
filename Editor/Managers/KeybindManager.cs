@@ -1237,7 +1237,7 @@ namespace BetterLegacy.Editor.Managers
 
         public static void OpenDialog(Keybind keybind)
         {
-            if (EditorManager.inst && keybind.settings.TryGetValue("Dialog", out string dialog) && EditorManager.inst.EditorDialogsDictionary.ContainsKey(dialog))
+            if (CoreHelper.InEditor && keybind.settings.TryGetValue("Dialog", out string dialog) && EditorManager.inst.EditorDialogsDictionary.ContainsKey(dialog))
                 EditorManager.inst.ShowDialog(dialog);
         }
 

@@ -1,4 +1,5 @@
 ﻿
+using BetterLegacy.Core.Helpers;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -51,7 +52,7 @@ namespace BetterLegacy.Components
                     num = -num;
                     inputField.text = num.ToString();
                 }
-                else if (EditorManager.inst)
+                else if (CoreHelper.InEditor)
                     EditorManager.inst.DisplayNotification("Could not invert number!", 1f, EditorManager.NotificationType.Error);
             }
 

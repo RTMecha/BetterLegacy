@@ -843,10 +843,9 @@ namespace BetterLegacy.Patchers
                         }
                     }
 
-                    if (EditorManager.inst != null)
-                    {
+                    if (CoreHelper.InEditor)
                         EditorManager.inst.DisplayNotification($"Unable to Load theme [{beatmapTheme.id}-{beatmapTheme.name}]\nDue to conflicting themes: {str}", 2f, EditorManager.NotificationType.Error);
-                    }
+                    
 
                     CoreHelper.LogError($"Unable to load theme {beatmapTheme.name} due to the id ({beatmapTheme.id}) conflicting with these other themes: {str}.");
                 }

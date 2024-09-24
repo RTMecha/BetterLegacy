@@ -99,7 +99,7 @@ namespace BetterLegacy.Core.Helpers
         static IEnumerator ILoadLevel(string fullPath, float delay = 2f)
         {
             SceneManager.inst.LoadScene("Editor");
-            while (!EditorManager.inst || !RTEditor.inst || EditorManager.inst.loading)
+            while (!CoreHelper.InEditor || !RTEditor.inst || EditorManager.inst.loading)
                 yield return null;
 
             yield return new WaitForSeconds(delay);
@@ -109,7 +109,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool SelectAllObjects()
         {
-            if (!GameData.IsValid || !EditorManager.inst || !EditorManager.inst.hasLoadedLevel)
+            if (!GameData.IsValid || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
             if (RTEditor.inst.timelineObjects.Count == 1)
@@ -132,7 +132,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool SelectAllObjectsOnCurrentLayer()
         {
-            if (!GameData.IsValid || !EditorManager.inst || !EditorManager.inst.hasLoadedLevel)
+            if (!GameData.IsValid || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
             var layer = RTEditor.inst.Layer;
@@ -161,7 +161,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool MirrorSelectedObjects()
         {
-            if (!GameData.IsValid || !EditorManager.inst || !EditorManager.inst.hasLoadedLevel)
+            if (!GameData.IsValid || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
             foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
@@ -183,7 +183,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool FlipSelectedObjects()
         {
-            if (!GameData.IsValid || !EditorManager.inst || !EditorManager.inst.hasLoadedLevel)
+            if (!GameData.IsValid || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
             foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
@@ -205,7 +205,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool RefreshKeyframesFromSelection()
         {
-            if (!GameData.IsValid || !EditorManager.inst || !EditorManager.inst.hasLoadedLevel)
+            if (!GameData.IsValid || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
             foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
@@ -216,7 +216,7 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool FixSmoothShakeKeyframes()
         {
-            if (!GameData.IsValid || !EditorManager.inst || !EditorManager.inst.hasLoadedLevel)
+            if (!GameData.IsValid || !CoreHelper.InEditor || !EditorManager.inst.hasLoadedLevel)
                 return false;
 
             var gameData = GameData.Current;

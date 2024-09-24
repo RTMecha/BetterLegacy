@@ -396,17 +396,17 @@ namespace BetterLegacy.Core.Managers
                     EventManager.inst.camZoom = 20f;
 
                 var editorCam = EventsConfig.Instance.EditorCamEnabled.Value;
-                if (!EditorManager.inst || !editorCam)
+                if (!CoreHelper.InEditor || !editorCam)
                     EventManager.inst.cam.orthographicSize = EventManager.inst.camZoom;
                 else if (inst.EditorSpeed != 0f)
                     EventManager.inst.cam.orthographicSize = inst.editorZoom;
 
-                if (!float.IsNaN(EventManager.inst.camRot) && (!EditorManager.inst || !editorCam))
+                if (!float.IsNaN(EventManager.inst.camRot) && (!CoreHelper.InEditor || !editorCam))
                     EventManager.inst.camParent.transform.rotation = Quaternion.Euler(new Vector3(inst.camRotOffset.x, inst.camRotOffset.y, EventManager.inst.camRot));
                 else if (!float.IsNaN(inst.editorRotate))
                     EventManager.inst.camParent.transform.rotation = Quaternion.Euler(new Vector3(inst.editorPerRotate.x, inst.editorPerRotate.y, inst.editorRotate));
 
-                if (!EditorManager.inst || !editorCam)
+                if (!CoreHelper.InEditor || !editorCam)
                     EventManager.inst.camParentTop.transform.localPosition = new Vector3(EventManager.inst.camPos.x, EventManager.inst.camPos.y, inst.zPosition);
                 else
                     EventManager.inst.camParentTop.transform.localPosition = new Vector3(inst.editorOffset.x, inst.editorOffset.y, inst.zPosition);
@@ -415,14 +415,14 @@ namespace BetterLegacy.Core.Managers
 
                 if (!inst.bgGlobalPosition)
                 {
-                    if (!EditorManager.inst || !editorCam)
+                    if (!CoreHelper.InEditor || !editorCam)
                         EventManager.inst.camPer.transform.localPosition = new Vector3(EventManager.inst.camPer.transform.localPosition.x, EventManager.inst.camPer.transform.localPosition.y, -EventManager.inst.camZoom + inst.perspectiveZoom);
                     else
                         EventManager.inst.camPer.transform.localPosition = new Vector3(EventManager.inst.camPer.transform.localPosition.x, EventManager.inst.camPer.transform.localPosition.y, -inst.editorZoom + inst.perspectiveZoom);
                 }
                 else
                 {
-                    if (!EditorManager.inst || !editorCam)
+                    if (!CoreHelper.InEditor || !editorCam)
                         EventManager.inst.camPer.transform.position = new Vector3(EventManager.inst.camPer.transform.position.x, EventManager.inst.camPer.transform.position.y, -EventManager.inst.camZoom + inst.perspectiveZoom);
                     else
                         EventManager.inst.camPer.transform.position = new Vector3(EventManager.inst.camPer.transform.position.x, EventManager.inst.camPer.transform.position.y, -inst.editorZoom + inst.perspectiveZoom);
@@ -559,7 +559,7 @@ namespace BetterLegacy.Core.Managers
                 GameStorageManager.inst.video.gameObject.layer = inst.videoBGRenderLayer == 0 ? 9 : 8;
 
                 var screenScale = (float)Display.main.systemWidth / 1920f;
-                if (inst.allowWindowPositioning && (!EditorManager.inst || !EditorManager.inst.isEditing))
+                if (inst.allowWindowPositioning && !CoreHelper.InEditorPreview)
                 {
                     if (!inst.setWindow)
                     {
@@ -576,7 +576,7 @@ namespace BetterLegacy.Core.Managers
                     windowPositionResolutionChanged = true;
                 }
 
-                if (inst.forceWindow && !inst.allowWindowPositioning && (!EditorManager.inst || !EditorManager.inst.isEditing))
+                if (inst.forceWindow && !inst.allowWindowPositioning && !CoreHelper.InEditorPreview)
                 {
                     inst.setWindow = true;
                     WindowController.SetResolution((int)(inst.windowResolution.x * screenScale), (int)(inst.windowResolution.y * screenScale), false);
@@ -1206,22 +1206,9 @@ namespace BetterLegacy.Core.Managers
         // 23 - 0
         public static void updatePlayerActive(float x)
         {
-            var active = false;
+            var active = (int)x == 0;
 
-            if ((int)x == 0)
-            {
-                active = true;
-            }
-            else if ((int)x == 1)
-            {
-                active = false;
-            }
-
-            var zen = false;
-            if (PlayerManager.IsZenMode || EditorManager.inst != null)
-            {
-                zen = true;
-            }
+            var zen = PlayerManager.IsZenMode || CoreHelper.InEditor;
 
             var a = active && !zen || active && EventsConfig.Instance.ShowGUI.Value;
 

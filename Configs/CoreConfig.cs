@@ -493,7 +493,7 @@ namespace BetterLegacy.Configs
 
         void LDMChanged()
         {
-            if (!EditorManager.inst)
+            if (!CoreHelper.InEditor)
                 return;
 
             var list = GameData.Current.beatmapObjects.FindAll(x => x.LDM);
@@ -521,7 +521,7 @@ namespace BetterLegacy.Configs
             if (SteamWrapper.inst)
                 SteamWrapper.inst.user.displayName = DisplayName.Value;
 
-            if (EditorManager.inst)
+            if (CoreHelper.InEditor)
                 EditorManager.inst.SetCreatorName(DisplayName.Value);
 
             LegacyPlugin.SaveProfile();

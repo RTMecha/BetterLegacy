@@ -26,7 +26,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool StartPrefix(InterfaceController __instance)
         {
-            if (EditorManager.inst)
+            if (CoreHelper.InEditor)
                 __instance.gameObject.SetActive(false);
 
             MenuManager.inst.ic = __instance;

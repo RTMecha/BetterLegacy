@@ -2663,7 +2663,7 @@ namespace BetterLegacy.Configs
         {
             RTThemeEditor.eventThemesPerPage = ThemesEventKeyframePerPage.Value;
 
-            if (!EditorManager.inst)
+            if (!CoreHelper.InEditor)
                 return;
 
             var p = Mathf.Clamp(RTThemeEditor.inst.eventThemePage, 0, DataManager.inst.AllThemes.Count / RTThemeEditor.eventThemesPerPage).ToString();
@@ -2683,7 +2683,7 @@ namespace BetterLegacy.Configs
 
         void AutosaveChanged()
         {
-            if (EditorManager.inst && EditorManager.inst.hasLoadedLevel)
+            if (CoreHelper.InEditor && EditorManager.inst.hasLoadedLevel)
                 RTEditor.inst.SetAutoSave();
         }
 
@@ -2786,7 +2786,7 @@ namespace BetterLegacy.Configs
             ObjectEditor.TimelineObjectHoverSize = TimelineObjectHoverSize.Value;
             RTPrefabEditor.ImportPrefabsDirectly = ImportPrefabsDirectly.Value;
 
-            if (!EditorManager.inst)
+            if (!CoreHelper.InEditor)
                 return;
 
             SetNotificationProperties();
@@ -2834,7 +2834,7 @@ namespace BetterLegacy.Configs
 
         void SetNotificationProperties()
         {
-            if (!EditorManager.inst)
+            if (!CoreHelper.InEditor)
                 return;
 
             var notifyRT = EditorManager.inst.notification.transform.AsRT();

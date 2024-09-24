@@ -395,59 +395,37 @@ namespace BetterLegacy.Core.Helpers
 
         #region Timeline
 
-        public static EventTrigger.Entry StartDragTrigger()
+        public static EventTrigger.Entry StartDragTrigger() => CreateEntry(EventTriggerType.BeginDrag, eventData =>
         {
-            var editorManager = EditorManager.inst;
-            var entry = new EventTrigger.Entry();
-            entry.eventID = EventTriggerType.BeginDrag;
-            entry.callback.AddListener(eventData =>
-            {
-                var pointerEventData = (PointerEventData)eventData;
-                editorManager.SelectionBoxImage.gameObject.SetActive(true);
-                editorManager.DragStartPos = pointerEventData.position * editorManager.ScreenScaleInverse;
-                editorManager.SelectionRect = default;
-            });
-            return entry;
-        }
+            var pointerEventData = (PointerEventData)eventData;
+            EditorManager.inst.SelectionBoxImage.gameObject.SetActive(true);
+            EditorManager.inst.DragStartPos = pointerEventData.position * CoreHelper.ScreenScaleInverse;
+            EditorManager.inst.SelectionRect = default;
+        });
 
-        public static EventTrigger.Entry DragTrigger()
+        public static EventTrigger.Entry DragTrigger() => CreateEntry(EventTriggerType.Drag, eventData =>
         {
-            var editorManager = EditorManager.inst;
-            var entry = new EventTrigger.Entry();
-            entry.eventID = EventTriggerType.Drag;
-            entry.callback.AddListener(eventData =>
-            {
-                var vector = ((PointerEventData)eventData).position * editorManager.ScreenScaleInverse;
+            var vector = ((PointerEventData)eventData).position * EditorManager.inst.ScreenScaleInverse;
 
-                editorManager.SelectionRect.xMin = vector.x < editorManager.DragStartPos.x ? vector.x : editorManager.DragStartPos.x;
-                editorManager.SelectionRect.xMax = vector.x < editorManager.DragStartPos.x ? editorManager.DragStartPos.x : vector.x;
+            EditorManager.inst.SelectionRect.xMin = vector.x < EditorManager.inst.DragStartPos.x ? vector.x : EditorManager.inst.DragStartPos.x;
+            EditorManager.inst.SelectionRect.xMax = vector.x < EditorManager.inst.DragStartPos.x ? EditorManager.inst.DragStartPos.x : vector.x;
 
-                editorManager.SelectionRect.yMin = vector.y < editorManager.DragStartPos.y ? vector.y : editorManager.DragStartPos.y;
-                editorManager.SelectionRect.yMax = vector.y < editorManager.DragStartPos.y ? editorManager.DragStartPos.y : vector.y;
+            EditorManager.inst.SelectionRect.yMin = vector.y < EditorManager.inst.DragStartPos.y ? vector.y : EditorManager.inst.DragStartPos.y;
+            EditorManager.inst.SelectionRect.yMax = vector.y < EditorManager.inst.DragStartPos.y ? EditorManager.inst.DragStartPos.y : vector.y;
 
-                editorManager.SelectionBoxImage.rectTransform.offsetMin = editorManager.SelectionRect.min;
-                editorManager.SelectionBoxImage.rectTransform.offsetMax = editorManager.SelectionRect.max;
-            });
-            return entry;
-        }
+            EditorManager.inst.SelectionBoxImage.rectTransform.offsetMin = EditorManager.inst.SelectionRect.min;
+            EditorManager.inst.SelectionBoxImage.rectTransform.offsetMax = EditorManager.inst.SelectionRect.max;
+        });
 
-        public static EventTrigger.Entry EndDragTrigger()
+        public static EventTrigger.Entry EndDragTrigger() => CreateEntry(EventTriggerType.EndDrag, eventData =>
         {
-            var editorManager = EditorManager.inst;
-
-            var entry = new EventTrigger.Entry();
-            entry.eventID = EventTriggerType.EndDrag;
-            entry.callback.AddListener(eventData =>
-            {
-                EditorManager.inst.DragEndPos = ((PointerEventData)eventData).position;
-                EditorManager.inst.SelectionBoxImage.gameObject.SetActive(false);
-                if (RTEditor.inst.layerType == RTEditor.LayerType.Objects)
-                    RTEditor.inst.StartCoroutine(ObjectEditor.inst.GroupSelectObjects(Input.GetKey(KeyCode.LeftShift)));
-                else
-                    RTEventEditor.inst.StartCoroutine(RTEventEditor.inst.GroupSelectKeyframes(Input.GetKey(KeyCode.LeftShift)));
-            });
-            return entry;
-        }
+            EditorManager.inst.DragEndPos = ((PointerEventData)eventData).position;
+            EditorManager.inst.SelectionBoxImage.gameObject.SetActive(false);
+            if (RTEditor.inst.layerType == RTEditor.LayerType.Objects)
+                RTEditor.inst.StartCoroutine(ObjectEditor.inst.GroupSelectObjects(Input.GetKey(KeyCode.LeftShift)));
+            else
+                RTEventEditor.inst.StartCoroutine(RTEventEditor.inst.GroupSelectKeyframes(Input.GetKey(KeyCode.LeftShift)));
+        });
 
         #endregion
 
