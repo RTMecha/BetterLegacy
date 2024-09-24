@@ -3,6 +3,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using InControl;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using XInputDotNetPure;
@@ -81,29 +82,30 @@ namespace BetterLegacy.Core.Data.Player
                 Player.Actions = myGameActions;
         }
 
+        // TODO: CHANGE TO MODIFIER BLOCKS
         public void UpdateModifiers()
         {
             if (CoreHelper.Paused || PlayerModel == null || PlayerModel.modifiers == null || PlayerModel.modifiers.Count <= 0)
                 return;
 
-            Func<Modifier<CustomPlayer>, bool> modifierPredicate = x => x.Action == null && x.type == ModifierBase.Type.Action || x.Trigger == null && x.type == ModifierBase.Type.Trigger || x.Inactive == null;
+            Predicate<Modifier<CustomPlayer>> modifierPredicate = x => x.Action == null && x.type == ModifierBase.Type.Action || x.Trigger == null && x.type == ModifierBase.Type.Trigger || x.Inactive == null;
 
-            if (PlayerModel.modifiers.Any(modifierPredicate))
-                PlayerModel.modifiers.Where(modifierPredicate).ToList().ForEach(modifier =>
+            if (PlayerModel.modifiers.TryFindAll(modifierPredicate, out List<Modifier<CustomPlayer>> findAll))
+                findAll.ForEach(modifier =>
                 {
                     modifier.Action = ModifiersHelper.PlayerAction;
                     modifier.Trigger = ModifiersHelper.PlayerTrigger;
                     modifier.Inactive = ModifiersHelper.PlayerInactive;
                 });
 
-            var actions = PlayerModel.modifiers.Where(x => x.type == ModifierBase.Type.Action);
-            var triggers = PlayerModel.modifiers.Where(x => x.type == ModifierBase.Type.Trigger);
+            var actions = PlayerModel.modifiers.FindAll(x => x.type == ModifierBase.Type.Action);
+            var triggers = PlayerModel.modifiers.FindAll(x => x.type == ModifierBase.Type.Trigger);
 
-            if (triggers.Count() > 0)
+            if (triggers.Count > 0)
             {
-                if (triggers.All(x => !x.active && (x.Trigger(x) && !x.not || !x.Trigger(x) && x.not)))
+                if (triggers.TrueForAll(x => !x.active && (x.Trigger(x) && !x.not || !x.Trigger(x) && x.not)))
                 {
-                    foreach (var act in actions.Where(x => !x.active))
+                    foreach (var act in actions.FindAll(x => !x.active))
                     {
                         if (!act.constant)
                             act.active = true;
@@ -112,12 +114,12 @@ namespace BetterLegacy.Core.Data.Player
                         act.Action?.Invoke(act);
                     }
 
-                    foreach (var trig in triggers.Where(x => !x.constant))
+                    foreach (var trig in triggers.FindAll(x => !x.constant))
                         trig.active = true;
                 }
                 else
                 {
-                    foreach (var act in actions.Where(x => x.active || x.running))
+                    foreach (var act in actions.FindAll(x => x.active || x.running))
                     {
                         act.active = false;
                         act.running = false;
@@ -127,7 +129,7 @@ namespace BetterLegacy.Core.Data.Player
             }
             else
             {
-                foreach (var act in actions.Where(x => !x.active))
+                foreach (var act in actions.FindAll(x => !x.active))
                 {
                     if (!act.constant)
                         act.active = true;
