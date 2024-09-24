@@ -2,6 +2,7 @@
 using BetterLegacy.Components.Editor;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Optimization;
 using BetterLegacy.Editor;
 using LSFunctions;
 using SimpleJSON;
@@ -189,7 +190,7 @@ namespace BetterLegacy.Core.Data
         {
             get
             {
-                var time = AudioManager.inst.CurrentAudioSource.time;
+                var time = Updater.CurrentTime;
                 var st = StartTime;
                 var akt = autoKillType;
                 var ako = autoKillOffset;

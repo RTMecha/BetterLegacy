@@ -302,8 +302,10 @@ namespace BetterLegacy.Components.Editor
         {
             hovered = true;
 
-            if (!TipEnabled || !CoreHelper.IsEditing)
+            if (!CoreHelper.IsEditing)
                 return;
+
+            SetTooltip();
 
             DataManager.Language enumTmp = DataManager.inst.GetCurrentLanguageEnum();
             int num = tooltipLanguages.FindIndex(x => x.language == enumTmp);
@@ -475,8 +477,6 @@ namespace BetterLegacy.Components.Editor
                 GameStorageManager.inst.objectDragger.rotation = Quaternion.Euler(0f, 0f, prefabObject.events[2].eventValues[0]);
             }
 
-            SetTooltip();
-
             if (beatmapObject.fromPrefab)
             {
                 if (string.IsNullOrEmpty(beatmapObject.prefabInstanceID))
@@ -562,10 +562,8 @@ namespace BetterLegacy.Components.Editor
 
         void SetTooltip()
         {
-            if (!EditorManager.inst.showHelp || !beatmapObject || EventSystem.current.IsPointerOverGameObject())
+            if (!beatmapObject || EventSystem.current.IsPointerOverGameObject())
                 return;
-
-            TipEnabled = true;
 
             if (tooltipLanguages.Count == 0)
                 tooltipLanguages.Add(TooltipHelper.NewTooltip(beatmapObject.name + " [ " + beatmapObject.StartTime + " ]", "", new List<string>()));

@@ -1091,17 +1091,25 @@ namespace BetterLegacy.Editor.Managers
                     continue;
 
                 bool isCurrentLayer = timelineObject.Layer == Layer && layerType == LayerType.Objects;
-                timelineObject.GameObject.SetActive(isCurrentLayer);
+                if (timelineObject.GameObject.activeSelf != isCurrentLayer)
+                    timelineObject.GameObject.SetActive(isCurrentLayer);
 
                 if (!isCurrentLayer)
                     continue;
 
-                timelineObject.Image.color = timelineObject.selected ? ObjEditor.inst.SelectedColor :
+                var color = timelineObject.selected ? ObjEditor.inst.SelectedColor :
                     timelineObject.IsBeatmapObject && !string.IsNullOrEmpty(timelineObject.GetData<BeatmapObject>().prefabID) ? timelineObject.GetData<BeatmapObject>().Prefab.PrefabType.Color :
                     timelineObject.IsPrefabObject ? timelineObject.GetData<PrefabObject>().Prefab.PrefabType.Color : ObjEditor.inst.NormalColor;
+
+                if (timelineObject.Image.color != color)
+                    timelineObject.Image.color = color;
             }
 
             var theme = EditorThemeManager.CurrentTheme;
+            var objectKeyframeColor1 = theme.GetObjectKeyframeColor(0);
+            var objectKeyframeColor2 = theme.GetObjectKeyframeColor(1);
+            var objectKeyframeColor3 = theme.GetObjectKeyframeColor(2);
+            var objectKeyframeColor4 = theme.GetObjectKeyframeColor(3);
             var objectKeyframesRenderBinColor = EditorConfig.Instance.EventKeyframesRenderBinColor.Value;
             if (ObjectEditor.inst && ObjectEditor.inst.CurrentSelection && ObjectEditor.inst.CurrentSelection.IsBeatmapObject && ObjectEditor.inst.CurrentSelection.InternalSelections.Count > 0)
                 foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalSelections)
@@ -1109,14 +1117,22 @@ namespace BetterLegacy.Editor.Managers
                     if (timelineObject.Data == null || !timelineObject.GameObject || !timelineObject.Image)
                         continue;
 
-                    timelineObject.GameObject.SetActive(true);
+                    if (!timelineObject.GameObject.activeSelf)
+                        timelineObject.GameObject.SetActive(true);
 
-                    var color = objectKeyframesRenderBinColor &&
-                        theme.ContainsGroup($"Object Keyframe Color {timelineObject.Type + 1}") ?
-                        theme.GetColor($"Object Keyframe Color {timelineObject.Type + 1}") : ObjEditor.inst.NormalColor;
+                    var color = timelineObject.Type switch
+                    {
+                        0 => objectKeyframeColor1,
+                        1 => objectKeyframeColor2,
+                        2 => objectKeyframeColor3,
+                        3 => objectKeyframeColor4,
+                        _ => ObjEditor.inst.NormalColor,
+                    };
                     color.a = 1f;
+                    color = timelineObject.selected ? !objectKeyframesRenderBinColor ? ObjEditor.inst.SelectedColor : EventEditor.inst.Selected : color;
 
-                    timelineObject.Image.color = timelineObject.selected ? !objectKeyframesRenderBinColor ? ObjEditor.inst.SelectedColor : EventEditor.inst.Selected : color;
+                    if (timelineObject.Image.color != color)
+                        timelineObject.Image.color = color;
                 }
 
             var eventKeyframesRenderBinColor = EditorConfig.Instance.EventKeyframesRenderBinColor.Value;
@@ -1131,17 +1147,18 @@ namespace BetterLegacy.Editor.Managers
                 bool isCurrentLayer = limit == Layer && layerType == LayerType.Events;
                 bool active = isCurrentLayer && (ShowModdedUI || timelineObject.Type < 10);
 
-                timelineObject.GameObject.SetActive(active);
+                if (timelineObject.GameObject.activeSelf != active)
+                    timelineObject.GameObject.SetActive(active);
 
                 if (!active)
                     continue;
 
-                var color = eventKeyframesRenderBinColor &&
-                    theme.ContainsGroup($"Event Color {timelineObject.Type % RTEventEditor.EventLimit + 1} Keyframe") ?
-                    theme.GetColor($"Event Color {timelineObject.Type % RTEventEditor.EventLimit + 1} Keyframe") : ObjEditor.inst.NormalColor;
+                var color = eventKeyframesRenderBinColor ? theme.GetEventKeyframeColor(timelineObject.Type % RTEventEditor.EventLimit) : ObjEditor.inst.NormalColor;
                 color.a = 1f;
+                color = timelineObject.selected ? !eventKeyframesRenderBinColor ? ObjEditor.inst.SelectedColor : EventEditor.inst.Selected : color;
 
-                timelineObject.Image.color = timelineObject.selected ? !eventKeyframesRenderBinColor ? ObjEditor.inst.SelectedColor : EventEditor.inst.Selected : color;
+                if (timelineObject.Image.color != color)
+                    timelineObject.Image.color = color;
             }
         }
 

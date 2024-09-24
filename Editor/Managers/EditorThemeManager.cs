@@ -713,6 +713,34 @@ namespace BetterLegacy.Editor.Managers
                 return ThemeGroup.Null;
             }
 
+            public Color GetEventKeyframeColor(int type) => type switch
+            {
+                0 => ColorGroups[ThemeGroup.Event_Color_1_Keyframe],
+                1 => ColorGroups[ThemeGroup.Event_Color_2_Keyframe],
+                2 => ColorGroups[ThemeGroup.Event_Color_3_Keyframe],
+                3 => ColorGroups[ThemeGroup.Event_Color_4_Keyframe],
+                4 => ColorGroups[ThemeGroup.Event_Color_5_Keyframe],
+                5 => ColorGroups[ThemeGroup.Event_Color_6_Keyframe],
+                6 => ColorGroups[ThemeGroup.Event_Color_7_Keyframe],
+                7 => ColorGroups[ThemeGroup.Event_Color_8_Keyframe],
+                8 => ColorGroups[ThemeGroup.Event_Color_9_Keyframe],
+                9 => ColorGroups[ThemeGroup.Event_Color_10_Keyframe],
+                10 => ColorGroups[ThemeGroup.Event_Color_11_Keyframe],
+                11 => ColorGroups[ThemeGroup.Event_Color_12_Keyframe],
+                12 => ColorGroups[ThemeGroup.Event_Color_13_Keyframe],
+                13 => ColorGroups[ThemeGroup.Event_Color_14_Keyframe],
+                _ => Color.white,
+            };
+
+            public Color GetObjectKeyframeColor(int type) => type switch
+            {
+                0 => ColorGroups[ThemeGroup.Object_Keyframe_Color_1],
+                1 => ColorGroups[ThemeGroup.Object_Keyframe_Color_2],
+                2 => ColorGroups[ThemeGroup.Object_Keyframe_Color_3],
+                3 => ColorGroups[ThemeGroup.Object_Keyframe_Color_4],
+                _ => Color.white,
+            };
+
             public static string GetString(ThemeGroup group)
             {
                 switch (group)

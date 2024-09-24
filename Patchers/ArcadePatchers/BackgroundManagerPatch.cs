@@ -120,10 +120,12 @@ namespace BetterLegacy.Patchers
                 {
                     var backgroundObject = GameData.Current.backgroundObjects[bg];
 
-                    if (backgroundObject.active)
-                        backgroundObject.BaseObject?.SetActive(backgroundObject.Enabled);
+                    var gameObject = backgroundObject.BaseObject;
 
-                    if (!backgroundObject.active || !backgroundObject.Enabled || !backgroundObject.BaseObject)
+                    if (backgroundObject.active && gameObject && gameObject.activeSelf != backgroundObject.Enabled)
+                        gameObject.SetActive(backgroundObject.Enabled);
+
+                    if (!backgroundObject.active || !backgroundObject.Enabled || !gameObject)
                         continue;
 
                     Color mainColor =
@@ -192,8 +194,6 @@ namespace BetterLegacy.Patchers
 
                         float rot = Updater.samples[Mathf.Clamp(backgroundObject.reactiveRotSample, 0, Updater.samples.Length - 1)];
 
-                        var gameObject = backgroundObject.BaseObject;
-
                         float z = Updater.samples[Mathf.Clamp(backgroundObject.reactiveZSample, 0, Updater.samples.Length - 1)];
 
                         gameObject.transform.localPosition =
@@ -210,8 +210,6 @@ namespace BetterLegacy.Patchers
                     else
                     {
                         backgroundObject.reactiveSize = Vector2.zero;
-
-                        var gameObject = backgroundObject.BaseObject;
 
                         gameObject.transform.localPosition = new Vector3(backgroundObject.pos.x, backgroundObject.pos.y, 32f + backgroundObject.layer * 10f + backgroundObject.zposition) + backgroundObject.positionOffset;
                         gameObject.transform.localScale = new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale) + backgroundObject.scaleOffset;
