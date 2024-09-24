@@ -1825,7 +1825,8 @@ namespace BetterLegacy.Example
                 autocompleteButton.onClick.AddListener(() =>
                 {
                     chatter.text = command.name;
-                    command.response?.Invoke(command.name);
+                    command.CheckResponse(command.name);
+
                     SearchCommandAutocomplete(command.name);
                 });
 
