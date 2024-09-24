@@ -35,7 +35,7 @@ namespace BetterLegacy.Editor.Managers
         public static List<List<BaseEventKeyframe>> AllEvents => !GameData.IsValid ? null : GameData.Current.eventObjects.allEvents;
 
         // Timeline will only ever have up to 15 "bins" and since the 15th bin is the checkpoints, we only need the first 14 bins.
-        public const int EventLimit = 14;
+        public const int EVENT_LIMIT = 14;
 
         public static bool ResetRotation => EditorConfig.Instance.RotationEventKeyframeResets.Value;
 
@@ -589,7 +589,7 @@ namespace BetterLegacy.Editor.Managers
             if (!_add)
                 DeselectAllKeyframes();
 
-            list.Where(x => (x.Type / EventLimit) == RTEditor.inst.Layer && RTEditor.inst.layerType == RTEditor.LayerType.Events &&
+            list.Where(x => (x.Type / EVENT_LIMIT) == RTEditor.inst.Layer && RTEditor.inst.layerType == RTEditor.LayerType.Events &&
             RTMath.RectTransformToScreenSpace(EditorManager.inst.SelectionBoxImage.rectTransform).Overlaps(RTMath.RectTransformToScreenSpace(x.Image.rectTransform))).ToList()
             .ForEach(x =>
             {
@@ -740,7 +740,7 @@ namespace BetterLegacy.Editor.Managers
 
         public GameObject EventGameObject(TimelineObject kf)
         {
-            var gameObject = EventEditor.inst.TimelinePrefab.Duplicate(EventEditor.inst.EventHolders.transform.GetChild(kf.Type % EventLimit), $"keyframe - {kf.Type}");
+            var gameObject = EventEditor.inst.TimelinePrefab.Duplicate(EventEditor.inst.EventHolders.transform.GetChild(kf.Type % EVENT_LIMIT), $"keyframe - {kf.Type}");
             return gameObject;
         }
 
@@ -776,7 +776,7 @@ namespace BetterLegacy.Editor.Managers
             var eventKeyframe = events[kf.Index];
             float eventTime = eventKeyframe.eventTime;
             int baseUnit = EditorManager.BaseUnit;
-            int limit = kf.Type / EventLimit;
+            int limit = kf.Type / EVENT_LIMIT;
 
             if (limit == RTEditor.inst.Layer)
             {
@@ -3268,7 +3268,7 @@ namespace BetterLegacy.Editor.Managers
             var theme = EditorThemeManager.CurrentTheme;
             var title = EventEditor.inst.dialogRight.GetChild(i).GetChild(0);
             var image = title.GetChild(0).GetComponent<Image>();
-            image.color = theme.ContainsGroup($"Event Color {i % EventLimit + 1} Editor") ? theme.GetColor($"Event Color {i % EventLimit + 1} Editor") : Color.white;
+            image.color = theme.ContainsGroup($"Event Color {i % EVENT_LIMIT + 1} Editor") ? theme.GetColor($"Event Color {i % EVENT_LIMIT + 1} Editor") : Color.white;
             image.color = LSColors.fadeColor(image.color, 1f);
             image.rectTransform.sizeDelta = new Vector2(17f, 0f);
             title.GetChild(1).GetComponent<Text>().text = $"- {EventTypes[i]} Editor - ";
@@ -3285,14 +3285,14 @@ namespace BetterLegacy.Editor.Managers
 
             for (int i = 0; i < AllEvents.Count; i++)
             {
-                int t = i % EventLimit;
-                int num = Mathf.Clamp(layer * EventLimit, 0, (RTEditor.ShowModdedUI ? layer * EventLimit : 10));
+                int t = i % EVENT_LIMIT;
+                int num = Mathf.Clamp(layer * EVENT_LIMIT, 0, (RTEditor.ShowModdedUI ? layer * EVENT_LIMIT : 10));
 
                 var text = eventLabels.transform.GetChild(t).GetChild(0).GetComponent<Text>();
 
                 if (i < EventTypes.Length)
                 {
-                    if (i >= num - EventLimit && i < num)
+                    if (i >= num - EVENT_LIMIT && i < num)
                         text.text = EventTypes[i];
                     else if (i < num)
                         text.text = layer == 69 ? "lol" : layer == 555 ? "Hahaha" : NoEventLabel;
@@ -3318,7 +3318,7 @@ namespace BetterLegacy.Editor.Managers
                 img.enabled = enabled;
                 if (enabled)
                 {
-                    img.color = theme.ContainsGroup($"Event Color {i % EventLimit + 1}") ? theme.GetColor($"Event Color {i % EventLimit + 1}") : Color.white;
+                    img.color = theme.ContainsGroup($"Event Color {i % EVENT_LIMIT + 1}") ? theme.GetColor($"Event Color {i % EVENT_LIMIT + 1}") : Color.white;
                 }
 
                 EventLabels[i].enabled = enabled;

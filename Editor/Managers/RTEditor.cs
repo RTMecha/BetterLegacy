@@ -2486,8 +2486,8 @@ namespace BetterLegacy.Editor.Managers
                     var pointerEventData = (PointerEventData)eventData;
 
                     var layer = Layer + 1;
-                    int max = RTEventEditor.EventLimit * layer;
-                    int min = max - RTEventEditor.EventLimit;
+                    int max = RTEventEditor.EVENT_LIMIT * layer;
+                    int min = max - RTEventEditor.EVENT_LIMIT;
                     var currentEvent = min + type;
 
                     CoreHelper.Log($"EventHolder: {type}\nMax: {max}\nMin: {min}\nCurrent Event: {currentEvent}");

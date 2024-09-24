@@ -235,7 +235,7 @@ namespace BetterLegacy.Editor
                     case TimelineObjectType.PrefabObject: return RTEditor.inst.layerType == RTEditor.LayerType.Objects && Layer == RTEditor.inst.Layer;
                     case TimelineObjectType.EventKeyframe:
                         {
-                            int limit = Type / RTEventEditor.EventLimit;
+                            int limit = Type / RTEventEditor.EVENT_LIMIT;
                             bool isCurrentLayer = limit == RTEditor.inst.Layer && RTEditor.inst.layerType == RTEditor.LayerType.Events;
                             return isCurrentLayer && (RTEditor.ShowModdedUI || Type < 10);
                         }
@@ -349,7 +349,7 @@ namespace BetterLegacy.Editor
                             if (!isCurrentLayer)
                                 break;
 
-                            var color = eventKeyframesRenderBinColor ? theme.GetEventKeyframeColor(Type % RTEventEditor.EventLimit) : ObjEditor.inst.NormalColor;
+                            var color = eventKeyframesRenderBinColor ? theme.GetEventKeyframeColor(Type % RTEventEditor.EVENT_LIMIT) : ObjEditor.inst.NormalColor;
                             color.a = 1f;
                             color = selected ? !eventKeyframesRenderBinColor ? ObjEditor.inst.SelectedColor : EventEditor.inst.Selected : color;
 
