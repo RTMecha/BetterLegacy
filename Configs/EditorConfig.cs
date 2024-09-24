@@ -105,9 +105,6 @@ namespace BetterLegacy.Configs
         public Setting<Color> MarkerLineColor { get; set; }
         public Setting<float> MarkerLineWidth { get; set; }
         public Setting<float> MarkerTextWidth { get; set; }
-        public Setting<bool> MarkerLoopActive { get; set; }
-        public Setting<int> MarkerLoopBegin { get; set; }
-        public Setting<int> MarkerLoopEnd { get; set; }
         public Setting<int> MarkerDefaultColor { get; set; }
 
         #endregion
@@ -1299,9 +1296,6 @@ namespace BetterLegacy.Configs
             MarkerLineColor = Bind(this, "Timeline", "Marker Line Color", new Color(1f, 1f, 1f, 0.7843f), "The color of the marker lines.");
             MarkerLineWidth = Bind(this, "Timeline", "Marker Line Width", 2f, "The width of the marker lines.");
             MarkerTextWidth = Bind(this, "Timeline", "Marker Text Width", 64f, "The width of the markers' text. If the text is longer than this width, then it doesn't display the symbols after the width.");
-            MarkerLoopActive = Bind(this, "Timeline", "Marker Loop Active", false, "If the marker should loop between markers.");
-            MarkerLoopBegin = Bind(this, "Timeline", "Marker Loop Begin", 0, "Audio time gets set to this marker.");
-            MarkerLoopEnd = Bind(this, "Timeline", "Marker Loop End", 1, "If the audio time gets to the set marker time, it will loop to the beginning marker.");
             MarkerDefaultColor = Bind(this, "Timeline", "Marker Default Color", 0, "The default color assigned to a new marker.");
 
             #endregion

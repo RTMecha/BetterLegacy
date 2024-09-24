@@ -40,7 +40,7 @@ namespace BetterLegacy.Editor.Managers
 
         void Update()
         {
-            if (Input.GetMouseButtonUp(2))
+            if (Input.GetMouseButtonUp(0))
                 StopDragging();
 
             for (int i = 0; i < timelineMarkers.Count; i++)
@@ -53,13 +53,11 @@ namespace BetterLegacy.Editor.Managers
                 RenderMarker(timelineMarkers[i]);
             }
 
-            var config = EditorConfig.Instance;
-
-            if (!config.MarkerLoopActive.Value || GameData.Current.beatmapData.markers.Count <= 0)
+            if (EditorManager.inst.loading || !markerLooping || GameData.Current.beatmapData.markers.Count <= 0)
                 return;
 
-            int markerStart = config.MarkerLoopBegin.Value;
-            int markerEnd = config.MarkerLoopEnd.Value;
+            int markerStart = markerLoopBegin;
+            int markerEnd = markerLoopEnd;
 
             if (markerStart < 0)
                 markerStart = 0;
@@ -437,6 +435,24 @@ namespace BetterLegacy.Editor.Managers
                 var button = gameObject.GetComponent<Button>();
                 button.onClick.AddListener(() => { SetCurrentMarker(timelineMarkers[index], true); });
 
+                var contextClickable = gameObject.AddComponent<ContextClickable>();
+                contextClickable.onClick = eventData =>
+                {
+                    if (eventData.button != PointerEventData.InputButton.Right)
+                        return;
+
+                    RTEditor.inst.ShowContextMenu(300f,
+                        new RTEditor.ButtonFunction("Open", () => SetCurrentMarker(timelineMarkers[index])),
+                        new RTEditor.ButtonFunction("Open & Bring To", () => SetCurrentMarker(timelineMarkers[index], true)),
+                        new RTEditor.ButtonFunction("Delete", () => DeleteMarker(index)),
+                        new RTEditor.ButtonFunction(true),
+                        new RTEditor.ButtonFunction("Start Marker Looping", () => { markerLooping = true; }),
+                        new RTEditor.ButtonFunction("Stop Marker Looping", () => { markerLooping = false; }),
+                        new RTEditor.ButtonFunction("Set Begin Loop", () => { markerLoopBegin = index; }),
+                        new RTEditor.ButtonFunction("Set End Loop", () => { markerLoopEnd = index; })
+                        );
+                };
+
                 TooltipHelper.AddHoverTooltip(gameObject, "<#" + LSColors.ColorToHex(markerColor) + ">" + marker.name + " [ " + marker.time + " ]</color>", marker.desc, new List<string>());
 
                 EditorThemeManager.ApplyGraphic(button.image, ThemeGroup.List_Button_2_Normal, true);
@@ -447,6 +463,10 @@ namespace BetterLegacy.Editor.Managers
                 num++;
             }
         }
+
+        public bool markerLooping;
+        public int markerLoopBegin;
+        public int markerLoopEnd = 1;
 
         public void CreateMarker(int index)
         {
@@ -466,23 +486,38 @@ namespace BetterLegacy.Editor.Managers
                 Text = gameObject.GetComponentInChildren<Text>(),
             };
 
+            EditorThemeManager.ApplyLightText(timelineMarker.Text);
+
             TriggerHelper.AddEventTriggers(gameObject, TriggerHelper.CreateEntry(EventTriggerType.PointerClick, eventData =>
             {
                 var pointerEventData = (PointerEventData)eventData;
 
-                if (pointerEventData.button == PointerEventData.InputButton.Left)
+                switch (pointerEventData.button)
                 {
-                    SetCurrentMarker(timelineMarker);
-                    AudioManager.inst.SetMusicTimeWithDelay(Mathf.Clamp(timelineMarker.Marker.time, 0f, AudioManager.inst.CurrentAudioSource.clip.length), 0.05f);
+                    case PointerEventData.InputButton.Left:
+                        {
+                            SetCurrentMarker(timelineMarker);
+                            AudioManager.inst.SetMusicTimeWithDelay(Mathf.Clamp(timelineMarker.Marker.time, 0f, AudioManager.inst.CurrentAudioSource.clip.length), 0.05f);
+                            break;
+                        }
+                    case PointerEventData.InputButton.Right:
+                        {
+                            DeleteMarker(timelineMarker.Index);
+                            break;
+                        }
+                    case PointerEventData.InputButton.Middle:
+                        {
+                            AudioManager.inst.SetMusicTime(Mathf.Clamp(timelineMarker.Marker.time, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
+                            break;
+                        }
                 }
 
-                if (pointerEventData.button == PointerEventData.InputButton.Right)
-                    DeleteMarker(timelineMarker.Index);
-            }), TriggerHelper.CreateEntry(EventTriggerType.BeginDrag, eventData =>
+            }),
+            TriggerHelper.CreateEntry(EventTriggerType.BeginDrag, eventData =>
             {
                 var pointerEventData = (PointerEventData)eventData;
 
-                if (pointerEventData.button == PointerEventData.InputButton.Middle)
+                if (pointerEventData.button == PointerEventData.InputButton.Left)
                 {
                     CoreHelper.Log($"Started dragging marker {index}");
                     timelineMarker.dragging = true;
@@ -529,8 +564,10 @@ namespace BetterLegacy.Editor.Managers
             timelineMarker.RectTransform.anchoredPosition = new Vector2(time * EditorManager.inst.Zoom - 6f, -12f);
             timelineMarker.Handle.color = markerColor;
 
-            timelineMarker.Text.text = timelineMarker.Marker.name;
-            EditorThemeManager.ApplyLightText(timelineMarker.Text);
+            var name = timelineMarker.Marker.name;
+            timelineMarker.Text.gameObject.SetActive(!string.IsNullOrEmpty(name));
+            if (!string.IsNullOrEmpty(name))
+                timelineMarker.Text.text = name;
             timelineMarker.Text.transform.AsRT().sizeDelta = new Vector2(EditorConfig.Instance.MarkerTextWidth.Value, 20f);
             timelineMarker.GameObject.SetActive(true);
 
