@@ -1,3 +1,14 @@
+1.6.4 > [Sep 24, 2024]
+- Added some context menus to the built-in file browser.
+- Included with the above feature is the ability to preview audio files.
+- Fixed some modifiers not having the correct parameters, breaking the UI.
+- Modifiers now have a context menu.
+- Added Paste Modifier and Paste Keyframes to Multi Object editor.
+- Multi Object editor now finally has shape editing.
+- Organized the Mutli Object editor UI.
+- Added Update Object button to Timeline Object context menu.
+- Reworked Example chatting internal code a tiny bit.
+- You can now properly greet Example.
 1.6.3 > [Sep 23, 2024]
 - Fixed image objects having their origin break when they appear.
 - Added theme folder navigation.
