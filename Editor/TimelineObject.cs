@@ -1,6 +1,8 @@
 ﻿using BetterLegacy.Components;
+using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Editor.Managers;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -22,21 +24,6 @@ namespace BetterLegacy.Editor
         public TimelineObject(object data)
         {
             Data = data;
-        }
-
-        public TimelineObject(object data, GameObject gameObject, Image image)
-        {
-            Data = data;
-            GameObject = gameObject;
-            Image = image;
-        }
-
-        public TimelineObject(object data, int type, GameObject gameObject, Image image)
-        {
-            Data = data;
-            Type = type;
-            GameObject = gameObject;
-            Image = image;
         }
 
         /// <summary>
@@ -238,7 +225,142 @@ namespace BetterLegacy.Editor
         public float timeOffset;
         public int binOffset;
 
-        public bool selected;
+        public bool IsCurrentLayer
+        {
+            get
+            {
+                switch (ObjectType)
+                {
+                    case TimelineObjectType.BeatmapObject: return RTEditor.inst.layerType == RTEditor.LayerType.Objects && Layer == RTEditor.inst.Layer;
+                    case TimelineObjectType.PrefabObject: return RTEditor.inst.layerType == RTEditor.LayerType.Objects && Layer == RTEditor.inst.Layer;
+                    case TimelineObjectType.EventKeyframe:
+                        {
+                            int limit = Type / RTEventEditor.EventLimit;
+                            bool isCurrentLayer = limit == RTEditor.inst.Layer && RTEditor.inst.layerType == RTEditor.LayerType.Events;
+                            return isCurrentLayer && (RTEditor.ShowModdedUI || Type < 10);
+                        }
+                    default: return false;
+                }
+            }
+        }
+
+        bool selected;
+        public bool Selected
+        {
+            get => selected;
+            set
+            {
+                selected = value;
+                Update(false);
+            }
+        }
+
+        public void Update(bool setActive = true)
+        {
+            switch (ObjectType)
+            {
+                case TimelineObjectType.BeatmapObject:
+                    {
+                        if (!GameObject || !Image)
+                            return;
+
+                        bool isCurrentLayer = IsCurrentLayer;
+
+                        if (setActive && GameObject.activeSelf != isCurrentLayer)
+                            GameObject.SetActive(IsCurrentLayer);
+
+                        if (!isCurrentLayer)
+                            return;
+
+                        var color = selected ?
+                            ObjEditor.inst.SelectedColor :
+                            !string.IsNullOrEmpty(GetData<BeatmapObject>().prefabID) ?
+                                GetData<BeatmapObject>().Prefab.PrefabType.Color :
+                                ObjEditor.inst.NormalColor;
+
+                        if (Image.color != color)
+                            Image.color = color;
+
+                        break;
+                    }
+                case TimelineObjectType.PrefabObject:
+                    {
+                        if (!GameObject || !Image)
+                            return;
+
+                        bool isCurrentLayer = IsCurrentLayer;
+
+                        if (setActive && GameObject.activeSelf != isCurrentLayer)
+                            GameObject.SetActive(IsCurrentLayer);
+
+                        if (!isCurrentLayer)
+                            return;
+
+                        var color = selected ? ObjEditor.inst.SelectedColor : GetData<PrefabObject>().Prefab.PrefabType.Color;
+
+                        if (Image.color != color)
+                            Image.color = color;
+
+                        break;
+                    }
+                case TimelineObjectType.EventKeyframe:
+                    {
+                        var theme = EditorThemeManager.CurrentTheme;
+                        if (isObjectKeyframe)
+                        {
+                            var objectKeyframeColor1 = theme.GetObjectKeyframeColor(0);
+                            var objectKeyframeColor2 = theme.GetObjectKeyframeColor(1);
+                            var objectKeyframeColor3 = theme.GetObjectKeyframeColor(2);
+                            var objectKeyframeColor4 = theme.GetObjectKeyframeColor(3);
+                            var objectKeyframesRenderBinColor = EditorConfig.Instance.ObjectKeyframesRenderBinColor.Value;
+
+                            if (!GameObject || !Image)
+                                return;
+
+                            if (!GameObject.activeSelf)
+                                GameObject.SetActive(true);
+
+                            var color = Type switch
+                            {
+                                0 => objectKeyframeColor1,
+                                1 => objectKeyframeColor2,
+                                2 => objectKeyframeColor3,
+                                3 => objectKeyframeColor4,
+                                _ => ObjEditor.inst.NormalColor,
+                            };
+                            color.a = 1f;
+                            color = selected ? !objectKeyframesRenderBinColor ? ObjEditor.inst.SelectedColor : EventEditor.inst.Selected : color;
+
+                            if (Image.color != color)
+                                Image.color = color;
+                        }
+                        else
+                        {
+                            var eventKeyframesRenderBinColor = EditorConfig.Instance.EventKeyframesRenderBinColor.Value;
+
+                            if (!GameObject || !Image)
+                                return;
+
+                            bool isCurrentLayer = IsCurrentLayer;
+
+                            if (setActive && GameObject.activeSelf != isCurrentLayer)
+                                GameObject.SetActive(isCurrentLayer);
+
+                            if (!isCurrentLayer)
+                                break;
+
+                            var color = eventKeyframesRenderBinColor ? theme.GetEventKeyframeColor(Type % RTEventEditor.EventLimit) : ObjEditor.inst.NormalColor;
+                            color.a = 1f;
+                            color = selected ? !eventKeyframesRenderBinColor ? ObjEditor.inst.SelectedColor : EventEditor.inst.Selected : color;
+
+                            if (Image.color != color)
+                                Image.color = color;
+                        }
+
+                        break;
+                    }
+            }
+        }
 
         float zoom = 0.05f;
         /// <summary>
@@ -271,6 +393,8 @@ namespace BetterLegacy.Editor
         /// The internal keyframes an object stores. Only used for Beatmap Objects.
         /// </summary>
         public List<TimelineObject> InternalSelections { get; set; } = new List<TimelineObject>();
+
+        public bool isObjectKeyframe;
 
         public TimelineObjectType ObjectType
         {

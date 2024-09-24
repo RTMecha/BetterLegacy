@@ -119,7 +119,7 @@ namespace BetterLegacy.Core.Helpers
             else if (RTEditor.inst.timelineObjects.Count > 1)
             {
                 for (int i = 0; i < RTEditor.inst.timelineObjects.Count; i++)
-                    RTEditor.inst.timelineObjects[i].selected = true;
+                    RTEditor.inst.timelineObjects[i].Selected = true;
 
                 ObjectEditor.inst.CurrentSelection = RTEditor.inst.timelineObjects.Last();
 
@@ -148,7 +148,7 @@ namespace BetterLegacy.Core.Helpers
             {
                 for (int i = 0; i < RTEditor.inst.timelineObjects.Count; i++)
                     if (RTEditor.inst.timelineObjects[i].Layer == layer)
-                        RTEditor.inst.timelineObjects[i].selected = true;
+                        RTEditor.inst.timelineObjects[i].Selected = true;
 
                 ObjectEditor.inst.CurrentSelection = RTEditor.inst.timelineObjects.Last();
 
@@ -257,7 +257,7 @@ namespace BetterLegacy.Core.Helpers
                 if (EditorConfig.Instance.SelectPasted.Value)
                 {
                     foreach (var kf in timelineObject.InternalSelections)
-                        kf.selected = ids.Contains(kf.ID);
+                        kf.Selected = ids.Contains(kf.ID);
                 }
 
                 ObjectEditor.inst.RenderTimelineObject(timelineObject);
@@ -309,7 +309,7 @@ namespace BetterLegacy.Core.Helpers
                 if (EditorConfig.Instance.SelectPasted.Value)
                 {
                     foreach (var kf in timelineObject.InternalSelections)
-                        kf.selected = ids.Contains(kf.ID);
+                        kf.Selected = ids.Contains(kf.ID);
                 }
 
                 ObjectEditor.inst.RenderTimelineObject(timelineObject);

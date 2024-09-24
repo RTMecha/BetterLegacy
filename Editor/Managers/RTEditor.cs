@@ -292,8 +292,6 @@ namespace BetterLegacy.Editor.Managers
         {
             timeEditing = Time.time - timeOffset + savedTimeEditng;
 
-            UpdateTimelineObjectColors();
-
             if (Input.GetMouseButtonDown(1) && (parentPickerEnabled || prefabPickerEnabled || onSelectTimelineObject != null))
             {
                 parentPickerEnabled = false;
@@ -1072,7 +1070,7 @@ namespace BetterLegacy.Editor.Managers
         {
             if (timelineObjects.TryFindIndex(x => x.ID == timelineObject.ID, out int a))
             {
-                timelineObject.selected = false;
+                timelineObject.Selected = false;
                 Destroy(timelineObject.GameObject);
                 timelineObjects.RemoveAt(a);
             }
@@ -1081,85 +1079,17 @@ namespace BetterLegacy.Editor.Managers
         public static Sprite GetKeyframeIcon(DataManager.LSAnimation a, DataManager.LSAnimation b)
             => ObjEditor.inst.KeyframeSprites[a.Name.Contains("Out") && b.Name.Contains("In") ? 3 : a.Name.Contains("Out") ? 2 : b.Name.Contains("In") ? 1 : 0];
 
-        void UpdateTimelineObjectColors()
+        void UpdateTimelineObjects()
         {
             for (int i = 0; i < timelineObjects.Count; i++)
-            {
-                var timelineObject = timelineObjects[i];
+                timelineObjects[i].Update();
 
-                if (timelineObject.Data == null || !timelineObject.GameObject || !timelineObject.Image)
-                    continue;
-
-                bool isCurrentLayer = timelineObject.Layer == Layer && layerType == LayerType.Objects;
-                if (timelineObject.GameObject.activeSelf != isCurrentLayer)
-                    timelineObject.GameObject.SetActive(isCurrentLayer);
-
-                if (!isCurrentLayer)
-                    continue;
-
-                var color = timelineObject.selected ? ObjEditor.inst.SelectedColor :
-                    timelineObject.IsBeatmapObject && !string.IsNullOrEmpty(timelineObject.GetData<BeatmapObject>().prefabID) ? timelineObject.GetData<BeatmapObject>().Prefab.PrefabType.Color :
-                    timelineObject.IsPrefabObject ? timelineObject.GetData<PrefabObject>().Prefab.PrefabType.Color : ObjEditor.inst.NormalColor;
-
-                if (timelineObject.Image.color != color)
-                    timelineObject.Image.color = color;
-            }
-
-            var theme = EditorThemeManager.CurrentTheme;
-            var objectKeyframeColor1 = theme.GetObjectKeyframeColor(0);
-            var objectKeyframeColor2 = theme.GetObjectKeyframeColor(1);
-            var objectKeyframeColor3 = theme.GetObjectKeyframeColor(2);
-            var objectKeyframeColor4 = theme.GetObjectKeyframeColor(3);
-            var objectKeyframesRenderBinColor = EditorConfig.Instance.EventKeyframesRenderBinColor.Value;
             if (ObjectEditor.inst && ObjectEditor.inst.CurrentSelection && ObjectEditor.inst.CurrentSelection.IsBeatmapObject && ObjectEditor.inst.CurrentSelection.InternalSelections.Count > 0)
-                foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalSelections)
-                {
-                    if (timelineObject.Data == null || !timelineObject.GameObject || !timelineObject.Image)
-                        continue;
+                for (int i = 0; i < ObjectEditor.inst.CurrentSelection.InternalSelections.Count; i++)
+                    ObjectEditor.inst.CurrentSelection.InternalSelections[i].Update();
 
-                    if (!timelineObject.GameObject.activeSelf)
-                        timelineObject.GameObject.SetActive(true);
-
-                    var color = timelineObject.Type switch
-                    {
-                        0 => objectKeyframeColor1,
-                        1 => objectKeyframeColor2,
-                        2 => objectKeyframeColor3,
-                        3 => objectKeyframeColor4,
-                        _ => ObjEditor.inst.NormalColor,
-                    };
-                    color.a = 1f;
-                    color = timelineObject.selected ? !objectKeyframesRenderBinColor ? ObjEditor.inst.SelectedColor : EventEditor.inst.Selected : color;
-
-                    if (timelineObject.Image.color != color)
-                        timelineObject.Image.color = color;
-                }
-
-            var eventKeyframesRenderBinColor = EditorConfig.Instance.EventKeyframesRenderBinColor.Value;
             for (int i = 0; i < timelineKeyframes.Count; i++)
-            {
-                var timelineObject = timelineKeyframes[i];
-
-                if (timelineObject.Data == null || !timelineObject.GameObject || !timelineObject.Image)
-                    continue;
-
-                int limit = timelineObject.Type / RTEventEditor.EventLimit;
-                bool isCurrentLayer = limit == Layer && layerType == LayerType.Events;
-                bool active = isCurrentLayer && (ShowModdedUI || timelineObject.Type < 10);
-
-                if (timelineObject.GameObject.activeSelf != active)
-                    timelineObject.GameObject.SetActive(active);
-
-                if (!active)
-                    continue;
-
-                var color = eventKeyframesRenderBinColor ? theme.GetEventKeyframeColor(timelineObject.Type % RTEventEditor.EventLimit) : ObjEditor.inst.NormalColor;
-                color.a = 1f;
-                color = timelineObject.selected ? !eventKeyframesRenderBinColor ? ObjEditor.inst.SelectedColor : EventEditor.inst.Selected : color;
-
-                if (timelineObject.Image.color != color)
-                    timelineObject.Image.color = color;
-            }
+                timelineKeyframes[i].Update();
         }
 
         #endregion
@@ -2046,7 +1976,7 @@ namespace BetterLegacy.Editor.Managers
                     if (ObjEditor.inst.currentKeyframe != 0)
                     {
                         var list = new List<TimelineObject>();
-                        foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.selected))
+                        foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.Selected))
                             list.Add(timelineObject);
                         var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
 
@@ -2220,6 +2150,7 @@ namespace BetterLegacy.Editor.Managers
 
             if (prevLayer != layer || prevLayerType != layerType)
             {
+                UpdateTimelineObjects();
                 switch (layerType)
                 {
                     case LayerType.Objects:
@@ -2227,17 +2158,7 @@ namespace BetterLegacy.Editor.Managers
                             ObjectEditor.inst.RenderTimelineObjectsPositions();
 
                             if (prevLayerType != layerType)
-                            {
-                                if (CheckpointEditor.inst.checkpoints.Count > 0)
-                                {
-                                    foreach (var obj2 in CheckpointEditor.inst.checkpoints)
-                                        Destroy(obj2);
-
-                                    CheckpointEditor.inst.checkpoints.Clear();
-                                }
-
                                 CheckpointEditor.inst.CreateGhostCheckpoints();
-                            }
 
                             break;
                         }
@@ -9495,6 +9416,9 @@ namespace BetterLegacy.Editor.Managers
             BackgroundManager.inst.UpdateBackgrounds();
             GameManager.inst.UpdateTheme();
             RTMarkerEditor.inst.CreateMarkers();
+            RTMarkerEditor.inst.markerLooping = false;
+            RTMarkerEditor.inst.markerLoopBegin = 0;
+            RTMarkerEditor.inst.markerLoopEnd = 1;
             EventManager.inst.updateEvents();
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 

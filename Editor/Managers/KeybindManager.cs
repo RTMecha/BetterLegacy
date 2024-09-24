@@ -1408,7 +1408,7 @@ namespace BetterLegacy.Editor.Managers
         {
             if (EditorManager.inst.IsOverObjTimeline && ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
             {
-                var selected = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.selected);
+                var selected = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.Selected);
                 var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
 
                 foreach (var timelineObject in selected)
@@ -1445,7 +1445,7 @@ namespace BetterLegacy.Editor.Managers
         {
             if (EditorManager.inst.IsOverObjTimeline && ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
             {
-                var selected = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.selected);
+                var selected = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.Selected);
                 var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
 
                 foreach (var timelineObject in selected)
@@ -1922,9 +1922,9 @@ namespace BetterLegacy.Editor.Managers
 
             if (ObjEditor.inst.ObjectView.activeInHierarchy
                 && ObjectEditor.inst.CurrentSelection.IsBeatmapObject
-                && ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.selected).Count() > 0)
+                && ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.Selected).Count() > 0)
             {
-                foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.selected))
+                foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.Selected))
                 {
                     if (timelineObject.Index != 0)
                         timelineObject.Time = RTEditor.SnapToBPM(timelineObject.Time);

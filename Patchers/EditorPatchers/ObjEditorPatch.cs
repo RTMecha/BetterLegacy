@@ -732,7 +732,7 @@ namespace BetterLegacy.Patchers
                         flipXButton.onClick.ClearAll();
                         flipXButton.onClick.AddListener(() =>
                         {
-                            foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.selected))
+                            foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.Selected))
                             {
                                 var eventKeyframe = timelineObject.GetData<EventKeyframe>();
                                 eventKeyframe.eventValues[0] = -eventKeyframe.eventValues[0];
@@ -759,7 +759,7 @@ namespace BetterLegacy.Patchers
                             flipYButton.onClick.ClearAll();
                             flipYButton.onClick.AddListener(() =>
                             {
-                                foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.selected))
+                                foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.Selected))
                                 {
                                     var eventKeyframe = timelineObject.GetData<EventKeyframe>();
                                     eventKeyframe.eventValues[1] = -eventKeyframe.eventValues[1];
@@ -1489,7 +1489,7 @@ namespace BetterLegacy.Patchers
             snapToBPM.onClick.AddListener(() =>
             {
                 var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
-                foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.selected))
+                foreach (var timelineObject in ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.Selected))
                 {
                     if (timelineObject.Index != 0)
                         timelineObject.Time = RTEditor.SnapToBPM(timelineObject.Time);
@@ -1535,7 +1535,7 @@ namespace BetterLegacy.Patchers
             pasteAll.onClick.AddListener(() =>
             {
                 var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
-                var list = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.selected);
+                var list = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.Selected);
 
                 foreach (var timelineObject in list)
                 {
@@ -1632,7 +1632,7 @@ namespace BetterLegacy.Patchers
             pastePos.onClick.AddListener(() =>
             {
                 var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
-                var list = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.selected);
+                var list = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.Selected);
 
                 foreach (var timelineObject in list)
                 {
@@ -1673,7 +1673,7 @@ namespace BetterLegacy.Patchers
             pasteSca.onClick.AddListener(() =>
             {
                 var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
-                var list = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.selected);
+                var list = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.Selected);
 
                 foreach (var timelineObject in list)
                 {
@@ -1739,7 +1739,7 @@ namespace BetterLegacy.Patchers
             pasteRot.onClick.AddListener(() =>
             {
                 var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
-                var list = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.selected);
+                var list = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.Selected);
 
                 foreach (var timelineObject in list)
                 {
@@ -1780,7 +1780,7 @@ namespace BetterLegacy.Patchers
             pasteCol.onClick.AddListener(() =>
             {
                 var beatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
-                var list = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.selected);
+                var list = ObjectEditor.inst.CurrentSelection.InternalSelections.Where(x => x.Selected);
 
                 foreach (var timelineObject in list)
                 {

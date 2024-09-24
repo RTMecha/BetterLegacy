@@ -1455,7 +1455,7 @@ namespace BetterLegacy.Editor.Managers
                 expandedObjects.Add(beatmapObjectCopy);
 
                 var timelineObject = new TimelineObject(beatmapObjectCopy);
-                timelineObject.selected = true;
+                timelineObject.Selected = true;
                 ObjectEditor.inst.CurrentSelection = timelineObject;
 
                 ObjectEditor.inst.RenderTimelineObject(timelineObject);
@@ -2353,8 +2353,8 @@ namespace BetterLegacy.Editor.Managers
                         var selectionToggle = selection.GetComponent<Toggle>();
 
                         selectionToggle.onValueChanged.ClearAll();
-                        selectionToggle.isOn = timelineObject.selected;
-                        selectionToggle.onValueChanged.AddListener(_val => { timelineObject.selected = _val; });
+                        selectionToggle.isOn = timelineObject.Selected;
+                        selectionToggle.onValueChanged.AddListener(_val => { timelineObject.Selected = _val; });
                         EditorThemeManager.ApplyToggle(selectionToggle, text: text);
                     }
                 }
