@@ -6240,8 +6240,8 @@ namespace BetterLegacy.Editor.Managers
             multiObjectEditorDialog.Find("data/left").AsRT().sizeDelta = new Vector2(355f, 730f);
         }
 
-        bool updatedShapes = false;
-        bool updatedText = false;
+        bool updatedShapes;
+        bool updatedText;
         public List<Toggle> shapeToggles = new List<Toggle>();
         public List<List<Toggle>> shapeOptionToggles = new List<List<Toggle>>();
 
@@ -6326,6 +6326,7 @@ namespace BetterLegacy.Editor.Managers
 
                     var shapeToggle = obj.GetComponent<Toggle>();
                     EditorThemeManager.ApplyToggle(shapeToggle, ThemeGroup.Background_1);
+                    shapeToggle.group = null;
 
                     shapeToggles.Add(shapeToggle);
 
@@ -6384,6 +6385,7 @@ namespace BetterLegacy.Editor.Managers
 
                             var shapeOptionToggle = opt.GetComponent<Toggle>();
                             EditorThemeManager.ApplyToggle(shapeOptionToggle, ThemeGroup.Background_1);
+                            shapeOptionToggle.group = null;
 
                             shapeOptionToggles[i].Add(shapeOptionToggle);
 
@@ -6452,6 +6454,7 @@ namespace BetterLegacy.Editor.Managers
                     var shapeToggle = obj.GetComponent<Toggle>();
                     shapeToggles.Add(shapeToggle);
                     EditorThemeManager.ApplyToggle(shapeToggle, ThemeGroup.Background_1);
+                    shapeToggle.group = null;
 
                     shapeOptionToggles.Add(new List<Toggle>());
 
@@ -6466,6 +6469,7 @@ namespace BetterLegacy.Editor.Managers
 
                         var shapeOptionToggle = opt.GetComponent<Toggle>();
                         EditorThemeManager.ApplyToggle(shapeOptionToggle, ThemeGroup.Background_1);
+                        shapeOptionToggle.group = null;
 
                         shapeOptionToggles[i].Add(shapeOptionToggle);
 
