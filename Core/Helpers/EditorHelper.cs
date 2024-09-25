@@ -1,11 +1,14 @@
-﻿using BetterLegacy.Configs;
+﻿using BetterLegacy.Components;
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Editor.Managers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace BetterLegacy.Core.Helpers
@@ -77,6 +80,53 @@ namespace BetterLegacy.Core.Helpers
             EditorThemeManager.AddGraphic(image, ThemeGroup.Title_Bar_Text);
 
             return gameObject;
+        }
+
+        public static void AddInputFieldContextMenu(InputField name)
+        {
+            if (!name.GetComponent<ContextClickable>() && name.gameObject)
+            {
+                var contextClickable = name.gameObject.AddComponent<ContextClickable>();
+                contextClickable.onClick = eventData =>
+                {
+                    if (eventData.button != PointerEventData.InputButton.Right)
+                        return;
+
+                    RTEditor.inst.ShowContextMenu(300f,
+                        new RTEditor.ButtonFunction("Flip Left/Right", () => { name.text = CoreHelper.FlipLeftRight(name.text); }),
+                        new RTEditor.ButtonFunction("Flip Up/Down", () => { name.text = CoreHelper.FlipUpDown(name.text); }),
+                        new RTEditor.ButtonFunction("Flip Upper/Lower", () => { name.text = CoreHelper.FlipUpperLower(name.text); }),
+                        new RTEditor.ButtonFunction(true),
+                        new RTEditor.ButtonFunction("Flip Number", () =>
+                        {
+                            CoreHelper.RegexMatches(name.text, new Regex(@"([-0-9]+)"), match =>
+                            {
+                                int num = Parser.TryParse(match.Groups[1].ToString(), 0);
+                                num = -num;
+                                name.text = name.text.Replace(match.Groups[1].ToString(), num.ToString());
+                            });
+                        }),
+                        new RTEditor.ButtonFunction("Increase Number", () =>
+                        {
+                            CoreHelper.RegexMatches(name.text, new Regex(@"([-0-9]+)"), match =>
+                            {
+                                int num = Parser.TryParse(match.Groups[1].ToString(), 0);
+                                num++;
+                                name.text = name.text.Replace(match.Groups[1].ToString(), num.ToString());
+                            });
+                        }),
+                        new RTEditor.ButtonFunction("Decrease Number", () =>
+                        {
+                            CoreHelper.RegexMatches(name.text, new Regex(@"([-0-9]+)"), match =>
+                            {
+                                int num = Parser.TryParse(match.Groups[1].ToString(), 0);
+                                num--;
+                                name.text = name.text.Replace(match.Groups[1].ToString(), num.ToString());
+                            });
+                        })
+                        );
+                };
+            }
         }
 
         public static void LogAvailableInstances<T>()

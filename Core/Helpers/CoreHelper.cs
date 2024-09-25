@@ -466,7 +466,7 @@ namespace BetterLegacy.Core.Helpers
                 matchAction?.Invoke(match);
         }
 
-        public static string Flip(string str)
+        public static string FlipLeftRight(string str)
         {
             string s;
             s = str.Replace("Left", "LSLeft87344874")
@@ -482,6 +482,42 @@ namespace BetterLegacy.Core.Helpers
                 .Replace("LSright87344874", "left")
                 .Replace("LSLEFT87344874", "RIGHT")
                 .Replace("LSRIGHT87344874", "LEFT");
+        }
+        
+        public static string FlipUpDown(string str)
+        {
+            string s;
+            s = str.Replace("Up", "LSUp87344874")
+                .Replace("Down", "LSDown87344874")
+                .Replace("up", "LSup87344874")
+                .Replace("down", "LSdown87344874")
+                .Replace("UP", "LSUP87344874")
+                .Replace("DOWN", "LSDOWN87344874");
+
+            return s.Replace("LSUp87344874", "Down")
+                .Replace("LSDown87344874", "Up")
+                .Replace("LSup87344874", "down")
+                .Replace("LSdown87344874", "up")
+                .Replace("LSUP87344874", "DOWN")
+                .Replace("LSDOWN87344874", "UP");
+        }
+        
+        public static string FlipUpperLower(string str)
+        {
+            string s;
+            s = str.Replace("Upper", "LSUpper87344874")
+                .Replace("Lower", "LSLower87344874")
+                .Replace("upper", "LSupper87344874")
+                .Replace("lower", "LSlower87344874")
+                .Replace("UPPER", "LSUPPER87344874")
+                .Replace("LOWER", "LSLOWER87344874");
+
+            return s.Replace("LSUpper87344874", "Lower")
+                .Replace("LSLower87344874", "Upper")
+                .Replace("LSupper87344874", "lower")
+                .Replace("LSlower87344874", "upper")
+                .Replace("LSUPPER87344874", "LOWER")
+                .Replace("LSLOWER87344874", "UPPER");
         }
 
         public static bool ColorMatch(Color a, Color b, float range, bool alpha = false)

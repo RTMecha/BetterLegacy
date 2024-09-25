@@ -10,6 +10,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -419,7 +420,10 @@ namespace BetterLegacy.Editor.Managers
                             SingleGenerator(modifier, layout, "Value", 0, 1f);
 
                             if (cmd == "setAlphaOther")
-                                StringGenerator(modifier, layout, "Object Group", 1);
+                            {
+                                var str = StringGenerator(modifier, layout, "Object Group", 1);
+                                EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+                            }
 
                             if (cmd == "blackHole")
                                 BoolGenerator(modifier, layout, "Use Opacity", 1, false);
@@ -633,7 +637,8 @@ namespace BetterLegacy.Editor.Managers
                     case "objectCollide":
                         {
                             PrefabGroupOnly(modifier, layout);
-                            StringGenerator(modifier, layout, "Object Group", 0);
+                            var str = StringGenerator(modifier, layout, "Object Group", 0);
+                            EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
                             break;
                         }
@@ -642,7 +647,8 @@ namespace BetterLegacy.Editor.Managers
                     case "setImageOther":
                         {
                             PrefabGroupOnly(modifier, layout);
-                            StringGenerator(modifier, layout, "Object Group", 1);
+                            var str = StringGenerator(modifier, layout, "Object Group", 1);
+                            EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                             StringGenerator(modifier, layout, cmd == "setImageOther" ? "Path" : "Text", 0);
 
                             break;
@@ -705,7 +711,10 @@ namespace BetterLegacy.Editor.Managers
                                 BoolGenerator(modifier, layout, "Use Opacity", 1, false);
 
                             if (cmd.Contains("Other"))
-                                StringGenerator(modifier, layout, "Object Group", 1);
+                            {
+                                var str = StringGenerator(modifier, layout, "Object Group", 1);
+                                EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+                            }
 
                             BoolGenerator(modifier, layout, "Set Back to Normal", cmd != "blurVariable" ? 2 : 1, false);
 
@@ -820,7 +829,10 @@ namespace BetterLegacy.Editor.Managers
                     case "rigidbodyOther":
                         {
                             if (cmd == "rigidbodyOther")
-                                StringGenerator(modifier, layout, "Object Group", 0);
+                            {
+                                var str = StringGenerator(modifier, layout, "Object Group", 0);
+                                EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+                            }
 
                             SingleGenerator(modifier, layout, "Gravity", 1, 0f);
 
@@ -925,7 +937,10 @@ namespace BetterLegacy.Editor.Managers
 
                             if (cmd == "addVariable" || cmd == "subVariable" || cmd == "setVariable" || cmd.Contains("variableOther") ||
                                 cmd == "setAlphaOther" || cmd == "removeTextOther" || cmd == "removeTextOtherAt")
-                                StringGenerator(modifier, layout, "Object Group", 1);
+                            {
+                                var str = StringGenerator(modifier, layout, "Object Group", 1);
+                                EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+                            }
 
                             break;
                         }
@@ -1012,7 +1027,8 @@ namespace BetterLegacy.Editor.Managers
                             if (cmd.Contains("Other"))
                             {
                                 PrefabGroupOnly(modifier, layout);
-                                StringGenerator(modifier, layout, "Object Group", 0);
+                                var str = StringGenerator(modifier, layout, "Object Group", 0);
+                                EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                             }
 
                             StringGenerator(modifier, layout, "Path", 1);
@@ -1267,7 +1283,8 @@ namespace BetterLegacy.Editor.Managers
                     case "copyColorOther":
                         {
                             PrefabGroupOnly(modifier, layout);
-                            StringGenerator(modifier, layout, "Object Group", 0);
+                            var str = StringGenerator(modifier, layout, "Object Group", 0);
+                            EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                             BoolGenerator(modifier, layout, "Apply Color 1", 1, true);
                             BoolGenerator(modifier, layout, "Apply Color 2", 2, true);
 
@@ -1281,7 +1298,8 @@ namespace BetterLegacy.Editor.Managers
                             if (cmd.Contains("Other"))
                             {
                                 PrefabGroupOnly(modifier, layout);
-                                StringGenerator(modifier, layout, "Object Group", 1);
+                                var str = StringGenerator(modifier, layout, "Object Group", 1);
+                                EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                             }
 
                             ColorGenerator(modifier, layout, "Color", !cmd.Contains("Other") ? 1 : 2);
@@ -1314,7 +1332,8 @@ namespace BetterLegacy.Editor.Managers
                     case "applyColorGroup":
                         {
                             PrefabGroupOnly(modifier, layout);
-                            StringGenerator(modifier, layout, "Object Group", 0);
+                            var str = StringGenerator(modifier, layout, "Object Group", 0);
+                            EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                             DropdownGenerator(modifier, layout, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
                             DropdownGenerator(modifier, layout, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
 
@@ -1327,7 +1346,10 @@ namespace BetterLegacy.Editor.Managers
                                 PrefabGroupOnly(modifier, layout);
                             StringGenerator(modifier, layout, "Hex Code", 0);
                             if (cmd.Contains("Other"))
-                                StringGenerator(modifier, layout, "Object Group", 1);
+                            {
+                                var str = StringGenerator(modifier, layout, "Object Group", 1);
+                                EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+                            }
 
                             StringGenerator(modifier, layout, "Hex Gradient Color", cmd.Contains("Other") ? 2 : 1);
 
@@ -1341,7 +1363,8 @@ namespace BetterLegacy.Editor.Managers
                     case "mouseOverSignalModifier":
                         {
                             PrefabGroupOnly(modifier, layout);
-                            StringGenerator(modifier, layout, "Object Group", 1);
+                            var str = StringGenerator(modifier, layout, "Object Group", 1);
+                            EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                             SingleGenerator(modifier, layout, "Delay", 0, 0f);
 
                             break;
@@ -1349,7 +1372,8 @@ namespace BetterLegacy.Editor.Managers
                     case "activateModifier":
                         {
                             PrefabGroupOnly(modifier, layout);
-                            StringGenerator(modifier, layout, "Object Group", 0);
+                            var str = StringGenerator(modifier, layout, "Object Group", 0);
+                            EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                             BoolGenerator(modifier, layout, "Do Multiple", 1, true);
                             IntegerGenerator(modifier, layout, "Singlular Index", 2, 0);
 
@@ -1408,7 +1432,8 @@ namespace BetterLegacy.Editor.Managers
                     case "setVariableRandom":
                         {
                             PrefabGroupOnly(modifier, layout);
-                            StringGenerator(modifier, layout, "Object Group", 0);
+                            var str = StringGenerator(modifier, layout, "Object Group", 0);
+                            EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                             IntegerGenerator(modifier, layout, "Minimum", 1, 0);
                             IntegerGenerator(modifier, layout, "Maximum", 2, 0);
 
@@ -1609,7 +1634,8 @@ namespace BetterLegacy.Editor.Managers
                             if (cmd == "clampVariableOther")
                             {
                                 PrefabGroupOnly(modifier, layout);
-                                StringGenerator(modifier, layout, "Object Group", 0);
+                                var str = StringGenerator(modifier, layout, "Object Group", 0);
+                                EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                             }
                             
                             IntegerGenerator(modifier, layout, "Minimum", 1, 0);
@@ -1640,7 +1666,10 @@ namespace BetterLegacy.Editor.Managers
                             DropdownGenerator(modifier, layout, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
 
                             if (cmd.Contains("Other"))
-                                StringGenerator(modifier, layout, "Object Group", 7);
+                            {
+                                var str = StringGenerator(modifier, layout, "Object Group", 7);
+                                EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+                            }
 
                             if (cmd.Contains("Signal"))
                             {
@@ -1658,7 +1687,8 @@ namespace BetterLegacy.Editor.Managers
                     case "animateVariableOther":
                         {
                             PrefabGroupOnly(modifier, layout);
-                            StringGenerator(modifier, layout, "Object Group", 0);
+                            var str = StringGenerator(modifier, layout, "Object Group", 0);
+                            EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
                             DropdownGenerator(modifier, layout, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
                             DropdownGenerator(modifier, layout, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
@@ -1679,7 +1709,8 @@ namespace BetterLegacy.Editor.Managers
                             if (cmd == "copyAxis")
                             {
                                 PrefabGroupOnly(modifier, layout);
-                                StringGenerator(modifier, layout, "Object Group", 0);
+                                var str = StringGenerator(modifier, layout, "Object Group", 0);
+                                EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                             }
 
                             DropdownGenerator(modifier, layout, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
@@ -1762,7 +1793,8 @@ namespace BetterLegacy.Editor.Managers
                                 EditorThemeManager.ApplyGraphic(deleteGroupButton.image, ThemeGroup.Delete_Text);
 
                                 StringGenerator(modifier, layout, "Name", i);
-                                StringGenerator(modifier, layout, "Name", i + 1);
+                                var str = StringGenerator(modifier, layout, "Object Group", i + 1);
+                                EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                                 DropdownGenerator(modifier, layout, "From Type", i + 2, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color", "Variable"));
                                 DropdownGenerator(modifier, layout, "From Axis", i + 3, CoreHelper.StringToOptionData("X", "Y", "Z"));
                                 SingleGenerator(modifier, layout, "Delay", i + 4, 0f);
@@ -1819,7 +1851,8 @@ namespace BetterLegacy.Editor.Managers
                     case "axisGreater":
                         {
                             PrefabGroupOnly(modifier, layout);
-                            StringGenerator(modifier, layout, "Object Group", 0);
+                            var str = StringGenerator(modifier, layout, "Object Group", 0);
+                            EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
                             DropdownGenerator(modifier, layout, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
                             DropdownGenerator(modifier, layout, "Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
@@ -1879,7 +1912,8 @@ namespace BetterLegacy.Editor.Managers
                     case "enableObjectTreeOther":
                     case "disableObjectTreeOther":
                         {
-                            StringGenerator(modifier, layout, "Object Group", 1);
+                            var str = StringGenerator(modifier, layout, "Object Group", 1);
+                            EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                             BoolGenerator(modifier, layout, "Use Self", 0, true);
                             BoolGenerator(modifier, layout, "Reset", 2, true);
 
@@ -1888,7 +1922,8 @@ namespace BetterLegacy.Editor.Managers
                     case "enableObjectOther":
                     case "disableObjectOther":
                         {
-                            StringGenerator(modifier, layout, "Object Group", 0);
+                            var str = StringGenerator(modifier, layout, "Object Group", 0);
+                            EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                             BoolGenerator(modifier, layout, "Reset", 1, true);
 
                             break;
@@ -1943,7 +1978,8 @@ namespace BetterLegacy.Editor.Managers
                     case "setBGActive":
                         {
                             BoolGenerator(modifier, layout, "Active", 0, false);
-                            StringGenerator(modifier, layout, "BG Group", 1);
+                            var str = StringGenerator(modifier, layout, "BG Group", 1);
+                            EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
                             break;
                         }
@@ -1964,7 +2000,10 @@ namespace BetterLegacy.Editor.Managers
                             BoolGenerator(modifier, layout, "On", 0, false);
 
                             if (cmd == "setCollisionOther")
-                                StringGenerator(modifier, layout, "Object Group", 1);
+                            {
+                                var str = StringGenerator(modifier, layout, "Object Group", 1);
+                                EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+                            }
 
                             break;
                         }
@@ -2019,49 +2058,11 @@ namespace BetterLegacy.Editor.Managers
                                 EditorThemeManager.ApplyGraphic(deleteGroupButton.button.image, ThemeGroup.Delete, true);
                                 EditorThemeManager.ApplyGraphic(deleteGroupButton.image, ThemeGroup.Delete_Text);
 
-                                StringGenerator(modifier, layout, "Object Group", i);
+                                var str = StringGenerator(modifier, layout, "Object Group", i);
+                                EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                                 SingleGenerator(modifier, layout, "Distance", i + 1, 2f);
                                 SingleGenerator(modifier, layout, "Time", i + 2, 12f);
                             }
-
-                            //var baseAdd = new GameObject("add");
-                            //baseAdd.transform.SetParent(layout);
-                            //baseAdd.transform.localScale = Vector3.one;
-
-                            //var baseAddRT = baseAdd.AddComponent<RectTransform>();
-                            //baseAddRT.sizeDelta = new Vector2(0f, 32f);
-
-                            //var add = PrefabEditor.inst.CreatePrefab.Duplicate(baseAddRT, "add");
-                            //var addText = add.transform.GetChild(0).GetComponent<Text>();
-                            //addText.text = "Add Group";
-                            //add.transform.AsRT().anchoredPosition = new Vector2(-6f, 0f);
-                            //add.transform.AsRT().anchorMax = new Vector2(0.5f, 0.5f);
-                            //add.transform.AsRT().anchorMin = new Vector2(0.5f, 0.5f);
-                            //add.transform.AsRT().sizeDelta = new Vector2(300f, 32f);
-
-                            //var addButton = add.GetComponent<Button>();
-                            //addButton.onClick.ClearAll();
-                            //addButton.onClick.AddListener(() =>
-                            //{
-                            //    var lastIndex = modifier.commands.Count - 1;
-                            //    var length = "2";
-                            //    var time = "12";
-                            //    if (lastIndex - 1 > 2)
-                            //    {
-                            //        length = modifier.commands[lastIndex - 1];
-                            //        time = modifier.commands[lastIndex];
-                            //    }
-
-                            //    modifier.commands.Add("Object Group");
-                            //    modifier.commands.Add(length);
-                            //    modifier.commands.Add(time);
-
-                            //    Updater.UpdateObject(beatmapObject);
-                            //    StartCoroutine(RenderModifiers(beatmapObject));
-                            //});
-
-                            //EditorThemeManager.ApplyGraphic(addButton.image, ThemeGroup.Add, true);
-                            //EditorThemeManager.ApplyGraphic(addText, ThemeGroup.Add_Text);
 
                             AddGenerator(modifier, layout, "Add Group", () =>
                             {
@@ -2129,9 +2130,9 @@ namespace BetterLegacy.Editor.Managers
                         {
                             var options = new List<Dropdown.OptionData>();
 
-                            var keyCodes = Enum.GetValues(typeof(Language));
+                            var languages = Enum.GetValues(typeof(Language));
 
-                            for (int i = 0; i < keyCodes.Length; i++)
+                            for (int i = 0; i < languages.Length; i++)
                                 options.Add(new Dropdown.OptionData(Enum.GetName(typeof(Language), i) ?? "Invalid Value"));
 
                             DropdownGenerator(modifier, layout, "Language", 0, options);
@@ -2340,7 +2341,7 @@ namespace BetterLegacy.Editor.Managers
             return global;
         }
 
-        public GameObject StringGenerator<T>(Modifier<T> modifier, Transform layout, string label, int type)
+        public GameObject StringGenerator<T>(Modifier<T> modifier, Transform layout, string label, int type, params RTEditor.ButtonFunction[] buttonFunctions)
         {
             var path = stringInput.Duplicate(layout, label);
             path.transform.localScale = Vector3.one;

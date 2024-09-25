@@ -19,6 +19,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -2051,6 +2052,8 @@ namespace BetterLegacy.Editor.Managers
                 t.Init(name, InputFieldSwapper.Type.String);
             }
 
+            EditorHelper.AddInputFieldContextMenu(name);
+
             name.onValueChanged.ClearAll();
             name.text = beatmapObject.name;
             name.onValueChanged.AddListener(_val =>
@@ -2089,6 +2092,8 @@ namespace BetterLegacy.Editor.Managers
                     beatmapObject.tags.RemoveAt(index);
                     RenderName(beatmapObject);
                 });
+
+                EditorHelper.AddInputFieldContextMenu(input);
 
                 EditorThemeManager.ApplyGraphic(gameObject.GetComponent<Image>(), ThemeGroup.Input_Field, true);
 
