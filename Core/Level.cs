@@ -52,8 +52,8 @@ namespace BetterLegacy.Core
             {
                 if (!string.IsNullOrEmpty(metadata.arcadeID) && metadata.arcadeID != "-1")
                     id = metadata.arcadeID;
-                else if (!string.IsNullOrEmpty(metadata.LevelBeatmap.beatmap_id) && metadata.LevelBeatmap.beatmap_id != "-1")
-                    id = metadata.LevelBeatmap.beatmap_id;
+                else if (!string.IsNullOrEmpty(metadata.beatmap.beatmap_id) && metadata.beatmap.beatmap_id != "-1")
+                    id = metadata.beatmap.beatmap_id;
                 else
                     id = "-1";
             }

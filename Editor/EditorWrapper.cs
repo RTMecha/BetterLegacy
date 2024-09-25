@@ -5,10 +5,13 @@ namespace BetterLegacy.Editor
 {
     public class EditorWrapper : EditorManager.MetadataWrapper
     {
-        public EditorWrapper(GameObject gameObject, MetaData metadata, string path, Sprite sprite) : base(metadata, path, sprite)
+        public EditorWrapper(GameObject gameObject, MetaData metadata, string path, Sprite sprite) : base(null, path, sprite)
         {
             GameObject = gameObject;
+            this.metadata = metadata;
         }
+
+        public new MetaData metadata;
 
         public GameObject GameObject { get; set; }
 

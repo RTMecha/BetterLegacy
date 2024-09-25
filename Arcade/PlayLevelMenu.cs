@@ -129,7 +129,7 @@ namespace BetterLegacy.Arcade
                 length = 0.1f,
             });
 
-            var name = CoreHelper.ReplaceFormatting(CurrentLevel.metadata.LevelBeatmap.name);
+            var name = CoreHelper.ReplaceFormatting(CurrentLevel.metadata.beatmap.name);
             int size = 110;
             if (name.Length > 13)
                 size = (int)(size * ((float)13f / name.Length));
@@ -160,7 +160,7 @@ namespace BetterLegacy.Arcade
                 name = "Song Button",
                 rect = RectValues.Default.AnchoredPosition(340f, 240f).SizeDelta(500f, 48f),
                 selectionPosition = new Vector2Int(0, 1),
-                text = $" [ {CurrentLevel.metadata.LevelSong.title} ]",
+                text = $" [ {CurrentLevel.metadata.song.title} ]",
                 opacity = 0f,
                 selectedOpacity = 1f,
                 color = 6,
@@ -192,7 +192,7 @@ namespace BetterLegacy.Arcade
                 name = "Artist Button",
                 rect = RectValues.Default.AnchoredPosition(340f, 190f).SizeDelta(500f, 48f),
                 selectionPosition = new Vector2Int(0, 2),
-                text = $" [ {CurrentLevel.metadata.LevelArtist.Name} ]",
+                text = $" [ {CurrentLevel.metadata.artist.Name} ]",
                 opacity = 0f,
                 selectedOpacity = 1f,
                 color = 6,
@@ -203,8 +203,8 @@ namespace BetterLegacy.Arcade
                 playBlipSound = true,
                 func = () =>
                 {
-                    if (CurrentLevel.metadata != null && !string.IsNullOrEmpty(CurrentLevel.metadata.LevelArtist.URL))
-                        Application.OpenURL(CurrentLevel.metadata.LevelArtist.URL);
+                    if (CurrentLevel.metadata != null && !string.IsNullOrEmpty(CurrentLevel.metadata.artist.URL))
+                        Application.OpenURL(CurrentLevel.metadata.artist.URL);
                 },
             });
 
@@ -224,7 +224,7 @@ namespace BetterLegacy.Arcade
                 name = "Creator Button",
                 rect = RectValues.Default.AnchoredPosition(340f, 140f).SizeDelta(500f, 48f),
                 selectionPosition = new Vector2Int(0, 3),
-                text = $" [ {CurrentLevel.metadata.LevelCreator.steam_name} ]",
+                text = $" [ {CurrentLevel.metadata.creator.steam_name} ]",
                 opacity = 0f,
                 selectedOpacity = 1f,
                 color = 6,
@@ -235,12 +235,12 @@ namespace BetterLegacy.Arcade
                 playBlipSound = true,
                 func = () =>
                 {
-                    if (CurrentLevel.metadata != null && !string.IsNullOrEmpty(CurrentLevel.metadata.LevelCreator.URL))
-                        Application.OpenURL(CurrentLevel.metadata.LevelCreator.URL);
+                    if (CurrentLevel.metadata != null && !string.IsNullOrEmpty(CurrentLevel.metadata.creator.URL))
+                        Application.OpenURL(CurrentLevel.metadata.creator.URL);
                 },
             });
 
-            var difficulty = CoreHelper.GetDifficulty(CurrentLevel.metadata.LevelSong.difficulty);
+            var difficulty = CoreHelper.GetDifficulty(CurrentLevel.metadata.song.difficulty);
             elements.Add(new MenuText
             {
                 id = "4624859539",
@@ -268,7 +268,7 @@ namespace BetterLegacy.Arcade
                 id = "4624859539",
                 name = "Description",
                 rect = RectValues.Default.AnchoredPosition(250f, -20f).SizeDelta(800f, 100f),
-                text = "<size=22>" + CurrentLevel.metadata.LevelSong.description,
+                text = "<size=22>" + CurrentLevel.metadata.song.description,
                 hideBG = true,
                 textColor = 6,
                 enableWordWrapping = true,
@@ -280,7 +280,7 @@ namespace BetterLegacy.Arcade
                 id = "4624859539",
                 name = "Tags",
                 rect = RectValues.Default.AnchoredPosition(250f, -200f).SizeDelta(800f, 100f),
-                text = "<size=22><b>Tags</b>: " + FontManager.TextTranslater.ArrayToString(CurrentLevel.metadata.LevelSong.tags),
+                text = "<size=22><b>Tags</b>: " + FontManager.TextTranslater.ArrayToString(CurrentLevel.metadata.song.tags),
                 hideBG = true,
                 textColor = 6,
                 enableWordWrapping = true,

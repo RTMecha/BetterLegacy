@@ -125,7 +125,7 @@ namespace BetterLegacy.Story
 
             var makeNewPlayerData = storyLevel.playerData == null;
             if (makeNewPlayerData)
-                storyLevel.playerData = new LevelManager.PlayerData { ID = storyLevel.id, LevelName = storyLevel.metadata?.LevelBeatmap?.name, };
+                storyLevel.playerData = new LevelManager.PlayerData { ID = storyLevel.id, LevelName = storyLevel.metadata?.beatmap?.name, };
 
             CoreHelper.Log($"Updating save data\n" +
                 $"New Player Data = {makeNewPlayerData}\n" +
@@ -381,7 +381,7 @@ namespace BetterLegacy.Story
             var storyLevel = new StoryLevel
             {
                 id = metadata?.arcadeID,
-                name = metadata?.LevelBeatmap?.name,
+                name = metadata?.beatmap?.name,
                 icon = icon,
                 music = song,
                 json = levelJSON.text,

@@ -242,9 +242,9 @@ namespace BetterLegacy.Core.Managers
             Debug.Log($"{className}Updating states...");
 
             if (IsArcade)
-                CoreHelper.UpdateDiscordStatus($"Level: {level.metadata.LevelBeatmap.name}", "In Arcade", "arcade");
+                CoreHelper.UpdateDiscordStatus($"Level: {level.metadata.beatmap.name}", "In Arcade", "arcade");
             else
-                CoreHelper.UpdateDiscordStatus($"DOC{(Story.StoryManager.inst.Chapter + 1).ToString("00")}-{(Story.StoryManager.inst.Level + 1).ToString("00")}: {level.metadata.LevelBeatmap.name}", "In Story", "arcade");
+                CoreHelper.UpdateDiscordStatus($"DOC{(Story.StoryManager.inst.Chapter + 1).ToString("00")}-{(Story.StoryManager.inst.Level + 1).ToString("00")}: {level.metadata.beatmap.name}", "In Story", "arcade");
 
             while (!GameManager.inst.introTitle && !GameManager.inst.introArtist)
                 yield return null;
@@ -319,7 +319,7 @@ namespace BetterLegacy.Core.Managers
 
             if (PlayerManager.Players.Count > 1)
                 AchievementManager.inst.UnlockAchievement("friendship");
-            var tags = CurrentLevel.metadata.LevelSong.tags;
+            var tags = CurrentLevel.metadata.song.tags;
             if (tags.Contains("joke") || tags.Contains("joke_level") || tags.Contains("meme") || tags.Contains("meme_level"))
                 AchievementManager.inst.UnlockAchievement("youve_been_trolled");
             if (tags.Contains("high_detail") || tags.Contains("lag"))
@@ -373,7 +373,7 @@ namespace BetterLegacy.Core.Managers
 
             var makeNewPlayerData = CurrentLevel.playerData == null;
             if (makeNewPlayerData)
-                CurrentLevel.playerData = new PlayerData { ID = CurrentLevel.id, LevelName = CurrentLevel.metadata?.LevelBeatmap?.name, };
+                CurrentLevel.playerData = new PlayerData { ID = CurrentLevel.id, LevelName = CurrentLevel.metadata?.beatmap?.name, };
 
             CoreHelper.Log($"Updating save data\n" +
                 $"New Player Data = {makeNewPlayerData}\n" +
@@ -446,12 +446,12 @@ namespace BetterLegacy.Core.Managers
                         levels.OrderByDescending(x => x.metadata.beatmap.date_edited)).ToList();
                 case LevelSort.DateCreated:
                     return
-                        (ascend ? levels.OrderBy(x => x.metadata.LevelBeatmap.date_created) :
-                        levels.OrderByDescending(x => x.metadata.LevelBeatmap.date_created)).ToList();
+                        (ascend ? levels.OrderBy(x => x.metadata.beatmap.date_created) :
+                        levels.OrderByDescending(x => x.metadata.beatmap.date_created)).ToList();
                 case LevelSort.DatePublished:
                     return
-                        (ascend ? levels.OrderBy(x => x.metadata.LevelBeatmap.date_published) :
-                        levels.OrderByDescending(x => x.metadata.LevelBeatmap.date_published)).ToList();
+                        (ascend ? levels.OrderBy(x => x.metadata.beatmap.date_published) :
+                        levels.OrderByDescending(x => x.metadata.beatmap.date_published)).ToList();
             }
 
             return levels;

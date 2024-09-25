@@ -21,9 +21,12 @@ namespace BetterLegacy.Core.Data
             beatmap = new LevelBeatmap();
         }
 
-        public MetaData(LevelArtist artist, LevelCreator creator, LevelSong song, LevelBeatmap beatmap) : base(artist, creator, song, beatmap)
+        public MetaData(LevelArtist artist, LevelCreator creator, LevelSong song, LevelBeatmap beatmap)
         {
-
+            this.artist = artist;
+            this.creator = creator;
+            this.song = song;
+            this.beatmap = beatmap;
         }
 
         /// <summary>
@@ -56,7 +59,7 @@ namespace BetterLegacy.Core.Data
         /// <summary>
         /// Gets the mod version of the metadata.
         /// </summary>
-        public Version ModVersion => new Version(LevelBeatmap.mod_version);
+        public Version ModVersion => new Version(beatmap.mod_version);
 
         /// <summary>
         /// Gets the prioritised ID. Arcade ID (if empty) > Server ID (if empty) > Steam Workshop ID (if empty) > -1
@@ -64,8 +67,8 @@ namespace BetterLegacy.Core.Data
         public string ID =>
                 !string.IsNullOrEmpty(arcadeID) && arcadeID != "-1" ?
                     arcadeID : !string.IsNullOrEmpty(serverID) && serverID != "-1" ?
-                    serverID : !string.IsNullOrEmpty(LevelBeatmap.beatmap_id) && LevelBeatmap.beatmap_id != "-1" ?
-                    LevelBeatmap.beatmap_id : "-1";
+                    serverID : !string.IsNullOrEmpty(beatmap.beatmap_id) && beatmap.beatmap_id != "-1" ?
+                    beatmap.beatmap_id : "-1";
 
         #region Methods
 
@@ -83,18 +86,18 @@ namespace BetterLegacy.Core.Data
                 game_version = orig.beatmap.game_version,
                 version_number = orig.beatmap.version_number,
                 workshop_id = orig.beatmap.workshop_id,
-                beatmap_id = orig.LevelBeatmap.beatmap_id,
-                date_created = orig.LevelBeatmap.date_created,
-                date_published = orig.LevelBeatmap.date_published,
-                mod_version = orig.LevelBeatmap.mod_version,
-                name = orig.LevelBeatmap.name,
+                beatmap_id = orig.beatmap.beatmap_id,
+                date_created = orig.beatmap.date_created,
+                date_published = orig.beatmap.date_published,
+                mod_version = orig.beatmap.mod_version,
+                name = orig.beatmap.name,
             },
             creator = new LevelCreator
             {
                 steam_id = orig.creator.steam_id,
                 steam_name = orig.creator.steam_name,
-                link = orig.LevelCreator.link,
-                linkType = orig.LevelCreator.linkType
+                link = orig.creator.link,
+                linkType = orig.creator.linkType
             },
             song = new LevelSong
             {
@@ -105,9 +108,9 @@ namespace BetterLegacy.Core.Data
                 previewStart = orig.song.previewStart,
                 time = orig.song.time,
                 title = orig.song.title,
-                tags = orig.LevelSong.tags,
-                link = orig.LevelSong.link,
-                linkType = orig.LevelSong.linkType,
+                tags = orig.song.tags,
+                link = orig.song.link,
+                linkType = orig.song.linkType,
             },
             serverID = orig.serverID,
             uploaderName = orig.uploaderName,
@@ -442,7 +445,7 @@ namespace BetterLegacy.Core.Data
 
             jn["beatmap"]["date_edited"] = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
             jn["beatmap"]["game_version"] = "24.1.7";
-            jn["beatmap"]["workshop_id"] = LevelBeatmap.beatmap_id;
+            jn["beatmap"]["workshop_id"] = beatmap.beatmap_id;
 
             return jn;
         }
@@ -457,43 +460,43 @@ namespace BetterLegacy.Core.Data
 
             jn["creator"]["steam_name"] = creator.steam_name;
             jn["creator"]["steam_id"] = creator.steam_id.ToString();
-            if (!string.IsNullOrEmpty(LevelCreator.link))
+            if (!string.IsNullOrEmpty(creator.link))
             {
-                jn["creator"]["link"] = LevelCreator.link;
-                jn["creator"]["linkType"] = LevelCreator.linkType.ToString();
+                jn["creator"]["link"] = creator.link;
+                jn["creator"]["linkType"] = creator.linkType.ToString();
             }
 
             jn["song"]["title"] = song.title;
             jn["song"]["difficulty"] = song.difficulty.ToString();
             jn["song"]["description"] = song.description;
 
-            if (!string.IsNullOrEmpty(LevelSong.link))
+            if (!string.IsNullOrEmpty(song.link))
             {
-                jn["song"]["link"] = LevelSong.link;
-                jn["song"]["linkType"] = LevelSong.linkType.ToString();
+                jn["song"]["link"] = song.link;
+                jn["song"]["linkType"] = song.linkType.ToString();
             }
             jn["song"]["bpm"] = song.BPM.ToString();
             jn["song"]["t"] = song.time.ToString();
             jn["song"]["preview_start"] = song.previewStart.ToString();
             jn["song"]["preview_length"] = song.previewLength.ToString();
 
-            if (LevelSong.tags != null)
-                for (int i = 0; i < LevelSong.tags.Length; i++)
-                    jn["song"]["tags"][i] = LevelSong.tags[i];
+            if (song.tags != null)
+                for (int i = 0; i < song.tags.Length; i++)
+                    jn["song"]["tags"][i] = song.tags[i];
 
-            jn["beatmap"]["name"] = !string.IsNullOrEmpty(LevelBeatmap.name) ? LevelBeatmap.name : song.title;
-            jn["beatmap"]["date_created"] = LevelBeatmap.date_created;
+            jn["beatmap"]["name"] = !string.IsNullOrEmpty(beatmap.name) ? beatmap.name : song.title;
+            jn["beatmap"]["date_created"] = beatmap.date_created;
 
-            if (!string.IsNullOrEmpty(LevelBeatmap.date_published))
-                jn["beatmap"]["date_published"] = LevelBeatmap.date_published;
+            if (!string.IsNullOrEmpty(beatmap.date_published))
+                jn["beatmap"]["date_published"] = beatmap.date_published;
             jn["beatmap"]["date_edited"] = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
             jn["beatmap"]["version_number"] = beatmap.version_number.ToString();
             jn["beatmap"]["game_version"] = beatmap.game_version;
-            jn["beatmap"]["mod_version"] = LevelBeatmap.mod_version;
-            jn["beatmap"]["workshop_id"] = !string.IsNullOrEmpty(LevelBeatmap.beatmap_id) ? LevelBeatmap.beatmap_id : "-1";
+            jn["beatmap"]["mod_version"] = beatmap.mod_version;
+            jn["beatmap"]["workshop_id"] = !string.IsNullOrEmpty(beatmap.beatmap_id) ? beatmap.beatmap_id : "-1";
 
-            if (LevelBeatmap.preferredPlayerCount != LevelBeatmap.PreferredPlayerCount.Any)
-                jn["beatmap"]["preferred_players"] = ((int)LevelBeatmap.preferredPlayerCount).ToString();
+            if (beatmap.preferredPlayerCount != LevelBeatmap.PreferredPlayerCount.Any)
+                jn["beatmap"]["preferred_players"] = ((int)beatmap.preferredPlayerCount).ToString();
 
             if (!string.IsNullOrEmpty(serverID))
                 jn["server_id"] = serverID;
@@ -530,15 +533,15 @@ namespace BetterLegacy.Core.Data
 
         #endregion
 
-        public LevelArtist LevelArtist => (LevelArtist)artist;
-        public LevelCreator LevelCreator => (LevelCreator)creator;
-        public LevelSong LevelSong => (LevelSong)song;
-        public LevelBeatmap LevelBeatmap => (LevelBeatmap)beatmap;
+        public new LevelArtist artist;
+        public new LevelCreator creator;
+        public new LevelSong song;
+        public new LevelBeatmap beatmap;
 
         /// <summary>
         /// Formats the song URL into a correct link format, in cases where the artist name is included in the song link somewhere.
         /// </summary>
-        public string SongURL => string.IsNullOrEmpty(LevelSong.link) || string.IsNullOrEmpty(artist.Link) ? null : CoreHelper.GetURL(CoreHelper.LinkType.Song, LevelSong.linkType, LevelSong.linkType == 2 ? artist.Link + "," + LevelSong.link : LevelSong.link);
+        public string SongURL => string.IsNullOrEmpty(song.link) || string.IsNullOrEmpty(artist.Link) ? null : CoreHelper.GetURL(CoreHelper.LinkType.Song, song.linkType, song.linkType == 2 ? artist.Link + "," + song.link : song.link);
 
         #region Operators
 

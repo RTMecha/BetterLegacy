@@ -314,7 +314,7 @@ namespace BetterLegacy.Patchers
             slider.value = SettingEditor.inst.SnapBPM;
             slider.onValueChanged.AddListener(_val =>
             {
-                DataManager.inst.metaData.song.BPM = _val;
+                MetaData.Current.song.BPM = _val;
                 SettingEditor.inst.SnapBPM = _val;
                 SetBPMInputField(slider, input);
                 RTEditor.inst.SetTimelineGridSize();
@@ -328,7 +328,7 @@ namespace BetterLegacy.Patchers
             input.onValueChanged.AddListener(_val =>
             {
                 var bpm = Parser.TryParse(_val, 120f);
-                DataManager.inst.metaData.song.BPM = bpm;
+                MetaData.Current.song.BPM = bpm;
                 SettingEditor.inst.SnapBPM = bpm;
                 SetBPMSlider(slider, input);
                 RTEditor.inst.SetTimelineGridSize();

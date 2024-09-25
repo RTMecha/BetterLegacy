@@ -825,7 +825,7 @@ namespace BetterLegacy.Editor.Managers
                 if (time >= 0f && time < AudioManager.inst.CurrentAudioSource.clip.length && EditorConfig.Instance.LevelLoadsLastTime.Value)
                     AudioManager.inst.SetMusicTime(time);
 
-                SettingEditor.inst.SnapBPM = DataManager.inst.metaData.song.BPM;
+                SettingEditor.inst.SnapBPM = MetaData.Current.song.BPM;
             }
 
             prevLayer = EditorManager.inst.layer;
@@ -2627,7 +2627,7 @@ namespace BetterLegacy.Editor.Managers
 
                 ShowWarningPopup("Are you sure you want to copy the level to the arcade folder?", () =>
                 {
-                    var name = MetaData.Current.LevelBeatmap.name;
+                    var name = MetaData.Current.beatmap.name;
                     name = CoreHelper.ReplaceFormatting(name); // for cases where a user has used symbols not allowed.
                     name = RTFile.ValidateDirectory(name);
                     var directory = $"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{name} [{MetaData.Current.arcadeID}]";
@@ -8842,15 +8842,14 @@ namespace BetterLegacy.Editor.Managers
 
                 folderButtonStorage.text.text = string.Format(format,
                     LSText.ClampString(name, foldClamp),
-                    LSText.ClampString(metadata.LevelBeatmap.name, songClamp),
+                    LSText.ClampString(metadata.song.title, songClamp),
                     LSText.ClampString(metadata.artist.Name, artiClamp),
                     LSText.ClampString(metadata.creator.steam_name, creaClamp),
                     metadata.song.difficulty,
                     LSText.ClampString(metadata.song.description, descClamp),
                     LSText.ClampString(metadata.beatmap.date_edited, dateClamp),
-                    LSText.ClampString(metadata.LevelBeatmap.date_created, dateClamp),
-                    LSText.ClampString(metadata.LevelBeatmap.date_published, dateClamp),
-                    LSText.ClampString(metadata.song.title, dateClamp));
+                    LSText.ClampString(metadata.beatmap.date_created, dateClamp),
+                    LSText.ClampString(metadata.beatmap.date_published, dateClamp));
 
                 folderButtonStorage.text.horizontalOverflow = horizontalOverflow;
                 folderButtonStorage.text.verticalOverflow = verticalOverflow;
@@ -8863,7 +8862,7 @@ namespace BetterLegacy.Editor.Managers
                 gameObject.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip
                 {
                     desc = "<#" + LSColors.ColorToHex(difficultyColor) + ">" + metadata.artist.Name + " - " + metadata.song.title,
-                    hint = $"</color><br>Folder: {name}<br>Date Edited: {metadata.beatmap.date_edited}<br>Date Created: {metadata.LevelBeatmap.date_created}<br>Description: {metadata.song.description}",
+                    hint = $"</color><br>Folder: {name}<br>Date Edited: {metadata.beatmap.date_edited}<br>Date Created: {metadata.beatmap.date_created}<br>Description: {metadata.song.description}",
                 });
 
                 folderButtonStorage.button.onClick.ClearAll();
@@ -8993,7 +8992,7 @@ namespace BetterLegacy.Editor.Managers
                                     var destination = path.Replace(name, RTFile.ValidateDirectory(folderCreatorName.text)).Replace("\\", "/");
                                     if (path != destination)
                                         Directory.Move(path, destination);
-                                    metadata.LevelBeatmap.name = folderCreatorName.text;
+                                    metadata.beatmap.name = folderCreatorName.text;
                                     RTFile.WriteToFile(Path.Combine(destination, "metadata.lsb"), metadata.ToJSON().ToString());
 
                                     UpdateEditorPath(true);
@@ -9398,7 +9397,7 @@ namespace BetterLegacy.Editor.Managers
             CheckpointEditor.inst.CreateGhostCheckpoints();
 
             SetFileInfo($"Updating states for [ {name} ]");
-            CoreHelper.UpdateDiscordStatus($"Editing: {DataManager.inst.metaData.song.title}", "In Editor", "editor");
+            CoreHelper.UpdateDiscordStatus($"Editing: {MetaData.Current.song.title}", "In Editor", "editor");
 
             CoreHelper.Log("Spawning players...");
             PlayerManager.LoadGlobalModels();
@@ -10093,7 +10092,7 @@ namespace BetterLegacy.Editor.Managers
             metaData.uploaderName = SteamWrapper.inst.user.displayName;
             metaData.creator.steam_name = SteamWrapper.inst.user.displayName;
             metaData.creator.steam_id = SteamWrapper.inst.user.id;
-            metaData.LevelBeatmap.name = EditorManager.inst.newLevelName;
+            metaData.beatmap.name = EditorManager.inst.newLevelName;
 
             DataManager.inst.metaData = metaData;
 
@@ -10443,7 +10442,7 @@ namespace BetterLegacy.Editor.Managers
             #region Sorting
 
             Func<MetadataWrapper, bool> editorFolderSelector = x => x is EditorWrapper editorWrapper && !editorWrapper.isFolder;
-            var loadedLevels = EditorManager.inst.loadedLevels;
+            var loadedLevels = EditorManager.inst.loadedLevels.Select(x => x as EditorWrapper);
 
             switch (levelFilter)
             {
@@ -10491,8 +10490,8 @@ namespace BetterLegacy.Editor.Managers
                     }
                 case 7:
                     {
-                        EditorManager.inst.loadedLevels = (levelAscend ? loadedLevels.OrderBy(x => x.metadata is MetaData metadata ? metadata.LevelBeatmap.date_created : "") :
-                            loadedLevels.OrderByDescending(x => x.metadata is MetaData metadata ? metadata.LevelBeatmap.date_created : "")).OrderBy(editorFolderSelector).ToList();
+                        EditorManager.inst.loadedLevels = (levelAscend ? loadedLevels.OrderBy(x => x.metadata is MetaData metadata ? metadata.beatmap.date_created : "") :
+                            loadedLevels.OrderByDescending(x => x.metadata is MetaData metadata ? metadata.beatmap.date_created : "")).OrderBy(editorFolderSelector).ToList();
                         break;
                     }
             }

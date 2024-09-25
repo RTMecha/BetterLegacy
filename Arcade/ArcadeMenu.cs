@@ -1031,7 +1031,7 @@ namespace BetterLegacy.Arcade
         public static string LocalSearch => Searches[0];
         public static List<Level> LocalLevels => LevelManager.Levels.FindAll(level => !level.fromCollection && (string.IsNullOrEmpty(LocalSearch)
                         || level.id == LocalSearch
-                        || level.metadata.LevelSong.tags.Contains(LocalSearch.ToLower())
+                        || level.metadata.song.tags.Contains(LocalSearch.ToLower())
                         || level.metadata.artist.Name.ToLower().Contains(LocalSearch.ToLower())
                         || level.metadata.creator.steam_name.ToLower().Contains(LocalSearch.ToLower())
                         || level.metadata.song.title.ToLower().Contains(LocalSearch.ToLower())
@@ -1101,7 +1101,7 @@ namespace BetterLegacy.Arcade
                     func = () => { CoreHelper.StartCoroutine(SelectLocalLevel(level)); },
                     icon = level.icon,
                     iconRect = RectValues.Default.AnchoredPosition(-90, 30f),
-                    text = "<size=24>" + level.metadata?.LevelBeatmap?.name,
+                    text = "<size=24>" + level.metadata?.beatmap?.name,
                     textRect = RectValues.FullAnchored.AnchoredPosition(20f, -50f),
                     enableWordWrapping = true,
                     color = 6,
@@ -1418,7 +1418,7 @@ namespace BetterLegacy.Arcade
             Directory.GetDirectories(BrowserCurrentDirectory)
                     .Where(x => string.IsNullOrEmpty(BrowserSearch) || Path.GetFileName(x).ToLower().Contains(BrowserSearch.ToLower()) || Level.TryVerify(x + "/", false, out Level level) &&
                         (level.id == BrowserSearch
-                        || level.metadata.LevelSong.tags.Contains(BrowserSearch.ToLower())
+                        || level.metadata.song.tags.Contains(BrowserSearch.ToLower())
                         || level.metadata.artist.Name.ToLower().Contains(BrowserSearch.ToLower())
                         || level.metadata.creator.steam_name.ToLower().Contains(BrowserSearch.ToLower())
                         || level.metadata.song.title.ToLower().Contains(BrowserSearch.ToLower())
@@ -1522,7 +1522,7 @@ namespace BetterLegacy.Arcade
                         func = () => { CoreHelper.StartCoroutine(SelectLocalLevel(level)); },
                         icon = level.icon,
                         iconRect = RectValues.Default.AnchoredPosition(-90, 30f),
-                        text = "<size=24>" + level.metadata?.LevelBeatmap?.name,
+                        text = "<size=24>" + level.metadata?.beatmap?.name,
                         textRect = RectValues.FullAnchored.AnchoredPosition(20f, -50f),
                         enableWordWrapping = true,
                         color = 6,
@@ -1671,7 +1671,7 @@ namespace BetterLegacy.Arcade
         public static string QueueSearch => Searches[3];
         public static List<Level> QueueLevels => LevelManager.ArcadeQueue.FindAll(level => !level.fromCollection && (string.IsNullOrEmpty(QueueSearch)
                         || level.id == QueueSearch
-                        || level.metadata.LevelSong.tags.Contains(QueueSearch.ToLower())
+                        || level.metadata.song.tags.Contains(QueueSearch.ToLower())
                         || level.metadata.artist.Name.ToLower().Contains(QueueSearch.ToLower())
                         || level.metadata.creator.steam_name.ToLower().Contains(QueueSearch.ToLower())
                         || level.metadata.song.title.ToLower().Contains(QueueSearch.ToLower())
@@ -1732,7 +1732,7 @@ namespace BetterLegacy.Arcade
                     func = () => { CoreHelper.StartCoroutine(SelectLocalLevel(level)); },
                     icon = level.icon,
                     iconRect = RectValues.Default.AnchoredPosition(-320f, 0f).SizeDelta(100f, 100f),
-                    text = "<size=32>" + i.ToString() + " - " + level.metadata?.LevelBeatmap?.name,
+                    text = "<size=32>" + i.ToString() + " - " + level.metadata?.beatmap?.name,
                     textRect = RectValues.FullAnchored.AnchorMin(0.23f, 0f),
                     enableWordWrapping = true,
                     color = 6,
@@ -1939,7 +1939,7 @@ namespace BetterLegacy.Arcade
         public static string SteamSearch => Searches[4];
         public static List<Level> SubscribedSteamLevels => SteamWorkshopManager.inst.Levels.FindAll(level => !level.fromCollection && (string.IsNullOrEmpty(SteamSearch)
                         || level.id == SteamSearch
-                        || level.metadata.LevelSong.tags.Contains(SteamSearch.ToLower())
+                        || level.metadata.song.tags.Contains(SteamSearch.ToLower())
                         || level.metadata.artist.Name.ToLower().Contains(SteamSearch.ToLower())
                         || level.metadata.creator.steam_name.ToLower().Contains(SteamSearch.ToLower())
                         || level.metadata.song.title.ToLower().Contains(SteamSearch.ToLower())
@@ -2010,7 +2010,7 @@ namespace BetterLegacy.Arcade
                     func = () => { CoreHelper.StartCoroutine(SelectLocalLevel(level)); },
                     icon = level.icon,
                     iconRect = RectValues.Default.AnchoredPosition(-134f, 0f).SizeDelta(64f, 64f),
-                    text = "<size=24>" + level.metadata?.LevelBeatmap?.name,
+                    text = "<size=24>" + level.metadata?.beatmap?.name,
                     textRect = RectValues.FullAnchored.AnchorMin(0.24f, 0f),
                     enableWordWrapping = true,
                     color = 6,
