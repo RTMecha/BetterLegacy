@@ -728,6 +728,7 @@ namespace BetterLegacy.Editor.Managers
             kf.Index = index;
             kf.GameObject = EventGameObject(kf);
             kf.Image = kf.GameObject.transform.GetChild(0).GetComponent<Image>();
+            kf.Update();
 
             TriggerHelper.AddEventTriggers(kf.GameObject,
                 TriggerHelper.CreateEventObjectTrigger(kf),
