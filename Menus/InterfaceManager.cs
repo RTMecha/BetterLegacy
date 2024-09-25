@@ -78,6 +78,9 @@ namespace BetterLegacy.Menus
 
         public void PlayMusic(AudioClip music, bool allowSame = false)
         {
+            if (CoreHelper.InEditor)
+                return;
+
             if (!CoreHelper.InGame)
             {
                 AudioManager.inst.PlayMusic(null, music);
