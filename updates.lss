@@ -1,3 +1,8 @@
+1.6.5 > [Sep 25, 2024]
+- Reworked marker looping to be set via context menus instead of the config.
+- Changed marker dragging to left click.
+- Attempting more editor optimizations.
+- Fixed some zen mode stuff being done incorrectly in the arcade.
 1.6.4 > [Sep 24, 2024]
 - Added some context menus to the built-in file browser.
 - Included with the above feature is the ability to preview audio files.
