@@ -1098,6 +1098,7 @@ namespace BetterLegacy.Core.Optimization
             gameObject.transform.localRotation = Quaternion.Euler(new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y, backgroundObject.rot));
 
             Object.Destroy(gameObject.GetComponent<SelectBackgroundInEditor>());
+            Object.Destroy(gameObject.GetComponent<BoxCollider>());
             BackgroundManager.inst.backgroundObjects.Add(gameObject);
 
             backgroundObject.gameObjects.Clear();
