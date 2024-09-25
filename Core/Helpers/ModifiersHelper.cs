@@ -1399,7 +1399,7 @@ namespace BetterLegacy.Core.Helpers
                             if (modifier.value == "0" || modifier.value == "-1")
                                 break;
 
-                            if (CoreHelper.IsEditing && EditorManager.inst.loadedLevels.TryFind(x => x.metadata is MetaData metaData && metaData.ID == modifier.value, out EditorManager.MetadataWrapper metadataWrapper))
+                            if (CoreHelper.IsEditing && EditorManager.inst.loadedLevels.TryFind(x => x is Editor.EditorWrapper editorWrapper && editorWrapper.metadata is MetaData metaData && metaData.ID == modifier.value, out EditorManager.MetadataWrapper metadataWrapper))
                             {
                                 if (!ModifiersConfig.Instance.EditorLoadLevel.Value)
                                     break;
@@ -4407,13 +4407,28 @@ namespace BetterLegacy.Core.Helpers
                             To Axis: (X / Y / Z)
                             */
 
+                            if (modifier.Result == null)
+                            {
+                                CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm);
+                                Updater.levelProcessor.converter.cachedSequences.TryGetValue(bm.id, out ObjectConverter.CachedSequences cachedSequence);
+                                modifier.Result = new CopyAxisResult
+                                {
+                                    beatmapObject = bm,
+                                    cachedSequences = cachedSequence,
+                                };
+                            }
+
                             if (int.TryParse(modifier.commands[1], out int fromType) && int.TryParse(modifier.commands[2], out int fromAxis)
                                 && int.TryParse(modifier.commands[3], out int toType) && int.TryParse(modifier.commands[4], out int toAxis)
                                 && float.TryParse(modifier.commands[5], out float delay) && float.TryParse(modifier.commands[6], out float multiply)
                                 && float.TryParse(modifier.commands[7], out float offset) && float.TryParse(modifier.commands[8], out float min) && float.TryParse(modifier.commands[9], out float max)
                                 && float.TryParse(modifier.commands[10], out float loop) && bool.TryParse(modifier.commands[11], out bool useVisual)
-                                && CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
+                                && modifier.Result is CopyAxisResult copyAxisResult)
                             {
+                                var bm = copyAxisResult.beatmapObject;
+                                if (!bm)
+                                    break;
+
                                 var time = Updater.CurrentTime;
 
                                 fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
@@ -4422,8 +4437,9 @@ namespace BetterLegacy.Core.Helpers
                                 if (toType < 0 || toType > 3)
                                     break;
 
-                                if (!useVisual && Updater.levelProcessor.converter.cachedSequences.TryGetValue(bm.id, out ObjectConverter.CachedSequences cachedSequence))
+                                if (!useVisual && copyAxisResult.cachedSequences != null)
                                 {
+                                    var cachedSequence = copyAxisResult.cachedSequences;
                                     switch (fromType)
                                     {
                                         case 0:
@@ -5569,6 +5585,11 @@ namespace BetterLegacy.Core.Helpers
                                         textObject.text = bm.text;
                             break;
                         }
+                    case "copyAxis":
+                        {
+                            modifier.Result = null;
+                            break;
+                        }
                 }
             }
             catch (Exception ex)
@@ -5972,6 +5993,12 @@ namespace BetterLegacy.Core.Helpers
                         break;
                     }
             }
+        }
+
+        class CopyAxisResult
+        {
+            public BeatmapObject beatmapObject;
+            public ObjectConverter.CachedSequences cachedSequences;
         }
     }
 }
