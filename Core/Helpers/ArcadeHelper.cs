@@ -270,7 +270,7 @@ namespace BetterLegacy.Core.Helpers
                     var levelCollection = LevelCollection.Parse($"{path}/", JSON.Parse(RTFile.ReadFromFile($"{path}/collection.lsco")));
                     LevelManager.LevelCollections.Add(levelCollection);
                     if (LoadLevelsManager.inst)
-                        LoadLevelsManager.inst.UpdateInfo(levelCollection.Icon, $"Loading {name}", i);
+                        LoadLevelsManager.inst.UpdateInfo(levelCollection.icon, $"Loading {name}", i);
                     continue;
                 }
 

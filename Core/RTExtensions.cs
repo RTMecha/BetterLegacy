@@ -206,6 +206,56 @@ namespace BetterLegacy.Core
             return findAll.Count > 0;
         }
 
+        /// <summary>
+        /// Moves an item in a list to a different index.
+        /// </summary>
+        /// <typeparam name="T">The type of the List</typeparam>
+        /// <param name="t">Object reference.</param>
+        /// <param name="moveTo">Index to move the item to.</param>
+        public static void Move<T>(this List<T> ts, T t, int moveTo)
+        {
+            var index = ts.IndexOf(t);
+            if (index < 0 || index == moveTo)
+                return;
+
+            var result = ts[index];
+            ts.RemoveAt(index);
+            ts.Insert(Mathf.Clamp(moveTo, 0, ts.Count), result);
+        }
+
+        /// <summary>
+        /// Moves an item in a list to a different index.
+        /// </summary>
+        /// <typeparam name="T">The type of the List.</typeparam>
+        /// <param name="match">Object predicate.</param>
+        /// <param name="moveTo">Index to move the item to.</param>
+        public static void Move<T>(this List<T> ts, Predicate<T> match, int moveTo)
+        {
+            var index = ts.FindIndex(match);
+            if (index < 0 || index == moveTo)
+                return;
+
+            var result = ts[index];
+            ts.RemoveAt(index);
+            ts.Insert(Mathf.Clamp(moveTo, 0, ts.Count), result);
+        }
+
+        /// <summary>
+        /// Moves an item in a list to a different index.
+        /// </summary>
+        /// <typeparam name="T">The type of the List.</typeparam>
+        /// <param name="index">Index of an object.</param>
+        /// <param name="moveTo">Index to move the item to.</param>
+        public static void Move<T>(this List<T> ts, int index, int moveTo)
+        {
+            if (index < 0 || index == moveTo)
+                return;
+
+            var result = ts[index];
+            ts.RemoveAt(index);
+            ts.Insert(Mathf.Clamp(moveTo, 0, ts.Count), result);
+        }
+
         public static bool Has<T>(this List<T> ts, Predicate<T> predicate) => ts.Find(predicate) != null;
 
         public static void For<T>(this T[] ts, Action<T, int> action)

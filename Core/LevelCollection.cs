@@ -1,12 +1,9 @@
-﻿using System;
+﻿using BetterLegacy.Core.Managers;
+using LSFunctions;
+using SimpleJSON;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BetterLegacy.Core.Managers;
-using LSFunctions;
-using SimpleJSON;
 using UnityEngine;
 
 namespace BetterLegacy.Core
@@ -15,33 +12,38 @@ namespace BetterLegacy.Core
     {
         public LevelCollection()
         {
-            ID = LSText.randomNumString(16);
+            id = LSText.randomNumString(16);
         }
 
         /// <summary>
         /// Identification number of the collection.
         /// </summary>
-        public string ID { get; set; }
+        public string id;
+
+        /// <summary>
+        /// Server ID of the collection.
+        /// </summary>
+        public string serverID;
 
         /// <summary>
         /// Name of the collection.
         /// </summary>
-        public string Name { get; set; }
+        public string name;
 
         /// <summary>
         /// Full path of the collection. Must end with a "/".
         /// </summary>
-        public string Path { get; set; }
+        public string path;
 
         /// <summary>
         /// Icon of the collection.
         /// </summary>
-        public Sprite Icon { get; set; }
+        public Sprite icon;
 
         /// <summary>
         /// Banner of the collection. To be used for full level screen.
         /// </summary>
-        public Sprite Banner { get; set; }
+        public Sprite banner;
 
         /// <summary>
         /// All levels the collection contains.
@@ -69,9 +71,9 @@ namespace BetterLegacy.Core
         public static LevelCollection Parse(string path, JSONNode jn)
         {
             var collection = new LevelCollection();
-            collection.ID = jn["id"];
-            collection.Name = jn["name"];
-            collection.Path = path;
+            collection.id = jn["id"];
+            collection.name = jn["name"];
+            collection.path = path;
 
             for (int i = 0; i < jn["levels"].Count; i++)
             {
@@ -81,8 +83,8 @@ namespace BetterLegacy.Core
                     collection.levels.Add(new Level(levelFolder) { fromCollection = true });
             }
 
-            collection.Icon = RTFile.FileExists($"{path}icon.png") ? SpriteHelper.LoadSprite($"{path}icon.png") : SpriteHelper.LoadSprite($"{path}icon.jpg");
-            collection.Banner = RTFile.FileExists($"{path}banner.png") ? SpriteHelper.LoadSprite($"{path}banner.png") : SpriteHelper.LoadSprite($"{path}banner.jpg");
+            collection.icon = RTFile.FileExists($"{path}icon.png") ? SpriteHelper.LoadSprite($"{path}icon.png") : SpriteHelper.LoadSprite($"{path}icon.jpg");
+            collection.banner = RTFile.FileExists($"{path}banner.png") ? SpriteHelper.LoadSprite($"{path}banner.png") : SpriteHelper.LoadSprite($"{path}banner.jpg");
 
             return collection;
         }
@@ -95,7 +97,7 @@ namespace BetterLegacy.Core
             if (!RTFile.DirectoryExists(path))
                 Directory.CreateDirectory(path);
 
-            collection.Path = $"{path}/";
+            collection.path = $"{path}/";
 
             collection.AddLevel(new Level($"{RTFile.ApplicationDirectory}beatmaps/arcade/2581783822/"));
 
@@ -106,33 +108,23 @@ namespace BetterLegacy.Core
 
         public int EntryLevelIndex => levels.FindIndex(x => x.metadata.isHubLevel && (!x.metadata.requireUnlock || x.playerData != null && x.playerData.Unlocked));
 
-        public void Move(string id, int moveTo)
-        {
-            var levelIndex = levels.FindIndex(x => x.id == id);
-
-            if (levelIndex < 0)
-                return;
-
-            var level = this[levelIndex];
-            levels.RemoveAt(levelIndex);
-            levels.Insert(Mathf.Clamp(moveTo, 0, Count), level);
-        }
+        public void Move(string id, int moveTo) => levels.Move(x => x.id == id, moveTo);
 
         public void Save()
         {
             var jn = JSON.Parse("{}");
 
-            jn["id"] = ID;
-            jn["name"] = Name;
+            jn["id"] = id;
+            jn["name"] = name;
 
             for (int i = 0; i < Count; i++)
                 jn["levels"][i] = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(this[i].path));
 
-            if (Icon)
-                SpriteHelper.SaveSprite(Icon, $"{Path}icon.png");
-            if (Banner)
-                SpriteHelper.SaveSprite(Banner, $"{Path}banner.png");
-            RTFile.WriteToFile($"{Path}collection.lsco", jn.ToString(3));
+            if (icon)
+                SpriteHelper.SaveSprite(icon, $"{path}icon.png");
+            if (banner)
+                SpriteHelper.SaveSprite(banner, $"{path}banner.png");
+            RTFile.WriteToFile($"{path}collection.lsco", jn.ToString(3));
         }
 
         public void AddLevel(Level level)
@@ -147,14 +139,16 @@ namespace BetterLegacy.Core
             for (int i = 0; i < files.Length; i++)
             {
                 var file = files[i];
-                var copyToPath = file.Replace("\\", "/").Replace(level.path, $"{Path}{folderName}/");
+                var copyToPath = file.Replace("\\", "/").Replace(level.path, $"{this.path}{folderName}/");
                 if (!RTFile.DirectoryExists(System.IO.Path.GetDirectoryName(copyToPath)))
                     Directory.CreateDirectory(System.IO.Path.GetDirectoryName(copyToPath));
 
                 File.Copy(file, copyToPath, RTFile.FileExists(copyToPath));
             }
 
-            var actuaLevel = new Level($"{Path}{folderName}/");
+            var actualLevel = new Level($"{this.path}{folderName}/");
+
+            levels.Add(actualLevel);
         }
 
         public void RemoveLevel(Level level)
