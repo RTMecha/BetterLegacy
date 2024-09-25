@@ -17,38 +17,37 @@ namespace BetterLegacy.Core.Data
             id = LSText.randomString(16);
         }
 
-        public Marker(string _name, string _desc, int _color, float _time) : base(true, _name, _desc, _color, _time)
+        public Marker(string name, string desc, int color, float time) : base(true, name, desc, color, time)
         {
             id = LSText.randomString(16);
         }
         
-        public Marker(bool _active, string _name, string _desc, int _color, float _time) : base(_active, _name, _desc, _color, _time)
+        public Marker(bool active, string name, string desc, int color, float time) : base(active, name, desc, color, time)
         {
             id = LSText.randomString(16);
         }
 
-        public string id;
-
-        public static Marker Parse(JSONNode jn)
+        public Marker(string id, string name, string desc, int color, float time) : base(true, name, desc, color, time)
         {
-            bool active = jn["active"].AsBool;
-            string name = "";
-            if (jn["name"] != null)
-                name = jn["name"];
-
-            string desc = "";
-            if (jn["desc"] != null)
-                desc = jn["desc"];
-
-            float time = jn["t"].AsFloat;
-
-            int color = 0;
-            if (jn["col"] != null)
-                color = jn["col"].AsInt;
-
-            return new Marker(active, name, desc, color, time);
+            this.id = id;
         }
 
+        /// <summary>
+        /// ID of the Marker to be used for editor identifying.
+        /// </summary>
+        public string id;
+
+        /// <summary>
+        /// Parses a Marker from an LS format file.
+        /// </summary>
+        /// <param name="jn">JSON to parse.</param>
+        /// <returns>Returns a parsed marker.</returns>
+        public static Marker Parse(JSONNode jn) => new Marker(jn["active"].AsBool, jn["name"], jn["desc"], jn["col"].AsInt, jn["t"].AsFloat);
+
+        /// <summary>
+        /// Converts the marker to a JSON Object in the LS format.
+        /// </summary>
+        /// <returns>Returns a JSON Object representing the Marker.</returns>
         public JSONNode ToJSON()
         {
             var jn = JSON.Parse("{}");
@@ -68,18 +67,17 @@ namespace BetterLegacy.Core.Data
             return jn;
         }
 
-        public static Marker ParseVG(JSONNode jn)
-        {
-            return new Marker
-            {
-                id = jn["ID"] ?? LSText.randomString(16),
-                name = jn["n"] ?? "",
-                desc = jn["d"] ?? "",
-                color = jn["c"] != null ? jn["c"].AsInt : 0,
-                time = jn["t"] != null ? jn["t"].AsFloat : 0f,
-            };
-        }
+        /// <summary>
+        /// Parses a Marker from a VG format file.
+        /// </summary>
+        /// <param name="jn">JSON to parse.</param>
+        /// <returns>Returns a parsed marker.</returns>
+        public static Marker ParseVG(JSONNode jn) => new Marker(jn["ID"]?.Value ?? LSText.randomString(16), jn["n"] ?? "", jn["d"] ?? "", jn["c"].AsInt, jn["t"].AsFloat);
 
+        /// <summary>
+        /// Converts the marker to a JSON Object in the VG format.
+        /// </summary>
+        /// <returns>Returns a JSON Object representing the Marker.</returns>
         public JSONNode ToJSONVG()
         {
             var jn = JSON.Parse("{}");
