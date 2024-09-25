@@ -28,13 +28,13 @@ namespace BetterLegacy.Editor
         /// </summary>
         public class Element
         {
-            public Element(object data, Type type)
+            public Element(string data, Type type)
             {
                 Data = data;
                 this.type = type;
             }
 
-            public object Data { get; set; }
+            public string Data { get; set; }
 
             public Action Function { get; set; }
 

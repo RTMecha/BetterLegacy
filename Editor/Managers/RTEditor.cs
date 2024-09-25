@@ -10737,7 +10737,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     case Document.Element.Type.Text:
                         {
-                            if (element.Data is not string || string.IsNullOrEmpty((string)element.Data))
+                            if (string.IsNullOrEmpty(element.Data))
                                 break;
 
                             var bar = singleInput.Duplicate(documentationContent, "element");
@@ -10747,12 +10747,12 @@ namespace BetterLegacy.Editor.Managers
 
                             LSHelpers.DeleteChildren(bar.transform);
                             bar.transform.localScale = Vector3.one;
-                            bar.transform.AsRT().sizeDelta = new Vector2(722f, 22f * LSText.WordWrap((string)element.Data, 67).Count);
+                            bar.transform.AsRT().sizeDelta = new Vector2(722f, 22f * LSText.WordWrap(element.Data, 67).Count);
 
                             var l = label.Duplicate(bar.transform, "label");
                             l.transform.localScale = Vector3.one;
                             var text = l.transform.GetChild(0).GetComponent<Text>();
-                            text.text = (string)element.Data;
+                            text.text = element.Data;
                             text.alignment = TextAnchor.UpperLeft;
                             EditorThemeManager.ApplyLightText(text);
 
@@ -10780,7 +10780,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     case Document.Element.Type.Image:
                         {
-                            if (element.Data is not string)
+                            if (string.IsNullOrEmpty(element.Data))
                                 break;
 
                             var bar = singleInput.Duplicate(documentationContent, "element");
@@ -10808,8 +10808,8 @@ namespace BetterLegacy.Editor.Managers
                             imageObjImage.enabled = true;
                             imageObjImage.color = new Color(1f, 1f, 1f, 1f);
 
-                            if (RTFile.FileExists($"{RTFile.ApplicationDirectory}{(string)element.Data}"))
-                                imageObjImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{(string)element.Data}");
+                            if (RTFile.FileExists($"{RTFile.ApplicationDirectory}{element.Data}"))
+                                imageObjImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{element.Data}");
                             else
                                 imageObjImage.enabled = false;
 
