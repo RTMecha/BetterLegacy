@@ -2834,7 +2834,7 @@ namespace BetterLegacy.Editor.Managers
 
                                 var level = GameData.ParseVG(levelVGJN, false, metadata.Version);
 
-                                StartCoroutine(ProjectData.Writer.SaveData(copyTo + "/level.lsb", level, () =>
+                                level.SaveData(copyTo + "/level.lsb", () =>
                                 {
                                     EditorManager.inst.DisplayNotification($"Successfully converted {Path.GetFileName(path)} to {Path.GetFileName(copyTo)} and added it to your level ({editorListPath}) folder.", 2f,
                                         EditorManager.NotificationType.Success);
@@ -2848,7 +2848,7 @@ namespace BetterLegacy.Editor.Managers
                                     level = null;
 
                                     AchievementManager.inst.UnlockAchievement("time_machine");
-                                }, true));
+                                }, true);
                             }
                             else
                             {
@@ -9260,7 +9260,7 @@ namespace BetterLegacy.Editor.Managers
 
                 SetFileInfo($"Backing up previous level [ {Path.GetFileName(GameManager.inst.path.Replace("/level.lsb", ""))} ]");
 
-                this.StartCoroutineAsync(ProjectData.Writer.SaveData(GameManager.inst.path.Replace("level.lsb", "level-open-backup.lsb"), GameData.Current));
+                GameData.Current.SaveData(GameManager.inst.path.Replace("level.lsb", "level-open-backup.lsb"));
 
                 CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
             }
@@ -10015,7 +10015,7 @@ namespace BetterLegacy.Editor.Managers
                 EditorManager.inst.autosaves.RemoveAt(0);
             }
 
-            this.StartCoroutineAsync(ProjectData.Writer.SaveData(autosavePath, GameData.Current));
+            GameData.Current.SaveData(autosavePath);
 
             EditorManager.inst.DisplayNotification("Autosaved backup!", 2f, EditorManager.NotificationType.Success);
 
@@ -10084,7 +10084,7 @@ namespace BetterLegacy.Editor.Managers
 
             var gameData = !string.IsNullOrEmpty(json) ? GameData.Parse(JSON.Parse(json), false) : CreateBaseBeatmap();
 
-            StartCoroutine(ProjectData.Writer.SaveData($"{path}/level.lsb", gameData));
+            gameData.SaveData($"{path}/level.lsb");
             var metaData = new MetaData();
             metaData.beatmap.game_version = "4.1.16";
             metaData.arcadeID = LSText.randomNumString(16);
@@ -10115,7 +10115,7 @@ namespace BetterLegacy.Editor.Managers
             if (gameData.eventObjects.allEvents == null)
                 gameData.eventObjects.allEvents = new List<List<BaseEventKeyframe>>();
             gameData.eventObjects.allEvents.Clear();
-            ProjectData.Reader.ClampEventListValues(gameData.eventObjects.allEvents, GameData.EventCount);
+            GameData.ClampEventListValues(gameData.eventObjects.allEvents, GameData.EventCount);
 
             for (int i = 0; i < (CoreHelper.AprilFools ? 45 : 25); i++)
             {

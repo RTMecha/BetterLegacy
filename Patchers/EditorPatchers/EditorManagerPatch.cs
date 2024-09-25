@@ -731,9 +731,9 @@ namespace BetterLegacy.Patchers
                 levelData.modVersion = LegacyPlugin.ModVersion.ToString();
 
             if (EditorConfig.Instance.SaveAsync.Value)
-                yield return CoreHelper.StartCoroutineAsync(ProjectData.Writer.SaveData(_path, gameData));
+                yield return CoreHelper.StartCoroutineAsync(gameData.ISaveData(_path));
             else
-                yield return CoreHelper.StartCoroutine(ProjectData.Writer.SaveData(_path, gameData));
+                yield return CoreHelper.StartCoroutine(gameData.ISaveData(_path));
 
             yield return new WaitForSeconds(0.5f);
             if (Instance != null)
@@ -779,10 +779,10 @@ namespace BetterLegacy.Patchers
                     File.Copy(file, saveTo, RTFile.FileExists(saveTo));
                 }
 
-                CoreHelper.StartCoroutine(ProjectData.Writer.SaveData(str + "/level.lsb", GameData.Current, () =>
+                GameData.Current.SaveData(str + "/level.lsb", () =>
                 {
                     Instance.DisplayNotification($"Saved beatmap to {__0}", 3f, EditorManager.NotificationType.Success);
-                }));
+                });
                 return false;
             }
             Instance.DisplayNotification("Beatmap can't be saved as until you load a level.", 3f, EditorManager.NotificationType.Error);

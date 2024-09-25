@@ -1373,10 +1373,10 @@ namespace BetterLegacy.Core.Helpers
                                     string str = RTFile.BasePath;
                                     if (ModifiersConfig.Instance.EditorSavesBeforeLoad.Value)
                                     {
-                                        CoreHelper.StartCoroutine(ProjectData.Writer.SaveData(str + "level-modifier-backup.lsb", GameData.Current, () =>
+                                        GameData.Current.SaveData(str + "level-modifier-backup.lsb", () =>
                                         {
                                             EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(str))}", 2f, EditorManager.NotificationType.Success);
-                                        }));
+                                        });
                                     }
 
                                     EditorManager.inst.StartCoroutine(EditorManager.inst.LoadLevel(modifier.value));
@@ -1411,10 +1411,10 @@ namespace BetterLegacy.Core.Helpers
                                     string str = RTFile.BasePath;
                                     if (ModifiersConfig.Instance.EditorSavesBeforeLoad.Value)
                                     {
-                                        CoreHelper.StartCoroutine(ProjectData.Writer.SaveData(str + "level-modifier-backup.lsb", GameData.Current, () =>
+                                        GameData.Current.SaveData(str + "level-modifier-backup.lsb", () =>
                                         {
                                             EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(str))}", 2f, EditorManager.NotificationType.Success);
-                                        }));
+                                        });
                                     }
 
                                     EditorManager.inst.StartCoroutine(EditorManager.inst.LoadLevel(path));
@@ -1438,10 +1438,10 @@ namespace BetterLegacy.Core.Helpers
                                     string str = RTFile.BasePath;
                                     if (ModifiersConfig.Instance.EditorSavesBeforeLoad.Value)
                                     {
-                                        CoreHelper.StartCoroutine(ProjectData.Writer.SaveData(str + "level-modifier-backup.lsb", GameData.Current, () =>
+                                        GameData.Current.SaveData(str + "level-modifier-backup.lsb", () =>
                                         {
                                             EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(str))}", 2f, EditorManager.NotificationType.Success);
-                                        }));
+                                        });
                                     }
 
                                     EditorManager.inst.StartCoroutine(EditorManager.inst.LoadLevel($"{EditorManager.inst.currentLoadedLevel}/{modifier.value}"));
@@ -4883,10 +4883,10 @@ namespace BetterLegacy.Core.Helpers
                                 string str = RTFile.BasePath;
                                 if (ModifiersConfig.Instance.EditorSavesBeforeLoad.Value)
                                 {
-                                    CoreHelper.StartCoroutine(ProjectData.Writer.SaveData(str + "level-modifier-backup.lsb", GameData.Current, () =>
+                                    GameData.Current.SaveData(str + "level-modifier-backup.lsb", () =>
                                     {
                                         EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(str))}", 2f, EditorManager.NotificationType.Success);
-                                    }));
+                                    });
                                 }
 
                                 EditorManager.inst.QuitToMenu();
@@ -4914,10 +4914,10 @@ namespace BetterLegacy.Core.Helpers
                                 string str = RTFile.BasePath;
                                 if (ModifiersConfig.Instance.EditorSavesBeforeLoad.Value)
                                 {
-                                    CoreHelper.StartCoroutine(ProjectData.Writer.SaveData(str + "level-modifier-backup.lsb", GameData.Current, () =>
+                                    GameData.Current.SaveData(str + "level-modifier-backup.lsb", () =>
                                     {
                                         EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(str))}", 2f, EditorManager.NotificationType.Success);
-                                    }));
+                                    });
                                 }
 
                                 GameManager.inst.QuitToArcade();

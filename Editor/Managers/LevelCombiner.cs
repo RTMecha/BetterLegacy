@@ -370,7 +370,7 @@ namespace BetterLegacy.Editor.Managers
                 return;
             }
 
-            var combinedGameData = ProjectData.Combiner.Combine(combineList.ToArray());
+            var combinedGameData = GameData.Combiner.Combine(combineList.ToArray());
             this.combinedGameData = combinedGameData;
 
             string save = savePath;
@@ -407,15 +407,15 @@ namespace BetterLegacy.Editor.Managers
             }
 
             if (EditorConfig.Instance.CombinerOutputFormat.Value == FileType.LS)
-                StartCoroutine(ProjectData.Writer.SaveData(save, combinedGameData, () =>
+                combinedGameData.SaveData(save, () =>
                 {
                     EditorManager.inst.DisplayNotification($"Combined {FontManager.TextTranslater.ArrayToString(list.ToArray())} to {savePath}!", 3f, EditorManager.NotificationType.Success);
-                }, true));
+                }, true);
             else
-                StartCoroutine(ProjectData.Writer.SaveDataVG(save.Replace(".lsb", ".vgd"), combinedGameData, () =>
+                combinedGameData.SaveDataVG(save.Replace(".lsb", ".vgd"), () =>
                 {
                     EditorManager.inst.DisplayNotification($"Combined {FontManager.TextTranslater.ArrayToString(list.ToArray())} to {savePath}!", 3f, EditorManager.NotificationType.Success);
-                }));
+                });
         }
     }
 }

@@ -272,7 +272,7 @@ namespace BetterLegacy
                         if (RTFile.FileExists(modBackup))
                             File.Delete(modBackup);
 
-                        CoreHelper.StartCoroutine(ProjectData.Writer.SaveData(modBackup, GameData.Current));
+                        GameData.Current.SaveData(modBackup);
                     }
                 };
             }

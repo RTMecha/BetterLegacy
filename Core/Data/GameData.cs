@@ -8,6 +8,7 @@ using BetterLegacy.Core.Optimization;
 using LSFunctions;
 using SimpleJSON;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -759,7 +760,7 @@ namespace BetterLegacy.Core.Data
             }
 
             CoreHelper.Log($"Checking keyframe counts");
-            ProjectData.Reader.ClampEventListValues(gameData.eventObjects.allEvents, EventCount);
+            ClampEventListValues(gameData.eventObjects.allEvents, EventCount);
 
             if (jn["events"].Count > 13 && jn["events"][13] != null && gameData.eventObjects.allEvents.Count > 36)
             {
@@ -820,7 +821,16 @@ namespace BetterLegacy.Core.Data
             gameData.beatmapData.markers = gameData.beatmapData.markers.OrderBy(x => x.time).ToList();
 
             for (int i = 0; i < jn["checkpoints"].Count; i++)
-                gameData.beatmapData.checkpoints.Add(ProjectData.Reader.ParseCheckpoint(jn["checkpoints"][i]));
+            {
+                var jnCheckpoint = jn["checkpoints"][i];
+                gameData.beatmapData.checkpoints.Add(new BeatmapData.Checkpoint(
+                    jnCheckpoint["active"].AsBool,
+                    jnCheckpoint["name"],
+                    jnCheckpoint["t"].AsFloat,
+                    new Vector2(
+                        jnCheckpoint["pos"]["x"].AsFloat,
+                        jnCheckpoint["pos"]["y"].AsFloat)));
+            }
 
             gameData.beatmapData.checkpoints = gameData.beatmapData.checkpoints.OrderBy(x => x.time).ToList();
 
@@ -929,7 +939,7 @@ namespace BetterLegacy.Core.Data
             for (int i = 0; i < jn["bg_objects"].Count; i++)
                 gameData.backgroundObjects.Add(Data.BackgroundObject.Parse(jn["bg_objects"][i]));
 
-            gameData.eventObjects.allEvents = ProjectData.Reader.ParseEventkeyframes(jn["events"], false);
+            gameData.eventObjects.allEvents = ParseEventkeyframes(jn["events"], false);
 
             // Fix for some levels having a Y value in shake, resulting in a shake with a 0 x direction value.
             var shakeIsBroke = false;
@@ -963,7 +973,7 @@ namespace BetterLegacy.Core.Data
                 CoreHelper.LogException(ex);
             }
 
-            ProjectData.Reader.ClampEventListValues(gameData.eventObjects.allEvents, EventCount);
+            ClampEventListValues(gameData.eventObjects.allEvents, EventCount);
 
             return gameData;
         }
@@ -1031,27 +1041,21 @@ namespace BetterLegacy.Core.Data
             }
 
             for (int i = 0; i < beatmapObjects.Count; i++)
-            {
-                jn["objects"][i] = ((Data.BeatmapObject)beatmapObjects[i]).ToJSONVG();
-            }
+                jn["objects"][i] = beatmapObjects[i].ToJSONVG();
 
             if (prefabObjects.Count > 0)
                 for (int i = 0; i < prefabObjects.Count; i++)
-                {
-                    jn["prefab_objects"][i] = ((Data.PrefabObject)prefabObjects[i]).ToJSONVG();
-                }
+                    jn["prefab_objects"][i] = prefabObjects[i].ToJSONVG();
             else
                 jn["prefab_objects"] = new JSONArray();
 
             if (prefabs.Count > 0)
                 for (int i = 0; i < prefabs.Count; i++)
-                {
-                    jn["prefabs"][i] = ((Data.Prefab)prefabs[i]).ToJSONVG();
-                }
+                    jn["prefabs"][i] = prefabs[i].ToJSONVG();
             else
                 jn["prefabs"] = new JSONArray();
 
-            Dictionary<string, string> idsConverter = new Dictionary<string, string>();
+            var idsConverter = new Dictionary<string, string>();
 
             int themeIndex = 0;
             var themes = DataManager.inst.CustomBeatmapThemes.Select(x => x as BeatmapTheme).Where(x => eventObjects.allEvents[4].Has(y => int.TryParse(x.id, out int id) && id == y.eventValues[0]));
@@ -1061,9 +1065,7 @@ namespace BetterLegacy.Core.Data
                     beatmapTheme.VGID = LSText.randomString(16);
 
                     if (!idsConverter.ContainsKey(Parser.TryParse(beatmapTheme.id, 0f).ToString()))
-                    {
                         idsConverter.Add(Parser.TryParse(beatmapTheme.id, 0f).ToString(), beatmapTheme.VGID);
-                    }
 
                     jn["themes"][themeIndex] = beatmapTheme.ToJSONVG();
                     themeIndex++;
@@ -1073,9 +1075,7 @@ namespace BetterLegacy.Core.Data
 
             if (beatmapData.markers.Count > 0)
                 for (int i = 0; i < beatmapData.markers.Count; i++)
-                {
                     jn["markers"][i] = ((Marker)beatmapData.markers[i]).ToJSONVG();
-                }
             else
                 jn["markers"] = new JSONArray();
 
@@ -1228,25 +1228,17 @@ namespace BetterLegacy.Core.Data
             return jn;
         }
 
-        public JSONNode ToJSON()
+        public JSONNode ToJSON(bool saveGameDataThemes = false)
         {
+            CoreHelper.Log("Saving Beatmap");
             var jn = JSON.Parse("{}");
 
-            jn["ed"]["timeline_pos"] = AudioManager.inst.CurrentAudioSource.time.ToString();
+            CoreHelper.Log("Saving Editor Data");
+            jn["ed"]["timeline_pos"] = "0";
+
+            CoreHelper.Log("Saving Markers");
             for (int i = 0; i < beatmapData.markers.Count; i++)
-            {
-                jn["ed"]["markers"][i]["name"] = beatmapData.markers[i].name.ToString();
-                jn["ed"]["markers"][i]["desc"] = beatmapData.markers[i].desc.ToString();
-                jn["ed"]["markers"][i]["col"] = beatmapData.markers[i].color.ToString();
-                jn["ed"]["markers"][i]["t"] = beatmapData.markers[i].time.ToString();
-            }
-
-            for (int i = 0; i < AssetManager.SpriteAssets.Count; i++)
-            {
-                jn["assets"]["spr"][i]["n"] = AssetManager.SpriteAssets.ElementAt(i).Key;
-
-                jn["assets"]["spr"][i]["i"] = SpriteHelper.SpriteToString(AssetManager.SpriteAssets.ElementAt(i).Value);
-            }
+                jn["ed"]["markers"][i] = ((Marker)beatmapData.markers[i]).ToJSON();
 
             for (int i = 0; i < levelModifiers.Count; i++)
             {
@@ -1257,44 +1249,38 @@ namespace BetterLegacy.Core.Data
                 jn["modifiers"][i]["retrigger"] = levelModifier.retriggerAmount.ToString();
             }
 
-            for (int i = 0; i < prefabObjects.Count; i++)
-                if (!prefabObjects[i].fromModifier)
-                    jn["prefab_objects"][i] = prefabObjects[i].ToJSON();
-
-            jn["level_data"] = beatmapData.ModLevelData.ToJSON();
-
-            for (int i = 0; i < prefabs.Count; i++)
-                jn["prefabs"][i] = prefabs[i].ToJSON();
-
-            if (beatmapThemes != null)
+            for (int i = 0; i < AssetManager.SpriteAssets.Count; i++)
             {
-                var levelThemes = new List<BaseBeatmapTheme>();
-
-                for (int i = 0; i < beatmapThemes.Count; i++)
-                {
-                    var beatmapTheme = beatmapThemes.ElementAt(i).Value;
-
-                    string id = beatmapTheme.id;
-
-                    foreach (var keyframe in eventObjects.allEvents[4])
-                    {
-                        var eventValue = keyframe.eventValues[0].ToString();
-
-                        if (int.TryParse(id, out int num) && (int)keyframe.eventValues[0] == num && levelThemes.Find(x => int.TryParse(x.id, out int xid) && xid == (int)keyframe.eventValues[0]) == null)
-                        {
-                            levelThemes.Add(beatmapTheme);
-                        }
-                    }
-                }
-
-                for (int i = 0; i < levelThemes.Count; i++)
-                {
-                    var beatmapTheme = (BeatmapTheme)levelThemes[i];
-
-                    jn["themes"][i] = beatmapTheme.ToJSON();
-                }
+                jn["assets"]["spr"][i]["n"] = AssetManager.SpriteAssets.ElementAt(i).Key;
+                jn["assets"]["spr"][i]["i"] = SpriteHelper.SpriteToString(AssetManager.SpriteAssets.ElementAt(i).Value);
             }
 
+            CoreHelper.Log("Saving Object Prefabs");
+            var prefabObjects = this.prefabObjects.FindAll(x => x.fromModifier);
+            for (int i = 0; i < prefabObjects.Count; i++)
+                jn["prefab_objects"][i] = prefabObjects[i].ToJSON();
+
+            CoreHelper.Log("Saving Level Data");
+            jn["level_data"] = beatmapData.ModLevelData.ToJSON();
+
+            CoreHelper.Log("Saving prefabs");
+            if (prefabs != null)
+                for (int i = 0; i < prefabs.Count; i++)
+                    jn["prefabs"][i] = prefabs[i].ToJSON();
+
+            CoreHelper.Log($"Saving themes");
+            var levelThemes =
+                saveGameDataThemes ?
+                    beatmapThemes.Where(x => Parser.TryParse(x.Value.id, 0) != 0 && eventObjects.allEvents[4].Has(y => y.eventValues[0] == Parser.TryParse(x.Value.id, 0))).Select(x => x.Value).ToList() :
+                    DataManager.inst.CustomBeatmapThemes.Where(x => Parser.TryParse(x.id, 0) != 0 && eventObjects.allEvents[4].Has(y => y.eventValues[0] == Parser.TryParse(x.id, 0))).ToList();
+
+            for (int i = 0; i < levelThemes.Count; i++)
+            {
+                CoreHelper.Log($"Saving {levelThemes[i].id} - {levelThemes[i].name} to level!");
+                jn["themes"][i] = ((BeatmapTheme)levelThemes[i]).ToJSON();
+            }
+
+            CoreHelper.Log("Saving Checkpoints");
             for (int i = 0; i < beatmapData.checkpoints.Count; i++)
             {
                 jn["checkpoints"][i]["active"] = "False";
@@ -1304,17 +1290,118 @@ namespace BetterLegacy.Core.Data
                 jn["checkpoints"][i]["pos"]["y"] = beatmapData.checkpoints[i].pos.y.ToString();
             }
 
-            for (int i = 0; i < beatmapObjects.Count; i++)
-                jn["beatmap_objects"][i] = beatmapObjects[i].ToJSON();
+            CoreHelper.Log("Saving Beatmap Objects");
+            if (beatmapObjects != null)
+            {
+                var list = beatmapObjects.FindAll(x => !x.fromPrefab);
+                jn["beatmap_objects"] = new JSONArray();
+                for (int i = 0; i < list.Count; i++)
+                    jn["beatmap_objects"][i] = list[i].ToJSON();
+            }
+            else
+            {
+                CoreHelper.Log("skipping objects");
+                jn["beatmap_objects"] = new JSONArray();
+            }
 
+            CoreHelper.Log("Saving Background Objects");
             for (int i = 0; i < backgroundObjects.Count; i++)
                 jn["bg_objects"][i] = backgroundObjects[i].ToJSON();
 
+            CoreHelper.Log("Saving Event Objects");
             for (int i = 0; i < eventObjects.allEvents.Count; i++)
                 for (int j = 0; j < eventObjects.allEvents[i].Count; j++)
-                    jn["events"][EventTypes[i]][j] = ((Data.EventKeyframe)eventObjects.allEvents[i][j]).ToJSON();
+                    if (EventTypes.Length > i)
+                        jn["events"][EventTypes[i]][j] = ((Data.EventKeyframe)eventObjects.allEvents[i][j]).ToJSON();
 
             return jn;
+        }
+
+        public void SaveData(string path, Action onSave = null, bool saveGameDataThemes = false)
+        {
+            if (EditorConfig.Instance.SaveAsync.Value)
+                CoreHelper.StartCoroutineAsync(ISaveData(path, onSave, saveGameDataThemes));
+            else
+                CoreHelper.StartCoroutine(ISaveData(path, onSave, saveGameDataThemes));
+        }
+        
+        public void SaveDataVG(string path, Action onSave = null)
+        {
+            if (EditorConfig.Instance.SaveAsync.Value)
+                CoreHelper.StartCoroutineAsync(ISaveDataVG(path, onSave));
+            else
+                CoreHelper.StartCoroutine(ISaveDataVG(path, onSave));
+        }
+
+        public IEnumerator ISaveData(string path, Action onSave = null, bool saveGameDataThemes = false)
+        {
+            var jn = ToJSON(saveGameDataThemes);
+            CoreHelper.Log($"Saving Entire Beatmap to {path}");
+            RTFile.WriteToFile(path, jn.ToString());
+
+            yield return CielaSpike.Ninja.JumpToUnity;
+            onSave?.Invoke();
+
+            yield break;
+        }
+
+        public IEnumerator ISaveDataVG(string path, Action onSave = null)
+        {
+            var jn = ToJSONVG();
+            CoreHelper.Log($"Saving Entire Beatmap to {path}");
+            RTFile.WriteToFile(path, jn.ToString());
+
+            yield return CielaSpike.Ninja.JumpToUnity;
+            onSave?.Invoke();
+
+            yield break;
+        }
+
+        public static List<List<BaseEventKeyframe>> ParseEventkeyframes(JSONNode jn, bool clamp = true)
+        {
+            var allEvents = new List<List<BaseEventKeyframe>>();
+
+            for (int i = 0; i < EventCount; i++)
+            {
+                allEvents.Add(new List<BaseEventKeyframe>());
+                if (jn[EventTypes[i]] != null)
+                    for (int j = 0; j < jn[EventTypes[i]].Count; j++)
+                        allEvents[i].Add(Data.EventKeyframe.Parse(jn[EventTypes[i]][j], i, DefaultKeyframes[i].eventValues.Length));
+            }
+
+            if (clamp)
+                ClampEventListValues(allEvents, EventCount);
+
+            allEvents.ForEach(x => x = x.OrderBy(x => x.eventTime).ToList());
+
+            return allEvents;
+        }
+
+        public static void ClampEventListValues(List<List<BaseEventKeyframe>> eventKeyframes, int totalTypes)
+        {
+            while (eventKeyframes.Count > totalTypes)
+                eventKeyframes.RemoveAt(eventKeyframes.Count - 1);
+
+            for (int type = 0; type < totalTypes; type++)
+            {
+                if (eventKeyframes.Count < type + 1)
+                    eventKeyframes.Add(new List<BaseEventKeyframe>());
+
+                if (eventKeyframes[type].Count < 1)
+                    eventKeyframes[type].Add(Data.EventKeyframe.DeepCopy((Data.EventKeyframe)DefaultKeyframes[type]));
+
+                for (int index = 0; index < eventKeyframes[type].Count; index++)
+                {
+                    var array = eventKeyframes[type][index].eventValues;
+                    if (array.Length != DefaultKeyframes[type].eventValues.Length)
+                    {
+                        array = new float[DefaultKeyframes[type].eventValues.Length];
+                        for (int i = 0; i < DefaultKeyframes[type].eventValues.Length; i++)
+                            array[i] = i < eventKeyframes[type][index].eventValues.Length ? eventKeyframes[type][index].eventValues[i] : DefaultKeyframes[type].eventValues[i];
+                    }
+                    eventKeyframes[type][index].eventValues = array;
+                }
+            }
         }
 
         #endregion
@@ -1903,5 +1990,160 @@ namespace BetterLegacy.Core.Data
 
         [NonSerialized]
         public new List<GameObject> backgroundGameObjects = new List<GameObject>();
+
+        public static class Combiner
+        {
+            #region Settings
+
+            public static bool prioritizeFirstEvents = true;
+            public static bool prioritizeFirstThemes = true;
+
+            public static bool addFirstMarkers = true;
+            public static bool addSecondMarkers = false;
+
+            public static bool addFirstCheckpoints = true;
+            public static bool addSecondCheckpoints = false;
+
+            public static bool objectsWithMatchingIDAddKeyframes = false;
+
+            #endregion
+
+            /// <summary>
+            /// Combines multiple GameDatas together.
+            /// </summary>
+            /// <param name="gameDatas">Array of GameData to combine together.</param>
+            /// <returns>Combined GameData.</returns>
+            public static GameData Combine(params GameData[] gameDatas)
+            {
+                var baseData = new GameData
+                {
+                    beatmapData = new LevelBeatmapData
+                    {
+                        editorData = new LevelEditorData(),
+                        levelData = new LevelData(),
+                    },
+                };
+
+                if (gameDatas != null && gameDatas.Length > 0)
+                    for (int i = 0; i < gameDatas.Length; i++)
+                    {
+                        if (gameDatas[i].beatmapData != null && baseData.beatmapData != null)
+                        {
+                            if (baseData.beatmapData.checkpoints == null)
+                                baseData.beatmapData.checkpoints = new List<BeatmapData.Checkpoint>();
+                            if (baseData.beatmapData.markers == null)
+                                baseData.beatmapData.markers = new List<BeatmapData.Marker>();
+
+                            baseData.beatmapData.checkpoints.AddRange(gameDatas[i].beatmapData.checkpoints.FindAll(x => !baseData.beatmapData.checkpoints.Has(y => y.time == x.time)));
+                            baseData.beatmapData.markers.AddRange(gameDatas[i].beatmapData.markers.FindAll(x => !baseData.beatmapData.markers.Has(y => y.time == x.time)));
+                        }
+
+                        if (baseData.beatmapObjects == null)
+                            baseData.beatmapObjects = new List<Data.BeatmapObject>();
+
+                        baseData.beatmapObjects.AddRange(gameDatas[i].beatmapObjects.FindAll(x => !baseData.beatmapObjects.Has(y => y.id == x.id)));
+
+                        if (baseData.prefabObjects == null)
+                            baseData.prefabObjects = new List<Data.PrefabObject>();
+
+                        baseData.prefabObjects.AddRange(gameDatas[i].prefabObjects.Where(x => !baseData.prefabObjects.Has(y => y.ID == x.ID)));
+
+                        if (baseData.prefabs == null)
+                            baseData.prefabs = new List<Data.Prefab>();
+
+                        baseData.prefabs.AddRange(gameDatas[i].prefabs.FindAll(x => !baseData.prefabs.Has(y => y.ID == x.ID)));
+
+                        baseData.backgroundObjects.AddRange(gameDatas[i].backgroundObjects.Where(x => !baseData.backgroundObjects.Has(y =>
+                        {
+                            return y.active == x.active &&
+                                    y.color == x.color &&
+                                    y.depth == x.depth &&
+                                    y.drawFade == x.drawFade &&
+                                    y.FadeColor == x.FadeColor &&
+                                    y.layer == x.layer &&
+                                    y.name == x.name &&
+                                    y.pos == x.pos &&
+                                    y.reactive == x.reactive &&
+                                    y.reactiveCol == x.reactiveCol &&
+                                    y.reactiveColIntensity == x.reactiveColIntensity &&
+                                    y.reactiveColSample == x.reactiveColSample &&
+                                    y.reactiveIncludesZ == x.reactiveIncludesZ &&
+                                    y.reactivePosIntensity == x.reactivePosIntensity &&
+                                    y.reactivePosSamples == x.reactivePosSamples &&
+                                    y.reactiveRotIntensity == x.reactiveRotIntensity &&
+                                    y.reactiveRotSample == x.reactiveRotSample &&
+                                    y.reactiveScaIntensity == x.reactiveScaIntensity &&
+                                    y.reactiveScale == x.reactiveScale &&
+                                    y.reactiveScaSamples == x.reactiveScaSamples &&
+                                    y.reactiveSize == x.reactiveSize &&
+                                    y.reactiveType == x.reactiveType &&
+                                    y.reactiveZIntensity == x.reactiveZIntensity &&
+                                    y.reactiveZSample == x.reactiveZSample &&
+                                    y.rot == x.rot &&
+                                    y.rotation == x.rotation &&
+                                    y.scale == x.scale &&
+                                    y.text == x.text &&
+                                    y.zscale == x.zscale;
+                        })));
+
+                        if (baseData.eventObjects == null)
+                            baseData.eventObjects = new EventObjects();
+
+                        for (int j = 0; j < gameDatas[i].eventObjects.allEvents.Count; j++)
+                        {
+                            if (baseData.eventObjects.allEvents.Count <= j)
+                                baseData.eventObjects.allEvents.Add(new List<BaseEventKeyframe>());
+
+                            baseData.eventObjects.allEvents[j].AddRange(gameDatas[i].eventObjects.allEvents[j].Where(x => !baseData.eventObjects.allEvents[j].Has(y => y.eventTime == x.eventTime)));
+                        }
+
+                        foreach (var beatmapTheme in gameDatas[i].beatmapThemes)
+                        {
+                            if (!baseData.beatmapThemes.ContainsKey(beatmapTheme.Key))
+                                baseData.beatmapThemes.Add(beatmapTheme.Key, beatmapTheme.Value);
+                        }
+
+                        // Clearing
+                        {
+                            for (int j = 0; j < gameDatas[i].beatmapData.checkpoints.Count; j++)
+                                gameDatas[i].beatmapData.checkpoints[j] = null;
+                            gameDatas[i].beatmapData.checkpoints.Clear();
+
+                            for (int j = 0; j < gameDatas[i].beatmapData.markers.Count; j++)
+                                gameDatas[i].beatmapData.markers[j] = null;
+                            gameDatas[i].beatmapData.markers.Clear();
+
+                            for (int j = 0; j < gameDatas[i].beatmapObjects.Count; j++)
+                                gameDatas[i].beatmapObjects[j] = null;
+                            gameDatas[i].beatmapObjects.Clear();
+
+                            for (int j = 0; j < gameDatas[i].backgroundObjects.Count; j++)
+                                gameDatas[i].backgroundObjects[j] = null;
+                            gameDatas[i].backgroundObjects.Clear();
+
+                            for (int j = 0; j < gameDatas[i].prefabObjects.Count; j++)
+                                gameDatas[i].prefabObjects[j] = null;
+                            gameDatas[i].prefabObjects.Clear();
+
+                            for (int j = 0; j < gameDatas[i].prefabs.Count; j++)
+                                gameDatas[i].prefabs[j] = null;
+                            gameDatas[i].prefabs.Clear();
+
+                            gameDatas[i].beatmapThemes.Clear();
+
+                            for (int j = 0; j < gameDatas[i].eventObjects.allEvents.Count; j++)
+                                gameDatas[i].eventObjects.allEvents[j] = null;
+                            gameDatas[i].eventObjects.allEvents.Clear();
+
+                            gameDatas[i] = null;
+                        }
+                    }
+
+                gameDatas = null;
+
+                return baseData;
+            }
+        }
+
     }
 }

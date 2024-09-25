@@ -383,8 +383,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool SaveDataPrefix(DataManager __instance, ref IEnumerator __result, string __0, DataManager.GameData __1)
         {
-            Debug.Log($"{__instance.className}GameData is modded: {__1 is Core.Data.GameData}");
-            __result = ProjectData.Writer.SaveData(__0, (Core.Data.GameData)__1);
+            Debug.Log($"{__instance.className}GameData is modded: {__1 is GameData}");
+            __result = (__1 as GameData).ISaveData(__0);
             return false;
         }
 
