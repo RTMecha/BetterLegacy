@@ -42,7 +42,7 @@ namespace BetterLegacy.Core.Data
         /// </summary>
         /// <param name="jn">JSON to parse.</param>
         /// <returns>Returns a parsed marker.</returns>
-        public static Marker Parse(JSONNode jn) => new Marker(jn["active"].AsBool, jn["name"], jn["desc"], jn["col"].AsInt, jn["t"].AsFloat);
+        public static Marker Parse(JSONNode jn) => new Marker(jn["active"].AsBool, jn["name"] ?? "", jn["desc"] ?? "", jn["col"].AsInt, jn["t"].AsFloat);
 
         /// <summary>
         /// Converts the marker to a JSON Object in the LS format.
