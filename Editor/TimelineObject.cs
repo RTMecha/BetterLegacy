@@ -171,6 +171,8 @@ namespace BetterLegacy.Editor
                     (Data as BeatmapObject).editorData.layer = value;
                 if (IsPrefabObject)
                     (Data as PrefabObject).editorData.layer = value;
+
+                Update();
             }
         }
 
