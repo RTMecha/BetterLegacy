@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Core;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Optimization;
@@ -45,7 +46,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool AddPrefabToLevelPrefix(DataManager.GameData.PrefabObject __0)
         {
-            Updater.AddPrefabToLevel(__0);
+            Updater.AddPrefabToLevel((PrefabObject)__0);
 
             return false;
         }

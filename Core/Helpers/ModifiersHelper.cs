@@ -2617,7 +2617,7 @@ namespace BetterLegacy.Core.Helpers
                                 var childList = list[i];
                                 for (int j = 0; j < childList.Count; j++)
                                 {
-                                    if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.top)
+                                    if (childList[j] is BeatmapObject beatmapObject && Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
                                         levelObject.top.gameObject.SetActive(true);
                                 }
                             }
@@ -2691,7 +2691,7 @@ namespace BetterLegacy.Core.Helpers
                                 var childList = list[i];
                                 for (int j = 0; j < childList.Count; j++)
                                 {
-                                    if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.top)
+                                    if (childList[j] is BeatmapObject beatmapObject && Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
                                         levelObject.top.gameObject.SetActive(false);
                                 }
                             }
@@ -4945,7 +4945,7 @@ namespace BetterLegacy.Core.Helpers
 
                                 GameData.Current.prefabObjects.Add((PrefabObject)modifier.Result);
 
-                                CoreHelper.StartCoroutine(Updater.IAddPrefabToLevel((PrefabObject)modifier.Result));
+                                Updater.AddPrefabToLevel((PrefabObject)modifier.Result);
                             }
 
                             break;
@@ -5367,7 +5367,7 @@ namespace BetterLegacy.Core.Helpers
                                 var childList = list[i];
                                 for (int j = 0; j < childList.Count; j++)
                                 {
-                                    if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.top)
+                                    if (childList[j] is BeatmapObject beatmapObject && Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
                                         levelObject.top.gameObject.SetActive(false);
                                 }
                             }
