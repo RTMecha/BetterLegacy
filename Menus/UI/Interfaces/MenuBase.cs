@@ -723,6 +723,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             menuText.textUI.maxVisibleCharacters = 0;
             menuText.textUI.enableWordWrapping = menuText.enableWordWrapping;
             menuText.textUI.alignment = menuText.alignment;
+            menuText.textUI.overflowMode = menuText.overflowMode;
 
             menuText.textRect.AssignToRectTransform(menuText.textUI.rectTransform);
 
@@ -791,6 +792,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             menuButton.textUI.maxVisibleCharacters = 0;
             menuButton.textUI.enableWordWrapping = menuButton.enableWordWrapping;
             menuButton.textUI.alignment = menuButton.alignment;
+            menuButton.textUI.overflowMode = menuButton.overflowMode;
 
             menuButton.textRect.AssignToRectTransform(menuButton.textUI.rectTransform);
 

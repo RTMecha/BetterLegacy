@@ -178,7 +178,8 @@ namespace BetterLegacy.Menus.UI.Elements
         public string text = "";
 
         public bool enableWordWrapping = false;
-        public TMPro.TextAlignmentOptions alignment = TextAlignmentOptions.Left;
+        public TextAlignmentOptions alignment = TextAlignmentOptions.Left;
+        public TextOverflowModes overflowMode = TextOverflowModes.Masking;
 
         /// <summary>
         /// The text component of the element.
