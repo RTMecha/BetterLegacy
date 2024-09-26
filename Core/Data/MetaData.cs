@@ -48,6 +48,7 @@ namespace BetterLegacy.Core.Data
         public string nextID;
         public bool isHubLevel;
         public bool requireUnlock;
+        public bool unlockAfterCompletion = true;
         public ServerVisibility visibility;
         public string changelog;
 
@@ -118,6 +119,7 @@ namespace BetterLegacy.Core.Data
             collectionID = orig.collectionID,
             isHubLevel = orig.isHubLevel,
             requireUnlock = orig.requireUnlock,
+            unlockAfterCompletion = orig.unlockAfterCompletion,
             arcadeID = orig.arcadeID,
             nextID = orig.nextID,
             prevID = orig.prevID,
@@ -406,6 +408,9 @@ namespace BetterLegacy.Core.Data
                 if (!string.IsNullOrEmpty(jn["require_unlock"]))
                     result.requireUnlock = jn["require_unlock"].AsBool;
 
+                if (!string.IsNullOrEmpty(jn["unlock_complete"]))
+                    result.unlockAfterCompletion = jn["unlock_complete"].AsBool;
+
                 if (!string.IsNullOrEmpty(jn["visibility"]))
                     result.visibility = (ServerVisibility)jn["visibility"].AsInt;
 
@@ -521,6 +526,9 @@ namespace BetterLegacy.Core.Data
 
             if (requireUnlock)
                 jn["require_unlock"] = requireUnlock.ToString();
+
+            if (!unlockAfterCompletion)
+                jn["unlock_complete"] = unlockAfterCompletion.ToString();
 
             if (visibility != ServerVisibility.Public)
                 jn["visibility"] = ((int)visibility).ToString();

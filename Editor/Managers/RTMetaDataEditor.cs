@@ -190,13 +190,14 @@ namespace BetterLegacy.Editor.Managers
 
             GenerateToggle(content, creatorLinkTitle, "is hub level", "Is Hub Level", 4);
             GenerateToggle(content, creatorLinkTitle, "unlock required", "Unlock Required", 5);
+            GenerateToggle(content, creatorLinkTitle, "unlock complete", "Unlock Completed", 6);
 
-            GenerateDropdown(content, creatorLinkTitle, "preferred player count", "Preferred Players", 6);
+            GenerateDropdown(content, creatorLinkTitle, "preferred player count", "Preferred Players", 7);
 
-            var serverID = content.Find("id").gameObject.Duplicate(content, "server id", 11);
+            var serverID = content.Find("id").gameObject.Duplicate(content, "server id", 12);
             Destroy(serverID.transform.GetChild(1).gameObject);
 
-            var uploadInfo = content.Find("creator").gameObject.Duplicate(content, "upload", 7);
+            var uploadInfo = content.Find("creator").gameObject.Duplicate(content, "upload", 8);
 
             try
             {
@@ -690,6 +691,11 @@ namespace BetterLegacy.Editor.Managers
             requireUnlock.onValueChanged.ClearAll();
             requireUnlock.isOn = metadata.requireUnlock;
             requireUnlock.onValueChanged.AddListener(_val => { metadata.requireUnlock = _val; });
+            
+            var unlockComplete = content.Find("unlock complete/toggle").GetComponent<Toggle>();
+            unlockComplete.onValueChanged.ClearAll();
+            unlockComplete.isOn = metadata.unlockAfterCompletion;
+            unlockComplete.onValueChanged.AddListener(_val => { metadata.unlockAfterCompletion = _val; });
 
             var preferredPlayerCount = content.Find("preferred player count/dropdown").GetComponent<Dropdown>();
             preferredPlayerCount.options = CoreHelper.StringToOptionData("Any", "One", "Two", "Three", "Four", "More than four");
