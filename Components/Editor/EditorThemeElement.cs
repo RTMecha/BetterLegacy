@@ -32,7 +32,7 @@ namespace BetterLegacy.Components.Editor
 
         void OnDestroy()
         {
-            if (!string.IsNullOrEmpty(id) && EditorThemeManager.TemporaryEditorGUIElements.ContainsKey(id)) // remove from temporary editor gui elements.
+            if (!string.IsNullOrEmpty(id)) // remove from temporary editor gui elements.
                 EditorThemeManager.TemporaryEditorGUIElements.Remove(id);
         }
     }
