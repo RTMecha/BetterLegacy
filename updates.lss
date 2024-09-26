@@ -1,3 +1,8 @@
+1.6.6 > [Sep 26, 2024]
+- Reworked some saving / loading code.
+- Added context menus to name, tag and some modifier input fields.
+- Fixed editor layer changing for objects being broken.
+- Prefab object expanding and object pasting is now a LOT faster. (around 1000 objects per second)
 1.6.5 > [Sep 25, 2024]
 - Reworked marker looping to be set via context menus instead of the config.
 - Changed marker dragging to left click.
