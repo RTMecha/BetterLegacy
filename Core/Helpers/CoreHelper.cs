@@ -845,6 +845,8 @@ namespace BetterLegacy.Core.Helpers
             Log($"{(string.IsNullOrEmpty(message) ? message : message + "\n")}Time taken: {sw.Elapsed}");
         }
 
+        public static void LogStopwatch(System.Diagnostics.Stopwatch sw) => Log($"Time: {sw.Elapsed}");
+
         public static IEnumerator Empty()
         {
             yield break;

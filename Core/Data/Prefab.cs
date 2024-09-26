@@ -69,8 +69,8 @@ namespace BetterLegacy.Core.Data
             prefab.objects.AddRange(og.objects.Select(x => BeatmapObject.DeepCopy((BeatmapObject)x, false)).ToList());
 
             foreach (var beatmapObject in prefab.objects)
-                if (!prefab.SpriteAssets.ContainsKey(beatmapObject.text) && og.SpriteAssets.TryGetValue(beatmapObject.text, out Sprite sprite))
-                    prefab.SpriteAssets.Add(beatmapObject.text, sprite);
+                if (beatmapObject.shape == 6 && !string.IsNullOrEmpty(beatmapObject.text) && og.SpriteAssets.TryGetValue(beatmapObject.text, out Sprite sprite))
+                    prefab.SpriteAssets[beatmapObject.text] = sprite;
 
             return prefab;
         }

@@ -110,14 +110,23 @@ namespace BetterLegacy.Core.Managers
                 try
                 {
                     if (GameData.Current.beatmapObjects.Find(x => x.id == audioSource.Key) == null || !GameData.Current.beatmapObjects.Find(x => x.id == audioSource.Key).Alive)
-                        DeleteKey(audioSource.Key, audioSource.Value);
+                        queuedAudioToDelete.Add(audioSource);
                 }
                 catch
                 {
 
                 }
             }
+
+            if (queuedAudioToDelete.Count > 0)
+            {
+                foreach (var audio in queuedAudioToDelete)
+                    DeleteKey(audio.Key, audio.Value);
+                queuedAudioToDelete.Clear();
+            }
         }
+
+        public static List<KeyValuePair<string, AudioSource>> queuedAudioToDelete = new List<KeyValuePair<string, AudioSource>>();
 
         /// <summary>
         /// Inits ModifiersManager.
@@ -141,11 +150,8 @@ namespace BetterLegacy.Core.Managers
 
         public static void DeleteKey(string id, AudioSource audioSource)
         {
-            if (audioSources.ContainsKey(id))
-            {
-                Destroy(audioSource);
-                audioSources.Remove(id);
-            }
+            Destroy(audioSource);
+            audioSources.Remove(id);
         }
 
         #region Modifier Functions

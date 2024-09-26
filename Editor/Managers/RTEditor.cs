@@ -6018,8 +6018,8 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 var kf = EventKeyframe.DeepCopy((EventKeyframe)bm.events[3][index]);
                                 kf.eventTime = currentTime - bm.StartTime;
-                                if (curves.value != 0 && DataManager.inst.AnimationListDictionary.ContainsKey(curves.value - 1))
-                                    kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
+                                if (curves.value != 0 && DataManager.inst.AnimationListDictionary.TryGetValue(curves.value - 1, out DataManager.LSAnimation anim))
+                                    kf.curveType = anim;
 
                                 if (currentMultiColorSelection >= 0)
                                     kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
@@ -6783,8 +6783,8 @@ namespace BetterLegacy.Editor.Managers
         public void SetKeyframeValues(EventKeyframe kf, Dropdown curves,
             string opacity, string hue, string sat, string val, string opacityGradient, string hueGradient, string satGradient, string valGradient)
         {
-            if (curves.value != 0 && DataManager.inst.AnimationListDictionary.ContainsKey(curves.value - 1))
-                kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
+            if (curves.value != 0 && DataManager.inst.AnimationListDictionary.TryGetValue(curves.value - 1, out DataManager.LSAnimation anim))
+                kf.curveType = anim;
             if (currentMultiColorSelection >= 0)
                 kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
             if (!string.IsNullOrEmpty(opacity))
@@ -6841,8 +6841,8 @@ namespace BetterLegacy.Editor.Managers
         public void SubKeyframeValues(EventKeyframe kf, Dropdown curves,
             string opacity, string hue, string sat, string val, string opacityGradient, string hueGradient, string satGradient, string valGradient)
         {
-            if (curves.value != 0 && DataManager.inst.AnimationListDictionary.ContainsKey(curves.value - 1))
-                kf.curveType = DataManager.inst.AnimationListDictionary[curves.value - 1];
+            if (curves.value != 0 && DataManager.inst.AnimationListDictionary.TryGetValue(curves.value - 1, out DataManager.LSAnimation anim))
+                kf.curveType = anim;
             if (currentMultiColorSelection >= 0)
                 kf.eventValues[0] = Mathf.Clamp(currentMultiColorSelection, 0, 18);
             if (!string.IsNullOrEmpty(opacity))
@@ -11229,9 +11229,9 @@ namespace BetterLegacy.Editor.Managers
             notifyGroup.childAlignment = direction != VerticalDirection.Up ? TextAnchor.LowerLeft : TextAnchor.UpperLeft;
         }
 
-        public static Color GetObjectColor(BaseBeatmapObject beatmapObject, bool ignoreTransparency)
+        public static Color GetObjectColor(BeatmapObject beatmapObject, bool ignoreTransparency)
         {
-            if (beatmapObject.objectType == ObjectType.Empty)
+            if (beatmapObject.objectType == BeatmapObject.ObjectType.Empty)
                 return Color.white;
 
             if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.Renderer)

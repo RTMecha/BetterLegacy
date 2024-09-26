@@ -76,8 +76,7 @@ namespace BetterLegacy.Editor.Managers
             var id = LSText.randomNumString(16);
             element.gameObject.AddComponent<EditorThemeElement>().Init(element, id);
 
-            if (!TemporaryEditorGUIElements.ContainsKey(id))
-                TemporaryEditorGUIElements.Add(id, element);
+            TemporaryEditorGUIElements[id] = element;
         }
 
         public static List<Element> EditorGUIElements { get; set; } = new List<Element>();
