@@ -56,10 +56,10 @@ namespace BetterLegacy.Core.Optimization.Objects
             }
 
             for (int i = 0; i < beatmapObjects.Count; i++)
-                CoreHelper.StartCoroutine(CacheSequence(beatmapObjects[i]));
+                CacheSequence(beatmapObjects[i]);
         }
 
-        public IEnumerator CacheSequence(BeatmapObject beatmapObject)
+        public IEnumerator ICacheSequence(BeatmapObject beatmapObject)
         {
             var collection = new CachedSequences()
             {
@@ -84,6 +84,31 @@ namespace BetterLegacy.Core.Optimization.Objects
             cachedSequences[beatmapObject.id] = collection;
 
             yield break;
+        }
+
+        public void CacheSequence(BeatmapObject beatmapObject)
+        {
+            var collection = new CachedSequences()
+            {
+                Position3DSequence = GetVector3Sequence(beatmapObject.events[0], new Vector3Keyframe(0.0f, Vector3.zero, Ease.Linear, null)),
+                ScaleSequence = GetVector2Sequence(beatmapObject.events[1], new Vector2Keyframe(0.0f, Vector2.one, Ease.Linear)),
+            };
+            collection.RotationSequence = GetFloatSequence(beatmapObject.events[2], 0, new FloatKeyframe(0.0f, 0.0f, Ease.Linear, null), collection.Position3DSequence, false);
+
+            // Empty objects don't need a color sequence, so it is not cached
+            if (ShowEmpties || beatmapObject.objectType != ObjectType.Empty)
+            {
+                collection.ColorSequence = GetColorSequence(beatmapObject.events[3],
+                    new ThemeKeyframe(0.0f, 0, 0.0f, 0.0f, 0.0f, 0.0f, Ease.Linear));
+
+                if (beatmapObject.gradientType != 0)
+                {
+                    collection.SecondaryColorSequence = GetColorSequence(beatmapObject.events[3],
+                        new ThemeKeyframe(0.0f, 0, 0.0f, 0.0f, 0.0f, 0.0f, Ease.Linear), true);
+                }
+            }
+
+            cachedSequences[beatmapObject.id] = collection;
         }
 
         public IEnumerable<ILevelObject> ToLevelObjects()

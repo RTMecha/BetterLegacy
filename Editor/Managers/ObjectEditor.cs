@@ -411,39 +411,40 @@ namespace BetterLegacy.Editor.Managers
             var list = SelectedObjects;
             int count = SelectedObjectCount;
 
-            if (count == GameData.Current.beatmapObjects.FindAll(x => !x.fromPrefab).Count + GameData.Current.prefabObjects.Count)
+            var gameData = GameData.Current;
+            if (count == gameData.beatmapObjects.FindAll(x => !x.fromPrefab).Count + gameData.prefabObjects.Count)
             {
                 yield break;
             }
 
             int min = list.Min(x => x.Index) - 1;
 
-            var beatmapObjects = list.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()).ToList();
+            var beatmapObjects = list.FindAll(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()).ToList();
             var beatmapObjectIDs = new List<string>();
             var prefabObjectIDs = new List<string>();
 
-            beatmapObjectIDs.AddRange(list.Where(x => x.IsBeatmapObject).Select(x => x.ID));
-            prefabObjectIDs.AddRange(list.Where(x => x.IsPrefabObject).Select(x => x.ID));
+            beatmapObjectIDs.AddRange(list.FindAll(x => x.IsBeatmapObject).Select(x => x.ID));
+            prefabObjectIDs.AddRange(list.FindAll(x => x.IsPrefabObject).Select(x => x.ID));
 
-            if (beatmapObjectIDs.Count == GameData.Current.beatmapObjects.FindAll(x => !x.fromPrefab).Count)
+            if (beatmapObjectIDs.Count == gameData.beatmapObjects.FindAll(x => !x.fromPrefab).Count)
             {
                 yield break;
             }
 
             if (prefabObjectIDs.Count > 0)
-                list.Where(x => x.IsPrefabObject)
+                list.FindAll(x => x.IsPrefabObject)
                     .Select(x => x.GetData<PrefabObject>()).ToList()
                     .ForEach(x => beatmapObjectIDs
                         .AddRange(GameData.Current.beatmapObjects
                             .Where(c => c.prefabInstanceID == x.ID)
                         .Select(c => c.id)));
 
-            GameData.Current.beatmapObjects.FindAll(x => beatmapObjectIDs.Contains(x.id)).ForEach(x => Updater.UpdateObject(x, reinsert: false));
-            GameData.Current.beatmapObjects.FindAll(x => prefabObjectIDs.Contains(x.prefabInstanceID)).ForEach(x => Updater.UpdateObject(x, reinsert: false));
+            gameData.beatmapObjects.FindAll(x => string.IsNullOrEmpty(x.parent) && beatmapObjectIDs.Contains(x.id)).ForEach(x => Updater.UpdateObject(x, reinsert: false));
+            gameData.beatmapObjects.FindAll(x => string.IsNullOrEmpty(x.parent) && prefabObjectIDs.Contains(x.prefabInstanceID)).ForEach(x => Updater.UpdateObject(x, reinsert: false));
 
-            GameData.Current.beatmapObjects.RemoveAll(x => beatmapObjectIDs.Contains(x.id));
-            GameData.Current.beatmapObjects.RemoveAll(x => prefabObjectIDs.Contains(x.prefabInstanceID));
-            GameData.Current.prefabObjects.RemoveAll(x => prefabObjectIDs.Contains(x.ID));
+            gameData.beatmapObjects.RemoveAll(x => beatmapObjectIDs.Contains(x.id));
+            gameData.beatmapObjects.RemoveAll(x => prefabObjectIDs.Contains(x.prefabInstanceID));
+            gameData.prefabObjects.RemoveAll(x => prefabObjectIDs.Contains(x.ID));
 
             RTEditor.inst.timelineObjects.FindAll(x => beatmapObjectIDs.Contains(x.ID) || prefabObjectIDs.Contains(x.ID)).ForEach(x => Destroy(x.GameObject));
             RTEditor.inst.timelineObjects.RemoveAll(x => beatmapObjectIDs.Contains(x.ID) || prefabObjectIDs.Contains(x.ID));
@@ -726,7 +727,9 @@ namespace BetterLegacy.Editor.Managers
 
             //Objects
             {
-                var ids = prefab.objects.ToDictionary(x => x.id, x => LSText.randomString(16));
+                var objectIDs = new List<KeyValuePair<string, string>>();
+                for (int j = 0; j < prefab.objects.Count; j++)
+                    objectIDs.Add(new KeyValuePair<string, string>(prefab.objects[j].id, LSText.randomString(16)));
 
                 var pastedObjects = new List<BeatmapObject>();
                 for (int i = 0; i < prefab.objects.Count; i++)
@@ -737,12 +740,12 @@ namespace BetterLegacy.Editor.Managers
 
                     var beatmapObjectCopy = BeatmapObject.DeepCopy((BeatmapObject)beatmapObject, false);
 
-                    if (!retainID && ids.TryGetValue(beatmapObject.id, out string id))
-                        beatmapObjectCopy.id = id;
+                    if (!retainID)
+                        beatmapObjectCopy.id = objectIDs[i].Value;
 
-                    if (!retainID && ids.TryGetValue(beatmapObject.parent, out string parentID))
-                        beatmapObjectCopy.parent = parentID;
-                    else if (GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.parent) == -1 && beatmapObjectCopy.parent != "CAMERA_PARENT" && !retainID)
+                    if (!retainID && !string.IsNullOrEmpty(beatmapObject.parent) && objectIDs.TryFind(x => x.Key == beatmapObject.parent, out KeyValuePair<string, string> keyValuePair))
+                        beatmapObjectCopy.parent = keyValuePair.Value;
+                    else if (!string.IsNullOrEmpty(beatmapObject.parent) && GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.parent) == -1 && beatmapObjectCopy.parent != "CAMERA_PARENT" && !retainID)
                         beatmapObjectCopy.parent = "";
 
                     beatmapObjectCopy.prefabID = beatmapObject.prefabID;
@@ -760,15 +763,16 @@ namespace BetterLegacy.Editor.Managers
                     if (offset != 0.0)
                         ++beatmapObjectCopy.editorData.Bin;
 
-                    if (!AssetManager.SpriteAssets.ContainsKey(beatmapObject.text) && prefab.SpriteAssets.TryGetValue(beatmapObject.text, out Sprite sprite))
-                        AssetManager.SpriteAssets.Add(beatmapObject.text, sprite);
+                    if (beatmapObjectCopy.shape == 6 && !string.IsNullOrEmpty(beatmapObjectCopy.text) && prefab.SpriteAssets.TryGetValue(beatmapObjectCopy.text, out Sprite sprite))
+                        AssetManager.SpriteAssets[beatmapObjectCopy.text] = sprite;
 
                     beatmapObjectCopy.editorData.layer = RTEditor.inst.Layer;
                     GameData.Current.beatmapObjects.Add(beatmapObjectCopy);
-                    if (Updater.levelProcessor && Updater.levelProcessor.converter != null && !Updater.levelProcessor.converter.beatmapObjects.ContainsKey(beatmapObjectCopy.id))
-                        Updater.levelProcessor.converter.beatmapObjects.Add(beatmapObjectCopy.id, beatmapObjectCopy);
+                    if (Updater.levelProcessor && Updater.levelProcessor.converter != null)
+                        Updater.levelProcessor.converter.beatmapObjects[beatmapObjectCopy.id] = beatmapObjectCopy;
 
-                    pastedObjects.Add(beatmapObjectCopy);
+                    if (string.IsNullOrEmpty(beatmapObject.parent)) // prevent updating of parented objects since updating is recursive.
+                        pastedObjects.Add(beatmapObjectCopy);
 
                     var timelineObject = new TimelineObject(beatmapObjectCopy);
 
@@ -776,17 +780,14 @@ namespace BetterLegacy.Editor.Managers
                     CurrentSelection = timelineObject;
 
                     RenderTimelineObject(timelineObject);
-
-                    delay += 0.0001f;
                 }
 
                 delay = 0f;
                 for (int i = 0; i < pastedObjects.Count; i++)
                 {
-                    var beatmapObject = pastedObjects[i];
                     if (i > 0 && updatePastedObjectsYieldType != YieldType.None)
                         yield return CoreHelper.GetYieldInstruction(updatePastedObjectsYieldType, ref delay);
-                    Updater.UpdateObject(beatmapObject);
+                    Updater.UpdateObject(pastedObjects[i], recalculate: false);
                 }
 
                 pastedObjects.Clear();
@@ -795,7 +796,9 @@ namespace BetterLegacy.Editor.Managers
 
             //Prefabs
             {
-                var prefabInstanceIDs = prefab.prefabObjects.ToDictionary(x => x.ID, x => LSText.randomString(16));
+                var ids = new List<string>();
+                for (int i = 0; i < prefab.prefabObjects.Count; i++)
+                    ids.Add(LSText.randomString(16));
 
                 delay = 0f;
                 for (int i = 0; i < prefab.prefabObjects.Count; i++)
@@ -805,8 +808,7 @@ namespace BetterLegacy.Editor.Managers
                         yield return CoreHelper.GetYieldInstruction(pasteObjectsYieldType, ref delay);
 
                     var prefabObjectCopy = PrefabObject.DeepCopy((PrefabObject)prefabObject, false);
-                    if (prefabInstanceIDs.TryGetValue(prefabObject.ID, out string id))
-                        prefabObjectCopy.ID = id;
+                    prefabObjectCopy.ID = ids[i];
                     prefabObjectCopy.prefabID = prefabObject.prefabID;
 
                     prefabObjectCopy.StartTime += offset == 0.0 ? undone ? prefab.Offset : audioTime + prefab.Offset : offset;
@@ -824,13 +826,13 @@ namespace BetterLegacy.Editor.Managers
 
                     RenderTimelineObject(timelineObject);
 
-                    StartCoroutine(Updater.IAddPrefabToLevel(prefabObjectCopy));
-
-                    delay += 0.0001f;
+                    Updater.AddPrefabToLevel(prefabObjectCopy, recalculate: false);
                 }
             }
 
             CoreHelper.StopAndLogStopwatch(sw);
+
+            Updater.levelProcessor?.engine?.objectSpawner?.RecalculateObjectStates();
 
             string stri = "object";
             if (prefab.objects.Count == 1)
@@ -3139,7 +3141,7 @@ namespace BetterLegacy.Editor.Managers
                     var assetExists = AssetManager.SpriteAssets.ContainsKey(beatmapObject.text);
                     if (!assetExists)
                     {
-                        var regex = new System.Text.RegularExpressions.Regex(@"img\((.*?)\)");
+                        var regex = new Regex(@"img\((.*?)\)");
                         var match = regex.Match(beatmapObject.text);
 
                         var path = match.Success ? RTFile.BasePath + match.Groups[1].ToString() : RTFile.BasePath + beatmapObject.text;
