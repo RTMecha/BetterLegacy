@@ -1256,7 +1256,7 @@ namespace BetterLegacy.Core.Data
             }
 
             CoreHelper.Log("Saving Object Prefabs");
-            var prefabObjects = this.prefabObjects.FindAll(x => x.fromModifier);
+            var prefabObjects = this.prefabObjects.FindAll(x => !x.fromModifier);
             for (int i = 0; i < prefabObjects.Count; i++)
                 jn["prefab_objects"][i] = prefabObjects[i].ToJSON();
 
