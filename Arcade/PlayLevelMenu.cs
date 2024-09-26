@@ -131,8 +131,10 @@ namespace BetterLegacy.Arcade
 
             var name = CoreHelper.ReplaceFormatting(CurrentLevel.metadata.beatmap.name);
             int size = 110;
-            if (name.Length > 13)
+            if (name.Length > 13 && name.Length <= 40)
                 size = (int)(size * ((float)13f / name.Length));
+            if (name.Length > 40)
+                name = LSText.ClampString(name, 40);
 
             elements.Add(new MenuText
             {
@@ -154,13 +156,20 @@ namespace BetterLegacy.Arcade
                 textColor = 6,
             });
 
+            var title = CoreHelper.ReplaceFormatting(CurrentLevel.metadata.song.title);
+            size = 32;
+            if (title.Length > 24 && title.Length <= 40)
+                size = (int)(size * ((float)24f / title.Length));
+            if (title.Length > 40)
+                title = LSText.ClampString(title, 40);
+
             elements.Add(new MenuButton
             {
                 id = "638553",
                 name = "Song Button",
                 rect = RectValues.Default.AnchoredPosition(340f, 240f).SizeDelta(500f, 48f),
                 selectionPosition = new Vector2Int(0, 1),
-                text = $" [ {CurrentLevel.metadata.song.title} ]",
+                text = $"<size={size}> [ {CurrentLevel.metadata.song.title} ]",
                 opacity = 0f,
                 selectedOpacity = 1f,
                 color = 6,
@@ -186,13 +195,20 @@ namespace BetterLegacy.Arcade
                 textColor = 6,
             });
 
+            var artist = CoreHelper.ReplaceFormatting(CurrentLevel.metadata.artist.Name);
+            size = 32;
+            if (artist.Length > 24 && artist.Length <= 40)
+                size = (int)(size * ((float)24f / artist.Length));
+            if (artist.Length > 40)
+                title = LSText.ClampString(title, 40);
+
             elements.Add(new MenuButton
             {
                 id = "638553",
                 name = "Artist Button",
                 rect = RectValues.Default.AnchoredPosition(340f, 190f).SizeDelta(500f, 48f),
                 selectionPosition = new Vector2Int(0, 2),
-                text = $" [ {CurrentLevel.metadata.artist.Name} ]",
+                text = $"<size={size}> [ {artist} ]",
                 opacity = 0f,
                 selectedOpacity = 1f,
                 color = 6,
@@ -218,13 +234,20 @@ namespace BetterLegacy.Arcade
                 textColor = 6,
             });
 
+            var creator = CoreHelper.ReplaceFormatting(CurrentLevel.metadata.creator.steam_name);
+            size = 32;
+            if (creator.Length > 24 && creator.Length <= 40)
+                size = (int)(size * ((float)24f / creator.Length));
+            if (creator.Length > 40)
+                title = LSText.ClampString(title, 40);
+
             elements.Add(new MenuButton
             {
                 id = "638553",
                 name = "Creator Button",
                 rect = RectValues.Default.AnchoredPosition(340f, 140f).SizeDelta(500f, 48f),
                 selectionPosition = new Vector2Int(0, 3),
-                text = $" [ {CurrentLevel.metadata.creator.steam_name} ]",
+                text = $"<size={size}> [ {creator} ]",
                 opacity = 0f,
                 selectedOpacity = 1f,
                 color = 6,
@@ -267,12 +290,13 @@ namespace BetterLegacy.Arcade
             {
                 id = "4624859539",
                 name = "Description",
-                rect = RectValues.Default.AnchoredPosition(250f, -20f).SizeDelta(800f, 100f),
+                rect = RectValues.Default.AnchoredPosition(250f, -60f).SizeDelta(800f, 170f),
                 text = "<size=22>" + CurrentLevel.metadata.song.description,
                 hideBG = true,
                 textColor = 6,
                 enableWordWrapping = true,
                 alignment = TMPro.TextAlignmentOptions.TopLeft,
+                overflowMode = TMPro.TextOverflowModes.Truncate,
             });
             
             elements.Add(new MenuText
@@ -322,6 +346,8 @@ namespace BetterLegacy.Arcade
                             LevelManager.currentLevelIndex = 0;
                         if (LevelManager.CurrentLevelCollection.Count > 1)
                             LevelManager.CurrentLevel = LevelManager.CurrentLevelCollection[LevelManager.currentLevelIndex];
+                        else
+                            LevelManager.CurrentLevel = CurrentLevel;
                     }
                     else if (LevelManager.ArcadeQueue.Count > 1)
                     {
@@ -600,11 +626,18 @@ namespace BetterLegacy.Arcade
         {
             if (MenuManager.inst)
                 AudioManager.inst.PlayMusic(MenuManager.inst.currentMenuMusicName, MenuManager.inst.currentMenuMusic);
-            LevelManager.CurrentLevelCollection = null;
             InterfaceManager.inst.CloseMenus();
 
-            ArcadeMenu.Init();
+            if (close == null)
+                ArcadeMenu.Init();
+            else
+            {
+                close();
+                close = null;
+            }
         }
+
+        public static Action close;
 
         public override void Clear()
         {
