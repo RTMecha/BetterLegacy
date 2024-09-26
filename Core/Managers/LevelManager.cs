@@ -85,6 +85,17 @@ namespace BetterLegacy.Core.Managers
 
         public static int currentLevelIndex;
 
+        public static Level NextLevel =>
+            CurrentLevelCollection && CurrentLevelCollection.Count > currentLevelIndex ?
+                CurrentLevelCollection[currentLevelIndex] :
+                ArcadeQueue.Count > currentQueueIndex ?
+                    ArcadeQueue[currentQueueIndex] :
+                    null;
+
+        public static Level NextLevelInCollection =>
+            CurrentLevelCollection && CurrentLevelCollection.Count > currentLevelIndex + 1 ?
+                CurrentLevelCollection[currentLevelIndex + 1] : null;
+
         /// <summary>
         /// Local collections from the arcade folder.
         /// </summary>
@@ -354,7 +365,7 @@ namespace BetterLegacy.Core.Managers
 
         public static void UpdateCurrentLevelProgress()
         {
-            if (!IsArcade || CurrentLevel == null)
+            if (!IsArcade || !CurrentLevel && !NextLevelInCollection)
                 return;
 
             CoreHelper.Log($"Setting Player Data");
@@ -368,30 +379,49 @@ namespace BetterLegacy.Core.Managers
             if (Saves.Where(x => x.Completed).Count() >= 100)
                 AchievementManager.inst.UnlockAchievement("one_hundred_levels");
 
+            var levels = CurrentLevelCollection ? CurrentLevelCollection.levels : Levels;
+            
             if (PlayerManager.IsZenMode || PlayerManager.IsPractice)
+            {
+                if (NextLevelInCollection && CurrentLevel.metadata && CurrentLevel.metadata.song.difficulty == 6)
+                    SetLevelData(levels, NextLevelInCollection, NextLevelInCollection.playerData == null, false);
                 return;
+            }
 
-            var makeNewPlayerData = CurrentLevel.playerData == null;
+            if (NextLevelInCollection)
+                SetLevelData(levels, NextLevelInCollection, NextLevelInCollection.playerData == null, false);
+            SetLevelData(levels, CurrentLevel, CurrentLevel.playerData == null, true);
+        }
+
+        public static void SetLevelData(List<Level> levels, Level currentLevel, bool makeNewPlayerData, bool update)
+        {
             if (makeNewPlayerData)
-                CurrentLevel.playerData = new PlayerData { ID = CurrentLevel.id, LevelName = CurrentLevel.metadata?.beatmap?.name, };
+                currentLevel.playerData = new PlayerData { ID = currentLevel.id, LevelName = currentLevel.metadata?.beatmap?.name, };
 
-            CoreHelper.Log($"Updating save data\n" +
-                $"New Player Data = {makeNewPlayerData}\n" +
-                $"Deaths [OLD = {CurrentLevel.playerData.Deaths} > NEW = {GameManager.inst.deaths.Count}]\n" +
-                $"Hits: [OLD = {CurrentLevel.playerData.Hits} > NEW = {GameManager.inst.hits.Count}]\n" +
-                $"Boosts: [OLD = {CurrentLevel.playerData.Boosts} > NEW = {BoostCount}]");
+            if (update)
+            {
+                CoreHelper.Log($"Updating save data\n" +
+                    $"New Player Data = {makeNewPlayerData}\n" +
+                    $"Deaths [OLD = {currentLevel.playerData.Deaths} > NEW = {GameManager.inst.deaths.Count}]\n" +
+                    $"Hits: [OLD = {currentLevel.playerData.Hits} > NEW = {GameManager.inst.hits.Count}]\n" +
+                    $"Boosts: [OLD = {currentLevel.playerData.Boosts} > NEW = {BoostCount}]");
 
-            CurrentLevel.playerData.Update(GameManager.inst.deaths.Count, GameManager.inst.hits.Count, BoostCount, true);
+                currentLevel.playerData.Update(GameManager.inst.deaths.Count, GameManager.inst.hits.Count, BoostCount, true);
+            }
 
-            if (Saves.TryFindIndex(x => x.ID == CurrentLevel.id, out int saveIndex))
-                Saves[saveIndex] = CurrentLevel.playerData;
+            if (currentLevel.metadata && currentLevel.metadata.unlockAfterCompletion)
+                currentLevel.playerData.Unlocked = true;
+
+            if (Saves.TryFindIndex(x => x.ID == currentLevel.id, out int saveIndex1))
+                Saves[saveIndex1] = currentLevel.playerData;
             else
-                Saves.Add(CurrentLevel.playerData);
+                Saves.Add(currentLevel.playerData);
 
-            if (Levels.TryFind(x => x.id == CurrentLevel.id, out Level level))
-                level.playerData = CurrentLevel.playerData;
+            if (levels.TryFind(x => x.id == currentLevel.id, out Level level1))
+                level1.playerData = currentLevel.playerData;
 
             SaveProgress();
+
         }
 
         /// <summary>

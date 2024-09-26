@@ -16,6 +16,7 @@ using BetterLegacy.Menus.UI.Interfaces;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Configs;
 using LSFunctions;
+using BetterLegacy.Core.Helpers;
 
 namespace BetterLegacy.Arcade
 {
@@ -96,6 +97,144 @@ namespace BetterLegacy.Arcade
                 func = () => { LSText.CopyToClipboard(CurrentCollection.id); },
             });
 
+            elements.Add(new MenuImage
+            {
+                id = "5356325",
+                name = "Backer",
+                rect = RectValues.Default.AnchoredPosition(200f, 0f).SizeDelta(900f, 685f),
+                opacity = 0.1f,
+                color = 6,
+                length = 0.1f,
+            });
+
+            elements.Add(new MenuImage
+            {
+                id = "84682758635",
+                name = "Cover",
+                rect = RectValues.Default.AnchoredPosition(-550f, 100f).SizeDelta(500f, 500f),
+                icon = CurrentCollection.icon,
+                opacity = 1f,
+                val = 40f,
+                length = 0.1f,
+            });
+            
+            elements.Add(new MenuImage
+            {
+                id = "84682758635",
+                name = "Banner",
+                rect = RectValues.Default.AnchoredPosition(200f, 200f).SizeDelta(900f, 300f),
+                icon = CurrentCollection.banner,
+                opacity = 1f,
+                val = 40f,
+                length = 0.1f,
+            });
+
+            var name = CoreHelper.ReplaceFormatting(CurrentCollection.name);
+            int size = 110;
+            if (name.Length > 13)
+                size = (int)(size * ((float)13f / name.Length));
+
+            elements.Add(new MenuText
+            {
+                id = "4624859539",
+                name = "Title",
+                rect = RectValues.Default.AnchoredPosition(-190f, 10f),
+                text = $"<size={size}><b>{name}",
+                hideBG = true,
+                textColor = 6,
+            });
+
+            elements.Add(new MenuText
+            {
+                id = "4624859539",
+                name = "Description Label",
+                rect = RectValues.Default.AnchoredPosition(160f, -90f).SizeDelta(800f, 100f),
+                text = "<size=40><b>Description:",
+                hideBG = true,
+                textColor = 6,
+                enableWordWrapping = true,
+                alignment = TMPro.TextAlignmentOptions.TopLeft,
+            });
+
+            elements.Add(new MenuText
+            {
+                id = "4624859539",
+                name = "Description",
+                rect = RectValues.Default.AnchoredPosition(160f, -140f).SizeDelta(800f, 100f),
+                text = "<size=22>" + CurrentCollection.description,
+                hideBG = true,
+                textColor = 6,
+                enableWordWrapping = true,
+                alignment = TMPro.TextAlignmentOptions.TopLeft,
+            });
+
+            elements.Add(new MenuText
+            {
+                id = "4624859539",
+                name = "Tags",
+                rect = RectValues.Default.AnchoredPosition(160f, -350f).SizeDelta(800f, 100f),
+                text = "<size=22><b>Tags</b>: " + FontManager.TextTranslater.ArrayToString(CurrentCollection.tags),
+                hideBG = true,
+                textColor = 6,
+                enableWordWrapping = true,
+                alignment = TMPro.TextAlignmentOptions.TopLeft,
+            });
+
+            elements.Add(new MenuButton
+            {
+                id = "3525734",
+                name = "Play Button",
+                rect = RectValues.Default.AnchoredPosition(-550f, -210f).SizeDelta(500f, 64f),
+                selectionPosition = new Vector2Int(0, 1),
+                text = "<size=40><b><align=center>[ PLAY ]",
+                opacity = 0.1f,
+                selectedOpacity = 1f,
+                color = 6,
+                selectedColor = 6,
+                textColor = 6,
+                selectedTextColor = 7,
+                length = 0.5f,
+                playBlipSound = true,
+                func = () =>
+                {
+                    LevelManager.currentLevelIndex = CurrentCollection.EntryLevelIndex;
+                    if (LevelManager.currentLevelIndex < 0)
+                        LevelManager.currentLevelIndex = 0;
+                    if (CurrentCollection.Count > 1)
+                        LevelManager.CurrentLevel = CurrentCollection[LevelManager.currentLevelIndex];
+
+                    CoreHelper.StartCoroutine(SelectLocalLevel(LevelManager.CurrentLevel));
+                },
+            });
+
+            elements.Add(new MenuButton
+            {
+                id = "3525734",
+                name = "Levels Button",
+                text = "<size=40><b><align=center>[ LEVELS ]",
+                rect = RectValues.Default.AnchoredPosition(-550f, -310f).SizeDelta(500f, 64f),
+                selectionPosition = new Vector2Int(0, 2),
+                opacity = 0.1f,
+                selectedOpacity = 1f,
+                color = 6,
+                selectedColor = 6,
+                textColor = 6,
+                selectedTextColor = 7,
+                length = 0.5f,
+                playBlipSound = true,
+                func = () =>
+                {
+                    var currentCollection = CurrentCollection;
+                    LevelListMenu.close = () => { Init(currentCollection); };
+                    LevelListMenu.Init(currentCollection.levels);
+                },
+            });
+
+            exitFunc = Close;
+            allowEffects = false;
+            layer = 10000;
+            defaultSelection = new Vector2Int(0, 4);
+            InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
         }
 
         public override void UpdateTheme()
@@ -106,6 +245,28 @@ namespace BetterLegacy.Arcade
                 Theme = InterfaceManager.inst.themes[0];
 
             base.UpdateTheme();
+        }
+
+        IEnumerator SelectLocalLevel(Level level)
+        {
+            if (!level.music)
+                yield return CoreHelper.StartCoroutine(level.LoadAudioClipRoutine(() => { OpenPlayLevelMenu(level); }));
+            else
+                OpenPlayLevelMenu(level);
+        }
+
+        void OpenPlayLevelMenu(Level level)
+        {
+            AudioManager.inst.StopMusic();
+            var collection = CurrentCollection;
+            PlayLevelMenu.close = () =>
+            {
+                Init(collection);
+                collection = null;
+            };
+            PlayLevelMenu.Init(level);
+            AudioManager.inst.PlayMusic(level?.metadata?.song?.title, level.music);
+            AudioManager.inst.SetPitch(CoreHelper.Pitch);
         }
 
         public static void Init(LevelCollection collection)

@@ -204,7 +204,14 @@ namespace BetterLegacy.Core.Helpers
                 DeleteComponents();
                 if (MenuManager.inst)
                     AudioManager.inst.PlayMusic(MenuManager.inst.currentMenuMusicName, MenuManager.inst.currentMenuMusic);
-                LoadArcadeMenu();
+                if (LevelManager.CurrentLevelCollection)
+                {
+                    var currentCollection = LevelManager.CurrentLevelCollection;
+                    LevelListMenu.close = () => { LevelCollectionMenu.Init(currentCollection); };
+                    LevelListMenu.Init(currentCollection.levels);
+                }
+                else
+                    ArcadeMenu.Init();
             }
             else
             {
@@ -414,13 +421,11 @@ namespace BetterLegacy.Core.Helpers
 
         }
 
-        public static void LoadArcadeMenu() => ArcadeMenu.Init();
-
         public static IEnumerator OnLoadingEnd()
         {
             yield return new WaitForSeconds(0.1f);
             AudioManager.inst.PlaySound("loadsound");
-            LoadArcadeMenu();
+            ArcadeMenu.Init();
             yield break;
         }
     }

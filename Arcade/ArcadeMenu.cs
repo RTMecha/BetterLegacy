@@ -1027,7 +1027,7 @@ namespace BetterLegacy.Arcade
 
         #region Local
 
-        public static int LocalLevelPageCount => LocalLevels.Count / MAX_LEVELS_PER_PAGE;
+        public static int LocalLevelPageCount => (LocalLevelCollections.Count + LocalLevels.Count) / MAX_LEVELS_PER_PAGE;
         public static string LocalSearch => Searches[0];
         public static List<Level> LocalLevels => LevelManager.Levels.FindAll(level => !level.fromCollection && (string.IsNullOrEmpty(LocalSearch)
                         || level.id == LocalSearch
@@ -1036,6 +1036,10 @@ namespace BetterLegacy.Arcade
                         || level.metadata.creator.steam_name.ToLower().Contains(LocalSearch.ToLower())
                         || level.metadata.song.title.ToLower().Contains(LocalSearch.ToLower())
                         || level.metadata.song.getDifficulty().ToLower().Contains(LocalSearch.ToLower())));
+
+        public static List<LevelCollection> LocalLevelCollections => LevelManager.LevelCollections.FindAll(collection => string.IsNullOrEmpty(LocalSearch)
+                        || collection.id == LocalSearch
+                        || collection.name.ToLower().Contains(LocalSearch.ToLower()));
 
         public void SearchLocalLevels(string search)
         {
@@ -1058,7 +1062,7 @@ namespace BetterLegacy.Arcade
         {
             Pages[0] = Mathf.Clamp(page, 0, LocalLevelPageCount);
 
-            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
+            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine") || x.name.Contains("Lock"));
 
             for (int i = 0; i < levelButtons.Count; i++)
             {
@@ -1066,7 +1070,7 @@ namespace BetterLegacy.Arcade
                 levelButton.Clear();
                 CoreHelper.Destroy(levelButton.gameObject);
             }
-            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
+            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine") || x.name.Contains("Lock"));
             RefreshLocalLevels(true);
         }
 
@@ -1077,9 +1081,53 @@ namespace BetterLegacy.Arcade
             var currentSearch = Searches[(int)CurrentTab];
 
             var levels = LocalLevels;
+            var collections = LocalLevelCollections;
+            int num = 0;
+            for (int i = 0; i < collections.Count; i++)
+            {
+                int index = num;
+                if (index < max - MAX_LEVELS_PER_PAGE || index >= max)
+                    continue;
+
+                int column = (index % MAX_LEVELS_PER_PAGE) % 5;
+                int row = (int)((index % MAX_LEVELS_PER_PAGE) / 5) + 2;
+
+                var collection = collections[index];
+                
+                elements.Add(new MenuButton
+                {
+                    id = collection.id,
+                    name = "Level Button",
+                    parentLayout = "levels",
+                    selectionPosition = new Vector2Int(column, row),
+                    func = () =>
+                    {
+                        LevelManager.currentQueueIndex = 0;
+                        LevelManager.CurrentLevelCollection = collection;
+                        LevelCollectionMenu.Init(collection);
+                    },
+                    icon = collection.icon ?? LegacyPlugin.AtanPlaceholder,
+                    iconRect = RectValues.Default.AnchoredPosition(-90, 30f),
+                    text = "<size=24>" + collection.name,
+                    textRect = RectValues.FullAnchored.AnchoredPosition(20f, -50f),
+                    enableWordWrapping = true,
+                    color = 6,
+                    opacity = 0.1f,
+                    textColor = 6,
+                    selectedColor = 6,
+                    selectedOpacity = 1f,
+                    selectedTextColor = 7,
+                    length = regenerateUI ? 0f : 0.01f,
+                    wait = !regenerateUI,
+                    mask = true,
+                });
+
+                num++;
+            }
+
             for (int i = 0; i < levels.Count; i++)
             {
-                int index = i;
+                int index = num;
                 if (index < max - MAX_LEVELS_PER_PAGE || index >= max)
                     continue;
 
@@ -1098,7 +1146,6 @@ namespace BetterLegacy.Arcade
                     name = "Level Button",
                     parentLayout = "levels",
                     selectionPosition = new Vector2Int(column, row),
-                    func = () => { CoreHelper.StartCoroutine(SelectLocalLevel(level)); },
                     icon = level.icon,
                     iconRect = RectValues.Default.AnchoredPosition(-90, 30f),
                     text = "<size=24>" + level.metadata?.beatmap?.name,
@@ -1113,6 +1160,7 @@ namespace BetterLegacy.Arcade
                     length = regenerateUI ? 0f : 0.01f,
                     wait = !regenerateUI,
                     mask = true,
+                    playBlipSound = false,
 
                     allowOriginalHoverMethods = true,
                     enterFunc = () =>
@@ -1152,7 +1200,73 @@ namespace BetterLegacy.Arcade
                             shine.gameObject.transform.AsRT().anchoredPosition = new Vector2(-240f, 0f);
                     },
                 };
+                MenuImage locked = null;
+
+                var levelIsLocked = level.Locked;
+                if (levelIsLocked)
+                {
+                    locked = new MenuImage
+                    {
+                        id = "0",
+                        name = "Lock",
+                        parent = button.id,
+                        icon = LegacyPlugin.LockSprite,
+                        rect = RectValues.Default.AnchoredPosition(80f, 40f).Pivot(0.5f, 0.8f).SizeDelta(80f, 100f),
+                        useOverrideColor = true,
+                        overrideColor = Color.white,
+                        opacity = 1f,
+                        length = 0f,
+                        wait = false,
+                    };
+                }
+
+                button.func = () =>
+                {
+                    if (levelIsLocked)
+                    {
+                        AudioManager.inst.PlaySound("Block");
+
+                        var animation = new RTAnimation($"Blocked Level in Arcade {level.id}")
+                        {
+                            animationHandlers = new List<AnimationHandlerBase>
+                            {
+                                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                                    {
+                                        new FloatKeyframe(0f, 15f, Ease.Linear),
+                                        new FloatKeyframe(1f, 0f, Ease.ElasticOut),
+                                    }, x => { if (button.gameObject) button.gameObject.transform.SetLocalRotationEulerZ(x); }),
+                                    new AnimationHandler<float>(new List<IKeyframe<float>>
+                                    {
+                                        new FloatKeyframe(0f, 120f, Ease.Linear),
+                                        new FloatKeyframe(2f, 0f, Ease.ElasticOut),
+                                    }, x => { if (locked.gameObject) locked.gameObject.transform.SetLocalRotationEulerZ(x); }),
+                            },
+                        };
+                        animation.onComplete = () =>
+                        {
+                            AnimationManager.inst.RemoveID(animation.id);
+                            if (button.gameObject)
+                                button.gameObject.transform.SetLocalRotationEulerZ(0f);
+                            if (locked.gameObject)
+                                locked.gameObject.transform.SetLocalRotationEulerZ(0f);
+                        };
+
+                        AnimationManager.inst.animations.FindAll(x => x.name == animation.name).ForEach(x =>
+                        {
+                            x.Stop();
+                            AnimationManager.inst.RemoveID(x.id);
+                        });
+                        AnimationManager.inst.Play(animation);
+
+                        return;
+                    }
+
+                    AudioManager.inst.PlaySound("blip");
+                    CoreHelper.StartCoroutine(SelectLocalLevel(level));
+                };
                 elements.Add(button);
+                if (levelIsLocked)
+                    elements.Add(locked);
 
                 elements.Add(new MenuImage
                 {
@@ -1211,6 +1325,8 @@ namespace BetterLegacy.Arcade
                     elements.Add(shine1);
                     elements.Add(shine2);
                 }
+
+                num++;
             }
 
             if (regenerateUI)
@@ -2254,6 +2370,10 @@ namespace BetterLegacy.Arcade
         public static void Init()
         {
             InterfaceManager.inst.CloseMenus();
+            LevelManager.CurrentLevel = null;
+            LevelManager.CurrentLevelCollection = null;
+            LevelManager.currentLevelIndex = 0;
+            LevelManager.currentQueueIndex = 0;
             Current = new ArcadeMenu();
         }
     }

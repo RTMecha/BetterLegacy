@@ -93,7 +93,7 @@ namespace BetterLegacy.Core
         public string[] LevelModes { get; set; }
         public string CurrentFile => LevelModes[Mathf.Clamp(LevelManager.CurrentLevelMode, 0, LevelModes.Length - 1)];
 
-        public bool Locked => metadata != null && metadata.requireUnlock && playerData != null && !playerData.Unlocked;
+        public bool Locked => metadata != null && metadata.requireUnlock && (playerData == null || !playerData.Unlocked);
 
         public void LoadAudioClip()
         {

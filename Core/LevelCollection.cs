@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Core.Managers;
+﻿using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Managers;
 using LSFunctions;
 using SimpleJSON;
 using System.Collections.Generic;
@@ -29,6 +30,21 @@ namespace BetterLegacy.Core
         /// Name of the collection.
         /// </summary>
         public string name;
+
+        /// <summary>
+        /// Description of the collection.
+        /// </summary>
+        public string description;
+
+        /// <summary>
+        /// Creator of the collection / levels within.
+        /// </summary>
+        public string creator;
+
+        /// <summary>
+        /// Tags used to identify the collection.
+        /// </summary>
+        public string[] tags;
 
         /// <summary>
         /// Full path of the collection. Must end with a "/".
@@ -73,14 +89,47 @@ namespace BetterLegacy.Core
             var collection = new LevelCollection();
             collection.id = jn["id"];
             collection.name = jn["name"];
+            collection.creator = jn["creator"];
+            collection.description = jn["desc"];
             collection.path = path;
+
+            if (jn["tags"] != null)
+            {
+                collection.tags = new string[jn["tags"].Count];
+                for (int i = 0; i < jn["tags"].Count; i++)
+                    collection.tags[i] = jn["tags"][i];
+            }
 
             for (int i = 0; i < jn["levels"].Count; i++)
             {
                 var levelFolder = $"{path}{jn["levels"][i].Value}/";
 
                 if (RTFile.FileExists($"{levelFolder}level.lsb") || RTFile.FileExists($"{levelFolder}level.vgd"))
-                    collection.levels.Add(new Level(levelFolder) { fromCollection = true });
+                {
+                    MetaData metadata = null;
+
+                    if (RTFile.FileExists($"{levelFolder}metadata.vgm"))
+                        metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile($"{levelFolder}metadata.vgm")));
+                    else if (RTFile.FileExists($"{levelFolder}metadata.lsb"))
+                        metadata = MetaData.Parse(JSON.Parse(RTFile.ReadFromFile($"{levelFolder}metadata.lsb")), false);
+
+                    if (!metadata)
+                        continue;
+
+                    if ((string.IsNullOrEmpty(metadata.arcadeID) || metadata.arcadeID.Contains("-") /* < don't want negative IDs */ || metadata.arcadeID == "0"))
+                    {
+                        metadata.arcadeID = LSText.randomNumString(16);
+                        var metadataJN = metadata.ToJSON();
+                        RTFile.WriteToFile($"{levelFolder}metadata.lsb", metadataJN.ToString(3));
+                    }
+
+                    var level = new Level(levelFolder) { fromCollection = true };
+
+                    if (LevelManager.Saves.TryFind(x => x.ID == level.id, out LevelManager.PlayerData playerData))
+                        level.playerData = playerData;
+
+                    collection.levels.Add(level);
+                }
             }
 
             collection.icon = RTFile.FileExists($"{path}icon.png") ? SpriteHelper.LoadSprite($"{path}icon.png") : SpriteHelper.LoadSprite($"{path}icon.jpg");
@@ -116,6 +165,13 @@ namespace BetterLegacy.Core
 
             jn["id"] = id;
             jn["name"] = name;
+            jn["creator"] = creator;
+            jn["desc"] = name;
+            if (tags != null)
+            {
+                for (int i = 0; i < tags.Length; i++)
+                    jn["tags"][i] = tags[i];
+            }
 
             for (int i = 0; i < Count; i++)
                 jn["levels"][i] = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(this[i].path));
