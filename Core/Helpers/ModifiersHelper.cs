@@ -5022,8 +5022,11 @@ namespace BetterLegacy.Core.Helpers
                             var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
 
                             if (!modifier.constant && list.Count > 0)
+                            {
                                 foreach (var bm in list)
-                                    Updater.UpdateObject(bm);
+                                    Updater.UpdateObject(bm, recalculate: false);
+                                Updater.levelProcessor?.engine?.objectSpawner?.RecalculateObjectStates();
+                            }
 
                             break;
                         }

@@ -1195,10 +1195,11 @@ namespace BetterLegacy.Editor.Managers
             foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
             {
                 if (timelineObject.IsBeatmapObject)
-                    Updater.UpdateObject(timelineObject.GetData<BeatmapObject>());
+                    Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), recalculate: false);
                 if (timelineObject.IsPrefabObject)
-                    Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
+                    Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), recalculate: false);
             }
+            Updater.levelProcessor?.engine?.objectSpawner?.RecalculateObjectStates();
         }
 
         public static void OpenPrefabDialog(Keybind keybind)
@@ -1230,9 +1231,10 @@ namespace BetterLegacy.Editor.Managers
                 bm.autoKillOffset = AudioManager.inst.CurrentAudioSource.time;
                 bm.editorData.collapse = true;
 
-                Updater.UpdateObject(bm);
+                Updater.UpdateObject(bm, recalculate: false);
                 ObjectEditor.inst.RenderTimelineObject(timelineObject);
             }
+            Updater.levelProcessor?.engine?.objectSpawner?.RecalculateObjectStates();
         }
 
         public static void OpenDialog(Keybind keybind)
@@ -1315,7 +1317,7 @@ namespace BetterLegacy.Editor.Managers
 
                     po.events[type].eventValues[value] += amount;
 
-                    Updater.UpdatePrefab(po);
+                    Updater.UpdatePrefab(po, "offset");
                 }
             }
         }
@@ -1357,7 +1359,7 @@ namespace BetterLegacy.Editor.Managers
 
                     po.events[type].eventValues[value] -= amount;
 
-                    Updater.UpdatePrefab(po);
+                    Updater.UpdatePrefab(po, "offset");
                 }
             }
         }
@@ -1399,7 +1401,7 @@ namespace BetterLegacy.Editor.Managers
 
                     po.events[type].eventValues[value] = amount;
 
-                    Updater.UpdatePrefab(po);
+                    Updater.UpdatePrefab(po, "offset");
                 }
             }
         }
@@ -1537,9 +1539,10 @@ namespace BetterLegacy.Editor.Managers
                 if ((int)bm.objectType > Enum.GetNames(typeof(ObjectType)).Length)
                     bm.objectType = 0;
 
-                Updater.UpdateObject(bm);
+                Updater.UpdateObject(bm, recalculate: false);
                 ObjectEditor.inst.RenderTimelineObject(timelineObject);
             }
+            Updater.levelProcessor?.engine?.objectSpawner?.RecalculateObjectStates();
         }
 
         public static void CycleObjectTypeDown(Keybind keybind)
@@ -1558,9 +1561,10 @@ namespace BetterLegacy.Editor.Managers
 
                 bm.objectType = (ObjectType)e;
 
-                Updater.UpdateObject(bm);
+                Updater.UpdateObject(bm, recalculate: false);
                 ObjectEditor.inst.RenderTimelineObject(timelineObject);
             }
+            Updater.levelProcessor?.engine?.objectSpawner?.RecalculateObjectStates();
         }
 
         public static void JumpToNextMarker(Keybind keybind)

@@ -4412,8 +4412,9 @@ namespace BetterLegacy.Editor.Managers
                              foreach (var beatmapObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject).Select(x => x.GetData<BeatmapObject>()))
                              {
                                  beatmapObject.modifiers.Clear();
-                                 Updater.UpdateObject(beatmapObject);
+                                 Updater.UpdateObject(beatmapObject, recalculate: false);
                              }
+                             Updater.levelProcessor?.engine?.objectSpawner?.RecalculateObjectStates();
 
                              HideWarningPopup();
                          }, HideWarningPopup);
