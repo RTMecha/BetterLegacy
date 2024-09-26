@@ -1958,11 +1958,20 @@ namespace BetterLegacy.Editor.Managers
         {
             var active = !HideVisualElementsWhenObjectIsEmpty || beatmapObject.objectType != ObjectType.Empty;
             var shapeTF = (Transform)ObjectUIElements["Shape"];
-            var shapeTFPActive = shapeTF.parent.GetChild(shapeTF.GetSiblingIndex() - 2).gameObject.activeSelf;
+            var shapesLabel = shapeTF.parent.GetChild(shapeTF.GetSiblingIndex() - 2);
+            var shapeTFPActive = shapesLabel.gameObject.activeSelf;
             shapeTF.parent.GetChild(shapeTF.GetSiblingIndex() - 2).gameObject.SetActive(active);
             shapeTF.gameObject.SetActive(active);
 
-            ((Transform)ObjectUIElements["Gradient"]).gameObject.SetActive(active);
+            try
+            {
+                shapesLabel.GetChild(0).GetComponent<Text>().text = RTEditor.NotSimple ? "Gradient / Shape" : "Shape";
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
+            ((Transform)ObjectUIElements["Gradient"]).gameObject.SetActive(active && RTEditor.NotSimple);
 
             ((Transform)ObjectUIElements["Shape Settings"]).gameObject.SetActive(active);
             ((Transform)ObjectUIElements["Depth"]).gameObject.SetActive(active);
