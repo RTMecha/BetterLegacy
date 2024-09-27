@@ -3,6 +3,7 @@ using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Optimization.Level;
 using BetterLegacy.Core.Optimization.Objects;
 using BetterLegacy.Patchers;
+using LSFunctions;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -707,75 +708,75 @@ namespace BetterLegacy.Core.Optimization
             if (prefab.objects.Count > 0)
                 for (int i = 0; i < prefabObject.RepeatCount + 1; i++)
                 {
-                    var objectIDs = new List<KeyValuePair<string, string>>();
+                    var objectIDs = new List<IDPair>();
                     for (int j = 0; j < prefab.objects.Count; j++)
-                        objectIDs.Add(new KeyValuePair<string, string>(prefab.objects[j].id, LSFunctions.LSText.randomString(16)));
+                        objectIDs.Add(new IDPair(prefab.objects[j].id, LSText.randomString(16)));
 
                     string prefabObjectID = prefabObject.ID;
                     int num = 0;
-                    foreach (var beatmapObj in prefab.objects)
+                    foreach (var beatmapObject in prefab.objects)
                     {
-                        var beatmapObject = BeatmapObject.DeepCopy((BeatmapObject)beatmapObj, false);
+                        var beatmapObjectCopy = BeatmapObject.DeepCopy((BeatmapObject)beatmapObject, false);
                         try
                         {
-                            beatmapObject.id = objectIDs[num].Value;
+                            beatmapObjectCopy.id = objectIDs[num].newID;
 
-                            if (!string.IsNullOrEmpty(beatmapObj.parent) && objectIDs.TryFind(x => x.Key == beatmapObj.parent, out KeyValuePair<string, string> keyValuePair))
-                                beatmapObject.parent = keyValuePair.Value;
-                            else if (!string.IsNullOrEmpty(beatmapObj.parent) && GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObj.parent) == -1)
-                                beatmapObject.parent = "";
+                            if (!string.IsNullOrEmpty(beatmapObject.parent) && objectIDs.TryFind(x => x.oldID == beatmapObject.parent, out IDPair idPair))
+                                beatmapObjectCopy.parent = idPair.newID;
+                            else if (!string.IsNullOrEmpty(beatmapObject.parent) && GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.parent) == -1 && beatmapObject.parent != "CAMERA_PARENT")
+                                beatmapObjectCopy.parent = "";
                         }
                         catch (System.Exception ex)
                         {
                             Debug.LogError($"{className}Failed to set object ID.\n{ex}");
                         }
 
-                        if (string.IsNullOrEmpty(beatmapObject.parent) && !string.IsNullOrEmpty(prefabObject.parent))
+                        if (string.IsNullOrEmpty(beatmapObjectCopy.parent) && !string.IsNullOrEmpty(prefabObject.parent))
                         {
-                            beatmapObject.parent = prefabObject.parent;
-                            beatmapObject.parentType = prefabObject.parentType;
-                            beatmapObject.parentOffsets = prefabObject.parentOffsets.ToList();
-                            beatmapObject.parentAdditive = prefabObject.parentAdditive;
-                            beatmapObject.parallaxSettings = prefabObject.parentParallax;
-                            beatmapObject.desync = prefabObject.desync;
+                            beatmapObjectCopy.parent = prefabObject.parent;
+                            beatmapObjectCopy.parentType = prefabObject.parentType;
+                            beatmapObjectCopy.parentOffsets = prefabObject.parentOffsets.ToList();
+                            beatmapObjectCopy.parentAdditive = prefabObject.parentAdditive;
+                            beatmapObjectCopy.parallaxSettings = prefabObject.parentParallax;
+                            beatmapObjectCopy.desync = prefabObject.desync;
                         }
 
-                        beatmapObject.active = false;
-                        beatmapObject.fromPrefab = true;
-                        beatmapObject.prefabInstanceID = prefabObjectID;
+                        beatmapObjectCopy.active = false;
+                        beatmapObjectCopy.fromPrefab = true;
+                        beatmapObjectCopy.prefabInstanceID = prefabObjectID;
 
-                        beatmapObject.StartTime = prefabObject.StartTime + prefab.Offset + ((beatmapObject.StartTime + timeToAdd) / Mathf.Clamp(prefabObject.speed, 0.01f, MaxFastSpeed));
+                        beatmapObjectCopy.StartTime = prefabObject.StartTime + prefab.Offset + ((beatmapObjectCopy.StartTime + timeToAdd) / Mathf.Clamp(prefabObject.speed, 0.01f, MaxFastSpeed));
 
                         try
                         {
-                            if (beatmapObject.events.Count > 0 && prefabObject.speed != 1f)
-                                for (int j = 0; j < beatmapObject.events.Count; j++)
-                                    beatmapObject.events[j].ForEach(x => x.eventTime /= Mathf.Clamp(prefabObject.speed, 0.01f, MaxFastSpeed));
+                            if (beatmapObjectCopy.events.Count > 0 && prefabObject.speed != 1f)
+                                for (int j = 0; j < beatmapObjectCopy.events.Count; j++)
+                                    beatmapObjectCopy.events[j].ForEach(x => x.eventTime /= Mathf.Clamp(prefabObject.speed, 0.01f, MaxFastSpeed));
                         }
                         catch (System.Exception ex)
                         {
                             Debug.LogError($"{className}Failed to set event speed.\n{ex}");
                         }
 
-                        if (prefabObject.autoKillType != PrefabObject.AutoKillType.Regular && prefabObject.StartTime + prefab.Offset + beatmapObject.GetObjectLifeLength(_oldStyle: true) > prefabObject.autoKillOffset)
+                        if (prefabObject.autoKillType != PrefabObject.AutoKillType.Regular && prefabObject.StartTime + prefab.Offset + beatmapObjectCopy.GetObjectLifeLength(_oldStyle: true) > prefabObject.autoKillOffset)
                         {
-                            beatmapObject.autoKillType = ObjectAutoKillType.SongTime;
-                            beatmapObject.autoKillOffset = prefabObject.autoKillType == PrefabObject.AutoKillType.StartTimeOffset ? prefabObject.StartTime + prefab.Offset + prefabObject.autoKillOffset : prefabObject.autoKillOffset;
+                            beatmapObjectCopy.autoKillType = ObjectAutoKillType.SongTime;
+                            beatmapObjectCopy.autoKillOffset = prefabObject.autoKillType == PrefabObject.AutoKillType.StartTimeOffset ? prefabObject.StartTime + prefab.Offset + prefabObject.autoKillOffset : prefabObject.autoKillOffset;
                         }
 
-                        if (beatmapObject.shape == 6 && !string.IsNullOrEmpty(beatmapObject.text) && prefab.SpriteAssets.TryGetValue(beatmapObject.text, out Sprite sprite))
-                            Managers.AssetManager.SpriteAssets[beatmapObject.text] = sprite;
+                        if (beatmapObjectCopy.shape == 6 && !string.IsNullOrEmpty(beatmapObjectCopy.text) && prefab.SpriteAssets.TryGetValue(beatmapObjectCopy.text, out Sprite sprite))
+                            Managers.AssetManager.SpriteAssets[beatmapObjectCopy.text] = sprite;
 
-                        beatmapObject.prefabID = prefabObject.prefabID;
+                        beatmapObjectCopy.prefabID = prefabObject.prefabID;
 
-                        beatmapObject.originalID = beatmapObj.id;
-                        GameData.Current.beatmapObjects.Add(beatmapObject);
-                        prefabObject.expandedObjects.Add(beatmapObject);
+                        beatmapObjectCopy.originalID = beatmapObject.id;
+                        GameData.Current.beatmapObjects.Add(beatmapObjectCopy);
+                        prefabObject.expandedObjects.Add(beatmapObjectCopy);
                         if (levelProcessor && levelProcessor.converter != null)
-                            levelProcessor.converter.beatmapObjects[beatmapObject.id] = beatmapObject;
+                            levelProcessor.converter.beatmapObjects[beatmapObjectCopy.id] = beatmapObjectCopy;
 
-                        if (string.IsNullOrEmpty(beatmapObject.parent)) // prevent updating of parented objects since updating is recursive.
-                            notParented.Add(beatmapObject);
+                        if (string.IsNullOrEmpty(beatmapObjectCopy.parent)) // prevent updating of parented objects since updating is recursive.
+                            notParented.Add(beatmapObjectCopy);
 
                         num++;
                     }

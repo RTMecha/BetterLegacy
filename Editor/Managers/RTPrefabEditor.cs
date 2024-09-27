@@ -1422,9 +1422,9 @@ namespace BetterLegacy.Editor.Managers
 
             var prefab = prefabObject.Prefab;
 
-            var objectIDs = new List<KeyValuePair<string, string>>();
+            var objectIDs = new List<IDPair>();
             for (int j = 0; j < prefab.objects.Count; j++)
-                objectIDs.Add(new KeyValuePair<string, string>(prefab.objects[j].id, LSText.randomString(16)));
+                objectIDs.Add(new IDPair(prefab.objects[j].id, LSText.randomString(16)));
 
             EditorManager.inst.ClearDialogs();
 
@@ -1439,10 +1439,10 @@ namespace BetterLegacy.Editor.Managers
 
                 var beatmapObjectCopy = BeatmapObject.DeepCopy((BeatmapObject)beatmapObject, false);
 
-                beatmapObjectCopy.id = objectIDs[i].Value;
+                beatmapObjectCopy.id = objectIDs[i].newID;
 
-                if (!string.IsNullOrEmpty(beatmapObject.parent) && objectIDs.TryFind(x => x.Key == beatmapObject.parent, out KeyValuePair<string, string> keyValuePair))
-                    beatmapObjectCopy.parent = keyValuePair.Value;
+                if (!string.IsNullOrEmpty(beatmapObject.parent) && objectIDs.TryFind(x => x.oldID == beatmapObject.parent, out IDPair idPair))
+                    beatmapObjectCopy.parent = idPair.newID;
                 else if (!string.IsNullOrEmpty(beatmapObject.parent) && GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.parent) == -1 && beatmapObjectCopy.parent != "CAMERA_PARENT")
                     beatmapObjectCopy.parent = "";
 

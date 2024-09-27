@@ -727,11 +727,12 @@ namespace BetterLegacy.Editor.Managers
 
             //Objects
             {
-                var objectIDs = new List<KeyValuePair<string, string>>();
+                var objectIDs = new List<IDPair>();
                 for (int j = 0; j < prefab.objects.Count; j++)
-                    objectIDs.Add(new KeyValuePair<string, string>(prefab.objects[j].id, LSText.randomString(16)));
+                    objectIDs.Add(new IDPair(prefab.objects[j].id, LSText.randomString(16)));
 
                 var pastedObjects = new List<BeatmapObject>();
+                var unparentedPastedObjects = new List<BeatmapObject>();
                 for (int i = 0; i < prefab.objects.Count; i++)
                 {
                     var beatmapObject = prefab.objects[i];
@@ -741,11 +742,11 @@ namespace BetterLegacy.Editor.Managers
                     var beatmapObjectCopy = BeatmapObject.DeepCopy((BeatmapObject)beatmapObject, false);
 
                     if (!retainID)
-                        beatmapObjectCopy.id = objectIDs[i].Value;
+                        beatmapObjectCopy.id = objectIDs[i].newID;
 
-                    if (!retainID && !string.IsNullOrEmpty(beatmapObject.parent) && objectIDs.TryFind(x => x.Key == beatmapObject.parent, out KeyValuePair<string, string> keyValuePair))
-                        beatmapObjectCopy.parent = keyValuePair.Value;
-                    else if (!string.IsNullOrEmpty(beatmapObject.parent) && GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.parent) == -1 && beatmapObjectCopy.parent != "CAMERA_PARENT" && !retainID)
+                    if (!retainID && !string.IsNullOrEmpty(beatmapObject.parent) && objectIDs.TryFind(x => x.oldID == beatmapObject.parent, out IDPair idPair))
+                        beatmapObjectCopy.parent = idPair.newID;
+                    else if (!retainID && !string.IsNullOrEmpty(beatmapObject.parent) && GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.parent) == -1 && beatmapObjectCopy.parent != "CAMERA_PARENT")
                         beatmapObjectCopy.parent = "";
 
                     beatmapObjectCopy.prefabID = beatmapObject.prefabID;
@@ -772,7 +773,8 @@ namespace BetterLegacy.Editor.Managers
                         Updater.levelProcessor.converter.beatmapObjects[beatmapObjectCopy.id] = beatmapObjectCopy;
 
                     if (string.IsNullOrEmpty(beatmapObject.parent)) // prevent updating of parented objects since updating is recursive.
-                        pastedObjects.Add(beatmapObjectCopy);
+                        unparentedPastedObjects.Add(beatmapObjectCopy);
+                    pastedObjects.Add(beatmapObjectCopy);
 
                     var timelineObject = new TimelineObject(beatmapObjectCopy);
 
@@ -782,14 +784,17 @@ namespace BetterLegacy.Editor.Managers
                     RenderTimelineObject(timelineObject);
                 }
 
+                var list = unparentedPastedObjects.Count > 0 ? unparentedPastedObjects : pastedObjects;
                 delay = 0f;
-                for (int i = 0; i < pastedObjects.Count; i++)
+                for (int i = 0; i < list.Count; i++)
                 {
                     if (i > 0 && updatePastedObjectsYieldType != YieldType.None)
                         yield return CoreHelper.GetYieldInstruction(updatePastedObjectsYieldType, ref delay);
-                    Updater.UpdateObject(pastedObjects[i], recalculate: false);
+                    Updater.UpdateObject(list[i], recalculate: false);
                 }
 
+                unparentedPastedObjects.Clear();
+                unparentedPastedObjects = null;
                 pastedObjects.Clear();
                 pastedObjects = null;
             }
