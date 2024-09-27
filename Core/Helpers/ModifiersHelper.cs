@@ -4407,28 +4407,13 @@ namespace BetterLegacy.Core.Helpers
                             To Axis: (X / Y / Z)
                             */
 
-                            if (modifier.Result == null)
-                            {
-                                CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm);
-                                Updater.levelProcessor.converter.cachedSequences.TryGetValue(bm.id, out ObjectConverter.CachedSequences cachedSequence);
-                                modifier.Result = new CopyAxisResult
-                                {
-                                    beatmapObject = bm,
-                                    cachedSequences = cachedSequence,
-                                };
-                            }
-
                             if (int.TryParse(modifier.commands[1], out int fromType) && int.TryParse(modifier.commands[2], out int fromAxis)
                                 && int.TryParse(modifier.commands[3], out int toType) && int.TryParse(modifier.commands[4], out int toAxis)
                                 && float.TryParse(modifier.commands[5], out float delay) && float.TryParse(modifier.commands[6], out float multiply)
                                 && float.TryParse(modifier.commands[7], out float offset) && float.TryParse(modifier.commands[8], out float min) && float.TryParse(modifier.commands[9], out float max)
                                 && float.TryParse(modifier.commands[10], out float loop) && bool.TryParse(modifier.commands[11], out bool useVisual)
-                                && modifier.Result is CopyAxisResult copyAxisResult)
+                                && CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
                             {
-                                var bm = copyAxisResult.beatmapObject;
-                                if (!bm)
-                                    break;
-
                                 var time = Updater.CurrentTime;
 
                                 fromType = Mathf.Clamp(fromType, 0, bm.events.Count);
@@ -4437,9 +4422,8 @@ namespace BetterLegacy.Core.Helpers
                                 if (toType < 0 || toType > 3)
                                     break;
 
-                                if (!useVisual && copyAxisResult.cachedSequences != null)
+                                if (!useVisual && Updater.levelProcessor.converter.cachedSequences.TryGetValue(bm.id, out ObjectConverter.CachedSequences cachedSequence))
                                 {
-                                    var cachedSequence = copyAxisResult.cachedSequences;
                                     switch (fromType)
                                     {
                                         case 0:
@@ -5996,12 +5980,6 @@ namespace BetterLegacy.Core.Helpers
                         break;
                     }
             }
-        }
-
-        class CopyAxisResult
-        {
-            public BeatmapObject beatmapObject;
-            public ObjectConverter.CachedSequences cachedSequences;
         }
     }
 }
