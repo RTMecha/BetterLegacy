@@ -1092,7 +1092,7 @@ namespace BetterLegacy.Arcade
                 int column = (index % MAX_LEVELS_PER_PAGE) % 5;
                 int row = (int)((index % MAX_LEVELS_PER_PAGE) / 5) + 2;
 
-                var collection = collections[index];
+                var collection = collections[i];
                 
                 elements.Add(new MenuButton
                 {
@@ -1134,7 +1134,7 @@ namespace BetterLegacy.Arcade
                 int column = (index % MAX_LEVELS_PER_PAGE) % 5;
                 int row = (int)((index % MAX_LEVELS_PER_PAGE) / 5) + 2;
 
-                var level = levels[index];
+                var level = levels[i];
 
                 var isSSRank = LevelManager.GetLevelRank(level).name == "SS";
 
