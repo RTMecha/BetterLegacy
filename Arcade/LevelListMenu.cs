@@ -343,7 +343,7 @@ namespace BetterLegacy.Arcade
             Search = search;
             Page = 0;
 
-            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
+            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine") || x.name.Contains("Lock"));
 
             for (int i = 0; i < levelButtons.Count; i++)
             {
@@ -351,7 +351,7 @@ namespace BetterLegacy.Arcade
                 levelButton.Clear();
                 CoreHelper.Destroy(levelButton.gameObject);
             }
-            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
+            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine") || x.name.Contains("Lock"));
             RefreshLocalLevels(true);
         }
 
@@ -359,7 +359,7 @@ namespace BetterLegacy.Arcade
         {
             Page = Mathf.Clamp(page, 0, LocalLevelPageCount);
 
-            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
+            var levelButtons = elements.FindAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine") || x.name.Contains("Lock"));
 
             for (int i = 0; i < levelButtons.Count; i++)
             {
@@ -367,7 +367,7 @@ namespace BetterLegacy.Arcade
                 levelButton.Clear();
                 CoreHelper.Destroy(levelButton.gameObject);
             }
-            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine"));
+            elements.RemoveAll(x => x.name == "Level Button" || x.name == "Difficulty" || x.name.Contains("Shine") || x.name.Contains("Lock"));
             RefreshLocalLevels(true);
         }
 
@@ -515,6 +515,7 @@ namespace BetterLegacy.Arcade
                     }
 
                     AudioManager.inst.PlaySound("blip");
+                    LevelManager.currentLevelIndex = index;
                     CoreHelper.StartCoroutine(SelectLocalLevel(level));
                 };
                 elements.Add(button);
