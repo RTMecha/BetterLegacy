@@ -775,7 +775,7 @@ namespace BetterLegacy.Core.Optimization
                         if (levelProcessor && levelProcessor.converter != null)
                             levelProcessor.converter.beatmapObjects[beatmapObjectCopy.id] = beatmapObjectCopy;
 
-                        if (string.IsNullOrEmpty(beatmapObjectCopy.parent)) // prevent updating of parented objects since updating is recursive.
+                        if (string.IsNullOrEmpty(beatmapObjectCopy.parent) || beatmapObjectCopy.parent == "CAMERA_PARENT" || GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.parent) != -1) // prevent updating of parented objects since updating is recursive.
                             notParented.Add(beatmapObjectCopy);
 
                         num++;

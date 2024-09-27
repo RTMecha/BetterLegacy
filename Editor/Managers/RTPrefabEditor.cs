@@ -1431,6 +1431,7 @@ namespace BetterLegacy.Editor.Managers
             var sw = CoreHelper.StartNewStopwatch();
 
             var expandedObjects = new List<BeatmapObject>();
+            var notParented = new List<BeatmapObject>();
             for (int i = 0; i < prefab.objects.Count; i++)
             {
                 var beatmapObject = prefab.objects[i];
@@ -1443,7 +1444,7 @@ namespace BetterLegacy.Editor.Managers
 
                 if (!string.IsNullOrEmpty(beatmapObject.parent) && objectIDs.TryFind(x => x.oldID == beatmapObject.parent, out IDPair idPair))
                     beatmapObjectCopy.parent = idPair.newID;
-                else if (!string.IsNullOrEmpty(beatmapObject.parent) && GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.parent) == -1 && beatmapObjectCopy.parent != "CAMERA_PARENT")
+                else if (!string.IsNullOrEmpty(beatmapObject.parent) && beatmapObjectCopy.parent != "CAMERA_PARENT" && GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.parent) == -1)
                     beatmapObjectCopy.parent = "";
 
                 beatmapObjectCopy.active = false;
@@ -1462,8 +1463,9 @@ namespace BetterLegacy.Editor.Managers
                 if (Updater.levelProcessor && Updater.levelProcessor.converter != null)
                     Updater.levelProcessor.converter.beatmapObjects[beatmapObjectCopy.id] = beatmapObjectCopy;
 
-                if (string.IsNullOrEmpty(beatmapObjectCopy.parent)) // prevent updating of parented objects since updating is recursive.
-                    expandedObjects.Add(beatmapObjectCopy);
+                if (string.IsNullOrEmpty(beatmapObjectCopy.parent) || beatmapObjectCopy.parent == "CAMERA_PARENT" || GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.parent) != -1) // prevent updating of parented objects since updating is recursive.
+                    notParented.Add(beatmapObjectCopy);
+                expandedObjects.Add(beatmapObjectCopy);
 
                 var timelineObject = new TimelineObject(beatmapObjectCopy);
                 timelineObject.Selected = true;
@@ -1472,16 +1474,19 @@ namespace BetterLegacy.Editor.Managers
                 ObjectEditor.inst.RenderTimelineObject(timelineObject);
             }
 
+            var list = notParented.Count > 0 ? notParented : expandedObjects;
             delay = 0f;
-            for (int i = 0; i < expandedObjects.Count; i++)
+            for (int i = 0; i < notParented.Count; i++)
             {
                 if (i > 0 && updateExpandedObjectsYieldType != YieldType.None)
                     yield return CoreHelper.GetYieldInstruction(updateExpandedObjectsYieldType, ref delay);
-                Updater.UpdateObject(expandedObjects[i], recalculate: false);
+                Updater.UpdateObject(notParented[i], recalculate: false);
             }
 
             Updater.levelProcessor?.engine?.objectSpawner?.RecalculateObjectStates();
 
+            notParented.Clear();
+            notParented = null;
             expandedObjects.Clear();
             expandedObjects = null;
 

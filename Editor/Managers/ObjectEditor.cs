@@ -439,12 +439,14 @@ namespace BetterLegacy.Editor.Managers
                             .Where(c => c.prefabInstanceID == x.ID)
                         .Select(c => c.id)));
 
-            gameData.beatmapObjects.FindAll(x => string.IsNullOrEmpty(x.parent) && beatmapObjectIDs.Contains(x.id)).ForEach(x => Updater.UpdateObject(x, reinsert: false));
-            gameData.beatmapObjects.FindAll(x => string.IsNullOrEmpty(x.parent) && prefabObjectIDs.Contains(x.prefabInstanceID)).ForEach(x => Updater.UpdateObject(x, reinsert: false));
+            gameData.beatmapObjects.FindAll(x => beatmapObjectIDs.Contains(x.id)).ForEach(x => Updater.UpdateObject(x, reinsert: false, recalculate: false));
+            gameData.beatmapObjects.FindAll(x => prefabObjectIDs.Contains(x.prefabInstanceID)).ForEach(x => Updater.UpdateObject(x, reinsert: false, recalculate: false));
 
             gameData.beatmapObjects.RemoveAll(x => beatmapObjectIDs.Contains(x.id));
             gameData.beatmapObjects.RemoveAll(x => prefabObjectIDs.Contains(x.prefabInstanceID));
             gameData.prefabObjects.RemoveAll(x => prefabObjectIDs.Contains(x.ID));
+
+            Updater.levelProcessor?.engine?.objectSpawner?.RecalculateObjectStates();
 
             RTEditor.inst.timelineObjects.FindAll(x => beatmapObjectIDs.Contains(x.ID) || prefabObjectIDs.Contains(x.ID)).ForEach(x => Destroy(x.GameObject));
             RTEditor.inst.timelineObjects.RemoveAll(x => beatmapObjectIDs.Contains(x.ID) || prefabObjectIDs.Contains(x.ID));
@@ -467,7 +469,7 @@ namespace BetterLegacy.Editor.Managers
 
                 if (GameData.Current.beatmapObjects.Count > 1)
                 {
-                    Updater.UpdateObject(beatmapObject, reinsert: false);
+                    Updater.UpdateObject(beatmapObject, reinsert: false, recalculate: false);
                     string id = beatmapObject.id;
 
                     index = GameData.Current.beatmapObjects.FindIndex(x => x.id == id);
@@ -480,9 +482,11 @@ namespace BetterLegacy.Editor.Managers
                         {
                             bm.parent = "";
 
-                            Updater.UpdateObject(bm);
+                            Updater.UpdateObject(bm, recalculate: false);
                         }
                     }
+
+                    Updater.levelProcessor?.engine?.objectSpawner?.RecalculateObjectStates();
                 }
                 else
                     EditorManager.inst.DisplayNotification("Can't delete only object", 2f, EditorManager.NotificationType.Error);
@@ -772,7 +776,7 @@ namespace BetterLegacy.Editor.Managers
                     if (Updater.levelProcessor && Updater.levelProcessor.converter != null)
                         Updater.levelProcessor.converter.beatmapObjects[beatmapObjectCopy.id] = beatmapObjectCopy;
 
-                    if (string.IsNullOrEmpty(beatmapObject.parent)) // prevent updating of parented objects since updating is recursive.
+                    if (string.IsNullOrEmpty(beatmapObject.parent) || beatmapObjectCopy.parent == "CAMERA_PARENT" || GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.parent) != -1) // prevent updating of parented objects since updating is recursive.
                         unparentedPastedObjects.Add(beatmapObjectCopy);
                     pastedObjects.Add(beatmapObjectCopy);
 
