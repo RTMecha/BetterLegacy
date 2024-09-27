@@ -341,7 +341,6 @@ namespace BetterLegacy.Arcade
                 {
                     if (LevelManager.CurrentLevelCollection != null)
                     {
-                        LevelManager.currentLevelIndex = LevelManager.CurrentLevelCollection.EntryLevelIndex;
                         if (LevelManager.currentLevelIndex < 0)
                             LevelManager.currentLevelIndex = 0;
                         if (LevelManager.CurrentLevelCollection.Count > 1)
