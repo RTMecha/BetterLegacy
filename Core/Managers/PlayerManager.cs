@@ -487,7 +487,10 @@ namespace BetterLegacy.Core.Managers
             customPlayer.GameObject = player.gameObject;
 
             if (GameManager.inst.players.activeSelf)
+            {
+                player.Spawn();
                 player.UpdatePlayer();
+            }
             else
                 player.playerNeedsUpdating = true;
 
