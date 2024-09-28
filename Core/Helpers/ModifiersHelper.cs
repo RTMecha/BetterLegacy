@@ -56,13 +56,13 @@ namespace BetterLegacy.Core.Helpers
                         {
                             var collider = levelObject.visualObject.Collider;
 
-                            for (int i = 0; i < GameManager.inst.players.transform.childCount; i++)
+                            var players = PlayerManager.Players;
+                            for (int i = 0; i < players.Count; i++)
                             {
-                                if (GameManager.inst.players.transform.Find(string.Format("Player {0}", i + 1)))
-                                {
-                                    var player = GameManager.inst.players.transform.Find(string.Format("Player {0}/Player", i + 1));
-                                    list.Add(player.GetComponent<Collider2D>().IsTouching(collider));
-                                }
+                                var player = players[i];
+                                if (!player.Player || !player.Player.CurrentCollider)
+                                    continue;
+                                list.Add(player.Player.CurrentCollider.IsTouching(collider));
                             }
                         }
 
