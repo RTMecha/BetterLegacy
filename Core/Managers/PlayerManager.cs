@@ -585,7 +585,10 @@ namespace BetterLegacy.Core.Managers
             player.playerIndex = index;
 
             if (transform.gameObject.activeInHierarchy)
+            {
+                player.Spawn();
                 player.UpdatePlayer();
+            }
             else
                 player.playerNeedsUpdating = true;
 

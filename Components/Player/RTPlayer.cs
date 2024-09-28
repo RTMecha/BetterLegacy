@@ -739,10 +739,12 @@ namespace BetterLegacy.Components.Player
         void Start()
         {
             playerHitEvent += UpdateTail;
-            Spawn();
 
             if (playerNeedsUpdating)
+            {
+                Spawn();
                 UpdatePlayer();
+            }
         }
 
         public bool isSpawning;
