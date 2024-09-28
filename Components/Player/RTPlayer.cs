@@ -2251,7 +2251,7 @@ namespace BetterLegacy.Components.Player
                 var b2 = currentModel.boostPart.scale;
                 var b3 = currentModel.boostPart.rotation;
 
-                ((MeshRenderer)boost.values["MeshRenderer"]).enabled = currentModel.boostPart.active;
+                this.boost.MeshRenderer.enabled = currentModel.boostPart.active;
                 boostBase.gameObject.transform.localPosition = new Vector3(b1.x, b1.y, 0.1f);
                 boostBase.gameObject.transform.localScale = new Vector3(b2.x, b2.y, 1f);
                 boostBase.gameObject.transform.localEulerAngles = new Vector3(0f, 0f, b3);
@@ -2299,14 +2299,14 @@ namespace BetterLegacy.Components.Player
 
                 rotateMode = (RotateMode)(int)currentModel.basePart.rotateMode;
 
-                ((CircleCollider2D)rbParent.values["CircleCollider2D"]).isTrigger = PlayerManager.IsZenMode && ZenEditorIncludesSolid;
-                ((PolygonCollider2D)rbParent.values["PolygonCollider2D"]).isTrigger = PlayerManager.IsZenMode && ZenEditorIncludesSolid;
+                circleCollider2D.isTrigger = PlayerManager.Invincible && ZenEditorIncludesSolid;
+                polygonCollider2D.isTrigger = PlayerManager.Invincible && ZenEditorIncludesSolid;
 
-                var colAcc = (bool)currentModel.basePart.collisionAccurate;
-                ((CircleCollider2D)rbParent.values["CircleCollider2D"]).enabled = !colAcc;
-                ((PolygonCollider2D)rbParent.values["PolygonCollider2D"]).enabled = colAcc;
+                var colAcc = currentModel.basePart.collisionAccurate;
+                circleCollider2D.enabled = !colAcc;
+                polygonCollider2D.enabled = colAcc;
                 if (colAcc)
-                    ((PolygonCollider2D)rbParent.values["PolygonCollider2D"]).CreateCollider((MeshFilter)playerObjects["Head"].values["MeshFilter"]);
+                    polygonCollider2D.CreateCollider(this.head.MeshFilter);
 
                 for (int i = 0; i < currentModel.tailParts.Count; i++)
                 {
