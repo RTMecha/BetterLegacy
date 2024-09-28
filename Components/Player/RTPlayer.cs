@@ -196,6 +196,9 @@ namespace BetterLegacy.Components.Player
 
         public Animator anim;
         public Rigidbody2D rb;
+        public CircleCollider2D circleCollider2D;
+        public PolygonCollider2D polygonCollider2D;
+        public Collider2D CurrentCollider => PlayerModel != null && PlayerModel.basePart.collisionAccurate ? polygonCollider2D : circleCollider2D;
 
         #endregion
 
@@ -432,6 +435,8 @@ namespace BetterLegacy.Components.Player
             circleCollider.enabled = false;
 
             var polygonCollider = rb.AddComponent<PolygonCollider2D>();
+            circleCollider2D = circleCollider;
+            polygonCollider2D = polygonCollider;
 
             playerObjects["RB Parent"].values.Add("CircleCollider2D", circleCollider);
             playerObjects["RB Parent"].values.Add("PolygonCollider2D", polygonCollider);
@@ -442,12 +447,13 @@ namespace BetterLegacy.Components.Player
             playerObjects.Add("Head", new PlayerObject("Head", head));
 
             var headMesh = head.GetComponent<MeshFilter>();
+            var headRenderer = head.GetComponent<MeshRenderer>();
 
             playerObjects["Head"].values.Add("MeshFilter", headMesh);
 
             polygonCollider.CreateCollider(headMesh);
 
-            playerObjects["Head"].values.Add("MeshRenderer", head.GetComponent<MeshRenderer>());
+            playerObjects["Head"].values.Add("MeshRenderer", headRenderer);
 
             polygonCollider.isTrigger = CoreHelper.InEditor && ZenEditorIncludesSolid;
             polygonCollider.enabled = false;
@@ -461,26 +467,74 @@ namespace BetterLegacy.Components.Player
             var playerCollision = rb.AddComponent<PlayerCollision>();
             playerCollision.player = this;
 
+            this.head = new PlayerPart
+            {
+                GameObject = head,
+                Transform = head.transform,
+                MeshFilter = headMesh,
+                MeshRenderer = headRenderer,
+            };
+
             var boost = transform.Find("Player/boost").gameObject;
             boost.transform.localScale = Vector3.zero;
             playerObjects.Add("Boost", new PlayerObject("Boost", transform.Find("Player/boost").gameObject));
-            playerObjects["Boost"].values.Add("MeshFilter", boost.GetComponent<MeshFilter>());
-            playerObjects["Boost"].values.Add("MeshRenderer", boost.GetComponent<MeshRenderer>());
+            var boostMesh = boost.GetComponent<MeshFilter>();
+            var boostRenderer = boost.GetComponent<MeshRenderer>();
+            playerObjects["Boost"].values.Add("MeshFilter", boostMesh);
+            playerObjects["Boost"].values.Add("MeshRenderer", boostRenderer);
+            this.boost = new PlayerPart
+            {
+                GameObject = boost,
+                Transform = boost.transform,
+                MeshFilter = boostMesh,
+                MeshRenderer = boostRenderer,
+            };
 
             playerObjects.Add("Tail Parent", new PlayerObject("Tail Parent", transform.Find("trail").gameObject));
             var tail1 = transform.Find("trail/1").gameObject;
-            playerObjects.Add("Tail 1", new PlayerObject("Tail 1", tail1));
             var tail2 = transform.Find("trail/2").gameObject;
-            playerObjects.Add("Tail 2", new PlayerObject("Tail 2", tail2));
             var tail3 = transform.Find("trail/3").gameObject;
+            playerObjects.Add("Tail 1", new PlayerObject("Tail 1", tail1));
+            playerObjects.Add("Tail 2", new PlayerObject("Tail 2", tail2));
             playerObjects.Add("Tail 3", new PlayerObject("Tail 3", tail3));
 
-            playerObjects["Tail 1"].values.Add("MeshFilter", tail1.GetComponent<MeshFilter>());
-            playerObjects["Tail 2"].values.Add("MeshFilter", tail2.GetComponent<MeshFilter>());
-            playerObjects["Tail 3"].values.Add("MeshFilter", tail3.GetComponent<MeshFilter>());
-            playerObjects["Tail 1"].values.Add("MeshRenderer", tail1.GetComponent<MeshRenderer>());
-            playerObjects["Tail 2"].values.Add("MeshRenderer", tail2.GetComponent<MeshRenderer>());
-            playerObjects["Tail 3"].values.Add("MeshRenderer", tail3.GetComponent<MeshRenderer>());
+            var tail1Mesh = tail1.GetComponent<MeshFilter>();
+            var tail1Renderer = tail1.GetComponent<MeshRenderer>();
+            
+            var tail2Mesh = tail2.GetComponent<MeshFilter>();
+            var tail2Renderer = tail2.GetComponent<MeshRenderer>();
+            
+            var tail3Mesh = tail3.GetComponent<MeshFilter>();
+            var tail3Renderer = tail3.GetComponent<MeshRenderer>();
+
+            tailParts.Add(new PlayerPart
+            {
+                GameObject = tail1,
+                Transform = tail1.transform,
+                MeshFilter = tail1Mesh,
+                MeshRenderer = tail1Renderer,
+            });
+            tailParts.Add(new PlayerPart
+            {
+                GameObject = tail2,
+                Transform = tail2.transform,
+                MeshFilter = tail2Mesh,
+                MeshRenderer = tail2Renderer,
+            });
+            tailParts.Add(new PlayerPart
+            {
+                GameObject = tail3,
+                Transform = tail3.transform,
+                MeshFilter = tail3Mesh,
+                MeshRenderer = tail3Renderer,
+            });
+
+            playerObjects["Tail 1"].values.Add("MeshFilter", tail1Mesh);
+            playerObjects["Tail 2"].values.Add("MeshFilter", tail2Mesh);
+            playerObjects["Tail 3"].values.Add("MeshFilter", tail3Mesh);
+            playerObjects["Tail 1"].values.Add("MeshRenderer", tail1Renderer);
+            playerObjects["Tail 2"].values.Add("MeshRenderer", tail2Renderer);
+            playerObjects["Tail 3"].values.Add("MeshRenderer", tail3Renderer);
             playerObjects["Tail 1"].values.Add("TrailRenderer", tail1.GetComponent<TrailRenderer>());
             playerObjects["Tail 2"].values.Add("TrailRenderer", tail2.GetComponent<TrailRenderer>());
             playerObjects["Tail 3"].values.Add("TrailRenderer", tail3.GetComponent<TrailRenderer>());
@@ -525,6 +579,7 @@ namespace BetterLegacy.Components.Player
                     path.Add(new MovementPath(Vector3.zero, Quaternion.identity, tailBase.transform));
 
                     playerObjects.Add(name, new PlayerObject(name, tailBase));
+                    tailBases.Add(tailBase.transform);
                 }
 
                 path.Add(new MovementPath(Vector3.zero, Quaternion.identity, null));
@@ -756,7 +811,141 @@ namespace BetterLegacy.Components.Player
             isDead = false;
             isBoosting = false;
             isSpawning = true;
-            anim.SetTrigger("spawn");
+
+            if (spawnAnimation != null)
+            {
+                AnimationManager.inst.RemoveID(spawnAnimation.id);
+                spawnAnimation = null;
+            }
+
+            bool initMidSpawn = false;
+            bool initAfterSpawn = false;
+            spawnAnimation = new RTAnimation("Player Spawn");
+            spawnAnimation.animationHandlers = new List<AnimationHandlerBase>()
+            {
+                new AnimationHandler<float>(new List<IKeyframe<float>>
+                {
+                    new FloatKeyframe(0f, 0f, Ease.Linear),
+                    new FloatKeyframe(0.2f, 1.2f, Ease.SineOut),
+                    new FloatKeyframe(0.23333333f, 1f, Ease.SineInOut),
+                }, x =>
+                {
+                    if (transform)
+                        transform.localScale = new Vector3(x, x, 1f);
+                }, () =>
+                {
+                    if (transform)
+                        transform.localScale = new Vector3(1f, 1f, 1f);
+                }), // base
+                new AnimationHandler<float>(new List<IKeyframe<float>>
+                {
+                    new FloatKeyframe(0f, 0f, Ease.Linear),
+                    new FloatKeyframe(0.23333333f, 1.2f, Ease.SineOut),
+                    new FloatKeyframe(0.36666667f, 0.8f, Ease.SineInOut),
+                    new FloatKeyframe(0.43333334f, 1.2f, Ease.SineInOut),
+                    new FloatKeyframe(0.5f, 0.8f, Ease.SineInOut),
+                    new FloatKeyframe(0.56666666f, 1.2f, Ease.SineInOut),
+                    new FloatKeyframe(0.6333333f, 0.8f, Ease.SineInOut),
+                    new FloatKeyframe(0.7f, 1.2f, Ease.SineInOut),
+                    new FloatKeyframe(0.76666665f, 1.2f, Ease.SineInOut),
+                    new FloatKeyframe(0.8333333f, 0.8f, Ease.SineInOut),
+                    new FloatKeyframe(0.9f, 1.2f, Ease.SineInOut),
+                    new FloatKeyframe(0.93333334f, 0.8f, Ease.SineInOut),
+                    new FloatKeyframe(1f, 1f, Ease.SineInOut),
+                }, x =>
+                {
+                    if (rb && rb.transform)
+                        rb.transform.localScale = new Vector3(x, x, 1f);
+                }, () =>
+                {
+                    if (rb && rb.transform)
+                        rb.transform.localScale = new Vector3(1f, 1f, 1f);
+                }), // Player
+                new AnimationHandler<float>(new List<IKeyframe<float>>
+                {
+                    new FloatKeyframe(0f, 0f, Ease.Linear),
+                    new FloatKeyframe(0.33333334f, 0f, Ease.Linear),
+                    new FloatKeyframe(0.43333334f, 1f, Ease.BackOut),
+                    new FloatKeyframe(0.5f, 1f, Ease.Linear),
+                }, x =>
+                {
+                    if (tailBases.Count > 0 && tailBases[0])
+                        tailBases[0].localScale = new Vector3(x, x, 1f);
+                }, () =>
+                {
+                    if (tailBases.Count > 0 && tailBases[0])
+                        tailBases[0].localScale = new Vector3(1f, 1f, 1f);
+                }), // Trail 1
+                new AnimationHandler<float>(new List<IKeyframe<float>>
+                {
+                    new FloatKeyframe(0f, 0f, Ease.Linear),
+                    new FloatKeyframe(0.43333334f, 0f, Ease.Linear),
+                    new FloatKeyframe(0.53333336f, 1f, Ease.BackOut),
+                    new FloatKeyframe(0.6f, 1f, Ease.Linear),
+                }, x =>
+                {
+                    if (tailBases.Count > 1 && tailBases[1])
+                        tailBases[1].localScale = new Vector3(x, x, 1f);
+                }, () =>
+                {
+                    if (tailBases.Count > 1 && tailBases[1])
+                        tailBases[1].localScale = new Vector3(1f, 1f, 1f);
+                }), // Trail 2
+                new AnimationHandler<float>(new List<IKeyframe<float>>
+                {
+                    new FloatKeyframe(0f, 0f, Ease.Linear),
+                    new FloatKeyframe(0.53333336f, 0f, Ease.Linear),
+                    new FloatKeyframe(0.6333333f, 1f, Ease.BackOut),
+                    new FloatKeyframe(0.7f, 1f, Ease.Linear),
+                }, x =>
+                {
+                    if (tailBases.Count > 2 && tailBases[2])
+                        tailBases[2].localScale = new Vector3(x, x, 1f);
+                }, () =>
+                {
+                    if (tailBases.Count > 2 && tailBases[2])
+                        tailBases[2].localScale = new Vector3(1f, 1f, 1f);
+                }), // Trail 3
+                new AnimationHandler<float>(new List<IKeyframe<float>>
+                {
+                    new FloatKeyframe(0f, 1.4f, Ease.Linear),
+                    new FloatKeyframe(1f, 1.4f, Ease.Linear),
+                    new FloatKeyframe(1.1f, 0f, Ease.Linear),
+                }, x =>
+                {
+                    if (boost != null && boost.Transform)
+                        boost.Transform.localScale = new Vector3(x, x, 0.2f);
+                }, () =>
+                {
+                    if (boost != null && boost.Transform)
+                        boost.Transform.localScale = new Vector3(0f, 0f, 0.2f);
+                }), // Boost
+                new AnimationHandler<float>(new List<IKeyframe<float>>
+                {
+                    new FloatKeyframe(0f, 1f, Ease.Linear),
+                    new FloatKeyframe(0.13333334f, 0.13333334f, Ease.Linear),
+                    new FloatKeyframe(1f, 1f, Ease.Linear),
+                    new FloatKeyframe(1.1f, 1f, Ease.Linear),
+                }, x =>
+                {
+                    if (!initMidSpawn && x >= 0.13333334f)
+                    {
+                        initMidSpawn = true;
+                        InitMidSpawn();
+                    }
+                    if (!initAfterSpawn && x >= 1f)
+                    {
+                        initAfterSpawn = true;
+                        InitAfterSpawn();
+                    }
+                }), // Events
+            };
+            spawnAnimation.onComplete = () =>
+            {
+                AnimationManager.inst.RemoveID(spawnAnimation.id);
+                spawnAnimation = null;
+            };
+            AnimationManager.inst.Play(spawnAnimation);
             PlaySpawnParticles();
 
             try
@@ -780,6 +969,8 @@ namespace BetterLegacy.Components.Player
 
             CoreHelper.Log($"Spawned Player {playerIndex}");
         }
+
+        public RTAnimation spawnAnimation;
 
         #endregion
 
@@ -3135,6 +3326,7 @@ namespace BetterLegacy.Components.Player
         public PlayerPart boostTail;
 
         public List<PlayerPart> tailParts = new List<PlayerPart>();
+        public List<Transform> tailBases = new List<Transform>();
 
         public class PlayerPart
         {
