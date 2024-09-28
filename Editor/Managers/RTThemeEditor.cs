@@ -1062,7 +1062,9 @@ namespace BetterLegacy.Editor.Managers
 
                 if (themePanel != null)
                 {
+                    Destroy(themePanel.GameObject);
                     SetupThemePanel(beatmapTheme, false);
+                    CoreHelper.StartCoroutine(RenderThemeList(EventEditor.inst.dialogRight.GetChild(4).Find("theme-search").GetComponent<InputField>().text));
                 }
 
                 var child = EventEditor.inst.dialogRight.GetChild(Instance.currentEventType);
@@ -1115,7 +1117,9 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var dialogTmp = EventEditor.inst.dialogRight.GetChild(4);
 
+                    Destroy(themePanel.GameObject);
                     SetupThemePanel(beatmapTheme, false);
+                    CoreHelper.StartCoroutine(RenderThemeList(EventEditor.inst.dialogRight.GetChild(4).Find("theme-search").GetComponent<InputField>().text));
                 }
 
                 var child = Instance.dialogRight.GetChild(Instance.currentEventType);
