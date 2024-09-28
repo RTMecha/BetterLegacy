@@ -457,7 +457,7 @@ namespace BetterLegacy.Core.Managers
 
         public static void SetGameSpeed(int speed) => DataManager.inst.UpdateSettingEnum("ArcadeGameSpeed", speed);
 
-        public static bool Invincible => CoreHelper.InEditor && (EditorManager.inst.isEditing || RTPlayer.ZenModeInEditor) || IsZenMode;
+        public static bool Invincible => CoreHelper.InEditor ? (EditorManager.inst.isEditing || RTPlayer.ZenModeInEditor) : IsZenMode;
 
         #endregion
 
