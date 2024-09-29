@@ -559,7 +559,7 @@ namespace BetterLegacy.Core.Managers
                 GameStorageManager.inst.video.gameObject.layer = inst.videoBGRenderLayer == 0 ? 9 : 8;
 
                 var screenScale = (float)Display.main.systemWidth / 1920f;
-                if (inst.allowWindowPositioning && !CoreHelper.InEditorPreview)
+                if (inst.allowWindowPositioning && CoreHelper.InEditorPreview)
                 {
                     if (!inst.setWindow)
                     {
@@ -576,13 +576,16 @@ namespace BetterLegacy.Core.Managers
                     windowPositionResolutionChanged = true;
                 }
 
-                if (inst.forceWindow && !inst.allowWindowPositioning && !CoreHelper.InEditorPreview)
+                if (inst.forceWindow && !inst.allowWindowPositioning && CoreHelper.InEditorPreview)
                 {
                     inst.setWindow = true;
                     WindowController.SetResolution((int)(inst.windowResolution.x * screenScale), (int)(inst.windowResolution.y * screenScale), false);
                     inst.windowHasChanged = true;
                     windowPositionResolutionChanged = true;
                 }
+
+                if (CoreHelper.InEditor && EditorManager.inst.isEditing)
+                    inst.setWindow = false;
 
                 if (!inst.forceWindow && inst.setWindow)
                 {
