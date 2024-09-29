@@ -184,43 +184,6 @@ namespace BetterLegacy.Core.Data
         public string originalID;
 
         /// <summary>
-        /// Gets if the current audio time is within the lifespan of the object.
-        /// </summary>
-        public bool Alive
-        {
-            get
-            {
-                var time = Updater.CurrentTime;
-                var st = StartTime;
-                var akt = autoKillType;
-                var ako = autoKillOffset;
-                var l = GetObjectLifeLength(_oldStyle: true);
-                return time >= st && (time <= l + st && akt != AutoKillType.OldStyleNoAutokill && akt != AutoKillType.SongTime || akt == AutoKillType.OldStyleNoAutokill || time < ako && akt == AutoKillType.SongTime);
-            }
-        }
-
-        /// <summary>
-        /// Gets the total amount of keyframes the object has.
-        /// </summary>
-        public int KeyframeCount
-        {
-            get
-            {
-                int result = -1;
-                if (events != null && events.Count > 0)
-                {
-                    for (int i = 0; i < events.Count; i++)
-                    {
-                        if (events[i] != null && events[i].Count > 0)
-                            result += events[i].Count;
-                    }
-                }
-
-                return result;
-            }
-        }
-
-        /// <summary>
         /// Object spawn conditions.
         /// </summary>
         public new ObjectType objectType;
@@ -249,6 +212,29 @@ namespace BetterLegacy.Core.Data
             Solid
         }
 
+        #region Properties
+
+        /// <summary>
+        /// Gets if the current audio time is within the lifespan of the object.
+        /// </summary>
+        public bool Alive
+        {
+            get
+            {
+                var time = Updater.CurrentTime;
+                var st = StartTime;
+                var akt = autoKillType;
+                var ako = autoKillOffset;
+                var l = GetObjectLifeLength(_oldStyle: true);
+                return time >= st && (time <= l + st && akt != AutoKillType.OldStyleNoAutokill && akt != AutoKillType.SongTime || akt == AutoKillType.OldStyleNoAutokill || time < ako && akt == AutoKillType.SongTime);
+            }
+        }
+
+        /// <summary>
+        /// Gets the total amount of keyframes the object has.
+        /// </summary>
+        public int KeyframeCount => events.Sum(x => x.Count);
+
         public BeatmapObject Parent => GameData.Current.beatmapObjects.Find(x => x.id == parent);
 
         /// <summary>
@@ -260,6 +246,8 @@ namespace BetterLegacy.Core.Data
         /// Gets the prefab object reference.
         /// </summary>
         public PrefabObject PrefabObject => GameData.Current.prefabObjects.Find(x => x.ID == prefabInstanceID);
+
+        #endregion
 
         #region Methods
 
