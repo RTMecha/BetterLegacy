@@ -1529,15 +1529,7 @@ namespace BetterLegacy.Editor.Managers
 
         public GameObject RenderTimelineObject(TimelineObject timelineObject, bool ignoreLayer = true)
         {
-            GameObject gameObject = null;
-
-            if (!timelineObject.verified && !RTEditor.inst.timelineObjects.Has(x => x.ID == timelineObject.ID))
-            {
-                timelineObject.verified = true;
-                RTEditor.inst.timelineObjects.Add(timelineObject);
-            }
-
-            gameObject = !timelineObject.GameObject ? CreateTimelineObject(timelineObject) : timelineObject.GameObject;
+            var gameObject = !timelineObject.GameObject ? CreateTimelineObject(timelineObject) : timelineObject.GameObject;
 
             if (ignoreLayer || RTEditor.inst.Layer == timelineObject.Layer)
             {
@@ -1682,11 +1674,11 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public GameObject CreateTimelineObject(TimelineObject timelineObject)
+        public GameObject CreateTimelineObject(TimelineObject timelineObject, bool forceAdd = false, bool dontAdd = false)
         {
             GameObject gameObject = null;
 
-            if (!timelineObject.verified && !RTEditor.inst.timelineObjects.Has(x => x.ID == timelineObject.ID))
+            if (forceAdd || !dontAdd && !timelineObject.verified && !RTEditor.inst.timelineObjects.Has(x => x.ID == timelineObject.ID))
             {
                 timelineObject.verified = true;
                 RTEditor.inst.timelineObjects.Add(timelineObject);
@@ -1713,7 +1705,7 @@ namespace BetterLegacy.Editor.Managers
             return gameObject;
         }
 
-        public IEnumerator ICreateTimelineObjects()
+        public IEnumerator ICreateTimelineObjects(bool forceAdd = false)
         {
             if (RTEditor.inst.timelineObjects.Count > 0)
                 RTEditor.inst.timelineObjects.ForEach(x => Destroy(x.GameObject));
@@ -1726,7 +1718,7 @@ namespace BetterLegacy.Editor.Managers
                 if (!string.IsNullOrEmpty(beatmapObject.id) && !beatmapObject.fromPrefab)
                 {
                     var timelineObject = GetTimelineObject(beatmapObject);
-                    CreateTimelineObject(timelineObject);
+                    CreateTimelineObject(timelineObject, forceAdd);
                     RenderTimelineObject(timelineObject);
                 }
             }
@@ -1737,7 +1729,7 @@ namespace BetterLegacy.Editor.Managers
                 if (!string.IsNullOrEmpty(prefabObject.ID))
                 {
                     var timelineObject = RTPrefabEditor.inst.GetTimelineObject(prefabObject);
-                    CreateTimelineObject(timelineObject);
+                    CreateTimelineObject(timelineObject, forceAdd);
                     RenderTimelineObject(timelineObject);
                 }
             }
@@ -1745,7 +1737,7 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
-        public void CreateTimelineObjects()
+        public void CreateTimelineObjects(bool forceAdd = false)
         {
             if (RTEditor.inst.timelineObjects.Count > 0)
                 RTEditor.inst.timelineObjects.ForEach(x => Destroy(x.GameObject));
