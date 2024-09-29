@@ -37,6 +37,8 @@ namespace BetterLegacy.Core.Data
         /// </summary>
         public string id;
 
+        public static Marker DeepCopy(Marker orig, bool newID = true) => new Marker(newID ? LSText.randomString(16) : orig.id, orig.name, orig.desc, orig.color, orig.time);
+
         /// <summary>
         /// Parses a Marker from an LS format file.
         /// </summary>

@@ -9417,8 +9417,8 @@ namespace BetterLegacy.Editor.Managers
             GameManager.inst.UpdateTheme();
             RTMarkerEditor.inst.CreateMarkers();
             RTMarkerEditor.inst.markerLooping = false;
-            RTMarkerEditor.inst.markerLoopBegin = 0;
-            RTMarkerEditor.inst.markerLoopEnd = 1;
+            RTMarkerEditor.inst.markerLoopBegin = null;
+            RTMarkerEditor.inst.markerLoopEnd = null;
             EventManager.inst.updateEvents();
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
@@ -9426,7 +9426,7 @@ namespace BetterLegacy.Editor.Managers
 
             CoreHelper.Log("Creating timeline objects...");
             SetFileInfo($"Setting first object of [ {name} ]");
-            StartCoroutine(ObjectEditor.inst.ICreateTimelineObjects());
+            StartCoroutine(ObjectEditor.inst.ICreateTimelineObjects(true));
             CoreHelper.Log($"Done. Time taken: {sw.Elapsed}");
 
             CheckpointEditor.inst.SetCurrentCheckpoint(0);

@@ -29,6 +29,7 @@ namespace BetterLegacy.Editor.Managers
         public TimelineMarker CurrentMarker { get; set; }
 
         public List<BaseMarker> Markers => GameData.Current.beatmapData.markers;
+        public Marker markerCopy;
 
         public static void Init() => MarkerEditor.inst.gameObject.AddComponent<RTMarkerEditor>();
 
@@ -40,7 +41,7 @@ namespace BetterLegacy.Editor.Managers
 
         void Update()
         {
-            if (Input.GetMouseButtonUp(0))
+            if (Input.GetMouseButtonUp((int)EditorConfig.Instance.MarkerDragButton.Value))
                 StopDragging();
 
             for (int i = 0; i < timelineMarkers.Count; i++)
@@ -53,11 +54,11 @@ namespace BetterLegacy.Editor.Managers
                 RenderMarker(timelineMarkers[i]);
             }
 
-            if (EditorManager.inst.loading || !markerLooping || GameData.Current.beatmapData.markers.Count <= 0)
+            if (EditorManager.inst.loading || !markerLooping || GameData.Current.beatmapData.markers.Count <= 0 || !markerLoopBegin || !markerLoopEnd)
                 return;
 
-            int markerStart = markerLoopBegin;
-            int markerEnd = markerLoopEnd;
+            int markerStart = markerLoopBegin.Index;
+            int markerEnd = markerLoopEnd.Index;
 
             if (markerStart < 0)
                 markerStart = 0;
@@ -444,12 +445,33 @@ namespace BetterLegacy.Editor.Managers
                     RTEditor.inst.ShowContextMenu(300f,
                         new RTEditor.ButtonFunction("Open", () => SetCurrentMarker(timelineMarkers[index])),
                         new RTEditor.ButtonFunction("Open & Bring To", () => SetCurrentMarker(timelineMarkers[index], true)),
+                        new RTEditor.ButtonFunction(true),
+                        new RTEditor.ButtonFunction("Copy", () =>
+                        {
+                            markerCopy = Marker.DeepCopy((Marker)marker);
+                            EditorManager.inst.DisplayNotification("Copied Marker", 1.5f, EditorManager.NotificationType.Success);
+                        }),
+                        new RTEditor.ButtonFunction("Paste", () =>
+                        {
+                            if (markerCopy == null)
+                            {
+                                EditorManager.inst.DisplayNotification("No copied Marker yet!", 1.5f, EditorManager.NotificationType.Error);
+                                return;
+                            }
+
+                            var marker = Marker.DeepCopy(markerCopy);
+                            marker.time = SettingEditor.inst.SnapActive ? RTEditor.SnapToBPM(EditorManager.inst.CurrentAudioPos) : EditorManager.inst.CurrentAudioPos;
+                            GameData.Current.beatmapData.markers.Add(marker);
+                            CreateMarker(GameData.Current.beatmapData.markers.Count - 1);
+                            OrderMarkers();
+                            EditorManager.inst.DisplayNotification("Pasted Marker", 1.5f, EditorManager.NotificationType.Success);
+                        }),
                         new RTEditor.ButtonFunction("Delete", () => DeleteMarker(index)),
                         new RTEditor.ButtonFunction(true),
                         new RTEditor.ButtonFunction("Start Marker Looping", () => { markerLooping = true; }),
                         new RTEditor.ButtonFunction("Stop Marker Looping", () => { markerLooping = false; }),
-                        new RTEditor.ButtonFunction("Set Begin Loop", () => { markerLoopBegin = index; }),
-                        new RTEditor.ButtonFunction("Set End Loop", () => { markerLoopEnd = index; })
+                        new RTEditor.ButtonFunction("Set Begin Loop", () => { markerLoopBegin = timelineMarkers[index]; }),
+                        new RTEditor.ButtonFunction("Set End Loop", () => { markerLoopEnd = timelineMarkers[index]; })
                         );
                 };
 
@@ -465,8 +487,8 @@ namespace BetterLegacy.Editor.Managers
         }
 
         public bool markerLooping;
-        public int markerLoopBegin;
-        public int markerLoopEnd = 1;
+        public TimelineMarker markerLoopBegin;
+        public TimelineMarker markerLoopEnd;
 
         public void CreateMarker(int index)
         {
@@ -502,11 +524,53 @@ namespace BetterLegacy.Editor.Managers
                         }
                     case PointerEventData.InputButton.Right:
                         {
+                            if (EditorConfig.Instance.MarkerShowContextMenu.Value)
+                            {
+                                RTEditor.inst.ShowContextMenu(300f,
+                                    new RTEditor.ButtonFunction("Open", () => { SetCurrentMarker(timelineMarker, true); }),
+                                    new RTEditor.ButtonFunction("Open & Bring To", () => SetCurrentMarker(timelineMarker, true)),
+                                    new RTEditor.ButtonFunction(true),
+                                    new RTEditor.ButtonFunction("Copy", () =>
+                                    {
+                                        markerCopy = Marker.DeepCopy(timelineMarker.Marker);
+                                        EditorManager.inst.DisplayNotification("Copied Marker", 1.5f, EditorManager.NotificationType.Success);
+                                    }),
+                                    new RTEditor.ButtonFunction("Paste", () =>
+                                    {
+                                        if (markerCopy == null)
+                                        {
+                                            EditorManager.inst.DisplayNotification("No copied Marker yet!", 1.5f, EditorManager.NotificationType.Error);
+                                            return;
+                                        }
+
+                                        var marker = Marker.DeepCopy(markerCopy);
+                                        marker.time = SettingEditor.inst.SnapActive ? RTEditor.SnapToBPM(EditorManager.inst.CurrentAudioPos) : EditorManager.inst.CurrentAudioPos;
+                                        GameData.Current.beatmapData.markers.Add(marker);
+                                        CreateMarker(GameData.Current.beatmapData.markers.Count - 1);
+                                        OrderMarkers();
+                                        EditorManager.inst.DisplayNotification("Pasted Marker", 1.5f, EditorManager.NotificationType.Success);
+                                    }),
+                                    new RTEditor.ButtonFunction("Delete", () =>
+                                    {
+                                        DeleteMarker(timelineMarker.Index);
+                                    }),
+                                    new RTEditor.ButtonFunction(true),
+                                    new RTEditor.ButtonFunction("Start Marker Looping", () => { markerLooping = true; }),
+                                    new RTEditor.ButtonFunction("Stop Marker Looping", () => { markerLooping = false; }),
+                                    new RTEditor.ButtonFunction("Set Begin Loop", () => { markerLoopBegin = timelineMarker; }),
+                                    new RTEditor.ButtonFunction("Set End Loop", () => { markerLoopEnd = timelineMarker; })
+                                    );
+
+                                break;
+                            }
                             DeleteMarker(timelineMarker.Index);
                             break;
                         }
                     case PointerEventData.InputButton.Middle:
                         {
+                            if (EditorConfig.Instance.MarkerDragButton.Value == PointerEventData.InputButton.Middle)
+                                return;
+
                             AudioManager.inst.SetMusicTime(Mathf.Clamp(timelineMarker.Marker.time, 0f, AudioManager.inst.CurrentAudioSource.clip.length));
                             break;
                         }
@@ -517,7 +581,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 var pointerEventData = (PointerEventData)eventData;
 
-                if (pointerEventData.button == PointerEventData.InputButton.Left)
+                if (pointerEventData.button == EditorConfig.Instance.MarkerDragButton.Value)
                 {
                     CoreHelper.Log($"Started dragging marker {index}");
                     timelineMarker.dragging = true;
@@ -627,7 +691,6 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < timelineMarkers.Count; i++)
                 timelineMarkers[i].dragging = false;
         }
-
 
         public void OrderMarkers()
         {
