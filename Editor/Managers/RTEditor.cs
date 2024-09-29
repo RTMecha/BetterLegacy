@@ -4414,7 +4414,7 @@ namespace BetterLegacy.Editor.Managers
                                  beatmapObject.modifiers.Clear();
                                  Updater.UpdateObject(beatmapObject, recalculate: false);
                              }
-                             Updater.levelProcessor?.engine?.objectSpawner?.RecalculateObjectStates();
+                             Updater.RecalculateObjectStates();
 
                              HideWarningPopup();
                          }, HideWarningPopup);
@@ -5108,7 +5108,10 @@ namespace BetterLegacy.Editor.Managers
                 })); // Autokill Offset
                 GenerateButton(syncLayout.transform, new ButtonFunction("P", eventData =>
                 {
-                    SyncObjectData("Parent", eventData, SelectObject.SetParent, false, true, "Parent");
+                    SyncObjectData("Parent", eventData, (TimelineObject currentSelection, BeatmapObject beatmapObjectToParentTo) =>
+                    {
+                        CoreHelper.SetParent(currentSelection, beatmapObjectToParentTo, recalculate: false, renderParent: false);
+                    }, false, true, "Parent");
                 })); // Parent
                 GenerateButton(syncLayout.transform, new ButtonFunction("PD", eventData =>
                 {

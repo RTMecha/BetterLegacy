@@ -1335,7 +1335,7 @@ namespace BetterLegacy.Editor.Managers
             Updater.AddPrefabToLevel(prefabObject, recalculate: false);
 
             gameData.prefabObjects.FindAll(x => x.prefabID == originalPrefab.ID).ForEach(x => Updater.UpdatePrefab(x, recalculate: false));
-            Updater.levelProcessor?.engine?.objectSpawner?.RecalculateObjectStates();
+            Updater.RecalculateObjectStates();
 
             ObjectEditor.inst.SetCurrentObject(GetTimelineObject(prefabObject));
 
@@ -1483,7 +1483,7 @@ namespace BetterLegacy.Editor.Managers
                 Updater.UpdateObject(notParented[i], recalculate: false);
             }
 
-            Updater.levelProcessor?.engine?.objectSpawner?.RecalculateObjectStates();
+            Updater.RecalculateObjectStates();
 
             notParented.Clear();
             notParented = null;

@@ -211,18 +211,21 @@ namespace BetterLegacy.Components.Editor
                     {
                         var prefabObject = otherTimelineObject.GetData<PrefabObject>();
                         prefabObject.parent = beatmapObject.id;
-                        Updater.UpdatePrefab(prefabObject);
+                        Updater.UpdatePrefab(prefabObject, recalculate: false);
 
                         success = true;
                         continue;
                     }
-                    success = TrySetParent(otherTimelineObject, beatmapObject);
+
+                    success = CoreHelper.TrySetParent(otherTimelineObject, beatmapObject, recalculate: false, renderParent: false);
                 }
 
                 if (!success)
                     EditorManager.inst.DisplayNotification("Cannot set parent to child / self!", 1f, EditorManager.NotificationType.Warning);
                 else
                     RTEditor.inst.parentPickerEnabled = false;
+
+                Updater.RecalculateObjectStates();
 
                 return;
             }
@@ -240,62 +243,12 @@ namespace BetterLegacy.Components.Editor
             }
 
             // set single parent
-            var tryParent = TrySetParent(currentSelection, beatmapObject);
+            var tryParent = CoreHelper.TrySetParent(currentSelection, beatmapObject);
 
             if (!tryParent)
                 EditorManager.inst.DisplayNotification("Cannot set parent to child / self!", 1f, EditorManager.NotificationType.Warning);
             else
                 RTEditor.inst.parentPickerEnabled = false;
-        }
-
-        public static void SetParent(TimelineObject currentSelection, BeatmapObject beatmapObjectToParentTo) => TrySetParent(currentSelection, beatmapObjectToParentTo);
-
-        /// <summary>
-        /// Tries to set an objects' parent. If the parent the user is trying to assign an object to a child of the object, then don't set parent.
-        /// </summary>
-        /// <param name="currentSelection"></param>
-        /// <param name="beatmapObjectToParentTo"></param>
-        /// <returns></returns>
-        public static bool TrySetParent(TimelineObject currentSelection, BeatmapObject beatmapObjectToParentTo)
-        {
-            var dictionary = new Dictionary<string, bool>();
-            var beatmapObjects = GameData.Current.beatmapObjects;
-
-            foreach (var obj in beatmapObjects)
-            {
-                bool canParent = true;
-                if (!string.IsNullOrEmpty(obj.parent))
-                {
-                    string parentID = currentSelection.ID;
-                    while (!string.IsNullOrEmpty(parentID))
-                    {
-                        if (parentID == obj.parent)
-                        {
-                            canParent = false;
-                            break;
-                        }
-
-                        int index = beatmapObjects.FindIndex(x => x.parent == parentID);
-                        parentID = index != -1 ? beatmapObjects[index].id : null;
-                    }
-                }
-
-                dictionary[obj.id] = canParent;
-            }
-
-            dictionary[currentSelection.ID] = false;
-
-            var shouldParent = dictionary.TryGetValue(beatmapObjectToParentTo.id, out bool value) && value;
-
-            if (shouldParent)
-            {
-                currentSelection.GetData<BeatmapObject>().parent = beatmapObjectToParentTo.id;
-                var bm = currentSelection.GetData<BeatmapObject>();
-                Updater.UpdateObject(bm);
-                ObjectEditor.inst.RenderParent(bm);
-            }
-
-            return shouldParent;
         }
 
         void OnMouseEnter()

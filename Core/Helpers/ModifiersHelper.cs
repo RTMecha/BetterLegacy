@@ -5009,7 +5009,7 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 foreach (var bm in list)
                                     Updater.UpdateObject(bm, recalculate: false);
-                                Updater.levelProcessor?.engine?.objectSpawner?.RecalculateObjectStates();
+                                Updater.RecalculateObjectStates();
                             }
 
                             break;

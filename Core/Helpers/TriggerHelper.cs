@@ -534,10 +534,12 @@ namespace BetterLegacy.Core.Helpers
                     if (ObjectEditor.UpdateObjects)
                     {
                         if (timelineObject.IsBeatmapObject)
-                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Start Time");
+                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Drag");
                         if (timelineObject.IsPrefabObject)
-                            Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), "Start Time");
+                            Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), "Drag");
                     }
+
+                    Updater.Sort();
                 }
 
                 if (RTEditor.inst.TimelineBeatmapObjects.Count == 1 && timelineObject.IsBeatmapObject)

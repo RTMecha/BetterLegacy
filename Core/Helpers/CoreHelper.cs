@@ -3,6 +3,9 @@ using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Optimization;
+using BetterLegacy.Editor;
+using BetterLegacy.Editor.Managers;
 using BetterLegacy.Menus;
 using CielaSpike;
 using InControl;
@@ -687,7 +690,59 @@ namespace BetterLegacy.Core.Helpers
             return null;
         }
 
-        #region Misc
+        #region GameData
+
+        public static void SetParent(TimelineObject currentSelection, BeatmapObject beatmapObjectToParentTo, bool recalculate = true, bool renderParent = true) => TrySetParent(currentSelection, beatmapObjectToParentTo, recalculate, renderParent);
+
+        /// <summary>
+        /// Tries to set an objects' parent. If the parent the user is trying to assign an object to a child of the object, then don't set parent.
+        /// </summary>
+        /// <param name="currentSelection"></param>
+        /// <param name="beatmapObjectToParentTo"></param>
+        /// <returns></returns>
+        public static bool TrySetParent(TimelineObject currentSelection, BeatmapObject beatmapObjectToParentTo, bool recalculate = true, bool renderParent = true)
+        {
+            var dictionary = new Dictionary<string, bool>();
+            var beatmapObjects = GameData.Current.beatmapObjects;
+
+            foreach (var obj in beatmapObjects)
+            {
+                bool canParent = true;
+                if (!string.IsNullOrEmpty(obj.parent))
+                {
+                    string parentID = currentSelection.ID;
+                    while (!string.IsNullOrEmpty(parentID))
+                    {
+                        if (parentID == obj.parent)
+                        {
+                            canParent = false;
+                            break;
+                        }
+
+                        int index = beatmapObjects.FindIndex(x => x.parent == parentID);
+                        parentID = index != -1 ? beatmapObjects[index].id : null;
+                    }
+                }
+
+                dictionary[obj.id] = canParent;
+            }
+
+            dictionary[currentSelection.ID] = false;
+
+            var shouldParent = dictionary.TryGetValue(beatmapObjectToParentTo.id, out bool value) && value;
+
+            if (shouldParent)
+            {
+                currentSelection.GetData<BeatmapObject>().parent = beatmapObjectToParentTo.id;
+                var bm = currentSelection.GetData<BeatmapObject>();
+                Updater.UpdateObject(bm, recalculate: recalculate);
+
+                if (renderParent)
+                    ObjectEditor.inst.RenderParent(bm);
+            }
+
+            return shouldParent;
+        }
 
         /// <summary>
         /// Gets closest event keyframe to current time.
@@ -751,7 +806,7 @@ namespace BetterLegacy.Core.Helpers
 
             return gameData.beatmapObjects.Find(x => x.tags.Contains(tag));
         }
-        
+
         public static BeatmapObject FindObjectWithTag(List<BeatmapObject> beatmapObjects, BeatmapObject beatmapObject, string tag) => beatmapObjects.Find(x => x.tags.Contains(tag));
 
         public static BeatmapObject FindObjectWithTag(List<BeatmapObject> beatmapObjects, List<PrefabObject> prefabObjects, BeatmapObject beatmapObject, string tag)
@@ -779,7 +834,7 @@ namespace BetterLegacy.Core.Helpers
 
             return beatmapObjects.FindAll(x => x.tags.Contains(tag) && x.prefabID == beatmapObject.prefabID && x.prefabInstanceID == beatmapObject.prefabInstanceID);
         }
-        
+
         public static List<BeatmapObject> FindObjectsWithTag(List<BeatmapObject> beatmapObjects, string tag) => beatmapObjects.FindAll(x => x.tags.Contains(tag));
 
         public static List<BeatmapObject> FindObjectsWithTag(List<BeatmapObject> beatmapObjects, List<PrefabObject> prefabObjects, BeatmapObject beatmapObject, string tag)
@@ -814,7 +869,7 @@ namespace BetterLegacy.Core.Helpers
             }
             return list;
         }
-        
+
         /// <summary>
         /// Iterates through the object parent chain (including the object itself).
         /// </summary>
@@ -838,6 +893,10 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
+        #endregion
+
+        #region Misc
+
         public static System.Diagnostics.Stopwatch StartNewStopwatch() => System.Diagnostics.Stopwatch.StartNew();
         public static void StopAndLogStopwatch(System.Diagnostics.Stopwatch sw, string message = "")
         {
@@ -846,124 +905,6 @@ namespace BetterLegacy.Core.Helpers
         }
 
         public static void LogStopwatch(System.Diagnostics.Stopwatch sw) => Log($"Time: {sw.Elapsed}");
-
-        public static IEnumerator Empty()
-        {
-            yield break;
-        }
-
-        public static string currentPopupID;
-        public static GameObject currentPopup;
-        public static void Popup(string dialogue, Color bar, string title, float time = 2f, bool destroyPrevious = true)
-        {
-            if (destroyPrevious && currentPopup)
-            {
-                if (AnimationManager.inst.animations.Has(x => x.id == currentPopupID))
-                    AnimationManager.inst.RemoveID(currentPopupID);
-                Destroy(currentPopup);
-            }
-
-            var inter = new GameObject("Canvas");
-            currentPopup = inter;
-            inter.transform.localScale = Vector3.one * ScreenScale;
-            var interfaceRT = inter.AddComponent<RectTransform>();
-            interfaceRT.anchoredPosition = new Vector2(960f, 540f);
-            interfaceRT.sizeDelta = new Vector2(1920f, 1080f);
-            interfaceRT.pivot = new Vector2(0.5f, 0.5f);
-            interfaceRT.anchorMin = Vector2.zero;
-            interfaceRT.anchorMax = Vector2.zero;
-
-            var canvas = inter.AddComponent<Canvas>();
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.None;
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.TexCoord1;
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.Tangent;
-            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.Normal;
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.scaleFactor = ScreenScale;
-            canvas.sortingOrder = 1000;
-
-            var canvasScaler = inter.AddComponent<CanvasScaler>();
-            canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            canvasScaler.referenceResolution = new Vector2(Screen.width, Screen.height);
-
-            inter.AddComponent<GraphicRaycaster>();
-
-            var imageObj = new GameObject("image");
-            imageObj.transform.SetParent(inter.transform);
-            imageObj.transform.localScale = Vector3.zero;
-
-            var imageRT = imageObj.AddComponent<RectTransform>();
-            imageRT.anchoredPosition = new Vector2(0f, 0f);
-            imageRT.sizeDelta = new Vector2(610f, 250f);
-
-            var im = imageObj.AddComponent<Image>();
-            im.color = new Color(0.2f, 0.2f, 0.2f, 1f);
-
-            var textObj = new GameObject("text");
-            textObj.transform.SetParent(imageObj.transform);
-            textObj.transform.localScale = Vector3.one;
-
-            var textRT = textObj.AddComponent<RectTransform>();
-            textRT.anchoredPosition = new Vector2(0f, 0f);
-            textRT.sizeDelta = new Vector2(590f, 250f);
-
-            var text = textObj.AddComponent<Text>();
-            text.font = FontManager.inst.DefaultFont;
-            text.text = dialogue;
-            text.fontSize = 20;
-            text.alignment = TextAnchor.MiddleCenter;
-
-            var top = new GameObject("top");
-            top.transform.SetParent(imageRT);
-            top.transform.localScale = Vector3.one;
-
-            var topRT = top.AddComponent<RectTransform>();
-            topRT.anchoredPosition = new Vector2(0f, 110f);
-            topRT.sizeDelta = new Vector2(610f, 32f);
-
-            var topImage = top.AddComponent<Image>();
-            topImage.color = bar;
-
-            var titleTextObj = new GameObject("text");
-            titleTextObj.transform.SetParent(topRT);
-            titleTextObj.transform.localScale = Vector3.one;
-
-            var titleTextRT = titleTextObj.AddComponent<RectTransform>();
-            titleTextRT.anchoredPosition = Vector2.zero;
-            titleTextRT.sizeDelta = new Vector2(590f, 32f);
-
-            var titleText = titleTextObj.AddComponent<Text>();
-            titleText.alignment = TextAnchor.MiddleLeft;
-            titleText.font = FontManager.inst.DefaultFont;
-            titleText.fontSize = 20;
-            titleText.text = title;
-            titleText.color = InvertColorHue(InvertColorValue(bar));
-
-            var animation = new RTAnimation("Popup Notification");
-            currentPopupID = animation.id;
-            animation.animationHandlers = new List<AnimationHandlerBase>
-                {
-                    new AnimationHandler<float>(new List<IKeyframe<float>>
-                    {
-                        new FloatKeyframe(0f, 0f, Ease.Linear),
-                        new FloatKeyframe(0.2f, 1f, Ease.BackOut),
-                        new FloatKeyframe(time + 0.2f, 1f, Ease.Linear),
-                        new FloatKeyframe(time + 0.7f, 0f, Ease.BackIn),
-                        new FloatKeyframe(time + 0.8f, 0f, Ease.Linear),
-                    }, delegate (float x)
-                    {
-                        imageObj.transform.localScale = new Vector3(x, x, x);
-                    }),
-                };
-            animation.onComplete = delegate ()
-            {
-                Destroy(inter);
-
-                AnimationManager.inst.RemoveID(animation.id);
-            };
-
-            AnimationManager.inst?.Play(animation);
-        }
 
         public static void TakeScreenshot()
         {

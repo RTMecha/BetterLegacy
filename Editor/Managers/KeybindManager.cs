@@ -1199,7 +1199,7 @@ namespace BetterLegacy.Editor.Managers
                 if (timelineObject.IsPrefabObject)
                     Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), recalculate: false);
             }
-            Updater.levelProcessor?.engine?.objectSpawner?.RecalculateObjectStates();
+            Updater.RecalculateObjectStates();
         }
 
         public static void OpenPrefabDialog(Keybind keybind)
@@ -1234,7 +1234,7 @@ namespace BetterLegacy.Editor.Managers
                 Updater.UpdateObject(bm, recalculate: false);
                 ObjectEditor.inst.RenderTimelineObject(timelineObject);
             }
-            Updater.levelProcessor?.engine?.objectSpawner?.RecalculateObjectStates();
+            Updater.RecalculateObjectStates();
         }
 
         public static void OpenDialog(Keybind keybind)
@@ -1542,7 +1542,7 @@ namespace BetterLegacy.Editor.Managers
                 Updater.UpdateObject(bm, recalculate: false);
                 ObjectEditor.inst.RenderTimelineObject(timelineObject);
             }
-            Updater.levelProcessor?.engine?.objectSpawner?.RecalculateObjectStates();
+            Updater.RecalculateObjectStates();
         }
 
         public static void CycleObjectTypeDown(Keybind keybind)
@@ -1564,7 +1564,7 @@ namespace BetterLegacy.Editor.Managers
                 Updater.UpdateObject(bm, recalculate: false);
                 ObjectEditor.inst.RenderTimelineObject(timelineObject);
             }
-            Updater.levelProcessor?.engine?.objectSpawner?.RecalculateObjectStates();
+            Updater.RecalculateObjectStates();
         }
 
         public static void JumpToNextMarker(Keybind keybind)

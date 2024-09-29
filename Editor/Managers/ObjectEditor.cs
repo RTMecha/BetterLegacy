@@ -316,7 +316,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     var prefabObject = timelineObject.GetData<PrefabObject>();
                     RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
-                    Updater.UpdatePrefab(prefabObject, "Start Time");
+                    Updater.UpdatePrefab(prefabObject, "Drag");
                     continue;
                 }
 
@@ -345,9 +345,7 @@ namespace BetterLegacy.Editor.Managers
                 }
             }
 
-            spawner.activateList.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
-            spawner.deactivateList.Sort((a, b) => a.KillTime.CompareTo(b.KillTime));
-            spawner.RecalculateObjectStates();
+            Updater.Sort();
 
             if (EditorConfig.Instance.UpdateHomingKeyframesDrag.Value)
                 System.Threading.Tasks.Task.Run(Updater.UpdateHomingKeyframes);
@@ -446,7 +444,7 @@ namespace BetterLegacy.Editor.Managers
             gameData.beatmapObjects.RemoveAll(x => prefabObjectIDs.Contains(x.prefabInstanceID));
             gameData.prefabObjects.RemoveAll(x => prefabObjectIDs.Contains(x.ID));
 
-            Updater.levelProcessor?.engine?.objectSpawner?.RecalculateObjectStates();
+            Updater.RecalculateObjectStates();
 
             RTEditor.inst.timelineObjects.FindAll(x => beatmapObjectIDs.Contains(x.ID) || prefabObjectIDs.Contains(x.ID)).ForEach(x => Destroy(x.GameObject));
             RTEditor.inst.timelineObjects.RemoveAll(x => beatmapObjectIDs.Contains(x.ID) || prefabObjectIDs.Contains(x.ID));
@@ -486,7 +484,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     }
 
-                    Updater.levelProcessor?.engine?.objectSpawner?.RecalculateObjectStates();
+                    Updater.RecalculateObjectStates();
                 }
                 else
                     EditorManager.inst.DisplayNotification("Can't delete only object", 2f, EditorManager.NotificationType.Error);
@@ -841,7 +839,7 @@ namespace BetterLegacy.Editor.Managers
 
             CoreHelper.StopAndLogStopwatch(sw);
 
-            Updater.levelProcessor?.engine?.objectSpawner?.RecalculateObjectStates();
+            Updater.RecalculateObjectStates();
 
             string stri = "object";
             if (prefab.objects.Count == 1)
