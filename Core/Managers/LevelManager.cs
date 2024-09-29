@@ -37,6 +37,11 @@ namespace BetterLegacy.Core.Managers
         public static float timeInLevelOffset = 0f;
 
         /// <summary>
+        /// Used for the no music achievement.
+        /// </summary>
+        public static int CurrentMusicVolume { get; set; }
+
+        /// <summary>
         /// Action that occurs when a player selects all controller inputs in the Input Select screen and loads the next scene.
         /// </summary>
         public static Action OnInputsSelected { get; set; }
@@ -328,6 +333,7 @@ namespace BetterLegacy.Core.Managers
 
             LoadingFromHere = false;
 
+            CurrentMusicVolume = CoreConfig.Instance.MusicVol.Value;
             if (PlayerManager.Players.Count > 1)
                 AchievementManager.inst.UnlockAchievement("friendship");
             var tags = CurrentLevel.metadata.song.tags;

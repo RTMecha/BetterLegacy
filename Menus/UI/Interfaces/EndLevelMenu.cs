@@ -76,7 +76,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     AchievementManager.inst.UnlockAchievement("expert_plus_ss_rank");
                 if (metadata.song.difficulty == 5 && levelRank.name == "SS")
                     AchievementManager.inst.UnlockAchievement("master_ss_rank");
-                if (AudioManager.inst.musicVol == 0f)
+                if (LevelManager.CurrentMusicVolume == 0)
                     AchievementManager.inst.UnlockAchievement("no_volume");
 
                 if (LevelManager.currentQueueIndex >= 9)
