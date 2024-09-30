@@ -50,6 +50,13 @@ namespace BetterLegacy.Core.Managers.Networking
             yield break;
         }
 
+        /// <summary>
+        /// Ensures that spaces are replaced with '+' for URL compatibility.
+        /// </summary>
+        /// <param name="search">The query to replace.</param>
+        /// <returns>Returns a proper query.</returns>
+        public static string ReplaceSpace(string search) => search.ToLower().Replace(" ", "+");
+
         public static IEnumerator GetResponseCode(string url, Action<long> result)
         {
             using var www = UnityWebRequest.Get(url);

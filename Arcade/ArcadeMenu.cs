@@ -1374,8 +1374,6 @@ namespace BetterLegacy.Arcade
             Pages[1] = 0;
         }
 
-        string ReplaceSpace(string search) => search.ToLower().Replace(" ", "+");
-
         public IEnumerator RefreshOnlineLevels()
         {
             if (loadingOnlineLevels)
@@ -1399,8 +1397,8 @@ namespace BetterLegacy.Arcade
             string query =
                 string.IsNullOrEmpty(search) && page == 0 ? SearchURL :
                     string.IsNullOrEmpty(search) && page != 0 ? $"{SearchURL}?page={page}" :
-                        !string.IsNullOrEmpty(search) && page == 0 ? $"{SearchURL}?query={ReplaceSpace(search)}" :
-                            !string.IsNullOrEmpty(search) ? $"{SearchURL}?query={ReplaceSpace(search)}&page={page}" : "";
+                        !string.IsNullOrEmpty(search) && page == 0 ? $"{SearchURL}?query={AlephNetworkManager.ReplaceSpace(search)}" :
+                            !string.IsNullOrEmpty(search) ? $"{SearchURL}?query={AlephNetworkManager.ReplaceSpace(search)}&page={page}" : "";
 
             CoreHelper.Log($"Search query: {query}");
 
