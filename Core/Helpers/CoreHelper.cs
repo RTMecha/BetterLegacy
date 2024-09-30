@@ -207,20 +207,6 @@ namespace BetterLegacy.Core.Helpers
                 Destroy(objects[i], instant, t);
         }
 
-        /// <summary>
-        /// Starts a coroutine from anywhere.
-        /// </summary>
-        /// <param name="routine">Routine to start.</param>
-        /// <returns>Returns a generated Coroutine.</returns>
-        public static Coroutine StartCoroutine(IEnumerator routine) => LegacyPlugin.inst.StartCoroutine(routine);
-
-        /// <summary>
-        /// Starts a coroutine from anywhere asynchronously.
-        /// </summary>
-        /// <param name="routine">Routine to start.</param>
-        /// <returns>Returns a generated Coroutine.</returns>
-        public static Coroutine StartCoroutineAsync(IEnumerator routine) => LegacyPlugin.inst.StartCoroutineAsync(routine);
-
         public static IEnumerator FixUIText()
         {
             var texts = Resources.FindObjectsOfTypeAll<Text>();
@@ -247,6 +233,22 @@ namespace BetterLegacy.Core.Helpers
         /// <returns>Returns a list of <see cref="Dropdown.OptionData"/> based on the string array.</returns>
         public static List<Dropdown.OptionData> StringToOptionData(params string[] str) => str.Select(x => new Dropdown.OptionData(x)).ToList();
 
+        #region Coroutines
+
+        /// <summary>
+        /// Starts a coroutine from anywhere.
+        /// </summary>
+        /// <param name="routine">Routine to start.</param>
+        /// <returns>Returns a generated Coroutine.</returns>
+        public static Coroutine StartCoroutine(IEnumerator routine) => LegacyPlugin.inst.StartCoroutine(routine);
+
+        /// <summary>
+        /// Starts a coroutine from anywhere asynchronously.
+        /// </summary>
+        /// <param name="routine">Routine to start.</param>
+        /// <returns>Returns a generated Coroutine.</returns>
+        public static Coroutine StartCoroutineAsync(IEnumerator routine) => LegacyPlugin.inst.StartCoroutineAsync(routine);
+
         public static void PerformActionAfterSeconds(float t, Action action) => StartCoroutine(IPerformActionAfterSeconds(t, action));
         
         public static IEnumerator IPerformActionAfterSeconds(float t, Action action)
@@ -271,27 +273,42 @@ namespace BetterLegacy.Core.Helpers
             action?.Invoke();
         }
 
-        public static void LogOnMainThread(string message)
+        public static void LogOnMainThread(string message) => ReturnToUnity(() => { Log(message); });
+
+        public static string DefaultYieldInstructionDescription => "Some options will run faster but freeze the game, while others run slower but allow you to see them update in real time.";
+
+        /// <summary>
+        /// Gets a specific <see cref="YieldInstruction"/> from a <see cref="YieldType"/>.
+        /// </summary>
+        /// <param name="yieldType">YieldType to get an instruction from.</param>
+        /// <param name="delay">Delay reference for <see cref="WaitForSeconds"/>.</param>
+        /// <returns>Returns a <see cref="YieldInstruction"/>.</returns>
+        public static YieldInstruction GetYieldInstruction(YieldType yieldType, ref float delay)
         {
-            StartCoroutine(IReturnToUnity(() => { Log(message); }));
+            switch (yieldType)
+            {
+                case YieldType.Delay: delay += 0.0001f; return new WaitForSeconds(delay);
+                case YieldType.EndOfFrame: return new WaitForEndOfFrame();
+                case YieldType.FixedUpdate: return new WaitForFixedUpdate();
+            }
+            return null;
         }
 
         #endregion
 
-        /// <summary>
-        /// Compares given values and invokes a method if they are not the same.
-        /// </summary>
-        /// <param name="prev">The previous value.</param>
-        /// <param name="current">The current value.</param>
-        /// <param name="action">The method to invoke if the parameters are not the same.</param>
-        /// <returns>Returns true if previous value is not equal to current value, otherwise returns false.</returns>
-        public static bool UpdateValue<T>(T prev, T current, Action<T> action)
-        {
-            bool value = !prev.Equals(current);
-            if (value)
-                action?.Invoke(current);
-            return value;
-        }
+        #region Scene
+
+        public static void LoadEditorWithProgress() => SceneManager.inst.LoadScene("Editor", true);
+        public static void LoadGameWithProgress() => SceneManager.inst.LoadScene("Game", true);
+        
+        public static void LoadEditor() => SceneManager.inst.LoadScene("Editor", false);
+        public static void LoadGame() => SceneManager.inst.LoadScene("Game", false);
+
+        public static Action<string> OnSceneLoad { get; set; }
+
+        #endregion
+
+        #endregion
 
         #region Logging
 
@@ -329,6 +346,19 @@ namespace BetterLegacy.Core.Helpers
                 $"---------------------------------------------------------------------\n");
 
         public static void LogSeparator() => Debug.Log("---------------------------------------------------------------------");
+
+        #region Stopwatch
+
+        public static System.Diagnostics.Stopwatch StartNewStopwatch() => System.Diagnostics.Stopwatch.StartNew();
+        public static void StopAndLogStopwatch(System.Diagnostics.Stopwatch sw, string message = "")
+        {
+            sw.Stop();
+            Log($"{(string.IsNullOrEmpty(message) ? message : message + "\n")}Time taken: {sw.Elapsed}");
+        }
+
+        public static void LogStopwatch(System.Diagnostics.Stopwatch sw) => Log($"Time: {sw.Elapsed}");
+
+        #endregion
 
         #endregion
 
@@ -676,20 +706,6 @@ namespace BetterLegacy.Core.Helpers
 
         #endregion
 
-        public static string DefaultYieldInstructionDescription => "Some options will run faster but freeze the game, while others run slower but allow you to see them update in real time.";
-
-        public static YieldInstruction GetYieldInstruction(YieldType yieldType, ref float delay)
-        {
-            switch (yieldType)
-            {
-                case YieldType.Delay: delay += 0.0001f; return new WaitForSeconds(delay);
-                case YieldType.Null: return null;
-                case YieldType.EndOfFrame: return new WaitForEndOfFrame();
-                case YieldType.FixedUpdate: return new WaitForFixedUpdate();
-            }
-            return null;
-        }
-
         #region GameData
 
         public static void SetParent(TimelineObject currentSelection, BeatmapObject beatmapObjectToParentTo, bool recalculate = true, bool renderParent = true) => TrySetParent(currentSelection, beatmapObjectToParentTo, recalculate, renderParent);
@@ -895,16 +911,7 @@ namespace BetterLegacy.Core.Helpers
 
         #endregion
 
-        #region Misc
-
-        public static System.Diagnostics.Stopwatch StartNewStopwatch() => System.Diagnostics.Stopwatch.StartNew();
-        public static void StopAndLogStopwatch(System.Diagnostics.Stopwatch sw, string message = "")
-        {
-            sw.Stop();
-            Log($"{(string.IsNullOrEmpty(message) ? message : message + "\n")}Time taken: {sw.Elapsed}");
-        }
-
-        public static void LogStopwatch(System.Diagnostics.Stopwatch sw) => Log($"Time: {sw.Elapsed}");
+        #region Screenshot
 
         public static void TakeScreenshot()
         {
@@ -1016,6 +1023,25 @@ namespace BetterLegacy.Core.Helpers
             AnimationManager.inst?.Play(animation);
 
             yield break;
+        }
+
+        #endregion
+
+        #region Misc
+
+        /// <summary>
+        /// Compares given values and invokes a method if they are not the same.
+        /// </summary>
+        /// <param name="prev">The previous value.</param>
+        /// <param name="current">The current value.</param>
+        /// <param name="action">The method to invoke if the parameters are not the same.</param>
+        /// <returns>Returns true if previous value is not equal to current value, otherwise returns false.</returns>
+        public static bool UpdateValue<T>(T prev, T current, Action<T> action)
+        {
+            bool value = !prev.Equals(current);
+            if (value)
+                action?.Invoke(current);
+            return value;
         }
 
         /// <summary>
