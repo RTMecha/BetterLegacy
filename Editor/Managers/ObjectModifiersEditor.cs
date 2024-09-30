@@ -358,7 +358,8 @@ namespace BetterLegacy.Editor.Managers
                     if (eventData.button != PointerEventData.InputButton.Right)
                         return;
 
-                    RTEditor.inst.ShowContextMenu(300f,
+                    var buttonFunctions = new List<RTEditor.ButtonFunction>()
+                    {
                         new RTEditor.ButtonFunction("Add", () =>
                         {
                             EditorManager.inst.ShowDialog("Default Modifiers Popup");
@@ -389,7 +390,12 @@ namespace BetterLegacy.Editor.Managers
                             StartCoroutine(RenderModifiers(beatmapObject));
                         }),
                         new RTEditor.ButtonFunction(true),
-                        new RTEditor.ButtonFunction("Update Modifier", () => { modifier.active = false; }));
+                        new RTEditor.ButtonFunction("Update Modifier", () => { modifier.active = false; }),
+                    };
+                    if (ModCompatibility.UnityExplorerInstalled)
+                        buttonFunctions.Add(new RTEditor.ButtonFunction("Inspect", () => { ModCompatibility.Inspect(modifier); }));
+
+                    RTEditor.inst.ShowContextMenu(RTEditor.DEFAULT_CONTEXT_MENU_WIDTH, buttonFunctions);
                 };
 
                 var cmd = modifier.commands[0];

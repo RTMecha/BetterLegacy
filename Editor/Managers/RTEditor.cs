@@ -10501,6 +10501,8 @@ namespace BetterLegacy.Editor.Managers
 
         public float contextButtonHeight = 37f;
         public float contextSpacerHeight = 6f;
+
+        public void ShowContextMenu(float width, List<ButtonFunction> buttonFunctions) => ShowContextMenu(width, buttonFunctions.ToArray());
         public void ShowContextMenu(float width, params ButtonFunction[] buttonFunctions)
         {
             float height = 0f;
