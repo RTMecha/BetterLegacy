@@ -107,6 +107,12 @@ namespace BetterLegacy.Editor.Managers
                         {
                             RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}", () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); });
                         }),
+                        new RTEditor.ButtonFunction("Create Prefab", () =>
+                        {
+                            PrefabEditor.inst.OpenDialog();
+                            createInternal = false;
+                        }),
+                        new RTEditor.ButtonFunction(true),
                         new RTEditor.ButtonFunction("Paste", PastePrefab)
                         );
                 };
@@ -118,7 +124,7 @@ namespace BetterLegacy.Editor.Managers
                         return;
 
                     RTEditor.inst.ShowContextMenu(300f,
-                        new RTEditor.ButtonFunction("Create prefab", () =>
+                        new RTEditor.ButtonFunction("Create Prefab", () =>
                         {
                             PrefabEditor.inst.OpenDialog();
                             createInternal = true;
@@ -547,27 +553,14 @@ namespace BetterLegacy.Editor.Managers
 
                 Destroy(prefabEditorData.Find("type/types").gameObject);
 
-                UIManager.SetRectTransform(prefabType.transform.AsRT(), new Vector2(-370f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 0.5f), new Vector2(742f, 34f));
-                var prefabTypeButton = prefabType.GetComponent<Button>();
-                prefabTypeButton.onClick.ClearAll();
-                prefabTypeButton.onClick.AddListener(() =>
-                {
-                    OpenPrefabTypePopup(NewPrefabTypeID, id =>
-                    {
-                        PrefabEditor.inst.NewPrefabType = PrefabType.prefabTypeLSIDToIndex.TryGetValue(id, out int prefabTypeIndexLS) ? prefabTypeIndexLS : PrefabType.prefabTypeVGIDToIndex.TryGetValue(id, out int prefabTypeIndexVG) ? prefabTypeIndexVG : 0;
-                        NewPrefabTypeID = id;
-                        if (DataManager.inst.PrefabTypes.Select(x => x as PrefabType).ToList().TryFind(x => x.id == id, out PrefabType prefabType))
-                        {
-                            externalCreatorText.name = prefabType.Name;
-                            externalCreatorImage.color = prefabType.Color;
-                        }
-                    });
-                });
+                UIManager.SetRectTransform(prefabType.transform.AsRT(), new Vector2(-370f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 0.5f), new Vector2(652f, 34f));
+                prefabCreatorTypeButton = prefabType.GetComponent<Button>();
+                prefabCreatorTypeButton.onClick.ClearAll();
                 externalCreatorText = prefabType.transform.Find("Text").GetComponent<Text>();
-                externalCreatorImage = prefabTypeButton.image;
+                externalCreatorImage = prefabCreatorTypeButton.image;
 
                 prefabType.AddComponent<ContrastColors>().Init(externalCreatorText, externalCreatorImage);
-                EditorThemeManager.AddGraphic(prefabTypeButton.image, ThemeGroup.Null, true);
+                EditorThemeManager.AddGraphic(prefabCreatorTypeButton.image, ThemeGroup.Null, true);
 
                 prefabEditorData.Find("spacer").AsRT().sizeDelta = new Vector2(749f, 32f);
                 prefabEditorData.Find("type").AsRT().sizeDelta = new Vector2(749f, 48f);
@@ -718,6 +711,8 @@ namespace BetterLegacy.Editor.Managers
             }
 
         }
+
+        public Button prefabCreatorTypeButton;
 
         #region Prefab Objects
 
@@ -2220,21 +2215,22 @@ namespace BetterLegacy.Editor.Managers
 
             if (createInternal)
             {
+                EditorManager.inst.DisplayNotification($"Saving Internal Prefab [{prefab.Name}] to level...", 1.5f, EditorManager.NotificationType.Warning);
                 ImportPrefabIntoLevel(prefab);
-                EditorManager.inst.DisplayNotification($"Saving Prefab to level [{prefab.Name}]!", 2f, EditorManager.NotificationType.Warning);
+                EditorManager.inst.DisplayNotification($"Saved Internal Prefab [{prefab.Name}]!", 2f, EditorManager.NotificationType.Success);
             }
             else
                 SavePrefab(prefab);
 
-            EditorManager.inst.HideDialog("Prefab Popup");
             EditorManager.inst.HideDialog("Prefab Editor");
+            OpenPopup();
         }
 
         public void SavePrefab(Prefab prefab)
         {
             RTEditor.inst.DisablePrefabWatcher();
 
-            EditorManager.inst.DisplayNotification($"Saving Prefab to System [{prefab.Name}]!", 2f, EditorManager.NotificationType.Warning);
+            EditorManager.inst.DisplayNotification($"Saving External Prefab [{prefab.Name}]...", 1.5f, EditorManager.NotificationType.Warning);
 
             prefab.objects.ForEach(x => { x.prefabID = ""; x.prefabInstanceID = ""; });
             int count = PrefabPanels.Count;
@@ -2265,7 +2261,7 @@ namespace BetterLegacy.Editor.Managers
                 typeHorizontalOverflow, typeVerticalOverflow, typeFontSize, deleteAnchoredPosition, deleteSizeDelta);
 
             RTFile.WriteToFile(file, prefab.ToJSON().ToString());
-            EditorManager.inst.DisplayNotification($"Saved prefab [{prefab.Name}]!", 2f, EditorManager.NotificationType.Success);
+            EditorManager.inst.DisplayNotification($"Saved External Prefab [{prefab.Name}]!", 2f, EditorManager.NotificationType.Success);
 
             RTEditor.inst.EnablePrefabWatcher();
         }
@@ -2425,6 +2421,21 @@ namespace BetterLegacy.Editor.Managers
                 externalCreatorText.text = prefabType.Name + " [ Click to Open Prefab Type Editor ]";
                 externalCreatorImage.color = prefabType.Color;
             }
+
+            prefabCreatorTypeButton.onClick.ClearAll();
+            prefabCreatorTypeButton.onClick.AddListener(() =>
+            {
+                OpenPrefabTypePopup(NewPrefabTypeID, id =>
+                {
+                    PrefabEditor.inst.NewPrefabType = PrefabType.prefabTypeLSIDToIndex.TryGetValue(id, out int prefabTypeIndexLS) ? prefabTypeIndexLS : PrefabType.prefabTypeVGIDToIndex.TryGetValue(id, out int prefabTypeIndexVG) ? prefabTypeIndexVG : 0;
+                    NewPrefabTypeID = id;
+                    if (DataManager.inst.PrefabTypes.Select(x => x as PrefabType).ToList().TryFind(x => x.id == id, out PrefabType prefabType))
+                    {
+                        externalCreatorText.text = prefabType.Name + " [ Click to Open Prefab Type Editor ]";
+                        externalCreatorImage.color = prefabType.Color;
+                    }
+                });
+            });
 
             var description = PrefabEditor.inst.dialog.Find("data/description/input").GetComponent<InputField>();
             description.onValueChanged.ClearAll();
@@ -2710,7 +2721,7 @@ namespace BetterLegacy.Editor.Managers
                                 AddPrefabObjectToLevel(prefab);
                                 EditorManager.inst.HideDialog("Prefab Popup");
                             }),
-                            new RTEditor.ButtonFunction("Create prefab", () =>
+                            new RTEditor.ButtonFunction("Create Prefab", () =>
                             {
                                 PrefabEditor.inst.OpenDialog();
                                 createInternal = true;
@@ -2819,7 +2830,7 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 RTEditor.inst.ShowFolderCreator($"{RTFile.ApplicationDirectory}{RTEditor.prefabListPath}", () => { RTEditor.inst.UpdatePrefabPath(true); RTEditor.inst.HideNameEditor(); });
                             }),
-                            new RTEditor.ButtonFunction("Create prefab", () =>
+                            new RTEditor.ButtonFunction("Create Prefab", () =>
                             {
                                 PrefabEditor.inst.OpenDialog();
                                 createInternal = false;

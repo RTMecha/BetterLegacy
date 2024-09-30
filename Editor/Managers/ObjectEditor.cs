@@ -871,6 +871,41 @@ namespace BetterLegacy.Editor.Managers
 
         public static bool SetToCenterCam => EditorConfig.Instance.CreateObjectsatCameraCenter.Value;
 
+        public void CreateNewObject(Action<TimelineObject> action = null, bool select = true, bool setHistory = true)
+        {
+            var timelineObject = CreateNewDefaultObject(select);
+
+            var bm = timelineObject.GetData<BeatmapObject>();
+            if (SetToCenterCam)
+            {
+                var pos = EventManager.inst.cam.transform.position;
+
+                bm.events[0][0].eventValues[0] = pos.x;
+                bm.events[0][0].eventValues[1] = pos.y;
+            }
+
+            if (action != null)
+                action(timelineObject);
+            else
+            {
+                Updater.UpdateObject(bm);
+                RenderTimelineObject(timelineObject);
+                OpenDialog(bm);
+            }
+
+
+            if (setHistory)
+            {
+                EditorManager.inst.history.Add(new History.Command("Create New Object", () =>
+                {
+                    CreateNewObject(action, select, false);
+                }, () =>
+                {
+                    inst.StartCoroutine(DeleteObject(timelineObject));
+                }), false);
+            }
+        }
+
         public void CreateNewNormalObject(bool _select = true, bool setHistory = true)
         {
             var timelineObject = CreateNewDefaultObject(_select);

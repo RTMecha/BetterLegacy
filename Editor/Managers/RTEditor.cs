@@ -475,6 +475,10 @@ namespace BetterLegacy.Editor.Managers
 
         #region Variables
 
+        public const float DEFAULT_CONTEXT_MENU_WIDTH = 300f;
+        public const string DEFAULT_OBJECT_NAME = "\"Default object cameo\" -Viral Mecha";
+        public const string BASE_CHECKPOINT_NAME = "Base Checkpoint";
+
         public Action<TimelineObject> onSelectTimelineObject;
 
         public GridRenderer previewGrid;
@@ -2420,6 +2424,149 @@ namespace BetterLegacy.Editor.Managers
             var playTestButton = playTest.GetComponent<Button>();
             playTestButton.transition = Selectable.Transition.ColorTint;
             EditorThemeManager.AddSelectable(playTestButton, ThemeGroup.Function_2, false);
+
+            var objectContextMenu = objectButton.AddComponent<ContextClickable>();
+            objectContextMenu.onClick = eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH,
+                    new ButtonFunction("Options", () => { EditorManager.inst.ShowDialog("Object Options Popup"); }),
+                    new ButtonFunction("More Options", ShowObjectTemplates)
+                    );
+            };
+
+            var prefabContextMenu = prefabButton.AddComponent<ContextClickable>();
+            prefabContextMenu.onClick = eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH,
+                    new ButtonFunction("Show Prefabs", PrefabEditor.inst.OpenPopup),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Create Internal Prefab", () =>
+                    {
+                        PrefabEditor.inst.OpenDialog();
+                        RTPrefabEditor.inst.createInternal = true;
+                    }),
+                    new ButtonFunction("Create External Prefab", () =>
+                    {
+                        PrefabEditor.inst.OpenDialog();
+                        RTPrefabEditor.inst.createInternal = false;
+                    })
+                    );
+            };
+
+            var markerContextMenu = markerButton.AddComponent<ContextClickable>();
+            markerContextMenu.onClick = eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH,
+                    new ButtonFunction("Show Markers", () =>
+                    {
+                        if (!RTMarkerEditor.inst.CurrentMarker)
+                        {
+                            EditorManager.inst.DisplayNotification("Select / create a Marker first!", 1.5f, EditorManager.NotificationType.Warning);
+                            return;
+                        }
+
+                        RTMarkerEditor.inst.OpenDialog(RTMarkerEditor.inst.CurrentMarker);
+                    }),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Create Marker", MarkerEditor.inst.CreateNewMarker),
+                    new ButtonFunction("Create Marker at Object", () =>
+                    {
+                        if (ObjectEditor.inst.CurrentSelection && ObjectEditor.inst.CurrentSelection.ObjectType != TimelineObject.TimelineObjectType.Null)
+                            RTMarkerEditor.inst.CreateNewMarker(ObjectEditor.inst.CurrentSelection.Time);
+                    })
+                    );
+            };
+
+            var checkpointContextMenu = checkpointButton.AddComponent<ContextClickable>();
+            checkpointContextMenu.onClick = eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH,
+                    new ButtonFunction("Show Checkpoints", () =>
+                    {
+                        if (Patchers.CheckpointEditorPatch.currentCheckpoint == null || !GameData.IsValid || CheckpointEditor.inst.currentObj < 0 || CheckpointEditor.inst.currentObj >= GameData.Current.beatmapData.checkpoints.Count)
+                        {
+                            EditorManager.inst.DisplayNotification("Select / create a Checkpoint first!", 1.5f, EditorManager.NotificationType.Warning);
+                            return;
+                        }
+
+                        CheckpointEditor.inst.OpenDialog(CheckpointEditor.inst.currentObj);
+                    }),
+                    new ButtonFunction(true),
+                    new ButtonFunction("Create Checkpoint", CheckpointEditor.inst.CreateNewCheckpoint),
+                    new ButtonFunction("Create Checkpoint at Object", () =>
+                    {
+                        if (ObjectEditor.inst.CurrentSelection && ObjectEditor.inst.CurrentSelection.ObjectType != TimelineObject.TimelineObjectType.Null)
+                            CheckpointEditor.inst.CreateNewCheckpoint(ObjectEditor.inst.CurrentSelection.Time, Vector2.zero);
+                    })
+                    );
+            };
+
+            var playTestContextMenu = playTest.AddComponent<ContextClickable>();
+            playTestContextMenu.onClick = eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH,
+                    new ButtonFunction("Playtest", () =>
+                    {
+                        EditorManager.inst.ToggleEditor();
+                    }),
+                    new ButtonFunction("Playtest Zen", () =>
+                    {
+                        EditorConfig.Instance.EditorZenMode.Value = true;
+                        EditorManager.inst.ToggleEditor();
+                    }),
+                    new ButtonFunction("Playtest Normal", () =>
+                    {
+                        EditorConfig.Instance.EditorZenMode.Value = false;
+                        EditorManager.inst.ToggleEditor();
+                    })
+                    );
+            };
+
+            var eventLayerContextMenu = eventLayerToggle.gameObject.AddComponent<ContextClickable>();
+            eventLayerContextMenu.onClick = eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH,
+                    new ButtonFunction("Toggle Layer Type", () => { SetLayer(Layer, layerType == LayerType.Events ? LayerType.Objects : LayerType.Events); }),
+                    new ButtonFunction("View Objects", () => { SetLayer(Layer, LayerType.Objects); }),
+                    new ButtonFunction("View Events", () => { SetLayer(Layer, LayerType.Events); })
+                    );
+            };
+
+            var layerContextMenu = layersObj.AddComponent<ContextClickable>();
+            layerContextMenu.onClick = eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH,
+                    new ButtonFunction("List Layers with Objects", CoreHelper.ListObjectLayers),
+                    new ButtonFunction("Next Free Layer", () =>
+                    {
+                        var layer = 0;
+                        while (GameData.Current.beatmapObjects.Has(x => x.editorData != null && x.editorData.layer == layer))
+                            layer++;
+                        SetLayer(layer, LayerType.Objects);
+                    })
+                    );
+            };
         }
 
         void SetupTimelineTriggers()
@@ -2601,6 +2748,174 @@ namespace BetterLegacy.Editor.Managers
             var hexagon = dialog.Find("shapes/hexagon").gameObject.GetComponent<Button>();
             hexagon.onClick.ClearAll();
             hexagon.onClick.AddListener(() => { ObjectEditor.inst.CreateNewHexagonObject(); });
+
+            objectTemplatePopup = GeneratePopup("Object Templates Popup", "Pick a template", Vector2.zero, new Vector2(600f, 400f), RefreshObjectTemplates, placeholderText: "Search for template...");
+        }
+
+        Popup objectTemplatePopup;
+
+        public void ShowObjectTemplates()
+        {
+            EditorManager.inst.ShowDialog("Object Templates Popup");
+            RefreshObjectTemplates(objectTemplatePopup.SearchField.text);
+        }
+
+        void RefreshObjectTemplates(string search)
+        {
+            LSHelpers.DeleteChildren(objectTemplatePopup.Content);
+            
+            for (int i = 0; i < objectOptions.Count; i++)
+                if (CoreHelper.SearchString(search, objectOptions[i].name))
+                    GenerateObjectTemplate(objectOptions[i].name, objectOptions[i].hint, objectOptions[i].Create);
+        }
+
+        List<ObjectOption> objectOptions = new List<ObjectOption>()
+        {
+            new ObjectOption("Normal", "A regular square object that hits the player.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+
+                Updater.UpdateObject(bm);
+                ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                ObjectEditor.inst.OpenDialog(bm);
+            }),
+            new ObjectOption("Helper", "A regular square object that is transparent and doesn't hit the player. This can be used to warn players of an attack.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = BeatmapObject.ObjectType.Helper;
+                bm.name = nameof(BeatmapObject.ObjectType.Helper);
+
+                Updater.UpdateObject(bm);
+                ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                ObjectEditor.inst.OpenDialog(bm);
+            }),
+            new ObjectOption("Decoration", "A regular square object that is opaque and doesn't hit the player.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = BeatmapObject.ObjectType.Decoration;
+                bm.name = nameof(BeatmapObject.ObjectType.Decoration);
+
+                Updater.UpdateObject(bm);
+                ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                ObjectEditor.inst.OpenDialog(bm);
+            }),
+            new ObjectOption("Solid", "A regular square object that doesn't allow the player to passh through.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = BeatmapObject.ObjectType.Solid;
+                bm.name = nameof(BeatmapObject.ObjectType.Solid);
+
+                Updater.UpdateObject(bm);
+                ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                ObjectEditor.inst.OpenDialog(bm);
+            }),
+            new ObjectOption("Alpha Helper", "A regular square object that is transparent and doesn't hit the player. This can be used to warn players of an attack.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = BeatmapObject.ObjectType.Decoration;
+                bm.name = nameof(BeatmapObject.ObjectType.Helper);
+                bm.events[3][0].eventValues[1] = 0.65f;
+
+                Updater.UpdateObject(bm);
+                ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                ObjectEditor.inst.OpenDialog(bm);
+            }),
+            new ObjectOption("Empty Hitbox", "A square object that is invisible but still has a collision and can hit the player.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = BeatmapObject.ObjectType.Normal;
+                bm.name = "Collision";
+                bm.events[3][0].eventValues[1] = 1f;
+
+                Updater.UpdateObject(bm);
+                ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                ObjectEditor.inst.OpenDialog(bm);
+            }),
+            new ObjectOption("Empty Solid", "A square object that is invisible but still has a collision and prevents the player from passing through.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = BeatmapObject.ObjectType.Solid;
+                bm.name = "Collision";
+                bm.events[3][0].eventValues[1] = 1f;
+
+                Updater.UpdateObject(bm);
+                ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                ObjectEditor.inst.OpenDialog(bm);
+            }),
+            new ObjectOption("Text", "A text object that can be used for dialogue.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = BeatmapObject.ObjectType.Decoration;
+                bm.name = "Text";
+                bm.text = "A text object that can be used for dialogue.";
+                bm.shape = 4;
+                bm.shapeOption = 0;
+
+                Updater.UpdateObject(bm);
+                ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                ObjectEditor.inst.OpenDialog(bm);
+            }),
+            new ObjectOption("Text Sequence", "A text object that can be used for dialogue. Includes a textSequence modifier.", timelineObject =>
+            {
+                var bm = timelineObject.GetData<BeatmapObject>();
+                bm.objectType = BeatmapObject.ObjectType.Decoration;
+                bm.name = "Text";
+                bm.text = "A text object that can be used for dialogue. Includes a textSequence modifier.";
+                bm.shape = 4;
+                bm.shapeOption = 0;
+                if (ModifiersManager.defaultBeatmapObjectModifiers.TryFind(x => x.Name == "textSequence", out Modifier<BeatmapObject> modifier))
+                    bm.modifiers.Add(Modifier<BeatmapObject>.DeepCopy(modifier, bm));
+
+                Updater.UpdateObject(bm);
+                ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                ObjectEditor.inst.OpenDialog(bm);
+            }),
+        };
+
+        class ObjectOption
+        {
+            public ObjectOption(string name, string hint, Action<TimelineObject> action)
+            {
+                this.name = name;
+                this.hint = hint;
+                this.action = action;
+            }
+
+            public string name;
+            public string hint;
+            public Action<TimelineObject> action;
+
+            public void Create()
+            {
+                try
+                {
+                    ObjectEditor.inst.CreateNewObject(action);
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
+            }
+        }
+
+        void GenerateObjectTemplate(string name, string hint, Action action)
+        {
+            var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(objectTemplatePopup.Content, "Function");
+
+            gameObject.AddComponent<HoverTooltip>().tooltipLangauges.Add(new HoverTooltip.Tooltip
+            {
+                desc = name,
+                hint = hint
+            });
+
+            var button = gameObject.GetComponent<Button>();
+            button.onClick.ClearAll();
+            button.onClick.AddListener(() => { action?.Invoke(); });
+
+            EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
+            var text = gameObject.transform.GetChild(0).GetComponent<Text>();
+            text.text = name;
+            EditorThemeManager.ApplyLightText(text);
         }
 
         void SetupDropdowns()
@@ -10115,7 +10430,7 @@ namespace BetterLegacy.Editor.Managers
             gameData.beatmapData = new LevelBeatmapData();
             gameData.beatmapData.levelData = new LevelData();
             gameData.beatmapData.editorData = new LevelEditorData();
-            gameData.beatmapData.checkpoints.Add(new DataManager.GameData.BeatmapData.Checkpoint(false, "Base Checkpoint", 0f, Vector2.zero));
+            gameData.beatmapData.checkpoints.Add(new DataManager.GameData.BeatmapData.Checkpoint(false, BASE_CHECKPOINT_NAME, 0f, Vector2.zero));
 
             if (gameData.eventObjects.allEvents == null)
                 gameData.eventObjects.allEvents = new List<List<BaseEventKeyframe>>();
@@ -10171,7 +10486,7 @@ namespace BetterLegacy.Editor.Managers
             if (CoreHelper.AprilFools)
                 beatmapObject.events[2].Add(new EventKeyframe(999f, new float[1] { 360000f }, new float[3]));
 
-            beatmapObject.name = CoreHelper.AprilFools ? "trololololo" : "\"Default object cameo\" -Viral Mecha";
+            beatmapObject.name = CoreHelper.AprilFools ? "trololololo" : DEFAULT_OBJECT_NAME;
             beatmapObject.autoKillType = AutoKillType.LastKeyframeOffset;
             beatmapObject.autoKillOffset = 4f;
             beatmapObject.editorData.layer = 0;

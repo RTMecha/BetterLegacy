@@ -15,6 +15,7 @@ namespace BetterLegacy.Patchers
     [HarmonyPatch(typeof(CheckpointEditor))]
     public class CheckpointEditorPatch : MonoBehaviour
     {
+        public static DataManager.GameData.BeatmapData.Checkpoint currentCheckpoint;
         public static CheckpointEditor Instance { get => CheckpointEditor.inst; set => CheckpointEditor.inst = value; }
 
         [HarmonyPatch(nameof(CheckpointEditor.Awake))]
@@ -93,6 +94,7 @@ namespace BetterLegacy.Patchers
                 return false;
 
             var checkpoint = GameData.Current.beatmapData.checkpoints[index];
+            currentCheckpoint = checkpoint;
 
             var search = Instance.right.Find("search").GetComponent<InputField>();
             search.onValueChanged.ClearAll();
