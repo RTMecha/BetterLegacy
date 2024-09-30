@@ -494,17 +494,19 @@ namespace BetterLegacy.Components.Editor
             if (!HighlightObjects || !hovered)
                 return;
 
+            var currentColor = renderer.material.color;
             var color = Input.GetKey(KeyCode.LeftShift) ? new Color(
-                renderer.material.color.r > 0.9f ? -HighlightDoubleColor.r : HighlightDoubleColor.r,
-                renderer.material.color.g > 0.9f ? -HighlightDoubleColor.g : HighlightDoubleColor.g,
-                renderer.material.color.b > 0.9f ? -HighlightDoubleColor.b : HighlightDoubleColor.b,
+                currentColor.r > 0.9f ? -HighlightDoubleColor.r : HighlightDoubleColor.r,
+                currentColor.g > 0.9f ? -HighlightDoubleColor.g : HighlightDoubleColor.g,
+                currentColor.b > 0.9f ? -HighlightDoubleColor.b : HighlightDoubleColor.b,
                 0f) : new Color(
-                renderer.material.color.r > 0.9f ? -HighlightColor.r : HighlightColor.r,
-                renderer.material.color.g > 0.9f ? -HighlightColor.g : HighlightColor.g,
-                renderer.material.color.b > 0.9f ? -HighlightColor.b : HighlightColor.b,
+                currentColor.r > 0.9f ? -HighlightColor.r : HighlightColor.r,
+                currentColor.g > 0.9f ? -HighlightColor.g : HighlightColor.g,
+                currentColor.b > 0.9f ? -HighlightColor.b : HighlightColor.b,
                 0f);
 
             renderer.material.color += color;
+            renderer.material.color = LSColors.fadeColor(renderer.material.color, 1f);
         }
 
         void SetLayerColor(Renderer renderer, int layer)
