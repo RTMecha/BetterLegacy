@@ -19,11 +19,14 @@ namespace BetterLegacy.Core.Data
         public bool running = false;
         public bool active = false;
         public List<string> commands = new List<string> { "" };
+        public string Name => commands != null && commands.Count > 0 ? commands[0] : "Null";
 
         public bool not = false;
 
         public object Result { get; set; }
 
         public bool hasChanged;
+
+        public override string ToString() => Name;
     }
 }
