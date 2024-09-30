@@ -176,14 +176,14 @@ namespace BetterLegacy.Patchers
 
         }
 
-        static IEnumerator DisplayLoadingScreen(string _level, bool _showLoading = true)
+        static IEnumerator DisplayLoadingScreen(string level, bool showLoading = true)
         {
             startLoadTime = Time.time;
             AudioManager.inst.SetPitch(1f);
             loading = true;
-            SetActive(_showLoading);
+            SetActive(showLoading);
 
-            if (_showLoading)
+            if (showLoading)
                 try
                 {
                     Instance.background.GetComponent<Image>().color = LSColors.HexToColor(DataManager.inst.GetSettingEnumValues("UITheme", 0)["bg"]);
@@ -193,14 +193,14 @@ namespace BetterLegacy.Patchers
                     CoreHelper.LogException(ex);
                 }
 
-            var async = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(_level);
+            var async = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(level);
             async.allowSceneActivation = false;
-            if (_showLoading)
+            if (showLoading)
                 UpdateProgress(0f);
 
             while (!async.isDone)
             {
-                if (_showLoading)
+                if (showLoading)
                     UpdateProgress(async.progress * 100f);
 
                 if (async.progress >= 0.9f)
@@ -216,6 +216,7 @@ namespace BetterLegacy.Patchers
             {
                 SetActive(false);
                 loading = false;
+                InvokeSceneLoad(level);
                 yield break;
             }
 
@@ -229,7 +230,16 @@ namespace BetterLegacy.Patchers
 
             loading = false;
 
+            InvokeSceneLoad(level);
+
             yield break;
+        }
+
+        static void InvokeSceneLoad(string level)
+        {
+
+            CoreHelper.OnSceneLoad?.Invoke(level);
+            CoreHelper.OnSceneLoad = null;
         }
     }
 }
