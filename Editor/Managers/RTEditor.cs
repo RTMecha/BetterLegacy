@@ -227,6 +227,7 @@ namespace BetterLegacy.Editor.Managers
             ObjectModifiersEditor.Init();
             LevelCombiner.Init();
             ProjectPlannerManager.Init();
+            UploadedLevelsManager.Init();
 
             mousePicker = Creator.NewUIObject("picker", EditorManager.inst.dialogs.parent);
             mousePicker.transform.localScale = Vector3.one;
