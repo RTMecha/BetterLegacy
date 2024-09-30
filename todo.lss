@@ -44,10 +44,10 @@
 - Multiplayer editor, possibly. (everyone has their own perspective of the hosts' editor but have limited functionality compared to the host)
 ### Internal
 - Clean up UIManager.
+- Clean up PlayerManager.
 - Summary and note as much as I can (or need to).
 ### Bugs
 - Fix window event keyframe not resetting when player pauses or when the user exits preview mode.
 - Fix up menu themes.
 - Fix homing keyframe behaviour. (Going from homing to a normal relative keyframe should prevent the keyframe from moving)
 - Fix parent desync not working for specific parent chains.
-- Cleanup the PlayerManager code.
