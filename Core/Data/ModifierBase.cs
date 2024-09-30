@@ -26,7 +26,5 @@ namespace BetterLegacy.Core.Data
         public object Result { get; set; }
 
         public bool hasChanged;
-
-        public override string ToString() => Name;
     }
 }

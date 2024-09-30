@@ -88,6 +88,8 @@ namespace BetterLegacy.Core.Data
             return jn;
         }
 
+        public override string ToString() => Name;
+
         #endregion
     }
 }
