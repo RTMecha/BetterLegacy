@@ -1031,7 +1031,7 @@ namespace BetterLegacy.Components.Player
             var player = playerObjects["RB Parent"].gameObject;
 
             // Here we handle the player's bounds to the camera. It is possible to include negative zoom in those bounds but it might not be a good idea since people have already utilized it.
-            if (!OutOfBounds && !EventsConfig.Instance.EditorCamEnabled.Value && CoreHelper.Playing)
+            if (!OutOfBounds && (!CoreHelper.InEditor || !EventsConfig.Instance.EditorCamEnabled.Value) && CoreHelper.Playing)
             {
                 var cameraToViewportPoint = Camera.main.WorldToViewportPoint(player.transform.position);
                 cameraToViewportPoint.x = Mathf.Clamp(cameraToViewportPoint.x, 0f, 1f);
