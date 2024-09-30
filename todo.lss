@@ -28,6 +28,7 @@
 - Controller Preferences metadata.
 - A way to detect duplicate object IDs.
 - Verify level function that checks if the level is on the server or not. If it isn't then remove serverID reference.
+- Some way to replace the song in-editor.
 - Possibly update input select scene to use new interface system.
 - Optimize timeline objects by replacing TextMeshPro with UnityEngine.UI.Text. See if it could be optional?
 - Fix spawnPrefab modifier potential issues by not adding to the prefabObjects list, assigning a custom Prefab Object property to Beatmap Object and have ObjectConverter read from that.
