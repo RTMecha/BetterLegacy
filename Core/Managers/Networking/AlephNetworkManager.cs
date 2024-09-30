@@ -276,7 +276,60 @@ namespace BetterLegacy.Core.Managers.Networking
             yield break;
         }
 
-        public static IEnumerator DownloadJSONFile(string path, Action<float> percentage, Action<string> callback, Action<string> onError)
+        public static IEnumerator DownloadJSONFile(string path, Action<string> callback, Action<string, long, string> onError, Dictionary<string, string> headers = null)
+        {
+            using var www = UnityWebRequest.Get(path);
+            www.certificateHandler = new ForceAcceptAll();
+
+            if (headers != null)
+                foreach (var header in headers)
+                    www.SetRequestHeader(header.Key, header.Value);
+
+            yield return www.SendWebRequest();
+            if (www.isNetworkError || www.isHttpError)
+            {
+                if (www.downloadHandler != null)
+                    onError?.Invoke(www.error, www.responseCode, www.downloadHandler.text);
+                else
+                    onError?.Invoke(www.error, www.responseCode, null);
+            }
+            else
+                callback?.Invoke(www.downloadHandler.text);
+
+            yield break;
+        }
+        
+        public static IEnumerator DownloadJSONFile(string path, Action<float> percentage, Action<string> callback, Action<string, string> onError, Dictionary<string, string> headers = null)
+        {
+            using var www = UnityWebRequest.Get(path);
+            www.certificateHandler = new ForceAcceptAll();
+
+            if (headers != null)
+                foreach (var header in headers)
+                    www.SetRequestHeader(header.Key, header.Value);
+
+            var webRequest = www.SendWebRequest();
+
+            while (!webRequest.isDone)
+            {
+                percentage?.Invoke(webRequest.progress);
+                yield return null;
+            }
+
+            if (www.isNetworkError || www.isHttpError)
+            {
+                if (www.downloadHandler != null)
+                    onError?.Invoke(www.error, www.downloadHandler.text);
+                else
+                    onError?.Invoke(www.error, null);
+            }
+            else
+                callback?.Invoke(www.downloadHandler.text);
+
+            yield break;
+        }
+
+        public static IEnumerator DownloadJSONFile(string path, Action<float> percentage, Action<string> callback, Action<string, string> onError)
         {
             using var www = UnityWebRequest.Get(path);
             var webRequest = www.SendWebRequest();
@@ -289,8 +342,10 @@ namespace BetterLegacy.Core.Managers.Networking
 
             if (www.isNetworkError || www.isHttpError)
             {
-                Debug.LogError($"{className}Error: {www.error}\nMessage: {www.downloadHandler.text}");
-                onError?.Invoke(www.error);
+                if (www.downloadHandler != null)
+                    onError?.Invoke(www.error, www.downloadHandler.text);
+                else
+                    onError?.Invoke(www.error, null);
             }
             else
                 callback?.Invoke(www.downloadHandler.text);

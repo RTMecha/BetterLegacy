@@ -282,7 +282,31 @@ namespace BetterLegacy.Editor.Managers
 				{
 					CoreHelper.LogException(ex);
 				}
-			}, headers));
+			}, (string onError, long responseCode, string errorMsg) =>
+            {
+                switch (responseCode)
+                {
+                    case 404:
+                        EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
+                        return;
+                    case 401:
+                        {
+                            if (LegacyPlugin.authData != null && LegacyPlugin.authData["access_token"] != null && LegacyPlugin.authData["refresh_token"] != null)
+                            {
+                                CoreHelper.StartCoroutine(RTMetaDataEditor.inst.RefreshTokens(Search));
+                                return;
+                            }
+                            RTMetaDataEditor.inst.ShowLoginPopup(Search);
+                            break;
+                        }
+                    default:
+                        EditorManager.inst.DisplayNotification($"Level search failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
+                        break;
+                }
+
+                if (errorMsg != null)
+                    CoreHelper.LogError($"Error Message: {errorMsg}");
+            }, headers));
 
 			loadingOnlineLevels = false;
 		}
