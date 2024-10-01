@@ -9611,7 +9611,44 @@ namespace BetterLegacy.Editor.Managers
             else if (RTFile.FileExists(fullPath + "/level.wav"))
                 yield return this.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip($"file://{fullPath}/level.wav", AudioType.WAV, x => { song = x; x = null; }, onError => { hadError = true; errorMessage = onError; }));
             else if (RTFile.FileExists(fullPath + "/level.mp3"))
-                yield return song = LSAudio.CreateAudioClipUsingMP3File(fullPath + "/level.mp3");
+            {
+                Exception e = null;
+                yield return this.StartCoroutineAsync(CoreHelper.DoAction(() =>
+                {
+                    try
+                    {
+                        song = LSAudio.CreateAudioClipUsingMP3File(RTFile.CombinePath(fullPath, "level.mp3"));
+                    }
+                    catch (Exception ex)
+                    {
+                        e = ex;
+                        hadError = true;
+                    }
+                }));
+
+                if (hadError)
+                {
+                    if (e != null)
+                        CoreHelper.LogException(e);
+
+                    if (!RTFile.FileExists(fullPath + "/level.mp3"))
+                        SetFileInfo("Song does not exist.");
+                    else
+                    {
+                        try
+                        {
+                            var file = new FileInfo(RTFile.CombinePath(fullPath, "level.mp3"));
+                            SetFileInfo($"There was a problem with loading the MP3 file. Could it be due to the filesize of [{file.Length}]?");
+                        }
+                        catch (Exception ex)
+                        {
+                            CoreHelper.LogException(ex);
+                        }
+                    }
+
+                    yield break;
+                }
+            }
 
             if (hadError)
             {

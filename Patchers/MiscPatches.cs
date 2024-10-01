@@ -2,6 +2,9 @@
 using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 using HarmonyLib;
+using MP3Sharp;
+using MP3Sharp.Decoding.Decoders;
+using MP3Sharp.Decoding.Decoders.LayerIII;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -73,6 +76,187 @@ namespace BetterLegacy.Patchers
         {
             __result = EventSystem.current && EventSystem.current.currentSelectedGameObject &&
                 (EventSystem.current.currentSelectedGameObject.GetComponent<InputField>() || EventSystem.current.currentSelectedGameObject.GetComponent<TMPro.TMP_InputField>());
+            return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(LSFunctions.LSAudio))]
+    public class LSAudioPatch
+    {
+        [HarmonyPatch(nameof(LSFunctions.LSAudio.CreateAudioClipUsingMP3File))]
+        [HarmonyPrefix]
+        static bool CreateAudioClipUsingMP3FilePrefix(ref AudioClip __result, string __0)
+        {
+            __result = CreateAudioClipUsingMP3File(__0);
+            return false;
+        }
+
+        static AudioClip CreateAudioClipUsingMP3File(string path)
+        {
+            var buffer = new byte[4096];
+            var data = new List<float>();
+            using var mp3Stream = new MP3Stream(path);
+            int num = 4096;
+            while (num == 4096 && mp3Stream.Length - mp3Stream.Position >= 1000L)
+            {
+                num = mp3Stream.Read(buffer, 0, 4096);
+                for (int i = 0; i < num; i += 2)
+                {
+                    byte b = buffer[i];
+                    data.Add(((short)((buffer[i + 1] << 8) | b)) * 1f / 32767f);
+                }
+            }
+            int frequency = mp3Stream.Frequency;
+            short channelCount = mp3Stream.ChannelCount;
+            int num3 = data.Count / channelCount;
+            var audioClip = AudioClip.Create("audio", num3, channelCount, frequency, false);
+            audioClip.SetData(data.ToArray(), 0);
+            return audioClip;
+        }
+    }
+
+    [HarmonyPatch(typeof(LayerIIIDecoder))]
+    public class LayerDecoderPatch
+    {
+        [HarmonyPatch("dequantize_sample")]
+        [HarmonyPrefix]
+        static bool dequantize_samplePrefix(LayerIIIDecoder __instance, float[][] xr, int ch, int gr)
+        {
+            try
+            {
+                GranuleInfo granuleInfo = __instance.m_SideInfo.Channels[ch].Granules[gr];
+                int num = 0;
+                int num2 = 0;
+                int num3 = 0;
+                int num4 = 0;
+                int num5;
+                if (granuleInfo.WindowSwitchingFlag != 0 && granuleInfo.BlockType == 2)
+                {
+                    if (granuleInfo.MixedBlockFlag != 0)
+                    {
+                        num5 = __instance.sfBandIndex[__instance.sfreq].l[1];
+                    }
+                    else
+                    {
+                        num3 = __instance.sfBandIndex[__instance.sfreq].s[1];
+                        num5 = (num3 << 2) - num3;
+                        num2 = 0;
+                    }
+                }
+                else
+                {
+                    num5 = __instance.sfBandIndex[__instance.sfreq].l[1];
+                }
+
+                // problematic area
+                float num6 = (float)Math.Pow(2.0, 0.25 * ((double)granuleInfo.GlobalGain - 210.0));
+                for (int i = 0; i < __instance.nonzero[ch]; i++)
+                {
+                    int num7 = i % 18;
+                    int num8 = (i - num7) / 18;
+                    if (__instance.is_1d[i] == 0)
+                    {
+                        xr[num8][num7] = 0f;
+                    }
+                    else
+                    {
+                        int num9 = __instance.is_1d[i];
+                        if (__instance.is_1d[i] > 0)
+                        {
+                            xr[num8][num7] = num6 * LayerIIIDecoder.t_43[num9];
+                        }
+                        else
+                        {
+                            xr[num8][num7] = -num6 * LayerIIIDecoder.t_43[-num9];
+                        }
+                    }
+                }
+
+                // dunno if the problem is after this
+                for (int i = 0; i < __instance.nonzero[ch]; i++)
+                {
+                    int num10 = i % 18;
+                    int num11 = (i - num10) / 18;
+                    if (num4 == num5)
+                    {
+                        if (granuleInfo.WindowSwitchingFlag != 0 && granuleInfo.BlockType == 2)
+                        {
+                            if (granuleInfo.MixedBlockFlag != 0)
+                            {
+                                if (num4 == __instance.sfBandIndex[__instance.sfreq].l[8])
+                                {
+                                    num5 = __instance.sfBandIndex[__instance.sfreq].s[4];
+                                    num5 = (num5 << 2) - num5;
+                                    num = 3;
+                                    num3 = __instance.sfBandIndex[__instance.sfreq].s[4] - __instance.sfBandIndex[__instance.sfreq].s[3];
+                                    num2 = __instance.sfBandIndex[__instance.sfreq].s[3];
+                                    num2 = (num2 << 2) - num2;
+                                }
+                                else if (num4 < __instance.sfBandIndex[__instance.sfreq].l[8])
+                                {
+                                    num5 = __instance.sfBandIndex[__instance.sfreq].l[++num + 1];
+                                }
+                                else
+                                {
+                                    num5 = __instance.sfBandIndex[__instance.sfreq].s[++num + 1];
+                                    num5 = (num5 << 2) - num5;
+                                    num2 = __instance.sfBandIndex[__instance.sfreq].s[num];
+                                    num3 = __instance.sfBandIndex[__instance.sfreq].s[num + 1] - num2;
+                                    num2 = (num2 << 2) - num2;
+                                }
+                            }
+                            else
+                            {
+                                num5 = __instance.sfBandIndex[__instance.sfreq].s[++num + 1];
+                                num5 = (num5 << 2) - num5;
+                                num2 = __instance.sfBandIndex[__instance.sfreq].s[num];
+                                num3 = __instance.sfBandIndex[__instance.sfreq].s[num + 1] - num2;
+                                num2 = (num2 << 2) - num2;
+                            }
+                        }
+                        else
+                        {
+                            num5 = __instance.sfBandIndex[__instance.sfreq].l[++num + 1];
+                        }
+                    }
+                    if (granuleInfo.WindowSwitchingFlag != 0 && ((granuleInfo.BlockType == 2 && granuleInfo.MixedBlockFlag == 0) || (granuleInfo.BlockType == 2 && granuleInfo.MixedBlockFlag != 0 && i >= 36)))
+                    {
+                        int num12 = (num4 - num2) / num3;
+                        int num13 = __instance.scalefac[ch].s[num12][num] << granuleInfo.ScaleFacScale;
+                        num13 += granuleInfo.SubblockGain[num12] << 2;
+                        xr[num11][num10] *= LayerIIIDecoder.two_to_negative_half_pow[num13];
+                    }
+                    else
+                    {
+                        int num14 = __instance.scalefac[ch].l[num];
+                        if (granuleInfo.Preflag != 0)
+                        {
+                            num14 += LayerIIIDecoder.pretab[num];
+                        }
+                        num14 <<= granuleInfo.ScaleFacScale;
+                        xr[num11][num10] *= LayerIIIDecoder.two_to_negative_half_pow[num14];
+                    }
+                    num4++;
+                }
+                for (int i = __instance.nonzero[ch]; i < 576; i++)
+                {
+                    int num15 = i % 18;
+                    int num16 = (i - num15) / 18;
+                    if (num15 < 0)
+                    {
+                        num15 = 0;
+                    }
+                    if (num16 < 0)
+                    {
+                        num16 = 0;
+                    }
+                    xr[num16][num15] = 0f;
+                }
+            }
+            catch
+            {
+
+            }
             return false;
         }
     }

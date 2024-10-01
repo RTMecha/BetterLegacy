@@ -265,6 +265,12 @@ namespace BetterLegacy.Core.Helpers
             action?.Invoke();
         }
 
+        public static IEnumerator DoAction(Action action)
+        {
+            action?.Invoke();
+            yield break;
+        }
+
         public static void ReturnToUnity(Action action) => StartCoroutine(IReturnToUnity(action));
 
         public static IEnumerator IReturnToUnity(Action action)
