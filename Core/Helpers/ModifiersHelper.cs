@@ -2607,19 +2607,16 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 var beatmapObject = Parser.TryParse(modifier.value, true) ? modifier.reference : modifier.reference.GetParentChain().Last();
 
-                                modifier.Result = beatmapObject.GetChildChain();
+                                modifier.Result = beatmapObject.GetChildTree();
                             }
 
-                            var list = (List<List<DataManager.GameData.BeatmapObject>>)modifier.Result;
+                            var list = (List<BeatmapObject>)modifier.Result;
 
                             for (int i = 0; i < list.Count; i++)
                             {
-                                var childList = list[i];
-                                for (int j = 0; j < childList.Count; j++)
-                                {
-                                    if (childList[j] is BeatmapObject beatmapObject && Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
-                                        levelObject.top.gameObject.SetActive(true);
-                                }
+                                var beatmapObject = list[i];
+                                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
+                                    levelObject.top.gameObject.SetActive(true);
                             }
 
                             break;
@@ -2641,26 +2638,23 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
-                                var resultList = new List<List<BeatmapObject>>();
+                                var resultList = new List<BeatmapObject>();
                                 foreach (var bm in beatmapObjects)
                                 {
                                     var beatmapObject = Parser.TryParse(modifier.value, true) ? bm : bm.GetParentChain().Last();
-                                    resultList.AddRange(beatmapObject.GetChildChain());
+                                    resultList.AddRange(beatmapObject.GetChildTree());
                                 }
 
                                 modifier.Result = resultList;
                             }
 
-                            var list = (List<List<BeatmapObject>>)modifier.Result;
+                            var list = (List<BeatmapObject>)modifier.Result;
 
                             for (int i = 0; i < list.Count; i++)
                             {
-                                var childList = list[i];
-                                for (int j = 0; j < childList.Count; j++)
-                                {
-                                    if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.top)
-                                        levelObject.top.gameObject.SetActive(true);
-                                }
+                                var beatmapObject = list[i];
+                                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
+                                    levelObject.top.gameObject.SetActive(true);
                             }
 
                             break;
@@ -2681,19 +2675,16 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 var beatmapObject = Parser.TryParse(modifier.value, true) ? modifier.reference : modifier.reference.GetParentChain().Last();
 
-                                modifier.Result = beatmapObject.GetChildChain();
+                                modifier.Result = beatmapObject.GetChildTree();
                             }
 
-                            var list = (List<List<DataManager.GameData.BeatmapObject>>)modifier.Result;
+                            var list = (List<BeatmapObject>)modifier.Result;
 
                             for (int i = 0; i < list.Count; i++)
                             {
-                                var childList = list[i];
-                                for (int j = 0; j < childList.Count; j++)
-                                {
-                                    if (childList[j] is BeatmapObject beatmapObject && Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
-                                        levelObject.top.gameObject.SetActive(false);
-                                }
+                                var beatmapObject = list[i];
+                                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
+                                    levelObject.top.gameObject.SetActive(false);
                             }
 
                             break;
@@ -2715,26 +2706,23 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
-                                var resultList = new List<List<BeatmapObject>>();
+                                var resultList = new List<BeatmapObject>();
                                 foreach (var bm in beatmapObjects)
                                 {
                                     var beatmapObject = Parser.TryParse(modifier.value, true) ? bm : bm.GetParentChain().Last();
-                                    resultList.AddRange(beatmapObject.GetChildChain());
+                                    resultList.AddRange(beatmapObject.GetChildTree());
                                 }
 
                                 modifier.Result = resultList;
                             }
 
-                            var list = (List<List<BeatmapObject>>)modifier.Result;
+                            var list = (List<BeatmapObject>)modifier.Result;
 
                             for (int i = 0; i < list.Count; i++)
                             {
-                                var childList = list[i];
-                                for (int j = 0; j < childList.Count; j++)
-                                {
-                                    if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.top)
-                                        levelObject.top.gameObject.SetActive(false);
-                                }
+                                var beatmapObject = list[i];
+                                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
+                                    levelObject.top.gameObject.SetActive(false);
                             }
 
                             break;
@@ -5344,19 +5332,16 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 var beatmapObject = Parser.TryParse(modifier.value, true) ? modifier.reference : modifier.reference.GetParentChain().Last();
 
-                                modifier.Result = beatmapObject.GetChildChain();
+                                modifier.Result = beatmapObject.GetChildTree();
                             }
 
-                            var list = (List<List<DataManager.GameData.BeatmapObject>>)modifier.Result;
+                            var list = (List<BeatmapObject>)modifier.Result;
 
                             for (int i = 0; i < list.Count; i++)
                             {
-                                var childList = list[i];
-                                for (int j = 0; j < childList.Count; j++)
-                                {
-                                    if (childList[j] is BeatmapObject beatmapObject && Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
-                                        levelObject.top.gameObject.SetActive(false);
-                                }
+                                var beatmapObject = list[i];
+                                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
+                                    levelObject.top.gameObject.SetActive(false);
                             }
 
                             break;
@@ -5370,26 +5355,23 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
-                                var resultList = new List<List<BeatmapObject>>();
+                                var resultList = new List<BeatmapObject>();
                                 foreach (var bm in beatmapObjects)
                                 {
                                     var beatmapObject = Parser.TryParse(modifier.value, true) ? bm : bm.GetParentChain().Last();
-                                    resultList.AddRange(beatmapObject.GetChildChain());
+                                    resultList.AddRange(beatmapObject.GetChildTree());
                                 }
 
                                 modifier.Result = resultList;
                             }
 
-                            var list = (List<List<BeatmapObject>>)modifier.Result;
+                            var list = (List<BeatmapObject>)modifier.Result;
 
                             for (int i = 0; i < list.Count; i++)
                             {
-                                var childList = list[i];
-                                for (int j = 0; j < childList.Count; j++)
-                                {
-                                    if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.top)
-                                        levelObject.top.gameObject.SetActive(false);
-                                }
+                                var beatmapObject = list[i];
+                                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
+                                    levelObject.top.gameObject.SetActive(false);
                             }
 
                             modifier.Result = null;
@@ -5425,33 +5407,24 @@ namespace BetterLegacy.Core.Helpers
                         {
                             if (modifier.value == "0")
                                 modifier.value = "False";
-                            
+
                             if (modifier.commands.Count > 1 && !Parser.TryParse(modifier.commands[1], true))
                                 return;
 
-                            if (Parser.TryParse(modifier.value, true))
+                            if (modifier.Result == null)
                             {
-                                foreach (var cc in modifier.reference.GetChildChain())
-                                {
-                                    for (int o = 0; o < cc.Count; o++)
-                                    {
-                                        if (cc[o] != null && Updater.TryGetObject(cc[o], out LevelObject levelObject) && levelObject.top)
-                                            levelObject.top.gameObject.SetActive(true);
-                                    }
-                                }
+                                var beatmapObject = Parser.TryParse(modifier.value, true) ? modifier.reference : modifier.reference.GetParentChain().Last();
 
-                                break;
+                                modifier.Result = beatmapObject.GetChildTree();
                             }
 
-                            var parentChain = modifier.reference.GetParentChain();
+                            var list = (List<BeatmapObject>)modifier.Result;
 
-                            foreach (var cc in parentChain[parentChain.Count - 1].GetChildChain())
+                            for (int i = 0; i < list.Count; i++)
                             {
-                                for (int o = 0; o < cc.Count; o++)
-                                {
-                                    if (cc[o] != null && Updater.TryGetObject(cc[o], out LevelObject levelObject) && levelObject.top)
-                                        levelObject.top.gameObject.SetActive(true);
-                                }
+                                var beatmapObject = list[i];
+                                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
+                                    levelObject.top.gameObject.SetActive(true);
                             }
 
                             break;
@@ -5465,26 +5438,23 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 var beatmapObjects = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[1]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[1]);
 
-                                var resultList = new List<List<BeatmapObject>>();
+                                var resultList = new List<BeatmapObject>();
                                 foreach (var bm in beatmapObjects)
                                 {
                                     var beatmapObject = Parser.TryParse(modifier.value, true) ? bm : bm.GetParentChain().Last();
-                                    resultList.AddRange(beatmapObject.GetChildChain());
+                                    resultList.AddRange(beatmapObject.GetChildTree());
                                 }
 
                                 modifier.Result = resultList;
                             }
 
-                            var list = (List<List<BeatmapObject>>)modifier.Result;
+                            var list = (List<BeatmapObject>)modifier.Result;
 
                             for (int i = 0; i < list.Count; i++)
                             {
-                                var childList = list[i];
-                                for (int j = 0; j < childList.Count; j++)
-                                {
-                                    if (childList[j] != null && Updater.TryGetObject(childList[j], out LevelObject levelObject) && levelObject.top)
-                                        levelObject.top.gameObject.SetActive(true);
-                                }
+                                var beatmapObject = list[i];
+                                if (Updater.TryGetObject(beatmapObject, out LevelObject levelObject) && levelObject.top)
+                                    levelObject.top.gameObject.SetActive(true);
                             }
 
                             modifier.Result = null;

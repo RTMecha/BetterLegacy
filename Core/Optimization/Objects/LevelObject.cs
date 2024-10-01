@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Core.Animation;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Optimization.Objects.Visual;
 using System.Collections.Generic;
 using System.Linq;
@@ -110,9 +111,9 @@ namespace BetterLegacy.Core.Optimization.Objects
 
                 if (pc != null && pc.Count > 0)
                 {
-                    var beatmapParent = (Data.BeatmapObject)pc[pc.Count - 1];
+                    var beatmapParent = pc[pc.Count - 1];
 
-                    cameraParent = beatmapParent.parent == "CAMERA_PARENT";
+                    cameraParent = beatmapParent.parent == BeatmapObject.CAMERA_PARENT;
 
                     positionParent = beatmapParent.GetParentType(0);
                     scaleParent = beatmapParent.GetParentType(1);

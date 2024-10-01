@@ -212,6 +212,12 @@ namespace BetterLegacy.Core.Data
             Solid
         }
 
+        #region Constants
+
+        public const string CAMERA_PARENT = "CAMERA_PARENT";
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -487,7 +493,7 @@ namespace BetterLegacy.Core.Data
                 beatmapObject.prefabID = jn["pre_id"];
 
             if (jn["p_id"] != null)
-                beatmapObject.parent = isCameraParented ? "CAMERA_PARENT" : jn["p_id"];
+                beatmapObject.parent = isCameraParented ? CAMERA_PARENT : jn["p_id"];
 
             if (!isCameraParented && jn["p_t"] != null)
                 beatmapObject.parentType = jn["p_t"];
@@ -851,7 +857,7 @@ namespace BetterLegacy.Core.Data
             }
 
             if (!string.IsNullOrEmpty(parent))
-                jn["p_id"] = parent == "CAMERA_PARENT" ? "camera" : parent;
+                jn["p_id"] = parent == CAMERA_PARENT ? "camera" : parent;
 
             jn["d"] = Depth;
 
@@ -1227,26 +1233,26 @@ namespace BetterLegacy.Core.Data
         public List<BeatmapObject> GetParentChain() => CoreHelper.GetParentChain(this);
 
         /// <summary>
-        /// Gets the every child connected to the beatmap object.
+        /// Recursively gets every child connected to the beatmap object.
         /// </summary>
-        /// <param name="beatmapObject"></param>
-        /// <returns>A full list tree with every child object.</returns>
-        public List<List<BeatmapObject>> GetChildChain()
+        /// <returns>A full list with every child object.</returns>
+        public List<BeatmapObject> GetChildTree()
         {
-            var lists = new List<List<BeatmapObject>>();
-            for (int i = 0; i < GameData.Current.beatmapObjects.Count; i++)
+            var list = new List<BeatmapObject>();
+            list.Add(this);
+            var beatmapObjects = GameData.Current.beatmapObjects;
+
+            string id = this.id;
+            if (beatmapObjects.TryFindAll(x => x.parent == id, out List<BeatmapObject> children))
             {
-                var parentChain = GameData.Current.beatmapObjects[i].GetParentChain();
-
-                if (parentChain == null || parentChain.Count < 1)
-                    continue;
-
-                if (parentChain.Has(x => x.id == id))
-                    lists.Add(parentChain);
+                for (int i = 0; i < children.Count; i++)
+                    list.AddRange(children[i].GetChildTree());
             }
 
-            return lists;
+            return list;
         }
+
+        public List<BeatmapObject> GetChildren() => GameData.Current.beatmapObjects.TryFindAll(x => x.parent == id, out List<BeatmapObject> children) ? children : new List<BeatmapObject>();
 
         #endregion
 
