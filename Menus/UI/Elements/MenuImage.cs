@@ -920,7 +920,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         if (parameters.IsArray && parameters.Count > 2 || parameters.IsObject && parameters["path"] != null)
                             InterfaceManager.inst.MainDirectory = RTFile.ApplicationDirectory + FontManager.TextTranslater.ReplaceProperties(parameters.IsArray ? parameters[2] : parameters["path"]);
 
-                        var path = RTFile.CombinePath(InterfaceManager.inst.MainDirectory, $"{(parameters.IsArray ? parameters[0].Value : parameters["file"].Value)}.lsi");
+                        var path = RTFile.CombinePaths(InterfaceManager.inst.MainDirectory, $"{(parameters.IsArray ? parameters[0].Value : parameters["file"].Value)}.lsi");
 
                         if (!RTFile.FileExists(path))
                         {

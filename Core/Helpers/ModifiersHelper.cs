@@ -5137,7 +5137,7 @@ namespace BetterLegacy.Core.Helpers
                                 return;
                             }
 
-                            var path = RTFile.CombinePath(RTFile.BasePath, modifier.value + ".lsi");
+                            var path = RTFile.CombinePaths(RTFile.BasePath, modifier.value + ".lsi");
 
                             if (!RTFile.FileExists(path))
                             {
