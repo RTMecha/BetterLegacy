@@ -10621,13 +10621,13 @@ namespace BetterLegacy.Editor.Managers
 
         }
 
-        public void ShowObjectSearch(Action<BeatmapObject> onSelect, bool clearParent = false)
+        public void ShowObjectSearch(Action<BeatmapObject> onSelect, bool clearParent = false, List<BeatmapObject> beatmapObjects = null)
         {
             EditorManager.inst.ShowDialog("Object Search Popup");
-            RefreshObjectSearch(onSelect, clearParent);
+            RefreshObjectSearch(onSelect, clearParent, beatmapObjects);
         }
 
-        public void RefreshObjectSearch(Action<BeatmapObject> onSelect, bool clearParent = false)
+        public void RefreshObjectSearch(Action<BeatmapObject> onSelect, bool clearParent = false, List<BeatmapObject> beatmapObjects = null)
         {
             var dialog = EditorManager.inst.GetDialog("Object Search Popup").Dialog;
             var content = dialog.Find("mask/content");
@@ -10659,19 +10659,22 @@ namespace BetterLegacy.Editor.Managers
             searchBar.onValueChanged.AddListener(_val =>
             {
                 objectSearchTerm = _val;
-                RefreshObjectSearch(onSelect, clearParent);
+                RefreshObjectSearch(onSelect, clearParent, beatmapObjects);
             });
 
             LSHelpers.DeleteChildren(content);
 
-            var list = GameData.Current.beatmapObjects.FindAll(x => !x.fromPrefab);
+            if (beatmapObjects == null)
+                beatmapObjects = GameData.Current.beatmapObjects;
+
+            var list = beatmapObjects.FindAll(x => !x.fromPrefab);
             foreach (var beatmapObject in list)
             {
                 var regex = new Regex(@"\[([0-9])\]");
                 var match = regex.Match(objectSearchTerm);
 
                 if (string.IsNullOrEmpty(objectSearchTerm) ||
-                    match.Success && int.TryParse(match.Groups[1].ToString(), out int index) && index < GameData.Current.beatmapObjects.Count && GameData.Current.beatmapObjects.IndexOf(beatmapObject) == index ||
+                    match.Success && int.TryParse(match.Groups[1].ToString(), out int index) && index < beatmapObjects.Count && beatmapObjects.IndexOf(beatmapObject) == index ||
                     beatmapObject.id == objectSearchTerm ||
                     beatmapObject.name.ToLower().Contains(objectSearchTerm.ToLower()))
                 {
@@ -10957,14 +10960,14 @@ namespace BetterLegacy.Editor.Managers
                         if (timelineObject.IsPrefabObject)
                         {
                             var prefabObject = timelineObject.GetData<PrefabObject>();
-                            prefabObject.parent = "CAMERA_PARENT";
+                            prefabObject.parent = BeatmapObject.CAMERA_PARENT;
                             Updater.UpdatePrefab(prefabObject);
 
                             continue;
                         }
 
                         var bm = timelineObject.GetData<BeatmapObject>();
-                        bm.parent = "CAMERA_PARENT";
+                        bm.parent = BeatmapObject.CAMERA_PARENT;
                         Updater.UpdateObject(bm);
                     }
 
