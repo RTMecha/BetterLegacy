@@ -2088,6 +2088,35 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddGraphic(exportToVGStorage.text, ThemeGroup.Function_2_Text);
         }
 
+        public void ConvertPrefab(Prefab prefab)
+        {
+            var exportPath = EditorConfig.Instance.ConvertPrefabLSToVGExportPath.Value;
+
+            if (string.IsNullOrEmpty(exportPath))
+            {
+                if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/exports"))
+                    Directory.CreateDirectory(RTFile.ApplicationDirectory + "beatmaps/exports");
+                exportPath = RTFile.ApplicationDirectory + "beatmaps/exports/";
+            }
+
+            if (!string.IsNullOrEmpty(exportPath) && exportPath[exportPath.Length - 1] != '/')
+                exportPath += "/";
+
+            if (!RTFile.DirectoryExists(Path.GetDirectoryName(exportPath)))
+            {
+                EditorManager.inst.DisplayNotification("Directory does not exist.", 2f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            var vgjn = prefab.ToJSONVG();
+
+            RTFile.WriteToFile($"{exportPath}{prefab.Name.ToLower()}.vgp", vgjn.ToString());
+
+            EditorManager.inst.DisplayNotification($"Converted Prefab {prefab.Name.ToLower()}.lsp from LS format to VG format and saved to {prefab.Name.ToLower()}.vgp!", 4f, EditorManager.NotificationType.Success);
+
+            AchievementManager.inst.UnlockAchievement("time_machine");
+        }
+
         public void RenderPrefabExternalDialog(PrefabPanel prefabPanel)
         {
             var prefab = prefabPanel.Prefab;
@@ -2119,34 +2148,7 @@ namespace BetterLegacy.Editor.Managers
             importPrefab.onClick.AddListener(() => { ImportPrefabIntoLevel(prefab); });
 
             exportToVG.onClick.ClearAll();
-            exportToVG.onClick.AddListener(() =>
-            {
-                var exportPath = EditorConfig.Instance.ConvertPrefabLSToVGExportPath.Value;
-
-                if (string.IsNullOrEmpty(exportPath))
-                {
-                    if (!RTFile.DirectoryExists(RTFile.ApplicationDirectory + "beatmaps/exports"))
-                        Directory.CreateDirectory(RTFile.ApplicationDirectory + "beatmaps/exports");
-                    exportPath = RTFile.ApplicationDirectory + "beatmaps/exports/";
-                }
-
-                if (!string.IsNullOrEmpty(exportPath) && exportPath[exportPath.Length - 1] != '/')
-                    exportPath += "/";
-
-                if (!RTFile.DirectoryExists(Path.GetDirectoryName(exportPath)))
-                {
-                    EditorManager.inst.DisplayNotification("Directory does not exist.", 2f, EditorManager.NotificationType.Error);
-                    return;
-                }
-
-                var vgjn = prefab.ToJSONVG();
-
-                RTFile.WriteToFile($"{exportPath}{prefab.Name.ToLower()}.vgp", vgjn.ToString());
-
-                EditorManager.inst.DisplayNotification($"Converted Prefab {prefab.Name.ToLower()}.lsp from LS format to VG format and saved to {prefab.Name.ToLower()}.vgp!", 4f, EditorManager.NotificationType.Success);
-
-                AchievementManager.inst.UnlockAchievement("time_machine");
-            });
+            exportToVG.onClick.AddListener(() => { ConvertPrefab(prefab); });
 
             externalDescriptionField.onValueChanged.ClearAll();
             externalDescriptionField.onEndEdit.ClearAll();
@@ -2820,6 +2822,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         RTEditor.inst.ShowContextMenu(300f,
                             new RTEditor.ButtonFunction("Import", () => { ImportPrefabIntoLevel(prefabPanel.Prefab); }),
+                            new RTEditor.ButtonFunction("Convert to VG", () => { ConvertPrefab(prefabPanel.Prefab); }),
                             new RTEditor.ButtonFunction("Open", () =>
                             {
                                 EditorManager.inst.ShowDialog("Prefab External Dialog");

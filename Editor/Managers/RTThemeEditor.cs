@@ -849,7 +849,7 @@ namespace BetterLegacy.Editor.Managers
                         EventEditor.inst.RenderThemePreview(themeKeyframe);
                     }),
                     new RTEditor.ButtonFunction("Edit", () => { RenderThemeEditor(Parser.TryParse(beatmapTheme.id, 0)); }),
-                    new RTEditor.ButtonFunction("Convert", () =>
+                    new RTEditor.ButtonFunction("Convert to VG", () =>
                     {
                         var exportPath = EditorConfig.Instance.ConvertThemeLSToVGExportPath.Value;
 

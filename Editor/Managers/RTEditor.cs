@@ -9149,7 +9149,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var metadata = MetaData.Parse(JSON.Parse(metadataStr));
 
-                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(transform, $"Folder [{Path.GetFileName(path)}]");
+                var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(transform, $"Folder [{name}]");
                 var folderButtonStorage = gameObject.GetComponent<FunctionButtonStorage>();
                 var folderButtonFunction = gameObject.AddComponent<FolderButtonFunction>();
 
@@ -9251,6 +9251,7 @@ namespace BetterLegacy.Editor.Managers
                                 EditorManager.inst.ShowDialog("Autosave Popup");
                                 RefreshAutosaveList(editorWrapper);
                             }),
+                            new ButtonFunction("Convert to VG", () => { ConvertLevel(path, name); }),
                             new ButtonFunction(true),
                             new ButtonFunction("Create folder", () =>
                             {
@@ -9617,7 +9618,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     try
                     {
-                        song = LSAudio.CreateAudioClipUsingMP3File(RTFile.CombinePath(fullPath, "level.mp3"));
+                        song = LSAudio.CreateAudioClipUsingMP3File(RTFile.CombinePaths(fullPath, "level.mp3"));
                     }
                     catch (Exception ex)
                     {
@@ -9637,7 +9638,7 @@ namespace BetterLegacy.Editor.Managers
                     {
                         try
                         {
-                            var file = new FileInfo(RTFile.CombinePath(fullPath, "level.mp3"));
+                            var file = new FileInfo(RTFile.CombinePaths(fullPath, "level.mp3"));
                             SetFileInfo($"There was a problem with loading the MP3 file. Could it be due to the filesize of [{file.Length}]?");
                         }
                         catch (Exception ex)
@@ -11575,6 +11576,75 @@ namespace BetterLegacy.Editor.Managers
         #endregion
 
         #region Misc Functions
+
+        /// <summary>
+        /// Converts a level to VG format and outputs it to the exports folder.
+        /// </summary>
+        /// <param name="currentPath">Does not end with /level.lsb or a /.</param>
+        /// <param name="fileName">The name of the folder.</param>
+        public void ConvertLevel(string currentPath, string fileName)
+        {
+            var exportPath = EditorConfig.Instance.ConvertLevelLSToVGExportPath.Value;
+
+            if (string.IsNullOrEmpty(exportPath))
+            {
+                var output = RTFile.CombinePaths(RTFile.ApplicationDirectory, "beatmaps/exports");
+                if (!RTFile.DirectoryExists(output))
+                    Directory.CreateDirectory(output);
+                exportPath = output + "/";
+            }
+
+            if (exportPath[exportPath.Length - 1] != '/')
+                exportPath += "/";
+
+            if (!RTFile.DirectoryExists(Path.GetDirectoryName(exportPath)))
+            {
+                EditorManager.inst.DisplayNotification("Directory does not exist.", 2f, EditorManager.NotificationType.Error);
+                return;
+            }
+
+            var gamedata = GameData.ReadFromFile(RTFile.CombinePaths(currentPath, "level.lsb"), FileType.LS);
+            var metadata = MetaData.ReadFromFile(RTFile.CombinePaths(currentPath, "metadata.lsb"), FileType.LS, false);
+
+            var vgd = gamedata.ToJSONVG();
+
+            var vgm = metadata.ToJSONVG();
+
+            var path = exportPath + fileName;
+
+            if (!RTFile.DirectoryExists(path))
+                Directory.CreateDirectory(path);
+
+            if (RTFile.FileExists(RTFile.CombinePaths(currentPath, "level.ogg")))
+                File.Copy(RTFile.CombinePaths(currentPath, "level.ogg"), RTFile.CombinePaths(path, "audio.ogg"), true);
+
+            if (RTFile.FileExists(RTFile.CombinePaths(currentPath, "level.jpg")))
+                File.Copy(RTFile.CombinePaths(currentPath, "level.jpg"), RTFile.CombinePaths(path, "cover.jpg"), true);
+
+            try
+            {
+                RTFile.WriteToFile(RTFile.CombinePaths(path, "metadata.vgm"), vgm.ToString());
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"{MetadataEditor.inst.className}Convert to VG error (MetaData) {ex}");
+            }
+
+            try
+            {
+                
+                RTFile.WriteToFile(RTFile.CombinePaths(path, "level.vgd"), vgd.ToString());
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"{MetadataEditor.inst.className}Convert to VG error (GameData) {ex}");
+            }
+
+            EditorManager.inst.DisplayNotification($"Converted Level \"{fileName}\" from LS format to VG format and saved to {Path.GetFileName(path)}.", 4f,
+                EditorManager.NotificationType.Success);
+
+            AchievementManager.inst.UnlockAchievement("time_machine");
+        }
 
         public static void SetNotificationProperties()
         {
