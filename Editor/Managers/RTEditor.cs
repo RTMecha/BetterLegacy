@@ -11035,7 +11035,7 @@ namespace BetterLegacy.Editor.Managers
                             }
 
                             var bm = timelineObject.GetData<BeatmapObject>();
-                            TriggerHelper.SetParent(timelineObject, ObjectEditor.inst.GetTimelineObject((BeatmapObject)obj));
+                            TriggerHelper.SetParent(timelineObject, ObjectEditor.inst.GetTimelineObject(obj));
                             Updater.UpdateObject(bm);
                         }
 
