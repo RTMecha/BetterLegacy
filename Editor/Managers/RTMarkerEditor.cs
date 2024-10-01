@@ -228,14 +228,17 @@ namespace BetterLegacy.Editor.Managers
                         RTEditor.inst.SetLayer(Mathf.Clamp(layer - 1, 0, int.MaxValue));
                 }
 
-            LSHelpers.DeleteChildren(MarkerEditor.inst.left.Find("color"), false);
+            var colorsParent = MarkerEditor.inst.left.Find("color");
+            LSHelpers.DeleteChildren(MarkerEditor.inst.left.Find("color"));
+            markerColors.Clear();
             int num = 0;
             foreach (var color in MarkerEditor.inst.markerColors)
             {
                 int colorIndex = num;
-                var gameObject = EditorManager.inst.colorGUI.Duplicate(MarkerEditor.inst.left.Find("color"), "marker color");
+                var gameObject = EditorManager.inst.colorGUI.Duplicate(colorsParent, "marker color");
                 gameObject.transform.localScale = Vector3.one;
                 gameObject.transform.Find("Image").gameObject.SetActive(marker.color == colorIndex);
+                markerColors.Add(gameObject.transform.Find("Image").gameObject);
                 var button = gameObject.GetComponent<Button>();
                 button.image.color = color;
                 button.onClick.ClearAll();
@@ -245,6 +248,24 @@ namespace BetterLegacy.Editor.Managers
                     SetColor(colorIndex);
                     UpdateColorSelection();
                 });
+
+                var contextClickable = gameObject.AddComponent<ContextClickable>();
+                contextClickable.onClick = eventData =>
+                {
+                    if (eventData.button != PointerEventData.InputButton.Right)
+                        return;
+
+                    RTEditor.inst.ShowContextMenu(RTEditor.DEFAULT_CONTEXT_MENU_WIDTH,
+                        new RTEditor.ButtonFunction("Use", () =>
+                        {
+                            Debug.Log($"{EditorManager.inst.className}Set Marker {colorIndex}'s color to {colorIndex}");
+                            SetColor(colorIndex);
+                            UpdateColorSelection();
+                        }),
+                        new RTEditor.ButtonFunction("Set as Default", () => { EditorConfig.Instance.MarkerDefaultColor.Value = colorIndex; }),
+                        new RTEditor.ButtonFunction("Edit Colors", SettingEditor.inst.Render)
+                        );
+                };
 
                 EditorThemeManager.ApplyGraphic(button.image, ThemeGroup.Null, true);
                 EditorThemeManager.ApplyGraphic(gameObject.transform.GetChild(0).GetComponent<Image>(), ThemeGroup.Background_1);
@@ -334,15 +355,12 @@ namespace BetterLegacy.Editor.Managers
             CreateMarkers();
         }
 
+        List<GameObject> markerColors = new List<GameObject>();
         public void UpdateColorSelection()
         {
             var marker = CurrentMarker.Marker;
-            int num = 0;
-            foreach (var color in MarkerEditor.inst.markerColors)
-            {
-                MarkerEditor.inst.left.Find("color").GetChild(num).Find("Image").gameObject.SetActive(marker.color == num);
-                num++;
-            }
+            for (int i = 0; i < markerColors.Count; i++)
+                markerColors[i].SetActive(marker.color == i);
         }
 
         public void SetCurrentMarker(TimelineMarker timelineMarker, bool bringTo = false, bool moveTimeline = false, bool showDialog = true)
