@@ -346,6 +346,13 @@ namespace BetterLegacy.Core.Data
 
         public static GameData ConvertedGameData { get; set; }
 
+        public static GameData ReadFromFile(string path, FileType fileType, bool parseThemes = true, Version version = default) => fileType switch
+        {
+            FileType.LS => Parse(JSON.Parse(RTFile.ReadFromFile(path)), parseThemes),
+            FileType.VG => ParseVG(JSON.Parse(RTFile.ReadFromFile(path)), parseThemes, version),
+            _ => null,
+        };
+
         public static GameData ParseVG(JSONNode jn, bool parseThemes = true, Version version = default)
         {
             var gameData = new GameData();

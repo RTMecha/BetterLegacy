@@ -127,6 +127,13 @@ namespace BetterLegacy.Core.Data
             changelog = orig.changelog,
         };
 
+        public static MetaData ReadFromFile(string path, FileType fileType, bool setDefaultValues = true) => fileType switch
+        {
+            FileType.LS => Parse(JSON.Parse(RTFile.ReadFromFile(path)), setDefaultValues),
+            FileType.VG => ParseVG(JSON.Parse(RTFile.ReadFromFile(path))),
+            _ => null,
+        };
+
         public static MetaData ParseVG(JSONNode jn)
         {
             MetaData result;
@@ -449,8 +456,10 @@ namespace BetterLegacy.Core.Data
             jn["song"]["preview_length"] = song.previewLength;
 
             jn["beatmap"]["date_edited"] = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
-            jn["beatmap"]["game_version"] = "24.1.7";
-            jn["beatmap"]["workshop_id"] = beatmap.beatmap_id;
+            jn["beatmap"]["game_version"] = "24.9.2";
+
+            if (!string.IsNullOrEmpty(beatmap.beatmap_id) && beatmap.beatmap_id != "-1")
+                jn["beatmap"]["workshop_id"] = beatmap.beatmap_id;
 
             return jn;
         }
