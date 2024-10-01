@@ -38,6 +38,9 @@ namespace BetterLegacy.Core
         public static string ValidateDirectory(string name)
             => Regex.Replace(name, string.Format("([{0}]*\\.+$)|([{0}]+)", Regex.Escape(new string(Path.GetInvalidPathChars())) + "+?#!"), string.Empty);
 
+        public static string CombinePaths(string path1, string path2) => Path.Combine(path1, path2).Replace("\\", "/");
+        public static string CombinePaths(params string[] paths) => Path.Combine(paths).Replace("\\", "/");
+
         public static void WriteToFile(string path, string json)
         {
             using var streamWriter = new StreamWriter(path);
