@@ -30,6 +30,7 @@
 - Config presets (Beginner, Legacy, Alpha, Modded, etc.) that affects editor themes, rounded UI and complexity.
 - Some way to replace the song in-editor.
 - Possibly update input select scene to use new interface system.
+- Check if a glow object is possible.
 - Optimize timeline objects by replacing TextMeshPro with UnityEngine.UI.Text. See if it could be optional?
 - Fix spawnPrefab modifier potential issues by not adding to the prefabObjects list, assigning a custom Prefab Object property to Beatmap Object and have ObjectConverter read from that.
 - MetaData settings that can be adjusted in the Play Level (Settings) menu and can be read using modifiers probably.
