@@ -2716,6 +2716,16 @@ namespace BetterLegacy.Editor.Managers
                             return;
                     }
                 });
+
+                var originContextMenu = toggle.gameObject.GetComponent<ContextClickable>() ?? toggle.gameObject.AddComponent<ContextClickable>();
+
+                originContextMenu.onClick = eventData =>
+                {
+                    if (eventData.button != PointerEventData.InputButton.Right)
+                        return;
+
+                    OriginContextMenu(beatmapObject);
+                };
             }
             for (int i = 1; i <= 3; i++)
             {
@@ -2755,6 +2765,16 @@ namespace BetterLegacy.Editor.Managers
                             return;
                     }
                 });
+
+                var originContextMenu = toggle.gameObject.GetComponent<ContextClickable>() ?? toggle.gameObject.AddComponent<ContextClickable>();
+
+                originContextMenu.onClick = eventData =>
+                {
+                    if (eventData.button != PointerEventData.InputButton.Right)
+                        return;
+
+                    OriginContextMenu(beatmapObject);
+                };
             }
 
             var oxIF = (InputField)ObjectUIElements["Origin X IF"];
@@ -2765,7 +2785,7 @@ namespace BetterLegacy.Editor.Managers
                 ifh.Init(oxIF, InputFieldSwapper.Type.Num);
             }
 
-            oxIF.onValueChanged.RemoveAllListeners();
+            oxIF.onValueChanged.ClearAll();
             oxIF.text = beatmapObject.origin.x.ToString();
             oxIF.onValueChanged.AddListener(_val =>
             {
@@ -2787,7 +2807,7 @@ namespace BetterLegacy.Editor.Managers
                 ifh.Init(oyIF, InputFieldSwapper.Type.Num);
             }
 
-            oyIF.onValueChanged.RemoveAllListeners();
+            oyIF.onValueChanged.ClearAll();
             oyIF.text = beatmapObject.origin.y.ToString();
             oyIF.onValueChanged.AddListener(_val =>
             {
@@ -2806,6 +2826,97 @@ namespace BetterLegacy.Editor.Managers
 
             TriggerHelper.AddEventTriggers(oxIF.gameObject, TriggerHelper.ScrollDelta(oxIF, multi: true), TriggerHelper.ScrollDeltaVector2(oxIF, oyIF, 0.1f, 10f));
             TriggerHelper.AddEventTriggers(oyIF.gameObject, TriggerHelper.ScrollDelta(oyIF, multi: true), TriggerHelper.ScrollDeltaVector2(oxIF, oyIF, 0.1f, 10f));
+
+            var originXContextMenu = oxIF.gameObject.GetComponent<ContextClickable>() ?? oxIF.gameObject.AddComponent<ContextClickable>();
+
+            originXContextMenu.onClick = eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                OriginContextMenu(beatmapObject);
+            };
+
+            var originYContextMenu = oyIF.gameObject.GetComponent<ContextClickable>() ?? oyIF.gameObject.AddComponent<ContextClickable>();
+
+            originYContextMenu.onClick = eventData =>
+            {
+                if (eventData.button != PointerEventData.InputButton.Right)
+                    return;
+
+                OriginContextMenu(beatmapObject);
+            };
+        }
+
+        void OriginContextMenu(BeatmapObject beatmapObject)
+        {
+            RTEditor.inst.ShowContextMenu(RTEditor.DEFAULT_CONTEXT_MENU_WIDTH,
+                new RTEditor.ButtonFunction("Center", () =>
+                {
+                    beatmapObject.origin = Vector2.zero;
+                    // Since origin has no affect on the timeline object, we will only need to update the physical object.
+                    if (UpdateObjects)
+                        Updater.UpdateObject(beatmapObject, "Origin");
+                    RenderOrigin(beatmapObject);
+                }),
+                new RTEditor.ButtonFunction("Top", () =>
+                {
+                    beatmapObject.origin.y = -0.5f;
+                    // Since origin has no affect on the timeline object, we will only need to update the physical object.
+                    if (UpdateObjects)
+                        Updater.UpdateObject(beatmapObject, "Origin");
+                    RenderOrigin(beatmapObject);
+                }),
+                new RTEditor.ButtonFunction("Bottom", () =>
+                {
+                    beatmapObject.origin.y = 0.5f;
+                    if (UpdateObjects)
+                        Updater.UpdateObject(beatmapObject, "Origin");
+                    RenderOrigin(beatmapObject);
+                }),
+                new RTEditor.ButtonFunction("Left", () =>
+                {
+                    beatmapObject.origin.x = -0.5f;
+                    if (UpdateObjects)
+                        Updater.UpdateObject(beatmapObject, "Origin");
+                    RenderOrigin(beatmapObject);
+                }),
+                new RTEditor.ButtonFunction("Right", () =>
+                {
+                    beatmapObject.origin.x = 0.5f;
+                    if (UpdateObjects)
+                        Updater.UpdateObject(beatmapObject, "Origin");
+                    RenderOrigin(beatmapObject);
+                }),
+                new RTEditor.ButtonFunction("Top (Triangle)", () =>
+                {
+                    beatmapObject.origin.y = -0.575f;
+                    if (UpdateObjects)
+                        Updater.UpdateObject(beatmapObject, "Origin");
+                    RenderOrigin(beatmapObject);
+                }),
+                new RTEditor.ButtonFunction("Bottom (Triangle)", () =>
+                {
+                    beatmapObject.origin.y = 0.2875f;
+                    if (UpdateObjects)
+                        Updater.UpdateObject(beatmapObject, "Origin");
+                    RenderOrigin(beatmapObject);
+                }),
+                new RTEditor.ButtonFunction("Left (Triangle)", () =>
+                {
+                    beatmapObject.origin.x = -0.497964993f;
+                    if (UpdateObjects)
+                        Updater.UpdateObject(beatmapObject, "Origin");
+                    RenderOrigin(beatmapObject);
+                }),
+                new RTEditor.ButtonFunction("Right (Triangle)", () =>
+                {
+                    beatmapObject.origin.x = 0.497964993f;
+                    if (UpdateObjects)
+                        Updater.UpdateObject(beatmapObject, "Origin");
+                    RenderOrigin(beatmapObject);
+                })
+                );
         }
 
         public void RenderGradient(BeatmapObject beatmapObject)
