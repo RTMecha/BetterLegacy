@@ -4412,6 +4412,12 @@ namespace BetterLegacy.Editor.Managers
                 TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
 
                 EditorHelper.SetComplexity(inputFieldStorage.leftGreaterButton.gameObject, Complexity.Normal);
+
+                GenerateButtons(parent, 32f, 0f, new ButtonFunction("Move to Current Editor Layer", () =>
+                {
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
+                        timelineObject.Layer = Layer;
+                }));
             }
 
             // Depth
