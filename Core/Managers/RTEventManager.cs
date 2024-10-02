@@ -395,18 +395,18 @@ namespace BetterLegacy.Core.Managers
                 if (float.IsNaN(EventManager.inst.camZoom) || EventManager.inst.camZoom == 0f)
                     EventManager.inst.camZoom = 20f;
 
-                var editorCam = EventsConfig.Instance.EditorCamEnabled.Value;
-                if (!CoreHelper.InEditor || !editorCam)
+                var editorCam = EventsConfig.Instance.EditorCameraEnabled;
+                if (!editorCam)
                     EventManager.inst.cam.orthographicSize = EventManager.inst.camZoom;
                 else if (inst.EditorSpeed != 0f)
                     EventManager.inst.cam.orthographicSize = inst.editorZoom;
 
-                if (!float.IsNaN(EventManager.inst.camRot) && (!CoreHelper.InEditor || !editorCam))
+                if (!float.IsNaN(EventManager.inst.camRot) && !editorCam)
                     EventManager.inst.camParent.transform.rotation = Quaternion.Euler(new Vector3(inst.camRotOffset.x, inst.camRotOffset.y, EventManager.inst.camRot));
                 else if (!float.IsNaN(inst.editorRotate))
                     EventManager.inst.camParent.transform.rotation = Quaternion.Euler(new Vector3(inst.editorPerRotate.x, inst.editorPerRotate.y, inst.editorRotate));
 
-                if (!CoreHelper.InEditor || !editorCam)
+                if (!editorCam)
                     EventManager.inst.camParentTop.transform.localPosition = new Vector3(EventManager.inst.camPos.x, EventManager.inst.camPos.y, inst.zPosition);
                 else
                     EventManager.inst.camParentTop.transform.localPosition = new Vector3(inst.editorOffset.x, inst.editorOffset.y, inst.zPosition);
@@ -415,14 +415,14 @@ namespace BetterLegacy.Core.Managers
 
                 if (!inst.bgGlobalPosition)
                 {
-                    if (!CoreHelper.InEditor || !editorCam)
+                    if (!editorCam)
                         EventManager.inst.camPer.transform.localPosition = new Vector3(EventManager.inst.camPer.transform.localPosition.x, EventManager.inst.camPer.transform.localPosition.y, -EventManager.inst.camZoom + inst.perspectiveZoom);
                     else
                         EventManager.inst.camPer.transform.localPosition = new Vector3(EventManager.inst.camPer.transform.localPosition.x, EventManager.inst.camPer.transform.localPosition.y, -inst.editorZoom + inst.perspectiveZoom);
                 }
                 else
                 {
-                    if (!CoreHelper.InEditor || !editorCam)
+                    if (!editorCam)
                         EventManager.inst.camPer.transform.position = new Vector3(EventManager.inst.camPer.transform.position.x, EventManager.inst.camPer.transform.position.y, -EventManager.inst.camZoom + inst.perspectiveZoom);
                     else
                         EventManager.inst.camPer.transform.position = new Vector3(EventManager.inst.camPer.transform.position.x, EventManager.inst.camPer.transform.position.y, -inst.editorZoom + inst.perspectiveZoom);

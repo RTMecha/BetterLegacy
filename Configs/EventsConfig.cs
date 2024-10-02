@@ -1,4 +1,5 @@
 ﻿using BepInEx.Configuration;
+using BetterLegacy.Core.Helpers;
 using System;
 using UnityEngine;
 
@@ -41,6 +42,8 @@ namespace BetterLegacy.Configs
         #endregion
 
         #region Camera
+
+        public bool EditorCameraEnabled => CoreHelper.InEditor && EditorCamEnabled.Value;
 
         /// <summary>
         /// Enabling this will disable all regular Camera events (move, zoom, etc) and allow you to move the camera around freely. WASD to move, + and - to zoom and numpad 4 / numpad 6 to rotate.
