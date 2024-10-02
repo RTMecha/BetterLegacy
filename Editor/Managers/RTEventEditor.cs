@@ -1143,6 +1143,15 @@ namespace BetterLegacy.Editor.Managers
                 var distance = GenerateUIElement("distance", "Single", ripples.transform, 12, "Distance");
                 var size = GenerateUIElement("size", "Vector2", ripples.transform, 14, "Height", "Width");
 
+                var modeLabel = strength["Label"].Duplicate(ripples.transform);
+                GenerateLabels(modeLabel.transform, "Mode");
+
+                var mode = ripples.transform.Find("curves").gameObject.Duplicate(ripples.transform, "mode");
+                var modeDropdown = mode.GetComponent<Dropdown>();
+                modeDropdown.options = CoreHelper.StringToOptionData("Radial", "Omni-Directional");
+
+                EditorThemeManager.AddDropdown(modeDropdown);
+
                 EditorThemeManager.AddInputFields(strength["UI"], true, "Event Editor");
                 EditorThemeManager.AddInputFields(speed["UI"], true, "Event Editor");
                 EditorThemeManager.AddInputFields(distance["UI"], true, "Event Editor");
@@ -1161,7 +1170,16 @@ namespace BetterLegacy.Editor.Managers
             var colorSplit = GenerateEventDialog("colorsplit");
             {
                 var offset = GenerateUIElement("offset", "Single", colorSplit.transform, 8, "Offset");
+
+                var modeLabel = offset["Label"].Duplicate(colorSplit.transform);
+                GenerateLabels(modeLabel.transform, "Mode");
+
+                var mode = colorSplit.transform.Find("curves").gameObject.Duplicate(colorSplit.transform, "mode");
+                var modeDropdown = mode.GetComponent<Dropdown>();
+                modeDropdown.options = CoreHelper.StringToOptionData("Single", "Single Box Filtered", "Double", "Double Box Filtered");
+
                 EditorThemeManager.AddInputFields(offset["UI"], true, "Event Editor");
+                EditorThemeManager.AddDropdown(modeDropdown);
             }
 
             var cameraOffset = GenerateEventDialog("camoffset");
@@ -1194,7 +1212,17 @@ namespace BetterLegacy.Editor.Managers
             var doubleVision = GenerateEventDialog("doublevision");
             {
                 var intensity = GenerateUIElement("intensity", "Single", doubleVision.transform, 8, "Intensity");
+
+                var modeLabel = intensity["Label"].Duplicate(doubleVision.transform);
+                GenerateLabels(modeLabel.transform, "Mode");
+
+                var mode = doubleVision.transform.Find("curves").gameObject.Duplicate(doubleVision.transform, "mode");
+                var modeDropdown = mode.GetComponent<Dropdown>();
+                modeDropdown.options = CoreHelper.StringToOptionData("Split", "Edges");
+
                 EditorThemeManager.AddInputFields(intensity["UI"], true, "Event Editor");
+                EditorThemeManager.AddDropdown(modeDropdown);
+
             }
 
             var scanLines = GenerateEventDialog("scanlines");
@@ -2341,6 +2369,18 @@ namespace BetterLegacy.Editor.Managers
 
                         SetVector2InputField(dialogTmp, "size", 3, 4);
 
+                        // Ripples Mode (No separate method required atm)
+                        {
+                            var drp = dialogTmp.Find("mode").GetComponent<Dropdown>();
+                            drp.onValueChanged.ClearAll();
+                            drp.value = (int)currentKeyframe.eventValues[5];
+                            drp.onValueChanged.AddListener(_val =>
+                            {
+                                currentKeyframe.eventValues[5] = _val;
+                                EventManager.inst.updateEvents();
+                            });
+                        }
+
                         break;
                     }
                 case 12: // RadialBlur
@@ -2357,6 +2397,18 @@ namespace BetterLegacy.Editor.Managers
                     {
                         // ColorSplit Offset
                         SetFloatInputField(dialogTmp, "offset/x", 0);
+
+                        // ColorSplit Mode (No separate method required atm)
+                        {
+                            var drp = dialogTmp.Find("mode").GetComponent<Dropdown>();
+                            drp.onValueChanged.ClearAll();
+                            drp.value = (int)currentKeyframe.eventValues[1];
+                            drp.onValueChanged.AddListener(_val =>
+                            {
+                                currentKeyframe.eventValues[1] = _val;
+                                EventManager.inst.updateEvents();
+                            });
+                        }
 
                         break;
                     }
@@ -2380,7 +2432,7 @@ namespace BetterLegacy.Editor.Managers
                         // Gradient Mode (No separate method required atm)
                         {
                             var drp = dialogTmp.Find("mode").GetComponent<Dropdown>();
-                            drp.onValueChanged.RemoveAllListeners();
+                            drp.onValueChanged.ClearAll();
                             drp.value = (int)currentKeyframe.eventValues[4];
                             drp.onValueChanged.AddListener(_val =>
                             {
@@ -2407,6 +2459,18 @@ namespace BetterLegacy.Editor.Managers
                     {
                         // DoubleVision Intensity
                         SetFloatInputField(dialogTmp, "intensity/x", 0);
+
+                        // DoubleVision Mode (No separate method required atm)
+                        {
+                            var drp = dialogTmp.Find("mode").GetComponent<Dropdown>();
+                            drp.onValueChanged.ClearAll();
+                            drp.value = (int)currentKeyframe.eventValues[1];
+                            drp.onValueChanged.AddListener(_val =>
+                            {
+                                currentKeyframe.eventValues[1] = _val;
+                                EventManager.inst.updateEvents();
+                            });
+                        }
 
                         break;
                     }
@@ -2585,7 +2649,7 @@ namespace BetterLegacy.Editor.Managers
                         // Render Type
                         {
                             var drp = dialogTmp.Find("rendertype").GetComponent<Dropdown>();
-                            drp.onValueChanged.RemoveAllListeners();
+                            drp.onValueChanged.ClearAll();
                             drp.value = (int)currentKeyframe.eventValues[9];
                             drp.onValueChanged.AddListener(_val =>
                             {
@@ -2609,7 +2673,7 @@ namespace BetterLegacy.Editor.Managers
                         // Direction
                         {
                             var drp = dialogTmp.Find("direction").GetComponent<Dropdown>();
-                            drp.onValueChanged.RemoveAllListeners();
+                            drp.onValueChanged.ClearAll();
                             drp.value = (int)currentKeyframe.eventValues[1];
                             drp.onValueChanged.AddListener(_val =>
                             {

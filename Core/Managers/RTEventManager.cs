@@ -330,7 +330,7 @@ namespace BetterLegacy.Core.Managers
         }
 
         bool IsLerper(int i, int j)
-            => !(i == 4 || i == 6 && j == 4 || i == 7 && j == 6 || i == 15 && (j == 2 || j == 3) || i == 20 && j == 0 || i == 22 && j == 6);
+            => !(i == 4 || i == 6 && j == 4 || i == 7 && j == 6 || i == 15 && (j == 2 || j == 3) || i == 20 && j == 0 || i == 22 && j == 6 || i == 30 && j == 2);
 
         public float fieldOfView = 50f;
         public bool setPerspectiveCamClip = false;
@@ -521,9 +521,9 @@ namespace BetterLegacy.Core.Managers
                 if (!float.IsNaN(inst.gradientIntensity))
                     RTEffectsManager.inst.UpdateGradient(!allowFX ? 0f : inst.gradientIntensity, inst.gradientRotation);
                 if (!float.IsNaN(inst.ripplesStrength))
-                    RTEffectsManager.inst.UpdateRipples(!allowFX ? 0f : inst.ripplesStrength, inst.ripplesSpeed, inst.ripplesDistance, inst.ripplesHeight, inst.ripplesWidth);
+                    RTEffectsManager.inst.UpdateRipples(!allowFX ? 0f : inst.ripplesStrength, inst.ripplesSpeed, inst.ripplesDistance, inst.ripplesHeight, inst.ripplesWidth, inst.ripplesMode);
                 if (!float.IsNaN(inst.doubleVision))
-                    RTEffectsManager.inst.UpdateDoubleVision(!allowFX ? 0f : inst.doubleVision);
+                    RTEffectsManager.inst.UpdateDoubleVision(!allowFX ? 0f : inst.doubleVision, inst.doubleVisionMode);
                 if (!float.IsNaN(inst.radialBlurIntensity))
                     RTEffectsManager.inst.UpdateRadialBlur(!allowFX ? 0f : inst.radialBlurIntensity, inst.radialBlurIterations);
                 if (!float.IsNaN(inst.scanLinesIntensity))
@@ -531,7 +531,7 @@ namespace BetterLegacy.Core.Managers
                 if (!float.IsNaN(inst.sharpen))
                     RTEffectsManager.inst.UpdateSharpen(!allowFX ? 0f : inst.sharpen);
                 if (!float.IsNaN(inst.colorSplitOffset))
-                    RTEffectsManager.inst.UpdateColorSplit(!allowFX ? 0f : inst.colorSplitOffset);
+                    RTEffectsManager.inst.UpdateColorSplit(!allowFX ? 0f : inst.colorSplitOffset, inst.colorSplitMode);
                 if (!float.IsNaN(inst.dangerIntensity))
                     RTEffectsManager.inst.UpdateDanger(!allowFX ? 0f : inst.dangerIntensity, inst.dangerColorResult, inst.dangerSize);
                 if (!float.IsNaN(inst.invertAmount))
@@ -1017,6 +1017,9 @@ namespace BetterLegacy.Core.Managers
 
         // 11 - 4
         public static void updateCameraRipplesWidth(float x) => inst.ripplesWidth = x;
+        
+        // 11 - 5
+        public static void updateCameraRipplesMode(float x) => inst.ripplesMode = (int)x;
 
         #endregion
 
@@ -1034,6 +1037,9 @@ namespace BetterLegacy.Core.Managers
 
         // 13 - 0
         public static void updateCameraColorSplit(float x) => inst.colorSplitOffset = x;
+
+        // 13 - 1
+        public static void updateCameraColorSplitMode(float x) => inst.colorSplitMode = (int)x;
 
         #endregion
 
@@ -1094,6 +1100,9 @@ namespace BetterLegacy.Core.Managers
 
         // 16 - 0
         public static void updateCameraDoubleVision(float x) => inst.doubleVision = x;
+
+        // 16 - 1
+        public static void updateCameraDoubleVisionMode(float x) => inst.doubleVisionMode = (int)x;
 
         #endregion
 
@@ -1616,6 +1625,7 @@ namespace BetterLegacy.Core.Managers
         public float gradientRotation;
 
         public float doubleVision;
+        public int doubleVisionMode;
 
         public float radialBlurIntensity;
         public int radialBlurIterations;
@@ -1627,6 +1637,7 @@ namespace BetterLegacy.Core.Managers
         public float sharpen;
 
         public float colorSplitOffset;
+        public int colorSplitMode;
 
         public float dangerIntensity;
         public float dangerColor;
@@ -1642,6 +1653,7 @@ namespace BetterLegacy.Core.Managers
         public float ripplesDistance;
         public float ripplesHeight;
         public float ripplesWidth;
+        public int ripplesMode;
 
         #endregion
 
@@ -1754,6 +1766,7 @@ namespace BetterLegacy.Core.Managers
                     0f, // Ripples Distance
                     0f, // Ripples Height
                     0f, // Ripples Width
+                    0f, // Ripples Mode
                 }, // Ripples - 11
                 new List<float>
                 {
@@ -1763,6 +1776,7 @@ namespace BetterLegacy.Core.Managers
                 new List<float>
                 {
                     0f, // ColorSplit Offset
+                    0f, // ColorSplit Mode
                 }, // ColorSplit - 13
                 new List<float>
                 {
@@ -1788,6 +1802,7 @@ namespace BetterLegacy.Core.Managers
                 new List<float>
                 {
                     0f, // DoubleVision Intensity
+                    0f, // DoubleVision Mode
                 }, // DoubleVision
                 new List<float>
                 {
@@ -2042,7 +2057,8 @@ namespace BetterLegacy.Core.Managers
                 updateCameraRipplesSpeed,
                 updateCameraRipplesDistance,
                 updateCameraRipplesHeight,
-                updateCameraRipplesWidth
+                updateCameraRipplesWidth,
+                updateCameraRipplesMode
             }, // Ripples
             new KFDelegate[]
             {
@@ -2051,7 +2067,8 @@ namespace BetterLegacy.Core.Managers
             }, // RadialBlur
             new KFDelegate[]
             {
-                updateCameraColorSplit
+                updateCameraColorSplit,
+                updateCameraColorSplitMode
             }, // ColorSplit
             new KFDelegate[]
             {
@@ -2076,7 +2093,8 @@ namespace BetterLegacy.Core.Managers
             }, // Gradient
             new KFDelegate[]
             {
-                updateCameraDoubleVision
+                updateCameraDoubleVision,
+                updateCameraDoubleVisionMode
             }, // DoubleVision
             new KFDelegate[]
             {

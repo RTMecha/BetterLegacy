@@ -155,9 +155,10 @@ namespace BetterLegacy.Core.Managers
             gradient.rotation.Override(_rotation);
         }
 
-        public void UpdateDoubleVision(float _intensity)
+        public void UpdateDoubleVision(float _intensity, int mode)
         {
             doubleVision.intensity.Override(_intensity);
+            doubleVision.mode.Override((SCPE.DoubleVision.Mode)mode);
         }
 
         public void UpdateRadialBlur(float _amount, int _iterations)
@@ -178,13 +179,14 @@ namespace BetterLegacy.Core.Managers
             sharpen.amount.Override(_amount);
         }
 
-        public void UpdateRipples(float _strength, float _speed, float _distance, float _height, float _width)
+        public void UpdateRipples(float _strength, float _speed, float _distance, float _height, float _width, int mode)
         {
             ripples.strength.Override(_strength);
             ripples.speed.Override(_speed);
             ripples.distance.Override(_distance);
             ripples.height.Override(_height);
             ripples.width.Override(_width);
+            ripples.mode.Override((SCPE.Ripples.RipplesMode)mode);
         }
 
         public void UpdateBlur(float _amount, int _iterations)
@@ -212,9 +214,10 @@ namespace BetterLegacy.Core.Managers
             blackBars.mode.Override((SCPE.BlackBars.Direction)(int)_mode);
         }
 
-        public void UpdateColorSplit(float _offset)
+        public void UpdateColorSplit(float _offset, int mode)
         {
             colorSplit.offset.Override(_offset);
+            colorSplit.mode.Override((SCPE.ColorSplit.SplitMode)mode);
         }
 
         public void UpdateDanger(float _intensity, Color _color, float _size)

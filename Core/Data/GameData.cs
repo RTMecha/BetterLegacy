@@ -1660,13 +1660,14 @@ namespace BetterLegacy.Core.Data
 			new Data.EventKeyframe
             {
                 eventTime = 0f,
-                eventValues = new float[5]
+                eventValues = new float[6]
                 {
                     0f,
                     0f,
                     1f,
                     0f,
-                    0f
+                    0f,
+                    0f,
                 },
                 id = LSText.randomNumString(8),
             }, // Ripples
@@ -1683,7 +1684,7 @@ namespace BetterLegacy.Core.Data
 			new Data.EventKeyframe
             {
                 eventTime = 0f,
-                eventValues = new float[1],
+                eventValues = new float[2],
                 id = LSText.randomNumString(8),
             }, // ColorSplit
 			new Data.EventKeyframe
@@ -1716,7 +1717,7 @@ namespace BetterLegacy.Core.Data
 			new Data.EventKeyframe
             {
                 eventTime = 0f,
-                eventValues = new float[1],
+                eventValues = new float[2],
                 id = LSText.randomNumString(8),
             }, // DoubleVision
 			new Data.EventKeyframe
