@@ -832,10 +832,6 @@ namespace BetterLegacy.Components.Player
                 {
                     if (transform)
                         transform.localScale = new Vector3(x, x, 1f);
-                }, () =>
-                {
-                    if (transform)
-                        transform.localScale = new Vector3(1f, 1f, 1f);
                 }), // base
                 new AnimationHandler<float>(new List<IKeyframe<float>>
                 {
@@ -856,10 +852,6 @@ namespace BetterLegacy.Components.Player
                 {
                     if (rb && rb.transform)
                         rb.transform.localScale = new Vector3(x, x, 1f);
-                }, () =>
-                {
-                    if (rb && rb.transform)
-                        rb.transform.localScale = new Vector3(1f, 1f, 1f);
                 }), // Player
                 new AnimationHandler<float>(new List<IKeyframe<float>>
                 {
@@ -871,10 +863,6 @@ namespace BetterLegacy.Components.Player
                 {
                     if (tailBases.Count > 0 && tailBases[0])
                         tailBases[0].localScale = new Vector3(x, x, 1f);
-                }, () =>
-                {
-                    if (tailBases.Count > 0 && tailBases[0])
-                        tailBases[0].localScale = new Vector3(1f, 1f, 1f);
                 }), // Trail 1
                 new AnimationHandler<float>(new List<IKeyframe<float>>
                 {
@@ -886,10 +874,6 @@ namespace BetterLegacy.Components.Player
                 {
                     if (tailBases.Count > 1 && tailBases[1])
                         tailBases[1].localScale = new Vector3(x, x, 1f);
-                }, () =>
-                {
-                    if (tailBases.Count > 1 && tailBases[1])
-                        tailBases[1].localScale = new Vector3(1f, 1f, 1f);
                 }), // Trail 2
                 new AnimationHandler<float>(new List<IKeyframe<float>>
                 {
@@ -901,10 +885,6 @@ namespace BetterLegacy.Components.Player
                 {
                     if (tailBases.Count > 2 && tailBases[2])
                         tailBases[2].localScale = new Vector3(x, x, 1f);
-                }, () =>
-                {
-                    if (tailBases.Count > 2 && tailBases[2])
-                        tailBases[2].localScale = new Vector3(1f, 1f, 1f);
                 }), // Trail 3
                 new AnimationHandler<float>(new List<IKeyframe<float>>
                 {
@@ -915,10 +895,6 @@ namespace BetterLegacy.Components.Player
                 {
                     if (boost != null && boost.Transform)
                         boost.Transform.localScale = new Vector3(x, x, 0.2f);
-                }, () =>
-                {
-                    if (boost != null && boost.Transform)
-                        boost.Transform.localScale = new Vector3(0f, 0f, 0.2f);
                 }), // Boost
                 new AnimationHandler<float>(new List<IKeyframe<float>>
                 {
@@ -944,6 +920,20 @@ namespace BetterLegacy.Components.Player
             {
                 AnimationManager.inst.RemoveID(spawnAnimation.id);
                 spawnAnimation = null;
+
+                if (transform)
+                    transform.localScale = new Vector3(1f, 1f, 1f);
+
+                if (rb && rb.transform)
+                    rb.transform.localScale = new Vector3(1f, 1f, 1f);
+
+                if (tailBases != null)
+                    for (int i = 0; i < tailBases.Count; i++)
+                        if (tailBases[i])
+                            tailBases[i].localScale = Vector3.one;
+
+                if (boost != null && boost.Transform)
+                    boost.Transform.localScale = new Vector3(0f, 0f, 0.2f);
             };
             AnimationManager.inst.Play(spawnAnimation);
             PlaySpawnParticles();
