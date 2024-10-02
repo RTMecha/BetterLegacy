@@ -24,9 +24,11 @@ namespace BetterLegacy.Core.Optimization.Objects.Visual
             Renderer = gameObject.GetComponent<Renderer>();
             Renderer.enabled = true;
             if (background)
+            {
                 GameObject.layer = 9;
+                Renderer.material = ObjectManager.inst.norm; // todo: replace with a material that supports perspective and doesn't have issues with opacity
+            }
 
-            Renderer.material = ObjectManager.inst.norm;
             material = Renderer.material;
 
             Collider = gameObject.GetComponent<Collider2D>();
