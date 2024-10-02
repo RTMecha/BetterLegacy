@@ -1,8 +1,10 @@
 ﻿using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using LSFunctions;
 using SimpleJSON;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -158,6 +160,15 @@ namespace BetterLegacy.Core
             result = t;
             return t;
         }
+
+        #endregion
+
+        #region Coroutines
+
+        public static void Start(this IEnumerator routine) => CoreHelper.StartCoroutine(routine);
+        public static Coroutine StartCoroutine(this IEnumerator routine) => CoreHelper.StartCoroutine(routine);
+        public static void StartAsync(this IEnumerator routine) => CoreHelper.StartCoroutineAsync(routine);
+        public static Coroutine StartCoroutineAsync(this IEnumerator routine) => CoreHelper.StartCoroutineAsync(routine);
 
         #endregion
 
