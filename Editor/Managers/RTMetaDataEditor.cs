@@ -156,6 +156,25 @@ namespace BetterLegacy.Editor.Managers
             uploadText.text = "Upload to Server";
 
             TooltipHelper.AssignTooltip(upload, "Upload Level");
+            var uploadContextMenu = upload.AddComponent<ContextClickable>();
+            uploadContextMenu.onClick = eventData =>
+            {
+                if (eventData.button != UnityEngine.EventSystems.PointerEventData.InputButton.Right)
+                    return;
+
+                RTEditor.inst.ShowContextMenu(RTEditor.DEFAULT_CONTEXT_MENU_WIDTH,
+                    new RTEditor.ButtonFunction("Upload / Update", UploadLevel),
+                    new RTEditor.ButtonFunction("Verify Level is on Server", () =>
+                    {
+                        RTEditor.inst.ShowWarningPopup("Do you want to verify that the level is on the Arcade server?", () =>
+                        {
+                            RTEditor.inst.HideWarningPopup();
+                            EditorManager.inst.DisplayNotification("Verifying...", 1.5f, EditorManager.NotificationType.Info);
+                            VerifyLevelIsOnServer();
+                        }, RTEditor.inst.HideWarningPopup);
+                    })
+                    );
+            };
 
             var zip = convert.Duplicate(submitBase, "delete");
 
@@ -787,6 +806,71 @@ namespace BetterLegacy.Editor.Managers
         public bool VerifyFile(string file) => !file.Contains("autosave") && !file.Contains("backup") && !file.Contains("level-previous") && file != "editor.lse" && !file.Contains("waveform-") &&
             (file.Contains(".lsb") || file.Contains(".jpg") || file.Contains(".png") || file.Contains(".ogg") || file.Contains(".wav") || file.Contains(".mp3") || file.Contains(".mp4"));
 
+        public void VerifyLevelIsOnServer()
+        {
+            if (!EditorManager.inst.hasLoadedLevel || !MetaData.IsValid)
+                return;
+
+            if (uploading)
+            {
+                EditorManager.inst.DisplayNotification("Please wait until upload / delete process is finished!", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
+            var serverID = MetaData.Current.serverID;
+
+            if (string.IsNullOrEmpty(serverID))
+            {
+                EditorManager.inst.DisplayNotification("Server ID was not assigned, so the level probably wasn't on the server.", 3f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
+            CoreHelper.StartCoroutine(AlephNetworkManager.DownloadJSONFile($"{AlephNetworkManager.ArcadeServerURL}api/level/{serverID}", json =>
+            {
+                EditorManager.inst.DisplayNotification($"Level is on server! {serverID}", 3f, EditorManager.NotificationType.Success);
+            }, (string onError, long responseCode, string errorMsg) =>
+            {
+                switch (responseCode)
+                {
+                    case 404:
+                        EditorManager.inst.DisplayNotification("404 not found.", 2f, EditorManager.NotificationType.Error);
+                        RTEditor.inst.ShowWarningPopup("Level was not found on the server. Do you want to remove the server ID?", () =>
+                        {
+                            MetaData.Current.serverID = null;
+                            MetaData.Current.beatmap.date_published = "";
+                            var jn = MetaData.Current.ToJSON();
+                            RTFile.WriteToFile(GameManager.inst.basePath + "metadata.lsb", jn.ToString());
+                        }, RTEditor.inst.HideWarningPopup);
+
+                        return;
+                    case 401:
+                        {
+                            if (authData != null && authData["access_token"] != null && authData["refresh_token"] != null)
+                            {
+                                CoreHelper.StartCoroutine(RefreshTokens(VerifyLevelIsOnServer));
+                                return;
+                            }
+                            ShowLoginPopup(UploadLevel);
+                            break;
+                        }
+                    default:
+                        EditorManager.inst.DisplayNotification($"Verify failed. Error code: {onError}", 2f, EditorManager.NotificationType.Error);
+                        RTEditor.inst.ShowWarningPopup("Verification failed. In case the level is not on the server, do you want to remove the server ID?", () =>
+                        {
+                            MetaData.Current.serverID = null;
+                            MetaData.Current.beatmap.date_published = "";
+                            var jn = MetaData.Current.ToJSON();
+                            RTFile.WriteToFile(GameManager.inst.basePath + "metadata.lsb", jn.ToString());
+                        }, RTEditor.inst.HideWarningPopup);
+
+                        break;
+                }
+
+                if (errorMsg != null)
+                    CoreHelper.LogError($"Error Message: {errorMsg}");
+            }));
+        }
+
         public void ConvertLevel()
         {
             var exportPath = EditorConfig.Instance.ConvertLevelLSToVGExportPath.Value;
@@ -850,12 +934,6 @@ namespace BetterLegacy.Editor.Managers
 
         public void UploadLevel()
         {
-            if (!AlephNetworkManager.ServerFinished)
-            {
-                EditorManager.inst.DisplayNotification("Server is not up yet.", 3f, EditorManager.NotificationType.Warning);
-                return;
-            }
-
             if (uploading)
             {
                 EditorManager.inst.DisplayNotification("Please wait until upload / delete process is finished!", 2f, EditorManager.NotificationType.Warning);
@@ -919,7 +997,6 @@ namespace BetterLegacy.Editor.Managers
                     File.Copy(file, copyTo, RTFile.FileExists(copyTo));
                 }
 
-                //ZipFile.CreateFromDirectory(GameManager.inst.basePath, path);
                 ZipFile.CreateFromDirectory(tempDirectory, path);
                 Directory.Delete(tempDirectory, true);
 
@@ -990,12 +1067,6 @@ namespace BetterLegacy.Editor.Managers
 
         public void DeleteLevel()
         {
-            if (!AlephNetworkManager.ServerFinished)
-            {
-                EditorManager.inst.DisplayNotification("Server is not up yet.", 3f, EditorManager.NotificationType.Warning);
-                return;
-            }
-
             if (uploading)
             {
                 EditorManager.inst.DisplayNotification("Please wait until upload / delete process is finished!", 2f, EditorManager.NotificationType.Warning);
@@ -1084,7 +1155,7 @@ namespace BetterLegacy.Editor.Managers
 
             if (www.isNetworkError)
             {
-                EditorManager.inst.DisplayNotification($"Upload failed. Error: {www.error}", 5f, EditorManager.NotificationType.Error);
+                EditorManager.inst.DisplayNotification($"Login failed. Error: {www.error}", 5f, EditorManager.NotificationType.Error);
                 yield break;
             }
 

@@ -3421,13 +3421,14 @@ namespace BetterLegacy.Editor.Managers
                 if (eventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                ShowContextMenu(300f,
+                ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH,
                     new ButtonFunction("Create folder", () =>
                     {
                         ShowFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => { UpdateEditorPath(true); HideNameEditor(); });
                     }),
                     new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
-                    new ButtonFunction("Paste", PasteLevel));
+                    new ButtonFunction("Paste", PasteLevel),
+                    new ButtonFunction("Open List in File Explorer", OpenLevelListFolder));
             };
 
             #region Level Path
@@ -3462,7 +3463,7 @@ namespace BetterLegacy.Editor.Managers
                 if (pointerEventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                ShowContextMenu(300f,
+                ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH,
                     new ButtonFunction("Set Level folder", () =>
                     {
                         EditorManager.inst.ShowDialog("Browser Popup");
@@ -3479,7 +3480,8 @@ namespace BetterLegacy.Editor.Managers
                             EditorManager.inst.HideDialog("Browser Popup");
                             UpdateEditorPath(false);
                         });
-                    }));
+                    }),
+                    new ButtonFunction("Open List in File Explorer", OpenLevelListFolder));
             };
 
             var levelListReloader = GameObject.Find("TimelineBar/GameObject/play")
@@ -3537,7 +3539,7 @@ namespace BetterLegacy.Editor.Managers
                 if (pointerEventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                ShowContextMenu(300f,
+                ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH,
                     new ButtonFunction("Set Theme folder", () =>
                     {
                         EditorManager.inst.ShowDialog("Browser Popup");
@@ -3554,7 +3556,8 @@ namespace BetterLegacy.Editor.Managers
                             EditorManager.inst.HideDialog("Browser Popup");
                             UpdateThemePath(false);
                         });
-                    }));
+                    }),
+                    new ButtonFunction("Open List in File Explorer", OpenThemeListFolder));
             };
 
             var themeListReload = GameObject.Find("TimelineBar/GameObject/play").Duplicate(themePathBase.transform, "reload themes");
@@ -3660,7 +3663,7 @@ namespace BetterLegacy.Editor.Managers
                 if (pointerEventData.button != PointerEventData.InputButton.Right)
                     return;
 
-                ShowContextMenu(300f,
+                ShowContextMenu(DEFAULT_CONTEXT_MENU_WIDTH,
                     new ButtonFunction("Set Prefab folder", () =>
                     {
                         EditorManager.inst.ShowDialog("Browser Popup");
@@ -3677,7 +3680,8 @@ namespace BetterLegacy.Editor.Managers
                             EditorManager.inst.HideDialog("Browser Popup");
                             UpdatePrefabPath(false);
                         });
-                    }));
+                    }),
+                    new ButtonFunction("Open List in File Explorer", OpenPrefabListFolder));
             };
 
             var prefabListReload = GameObject.Find("TimelineBar/GameObject/play")
@@ -9033,7 +9037,8 @@ namespace BetterLegacy.Editor.Managers
                                 ShowFolderCreator($"{RTFile.ApplicationDirectory}{editorListPath}", () => { UpdateEditorPath(true); HideNameEditor(); });
                             }),
                             new ButtonFunction("Create level", EditorManager.inst.OpenNewLevelPopup),
-                            new ButtonFunction("Paste", PasteLevel));
+                            new ButtonFunction("Paste", PasteLevel),
+                            new ButtonFunction("Open List in File Explorer", OpenLevelListFolder));
 
                         return;
                     }
@@ -9122,7 +9127,12 @@ namespace BetterLegacy.Editor.Managers
                                         EditorManager.inst.DisplayNotification("Deleted folder!", 2f, EditorManager.NotificationType.Success);
                                         HideWarningPopup();
                                     }, HideWarningPopup);
-                                }));
+                                }),
+                                new ButtonFunction(true),
+                                new ButtonFunction("ZIP Folder", () => ZIPLevel(path, name)),
+                                new ButtonFunction("Copy Path", () => { LSText.CopyToClipboard(path); }),
+                                new ButtonFunction("Open in File Explorer", () => { RTFile.OpenInFileBrowser.Open(path); }),
+                                new ButtonFunction("Open List in File Explorer", OpenLevelListFolder));
 
                             return;
                         }
@@ -9373,7 +9383,12 @@ namespace BetterLegacy.Editor.Managers
                                     LSText.CopyToClipboard(metadata.serverID);
                                     EditorManager.inst.DisplayNotification($"Copied Server ID ({metadata.serverID}) to your clipboard.", 2f, EditorManager.NotificationType.Success);
                                 }
-                            })
+                            }),
+                            new ButtonFunction(true),
+                            new ButtonFunction("ZIP Level", () => ZIPLevel(path, name)),
+                            new ButtonFunction("Copy Path", () => { LSText.CopyToClipboard(path); }),
+                            new ButtonFunction("Open in File Explorer", () => { RTFile.OpenInFileBrowser.Open(path); }),
+                            new ButtonFunction("Open List in File Explorer", OpenLevelListFolder)
                         );
 
                         return;
@@ -11576,6 +11591,44 @@ namespace BetterLegacy.Editor.Managers
         #endregion
 
         #region Misc Functions
+
+        public void OpenLevelListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(RTFile.ApplicationDirectory, editorListPath));
+        public void OpenThemeListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(RTFile.ApplicationDirectory, themeListPath));
+        public void OpenPrefabListFolder() => RTFile.OpenInFileBrowser.Open(RTFile.CombinePaths(RTFile.ApplicationDirectory, prefabListPath));
+
+        public void ZIPLevel(string currentPath, string fileName)
+        {
+            EditorManager.inst.DisplayNotification($"Zipping {fileName}...", 2f, EditorManager.NotificationType.Warning);
+
+            IZIPLevel(currentPath, fileName).StartAsync();
+        }
+
+        public IEnumerator IZIPLevel(string currentPath, string fileName)
+        {
+            bool failed;
+            try
+            {
+                var zipPath = currentPath + ".zip";
+                if (RTFile.FileExists(zipPath))
+                    File.Delete(zipPath);
+
+                System.IO.Compression.ZipFile.CreateFromDirectory(currentPath, zipPath);
+
+                failed = false;
+            }
+            catch (Exception ex)
+            {
+                failed = true;
+                CoreHelper.LogException(ex);
+            }
+
+            yield return Ninja.JumpToUnity;
+            if (failed)
+                EditorManager.inst.DisplayNotification($"Had an error with zipping the folder. Check the logs!", 2f, EditorManager.NotificationType.Error);
+            else
+                EditorManager.inst.DisplayNotification($"Successfully zipped the folder to {fileName}.zip!", 2f, EditorManager.NotificationType.Success);
+            yield break;
+        }
 
         /// <summary>
         /// Converts a level to VG format and outputs it to the exports folder.
