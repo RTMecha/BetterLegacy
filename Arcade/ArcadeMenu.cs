@@ -1366,6 +1366,7 @@ namespace BetterLegacy.Arcade
         public void SetOnlineLevelsPage(int page)
         {
             Pages[1] = page;
+            CoreHelper.StartCoroutine(RefreshOnlineLevels());
         }
 
         public void SearchOnlineLevels(string search)
@@ -2293,20 +2294,6 @@ namespace BetterLegacy.Arcade
                     length = 0.01f,
                 };
                 elements.Add(button);
-
-                //elements.Add(new MenuImage
-                //{
-                //    id = "0",
-                //    name = "Difficulty",
-                //    parent = id,
-                //    rect = new RectValues(Vector2.zero, Vector2.one, new Vector2(1f, 0f), new Vector2(1f, 0.5f), new Vector2(8f, 0f)),
-                //    overrideColor = CoreHelper.GetDifficulty(difficulty).color,
-                //    useOverrideColor = true,
-                //    opacity = 1f,
-                //    roundedSide = SpriteHelper.RoundedSide.Left,
-                //    length = 0f,
-                //    wait = false,
-                //});
 
                 if (!string.IsNullOrEmpty(id) && OnlineSteamLevelIcons.TryGetValue(id, out Sprite sprite))
                     button.icon = sprite;
