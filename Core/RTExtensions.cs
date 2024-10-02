@@ -267,6 +267,12 @@ namespace BetterLegacy.Core
             ts.Insert(Mathf.Clamp(moveTo, 0, ts.Count), result);
         }
 
+        /// <summary>
+        /// Checks if a list has a specific item.
+        /// </summary>
+        /// <typeparam name="T">The type of the list.</typeparam>
+        /// <param name="predicate">Predicate to find an item.</param>
+        /// <returns>Returns true if an item is found, otherwise returns false.</returns>
         public static bool Has<T>(this List<T> ts, Predicate<T> predicate) => ts.Find(predicate) != null;
 
         public static void For<T>(this T[] ts, Action<T, int> action)
@@ -281,35 +287,19 @@ namespace BetterLegacy.Core
                 action?.Invoke(ts[i], i);
         }
 
-        public static Dictionary<TKey, TValue> ToDictionary<T, TKey, TValue>(this List<T> ts, Func<T, TKey> key, Func<T, TValue> value)
+        /// <summary>
+        /// Fills a list with an item.
+        /// </summary>
+        /// <typeparam name="T">The type of the list and item.</typeparam>
+        /// <param name="count">The amount to fill.</param>
+        /// <param name="obj">The item to fill the list with.</param>
+        public static void Fill<T>(this List<T> ts, int count, T obj)
         {
-            var dictionary = new Dictionary<TKey, TValue>();
-
-            var keys = ts.Select(key);
-            var values = ts.Select(value);
-
-            for (int i = 0; i < keys.Count(); i++)
-            {
-                var k = keys.ElementAt(i);
-                if (!dictionary.ContainsKey(k))
-                    dictionary.Add(k, values.ElementAt(i));
-            }
-
-            return dictionary;
+            for (int i = 0; i < count; i++)
+                ts.Add(obj);
         }
-
-        static void Test()
-        {
-            GameData.Current.beatmapObjects.ToDictionary(x => x.id, x => x);
-
-            GameData.Current.beatmapObjects.ToDictionary(x => x.id);
-        }
-
-        public static string[] GetLinesArray(this string str) => str.Split(new string[] { "\n", "\n\r", "\r" }, StringSplitOptions.RemoveEmptyEntries);
-
-        public static List<string> GetLines(this string str) => str.Split(new string[] { "\n", "\n\r", "\r" }, StringSplitOptions.RemoveEmptyEntries).ToList();
-
-        public static Vector2 ToVector2(this Vector3 _v) => new Vector2(_v.x, _v.y);
+        
+        public static string[] GetLines(this string str) => str.Split(new string[] { "\n", "\n\r", "\r" }, StringSplitOptions.RemoveEmptyEntries);
 
         #endregion
 
