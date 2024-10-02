@@ -1098,16 +1098,7 @@ namespace BetterLegacy.Editor.Managers
                 createStorage.text.fontSize = 16;
                 createStorage.text.text = "Create";
                 createStorage.button.onClick.ClearAll();
-                createStorage.button.onClick.AddListener(() =>
-                {
-                    var num = PlayerManager.PlayerModels.Count;
-
-                    PlayerManager.CreateNewPlayerModel();
-                    PlayerManager.SetPlayerModel(playerModelIndex, PlayerManager.PlayerModels.ElementAt(num).Key);
-                    PlayerManager.RespawnPlayers();
-                    StartCoroutine(RefreshEditor());
-                    EditorManager.inst.DisplayNotification("Created a new player model!", 1.5f, EditorManager.NotificationType.Success);
-                });
+                createStorage.button.onClick.AddListener(CreateNewModel);
 
                 EditorThemeManager.AddSelectable(createStorage.button, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(createStorage.text, ThemeGroup.Function_2_Text);
@@ -1118,19 +1109,7 @@ namespace BetterLegacy.Editor.Managers
                 saveStorage.text.fontSize = 16;
                 saveStorage.text.text = "Save";
                 saveStorage.button.onClick.ClearAll();
-                saveStorage.button.onClick.AddListener(() =>
-                {
-                    try
-                    {
-                        if (!PlayerManager.SaveGlobalModels())
-                            EditorManager.inst.DisplayNotification("Failed to save player models.", 2f, EditorManager.NotificationType.Error);
-                    }
-                    catch (Exception ex)
-                    {
-                        EditorManager.inst.DisplayNotification("Failed to save player models.", 2f, EditorManager.NotificationType.Error);
-                        CoreHelper.LogException(ex);
-                    }
-                });
+                saveStorage.button.onClick.AddListener(Save);
 
                 EditorThemeManager.AddSelectable(saveStorage.button, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(saveStorage.text, ThemeGroup.Function_2_Text);
@@ -1141,15 +1120,7 @@ namespace BetterLegacy.Editor.Managers
                 loadStorage.text.fontSize = 16;
                 loadStorage.text.text = "Reload";
                 loadStorage.button.onClick.ClearAll();
-                loadStorage.button.onClick.AddListener(() =>
-                {
-                    PlayerManager.LoadGlobalModels();
-                    PlayerManager.RespawnPlayers();
-                    StartCoroutine(RefreshEditor());
-                    EditorManager.inst.HideDialog("Player Models Popup");
-
-                    EditorManager.inst.DisplayNotification("Loaded player models", 1.5f, EditorManager.NotificationType.Success);
-                });
+                loadStorage.button.onClick.AddListener(Reload);
 
                 EditorThemeManager.AddSelectable(loadStorage.button, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(loadStorage.text, ThemeGroup.Function_2_Text);
@@ -1976,6 +1947,46 @@ namespace BetterLegacy.Editor.Managers
                     StartCoroutine(RefreshEditor());
                 });
 
+                var modelContextMenu = model.AddComponent<ContextClickable>();
+                modelContextMenu.onClick = eventData =>
+                {
+                    if (eventData.button != PointerEventData.InputButton.Right)
+                        return;
+
+                    RTEditor.inst.ShowContextMenu(RTEditor.DEFAULT_CONTEXT_MENU_WIDTH,
+                        new RTEditor.ButtonFunction("Open & Use", () =>
+                        {
+                            PlayerManager.SetPlayerModelIndex(playerModelIndex, index);
+                            PlayerManager.RespawnPlayers();
+                            StartCoroutine(RefreshEditor());
+                        }),
+                        new RTEditor.ButtonFunction("Set to Global", () => { PlayerManager.PlayerIndexes[playerModelIndex].Value = playerModel.Key; }),
+                        new RTEditor.ButtonFunction("Create New", CreateNewModel),
+                        new RTEditor.ButtonFunction("Save", Save),
+                        new RTEditor.ButtonFunction("Reload", Reload),
+                        new RTEditor.ButtonFunction(true),
+                        new RTEditor.ButtonFunction("Duplicate", () =>
+                        {
+                            PlayerManager.DuplicatePlayerModel(playerModel.Key);
+                            PlayerManager.SetPlayerModelIndex(playerModelIndex, PlayerManager.PlayerModels.Count - 1);
+                        }),
+                        new RTEditor.ButtonFunction("Delete", () =>
+                        {
+                            RTEditor.inst.ShowWarningPopup("Are you sure you want to delete this Player Model?", () =>
+                            {
+                                PlayerManager.SetPlayerModelIndex(playerModelIndex, 0);
+                                PlayerManager.PlayerModels.Remove(playerModel.Key);
+                                PlayerManager.RespawnPlayers();
+                                StartCoroutine(RefreshEditor());
+                                StartCoroutine(RefreshModels());
+
+
+                                RTEditor.inst.HideWarningPopup();
+                            }, RTEditor.inst.HideWarningPopup);
+                        })
+                        );
+                };
+
                 var text = model.transform.GetChild(0).GetComponent<Text>();
                 text.text = name;
 
@@ -2482,6 +2493,41 @@ namespace BetterLegacy.Editor.Managers
                 case 7: return "isPressingKey";
                 default: return "isBoosting";
             }
+        }
+
+        public void CreateNewModel()
+        {
+            var num = PlayerManager.PlayerModels.Count;
+
+            PlayerManager.CreateNewPlayerModel();
+            PlayerManager.SetPlayerModel(playerModelIndex, PlayerManager.PlayerModels.ElementAt(num).Key);
+            PlayerManager.RespawnPlayers();
+            StartCoroutine(RefreshEditor());
+            EditorManager.inst.DisplayNotification("Created a new player model!", 1.5f, EditorManager.NotificationType.Success);
+        }
+
+        public void Save()
+        {
+            try
+            {
+                if (!PlayerManager.SaveGlobalModels())
+                    EditorManager.inst.DisplayNotification("Failed to save player models.", 2f, EditorManager.NotificationType.Error);
+            }
+            catch (Exception ex)
+            {
+                EditorManager.inst.DisplayNotification("Failed to save player models.", 2f, EditorManager.NotificationType.Error);
+                CoreHelper.LogException(ex);
+            }
+        }
+
+        public void Reload()
+        {
+            PlayerManager.LoadGlobalModels();
+            PlayerManager.RespawnPlayers();
+            StartCoroutine(RefreshEditor());
+            EditorManager.inst.HideDialog("Player Models Popup");
+
+            EditorManager.inst.DisplayNotification("Loaded player models", 1.5f, EditorManager.NotificationType.Success);
         }
 
         public Tab CurrentTab { get; set; } = Tab.Base;
