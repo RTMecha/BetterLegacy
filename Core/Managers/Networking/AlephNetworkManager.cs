@@ -28,8 +28,6 @@ namespace BetterLegacy.Core.Managers.Networking
 
         void Awake() => inst = this;
 
-        public static bool ServerFinished => true;
-
         public static string ArcadeServerURL => "https://betterlegacy.net/";
 
         public static IEnumerator Delete(string path, Action onComplete, Action<string, long> onError, Dictionary<string, string> headers = null)
