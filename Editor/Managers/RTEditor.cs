@@ -3217,8 +3217,8 @@ namespace BetterLegacy.Editor.Managers
 
             EditorHelper.AddEditorDropdown("Editor Preferences", "", "Edit", SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}editor_gui_preferences-white.png"), () =>
             {
-                ConfigManager.inst.Show();
                 ConfigManager.inst.SetTab(2);
+                ConfigManager.inst.Show();
             });
 
             EditorHelper.AddEditorDropdown("Clear Sprite Data", "", "Edit", titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
