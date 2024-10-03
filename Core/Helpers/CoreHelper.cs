@@ -1050,6 +1050,164 @@ namespace BetterLegacy.Core.Helpers
             return value;
         }
 
+        public static void SetConfigPreset(int preset)
+        {
+            switch (preset)
+            {
+                // Beginner
+                case 0:
+                    {
+                        EditorConfig.Instance.EditorComplexity.Value = Complexity.Simple;
+                        EditorConfig.Instance.EditorTheme.Value = EditorTheme.Legacy;
+                        EditorConfig.Instance.RoundedUI.Value = true;
+                        EditorConfig.Instance.DraggingPlaysSound.Value = true;
+                        EditorConfig.Instance.PrefabExampleTemplate.Value = true;
+                        EditorConfig.Instance.WaveformMode.Value = WaveformType.Legacy;
+                        EditorConfig.Instance.WaveformBGColor.Reset();
+                        EditorConfig.Instance.WaveformBottomColor.Reset();
+                        EditorConfig.Instance.WaveformTopColor.Reset();
+                        EditorConfig.Instance.TimelineGridEnabled.Value = false;
+                        EditorConfig.Instance.EventLabelsRenderLeft.Value = true;
+                        EditorConfig.Instance.TimelineCursorColor.Reset();
+                        EditorConfig.Instance.KeyframeCursorColor.Reset();
+                        EditorConfig.Instance.ObjectKeyframesRenderBinColor.Value = true;
+                        EditorConfig.Instance.EventKeyframesRenderBinColor.Value = true;
+                        EditorConfig.Instance.LevelLoadsLastTime.Value = false;
+                        EditorConfig.Instance.LevelPausesOnStart.Value = false;
+                        EditorConfig.Instance.DragUI.Value = true;
+                        EditorConfig.Instance.ImportPrefabsDirectly.Value = true;
+                        EditorConfig.Instance.RenderDepthRange.Value = new Vector2Int(0, 30);
+                        EditorConfig.Instance.PlayEditorAnimations.Value = true;
+                        EditorConfig.Instance.PreviewGridEnabled.Value = false;
+
+                        CoreConfig.Instance.IncreasedClipPlanes.Value = true;
+                        CoreConfig.Instance.EnableVideoBackground.Value = true;
+
+                        EventsConfig.Instance.ShakeEventMode.Value = ShakeType.Catalyst;
+
+                        PlayerConfig.Instance.QueueBoost.Value = true;
+                        PlayerConfig.Instance.PlaySoundB.Value = true;
+                        PlayerConfig.Instance.PlaySoundR.Value = true;
+
+                        break;
+                    }
+
+                // Legacy
+                case 1:
+                    {
+                        EditorConfig.Instance.EditorComplexity.Value = Complexity.Normal;
+                        EditorConfig.Instance.EditorTheme.Value = EditorTheme.Legacy;
+                        EditorConfig.Instance.RoundedUI.Value = false;
+                        EditorConfig.Instance.DraggingPlaysSound.Value = false;
+                        EditorConfig.Instance.PrefabExampleTemplate.Value = true;
+                        EditorConfig.Instance.WaveformMode.Value = WaveformType.Legacy;
+                        EditorConfig.Instance.WaveformBGColor.Reset();
+                        EditorConfig.Instance.WaveformBottomColor.Reset();
+                        EditorConfig.Instance.WaveformTopColor.Reset();
+                        EditorConfig.Instance.TimelineGridEnabled.Value = false;
+                        EditorConfig.Instance.EventLabelsRenderLeft.Value = false;
+                        EditorConfig.Instance.TimelineCursorColor.Reset();
+                        EditorConfig.Instance.KeyframeCursorColor.Reset();
+                        EditorConfig.Instance.ObjectKeyframesRenderBinColor.Value = false;
+                        EditorConfig.Instance.EventKeyframesRenderBinColor.Value = true;
+                        EditorConfig.Instance.LevelLoadsLastTime.Value = false;
+                        EditorConfig.Instance.LevelPausesOnStart.Value = false;
+                        EditorConfig.Instance.DragUI.Value = false;
+                        EditorConfig.Instance.ImportPrefabsDirectly.Value = true;
+                        EditorConfig.Instance.RenderDepthRange.Value = new Vector2Int(0, 30);
+                        EditorConfig.Instance.PlayEditorAnimations.Value = false;
+                        EditorConfig.Instance.PreviewGridEnabled.Value = false;
+
+                        CoreConfig.Instance.IncreasedClipPlanes.Value = false;
+                        CoreConfig.Instance.EnableVideoBackground.Value = true;
+
+                        EventsConfig.Instance.ShakeEventMode.Value = ShakeType.Original;
+
+                        PlayerConfig.Instance.QueueBoost.Value = false;
+                        PlayerConfig.Instance.PlaySoundB.Value = false;
+                        PlayerConfig.Instance.PlaySoundR.Value = false;
+
+                        break;
+                    }
+
+                // Alpha
+                case 2:
+                    {
+                        EditorConfig.Instance.EditorComplexity.Value = Complexity.Normal;
+                        EditorConfig.Instance.EditorTheme.Value = EditorTheme.Modern;
+                        EditorConfig.Instance.RoundedUI.Value = true;
+                        EditorConfig.Instance.DraggingPlaysSound.Value = false;
+                        EditorConfig.Instance.PrefabExampleTemplate.Value = false;
+                        EditorConfig.Instance.WaveformMode.Value = WaveformType.Beta;
+                        EditorConfig.Instance.WaveformBGColor.Reset();
+                        EditorConfig.Instance.WaveformBottomColor.Reset();
+                        EditorConfig.Instance.WaveformTopColor.Value = new Color(0.5f, 0.5f, 0.5f, 1f);
+                        EditorConfig.Instance.TimelineGridEnabled.Value = true;
+                        EditorConfig.Instance.EventLabelsRenderLeft.Value = true;
+                        EditorConfig.Instance.TimelineCursorColor.Value = LSColors.HexToColor("03AEF0");
+                        EditorConfig.Instance.KeyframeCursorColor.Value = LSColors.HexToColor("03AEF0");
+                        EditorConfig.Instance.ObjectKeyframesRenderBinColor.Value = false;
+                        EditorConfig.Instance.EventKeyframesRenderBinColor.Value = false;
+                        EditorConfig.Instance.LevelLoadsLastTime.Value = false;
+                        EditorConfig.Instance.LevelPausesOnStart.Value = false;
+                        EditorConfig.Instance.DragUI.Value = false;
+                        EditorConfig.Instance.ImportPrefabsDirectly.Value = true;
+                        EditorConfig.Instance.RenderDepthRange.Value = new Vector2Int(0, 40); // todo: verify that the range is 40
+                        EditorConfig.Instance.PlayEditorAnimations.Value = false;
+                        EditorConfig.Instance.PreviewGridEnabled.Value = true;
+
+                        CoreConfig.Instance.IncreasedClipPlanes.Value = false; // todo: make sure alpha levels work without this on
+                        CoreConfig.Instance.EnableVideoBackground.Value = false;
+
+                        EventsConfig.Instance.ShakeEventMode.Value = ShakeType.Original;
+
+                        PlayerConfig.Instance.QueueBoost.Value = true;
+                        PlayerConfig.Instance.PlaySoundB.Value = false;
+                        PlayerConfig.Instance.PlaySoundR.Value = false;
+
+                        break;
+                    }
+
+                // Modded
+                case 3:
+                    {
+                        EditorConfig.Instance.EditorComplexity.Value = Complexity.Advanced;
+                        EditorConfig.Instance.EditorTheme.Value = EditorTheme.Dark;
+                        EditorConfig.Instance.RoundedUI.Value = true;
+                        EditorConfig.Instance.DraggingPlaysSound.Value = true;
+                        EditorConfig.Instance.PrefabExampleTemplate.Value = false;
+                        EditorConfig.Instance.WaveformMode.Value = WaveformType.LegacyFast;
+                        EditorConfig.Instance.WaveformBGColor.Reset();
+                        EditorConfig.Instance.WaveformBottomColor.Value = LSColors.HexToColor("2FCBD6");
+                        EditorConfig.Instance.WaveformTopColor.Value = LSColors.HexToColor("F6AC1A");
+                        EditorConfig.Instance.TimelineGridEnabled.Value = true;
+                        EditorConfig.Instance.EventLabelsRenderLeft.Value = false;
+                        EditorConfig.Instance.TimelineCursorColor.Value = LSColors.HexToColor("F6AC1A");
+                        EditorConfig.Instance.KeyframeCursorColor.Value = LSColors.HexToColor("F6AC1A");
+                        EditorConfig.Instance.ObjectKeyframesRenderBinColor.Value = true;
+                        EditorConfig.Instance.EventKeyframesRenderBinColor.Value = true;
+                        EditorConfig.Instance.LevelLoadsLastTime.Value = true;
+                        EditorConfig.Instance.LevelPausesOnStart.Value = true;
+                        EditorConfig.Instance.DragUI.Value = true;
+                        EditorConfig.Instance.ImportPrefabsDirectly.Value = false;
+                        EditorConfig.Instance.RenderDepthRange.Reset();
+                        EditorConfig.Instance.PlayEditorAnimations.Value = true;
+                        EditorConfig.Instance.PreviewGridEnabled.Value = false;
+
+                        CoreConfig.Instance.IncreasedClipPlanes.Value = true;
+                        CoreConfig.Instance.EnableVideoBackground.Value = true;
+
+                        EventsConfig.Instance.ShakeEventMode.Value = ShakeType.Catalyst;
+
+                        PlayerConfig.Instance.QueueBoost.Value = true;
+                        PlayerConfig.Instance.PlaySoundB.Value = true;
+                        PlayerConfig.Instance.PlaySoundR.Value = true;
+
+                        break;
+                    }
+            }
+        }
+
         /// <summary>
         /// Sets mostly unlimited render depth range.
         /// </summary>
