@@ -61,6 +61,10 @@ namespace BetterLegacy.Configs
         public T MinValue { get; set; }
         public T MaxValue { get; set; }
 
+        public T Default { get => (T)DefaultValue; set => DefaultValue = value; }
+
+        public void Reset() => BoxedValue = DefaultValue;
+
         public override void OnSettingChanged(object instance)
         {
             Config?.OnSettingChanged(instance);
