@@ -2510,6 +2510,11 @@ namespace BetterLegacy.Configs
             ThemesEventKeyframePerPage.SettingChanged += ThemeEventKeyframeChanged;
 
             WaveformRerender.SettingChanged += TimelineWaveformChanged;
+            WaveformMode.SettingChanged += TimelineWaveformChanged;
+            WaveformBGColor.SettingChanged += TimelineWaveformChanged;
+            WaveformBottomColor.SettingChanged += TimelineWaveformChanged;
+            WaveformTopColor.SettingChanged += TimelineWaveformChanged;
+            WaveformTextureFormat.SettingChanged += TimelineWaveformChanged;
 
             DraggingPlaysSound.SettingChanged += DraggingChanged;
             DraggingPlaysSoundOnlyWithBPM.SettingChanged += DraggingChanged;
