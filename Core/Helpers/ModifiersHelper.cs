@@ -2281,6 +2281,137 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+
+                    case "playerMoveToObject":
+                        {
+                            if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
+                                break;
+
+                            var pos = levelObject.visualObject.GameObject.transform.position;
+                            var player = PlayerManager.GetClosestPlayer(pos);
+
+                            if (!player || !player.Player || !player.Player.rb)
+                                break;
+                            
+                            player.Player.rb.position = new Vector3(pos.x, pos.y, 0f);
+
+                            break;
+                        }
+                    case "playerMoveAllToObject":
+                        {
+                            if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
+                                break;
+
+                            var pos = levelObject.visualObject.GameObject.transform.position;
+
+                            foreach (var player in PlayerManager.Players.Where(x => x.Player))
+                            {
+                                if (!player.Player.rb)
+                                    break;
+
+                                player.Player.rb.position = new Vector3(pos.x, pos.y, 0f);
+                            }
+
+                            break;
+                        }
+                    case "playerMoveXToObject":
+                        {
+                            if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
+                                break;
+
+                            var pos = levelObject.visualObject.GameObject.transform.position;
+                            var player = PlayerManager.GetClosestPlayer(pos);
+
+                            if (!player || !player.Player || !player.Player.rb)
+                                break;
+
+                            var y = player.Player.rb.position.y;
+                            player.Player.rb.position = new Vector2(pos.x, y);
+
+                            break;
+                        }
+                    case "playerMoveXAllToObject":
+                        {
+                            if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
+                                break;
+
+                            var pos = levelObject.visualObject.GameObject.transform.position;
+
+                            foreach (var player in PlayerManager.Players.Where(x => x.Player))
+                            {
+                                if (!player.Player.rb)
+                                    break;
+
+                                var y = player.Player.rb.position.y;
+                                player.Player.rb.position = new Vector2(pos.x, y);
+                            }
+
+                            break;
+                        }
+                    case "playerMoveYToObject":
+                        {
+                            if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
+                                break;
+
+                            var pos = levelObject.visualObject.GameObject.transform.position;
+                            var player = PlayerManager.GetClosestPlayer(pos);
+
+                            if (!player || !player.Player || !player.Player.rb)
+                                break;
+
+                            var x = player.Player.rb.position.x;
+                            player.Player.rb.position = new Vector2(x, pos.y);
+
+                            break;
+                        }
+                    case "playerMoveYAllToObject":
+                        {
+                            if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
+                                break;
+
+                            var pos = levelObject.visualObject.GameObject.transform.position;
+
+                            foreach (var player in PlayerManager.Players.Where(x => x.Player))
+                            {
+                                if (!player.Player.rb)
+                                    break;
+
+                                var x = player.Player.rb.position.x;
+                                player.Player.rb.position = new Vector2(x, pos.y);
+                            }
+
+                            break;
+                        }
+                    case "playerRotateToObject":
+                        {
+                            if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
+                                break;
+
+                            var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
+
+                            if (!player || !player.Player || !player.Player.rb)
+                                break;
+
+                            player.Player.rb.transform.SetLocalRotationEulerZ(levelObject.visualObject.GameObject.transform.localRotation.eulerAngles.z);
+
+                            break;
+                        }
+                    case "playerRotateAllToObject":
+                        {
+                            if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
+                                break;
+
+                            foreach (var player in PlayerManager.Players.Where(x => x.Player))
+                            {
+                                if (!player.Player.rb)
+                                    break;
+
+                                player.Player.rb.transform.SetLocalRotationEulerZ(levelObject.visualObject.GameObject.transform.localRotation.eulerAngles.z);
+                            }
+
+                            break;
+                        }
+
                     case "playerBoost":
                         {
                             if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject && !modifier.constant)
