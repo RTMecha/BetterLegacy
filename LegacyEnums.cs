@@ -147,8 +147,10 @@
     {
         Legacy,
         Beta,
+        Modern,
         LegacyFast,
-        BetaFast
+        BetaFast,
+        ModernFast
     }
 
     public enum VerticalDirection

@@ -1115,16 +1115,41 @@ namespace BetterLegacy.Editor.Managers
                 int num = Mathf.Clamp((int)AudioManager.inst.CurrentAudioSource.clip.length * 48, 100, 15000);
                 Texture2D waveform = null;
 
-                if (config.WaveformMode.Value == WaveformType.Legacy)
-                    yield return CoreHelper.StartCoroutineAsync(Legacy(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, config.WaveformBottomColor.Value, (Texture2D _tex) => { waveform = _tex; }));
-                if (config.WaveformMode.Value == WaveformType.Beta)
-                    yield return CoreHelper.StartCoroutineAsync(Beta(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, (Texture2D _tex) => { waveform = _tex; }));
-                if (config.WaveformMode.Value == WaveformType.BetaFast)
-                    yield return CoreHelper.StartCoroutineAsync(BetaFast(AudioManager.inst.CurrentAudioSource.clip, 1f, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, (Texture2D _tex) => { waveform = _tex; }));
-                if (config.WaveformMode.Value == WaveformType.LegacyFast)
-                    yield return CoreHelper.StartCoroutineAsync(LegacyFast(AudioManager.inst.CurrentAudioSource.clip, 1f, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, config.WaveformBottomColor.Value, (Texture2D _tex) => { waveform = _tex; }));
+                switch (config.WaveformMode.Value)
+                {
+                    case WaveformType.Legacy:
+                        {
+                            yield return CoreHelper.StartCoroutineAsync(Legacy(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, config.WaveformBottomColor.Value, (Texture2D _tex) => { waveform = _tex; }));
+                            break;
+                        }
+                    case WaveformType.Beta:
+                        {
+                            yield return CoreHelper.StartCoroutineAsync(Beta(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, (Texture2D _tex) => { waveform = _tex; }));
+                            break;
+                        }
+                    case WaveformType.Modern:
+                        {
+                            yield return CoreHelper.StartCoroutineAsync(Modern(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, (Texture2D _tex) => { waveform = _tex; }));
+                            break;
+                        }
+                    case WaveformType.LegacyFast:
+                        {
+                            yield return CoreHelper.StartCoroutineAsync(LegacyFast(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, config.WaveformBottomColor.Value, (Texture2D _tex) => { waveform = _tex; }));
+                            break;
+                        }
+                    case WaveformType.BetaFast:
+                        {
+                            yield return CoreHelper.StartCoroutineAsync(BetaFast(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, (Texture2D _tex) => { waveform = _tex; }));
+                            break;
+                        }
+                    case WaveformType.ModernFast:
+                        {
+                            yield return CoreHelper.StartCoroutineAsync(ModernFast(AudioManager.inst.CurrentAudioSource.clip, num, 300, config.WaveformBGColor.Value, config.WaveformTopColor.Value, (Texture2D _tex) => { waveform = _tex; }));
+                            break;
+                        }
+                }
 
-                var waveSprite = Sprite.Create(waveform, new Rect(0f, 0f, (float)num, 300f), new Vector2(0.5f, 0.5f), 100f);
+                var waveSprite = Sprite.Create(waveform, new Rect(0f, 0f, num, 300f), new Vector2(0.5f, 0.5f), 100f);
                 SetTimelineSprite(waveSprite);
 
                 if (config.WaveformSaves.Value)
@@ -1182,14 +1207,14 @@ namespace BetterLegacy.Editor.Managers
                 array3[j] = 0f;
                 for (int k = 0; k < num; k++)
                     array3[j] += Mathf.Abs(array2[j * num + k]);
-                array3[j] /= (float)num;
+                array3[j] /= num;
             }
             for (int l = 0; l < array3.Length - 1; l++)
             {
                 int num2 = 0;
-                while ((float)num2 < (float)textureHeight * array3[l] + 1f)
+                while (num2 < textureHeight * array3[l] + 1f)
                 {
-                    texture2D.SetPixel(textureWidth * l / array3.Length, (int)((float)textureHeight * (array3[l] + 1f) / 2f) - num2, waveform);
+                    texture2D.SetPixel(textureWidth * l / array3.Length, (int)(textureHeight * (array3[l] + 1f) / 2f) - num2, waveform);
                     num2++;
                 }
             }
@@ -1238,15 +1263,15 @@ namespace BetterLegacy.Editor.Managers
                 {
                     array6[j] += Mathf.Abs(array3[j * num + k]);
                 }
-                array6[j] /= (float)num;
+                array6[j] /= num;
                 array6[j] *= 0.85f;
             }
             for (int l = 0; l < array6.Length - 1; l++)
             {
                 int num2 = 0;
-                while ((float)num2 < (float)textureHeight * array6[l])
+                while (num2 < textureHeight * array6[l])
                 {
-                    texture2D.SetPixel(textureWidth * l / array6.Length, (int)((float)textureHeight * array6[l]) - num2, _top);
+                    texture2D.SetPixel(textureWidth * l / array6.Length, (int)(textureHeight * array6[l]) - num2, _top);
                     num2++;
                 }
             }
@@ -1258,17 +1283,17 @@ namespace BetterLegacy.Editor.Managers
                 {
                     array6[m] += Mathf.Abs(array4[m * num + n]);
                 }
-                array6[m] /= (float)num;
+                array6[m] /= num;
                 array6[m] *= 0.85f;
             }
             for (int num3 = 0; num3 < array6.Length - 1; num3++)
             {
                 int num4 = 0;
-                while ((float)num4 < (float)textureHeight * array6[num3])
+                while (num4 < textureHeight * array6[num3])
                 {
                     int x = textureWidth * num3 / array6.Length;
                     int y = (int)array4[num3 * num + num4] - num4;
-                    texture2D.SetPixel(x, y, texture2D.GetPixel(x, y) == _top ? MixColors(new List<Color> { _top, _bottom }) : _bottom);
+                    texture2D.SetPixel(x, y, texture2D.GetPixel(x, y) == _top ? CoreHelper.MixColors(new List<Color> { _top, _bottom }) : _bottom);
                     num4++;
                 }
             }
@@ -1280,7 +1305,48 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
-        public IEnumerator BetaFast(AudioClip audio, float saturation, int width, int height, Color background, Color col, Action<Texture2D> action)
+        public IEnumerator Modern(AudioClip clip, int textureWidth, int textureHeight, Color background, Color waveform, Action<Texture2D> action)
+        {
+            yield return Ninja.JumpToUnity;
+            CoreHelper.Log("Generating Modern Waveform");
+            int num = 100;
+            var texture2D = new Texture2D(textureWidth, textureHeight, EditorConfig.Instance.WaveformTextureFormat.Value, false);
+            yield return Ninja.JumpBack;
+
+            var array = new Color[texture2D.width * texture2D.height];
+            for (int i = 0; i < array.Length; i++)
+                array[i] = background;
+
+            texture2D.SetPixels(array);
+            num = clip.frequency / num;
+            float[] array2 = new float[clip.samples * clip.channels];
+            clip.GetData(array2, 0);
+            float[] array3 = new float[array2.Length / num];
+            for (int j = 0; j < array3.Length; j++)
+            {
+                array3[j] = 0f;
+                for (int k = 0; k < num; k++)
+                    array3[j] += Mathf.Abs(array2[j * num + k]);
+                array3[j] /= (float)num;
+            }
+            for (int l = 0; l < array3.Length - 1; l++)
+            {
+                int num2 = 0;
+                while (num2 < textureHeight * array3[l] + 1f)
+                {
+                    texture2D.SetPixel(textureWidth * l / array3.Length, (int)(textureHeight * (array3[l] + 1f)) - num2, waveform);
+                    num2++;
+                }
+            }
+            yield return Ninja.JumpToUnity;
+            texture2D.wrapMode = TextureWrapMode.Clamp;
+            texture2D.filterMode = FilterMode.Point;
+            texture2D.Apply();
+            action(texture2D);
+            yield break;
+        }
+
+        public IEnumerator BetaFast(AudioClip audio, int width, int height, Color background, Color col, Action<Texture2D> action)
         {
             yield return Ninja.JumpToUnity;
             CoreHelper.Log("Generating Beta Waveform (Fast)");
@@ -1321,7 +1387,7 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
-        public IEnumerator LegacyFast(AudioClip audio, float saturation, int width, int height, Color background, Color colTop, Color colBot, Action<Texture2D> action)
+        public IEnumerator LegacyFast(AudioClip audio, int width, int height, Color background, Color colTop, Color colBot, Action<Texture2D> action)
         {
             yield return Ninja.JumpToUnity;
             CoreHelper.Log("Generating Legacy Waveform (Fast)");
@@ -1353,7 +1419,7 @@ namespace BetterLegacy.Editor.Managers
                 {
                     tex.SetPixel(x, height - y, colTop);
 
-                    tex.SetPixel(x, y, tex.GetPixel(x, y) == colTop ? MixColors(new List<Color> { colTop, colBot }) : colBot);
+                    tex.SetPixel(x, y, tex.GetPixel(x, y) == colTop ? CoreHelper.MixColors(new List<Color> { colTop, colBot }) : colBot);
                 }
             }
             yield return Ninja.JumpToUnity;
@@ -1363,13 +1429,45 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
-        public static Color MixColors(List<Color> colors)
+        public IEnumerator ModernFast(AudioClip audio, int width, int height, Color background, Color col, Action<Texture2D> action)
         {
-            var invertedColorSum = Color.black;
-            foreach (var color in colors)
-                invertedColorSum += Color.white - color;
+            yield return Ninja.JumpToUnity;
+            CoreHelper.Log("Generating Modern Waveform (Fast)");
+            var tex = new Texture2D(width, height, EditorConfig.Instance.WaveformTextureFormat.Value, false);
+            yield return Ninja.JumpBack;
 
-            return Color.white - invertedColorSum / colors.Count;
+            float[] samples = new float[audio.samples * audio.channels];
+            float[] waveform = new float[width];
+            audio.GetData(samples, 0);
+            float packSize = ((float)samples.Length / (float)width);
+            int s = 0;
+            for (float i = 0; Mathf.RoundToInt(i) < samples.Length && s < waveform.Length; i += packSize)
+            {
+                waveform[s] = Mathf.Abs(samples[Mathf.RoundToInt(i)]);
+                s++;
+            }
+
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    tex.SetPixel(x, y, background);
+                }
+            }
+
+            for (int x = 0; x < waveform.Length; x++)
+            {
+                for (int y = 0; y <= waveform[x] * ((float)height * .75f); y++)
+                {
+                    tex.SetPixel(x, y, col);
+                    //tex.SetPixel(x, (height / 2) - y, col);
+                }
+            }
+            yield return Ninja.JumpToUnity;
+            tex.Apply();
+
+            action?.Invoke(tex);
+            yield break;
         }
 
         public float timelineGridRenderMultiSizeCloser = 40f;
