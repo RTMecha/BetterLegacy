@@ -1,3 +1,30 @@
+snapshot-2024.10.1 - (pre-1.7.0) > [???]
+- BetterLegacy now has a demo of chapter 1!
+- Added a way to view levels you've uploaded via the "View Uploaded" button in the Upload dropdown in the editor.
+- Fixed Window event keyframes previewing in the editor instead of preview mode.
+- Fixed player noclipping issue.
+- Added a config for changing Marker right click behavior.
+- Fixed player objects not properly checking invincible / zen mode properties.
+- Fixed player spawn animation breaking after the player is set active when it was inactive before
+- Optimized playerCollide modifier by using property instead of GetComponent.
+- Improved enable/disableObject modifiers code.
+- Fixed no_volume considering Audio event keyframe value instead of just the user's config.
+- Improved object updating a tiny bit more.
+- Hovering the mouse over a transparent object with highlight objects on now sets the object to opaque.
+- Added some context menus to the timeline bar elements.
+- You can now directly parent an object to the camera via the parent search context menu. Additionally, you can also view the child tree and/or parent chain of an object via the parent button context menu.
+- Added Convert to VG buttons to context menus where it's needed.
+- Added a few more buttons to different context menus relating to the file system.
+- Object origin offset now has a context menu.
+- Online levels tab now refreshes when you switch pages.
+- Added a Mode dropdown to the Color Split, Ripples and Double Vision event keyframes.
+- Fixed the player moving when the camera rotates in 3D where it shouldn't.
+- Due to the above fix, the player should now ALWAYS stay in the bounds of the camera if Out of Bounds is turned off in the player event keyframe. There were some cases where the player bugged and exited the camera (Such as in Subnautix' Stormbringer).
+- Fixed a bug with object opacity where it will default to 1 if it's higher than or equal to 0.9.
+- Fixed random error log when opening Config Manager via the "Editor Preferences" button.
+- Started working on config presets.
+- User's Display Name now defaults to the Steam username, if Display Name is still "Player".
+- Added a new "Modern" timeline waveform type. This is based on the alpha editor timeline waveform where the texture is only along the bottom.
 1.6.9 > [Sep 29, 2024]
 - Fixed player spawn issues.
 - Fixed theme not updating properly in some cases.
