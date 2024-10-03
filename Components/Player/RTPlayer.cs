@@ -1028,8 +1028,11 @@ namespace BetterLegacy.Components.Player
                 cameraToViewportPoint.y = Mathf.Clamp(cameraToViewportPoint.y, 0f, 1f);
                 if (Camera.main.orthographicSize > 0f && (!includeNegativeZoom || Camera.main.orthographicSize < 0f) && CustomPlayer)
                 {
-                    float maxDistanceDelta = Time.deltaTime * 1500f;
-                    player.transform.position = Vector3.MoveTowards(lastPos, Camera.main.ViewportToWorldPoint(cameraToViewportPoint), maxDistanceDelta);
+                    //float maxDistanceDelta = Time.deltaTime * 1500f;
+                    //player.transform.position = Vector3.MoveTowards(lastPos, Camera.main.ViewportToWorldPoint(cameraToViewportPoint), maxDistanceDelta);
+                    var pos = Camera.main.ViewportToWorldPoint(cameraToViewportPoint);
+                    pos.z = player.transform.position.z;
+                    player.transform.position = pos;
                 }
             }
 
