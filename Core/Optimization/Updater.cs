@@ -28,8 +28,20 @@ namespace BetterLegacy.Core.Optimization
 
         public static float[] samples = new float[256];
 
-        public static bool Active => levelProcessor && levelProcessor.level;
+        /// <summary>
+        /// Gets a sample by a sample index and multiplies it by intensity.
+        /// </summary>
+        /// <param name="sample">Sample index to get.</param>
+        /// <param name="intensity">Intensity to multiply the sample by.</param>
+        /// <returns>Returns a sample.</returns>
+        public static float GetSample(int sample, float intensity) => samples[Mathf.Clamp(sample, 0, samples.Length - 1)] * intensity;
 
+        /// <summary>
+        /// Checks if a <see cref="BeatmapObject"/> has a generated <see cref="LevelObject"/> and spits out said <see cref="LevelObject"/>.
+        /// </summary>
+        /// <param name="beatmapObject"><see cref="BeatmapObject"/> to get a LevelObject from.</param>
+        /// <param name="levelObject"><see cref="LevelObject"/> result.</param>
+        /// <returns>Returns true if the <see cref="BeatmapObject"/> has a generated <see cref="LevelObject"/>, otherwise returns false.</returns>
         public static bool TryGetObject(BeatmapObject beatmapObject, out LevelObject levelObject)
         {
             if (beatmapObject.levelObject)

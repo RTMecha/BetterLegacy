@@ -2939,11 +2939,8 @@ namespace BetterLegacy.Core.Helpers
                                 && int.TryParse(modifier.commands[2], out int sampleY) && float.TryParse(modifier.commands[4], out float intensityY)
                                 && float.TryParse(modifier.value, out float val))
                             {
-                                sampleX = Mathf.Clamp(sampleX, 0, 255);
-                                sampleY = Mathf.Clamp(sampleY, 0, 255);
-
-                                float reactivePositionX = Updater.samples[sampleX] * intensityX * val;
-                                float reactivePositionY = Updater.samples[sampleY] * intensityY * val;
+                                float reactivePositionX = Updater.GetSample(sampleX, intensityX * val);
+                                float reactivePositionY = Updater.GetSample(sampleY, intensityY * val);
 
                                 var x = modifier.reference.origin.x;
                                 var y = modifier.reference.origin.y;
@@ -2959,11 +2956,8 @@ namespace BetterLegacy.Core.Helpers
                                 && int.TryParse(modifier.commands[2], out int sampleY) && float.TryParse(modifier.commands[4], out float intensityY)
                                 && float.TryParse(modifier.value, out float val))
                             {
-                                sampleX = Mathf.Clamp(sampleX, 0, 255);
-                                sampleY = Mathf.Clamp(sampleY, 0, 255);
-
-                                float reactiveScaleX = Updater.samples[sampleX] * intensityX * val;
-                                float reactiveScaleY = Updater.samples[sampleY] * intensityY * val;
+                                float reactiveScaleX = Updater.GetSample(sampleX, intensityX * val);
+                                float reactiveScaleY = Updater.GetSample(sampleY, intensityY * val);
 
                                 levelObject.visualObject.GameObject.transform.localScale = new Vector3(1f + reactiveScaleX, 1f + reactiveScaleY, 1f);
                             }
@@ -2974,9 +2968,7 @@ namespace BetterLegacy.Core.Helpers
                             if (modifier.reference && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject
                                 && int.TryParse(modifier.commands[1], out int sample) && float.TryParse(modifier.value, out float val))
                             {
-                                sample = Mathf.Clamp(sample, 0, 255);
-
-                                float reactiveRotation = Updater.samples[sample] * val;
+                                float reactiveRotation = Updater.GetSample(sample, val);
 
                                 levelObject.visualObject.GameObject.transform.localRotation = Quaternion.Euler(0f, 0f, reactiveRotation);
                             }
@@ -2989,7 +2981,7 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 sample = Mathf.Clamp(sample, 0, 255);
 
-                                float reactiveColor = Updater.samples[sample] * val;
+                                float reactiveColor = Updater.GetSample(sample, val);
 
                                 if (levelObject.visualObject.Renderer != null && int.TryParse(modifier.commands[2], out int col))
                                     levelObject.visualObject.Renderer.material.color += GameManager.inst.LiveTheme.objectColors[col] * reactiveColor;
@@ -3003,7 +2995,7 @@ namespace BetterLegacy.Core.Helpers
                             {
                                 sample = Mathf.Clamp(sample, 0, 255);
 
-                                float reactiveColor = Updater.samples[sample] * val;
+                                float reactiveColor = Updater.GetSample(sample, val);
 
                                 if (levelObject.visualObject.Renderer != null && int.TryParse(modifier.commands[2], out int col))
                                     levelObject.visualObject.Renderer.material.color = RTMath.Lerp(levelObject.visualObject.Renderer.material.color, GameManager.inst.LiveTheme.objectColors[col], reactiveColor);
@@ -3017,11 +3009,8 @@ namespace BetterLegacy.Core.Helpers
                                 && int.TryParse(modifier.commands[2], out int sampleY) && float.TryParse(modifier.commands[4], out float intensityY)
                                 && float.TryParse(modifier.value, out float val))
                             {
-                                sampleX = Mathf.Clamp(sampleX, 0, 255);
-                                sampleY = Mathf.Clamp(sampleY, 0, 255);
-
-                                float reactivePositionX = Updater.samples[sampleX] * intensityX * val;
-                                float reactivePositionY = Updater.samples[sampleY] * intensityY * val;
+                                float reactivePositionX = Updater.GetSample(sampleX, intensityX * val);
+                                float reactivePositionY = Updater.GetSample(sampleY, intensityY * val);
 
                                 modifier.reference.reactivePositionOffset = new Vector3(reactivePositionX, reactivePositionY);
                             }
@@ -3035,11 +3024,8 @@ namespace BetterLegacy.Core.Helpers
                                 && int.TryParse(modifier.commands[2], out int sampleY) && float.TryParse(modifier.commands[4], out float intensityY)
                                 && float.TryParse(modifier.value, out float val))
                             {
-                                sampleX = Mathf.Clamp(sampleX, 0, 255);
-                                sampleY = Mathf.Clamp(sampleY, 0, 255);
-
-                                float reactiveScaleX = Updater.samples[sampleX] * intensityX * val;
-                                float reactiveScaleY = Updater.samples[sampleY] * intensityY * val;
+                                float reactiveScaleX = Updater.GetSample(sampleX, intensityX * val);
+                                float reactiveScaleY = Updater.GetSample(sampleY, intensityY * val);
 
                                 modifier.reference.reactiveScaleOffset = new Vector3(reactiveScaleX, reactiveScaleY, 1f);
                             }
@@ -3050,9 +3036,7 @@ namespace BetterLegacy.Core.Helpers
                         {
                             if (modifier.reference && int.TryParse(modifier.commands[1], out int sample) && float.TryParse(modifier.value, out float val))
                             {
-                                sample = Mathf.Clamp(sample, 0, 255);
-
-                                float reactiveRotation = Updater.samples[sample] * val;
+                                float reactiveRotation = Updater.GetSample(sample, val);
 
                                 modifier.reference.reactiveRotationOffset = reactiveRotation;
                             }

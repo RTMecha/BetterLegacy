@@ -139,7 +139,7 @@ namespace BetterLegacy.Patchers
                                     backgroundObject.hue,
                                     backgroundObject.saturation,
                                     backgroundObject.value),
-                                Updater.samples[Mathf.Clamp(backgroundObject.reactiveColSample, 0, Updater.samples.Length - 1)] * backgroundObject.reactiveColIntensity);
+                                Updater.GetSample(backgroundObject.reactiveColSample, backgroundObject.reactiveColIntensity));
 
                     mainColor.a = 1f;
 
@@ -180,32 +180,31 @@ namespace BetterLegacy.Patchers
                                 break;
                             case (DataManager.GameData.BackgroundObject.ReactiveType)3:
                                 {
-                                    float xr = Updater.samples[Mathf.Clamp(backgroundObject.reactiveScaSamples[0], 0, Updater.samples.Length - 1)];
-                                    float yr = Updater.samples[Mathf.Clamp(backgroundObject.reactiveScaSamples[1], 0, Updater.samples.Length - 1)];
+                                    float xr = Updater.GetSample(backgroundObject.reactiveScaSamples[0], backgroundObject.reactiveScaIntensity[0]);
+                                    float yr = Updater.GetSample(backgroundObject.reactiveScaSamples[1], backgroundObject.reactiveScaIntensity[1]);
 
                                     backgroundObject.reactiveSize =
-                                        new Vector2(xr * backgroundObject.reactiveScaIntensity[0], yr * backgroundObject.reactiveScaIntensity[1]) * backgroundObject.reactiveScale;
+                                        new Vector2(xr, yr) * backgroundObject.reactiveScale;
                                     break;
                                 }
                         }
 
-                        float x = Updater.samples[Mathf.Clamp(backgroundObject.reactivePosSamples[0], 0, Updater.samples.Length - 1)];
-                        float y = Updater.samples[Mathf.Clamp(backgroundObject.reactivePosSamples[1], 0, Updater.samples.Length - 1)];
+                        float x = Updater.GetSample(backgroundObject.reactivePosSamples[0], backgroundObject.reactivePosIntensity[0]);
+                        float y = Updater.GetSample(backgroundObject.reactivePosSamples[1], backgroundObject.reactivePosIntensity[1]);
+                        float z = Updater.GetSample(backgroundObject.reactiveZSample, backgroundObject.reactiveZIntensity);
 
-                        float rot = Updater.samples[Mathf.Clamp(backgroundObject.reactiveRotSample, 0, Updater.samples.Length - 1)];
-
-                        float z = Updater.samples[Mathf.Clamp(backgroundObject.reactiveZSample, 0, Updater.samples.Length - 1)];
+                        float rot = Updater.GetSample(backgroundObject.reactiveRotSample, backgroundObject.reactiveRotIntensity);
 
                         gameObject.transform.localPosition =
-                            new Vector3(backgroundObject.pos.x + (x * backgroundObject.reactivePosIntensity[0]),
-                            backgroundObject.pos.y + (y * backgroundObject.reactivePosIntensity[1]),
-                            32f + backgroundObject.layer * 10f + (z * backgroundObject.reactiveZIntensity) + backgroundObject.zposition) + backgroundObject.positionOffset;
+                            new Vector3(backgroundObject.pos.x + x,
+                            backgroundObject.pos.y + y,
+                            32f + backgroundObject.layer * 10f + z + backgroundObject.zposition) + backgroundObject.positionOffset;
                         gameObject.transform.localScale =
                             new Vector3(backgroundObject.scale.x, backgroundObject.scale.y, backgroundObject.zscale) +
                             new Vector3(backgroundObject.reactiveSize.x, backgroundObject.reactiveSize.y, 0f) + backgroundObject.scaleOffset;
                         gameObject.transform.localRotation = Quaternion.Euler(
                             new Vector3(backgroundObject.rotation.x, backgroundObject.rotation.y,
-                            backgroundObject.rot + (rot * backgroundObject.reactiveRotIntensity)) + backgroundObject.rotationOffset);
+                            backgroundObject.rot + rot) + backgroundObject.rotationOffset);
                     }
                     else
                     {
