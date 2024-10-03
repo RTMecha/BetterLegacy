@@ -420,7 +420,7 @@ namespace BetterLegacy.Menus
                 {
                     var line = lines[i];
 
-                    var regex = new Regex(@"([0-9]+).([0-9]+).([0-9]+) > \[(.*?) ([0-9]+), ([0-9]+)]");
+                    var regex = new Regex(@"(.*?) > \[(.*?) ([0-9]+), ([0-9]+)]");
                     var match = regex.Match(line);
                     if (match.Success)
                     {
