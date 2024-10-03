@@ -8,6 +8,7 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Core.Helpers;
 using System.Text.RegularExpressions;
 using BetterLegacy.Core.Animation;
+using BetterLegacy.Core.Optimization;
 
 namespace BetterLegacy.Core
 {
@@ -951,6 +952,18 @@ namespace BetterLegacy.Core
                             try
                             {
                                 input = input.Replace(match.Groups[0].ToString(), DateTime.Now.ToString(match.Groups[1].ToString().Trim()));
+                            }
+                            catch { }
+                        });
+                    }
+
+                    if (input.Contains("sampleAudio"))
+                    {
+                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"sampleAudio\((.*?),(.*?)\)", includeEnd)), match =>
+                        {
+                            try
+                            {
+                                input = input.Replace(match.Groups[0].ToString(), Updater.GetSample(Parser.TryParse(match.Groups[1].ToString().Trim(), 0), Parser.TryParse(match.Groups[2].ToString().Trim(), 0f)).ToString());
                             }
                             catch { }
                         });
