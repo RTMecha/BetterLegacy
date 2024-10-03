@@ -445,6 +445,15 @@ namespace BetterLegacy.Core.Helpers
             return list;
         }
 
+        public static Color MixColors(List<Color> colors)
+        {
+            var invertedColorSum = Color.black;
+            foreach (var color in colors)
+                invertedColorSum += Color.white - color;
+
+            return Color.white - invertedColorSum / colors.Count;
+        }
+
         #endregion
 
         #region Strings
@@ -1138,7 +1147,7 @@ namespace BetterLegacy.Core.Helpers
                         EditorConfig.Instance.RoundedUI.Value = true;
                         EditorConfig.Instance.DraggingPlaysSound.Value = false;
                         EditorConfig.Instance.PrefabExampleTemplate.Value = false;
-                        EditorConfig.Instance.WaveformMode.Value = WaveformType.Beta;
+                        EditorConfig.Instance.WaveformMode.Value = WaveformType.Modern;
                         EditorConfig.Instance.WaveformBGColor.Reset();
                         EditorConfig.Instance.WaveformBottomColor.Reset();
                         EditorConfig.Instance.WaveformTopColor.Value = new Color(0.5f, 0.5f, 0.5f, 1f);
