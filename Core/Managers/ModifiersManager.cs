@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Components.Player;
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Data.Player;
 using BetterLegacy.Core.Helpers;
@@ -42,11 +43,15 @@ namespace BetterLegacy.Core.Managers
             if (!GameData.IsValid || !CoreHelper.Playing)
                 return;
 
+            var ldm = CoreConfig.Instance.LDM.Value;
             var order = GameData.Current.beatmapObjects.FindAll(x => x.modifiers.Count > 0);
 
             for (int i = 0; i < order.Count; i++)
             {
                 var beatmapObject = order[i];
+
+                if (ldm && beatmapObject.LDM)
+                    return;
 
                 if (beatmapObject.modifiers.TryFindAll(x => x.Action == null && x.type == ModifierBase.Type.Action || x.Trigger == null && x.type == ModifierBase.Type.Trigger || x.Inactive == null, out List<Modifier<BeatmapObject>> nullActionModifiers))
                     nullActionModifiers.ForEach(AssignModifierActions);
