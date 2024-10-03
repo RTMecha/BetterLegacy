@@ -146,7 +146,6 @@ namespace BetterLegacy.Components.Editor
             if (!RTEditor.inst.parentPickerEnabled && !RTEditor.inst.prefabPickerEnabled)
             {
                 var timelineObject = ObjectEditor.inst.GetTimelineObject(beatmapObject);
-                ObjectEditor.inst.RenderTimelineObject(timelineObject);
                 if (!Input.GetKey(KeyCode.LeftShift))
                 {
                     ObjectEditor.inst.SetCurrentObject(timelineObject);
