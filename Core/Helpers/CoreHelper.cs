@@ -1091,6 +1091,7 @@ namespace BetterLegacy.Core.Helpers
 
                         CoreConfig.Instance.IncreasedClipPlanes.Value = true;
                         CoreConfig.Instance.EnableVideoBackground.Value = true;
+                        CoreConfig.Instance.ShowBackgroundObjects.Value = true;
 
                         EventsConfig.Instance.ShakeEventMode.Value = ShakeType.Catalyst;
 
@@ -1129,6 +1130,7 @@ namespace BetterLegacy.Core.Helpers
 
                         CoreConfig.Instance.IncreasedClipPlanes.Value = false;
                         CoreConfig.Instance.EnableVideoBackground.Value = true;
+                        CoreConfig.Instance.ShowBackgroundObjects.Value = true;
 
                         EventsConfig.Instance.ShakeEventMode.Value = ShakeType.Original;
 
@@ -1167,6 +1169,7 @@ namespace BetterLegacy.Core.Helpers
 
                         CoreConfig.Instance.IncreasedClipPlanes.Value = false; // todo: make sure alpha levels work without this on
                         CoreConfig.Instance.EnableVideoBackground.Value = false;
+                        CoreConfig.Instance.ShowBackgroundObjects.Value = false;
 
                         EventsConfig.Instance.ShakeEventMode.Value = ShakeType.Original;
 
@@ -1205,6 +1208,7 @@ namespace BetterLegacy.Core.Helpers
 
                         CoreConfig.Instance.IncreasedClipPlanes.Value = true;
                         CoreConfig.Instance.EnableVideoBackground.Value = true;
+                        CoreConfig.Instance.ShowBackgroundObjects.Value = true;
 
                         EventsConfig.Instance.ShakeEventMode.Value = ShakeType.Catalyst;
 

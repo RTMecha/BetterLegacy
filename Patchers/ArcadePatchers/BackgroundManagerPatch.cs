@@ -24,7 +24,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static void UpdatePrefix()
         {
-            if (!CoreHelper.Playing || !GameData.IsValid || GameData.Current.backgroundObjects == null)
+            if (!CoreConfig.Instance.ShowBackgroundObjects.Value || !CoreHelper.Playing || !GameData.IsValid || GameData.Current.backgroundObjects == null)
                 return;
 
             var list = GameData.Current.backgroundObjects.FindAll(x => x.modifiers.Count > 0);
@@ -108,7 +108,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool UpdateBackgroundObjectsPrefix(BackgroundManager __instance)
         {
-            if ((CoreHelper.Playing || LevelManager.LevelEnded && CoreConfig.Instance.ReplayLevel.Value) && BackgroundManager.inst?.backgroundParent?.gameObject)
+            var ldm = CoreConfig.Instance.LDM.Value;
+            if (CoreConfig.Instance.ShowBackgroundObjects.Value && (CoreHelper.Playing || LevelManager.LevelEnded && CoreConfig.Instance.ReplayLevel.Value) && BackgroundManager.inst?.backgroundParent?.gameObject)
             {
                 __instance.sampleLow = Updater.samples.Skip(0).Take(56).Average((float a) => a) * 1000f;
                 __instance.sampleMid = Updater.samples.Skip(56).Take(100).Average((float a) => a) * 3000f;
@@ -151,19 +152,32 @@ namespace BetterLegacy.Patchers
                     fadeColor.a = 1f;
 
                     int layer = backgroundObject.depth - backgroundObject.layer;
-                    for (int i = 0; i < backgroundObject.renderers.Count; i++)
+                    if (ldm && backgroundObject.renderers.Count > 0)
                     {
-                        var renderer = backgroundObject.renderers[i];
-                        if (i == 0)
+                        backgroundObject.renderers[0].material.color = mainColor;
+                        if (backgroundObject.renderers.Count > 1 && backgroundObject.renderers[1].gameObject.activeSelf)
                         {
-                            renderer.material.color = mainColor;
-                            continue;
+                            for (int i = 1; i < backgroundObject.renderers.Count; i++)
+                                backgroundObject.renderers[i].gameObject.SetActive(false);
                         }
-
-                        float t = 1f / layer * i;
-
-                        renderer.material.color = Color.Lerp(Color.Lerp(mainColor, fadeColor, t), fadeColor, t);
                     }
+                    else
+                        for (int i = 0; i < backgroundObject.renderers.Count; i++)
+                        {
+                            var renderer = backgroundObject.renderers[i];
+                            if (i == 0)
+                            {
+                                renderer.material.color = mainColor;
+                                continue;
+                            }
+
+                            if (!renderer.gameObject.activeSelf)
+                                renderer.gameObject.SetActive(true);
+
+                            float t = 1f / layer * i;
+
+                            renderer.material.color = Color.Lerp(Color.Lerp(mainColor, fadeColor, t), fadeColor, t);
+                        }
 
                     if (backgroundObject.reactive)
                     {

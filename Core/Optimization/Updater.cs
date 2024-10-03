@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Core.Data;
+﻿using BetterLegacy.Configs;
+using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Optimization.Level;
 using BetterLegacy.Core.Optimization.Objects;
@@ -946,7 +947,7 @@ namespace BetterLegacy.Core.Optimization
         /// <returns></returns>
         public static GameObject CreateBackgroundObject(BackgroundObject backgroundObject)
         {
-            if (!backgroundObject.active)
+            if (!CoreConfig.Instance.ShowBackgroundObjects.Value || !backgroundObject.active)
                 return null;
 
             float scaleZ = backgroundObject.zscale;

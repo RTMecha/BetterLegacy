@@ -285,6 +285,11 @@ namespace BetterLegacy.Configs
         public Setting<bool> LDM { get; set; }
 
         /// <summary>
+        /// If enabled, the Background Objects will render. Otherwise, they will be hidden and will boost performance.
+        /// </summary>
+        public Setting<bool> ShowBackgroundObjects { get; set; }
+
+        /// <summary>
         /// If on, the old video BG feature returns, though somewhat buggy. Requires a bg.mp4 or bg.mov file to exist in the level folder.
         /// </summary>
         public Setting<bool> EnableVideoBackground { get; set; }
@@ -419,6 +424,7 @@ namespace BetterLegacy.Configs
             #region Level
 
             LDM = Bind(this, "Level", "Low Detail Mode", false, "If enabled, any objects with \"LDM\" (Low Detail Mode) toggled on will not be rendered.");
+            ShowBackgroundObjects = Bind(this, "Level", "Show Background Objects", true, "If enabled, the Background Objects will render. Otherwise, they will be hidden and will boost performance.");
             EnableVideoBackground = Bind(this, "Level", "Video Backgrounds", true, "If on, the old video BG feature returns, though somewhat buggy. Requires a bg.mp4 or bg.mov file to exist in the level folder.");
             UseNewUpdateMethod = Bind(this, "Level", "Use New Update Method", true, "Possibly releases the fixed framerate of the game.");
             ReplayLevel = Bind(this, "Level", "Replay Level in Background After Completion", true, "When completing a level, having this on will replay the level with no players in the background of the end screen.");
@@ -464,6 +470,7 @@ namespace BetterLegacy.Configs
             Language.SettingChanged += DefaultSettingsChanged;
             ControllerRumble.SettingChanged += DefaultSettingsChanged;
             LDM.SettingChanged += LDMChanged;
+            ShowBackgroundObjects.SettingChanged += ShowBackgroundObjectsChanged;
             DiscordShowLevel.SettingChanged += DiscordChanged;
             DiscordRichPresenceID.SettingChanged += DiscordChanged;
             DebugInfoStartup.SettingChanged += DebugInfoChanged;
@@ -499,6 +506,12 @@ namespace BetterLegacy.Configs
             var list = GameData.Current.beatmapObjects.FindAll(x => x.LDM);
             for (int i = 0; i < list.Count; i++)
                 Updater.UpdateObject(list[i]);
+        }
+
+        void ShowBackgroundObjectsChanged()
+        {
+            if (BackgroundManager.inst)
+                BackgroundManager.inst.UpdateBackgrounds();
         }
 
         void DefaultSettingsChanged()
