@@ -48,6 +48,17 @@ namespace BetterLegacy.Core.Managers.Networking
                 steamUser = new SteamUser(SteamClient.SteamId, SteamClient.SteamId.Value, SteamClient.Name);
                 Debug.Log($"{className}Init Steam User: {SteamClient.Name}");
                 Initialized = true;
+
+                try
+                {
+                    var displayName = Configs.CoreConfig.Instance.DisplayName;
+                    if (displayName.Value == displayName.Default)
+                        displayName.Value = steamUser.name;
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"{className}Had an error setting the default config: {ex}");
+                }
             }
             catch (Exception ex)
             {
