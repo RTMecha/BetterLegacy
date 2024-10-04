@@ -3098,17 +3098,18 @@ namespace BetterLegacy.Editor.Managers
                 RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".lsp", ".vgp", "lst", ".vgt", ".lsb", ".vgd" }, onSelectFile: _val =>
                 {
                     bool failed = false;
-                    if (_val.Contains(".lsp"))
+                    var selectedFile = _val.Replace("\\", "/");
+                    if (selectedFile.Contains(".lsp"))
                     {
-                        var file = RTFile.ApplicationDirectory + prefabListSlash + Path.GetFileName(_val);
-                        File.Copy(_val, file, RTFile.FileExists(file));
-                        EditorManager.inst.DisplayNotification($"Copied {Path.GetFileName(_val)} to prefab ({prefabListPath}) folder.", 2f, EditorManager.NotificationType.Success);
+                        var file = RTFile.ApplicationDirectory + prefabListSlash + Path.GetFileName(selectedFile);
+                        RTFile.CopyFile(selectedFile, file);
+                        EditorManager.inst.DisplayNotification($"Copied {Path.GetFileName(selectedFile)} to prefab ({prefabListPath}) folder.", 2f, EditorManager.NotificationType.Success);
                     }
-                    else if (_val.Contains(".vgp"))
+                    else if (selectedFile.Contains(".vgp"))
                     {
                         try
                         {
-                            var file = RTFile.ReadFromFile(_val);
+                            var file = RTFile.ReadFromFile(selectedFile);
 
                             var vgjn = JSON.Parse(file);
 
@@ -3127,7 +3128,7 @@ namespace BetterLegacy.Editor.Managers
                             prefab = null;
                             jn = null;
 
-                            EditorManager.inst.DisplayNotification($"Successfully converted {Path.GetFileName(_val)} to {fileName} and added it to your prefab ({prefabListPath}) folder.", 2f,
+                            EditorManager.inst.DisplayNotification($"Successfully converted {Path.GetFileName(selectedFile)} to {fileName} and added it to your prefab ({prefabListPath}) folder.", 2f,
                                 EditorManager.NotificationType.Success);
 
                             AchievementManager.inst.UnlockAchievement("time_machine");
@@ -3138,17 +3139,17 @@ namespace BetterLegacy.Editor.Managers
                             failed = true;
                         }
                     }
-                    else if (_val.Contains(".lst"))
+                    else if (selectedFile.Contains(".lst"))
                     {
-                        var file = RTFile.ApplicationDirectory + themeListSlash + Path.GetFileName(_val);
-                        File.Copy(_val, file, RTFile.FileExists(file));
-                        EditorManager.inst.DisplayNotification($"Copied {Path.GetFileName(_val)} to theme ({themeListPath}) folder.", 2f, EditorManager.NotificationType.Success);
+                        var file = RTFile.ApplicationDirectory + themeListSlash + Path.GetFileName(selectedFile);
+                        File.Copy(selectedFile, file, RTFile.FileExists(file));
+                        EditorManager.inst.DisplayNotification($"Copied {Path.GetFileName(selectedFile)} to theme ({themeListPath}) folder.", 2f, EditorManager.NotificationType.Success);
                     }
-                    else if (_val.Contains(".vgt"))
+                    else if (selectedFile.Contains(".vgt"))
                     {
                         try
                         {
-                            var file = RTFile.ReadFromFile(_val);
+                            var file = RTFile.ReadFromFile(selectedFile);
 
                             var vgjn = JSON.Parse(file);
 
@@ -3167,7 +3168,7 @@ namespace BetterLegacy.Editor.Managers
                             theme = null;
                             jn = null;
 
-                            EditorManager.inst.DisplayNotification($"Successfully converted {Path.GetFileName(_val)} to {fileName} and added it to your theme ({themeListPath}) folder.", 2f,
+                            EditorManager.inst.DisplayNotification($"Successfully converted {Path.GetFileName(selectedFile)} to {fileName} and added it to your theme ({themeListPath}) folder.", 2f,
                                 EditorManager.NotificationType.Success);
 
                             AchievementManager.inst.UnlockAchievement("time_machine");
@@ -3178,11 +3179,11 @@ namespace BetterLegacy.Editor.Managers
                             failed = true;
                         }
                     }
-                    else if (_val.Replace("\\", "/").Contains("/level.lsb"))
+                    else if (selectedFile.Contains("/level.lsb"))
                     {
                         ShowWarningPopup("Warning! Selecting a level will copy all of its contents to your editor, are you sure you want to do this?", () =>
                         {
-                            var path = _val.Replace("\\", "/").Replace("/level.lsb", "");
+                            var path = selectedFile.Replace("/level.lsb", "");
 
                             var files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
 
@@ -3201,22 +3202,21 @@ namespace BetterLegacy.Editor.Managers
                             EditorManager.inst.ShowDialog("Browser Popup");
                         });
                     }
-                    else if (_val.Replace("\\", "/").Contains("/level.vgd"))
+                    else if (selectedFile.Contains("/level.vgd"))
                     {
                         try
                         {
-                            var path = _val.Replace("\\", "/").Replace("/level.vgd", "");
+                            var path = selectedFile.Replace("/level.vgd", "");
 
-                            if (RTFile.FileExists(path + "/metadata.vgm") &&
-                                (RTFile.FileExists(path + "/audio.ogg") || RTFile.FileExists(path + "/audio.wav") || RTFile.FileExists(path + "/audio.mp3") || RTFile.FileExists(path + "/level.ogg") || RTFile.FileExists(path + "/level.wav") || RTFile.FileExists(path + "/level.mp3")) &&
-                                RTFile.FileExists(path + "/cover.jpg"))
+                            if (RTFile.FileExists(RTFile.CombinePaths(path, "metadata.vgm")) &&
+                                (RTFile.FileExists(RTFile.CombinePaths(path, "audio.ogg")) || RTFile.FileExists(RTFile.CombinePaths(path, "audio.wav")) || RTFile.FileExists(RTFile.CombinePaths(path, "audio.wav")) || RTFile.FileExists(RTFile.CombinePaths(path, "level.ogg")) || RTFile.FileExists(RTFile.CombinePaths(path, "level.wav")) || RTFile.FileExists(RTFile.CombinePaths(path, "level.mp3"))))
                             {
-                                var copyTo = path.Replace(Path.GetDirectoryName(path).Replace("\\", "/"), RTFile.ApplicationDirectory + editorListSlash);
+                                var copyTo = path.Replace(Path.GetDirectoryName(path).Replace("\\", "/") + " Convert", RTFile.ApplicationDirectory + editorListSlash);
 
                                 if (!RTFile.DirectoryExists(copyTo))
                                     Directory.CreateDirectory(copyTo);
 
-                                var metadataVGJSON = RTFile.ReadFromFile(path + "/metadata.vgm");
+                                var metadataVGJSON = RTFile.ReadFromFile(RTFile.CombinePaths(path, "metadata.vgm"));
 
                                 var metadataVGJN = JSON.Parse(metadataVGJSON);
 
@@ -3224,31 +3224,32 @@ namespace BetterLegacy.Editor.Managers
 
                                 var metadataJN = metadata.ToJSON();
 
-                                RTFile.WriteToFile(copyTo + "/metadata.lsb", metadataJN.ToString());
+                                RTFile.WriteToFile(RTFile.CombinePaths(copyTo, "metadata.lsb"), metadataJN.ToString());
 
-                                if (RTFile.FileExists(path + "/audio.ogg"))
-                                    File.Copy(path + "/audio.ogg", copyTo + "/level.ogg", RTFile.FileExists(copyTo + "/level.ogg"));
-                                if (RTFile.FileExists(path + "/audio.wav"))
-                                    File.Copy(path + "/audio.wav", copyTo + "/level.wav", RTFile.FileExists(copyTo + "/level.wav"));
-                                if (RTFile.FileExists(path + "/audio.mp3"))
-                                    File.Copy(path + "/audio.mp3", copyTo + "/level.mp3", RTFile.FileExists(copyTo + "/level.mp3"));
+                                if (RTFile.FileExists(RTFile.CombinePaths(path, "audio.ogg")))
+                                    RTFile.CopyFile(RTFile.CombinePaths(path, "audio.ogg"), RTFile.CombinePaths(copyTo, "level.ogg"));
+                                if (RTFile.FileExists(RTFile.CombinePaths(path, "audio.wav")))
+                                    RTFile.CopyFile(RTFile.CombinePaths(path, "audio.wav"), RTFile.CombinePaths(copyTo, "level.wav"));
+                                if (RTFile.FileExists(RTFile.CombinePaths(path, "audio.mp3")))
+                                    RTFile.CopyFile(RTFile.CombinePaths(path, "audio.mp3"), RTFile.CombinePaths(copyTo, "level.mp3"));
 
-                                if (RTFile.FileExists(path + "/level.ogg"))
-                                    File.Copy(path + "/level.ogg", copyTo + "/level.ogg", RTFile.FileExists(copyTo + "/level.ogg"));
-                                if (RTFile.FileExists(path + "/level.wav"))
-                                    File.Copy(path + "/level.wav", copyTo + "/level.wav", RTFile.FileExists(copyTo + "/level.wav"));
-                                if (RTFile.FileExists(path + "/level.mp3"))
-                                    File.Copy(path + "/level.mp3", copyTo + "/level.mp3", RTFile.FileExists(copyTo + "/level.mp3"));
+                                if (RTFile.FileExists(RTFile.CombinePaths(path, "level.ogg")))
+                                    RTFile.CopyFile(RTFile.CombinePaths(path, "level.ogg"), RTFile.CombinePaths(copyTo, "level.ogg"));
+                                if (RTFile.FileExists(RTFile.CombinePaths(path, "level.wav")))
+                                    RTFile.CopyFile(RTFile.CombinePaths(path, "level.wav"), RTFile.CombinePaths(copyTo, "level.wav"));
+                                if (RTFile.FileExists(RTFile.CombinePaths(path, "level.mp3")))
+                                    RTFile.CopyFile(RTFile.CombinePaths(path, "level.mp3"), RTFile.CombinePaths(copyTo, "level.mp3"));
 
-                                File.Copy(path + "/cover.jpg", copyTo + "/level.jpg", RTFile.FileExists(copyTo + "/level.jpg"));
+                                if (RTFile.FileExists(RTFile.CombinePaths(path, "cover.jpg")))
+                                    RTFile.CopyFile(RTFile.CombinePaths(path, "cover.jpg"), RTFile.CombinePaths(copyTo, "level.jpg"));
 
-                                var levelVGJSON = RTFile.ReadFromFile(path + "/level.vgd");
+                                var levelVGJSON = RTFile.ReadFromFile(RTFile.CombinePaths(path, "level.vgd"));
 
                                 var levelVGJN = JSON.Parse(levelVGJSON);
 
                                 var level = GameData.ParseVG(levelVGJN, false, metadata.Version);
 
-                                level.SaveData(copyTo + "/level.lsb", () =>
+                                level.SaveData(RTFile.CombinePaths(copyTo, "level.lsb"), () =>
                                 {
                                     EditorManager.inst.DisplayNotification($"Successfully converted {Path.GetFileName(path)} to {Path.GetFileName(copyTo)} and added it to your level ({editorListPath}) folder.", 2f,
                                         EditorManager.NotificationType.Success);
@@ -3277,7 +3278,7 @@ namespace BetterLegacy.Editor.Managers
                             failed = true;
                         }
                     }
-                    else if (_val.Replace("\\", "/").Contains("/autosave_") && _val.Contains(".vgd"))
+                    else if (selectedFile.Contains("/autosave_") && selectedFile.Contains(".vgd"))
                     {
                         EditorManager.inst.DisplayNotification("Cannot select autosave.", 2f, EditorManager.NotificationType.Warning);
                         failed = true;
@@ -10166,7 +10167,15 @@ namespace BetterLegacy.Editor.Managers
                     DataManager.inst.BeatmapThemeIndexToID.Add(DataManager.inst.AllThemes.Count - 1, int.Parse(orig.id));
                     DataManager.inst.BeatmapThemeIDToIndex.Add(int.Parse(orig.id), DataManager.inst.AllThemes.Count - 1);
 
-                    RTThemeEditor.inst.SetupThemePanel(orig, false);
+                    try
+                    {
+                        RTThemeEditor.inst.SetupThemePanel(orig, false);
+                    }
+                    catch (Exception ex)
+                    {
+                        EditorManager.inst.DisplayNotification($"Unable to load Theme [{orig.name}] for some reason. Press {CoreConfig.Instance.OpenPAPersistentFolder.Value} key to open the log folder and give the Player.log file to RTMecha.", 8f, EditorManager.NotificationType.Error);
+                        CoreHelper.LogException(ex);
+                    }
                 }
 
                 if (jn["id"] == null)
