@@ -28,6 +28,8 @@ namespace BetterLegacy.Core
         /// </summary>
         public static string BepInExAssetsPath => $"{BepInExPluginsPath}Assets/";
 
+        public static void CopyFile(string filePath, string destination) => File.Copy(filePath, destination, true);
+
         public static bool FileExists(string _filePath) => !string.IsNullOrEmpty(_filePath) && File.Exists(_filePath);
 
         public static bool DirectoryExists(string _directoryPath) => !string.IsNullOrEmpty(_directoryPath) && Directory.Exists(_directoryPath);
