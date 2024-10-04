@@ -1,4 +1,10 @@
-snapshot-2024.10.1 - (pre-1.7.0) > [???]
+snapshot-2024.10.2 - (pre-1.7.0) > [Oct 4, 2024]
+- Added playerMoveToObject modifiers. These modifiers lock the players' positon / rotation to the object. The object cannot be empty.
+- Added sampleAudio(int sample, float intensity) to math evaluators.
+- Objects with LDM on no longer run their modifiers if the LDM config is on.
+- Added a setting for showing / hiding Background Objects. If off, there will be a significant FPS boost for levels that use Background Objects, but unfortunately won't have them render.
+- Tried fixing VG to LS Converting issues.
+snapshot-2024.10.1 - (pre-1.7.0) > [Oct 3, 2024]
 - BetterLegacy now has a demo of chapter 1!
 - Added a way to view levels you've uploaded via the "View Uploaded" button in the Upload dropdown in the editor.
 - Fixed Window event keyframes previewing in the editor instead of preview mode.
