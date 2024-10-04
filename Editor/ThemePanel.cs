@@ -26,6 +26,8 @@ namespace BetterLegacy.Editor
 
         public string OriginalID { get; set; }
 
+        public bool isDuplicate;
+
         public bool isFolder;
     }
 }

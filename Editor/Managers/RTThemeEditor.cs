@@ -803,10 +803,11 @@ namespace BetterLegacy.Editor.Managers
             yield break;
         }
 
-        public void SetupThemePanel(BeatmapTheme beatmapTheme, bool defaultTheme)
+        public void SetupThemePanel(BeatmapTheme beatmapTheme, bool defaultTheme, bool duplicate = false)
         {
             var themePanel = GenerateThemePanel(themeKeyframeContent);
             themePanel.Theme = beatmapTheme;
+            themePanel.isDuplicate = duplicate;
             if (!string.IsNullOrEmpty(beatmapTheme.filePath))
                 themePanel.FilePath = beatmapTheme.filePath.Replace("\\", "/");
             themePanel.OriginalID = beatmapTheme.id;
@@ -817,6 +818,15 @@ namespace BetterLegacy.Editor.Managers
             themePanel.UseButton.onClick.ClearAll();
             themePanel.UseButton.onClick.AddListener(() =>
             {
+                if (duplicate)
+                {
+                    var array = DataManager.inst.CustomBeatmapThemes.Where(x => x.id == beatmapTheme.id).Select(x => x.name).ToArray();
+                    var str = FontManager.TextTranslater.ArrayToString(array);
+
+                    EditorManager.inst.DisplayNotification($"Unable to use Theme [{beatmapTheme.name}] due to conflicting themes: {str}.", 2f * array.Length, EditorManager.NotificationType.Error);
+                    return;
+                }
+
                 if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => RTEventEditor.inst.SelectedKeyframes.Min(y => y.Type) == x.Type))
                 {
                     foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
@@ -837,6 +847,15 @@ namespace BetterLegacy.Editor.Managers
                 RTEditor.inst.ShowContextMenu(400f,
                     new RTEditor.ButtonFunction("Use", () =>
                     {
+                        if (duplicate)
+                        {
+                            var array = DataManager.inst.CustomBeatmapThemes.Where(x => x.id == beatmapTheme.id).Select(x => x.name).ToArray();
+                            var str = FontManager.TextTranslater.ArrayToString(array);
+
+                            EditorManager.inst.DisplayNotification($"Unable to use Theme [{beatmapTheme.name}] due to conflicting themes: {str}.", 2f * array.Length, EditorManager.NotificationType.Error);
+                            return;
+                        }
+
                         if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => RTEventEditor.inst.SelectedKeyframes.Min(y => y.Type) == x.Type))
                         {
                             foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
@@ -1063,7 +1082,7 @@ namespace BetterLegacy.Editor.Managers
                 if (themePanel != null)
                 {
                     Destroy(themePanel.GameObject);
-                    SetupThemePanel(beatmapTheme, false);
+                    SetupThemePanel(beatmapTheme, false, DataManager.inst.CustomBeatmapThemes.FindAll(x => x.id == __0.ToString()).Count > 1);
                     CoreHelper.StartCoroutine(RenderThemeList(EventEditor.inst.dialogRight.GetChild(4).Find("theme-search").GetComponent<InputField>().text));
                 }
 
@@ -1113,19 +1132,29 @@ namespace BetterLegacy.Editor.Managers
                 if (DataManager.inst.CustomBeatmapThemes.TryFindIndex(x => x.id == __0.ToString(), out int themeIndex))
                     DataManager.inst.CustomBeatmapThemes[themeIndex] = beatmapTheme;
 
+                var duplicate = DataManager.inst.CustomBeatmapThemes.FindAll(x => x.id == __0.ToString()).Count > 1;
                 if (!(__0 < DataManager.inst.BeatmapThemes.Count) && ThemePanels.TryFind(x => x.Theme != null && x.Theme.id == __0.ToString(), out ThemePanel themePanel))
                 {
                     var dialogTmp = EventEditor.inst.dialogRight.GetChild(4);
 
                     Destroy(themePanel.GameObject);
-                    SetupThemePanel(beatmapTheme, false);
-                    CoreHelper.StartCoroutine(RenderThemeList(EventEditor.inst.dialogRight.GetChild(4).Find("theme-search").GetComponent<InputField>().text));
+                    SetupThemePanel(beatmapTheme, false, duplicate);
+                    CoreHelper.StartCoroutine(RenderThemeList(dialogTmp.Find("theme-search").GetComponent<InputField>().text));
                 }
 
                 var child = Instance.dialogRight.GetChild(Instance.currentEventType);
                 Instance.RenderThemePreview(child);
                 Instance.showTheme = false;
                 theme.gameObject.SetActive(false);
+
+                if (duplicate)
+                {
+                    var array = DataManager.inst.CustomBeatmapThemes.Where(x => x.id == beatmapTheme.id).Select(x => x.name).ToArray();
+                    var str = FontManager.TextTranslater.ArrayToString(array);
+
+                    EditorManager.inst.DisplayNotification($"Unable to use Theme [{beatmapTheme.name}] due to conflicting themes: {str}.", 2f * array.Length, EditorManager.NotificationType.Error);
+                    return;
+                }
 
                 if (RTEventEditor.inst.SelectedKeyframes.Count > 1 && RTEventEditor.inst.SelectedKeyframes.All(x => RTEventEditor.inst.SelectedKeyframes.Min(y => y.Type) == x.Type))
                     foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)

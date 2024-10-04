@@ -10160,7 +10160,9 @@ namespace BetterLegacy.Editor.Managers
                     var str = FontManager.TextTranslater.ArrayToString(array);
 
                     if (EditorManager.inst != null)
-                        EditorManager.inst.DisplayNotification($"Unable to Load theme [{orig.name}] due to conflicting themes: {str}", 2f * array.Length, EditorManager.NotificationType.Error);
+                        EditorManager.inst.DisplayNotification($"Unable to load Theme [{orig.name}] due to conflicting themes: {str}", 2f * array.Length, EditorManager.NotificationType.Error);
+
+                    RTThemeEditor.inst.SetupThemePanel(orig, false, true);
                 }
                 else
                 {
