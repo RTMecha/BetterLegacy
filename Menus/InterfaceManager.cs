@@ -246,11 +246,7 @@ namespace BetterLegacy.Menus
             LevelCollectionMenu.Current = null;
             LevelListMenu.Current = null;
 
-            if (CurrentGenerateUICoroutine != null)
-            {
-                StopCoroutine(CurrentGenerateUICoroutine);
-                CurrentGenerateUICoroutine = null;
-            }
+            StopGenerating();
         }
 
         public void Clear()
@@ -275,11 +271,16 @@ namespace BetterLegacy.Menus
             interfaces.Clear();
             themes.Clear();
 
-            if (CurrentGenerateUICoroutine != null)
-            {
-                StopCoroutine(CurrentGenerateUICoroutine);
-                CurrentGenerateUICoroutine = null;
-            }
+            StopGenerating();
+        }
+
+        public void StopGenerating()
+        {
+            if (CurrentGenerateUICoroutine == null)
+                return;
+
+            StopCoroutine(CurrentGenerateUICoroutine);
+            CurrentGenerateUICoroutine = null;
         }
 
         public void LoadThemes()
@@ -396,7 +397,6 @@ namespace BetterLegacy.Menus
                     childControlWidth = true,
                     childForceExpandWidth = true,
                     spacing = 4f,
-                    //rect = new RectValues(new Vector2(0f, -32f), new Vector2(1f, 1f), new Vector2(0f, 0f), new Vector2(0.5f, 0.5f), new Vector2(-64f, -256f)),
                     rect = RectValues.FullAnchored.AnchoredPosition(0f, -32f).SizeDelta(-64f, -256f),
                 });
 
@@ -405,10 +405,8 @@ namespace BetterLegacy.Menus
                     id = "1",
                     name = "Title",
                     text = "<size=60><b>BetterLegacy Changelog",
-                    //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(-620f, 440f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(400f, 64f)),
                     rect = RectValues.Default.AnchoredPosition(-640f, 440f).SizeDelta(400f, 64f),
                     icon = LegacyPlugin.PALogoSprite,
-                    //iconRectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(-256f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(64f, 64f)),
                     iconRect = RectValues.Default.AnchoredPosition(-256f, 0f).SizeDelta(64f, 64f),
                     hideBG = true,
                     textColor = 6
@@ -438,7 +436,6 @@ namespace BetterLegacy.Menus
                     id = "0",
                     name = "Next Menu Button",
                     text = "<b><align=center>[ NEXT ]",
-                    //rectJSON = MenuImage.GenerateRectTransformJSON(new Vector2(0f, -400f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, 64f)),
                     rect = RectValues.Default.AnchoredPosition(0f, -400f).SizeDelta(300f, 64f),
                     func = () => { SetCurrentInterface("0"); },
                     opacity = 0.1f,
@@ -488,7 +485,6 @@ namespace BetterLegacy.Menus
                 name = "Update Note",
                 text = note,
                 parentLayout = "updates",
-                //rectJSON = MenuImage.GenerateRectTransformJSON(Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 36f)),
                 rect = RectValues.Default.SizeDelta(0f, 36f),
                 hideBG = true,
                 textColor = 6
@@ -505,135 +501,4 @@ namespace BetterLegacy.Menus
             base.UpdateTheme();
         }
     }
-
-    //public class ArcadeMenuTest : MenuBase
-    //{
-    //    public ArcadeMenuTest() : base() { }
-
-    //    public override IEnumerator GenerateUI()
-    //    {
-    //        var canvas = UIManager.GenerateUICanvas("Arcade Menu", null);
-    //        this.canvas = canvas.Canvas.gameObject;
-
-    //        var gameObject = Creator.NewUIObject("Layout", canvas.Canvas.transform);
-    //        gameObject.transform.AsRT().anchoredPosition = Vector2.zero;
-
-    //        var text = CreateText("Test Text", gameObject.transform, "This is a test!", new Vector2(0f, 200f), new Vector2(200f, 64f));
-    //        elements.Add(text);
-
-    //        while (text.isSpawning)
-    //            yield return null;
-
-    //        var button1 = CreateButton("Test 1", gameObject.transform, new Vector2Int(0, 0), "Test 1", new Vector2(-100f, 0f), new Vector2(100f, 64f));
-    //        button1.clickable.onClick = pointerEventData =>
-    //        {
-    //            if (!isOpen)
-    //                return;
-
-    //            AudioManager.inst.PlaySound("blip");
-    //        };
-    //        elements.Add(button1);
-
-    //        while (button1.isSpawning)
-    //            yield return null;
-
-    //        var button2 = CreateButton("Test 2", gameObject.transform, new Vector2Int(1, 0), "Test 2", new Vector2(100f, 0f), new Vector2(100f, 64f));
-    //        button2.clickable.onClick = pointerEventData =>
-    //        {
-    //            if (!isOpen)
-    //                return;
-
-    //            AudioManager.inst.PlaySound("blip");
-    //        };
-    //        elements.Add(button2);
-
-    //        while (button2.isSpawning)
-    //            yield return null;
-
-    //        var button3 = CreateButton("Test 3", gameObject.transform, new Vector2Int(0, 1), "Test 3", new Vector2(0f, -100f), new Vector2(100f, 64f));
-    //        button3.clickable.onClick = pointerEventData =>
-    //        {
-    //            if (!isOpen)
-    //                return;
-
-    //            AudioManager.inst.PlaySound("blip");
-    //        };
-    //        elements.Add(button3);
-
-    //        while (button3.isSpawning)
-    //            yield return null;
-
-    //        isOpen = true;
-    //        yield break;
-    //    }
-
-    //    public override BeatmapTheme Theme { get; set; } = new BeatmapTheme()
-    //    {
-    //        name = "Default Theme",
-    //        backgroundColor = new Color(0.9f, 0.9f, 0.9f),
-    //        guiColor = new Color(0.5f, 0.5f, 0.5f),
-    //        guiAccentColor = new Color(1f, 0.6f, 0f),
-    //        playerColors = new List<Color>
-    //        {
-    //            new Color(0.5f, 0.5f, 0.5f), // 0
-    //            new Color(0.5f, 0.5f, 0.5f), // 1
-    //            new Color(0.5f, 0.5f, 0.5f), // 2
-    //            new Color(0.5f, 0.5f, 0.5f), // 3
-    //        },
-    //        objectColors = new List<Color>
-    //        {
-    //            new Color(0.5f, 0.5f, 0.5f), // 0
-    //            new Color(0.5f, 0.5f, 0.5f), // 1
-    //            new Color(0.5f, 0.5f, 0.5f), // 2
-    //            new Color(0.5f, 0.5f, 0.5f), // 3
-    //            new Color(0.5f, 0.5f, 0.5f), // 4
-    //            new Color(0.5f, 0.5f, 0.5f), // 5
-    //            new Color(0.5f, 0.5f, 0.5f), // 6
-    //            new Color(0.5f, 0.5f, 0.5f), // 7
-    //            new Color(0.5f, 0.5f, 0.5f), // 8
-    //            new Color(0.5f, 0.5f, 0.5f), // 9
-    //            new Color(0.5f, 0.5f, 0.5f), // 10
-    //            new Color(0.5f, 0.5f, 0.5f), // 11
-    //            new Color(0.5f, 0.5f, 0.5f), // 12
-    //            new Color(0.5f, 0.5f, 0.5f), // 13
-    //            new Color(0.5f, 0.5f, 0.5f), // 14
-    //            new Color(0.5f, 0.5f, 0.5f), // 15
-    //            new Color(0.5f, 0.5f, 0.5f), // 16
-    //            new Color(0.5f, 0.5f, 0.5f), // 17
-    //        },
-    //        effectColors = new List<Color>
-    //        {
-    //            new Color(0.5f, 0.5f, 0.5f), // 0
-    //            new Color(0.5f, 0.5f, 0.5f), // 1
-    //            new Color(0.5f, 0.5f, 0.5f), // 2
-    //            new Color(0.5f, 0.5f, 0.5f), // 3
-    //            new Color(0.5f, 0.5f, 0.5f), // 4
-    //            new Color(0.5f, 0.5f, 0.5f), // 5
-    //            new Color(0.5f, 0.5f, 0.5f), // 6
-    //            new Color(0.5f, 0.5f, 0.5f), // 7
-    //            new Color(0.5f, 0.5f, 0.5f), // 8
-    //            new Color(0.5f, 0.5f, 0.5f), // 9
-    //            new Color(0.5f, 0.5f, 0.5f), // 10
-    //            new Color(0.5f, 0.5f, 0.5f), // 11
-    //            new Color(0.5f, 0.5f, 0.5f), // 12
-    //            new Color(0.5f, 0.5f, 0.5f), // 13
-    //            new Color(0.5f, 0.5f, 0.5f), // 14
-    //            new Color(0.5f, 0.5f, 0.5f), // 15
-    //            new Color(0.5f, 0.5f, 0.5f), // 16
-    //            new Color(0.5f, 0.5f, 0.5f), // 17
-    //        },
-    //        backgroundColors = new List<Color>
-    //        {
-    //            new Color(0.5f, 0.5f, 0.5f), // 0
-    //            new Color(0.5f, 0.5f, 0.5f), // 1
-    //            new Color(0.5f, 0.5f, 0.5f), // 2
-    //            new Color(0.5f, 0.5f, 0.5f), // 3
-    //            new Color(0.5f, 0.5f, 0.5f), // 4
-    //            new Color(0.5f, 0.5f, 0.5f), // 5
-    //            new Color(0.5f, 0.5f, 0.5f), // 6
-    //            new Color(0.5f, 0.5f, 0.5f), // 7
-    //            new Color(0.5f, 0.5f, 0.5f), // 8
-    //        },
-    //    };
-    //}
 }
