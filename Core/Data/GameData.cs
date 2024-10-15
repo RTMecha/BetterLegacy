@@ -149,10 +149,10 @@ namespace BetterLegacy.Core.Data
 
                             foreach (var player in PlayerManager.Players)
                             {
-                                if (!player.Player || !player.Player.playerObjects.TryGetValue("RB Parent", out RTPlayer.PlayerObject rbParent) || !rbParent.gameObject)
+                                if (!player.Player || !player.Player.rb)
                                     continue;
 
-                                var tf = rbParent.gameObject.transform;
+                                var tf = player.Player.rb.transform;
 
                                 if (t == 0f)
                                 {
@@ -168,7 +168,6 @@ namespace BetterLegacy.Core.Data
                                     {
                                         new Vector2Keyframe(0f, tf.localPosition, Ease.Linear),
                                         new Vector2Keyframe(t, new Vector2(x, y), Ease.Linear),
-                                        new Vector2Keyframe(t + 0.02f, new Vector2(x, y), Ease.Linear),
                                     }, x =>
                                     {
                                         if (!tf)
@@ -177,6 +176,15 @@ namespace BetterLegacy.Core.Data
                                         tf.localPosition = x;
                                     }),
                                 };
+
+                                animation.onComplete = () =>
+                                {
+                                    AnimationManager.inst.RemoveID(animation.id);
+                                    if (tf)
+                                        tf.localPosition = new Vector2(x, y);
+                                };
+
+                                AnimationManager.inst.Play(animation);
                             }
 
                             break;
