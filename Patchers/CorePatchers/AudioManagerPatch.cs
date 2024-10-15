@@ -17,9 +17,7 @@ namespace BetterLegacy.Patchers
             __instance.musicVol = (float)DataManager.inst.GetSettingInt("MusicVolume", 9) / 9f * __instance.masterVol * (RTEventManager.inst ? RTEventManager.inst.audioVolume : 1f);
             __instance.sfxVol = (float)DataManager.inst.GetSettingInt("EffectsVolume", 9) / 9f * __instance.masterVol;
             if (!__instance.isFading)
-            {
                 __instance.CurrentAudioSource.volume = __instance.musicVol;
-            }
             __instance.CurrentAudioSource.pitch = __instance.pitch;
 
             return false;
@@ -60,15 +58,19 @@ namespace BetterLegacy.Patchers
         {
             __instance.isFading = true;
             float percent = 0f;
+            var currentSource = __instance.musicSources[__instance.activeMusicSourceIndex];
+            var otherSource = __instance.musicSources[1 - __instance.activeMusicSourceIndex];
             while (percent < 1f)
             {
                 percent += Time.deltaTime * 1f / duration;
-                __instance.musicSources[__instance.activeMusicSourceIndex].volume = Mathf.Lerp(0f, __instance.musicVol, percent);
-                __instance.musicSources[1 - __instance.activeMusicSourceIndex].volume = Mathf.Lerp(__instance.musicVol, 0f, percent);
+                currentSource.volume = Mathf.Lerp(0f, __instance.musicVol, percent);
+                otherSource.volume = Mathf.Lerp(__instance.musicVol, 0f, percent);
                 yield return null;
             }
             __instance.isFading = false;
-            __instance.musicSources[1 - __instance.activeMusicSourceIndex].clip = null; // clear clip from memory
+            if (otherSource.clip)
+                otherSource.clip.UnloadAudioData();
+            otherSource.clip = null; // clear clip from memory
             yield break;
         }
     }
