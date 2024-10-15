@@ -522,7 +522,7 @@ namespace BetterLegacy.Arcade
             {
                 id = "0",
                 name = "Challenge Text",
-                text = $"<align=center>{PlayerManager.ChallengeModeNames[(int)PlayerManager.DifficultyMode]}",
+                text = $"<align=center>{PlayerManager.ChallengeModeNames[(int)PlayerManager.ChallengeMode]}",
                 rect = RectValues.Default.AnchoredPosition(510f, -360f).SizeDelta(64f, 64f),
                 hideBG = true,
                 color = 6,
@@ -547,7 +547,7 @@ namespace BetterLegacy.Arcade
                 playBlipSound = false,
                 func = () =>
                 {
-                    var challenge = (int)PlayerManager.DifficultyMode - 1;
+                    var challenge = (int)PlayerManager.ChallengeMode - 1;
                     if (challenge < 0)
                     {
                         AudioManager.inst.PlaySound("Block");
@@ -555,8 +555,8 @@ namespace BetterLegacy.Arcade
                     }
 
                     AudioManager.inst.PlaySound("blip");
-                    PlayerManager.SetGameMode(challenge);
-                    challengeText.text = $"<align=center>{PlayerManager.ChallengeModeNames[(int)PlayerManager.DifficultyMode]}";
+                    PlayerManager.SetChallengeMode(challenge);
+                    challengeText.text = $"<align=center>{PlayerManager.ChallengeModeNames[(int)PlayerManager.ChallengeMode]}";
                     challengeText.textUI.maxVisibleCharacters = challengeText.text.Length;
                     challengeText.textUI.text = challengeText.text;
                 },
@@ -581,7 +581,7 @@ namespace BetterLegacy.Arcade
                 playBlipSound = false,
                 func = () =>
                 {
-                    var challenge = (int)PlayerManager.DifficultyMode + 1;
+                    var challenge = (int)PlayerManager.ChallengeMode + 1;
                     if (challenge >= 5)
                     {
                         AudioManager.inst.PlaySound("Block");
@@ -589,8 +589,8 @@ namespace BetterLegacy.Arcade
                     }
 
                     AudioManager.inst.PlaySound("blip");
-                    PlayerManager.SetGameMode(challenge);
-                    challengeText.text = $"<align=center>{PlayerManager.ChallengeModeNames[(int)PlayerManager.DifficultyMode]}";
+                    PlayerManager.SetChallengeMode(challenge);
+                    challengeText.text = $"<align=center>{PlayerManager.ChallengeModeNames[(int)PlayerManager.ChallengeMode]}";
                     challengeText.textUI.maxVisibleCharacters = challengeText.text.Length;
                     challengeText.textUI.text = challengeText.text;
                 },

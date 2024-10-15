@@ -126,27 +126,27 @@ namespace BetterLegacy.Core.Managers
             return null;
         }
 
-        #region Game Modes
+        #region Level Difficulties
 
-        public static void SetGameMode(int mode) => DataManager.inst.UpdateSettingInt("ArcadeDifficulty", mode);
+        public static void SetChallengeMode(int mode) => DataManager.inst.UpdateSettingInt("ArcadeDifficulty", mode);
 
-        public static DifficultyMode DifficultyMode => (DifficultyMode)DataManager.inst.GetSettingInt("ArcadeDifficulty", 0);
+        public static ChallengeMode ChallengeMode => (ChallengeMode)DataManager.inst.GetSettingInt("ArcadeDifficulty", 0);
 
-        public static bool IsZenMode => DifficultyMode == DifficultyMode.ZenMode;
-        public static bool IsNormal => DifficultyMode == DifficultyMode.Normal;
-        public static bool Is1Life => DifficultyMode == DifficultyMode.OneLife;
-        public static bool IsNoHit => DifficultyMode == DifficultyMode.OneHit;
-        public static bool IsPractice => DifficultyMode == DifficultyMode.Practice;
-
-        public static List<float> GameSpeeds => new List<float> { 0.1f, 0.5f, 0.8f, 1f, 1.2f, 1.5f, 2f, 3f, };
+        public static bool IsZenMode => ChallengeMode == ChallengeMode.ZenMode;
+        public static bool IsNormal => ChallengeMode == ChallengeMode.Normal;
+        public static bool Is1Life => ChallengeMode == ChallengeMode.OneLife;
+        public static bool IsNoHit => ChallengeMode == ChallengeMode.OneHit;
+        public static bool IsPractice => ChallengeMode == ChallengeMode.Practice;
 
         public static List<string> ChallengeModeNames => new List<string> { "ZEN", "NORMAL", "ONE LIFE", "ONE HIT", "PRACTICE" };
+
+        public static bool Invincible => CoreHelper.InEditor ? (EditorManager.inst.isEditing || RTPlayer.ZenModeInEditor) : IsZenMode;
+
+        public static List<float> GameSpeeds => new List<float> { 0.1f, 0.5f, 0.8f, 1f, 1.2f, 1.5f, 2f, 3f, };
 
         public static int ArcadeGameSpeed => DataManager.inst.GetSettingEnum("ArcadeGameSpeed", 2);
 
         public static void SetGameSpeed(int speed) => DataManager.inst.UpdateSettingEnum("ArcadeGameSpeed", speed);
-
-        public static bool Invincible => CoreHelper.InEditor ? (EditorManager.inst.isEditing || RTPlayer.ZenModeInEditor) : IsZenMode;
 
         #endregion
 
