@@ -25,6 +25,7 @@
 - Collab sharing via server?
 - Editor online backups?
 ### Misc
+- Experimental feature toggles. (Homing keyframes, parent desync, etc)
 - Controller Preferences metadata.
 - A way to detect duplicate object IDs.
 - Config presets (Beginner, Legacy, Alpha, Modded, etc.) that affects editor themes, rounded UI and complexity.
