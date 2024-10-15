@@ -57,17 +57,38 @@
         EqualsBar
     }
 
+    /// <summary>
+    /// Used for obtaining a specific yield instruction.
+    /// </summary>
     public enum YieldType
     {
+        /// <summary>
+        /// Returns: null
+        /// </summary>
         None,
+        /// <summary>
+        /// Returns: new WaitForSeconds(delay)
+        /// </summary>
         Delay,
+        /// <summary>
+        /// Returns: null
+        /// </summary>
         Null,
+        /// <summary>
+        /// Returns: new WaitForEndOfFrame()
+        /// </summary>
         EndOfFrame,
+        /// <summary>
+        /// Returns: new WaitForFixedUpdate()
+        /// </summary>
         FixedUpdate,
     }
     
     public enum Rank
     {
+        /// <summary>
+        /// Does not set a rank.
+        /// </summary>
         Null,
         SS,
         S,
@@ -143,10 +164,22 @@
         Advanced
     }
 
+    /// <summary>
+    /// The type of Waveform the editor timeline should render.
+    /// </summary>
     public enum WaveformType
     {
+        /// <summary>
+        /// The vanilla rendering type.
+        /// </summary>
         Legacy,
+        /// <summary>
+        /// Old rendering type.
+        /// </summary>
         Beta,
+        /// <summary>
+        /// New rendering type based on alpha waveform.
+        /// </summary>
         Modern,
         LegacyFast,
         BetaFast,
@@ -165,6 +198,9 @@
         Right
     }
 
+    /// <summary>
+    /// PA Easings.
+    /// </summary>
     public enum Easings
     {
         Linear,
@@ -192,18 +228,39 @@
         InOutExpo
     }
 
+    /// <summary>
+    /// Where a Prefab comes from.
+    /// </summary>
     public enum PrefabDialog
     {
+        /// <summary>
+        /// Prefab comes from internal level file.
+        /// </summary>
         Internal,
+        /// <summary>
+        /// Prefab comes from external prefabs folder.
+        /// </summary>
         External
     }
 
+    /// <summary>
+    /// The type of shake to be used when playing a level.
+    /// </summary>
     public enum ShakeType
     {
+        /// <summary>
+        /// The original Legacy shake behavior.
+        /// </summary>
         Original,
+        /// <summary>
+        /// Shake behavior based on Catalyst. Allows for the extra shake event values.
+        /// </summary>
         Catalyst
     }
 
+    /// <summary>
+    /// What type of value an object is.
+    /// </summary>
     public enum ValueType
     {
         Bool,
@@ -503,18 +560,45 @@
         Matoran
     }
 
-    public enum DifficultyMode
+    /// <summary>
+    /// The challenge mode the user wants to play a level with.
+    /// </summary>
+    public enum ChallengeMode
     {
+        /// <summary>
+        /// No damage is taken.
+        /// </summary>
         ZenMode,
+        /// <summary>
+        /// Damage is taken.
+        /// </summary>
         Normal,
+        /// <summary>
+        /// Player restarts the level when dead.
+        /// </summary>
         OneLife,
+        /// <summary>
+        /// Player restarts the level when hit.
+        /// </summary>
         OneHit,
+        /// <summary>
+        /// Damage is taken, but health is not subtracted so the Player will not die.
+        /// </summary>
         Practice
     }
 
+    /// <summary>
+    /// The GameMode type of a level.
+    /// </summary>
     public enum GameMode
     {
+        /// <summary>
+        /// The normal top-down movement.
+        /// </summary>
         Regular,
+        /// <summary>
+        /// Left/right movement with jumping affected by gravity.
+        /// </summary>
         Platformer
     }
 
@@ -532,9 +616,18 @@
         p2160
     }
 
+    /// <summary>
+    /// Which era of Project Arrhythmia a file is from.
+    /// </summary>
     public enum FileType
     {
+        /// <summary>
+        /// Lime Studios / Lilscript format.
+        /// </summary>
         LS,
+        /// <summary>
+        /// Vitamin Games format.
+        /// </summary>
         VG
     }
 
