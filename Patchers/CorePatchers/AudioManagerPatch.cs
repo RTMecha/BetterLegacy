@@ -58,19 +58,21 @@ namespace BetterLegacy.Patchers
         {
             __instance.isFading = true;
             float percent = 0f;
-            var currentSource = __instance.musicSources[__instance.activeMusicSourceIndex];
-            var otherSource = __instance.musicSources[1 - __instance.activeMusicSourceIndex];
             while (percent < 1f)
             {
                 percent += Time.deltaTime * 1f / duration;
-                currentSource.volume = Mathf.Lerp(0f, __instance.musicVol, percent);
-                otherSource.volume = Mathf.Lerp(__instance.musicVol, 0f, percent);
+                __instance.musicSources[__instance.activeMusicSourceIndex].volume = Mathf.Lerp(0f, __instance.musicVol, percent);
+                __instance.musicSources[1 - __instance.activeMusicSourceIndex].volume = Mathf.Lerp(__instance.musicVol, 0f, percent);
                 yield return null;
             }
             __instance.isFading = false;
-            if (otherSource.clip)
-                otherSource.clip.UnloadAudioData();
-            otherSource.clip = null; // clear clip from memory
+
+            var currentSource = __instance.musicSources[1 - __instance.activeMusicSourceIndex];
+
+            // Clear clip from memory to try and prevent memory leak
+            if (currentSource.clip)
+                currentSource.clip.UnloadAudioData();
+            currentSource.clip = null;
             yield break;
         }
     }
