@@ -1013,12 +1013,14 @@ namespace BetterLegacy.Components.Player
 
         void LateUpdate()
         {
+            UpdateControls(); UpdateRotation();
+
             if (UpdateMode == TailUpdateMode.LateUpdate)
                 UpdateTailDistance();
 
-            UpdateTailTransform(); UpdateTailDev(); UpdateTailSizes(); UpdateControls(); UpdateRotation();
+            UpdateTailTransform(); UpdateTailDev(); UpdateTailSizes();
 
-            var player = playerObjects["RB Parent"].gameObject;
+            var player = rb.gameObject;
 
             // Here we handle the player's bounds to the camera. It is possible to include negative zoom in those bounds but it might not be a good idea since people have already utilized it.
             if (!OutOfBounds && !EventsConfig.Instance.EditorCameraEnabled && CoreHelper.Playing)
@@ -1028,8 +1030,6 @@ namespace BetterLegacy.Components.Player
                 cameraToViewportPoint.y = Mathf.Clamp(cameraToViewportPoint.y, 0f, 1f);
                 if (Camera.main.orthographicSize > 0f && (!includeNegativeZoom || Camera.main.orthographicSize < 0f) && CustomPlayer)
                 {
-                    //float maxDistanceDelta = Time.deltaTime * 1500f;
-                    //player.transform.position = Vector3.MoveTowards(lastPos, Camera.main.ViewportToWorldPoint(cameraToViewportPoint), maxDistanceDelta);
                     var pos = Camera.main.ViewportToWorldPoint(cameraToViewportPoint);
                     pos.z = player.transform.position.z;
                     player.transform.position = pos;
