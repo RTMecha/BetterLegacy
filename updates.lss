@@ -1,5 +1,5 @@
-snapshot-2024.10.3
-- Duplicate themes now display in the theme list, but will not be useable.
+snapshot-2024.10.3 - (pre-1.7.0) > [Oct 17, 2024]
+- Duplicate themes now display in the theme list, but will not be usable.
 - Added "Show Experimental Features" toggle to Config Manager > Editor > Editor GUI. This is for specific features that might change in the future, so this toggle is to let people know what is experimental and what isn't. (Homing keyframes and parent desync are currently considered experimental due to them breaking in some cases)
 - Added controlPress modifiers. These are used to detect controller inputs.
 - Updated the story files to the current version.
