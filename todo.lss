@@ -19,7 +19,7 @@
 - New modifiers [prizeObject, setParent, playerAction (PlayerActionSet) trigger].
 - Add a value for spawning a prefab at the object's position.
 - Add Set Data to image shape for Custom Player objects.
-- More player model limits (move speed, boost speed, etc, allow / disallow custom models).
+- More player model limits (move speed, boost speed, etc).
 - Prefab preview image. Can set the specific capture size and position.
 - Asset sharing on the online server. (Prefabs, themes, player models, etc)
 - Collab sharing via server?
