@@ -318,6 +318,54 @@ namespace BetterLegacy.Core.Helpers
                         }
                         break;
                     }
+                case "controlPress":
+                    {
+                        var type = Parser.TryParse(modifier.value, 0);
+
+                        if (!Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || !levelObject.visualObject.GameObject)
+                            break;
+
+                        var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
+
+                        if (!player || player.device == null)
+                            break;
+
+                        var device = player.device;
+
+                        return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).IsPressed;
+                    }
+                case "controlDown":
+                    {
+                        var type = Parser.TryParse(modifier.value, 0);
+
+                        if (!Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || !levelObject.visualObject.GameObject)
+                            break;
+
+                        var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
+
+                        if (!player || player.device == null)
+                            break;
+
+                        var device = player.device;
+
+                        return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasPressed;
+                    }
+                case "controlReleased":
+                    {
+                        var type = Parser.TryParse(modifier.value, 0);
+
+                        if (!Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || !levelObject.visualObject.GameObject)
+                            break;
+
+                        var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
+
+                        if (!player || player.device == null)
+                            break;
+
+                        var device = player.device;
+
+                        return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasReleased;
+                    }
                 #endregion
                 #region Collide
                 case "bulletCollide":
@@ -5920,13 +5968,77 @@ namespace BetterLegacy.Core.Helpers
 
             switch (modifier.commands[0])
             {
-                case "actionPress":
+                case "keyPressDown":
                     {
-                        return modifier.reference.Player.Actions.Boost.IsPressed;
+                        return int.TryParse(modifier.value, out int num) && Input.GetKeyDown((KeyCode)num);
                     }
-                case "actionDown":
+                case "keyPress":
                     {
-                        return modifier.reference.Player.Actions.Boost.WasPressed;
+                        return int.TryParse(modifier.value, out int num) && Input.GetKey((KeyCode)num);
+                    }
+                case "keyPressUp":
+                    {
+                        return int.TryParse(modifier.value, out int num) && Input.GetKeyUp((KeyCode)num);
+                    }
+                case "mouseButtonDown":
+                    {
+                        return int.TryParse(modifier.value, out int num) && Input.GetMouseButtonDown(num);
+                    }
+                case "mouseButton":
+                    {
+                        return int.TryParse(modifier.value, out int num) && Input.GetMouseButton(num);
+                    }
+                case "mouseButtonUp":
+                    {
+                        return int.TryParse(modifier.value, out int num) && Input.GetMouseButtonUp(num);
+                    }
+                case "controlPress":
+                    {
+                        var type = Parser.TryParse(modifier.value, 0);
+                        var device = modifier.reference.device;
+                        //return type switch
+                        //{
+                        //    0 => device.Action1.IsPressed,
+                        //    1 => device.Action2.IsPressed,
+                        //    2 => device.Action3.IsPressed,
+                        //    3 => device.Action4.IsPressed,
+                        //    4 => device.GetControl(InControl.InputControlType.Start).IsPressed,
+                        //    5 => device.GetControl(InControl.InputControlType.Start).IsPressed,
+                        //};
+
+                        return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).IsPressed;
+                    }
+                case "controlDown":
+                    {
+                        var type = Parser.TryParse(modifier.value, 0);
+                        var device = modifier.reference.device;
+                        //return type switch
+                        //{
+                        //    0 => device.Action1.IsPressed,
+                        //    1 => device.Action2.IsPressed,
+                        //    2 => device.Action3.IsPressed,
+                        //    3 => device.Action4.IsPressed,
+                        //    4 => device.GetControl(InControl.InputControlType.Start).IsPressed,
+                        //    5 => device.GetControl(InControl.InputControlType.Start).IsPressed,
+                        //};
+
+                        return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasPressed;
+                    }
+                case "controlReleased":
+                    {
+                        var type = Parser.TryParse(modifier.value, 0);
+                        var device = modifier.reference.device;
+                        //return type switch
+                        //{
+                        //    0 => device.Action1.IsPressed,
+                        //    1 => device.Action2.IsPressed,
+                        //    2 => device.Action3.IsPressed,
+                        //    3 => device.Action4.IsPressed,
+                        //    4 => device.GetControl(InControl.InputControlType.Start).IsPressed,
+                        //    5 => device.GetControl(InControl.InputControlType.Start).IsPressed,
+                        //};
+
+                        return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasReleased;
                     }
                 case "healthEquals":
                     {
