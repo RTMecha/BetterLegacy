@@ -1,3 +1,8 @@
+snapshot-2024.10.3
+- Duplicate themes now display in the theme list, but will not be useable.
+- Added "Show Experimental Features" toggle to Config Manager > Editor > Editor GUI. This is for specific features that might change in the future, so this toggle is to let people know what is experimental and what isn't. (Homing keyframes and parent desync are currently considered experimental due to them breaking in some cases)
+- Added controlPress modifiers. These are used to detect controller inputs.
+- Updated the story files to the current version.
 snapshot-2024.10.2 - (pre-1.7.0) > [Oct 4, 2024]
 - Added playerMoveToObject modifiers. These modifiers lock the players' positon / rotation to the object. The object cannot be empty.
 - Added sampleAudio(int sample, float intensity) to math evaluators.
