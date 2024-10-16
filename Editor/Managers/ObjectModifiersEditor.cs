@@ -991,6 +991,43 @@ namespace BetterLegacy.Editor.Managers
                             break;
                         }
 
+                    case "controlPressDown":
+                    case "controlPress":
+                    case "controlPressUp":
+                        {
+                            var dd = dropdownBar.Duplicate(layout, "Key");
+                            var labelText = dd.transform.Find("Text").GetComponent<Text>();
+                            labelText.text = "Value";
+
+                            Destroy(dd.transform.Find("Dropdown").GetComponent<HoverTooltip>());
+
+                            var hide = dd.transform.Find("Dropdown").GetComponent<HideDropdownOptions>();
+                            hide.DisabledOptions.Clear();
+                            var d = dd.transform.Find("Dropdown").GetComponent<Dropdown>();
+                            d.onValueChanged.RemoveAllListeners();
+                            d.options.Clear();
+
+                            var keyCodes = Enum.GetValues(typeof(PlayerInputControlType));
+
+                            for (int i = 0; i < keyCodes.Length; i++)
+                            {
+                                var str = Enum.GetName(typeof(PlayerInputControlType), i) ?? "Invalid Value";
+
+                                hide.DisabledOptions.Add(string.IsNullOrEmpty(Enum.GetName(typeof(PlayerInputControlType), i)));
+
+                                d.options.Add(new Dropdown.OptionData(str));
+                            }
+
+                            d.value = Parser.TryParse(modifier.value, 0);
+
+                            d.onValueChanged.AddListener(_val => { modifier.value = _val.ToString(); });
+
+                            EditorThemeManager.ApplyLightText(labelText);
+                            EditorThemeManager.ApplyDropdown(d);
+
+                            break;
+                        }
+
                     #endregion
 
                     #region Save / Load JSON

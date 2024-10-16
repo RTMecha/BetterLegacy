@@ -327,14 +327,14 @@ namespace BetterLegacy.Core.Helpers
 
                         var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
 
-                        if (!player || player.device == null)
+                        if (!player || player.device == null && !CoreHelper.InEditor || InControl.InputManager.ActiveDevice == null)
                             break;
 
-                        var device = player.device;
+                        var device = player.device ?? InControl.InputManager.ActiveDevice;
 
                         return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).IsPressed;
                     }
-                case "controlDown":
+                case "controlPressDown":
                     {
                         var type = Parser.TryParse(modifier.value, 0);
 
@@ -343,14 +343,14 @@ namespace BetterLegacy.Core.Helpers
 
                         var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
 
-                        if (!player || player.device == null)
+                        if (!player || player.device == null && !CoreHelper.InEditor || InControl.InputManager.ActiveDevice == null)
                             break;
 
-                        var device = player.device;
+                        var device = player.device ?? InControl.InputManager.ActiveDevice;
 
                         return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasPressed;
                     }
-                case "controlReleased":
+                case "controlPressUp":
                     {
                         var type = Parser.TryParse(modifier.value, 0);
 
@@ -359,10 +359,10 @@ namespace BetterLegacy.Core.Helpers
 
                         var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
 
-                        if (!player || player.device == null)
+                        if (!player || player.device == null && !CoreHelper.InEditor || InControl.InputManager.ActiveDevice == null)
                             break;
 
-                        var device = player.device;
+                        var device = player.device ?? InControl.InputManager.ActiveDevice;
 
                         return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasReleased;
                     }
@@ -6008,7 +6008,7 @@ namespace BetterLegacy.Core.Helpers
 
                         return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).IsPressed;
                     }
-                case "controlDown":
+                case "controlPressDown":
                     {
                         var type = Parser.TryParse(modifier.value, 0);
                         var device = modifier.reference.device;
@@ -6024,7 +6024,7 @@ namespace BetterLegacy.Core.Helpers
 
                         return Enum.TryParse(((PlayerInputControlType)type).ToString(), out InControl.InputControlType inputControlType) && device.GetControl(inputControlType).WasPressed;
                     }
-                case "controlReleased":
+                case "controlPressUp":
                     {
                         var type = Parser.TryParse(modifier.value, 0);
                         var device = modifier.reference.device;
