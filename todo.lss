@@ -8,6 +8,7 @@
 - Animation editor (for player animations).
 - Player modifiers.
 - Level modifiers (supports VG triggers).
+- 2D option for BG objects (VG parallax support?)
 - Camera Jiggle event keyframe? (instead of a single thing that doesn't change throughout the entire level)
 - Add feedback (KinoFeedback) effect to event keyframes.
 - Add a fake Desktop thing like Rhythm Doctor for Window event keyframes. (The Desktop will look like a PA interface)
