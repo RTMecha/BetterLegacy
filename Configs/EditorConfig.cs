@@ -150,6 +150,7 @@ namespace BetterLegacy.Configs
         public Setting<EditorFont> EditorFont { get; set; }
         public Setting<bool> RoundedUI { get; set; }
         public Setting<Complexity> EditorComplexity { get; set; }
+        public Setting<bool> ShowExperimental { get; set; }
         public Setting<bool> HoverUIPlaySound { get; set; }
         public Setting<bool> ImportPrefabsDirectly { get; set; }
         public Setting<int> ThemesPerPage { get; set; }
@@ -1343,7 +1344,7 @@ namespace BetterLegacy.Configs
             EditorFont = BindEnum(this, "Editor GUI", "Editor Font", BetterLegacy.EditorFont.Inconsolata_Variable, "The current font the editor uses.");
             RoundedUI = Bind(this, "Editor GUI", "Rounded UI", false, "If all elements that can be rounded should be so.");
             EditorComplexity = BindEnum(this, "Editor GUI", "Editor Complexity", Complexity.Advanced, "What features show in the editor.");
-            //ShowModdedFeaturesInEditor = Bind(this, "Editor GUI", "Show Modded Features in Editor", true, "Z axis, 10-18 color slots, homing keyframes, etc get set active / inactive with this on / off respectively");
+            ShowExperimental = Bind(this, "Editor GUI", "Show Experimental Features", false, "If experimental features should display. These features are not gauranteed to always work and have a chance to be changed in future updates.");
             HoverUIPlaySound = Bind(this, "Editor GUI", "Hover UI Play Sound", false, "Plays a sound when the hover UI element is hovered over.");
             ImportPrefabsDirectly = Bind(this, "Editor GUI", "Import Prefabs Directly", false, "When clicking on an External Prefab, instead of importing it directly it'll bring up a Prefab External View Dialog if this config is off.");
             ThemesPerPage = Bind(this, "Editor GUI", "Themes Per Page", 10, "How many themes are shown per page in the Beatmap Themes popup.");
@@ -2520,6 +2521,7 @@ namespace BetterLegacy.Configs
             DraggingPlaysSoundOnlyWithBPM.SettingChanged += DraggingChanged;
 
             EditorComplexity.SettingChanged += ModdedEditorChanged;
+            ShowExperimental.SettingChanged += ModdedEditorChanged;
 
             MarkerLineColor.SettingChanged += MarkerChanged;
             MarkerLineWidth.SettingChanged += MarkerChanged;

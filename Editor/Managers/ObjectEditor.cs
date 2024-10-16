@@ -2579,8 +2579,8 @@ namespace BetterLegacy.Editor.Managers
 
             var spawnOnce = (Toggle)ObjectUIElements["Parent Spawn Once"];
             spawnOnce.onValueChanged.ClearAll();
-            spawnOnce.gameObject.SetActive(RTEditor.ShowModdedUI);
-            if (RTEditor.ShowModdedUI)
+            spawnOnce.gameObject.SetActive(RTEditor.ShowModdedUI && EditorConfig.Instance.ShowExperimental.Value);
+            if (RTEditor.ShowModdedUI && EditorConfig.Instance.ShowExperimental.Value)
             {
                 spawnOnce.isOn = beatmapObject.desync;
                 spawnOnce.onValueChanged.AddListener(_val =>
@@ -3755,52 +3755,56 @@ namespace BetterLegacy.Editor.Managers
 
             if (kfdialog.Find("r_axis") && kfdialog.Find("r_axis").gameObject.TryGetComponent(out Dropdown rAxis))
             {
-                rAxis.gameObject.SetActive(random == 5 || random == 6);
+                var active = (random == 5 || random == 6) && RTEditor.ShowModdedUI && EditorConfig.Instance.ShowExperimental.Value;
+                rAxis.gameObject.SetActive(active);
                 rAxis.onValueChanged.ClearAll();
-                rAxis.value = Mathf.Clamp((int)firstKF.GetData<EventKeyframe>().eventRandomValues[3], 0, 3);
-                rAxis.onValueChanged.AddListener(_val =>
+                if (active)
                 {
-                    foreach (var keyframe in selected.Select(x => x.GetData<EventKeyframe>()))
-                        keyframe.eventRandomValues[3] = _val;
-                    Updater.UpdateObject(beatmapObject, "Keyframes");
-                });
+                    rAxis.value = Mathf.Clamp((int)firstKF.GetData<EventKeyframe>().eventRandomValues[3], 0, 3);
+                    rAxis.onValueChanged.AddListener(_val =>
+                    {
+                        foreach (var keyframe in selected.Select(x => x.GetData<EventKeyframe>()))
+                            keyframe.eventRandomValues[3] = _val;
+                        Updater.UpdateObject(beatmapObject, "Keyframes");
+                    });
+                }
             }
 
             for (int n = 0; n <= (type == 0 ? 5 : type == 2 ? 4 : 3); n++)
             {
-                // We skip the 2nd random type for compatibility with old PA levels.
+                // We skip the 2nd random type for compatibility with old PA levels (for some reason).
                 int buttonTmp = (n >= 2 && (type != 2 || n < 3)) ? (n + 1) : (n > 2 && type == 2) ? n + 2 : n;
 
                 var randomToggles = kfdialog.Find("random");
+                var active = buttonTmp != 5 && buttonTmp != 6 || RTEditor.ShowModdedUI && EditorConfig.Instance.ShowExperimental.Value;
+                randomToggles.GetChild(n).gameObject.SetActive(active);
 
-                randomToggles.GetChild(n).gameObject.SetActive(buttonTmp != 5 && buttonTmp != 6 || RTEditor.ShowModdedUI);
+                if (!active)
+                    continue;
 
-                if (buttonTmp != 5 && buttonTmp != 6 || RTEditor.ShowModdedUI)
+                var toggle = randomToggles.GetChild(n).GetComponent<Toggle>();
+                toggle.onValueChanged.ClearAll();
+                toggle.isOn = random == buttonTmp;
+                toggle.onValueChanged.AddListener(_val =>
                 {
-                    var toggle = randomToggles.GetChild(n).GetComponent<Toggle>();
-                    toggle.onValueChanged.ClearAll();
-                    toggle.isOn = random == buttonTmp;
-                    toggle.onValueChanged.AddListener(_val =>
+                    if (_val)
                     {
-                        if (_val)
-                        {
-                            foreach (var keyframe in selected.Select(x => x.GetData<EventKeyframe>()))
-                                keyframe.random = buttonTmp;
+                        foreach (var keyframe in selected.Select(x => x.GetData<EventKeyframe>()))
+                            keyframe.random = buttonTmp;
 
                             // Since keyframe value has no affect on the timeline object, we will only need to update the physical object.
                             if (UpdateObjects)
-                                Updater.UpdateObject(beatmapObject, "Keyframes");
-                        }
-
-                        UpdateKeyframeRandomDialog(kfdialog, randomValueLabel, randomValue, type, selected, firstKF, beatmapObject, typeName, buttonTmp);
-                    });
-                    if (!toggle.GetComponent<HoverUI>())
-                    {
-                        var hoverUI = toggle.gameObject.AddComponent<HoverUI>();
-                        hoverUI.animatePos = false;
-                        hoverUI.animateSca = true;
-                        hoverUI.size = 1.1f;
+                            Updater.UpdateObject(beatmapObject, "Keyframes");
                     }
+
+                    UpdateKeyframeRandomDialog(kfdialog, randomValueLabel, randomValue, type, selected, firstKF, beatmapObject, typeName, buttonTmp);
+                });
+                if (!toggle.GetComponent<HoverUI>())
+                {
+                    var hoverUI = toggle.gameObject.AddComponent<HoverUI>();
+                    hoverUI.animatePos = false;
+                    hoverUI.animateSca = true;
+                    hoverUI.size = 1.1f;
                 }
             }
 
