@@ -23,7 +23,7 @@ namespace BetterLegacy.Core.Managers
 
         public static Vector2 CursorPosition => new Vector2(Input.mousePosition.x, Input.mousePosition.y);
 
-        public static void Init() => new GameObject("CursorManager", typeof(CursorManager));
+        public static void Init() => new GameObject(nameof(CursorManager), typeof(CursorManager));
 
         void Awake()
         {
