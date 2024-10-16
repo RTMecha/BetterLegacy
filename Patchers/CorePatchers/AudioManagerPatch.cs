@@ -61,7 +61,7 @@ namespace BetterLegacy.Patchers
             while (percent < 1f)
             {
                 percent += Time.deltaTime * 1f / duration;
-                __instance.musicSources[__instance.activeMusicSourceIndex].volume = Mathf.Lerp(0f, __instance.musicVol, percent);
+                __instance.CurrentAudioSource.volume = Mathf.Lerp(0f, __instance.musicVol, percent);
                 __instance.musicSources[1 - __instance.activeMusicSourceIndex].volume = Mathf.Lerp(__instance.musicVol, 0f, percent);
                 yield return null;
             }
@@ -70,7 +70,7 @@ namespace BetterLegacy.Patchers
             var currentSource = __instance.musicSources[1 - __instance.activeMusicSourceIndex];
 
             // Clear clip from memory to try and prevent memory leak
-            if (currentSource.clip)
+            if (currentSource.clip && currentSource.clip != __instance.CurrentAudioSource.clip)
                 currentSource.clip.UnloadAudioData();
             currentSource.clip = null;
             yield break;
