@@ -19,6 +19,8 @@ namespace BetterLegacy.Core.Managers
 {
     public class ModifiersManager : MonoBehaviour
     {
+        static System.Diagnostics.Stopwatch sw;
+
         /// <summary>
         /// Assigns delegates to the modifier's actions. Can be patched with a custom method.
         /// </summary>
@@ -43,21 +45,50 @@ namespace BetterLegacy.Core.Managers
             if (!GameData.IsValid || !CoreHelper.Playing)
                 return;
 
+            if (Input.GetKeyDown(KeyCode.Alpha1))
+                sw = CoreHelper.StartNewStopwatch();
+
             var ldm = CoreConfig.Instance.LDM.Value;
-            var order = GameData.Current.beatmapObjects.FindAll(x => x.modifiers.Count > 0);
+            var beatmapObjects = GameData.Current.beatmapObjects;
 
-            for (int i = 0; i < order.Count; i++)
+            for (int i = 0; i < beatmapObjects.Count; i++)
             {
-                var beatmapObject = order[i];
+                var beatmapObject = beatmapObjects[i];
 
-                if (ldm && beatmapObject.LDM)
-                    return;
+                if (beatmapObject.modifiers.Count <= 0 || ldm && beatmapObject.LDM)
+                    continue;
 
-                if (beatmapObject.modifiers.TryFindAll(x => x.Action == null && x.type == ModifierBase.Type.Action || x.Trigger == null && x.type == ModifierBase.Type.Trigger || x.Inactive == null, out List<Modifier<BeatmapObject>> nullActionModifiers))
-                    nullActionModifiers.ForEach(AssignModifierActions);
+                //if (beatmapObject.modifiers.TryFindAll(x => x.Action == null && x.type == ModifierBase.Type.Action || x.Trigger == null && x.type == ModifierBase.Type.Trigger || x.Inactive == null, out List<Modifier<BeatmapObject>> nullActionModifiers))
+                //    nullActionModifiers.ForEach(AssignModifierActions);
 
-                var actions = beatmapObject.modifiers.FindAll(x => x.type == ModifierBase.Type.Action);
-                var triggers = beatmapObject.modifiers.FindAll(x => x.type == ModifierBase.Type.Trigger);
+                var actions = new List<Modifier<BeatmapObject>>();
+                var triggers = new List<Modifier<BeatmapObject>>();
+                for (int j = 0; j < beatmapObject.modifiers.Count; j++)
+                {
+                    var modifier = beatmapObject.modifiers[j];
+                    switch (modifier.type)
+                    {
+                        case ModifierBase.Type.Action:
+                            {
+                                if (modifier.Action == null || modifier.Inactive == null)
+                                    AssignModifierActions(modifier);
+
+                                actions.Add(modifier);
+                                break;
+                            }
+                        case ModifierBase.Type.Trigger:
+                            {
+                                if (modifier.Trigger == null || modifier.Inactive == null)
+                                    AssignModifierActions(modifier);
+
+                                triggers.Add(modifier);
+                                break;
+                            }
+                    }
+                }
+
+                //var actions = beatmapObject.modifiers.FindAll(x => x.type == ModifierBase.Type.Action);
+                //var triggers = beatmapObject.modifiers.FindAll(x => x.type == ModifierBase.Type.Trigger);
 
                 if (beatmapObject.ignoreLifespan || beatmapObject.Alive)
                 {
@@ -128,6 +159,12 @@ namespace BetterLegacy.Core.Managers
                 foreach (var audio in queuedAudioToDelete)
                     DeleteKey(audio.Key, audio.Value);
                 queuedAudioToDelete.Clear();
+            }
+
+            if (sw != null)
+            {
+                CoreHelper.StopAndLogStopwatch(sw, "ModifiersManager");
+                sw = null;
             }
         }
 

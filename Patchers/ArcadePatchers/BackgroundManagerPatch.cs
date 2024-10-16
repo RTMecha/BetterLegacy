@@ -20,6 +20,8 @@ namespace BetterLegacy.Patchers
 
         public static BackgroundManager Instance { get => BackgroundManager.inst; set => BackgroundManager.inst = value; }
 
+        static System.Diagnostics.Stopwatch sw;
+
         [HarmonyPatch(nameof(BackgroundManager.Update))]
         [HarmonyPrefix]
         static void UpdatePrefix()
@@ -27,26 +29,61 @@ namespace BetterLegacy.Patchers
             if (!CoreConfig.Instance.ShowBackgroundObjects.Value || !CoreHelper.Playing || !GameData.IsValid || GameData.Current.backgroundObjects == null)
                 return;
 
-            var list = GameData.Current.backgroundObjects.FindAll(x => x.modifiers.Count > 0);
+            var list = GameData.Current.backgroundObjects;
+
+            if (Input.GetKeyDown(KeyCode.Alpha2))
+                sw = CoreHelper.StartNewStopwatch();
 
             for (int i = 0; i < list.Count; i++)
             {
                 var backgroundObject = list[i];
 
+                if (backgroundObject.modifiers.Count <= 0)
+                    continue;
+
                 for (int j = 0; j < backgroundObject.modifiers.Count; j++)
                 {
                     var modifiers = backgroundObject.modifiers[j];
 
-                    if (modifiers.TryFindAll(x => x.Action == null && x.type == ModifierBase.Type.Action || x.Trigger == null && x.type == ModifierBase.Type.Trigger || x.Inactive == null, out List<Modifier<BackgroundObject>> findAll))
-                        findAll.ForEach(modifier =>
-                        {
-                            modifier.Action = ModifiersHelper.BGAction;
-                            modifier.Trigger = ModifiersHelper.BGTrigger;
-                            modifier.Inactive = ModifiersHelper.BGInactive;
-                        });
+                    //if (modifiers.TryFindAll(x => x.Action == null && x.type == ModifierBase.Type.Action || x.Trigger == null && x.type == ModifierBase.Type.Trigger || x.Inactive == null, out List<Modifier<BackgroundObject>> findAll))
+                    //    findAll.ForEach(modifier =>
+                    //    {
+                    //        modifier.Action = ModifiersHelper.BGAction;
+                    //        modifier.Trigger = ModifiersHelper.BGTrigger;
+                    //        modifier.Inactive = ModifiersHelper.BGInactive;
+                    //    });
 
-                    var actions = modifiers.FindAll(x => x.type == ModifierBase.Type.Action);
-                    var triggers = modifiers.FindAll(x => x.type == ModifierBase.Type.Trigger);
+                    var actions = new List<Modifier<BackgroundObject>>();
+                    var triggers = new List<Modifier<BackgroundObject>>();
+                    for (int k = 0; k < modifiers.Count; k++)
+                    {
+                        var modifier = modifiers[k];
+                        switch (modifier.type)
+                        {
+                            case ModifierBase.Type.Action:
+                                {
+                                    if (modifier.Action == null || modifier.Inactive == null)
+                                        modifier.Action = ModifiersHelper.BGAction;
+
+                                    actions.Add(modifier);
+                                    break;
+                                }
+                            case ModifierBase.Type.Trigger:
+                                {
+                                    if (modifier.Trigger == null || modifier.Inactive == null)
+                                        modifier.Trigger = ModifiersHelper.BGTrigger;
+
+                                    triggers.Add(modifier);
+                                    break;
+                                }
+                        }
+
+                        if (modifier.Inactive == null)
+                            modifier.Inactive = ModifiersHelper.BGInactive;
+                    }
+
+                    //var actions = modifiers.FindAll(x => x.type == ModifierBase.Type.Action);
+                    //var triggers = modifiers.FindAll(x => x.type == ModifierBase.Type.Trigger);
 
                     if (triggers.Count > 0)
                     {
@@ -91,6 +128,12 @@ namespace BetterLegacy.Patchers
                         }
                     }
                 }
+            }
+
+            if (sw != null)
+            {
+                CoreHelper.StopAndLogStopwatch(sw, "BackgroundManager");
+                sw = null;
             }
         }
 
