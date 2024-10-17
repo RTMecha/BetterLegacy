@@ -52,7 +52,7 @@ namespace BetterLegacy.Configs
             configBase.transform.AsRT().sizeDelta = new Vector2(1000f, 800f);
             var configBaseImage = configBase.AddComponent<Image>();
 
-            EditorThemeManager.ApplyGraphic(configBaseImage, ThemeGroup.Background_1, true);
+            EditorThemeManager.ApplyGraphic(configBaseImage, ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Bottom);
 
             var selectable = configBase.AddComponent<SelectGUI>();
             selectable.target = configBase.transform;
@@ -61,7 +61,7 @@ namespace BetterLegacy.Configs
             UIManager.SetRectTransform(panel.transform.AsRT(), Vector2.zero, Vector2.one, new Vector2(0f, 1f), Vector2.zero, new Vector2(0f, 32f));
 
             var panelImage = panel.AddComponent<Image>();
-            EditorThemeManager.ApplyGraphic(panelImage, ThemeGroup.Background_1, true);
+            EditorThemeManager.ApplyGraphic(panelImage, ThemeGroup.Background_1, true, roundedSide: SpriteHelper.RoundedSide.Top);
 
             var title = Creator.NewUIObject("Title", panel.transform);
             UIManager.SetRectTransform(title.transform.AsRT(), new Vector2(2f, 0f), Vector2.one, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(-12f, -8f));
@@ -317,7 +317,7 @@ namespace BetterLegacy.Configs
             descriptionText.fontSize = 18;
             descriptionText.text = "Hover over a setting to get the description.";
 
-            EditorThemeManager.ApplyGraphic(descriptionBaseImage, ThemeGroup.Background_2, true, roundedSide: SpriteHelper.RoundedSide.Left);
+            EditorThemeManager.ApplyGraphic(descriptionBaseImage, ThemeGroup.Background_2, true, roundedSide: SpriteHelper.RoundedSide.Right);
             EditorThemeManager.ApplyLightText(descriptionText);
 
             configs.Add(CoreConfig.Instance);
