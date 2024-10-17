@@ -1370,13 +1370,13 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "audioSource":
                         {
-                            if (modifier.Result == null || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null ||
-                                levelObject.visualObject.GameObject == null || !bool.TryParse(modifier.commands[1], out bool global))
+                            if (modifier.Result != null || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null ||
+                                !levelObject.visualObject.GameObject)
                                 break;
 
                             string text = RTFile.ApplicationDirectory + "beatmaps/soundlibrary/" + modifier.value;
 
-                            if (!global)
+                            if (!bool.TryParse(modifier.commands[1], out bool global) || !global)
                                 text = RTFile.BasePath + modifier.value;
 
                             if (!modifier.value.Contains(".ogg") && RTFile.FileExists(text + ".ogg"))
@@ -1389,7 +1389,10 @@ namespace BetterLegacy.Core.Helpers
                                 text += ".mp3";
 
                             if (!RTFile.FileExists(text))
+                            {
+                                CoreHelper.LogError($"File does not exist {text}");
                                 break;
+                            }
 
                             if (text.Contains(".mp3"))
                             {
@@ -1400,7 +1403,17 @@ namespace BetterLegacy.Core.Helpers
 
                             CoreHelper.StartCoroutine(ModifiersManager.LoadMusicFileRaw(text, audioClip =>
                             {
+                                if (!audioClip)
+                                {
+                                    CoreHelper.LogError($"Failed to load audio {text}");
+                                    return;
+                                }
+
                                 audioClip.name = modifier.value;
+
+                                if (levelObject.visualObject == null || !levelObject.visualObject.GameObject)
+                                    return;
+
                                 modifier.Result = levelObject.visualObject.GameObject.AddComponent<AudioModifier>();
                                 ((AudioModifier)modifier.Result).Init(audioClip, modifier.reference, modifier);
                             }));

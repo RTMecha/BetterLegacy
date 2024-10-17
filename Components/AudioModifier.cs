@@ -10,12 +10,6 @@ namespace BetterLegacy.Components
     /// </summary>
     public class AudioModifier : MonoBehaviour
     {
-        void Awake()
-        {
-            AudioSource = gameObject.AddComponent<AudioSource>();
-            AudioSource.loop = true;
-        }
-
         /// <summary>
         /// Assigns audio, a BeatmapObject and modifier.
         /// </summary>
@@ -24,9 +18,11 @@ namespace BetterLegacy.Components
             AudioClip = audioClip;
             BeatmapObject = beatmapObject;
             Modifier = modifier;
+            AudioSource = gameObject.GetComponent<AudioSource>() ?? gameObject.AddComponent<AudioSource>();
+            AudioSource.loop = true;
             AudioSource.clip = AudioClip;
 
-            gameObject.AddComponent<DestroyModifierResult>().Modifier = modifier;
+            (gameObject.GetComponent<DestroyModifierResult>() ?? gameObject.AddComponent<DestroyModifierResult>()).Modifier = modifier;
         }
 
         void Update()
