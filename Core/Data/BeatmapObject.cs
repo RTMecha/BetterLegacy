@@ -227,7 +227,7 @@ namespace BetterLegacy.Core.Data
         {
             get
             {
-                var time = Updater.CurrentTime;
+                var time = AudioManager.inst.CurrentAudioSource.time;
                 var st = StartTime;
                 var akt = autoKillType;
                 var ako = autoKillOffset;
