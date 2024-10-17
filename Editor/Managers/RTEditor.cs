@@ -3289,10 +3289,10 @@ namespace BetterLegacy.Editor.Managers
                 });
             }, 4);
 
-            var addFileToLevelFolder = EditorHelper.AddEditorDropdown("Add File to Level Folder", "", "File", SearchSprite, () =>
+            var addFileToLevelFolder = EditorHelper.AddEditorDropdown("Add File to Level", "", "File", SearchSprite, () =>
             {
                 EditorManager.inst.ShowDialog("Browser Popup");
-                RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".ogg", ".wav", ".png", ".jpg", ".mp4", ".mov" }, onSelectFile: _val =>
+                RTFileBrowser.inst.UpdateBrowser(Directory.GetCurrentDirectory(), new string[] { ".ogg", ".wav", ".png", ".jpg", ".mp4", ".mov", ".lsp", ".vgp" }, onSelectFile: _val =>
                 {
                     if (_val.Contains(".mp4") || _val.Contains(".mov"))
                     {
@@ -3304,6 +3304,26 @@ namespace BetterLegacy.Editor.Managers
                             RTVideoManager.inst.Play(copyTo, 1f);
                         else
                             RTVideoManager.inst.Stop();
+
+                        return;
+                    }
+
+                    if (_val.Contains(".lsp"))
+                    {
+                        var prefab = Prefab.Parse(JSON.Parse(RTFile.ReadFromFile(_val)));
+
+                        RTPrefabEditor.inst.OpenPopup();
+                        RTPrefabEditor.inst.ImportPrefabIntoLevel(prefab);
+
+                        return;
+                    }
+                    
+                    if (_val.Contains(".vgp"))
+                    {
+                        var prefab = Prefab.ParseVG(JSON.Parse(RTFile.ReadFromFile(_val)));
+
+                        RTPrefabEditor.inst.OpenPopup();
+                        RTPrefabEditor.inst.ImportPrefabIntoLevel(prefab);
 
                         return;
                     }
