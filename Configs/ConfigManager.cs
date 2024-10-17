@@ -19,6 +19,15 @@ namespace BetterLegacy.Configs
     {
         public static ConfigManager inst;
 
+        #region Fields
+
+        public List<BaseConfig> configs = new List<BaseConfig>();
+
+        public bool watchingKeybind;
+        public Action<KeyCode> onSelectKey;
+
+        #region UI
+
         public UICanvas canvas;
         public GameObject configBase;
         public Transform subTabs;
@@ -28,10 +37,21 @@ namespace BetterLegacy.Configs
 
         public GameObject numberFieldStorage;
 
-        public List<BaseConfig> configs = new List<BaseConfig>();
+        #endregion
 
-        public bool watchingKeybind;
-        public Action<KeyCode> onSelectKey;
+        #region Tabs & Pages
+
+        public const int MAX_SETTINGS_PER_PAGE = 14;
+        public int currentSubTabPage;
+        public int currentSubTab;
+        public int currentTab;
+        public int lastTab;
+        public string searchTerm;
+        public List<string> subTabSections = new List<string>();
+
+        #endregion
+
+        #endregion
 
         public static void Init()
         {
@@ -337,44 +357,43 @@ namespace BetterLegacy.Configs
         void Update()
         {
             if (!watchingKeybind && Input.GetKeyDown(CoreConfig.Instance.OpenConfigKey.Value))
-                (Active ? (Action)Hide : Show).Invoke();
+                Toggle();
 
             if (canvas != null)
                 canvas.Canvas.scaleFactor = CoreHelper.ScreenScale;
 
-            if (watchingKeybind)
+            if (!watchingKeybind)
+                return;
+
+            var key = KeybindManager.WatchKeyCode();
+
+            if (key == KeyCode.None)
+                return;
+
+            watchingKeybind = false;
+
+            try
             {
-                var key = KeybindManager.WatchKeyCode();
-
-                if (key != KeyCode.None)
-                {
-                    watchingKeybind = false;
-
-                    try
-                    {
-                        onSelectKey?.Invoke(key);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreHelper.LogError($"Error with keybind action: {ex}");
-                    }
-                }
+                onSelectKey?.Invoke(key);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Error with keybind action: {ex}");
             }
         }
 
-        public bool Active => configBase && configBase.activeSelf;
+        #region Active States
+
+        public bool Active => configBase.activeSelf;
 
         public void Show() => configBase.SetActive(true);
 
         public void Hide() => configBase.SetActive(false);
 
-        public int maxSettingsPerPage = 14;
-        public int currentSubTabPage;
-        public int currentSubTab;
-        public int currentTab;
-        public int lastTab;
-        public string searchTerm;
-        public List<string> subTabSections = new List<string>();
+        public void Toggle() => configBase.SetActive(!Active);
+
+        #endregion
+
         public void SetTab(int tabIndex)
         {
             if (currentTab != tabIndex)
@@ -385,7 +404,7 @@ namespace BetterLegacy.Configs
 
             lastTab = currentTab;
             currentTab = tabIndex;
-            LSHelpers.DeleteChildren(this.subTabs);
+            LSHelpers.DeleteChildren(subTabs);
             var config = configs[Mathf.Clamp(tabIndex, 0, configs.Count - 1)];
 
             subTabSections.Clear();
@@ -441,7 +460,7 @@ namespace BetterLegacy.Configs
 
             var settings = config.Settings.Where(x => subTabSections[currentSubTab] == x.Section);
             var page = currentSubTabPage + 1;
-            var max = page * maxSettingsPerPage;
+            var max = page * MAX_SETTINGS_PER_PAGE;
             
             LSHelpers.DeleteChildren(content);
             int num = 0;
@@ -452,7 +471,7 @@ namespace BetterLegacy.Configs
                 if (!CoreHelper.SearchString(searchTerm, setting.Key) && !CoreHelper.SearchString(searchTerm, setting.Section))
                     continue;
 
-                if (num >= max - maxSettingsPerPage && num < max)
+                if (num >= max - MAX_SETTINGS_PER_PAGE && num < max)
                 {
                     CoreHelper.Log($"Setting: {setting.Key}");
 
@@ -824,8 +843,8 @@ namespace BetterLegacy.Configs
                 }
             });
 
-            if (num / maxSettingsPerPage != 0)
-                TriggerHelper.AddEventTriggers(pageFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(pageFieldStorage.inputField, max: num / maxSettingsPerPage));
+            if (num / MAX_SETTINGS_PER_PAGE != 0)
+                TriggerHelper.AddEventTriggers(pageFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(pageFieldStorage.inputField, max: num / MAX_SETTINGS_PER_PAGE));
             else
                 TriggerHelper.AddEventTriggers(pageFieldStorage.inputField.gameObject);
 
@@ -840,7 +859,7 @@ namespace BetterLegacy.Configs
             {
                 if (int.TryParse(pageFieldStorage.inputField.text, out int p))
                 {
-                    currentSubTabPage = Mathf.Clamp(p - 1, 0, num / maxSettingsPerPage);
+                    currentSubTabPage = Mathf.Clamp(p - 1, 0, num / MAX_SETTINGS_PER_PAGE);
                     RefreshSettings();
                 }
             });
@@ -849,14 +868,14 @@ namespace BetterLegacy.Configs
             {
                 if (int.TryParse(pageFieldStorage.inputField.text, out int p))
                 {
-                    currentSubTabPage = Mathf.Clamp(p + 1, 0, num / maxSettingsPerPage);
+                    currentSubTabPage = Mathf.Clamp(p + 1, 0, num / MAX_SETTINGS_PER_PAGE);
                     RefreshSettings();
                 }
             });
             pageFieldStorage.rightGreaterButton.onClick.ClearAll();
             pageFieldStorage.rightGreaterButton.onClick.AddListener(() =>
             {
-                currentSubTabPage = num / maxSettingsPerPage;
+                currentSubTabPage = num / MAX_SETTINGS_PER_PAGE;
                 RefreshSettings();
             });
         }
