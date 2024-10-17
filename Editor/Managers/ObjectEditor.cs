@@ -894,16 +894,16 @@ namespace BetterLegacy.Editor.Managers
             }
 
 
-            if (setHistory)
+            if (!setHistory)
+                return;
+
+            EditorManager.inst.history.Add(new History.Command("Create New Object", () =>
             {
-                EditorManager.inst.history.Add(new History.Command("Create New Object", () =>
-                {
-                    CreateNewObject(action, select, false);
-                }, () =>
-                {
-                    inst.StartCoroutine(DeleteObject(timelineObject));
-                }), false);
-            }
+                CreateNewObject(action, select, false);
+            }, () =>
+            {
+                inst.StartCoroutine(DeleteObject(timelineObject));
+            }));
         }
 
         public void CreateNewNormalObject(bool _select = true, bool setHistory = true)
@@ -923,16 +923,16 @@ namespace BetterLegacy.Editor.Managers
             RenderTimelineObject(timelineObject);
             OpenDialog(bm);
 
-            if (setHistory)
+            if (!setHistory)
+                return;
+
+            EditorManager.inst.history.Add(new History.Command("Create New Normal Object", () =>
             {
-                EditorManager.inst.history.Add(new History.Command("Create New Normal Object", delegate ()
-                {
-                    CreateNewNormalObject(_select, false);
-                }, delegate ()
-                {
-                    inst.StartCoroutine(DeleteObject(timelineObject));
-                }), false);
-            }
+                CreateNewNormalObject(_select, false);
+            }, () =>
+            {
+                inst.StartCoroutine(DeleteObject(timelineObject));
+            }));
         }
 
         public void CreateNewCircleObject(bool _select = true, bool setHistory = true)
@@ -956,16 +956,16 @@ namespace BetterLegacy.Editor.Managers
             RenderTimelineObject(timelineObject);
             OpenDialog(bm);
 
-            if (setHistory)
+            if (!setHistory)
+                return;
+
+            EditorManager.inst.history.Add(new History.Command("Create New Normal Circle Object", () =>
             {
-                EditorManager.inst.history.Add(new History.Command("Create New Normal Circle Object", delegate ()
-                {
-                    CreateNewCircleObject(_select, false);
-                }, delegate ()
-                {
-                    inst.StartCoroutine(DeleteObject(timelineObject));
-                }), false);
-            }
+                CreateNewCircleObject(_select, false);
+            }, () =>
+            {
+                inst.StartCoroutine(DeleteObject(timelineObject));
+            }));
         }
 
         public void CreateNewTriangleObject(bool _select = true, bool setHistory = true)
@@ -989,16 +989,16 @@ namespace BetterLegacy.Editor.Managers
             RenderTimelineObject(timelineObject);
             OpenDialog(bm);
 
-            if (setHistory)
+            if (!setHistory)
+                return;
+
+            EditorManager.inst.history.Add(new History.Command("Create New Normal Triangle Object", () =>
             {
-                EditorManager.inst.history.Add(new History.Command("Create New Normal Triangle Object", delegate ()
-                {
-                    CreateNewTriangleObject(_select, false);
-                }, delegate ()
-                {
-                    inst.StartCoroutine(DeleteObject(timelineObject));
-                }), false);
-            }
+                CreateNewTriangleObject(_select, false);
+            }, () =>
+            {
+                inst.StartCoroutine(DeleteObject(timelineObject));
+            }));
         }
 
         public void CreateNewTextObject(bool _select = true, bool setHistory = true)
@@ -1033,16 +1033,16 @@ namespace BetterLegacy.Editor.Managers
             if (!CoreHelper.AprilFools)
                 OpenDialog(bm);
 
-            if (setHistory)
+            if (!setHistory)
+                return;
+
+            EditorManager.inst.history.Add(new History.Command("Create New Normal Text Object", () =>
             {
-                EditorManager.inst.history.Add(new History.Command("Create New Normal Text Object", delegate ()
-                {
-                    CreateNewTextObject(_select, false);
-                }, delegate ()
-                {
-                    inst.StartCoroutine(DeleteObject(timelineObject));
-                }), false);
-            }
+                CreateNewTextObject(_select, false);
+            }, () =>
+            {
+                inst.StartCoroutine(DeleteObject(timelineObject));
+            }));
         }
 
         public void CreateNewHexagonObject(bool _select = true, bool setHistory = true)
@@ -1066,16 +1066,16 @@ namespace BetterLegacy.Editor.Managers
             RenderTimelineObject(timelineObject);
             OpenDialog(bm);
 
-            if (setHistory)
+            if (!setHistory)
+                return;
+
+            EditorManager.inst.history.Add(new History.Command("Create New Normal Hexagon Object", () =>
             {
-                EditorManager.inst.history.Add(new History.Command("Create New Normal Hexagon Object", delegate ()
-                {
-                    CreateNewHexagonObject(_select, false);
-                }, delegate ()
-                {
-                    inst.StartCoroutine(DeleteObject(timelineObject));
-                }), false);
-            }
+                CreateNewHexagonObject(_select, false);
+            }, () =>
+            {
+                inst.StartCoroutine(DeleteObject(timelineObject));
+            }));
         }
 
         public void CreateNewHelperObject(bool _select = true, bool setHistory = true)
@@ -1100,16 +1100,16 @@ namespace BetterLegacy.Editor.Managers
             RenderTimelineObject(timelineObject);
             OpenDialog(bm);
 
-            if (setHistory)
+            if (!setHistory)
+                return;
+
+            EditorManager.inst.history.Add(new History.Command("Create New Helper Object", () =>
             {
-                EditorManager.inst.history.Add(new History.Command("Create New Helper Object", delegate ()
-                {
-                    CreateNewHelperObject(_select, false);
-                }, delegate ()
-                {
-                    inst.StartCoroutine(DeleteObject(timelineObject));
-                }), false);
-            }
+                CreateNewHelperObject(_select, false);
+            }, () =>
+            {
+                inst.StartCoroutine(DeleteObject(timelineObject));
+            }));
         }
 
         public void CreateNewDecorationObject(bool _select = true, bool setHistory = true)
@@ -1133,16 +1133,16 @@ namespace BetterLegacy.Editor.Managers
             RenderTimelineObject(timelineObject);
             OpenDialog(bm);
 
-            if (setHistory)
+            if (!setHistory)
+                return;
+
+            EditorManager.inst.history.Add(new History.Command("Create New Decoration Object", () =>
             {
-                EditorManager.inst.history.Add(new History.Command("Create New Decoration Object", delegate ()
-                {
-                    CreateNewDecorationObject(_select, false);
-                }, delegate ()
-                {
-                    inst.StartCoroutine(DeleteObject(timelineObject));
-                }), false);
-            }
+                CreateNewDecorationObject(_select, false);
+            }, () =>
+            {
+                inst.StartCoroutine(DeleteObject(timelineObject));
+            }));
         }
 
         public void CreateNewEmptyObject(bool _select = true, bool setHistory = true)
@@ -1166,16 +1166,16 @@ namespace BetterLegacy.Editor.Managers
             RenderTimelineObject(timelineObject);
             OpenDialog(bm);
 
-            if (setHistory)
+            if (!setHistory)
+                return;
+
+            EditorManager.inst.history.Add(new History.Command("Create New Empty Object", () =>
             {
-                EditorManager.inst.history.Add(new History.Command("Create New Empty Object", delegate ()
-                {
-                    CreateNewEmptyObject(_select, false);
-                }, delegate ()
-                {
-                    inst.StartCoroutine(DeleteObject(timelineObject));
-                }), false);
-            }
+                CreateNewEmptyObject(_select, false);
+            }, () =>
+            {
+                inst.StartCoroutine(DeleteObject(timelineObject));
+            }));
         }
 
         public void CreateNewNoAutokillObject(bool _select = true, bool setHistory = true)
@@ -1198,16 +1198,16 @@ namespace BetterLegacy.Editor.Managers
             RenderTimelineObject(timelineObject);
             OpenDialog(bm);
 
-            if (setHistory)
+            if (!setHistory)
+                return;
+
+            EditorManager.inst.history.Add(new History.Command("Create New No Autokill Object", () =>
             {
-                EditorManager.inst.history.Add(new History.Command("Create New No Autokill Object", delegate ()
-                {
-                    CreateNewNoAutokillObject(_select, false);
-                }, delegate ()
-                {
-                    inst.StartCoroutine(DeleteObject(timelineObject));
-                }), false);
-            }
+                CreateNewNoAutokillObject(_select, false);
+            }, () =>
+            {
+                inst.StartCoroutine(DeleteObject(timelineObject));
+            }));
         }
 
         public TimelineObject CreateNewDefaultObject(bool _select = true)
@@ -1225,22 +1225,13 @@ namespace BetterLegacy.Editor.Managers
                 new List<BaseEventKeyframe>(),
                 new List<BaseEventKeyframe>()
             };
+
             // Position
-            list[0].Add(new EventKeyframe(0f, new float[3]
-            {
-                0f,
-                0f,
-                0f,
-            }, new float[4], 0));
+            list[0].Add(new EventKeyframe(0f, new float[3], new float[4], 0));
             // Scale
-            list[1].Add(new EventKeyframe(0f, new float[]
-            {
-                1f,
-                1f
-            }, new float[3], 0));
+            list[1].Add(new EventKeyframe(0f, new float[]  { 1f, 1f }, new float[3], 0));
             // Rotation
-            list[2].Add(new EventKeyframe(0f, new float[1], new float[3], 0));
-            ((EventKeyframe)list[2][0]).relative = true;
+            list[2].Add(new EventKeyframe(0f, new float[1], new float[3], 0) { relative = true });
             // Color
             list[3].Add(new EventKeyframe(0f, new float[10]
             {
@@ -1289,47 +1280,34 @@ namespace BetterLegacy.Editor.Managers
 
         public static BeatmapObject CreateNewBeatmapObject(float _time, bool _add = true)
         {
-            var beatmapObject = new BeatmapObject();
-            beatmapObject.id = LSText.randomString(16);
-            beatmapObject.StartTime = _time;
+            var beatmapObject = new BeatmapObject(_time);
 
             if (!CoreHelper.AprilFools)
                 beatmapObject.editorData.layer = RTEditor.inst.Layer;
 
-            var positionKeyframe = new EventKeyframe();
-            positionKeyframe.eventTime = 0f;
+            var positionKeyframe = new EventKeyframe(0f);
             positionKeyframe.SetEventValues(new float[3]);
             positionKeyframe.SetEventRandomValues(new float[4]);
 
-            var scaleKeyframe = new EventKeyframe();
-            scaleKeyframe.eventTime = 0f;
-            scaleKeyframe.SetEventValues(new float[]
-            {
-                1f,
-                1f
-            });
+            var scaleKeyframe = new EventKeyframe(0f);
+            scaleKeyframe.SetEventValues(1f, 1f);
 
-            var rotationKeyframe = new EventKeyframe();
-            rotationKeyframe.eventTime = 0f;
-            rotationKeyframe.relative = true;
+            var rotationKeyframe = new EventKeyframe(0f) { relative = true };
             rotationKeyframe.SetEventValues(new float[1]);
 
-            var colorKeyframe = new EventKeyframe();
-            colorKeyframe.eventTime = 0f;
-            colorKeyframe.SetEventValues(new float[]
+            var colorKeyframe = new EventKeyframe(0f, new float[10]
             {
-                0f,
-                0f,
-                0f,
-                0f,
-                0f,
-                0f,
-                0f,
-                0f,
-                0f,
-                0f
-            });
-            colorKeyframe.SetEventRandomValues(0f, 0f, 0f, 0f);
+                0f, // start color slot
+                0f, // start opacity
+                0f, // start hue
+                0f, // start saturation
+                0f, // start value
+                1f, // end color slot
+                0f, // end opacity
+                0f, // end hue
+                0f, // end saturation
+                0f, // end value
+            }, new float[4], 0);
 
             beatmapObject.events[0].Add(positionKeyframe);
             beatmapObject.events[1].Add(scaleKeyframe);
@@ -1363,11 +1341,11 @@ namespace BetterLegacy.Editor.Managers
 
             var list = RTEditor.inst.timelineObjects;
             list.Where(x => x.Layer == RTEditor.inst.Layer && RTMath.RectTransformToScreenSpace(EditorManager.inst.SelectionBoxImage.rectTransform)
-            .Overlaps(RTMath.RectTransformToScreenSpace(x.Image.rectTransform))).ToList().ForEach(delegate (TimelineObject x)
+            .Overlaps(RTMath.RectTransformToScreenSpace(x.Image.rectTransform))).ToList().ForEach(timelineObject =>
             {
-                x.Selected = true;
-                x.timeOffset = 0f;
-                x.binOffset = 0;
+                timelineObject.Selected = true;
+                timelineObject.timeOffset = 0f;
+                timelineObject.binOffset = 0;
             });
 
             if (SelectedObjectCount > 1)
@@ -1394,12 +1372,12 @@ namespace BetterLegacy.Editor.Managers
                 list.ForEach(x => x.Selected = false);
 
             list.Where(x => RTMath.RectTransformToScreenSpace(ObjEditor.inst.SelectionBoxImage.rectTransform)
-            .Overlaps(RTMath.RectTransformToScreenSpace(x.Image.rectTransform))).ToList().ForEach(delegate (TimelineObject x)
+            .Overlaps(RTMath.RectTransformToScreenSpace(x.Image.rectTransform))).ToList().ForEach(timelineObject =>
             {
-                x.Selected = true;
-                x.timeOffset = 0f;
-                ObjEditor.inst.currentKeyframeKind = x.Type;
-                ObjEditor.inst.currentKeyframe = x.Index;
+                timelineObject.Selected = true;
+                timelineObject.timeOffset = 0f;
+                ObjEditor.inst.currentKeyframeKind = timelineObject.Type;
+                ObjEditor.inst.currentKeyframe = timelineObject.Index;
             });
 
             var bm = CurrentSelection.GetData<BeatmapObject>();
@@ -1490,7 +1468,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 Debug.Log($"{ObjEditor.inst.className}Setting Current Keyframe: {type}, {index}");
                 if (!_shift && bmTimelineObject.InternalSelections.Count > 0)
-                    bmTimelineObject.InternalSelections.ForEach(delegate (TimelineObject x) { x.Selected = false; });
+                    bmTimelineObject.InternalSelections.ForEach(timelineObject => { timelineObject.Selected = false; });
 
                 var kf = GetKeyframe(beatmapObject, type, index);
 

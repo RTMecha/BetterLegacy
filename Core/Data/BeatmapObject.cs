@@ -29,6 +29,7 @@ namespace BetterLegacy.Core.Data
 
         public BeatmapObject(float startTime) : base(startTime)
         {
+            id = LSText.randomString(16);
             editorData = new ObjectEditorData();
         }
 

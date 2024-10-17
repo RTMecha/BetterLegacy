@@ -14,6 +14,11 @@ namespace BetterLegacy.Core.Data
             id = LSText.randomNumString(8);
         }
 
+        public EventKeyframe(float eventTime) : base()
+        {
+            this.eventTime = eventTime;
+        }
+
         public EventKeyframe(float[] eventValues, float[] eventRandomValues, int random = 0) : base(eventValues, eventRandomValues, random)
         {
             id = LSText.randomNumString(8);
