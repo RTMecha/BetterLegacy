@@ -26,6 +26,7 @@ namespace BetterLegacy.Editor.Managers
 
         public Transform eventEditorDialog;
 
+        public TimelineObject CurrentSelectedTimelineKeyframe => RTEditor.inst.timelineKeyframes.Find(x => x.Type == EventEditor.inst.currentEventType && x.Index == EventEditor.inst.currentEvent);
         public EventKeyframe CurrentSelectedKeyframe => !GameData.IsValid ? null : (EventKeyframe)GameData.Current.eventObjects.allEvents[EventEditor.inst.currentEventType][EventEditor.inst.currentEvent];
 
         public List<TimelineObject> SelectedKeyframes => RTEditor.inst.timelineKeyframes.FindAll(x => x.Selected);
@@ -2856,50 +2857,49 @@ namespace BetterLegacy.Editor.Managers
                 var paste = dialogTmp.Find("edit/paste").GetComponent<Button>();
 
                 copy.onClick.ClearAll();
-                copy.onClick.AddListener(() =>
-                {
-                    if (copiedKeyframeDatas.Count > __instance.currentEventType)
-                    {
-                        copiedKeyframeDatas[__instance.currentEventType] = EventKeyframe.DeepCopy(currentKeyframe);
-                        EditorManager.inst.DisplayNotification("Copied keyframe data!", 2f, EditorManager.NotificationType.Success);
-                    }
-                    else
-                    {
-                        EditorManager.inst.DisplayNotification("Keyframe type does not exist yet.", 2f, EditorManager.NotificationType.Error);
-                    }
-                });
+                copy.onClick.AddListener(() => { CopyKeyframeData(CurrentSelectedTimelineKeyframe); });
 
                 paste.onClick.ClearAll();
-                paste.onClick.AddListener(() =>
-                {
-                    if (copiedKeyframeDatas.Count > __instance.currentEventType && copiedKeyframeDatas[__instance.currentEventType] != null)
-                    {
-                        foreach (var keyframe in SelectedKeyframes)
-                        {
-                            var kf = keyframe.GetData<EventKeyframe>();
-                            kf.curveType = copiedKeyframeDatas[keyframe.Type].curveType;
-                            kf.eventValues = copiedKeyframeDatas[keyframe.Type].eventValues.Copy();
-                            kf.eventRandomValues = copiedKeyframeDatas[keyframe.Type].eventRandomValues.Copy();
-                            kf.random = copiedKeyframeDatas[keyframe.Type].random;
-                            kf.relative = copiedKeyframeDatas[keyframe.Type].relative;
-                        }
-
-                        RenderEventsDialog();
-                        EventManager.inst.updateEvents();
-                        EditorManager.inst.DisplayNotification($"Pasted {EventTypes[__instance.currentEventType]} keyframe data to current selected keyframe!", 2f, EditorManager.NotificationType.Success);
-                    }
-                    else if (copiedKeyframeDatas.Count > __instance.currentEventType)
-                    {
-                        EditorManager.inst.DisplayNotification($"{EventTypes[__instance.currentEventType]} keyframe data not copied yet!", 2f, EditorManager.NotificationType.Error);
-                    }
-                    else
-                    {
-                        EditorManager.inst.DisplayNotification("Keyframe type does not exist yet.", 2f, EditorManager.NotificationType.Error);
-                    }
-                });
+                paste.onClick.AddListener(() => { PasteKeyframeData(__instance.currentEventType); });
             }
 
             RenderTitle(__instance.currentEventType);
+        }
+
+        public void CopyKeyframeData(TimelineObject currentKeyframe)
+        {
+            if (copiedKeyframeDatas.Count > currentKeyframe.Type)
+            {
+                copiedKeyframeDatas[currentKeyframe.Type] = EventKeyframe.DeepCopy(currentKeyframe.GetData<EventKeyframe>());
+                EditorManager.inst.DisplayNotification("Copied keyframe data!", 2f, EditorManager.NotificationType.Success);
+            }
+            else
+                EditorManager.inst.DisplayNotification("Keyframe type does not exist yet.", 2f, EditorManager.NotificationType.Error);
+        }
+
+        public void PasteKeyframeData(int type)
+        {
+            if (copiedKeyframeDatas.Count > type && copiedKeyframeDatas[type] != null)
+            {
+                foreach (var keyframe in SelectedKeyframes.Where(x => x.Type == type))
+                {
+                    var kf = keyframe.GetData<EventKeyframe>();
+
+                    kf.curveType = copiedKeyframeDatas[type].curveType;
+                    kf.eventValues = copiedKeyframeDatas[type].eventValues.Copy();
+                    kf.eventRandomValues = copiedKeyframeDatas[type].eventRandomValues.Copy();
+                    kf.random = copiedKeyframeDatas[type].random;
+                    kf.relative = copiedKeyframeDatas[type].relative;
+                }
+
+                RenderEventsDialog();
+                EventManager.inst.updateEvents();
+                EditorManager.inst.DisplayNotification($"Pasted {EventTypes[type]} keyframe data to current selected keyframe!", 2f, EditorManager.NotificationType.Success);
+            }
+            else if (copiedKeyframeDatas.Count > type)
+                EditorManager.inst.DisplayNotification($"{EventTypes[type]} keyframe data not copied yet!", 2f, EditorManager.NotificationType.Error);
+            else
+                EditorManager.inst.DisplayNotification("Keyframe type does not exist yet.", 2f, EditorManager.NotificationType.Error);
         }
 
         public List<EventKeyframe> copiedKeyframeDatas = new List<EventKeyframe>();

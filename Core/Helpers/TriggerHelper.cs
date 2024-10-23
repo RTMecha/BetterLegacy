@@ -431,311 +431,340 @@ namespace BetterLegacy.Core.Helpers
 
         #region Keyframes
 
-        public static EventTrigger.Entry CreateKeyframeStartDragTrigger(BeatmapObject beatmapObject, TimelineObject timelineObject)
+        public static EventTrigger.Entry CreateKeyframeStartDragTrigger(BeatmapObject beatmapObject, TimelineObject timelineObject) => CreateEntry(EventTriggerType.BeginDrag, eventData =>
         {
-            var entry = new EventTrigger.Entry();
-            entry.eventID = EventTriggerType.BeginDrag;
-            entry.callback.AddListener(eventData =>
+            if (timelineObject.Index == 0)
             {
-                if (timelineObject.Index == 0)
-                {
-                    EditorManager.inst.DisplayNotification("Can't change time of first Keyframe", 2f, EditorManager.NotificationType.Warning);
-                    return;
-                }
+                EditorManager.inst.DisplayNotification("Can't change time of first Keyframe", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
 
-                ObjEditor.inst.currentKeyframeKind = timelineObject.Type;
-                ObjEditor.inst.currentKeyframe = timelineObject.Index;
+            ObjEditor.inst.currentKeyframeKind = timelineObject.Type;
+            ObjEditor.inst.currentKeyframe = timelineObject.Index;
 
-                var list = beatmapObject.timelineObject.InternalSelections;
-                if (list.FindIndex(x => x.Type == timelineObject.Type && x.Index == timelineObject.Index) != -1)
+            var list = beatmapObject.timelineObject.InternalSelections;
+            if (list.FindIndex(x => x.Type == timelineObject.Type && x.Index == timelineObject.Index) != -1)
+                foreach (var otherTLO in beatmapObject.timelineObject.InternalSelections)
+                    otherTLO.timeOffset = otherTLO.Type == ObjEditor.inst.currentKeyframeKind && otherTLO.Index == ObjEditor.inst.currentKeyframe ? 0f : otherTLO.Time - timelineObject.Time;
+            ObjEditor.inst.mouseOffsetXForKeyframeDrag = timelineObject.Time - ObjectEditor.MouseTimelineCalc();
+            ObjEditor.inst.timelineKeyframesDrag = true;
+        });
+
+        public static EventTrigger.Entry CreateKeyframeEndDragTrigger(BeatmapObject beatmapObject, TimelineObject timelineObject) => CreateEntry(EventTriggerType.EndDrag, eventData =>
+        {
+            ObjectEditor.inst.UpdateKeyframeOrder(beatmapObject);
+
+            ObjectEditor.inst.RenderTimelineObject(ObjectEditor.inst.GetTimelineObject(beatmapObject));
+
+            ObjectEditor.inst.RenderKeyframes(beatmapObject);
+            ObjectEditor.inst.ResizeKeyframeTimeline(beatmapObject);
+            ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
+            ObjEditor.inst.timelineKeyframesDrag = false;
+        });
+
+        public static EventTrigger.Entry CreateKeyframeSelectTrigger(BeatmapObject beatmapObject, TimelineObject timelineObject) => CreateEntry(EventTriggerType.PointerDown, eventData =>
+        {
+            if ((eventData as PointerEventData).button != PointerEventData.InputButton.Right)
+                return;
+
+            RTEditor.inst.ShowContextMenu(RTEditor.DEFAULT_CONTEXT_MENU_WIDTH,
+                new RTEditor.ButtonFunction("Set Cursor to KF", () => { AudioManager.inst.SetMusicTime(beatmapObject.StartTime + timelineObject.Time); }),
+                new RTEditor.ButtonFunction("Set KF to Cursor", () =>
                 {
-                    foreach (var otherTLO in beatmapObject.timelineObject.InternalSelections)
+                    var time = beatmapObject.StartTime - AudioManager.inst.CurrentAudioSource.time;
+                    var selected = RTEventEditor.inst.SelectedKeyframes;
+                    for (int i = 0; i < selected.Count; i++)
                     {
-                        otherTLO.timeOffset = otherTLO.Type == ObjEditor.inst.currentKeyframeKind && otherTLO.Index == ObjEditor.inst.currentKeyframe ? 0f : otherTLO.Time - timelineObject.Time;
+                        var kf = selected[i];
+                        var eventKeyframe = kf.GetData<EventKeyframe>();
+                        eventKeyframe.eventTime = Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
                     }
-                }
-                ObjEditor.inst.mouseOffsetXForKeyframeDrag = timelineObject.Time - ObjectEditor.MouseTimelineCalc();
-                ObjEditor.inst.timelineKeyframesDrag = true;
-            });
-            return entry;
-        }
 
-        public static EventTrigger.Entry CreateKeyframeEndDragTrigger(BeatmapObject beatmapObject, TimelineObject timelineObject)
-        {
-            var entry = new EventTrigger.Entry();
-            entry.eventID = EventTriggerType.EndDrag;
-            entry.callback.AddListener(eventData =>
-            {
-                ObjectEditor.inst.UpdateKeyframeOrder(beatmapObject);
+                    ObjectEditor.inst.RenderKeyframes(beatmapObject);
+                    Updater.UpdateObject(beatmapObject, "Keyframes");
+                }),
+                new RTEditor.ButtonFunction(true),
+                new RTEditor.ButtonFunction("Copy", () => ObjectEditor.inst.CopyAllSelectedEvents(beatmapObject)),
+                new RTEditor.ButtonFunction("Paste", () => ObjectEditor.inst.PasteKeyframes(beatmapObject)),
+                new RTEditor.ButtonFunction("Copy Data", () =>
+                {
+                    var selected = beatmapObject.timelineObject.InternalSelections.Where(x => x.Selected);
+                    var firstKF = selected.ElementAt(0);
+                    var type = timelineObject.Type;
 
-                ObjectEditor.inst.RenderTimelineObject(ObjectEditor.inst.GetTimelineObject(beatmapObject));
+                    switch (type)
+                    {
+                        case 0:
+                            ObjectEditor.inst.CopiedPositionData = EventKeyframe.DeepCopy(firstKF.GetData<EventKeyframe>());
+                            break;
+                        case 1:
+                            ObjectEditor.inst.CopiedScaleData = EventKeyframe.DeepCopy(firstKF.GetData<EventKeyframe>());
+                            break;
+                        case 2:
+                            ObjectEditor.inst.CopiedRotationData = EventKeyframe.DeepCopy(firstKF.GetData<EventKeyframe>());
+                            break;
+                        case 3:
+                            ObjectEditor.inst.CopiedColorData = EventKeyframe.DeepCopy(firstKF.GetData<EventKeyframe>());
+                            break;
+                    }
+                    EditorManager.inst.DisplayNotification("Copied keyframe data!", 2f, EditorManager.NotificationType.Success);
+                }),
+                new RTEditor.ButtonFunction("Paste Data", () =>
+                {
+                    var selected = beatmapObject.timelineObject.InternalSelections.Where(x => x.Selected);
+                    var type = timelineObject.Type;
 
-                ObjectEditor.inst.RenderKeyframes(beatmapObject);
-                ObjectEditor.inst.ResizeKeyframeTimeline(beatmapObject);
-                ObjectEditor.inst.RenderObjectKeyframesDialog(beatmapObject);
-                ObjEditor.inst.timelineKeyframesDrag = false;
-            });
-            return entry;
-        }
-
-        public static EventTrigger.Entry CreateKeyframeSelectTrigger(BeatmapObject beatmapObject, TimelineObject timelineObject)
-        {
-            var entry = new EventTrigger.Entry();
-            entry.eventID = EventTriggerType.PointerDown;
-            entry.callback.AddListener(eventData =>
-            {
-                if ((eventData as PointerEventData).button == PointerEventData.InputButton.Middle)
-                    AudioManager.inst.SetMusicTime(beatmapObject.StartTime + timelineObject.Time);
-            });
-            return entry;
-        }
+                    switch (type)
+                    {
+                        case 0:
+                            ObjectEditor.inst.PasteKeyframeData(ObjectEditor.inst.CopiedPositionData, selected, beatmapObject, "Position");
+                            break;
+                        case 1:
+                            ObjectEditor.inst.PasteKeyframeData(ObjectEditor.inst.CopiedScaleData, selected, beatmapObject, "Scale");
+                            break;
+                        case 2:
+                            ObjectEditor.inst.PasteKeyframeData(ObjectEditor.inst.CopiedRotationData, selected, beatmapObject, "Rotation");
+                            break;
+                        case 3:
+                            ObjectEditor.inst.PasteKeyframeData(ObjectEditor.inst.CopiedColorData, selected, beatmapObject, "Color");
+                            break;
+                    }
+                }),
+                new RTEditor.ButtonFunction("Delete", RTEditor.inst.Delete)
+                );
+        });
 
         #endregion
 
         #region Objects
 
-        public static EventTrigger.Entry CreateBeatmapObjectStartDragTrigger(TimelineObject timelineObject)
+        public static EventTrigger.Entry CreateBeatmapObjectStartDragTrigger(TimelineObject timelineObject) => CreateEntry(EventTriggerType.BeginDrag, eventData =>
         {
-            var entry = new EventTrigger.Entry();
-            entry.eventID = EventTriggerType.BeginDrag;
-            entry.callback.AddListener(eventData =>
-            {
-                int bin = timelineObject.Bin;
+            int bin = timelineObject.Bin;
 
-                foreach (var otherTLO in RTEditor.inst.timelineObjects)
+            foreach (var otherTLO in RTEditor.inst.timelineObjects)
+            {
+                otherTLO.timeOffset = otherTLO.Time - timelineObject.Time;
+                otherTLO.binOffset = otherTLO.Bin - bin;
+            }
+
+            timelineObject.timeOffset = 0f;
+            timelineObject.binOffset = 0;
+
+            float timelineTime = EditorManager.inst.GetTimelineTime();
+            int num = 14 - Mathf.RoundToInt((Input.mousePosition.y - 25f) * EditorManager.inst.ScreenScaleInverse / 20f);
+            ObjEditor.inst.mouseOffsetXForDrag = timelineObject.Time - timelineTime;
+            ObjEditor.inst.mouseOffsetYForDrag = bin - num;
+            ObjEditor.inst.beatmapObjectsDrag = true;
+        });
+
+        public static EventTrigger.Entry CreateBeatmapObjectEndDragTrigger(TimelineObject timelineObject) => CreateEntry(EventTriggerType.EndDrag, eventData =>
+        {
+            ObjEditor.inst.beatmapObjectsDrag = false;
+
+            foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
+            {
+                ObjectEditor.inst.RenderTimelineObject(timelineObject);
+                if (ObjectEditor.UpdateObjects)
                 {
-                    otherTLO.timeOffset = otherTLO.Time - timelineObject.Time;
-                    otherTLO.binOffset = otherTLO.Bin - bin;
+                    if (timelineObject.IsBeatmapObject)
+                        Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Drag");
+                    if (timelineObject.IsPrefabObject)
+                        Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), "Drag");
                 }
 
-                timelineObject.timeOffset = 0f;
-                timelineObject.binOffset = 0;
+                Updater.Sort();
+            }
+
+            if (RTEditor.inst.TimelineBeatmapObjects.Count == 1 && timelineObject.IsBeatmapObject)
+                RTEditor.inst.StartCoroutine(ObjectEditor.RefreshObjectGUI(timelineObject.Data as BeatmapObject));
+        });
+
+        public static EventTrigger.Entry CreateBeatmapObjectTrigger(TimelineObject timelineObject) => CreateEntry(EventTriggerType.PointerUp, eventData =>
+        {
+            var pointerEventData = (PointerEventData)eventData;
+            if (ObjEditor.inst.beatmapObjectsDrag)
+                return;
+
+            CoreHelper.Log($"Selecting [ {timelineObject.ID} ]");
+
+            if (!RTEditor.inst.parentPickerEnabled && !RTEditor.inst.prefabPickerEnabled)
+            {
+                if (pointerEventData.button == PointerEventData.InputButton.Right)
+                {
+                    RTEditor.inst.ShowContextMenu(300f,
+                        new RTEditor.ButtonFunction("Select", () => { ObjectEditor.inst.SetCurrentObject(timelineObject); }),
+                        new RTEditor.ButtonFunction("Add to Selection", () => { ObjectEditor.inst.AddSelectedObject(timelineObject); }),
+                        new RTEditor.ButtonFunction("Create New", () => { ObjectEditor.inst.CreateNewNormalObject(); }),
+                        new RTEditor.ButtonFunction("Update Object", () =>
+                        {
+                            if (timelineObject.IsBeatmapObject)
+                                Updater.UpdateObject(timelineObject.GetData<BeatmapObject>());
+                            if (timelineObject.IsPrefabObject)
+                                Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
+                        }),
+                        new RTEditor.ButtonFunction(true),
+                        new RTEditor.ButtonFunction("Cut", () =>
+                        {
+                            ObjEditor.inst.CopyObject();
+                            CoreHelper.StartCoroutine(ObjectEditor.inst.DeleteObjects());
+                        }),
+                        new RTEditor.ButtonFunction("Copy", ObjEditor.inst.CopyObject),
+                        new RTEditor.ButtonFunction("Paste", () => { ObjectEditor.inst.PasteObject(); }),
+                        new RTEditor.ButtonFunction("Duplicate", () =>
+                        {
+                            var offsetTime = ObjectEditor.inst.SelectedObjects.Min(x => x.Time);
+
+                            ObjEditor.inst.CopyObject();
+                            ObjectEditor.inst.PasteObject(offsetTime);
+                        }),
+                        new RTEditor.ButtonFunction("Paste (Keep Prefab)", () => { ObjectEditor.inst.PasteObject(0f, false); }),
+                        new RTEditor.ButtonFunction("Duplicate (Keep Prefab)", () =>
+                        {
+                            var offsetTime = ObjectEditor.inst.SelectedObjects.Min(x => x.Time);
+
+                            ObjEditor.inst.CopyObject();
+                            ObjectEditor.inst.PasteObject(offsetTime, false);
+                        }),
+                        new RTEditor.ButtonFunction("Delete", () => { CoreHelper.StartCoroutine(ObjectEditor.inst.DeleteObjects()); })
+                        );
+
+                    return;
+                }
+
+                if (InputDataManager.inst.editorActions.MultiSelect.IsPressed)
+                    ObjectEditor.inst.AddSelectedObject(timelineObject);
+                else
+                    ObjectEditor.inst.SetCurrentObject(timelineObject);
 
                 float timelineTime = EditorManager.inst.GetTimelineTime();
-                int num = 14 - Mathf.RoundToInt((Input.mousePosition.y - 25f) * EditorManager.inst.ScreenScaleInverse / 20f);
                 ObjEditor.inst.mouseOffsetXForDrag = timelineObject.Time - timelineTime;
-                ObjEditor.inst.mouseOffsetYForDrag = bin - num;
-                ObjEditor.inst.beatmapObjectsDrag = true;
-            });
-            return entry;
-        }
+                return;
+            }
 
-        public static EventTrigger.Entry CreateBeatmapObjectEndDragTrigger(TimelineObject timelineObject)
-        {
-            var entry = new EventTrigger.Entry();
-            entry.eventID = EventTriggerType.EndDrag;
-            entry.callback.AddListener(eventData =>
+            if (pointerEventData.button == PointerEventData.InputButton.Right)
+                return;
+
+            if (RTEditor.inst.onSelectTimelineObject != null)
             {
-                ObjEditor.inst.beatmapObjectsDrag = false;
+                RTEditor.inst.onSelectTimelineObject(timelineObject);
+                RTEditor.inst.onSelectTimelineObject = null;
+                return;
+            }
 
-                foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
-                {
-                    ObjectEditor.inst.RenderTimelineObject(timelineObject);
-                    if (ObjectEditor.UpdateObjects)
-                    {
-                        if (timelineObject.IsBeatmapObject)
-                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Drag");
-                        if (timelineObject.IsPrefabObject)
-                            Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), "Drag");
-                    }
-
-                    Updater.Sort();
-                }
-
-                if (RTEditor.inst.TimelineBeatmapObjects.Count == 1 && timelineObject.IsBeatmapObject)
-                    RTEditor.inst.StartCoroutine(ObjectEditor.RefreshObjectGUI(timelineObject.Data as BeatmapObject));
-            });
-            return entry;
-        }
-
-        public static EventTrigger.Entry CreateBeatmapObjectTrigger(TimelineObject timelineObject)
-        {
-            var entry = new EventTrigger.Entry();
-            entry.eventID = EventTriggerType.PointerUp;
-            entry.callback.AddListener(eventData =>
+            if (RTEditor.inst.prefabPickerEnabled && timelineObject.IsBeatmapObject)
             {
-                var pointerEventData = (PointerEventData)eventData;
-                if (ObjEditor.inst.beatmapObjectsDrag)
-                    return;
-
-                CoreHelper.Log($"Selecting [ {timelineObject.ID} ]");
-
-                if (RTEditor.inst.onSelectTimelineObject != null)
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                if (string.IsNullOrEmpty(beatmapObject.prefabInstanceID))
                 {
-                    RTEditor.inst.onSelectTimelineObject(timelineObject);
-                    RTEditor.inst.onSelectTimelineObject = null;
+                    EditorManager.inst.DisplayNotification("Object is not assigned to a prefab!", 2f, EditorManager.NotificationType.Error);
                     return;
                 }
 
-                if (!RTEditor.inst.parentPickerEnabled && !RTEditor.inst.prefabPickerEnabled)
+                if (RTEditor.inst.selectingMultiple)
                 {
-                    if (pointerEventData.button == PointerEventData.InputButton.Right)
+                    foreach (var otherTimelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                     {
-                        RTEditor.inst.ShowContextMenu(300f,
-                            new RTEditor.ButtonFunction("Select", () => { ObjectEditor.inst.SetCurrentObject(timelineObject); }),
-                            new RTEditor.ButtonFunction("Add to Selection", () => { ObjectEditor.inst.AddSelectedObject(timelineObject); }),
-                            new RTEditor.ButtonFunction("Create New", () => { ObjectEditor.inst.CreateNewNormalObject(); }),
-                            new RTEditor.ButtonFunction("Update Object", () =>
-                            {
-                                if (timelineObject.IsBeatmapObject)
-                                    Updater.UpdateObject(timelineObject.GetData<BeatmapObject>());
-                                if (timelineObject.IsPrefabObject)
-                                    Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>());
-                            }),
-                            new RTEditor.ButtonFunction(true),
-                            new RTEditor.ButtonFunction("Cut", () =>
-                            {
-                                ObjEditor.inst.CopyObject();
-                                CoreHelper.StartCoroutine(ObjectEditor.inst.DeleteObjects());
-                            }),
-                            new RTEditor.ButtonFunction("Copy", ObjEditor.inst.CopyObject),
-                            new RTEditor.ButtonFunction("Paste", () => { ObjectEditor.inst.PasteObject(); }),
-                            new RTEditor.ButtonFunction("Duplicate", () =>
-                            {
-                                var offsetTime = ObjectEditor.inst.SelectedObjects.Min(x => x.Time);
+                        var otherBeatmapObject = otherTimelineObject.GetData<BeatmapObject>();
 
-                                ObjEditor.inst.CopyObject();
-                                ObjectEditor.inst.PasteObject(offsetTime);
-                            }),
-                            new RTEditor.ButtonFunction("Paste (Keep Prefab)", () => { ObjectEditor.inst.PasteObject(0f, false); }),
-                            new RTEditor.ButtonFunction("Duplicate (Keep Prefab)", () =>
-                            {
-                                var offsetTime = ObjectEditor.inst.SelectedObjects.Min(x => x.Time);
-
-                                ObjEditor.inst.CopyObject();
-                                ObjectEditor.inst.PasteObject(offsetTime, false);
-                            }),
-                            new RTEditor.ButtonFunction("Delete", () => { CoreHelper.StartCoroutine(ObjectEditor.inst.DeleteObjects()); })
-                            );
-
-                        return;
+                        otherBeatmapObject.prefabID = beatmapObject.prefabID;
+                        otherBeatmapObject.prefabInstanceID = beatmapObject.prefabInstanceID;
+                        ObjectEditor.inst.RenderTimelineObject(otherTimelineObject);
                     }
+                }
+                else if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+                {
+                    var currentBeatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
 
-                    if (InputDataManager.inst.editorActions.MultiSelect.IsPressed)
-                        ObjectEditor.inst.AddSelectedObject(timelineObject);
-                    else
-                        ObjectEditor.inst.SetCurrentObject(timelineObject);
-
-                    float timelineTime = EditorManager.inst.GetTimelineTime();
-                    ObjEditor.inst.mouseOffsetXForDrag = timelineObject.Time - timelineTime;
-                    return;
+                    currentBeatmapObject.prefabID = beatmapObject.prefabID;
+                    currentBeatmapObject.prefabInstanceID = beatmapObject.prefabInstanceID;
+                    ObjectEditor.inst.RenderTimelineObject(ObjectEditor.inst.CurrentSelection);
+                    ObjectEditor.inst.OpenDialog(currentBeatmapObject);
                 }
 
-                if (RTEditor.inst.prefabPickerEnabled && timelineObject.IsBeatmapObject && pointerEventData.button != PointerEventData.InputButton.Right)
-                {
-                    var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                    if (string.IsNullOrEmpty(beatmapObject.prefabInstanceID))
-                    {
-                        EditorManager.inst.DisplayNotification("Object is not assigned to a prefab!", 2f, EditorManager.NotificationType.Error);
-                        return;
-                    }
+                RTEditor.inst.prefabPickerEnabled = false;
 
-                    if (RTEditor.inst.selectingMultiple)
+                return;
+            }
+
+            if (RTEditor.inst.prefabPickerEnabled && timelineObject.IsPrefabObject)
+            {
+                var prefabObject = timelineObject.GetData<PrefabObject>();
+                var prefabInstanceID = LSText.randomString(16);
+
+                if (RTEditor.inst.selectingMultiple)
+                {
+                    foreach (var otherTimelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
                     {
-                        foreach (var otherTimelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
+                        var otherBeatmapObject = otherTimelineObject.GetData<BeatmapObject>();
+
+                        otherBeatmapObject.prefabID = prefabObject.prefabID;
+                        otherBeatmapObject.prefabInstanceID = prefabInstanceID;
+                        ObjectEditor.inst.RenderTimelineObject(otherTimelineObject);
+                    }
+                }
+                else if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
+                {
+                    var currentBeatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
+
+                    currentBeatmapObject.prefabID = prefabObject.prefabID;
+                    currentBeatmapObject.prefabInstanceID = prefabInstanceID;
+                    ObjectEditor.inst.RenderTimelineObject(ObjectEditor.inst.CurrentSelection);
+                    ObjectEditor.inst.OpenDialog(currentBeatmapObject);
+                }
+
+                RTEditor.inst.prefabPickerEnabled = false;
+
+                return;
+            }
+
+            if (RTEditor.inst.parentPickerEnabled && timelineObject.IsBeatmapObject)
+            {
+                if (RTEditor.inst.selectingMultiple)
+                {
+                    bool success = false;
+                    foreach (var otherTimelineObject in ObjectEditor.inst.SelectedObjects)
+                    {
+                        if (otherTimelineObject.IsPrefabObject)
                         {
-                            var otherBeatmapObject = otherTimelineObject.GetData<BeatmapObject>();
+                            var prefabObject = otherTimelineObject.GetData<PrefabObject>();
+                            prefabObject.parent = timelineObject.ID;
+                            Updater.UpdatePrefab(prefabObject);
+                            RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
 
-                            otherBeatmapObject.prefabID = beatmapObject.prefabID;
-                            otherBeatmapObject.prefabInstanceID = beatmapObject.prefabInstanceID;
-                            ObjectEditor.inst.RenderTimelineObject(otherTimelineObject);
+                            success = true;
+                            continue;
                         }
-                    }
-                    else if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
-                    {
-                        var currentBeatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
-
-                        currentBeatmapObject.prefabID = beatmapObject.prefabID;
-                        currentBeatmapObject.prefabInstanceID = beatmapObject.prefabInstanceID;
-                        ObjectEditor.inst.RenderTimelineObject(ObjectEditor.inst.CurrentSelection);
-                        ObjectEditor.inst.OpenDialog(currentBeatmapObject);
+                        success = SetParent(otherTimelineObject, timelineObject);
                     }
 
-                    RTEditor.inst.prefabPickerEnabled = false;
-
-                    return;
-                }
-
-                if (RTEditor.inst.prefabPickerEnabled && timelineObject.IsPrefabObject && pointerEventData.button != PointerEventData.InputButton.Right)
-                {
-                    var prefabObject = timelineObject.GetData<PrefabObject>();
-                    var prefabInstanceID = LSText.randomString(16);
-
-                    if (RTEditor.inst.selectingMultiple)
-                    {
-                        foreach (var otherTimelineObject in ObjectEditor.inst.SelectedObjects.Where(x => x.IsBeatmapObject))
-                        {
-                            var otherBeatmapObject = otherTimelineObject.GetData<BeatmapObject>();
-
-                            otherBeatmapObject.prefabID = prefabObject.prefabID;
-                            otherBeatmapObject.prefabInstanceID = prefabInstanceID;
-                            ObjectEditor.inst.RenderTimelineObject(otherTimelineObject);
-                        }
-                    }
-                    else if (ObjectEditor.inst.CurrentSelection.IsBeatmapObject)
-                    {
-                        var currentBeatmapObject = ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>();
-
-                        currentBeatmapObject.prefabID = prefabObject.prefabID;
-                        currentBeatmapObject.prefabInstanceID = prefabInstanceID;
-                        ObjectEditor.inst.RenderTimelineObject(ObjectEditor.inst.CurrentSelection);
-                        ObjectEditor.inst.OpenDialog(currentBeatmapObject);
-                    }
-
-                    RTEditor.inst.prefabPickerEnabled = false;
-
-                    return;
-                }
-
-                if (RTEditor.inst.parentPickerEnabled && timelineObject.IsBeatmapObject && pointerEventData.button != PointerEventData.InputButton.Right)
-                {
-                    if (RTEditor.inst.selectingMultiple)
-                    {
-                        bool success = false;
-                        foreach (var otherTimelineObject in ObjectEditor.inst.SelectedObjects)
-                        {
-                            if (otherTimelineObject.IsPrefabObject)
-                            {
-                                var prefabObject = otherTimelineObject.GetData<PrefabObject>();
-                                prefabObject.parent = timelineObject.ID;
-                                Updater.UpdatePrefab(prefabObject);
-                                RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
-
-                                success = true;
-                                continue;
-                            }
-                            success = SetParent(otherTimelineObject, timelineObject);
-                        }
-
-                        if (!success)
-                            EditorManager.inst.DisplayNotification("Cannot set parent to child / self!", 1f, EditorManager.NotificationType.Warning);
-                        else
-                            RTEditor.inst.parentPickerEnabled = false;
-
-                        return;
-                    }
-
-                    if (ObjectEditor.inst.CurrentSelection.IsPrefabObject)
-                    {
-                        var prefabObject = ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>();
-                        prefabObject.parent = timelineObject.ID;
-                        Updater.UpdatePrefab(prefabObject);
-                        RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
-                        RTEditor.inst.parentPickerEnabled = false;
-
-                        return;
-                    }
-
-                    var tryParent = SetParent(ObjectEditor.inst.CurrentSelection, timelineObject);
-
-                    if (!tryParent)
+                    if (!success)
                         EditorManager.inst.DisplayNotification("Cannot set parent to child / self!", 1f, EditorManager.NotificationType.Warning);
                     else
                         RTEditor.inst.parentPickerEnabled = false;
+
+                    return;
                 }
-            });
-            return entry;
-        }
+
+                if (ObjectEditor.inst.CurrentSelection.IsPrefabObject)
+                {
+                    var prefabObject = ObjectEditor.inst.CurrentSelection.GetData<PrefabObject>();
+                    prefabObject.parent = timelineObject.ID;
+                    Updater.UpdatePrefab(prefabObject);
+                    RTPrefabEditor.inst.RenderPrefabObjectDialog(prefabObject);
+                    RTEditor.inst.parentPickerEnabled = false;
+
+                    return;
+                }
+
+                var tryParent = SetParent(ObjectEditor.inst.CurrentSelection, timelineObject);
+
+                if (!tryParent)
+                    EditorManager.inst.DisplayNotification("Cannot set parent to child / self!", 1f, EditorManager.NotificationType.Warning);
+                else
+                    RTEditor.inst.parentPickerEnabled = false;
+            }
+        });
 
         public static bool SetParent(TimelineObject currentSelection, TimelineObject timelineObjectToParentTo)
         {
@@ -783,115 +812,126 @@ namespace BetterLegacy.Core.Helpers
 
         #region Events
 
-        public static EventTrigger.Entry CreateEventObjectTrigger(TimelineObject kf)
+        public static EventTrigger.Entry CreateEventObjectTrigger(TimelineObject kf) => CreateEntry(EventTriggerType.PointerClick, eventData =>
         {
-            var entry = new EventTrigger.Entry();
-            entry.eventID = EventTriggerType.PointerClick;
-            entry.callback.AddListener(eventData =>
-            {
-                if (!EventEditor.inst.eventDrag && (eventData as PointerEventData).button != PointerEventData.InputButton.Middle)
-                    (InputDataManager.inst.editorActions.MultiSelect.IsPressed ? (Action<int, int>)EventEditor.inst.AddedSelectedEvent : EventEditor.inst.SetCurrentEvent)(kf.Type, kf.Index);
-            });
-            return entry;
-        }
+            var pointerEventData = (PointerEventData)eventData;
+            if (EventEditor.inst.eventDrag || pointerEventData.button == PointerEventData.InputButton.Right)
+                return;
 
-        public static EventTrigger.Entry CreateEventEndDragTrigger()
-        {
-            var eventEndDragTrigger = new EventTrigger.Entry();
-            eventEndDragTrigger.eventID = EventTriggerType.EndDrag;
-            eventEndDragTrigger.callback.AddListener(eventData =>
-            {
-                EventEditor.inst.eventDrag = false;
-                EventEditor.inst.UpdateEventOrder();
-                EventManager.inst.updateEvents();
-            });
-            return eventEndDragTrigger;
-        }
+            (InputDataManager.inst.editorActions.MultiSelect.IsPressed ?
+                (Action<int, int>)EventEditor.inst.AddedSelectedEvent :
+                EventEditor.inst.SetCurrentEvent)(kf.Type, kf.Index);
+        });
 
-        public static EventTrigger.Entry CreateEventStartDragTrigger(TimelineObject kf)
+        public static EventTrigger.Entry CreateEventEndDragTrigger() => CreateEntry(EventTriggerType.EndDrag, evenData =>
         {
-            var startDragTrigger = new EventTrigger.Entry();
-            startDragTrigger.eventID = EventTriggerType.BeginDrag;
-            startDragTrigger.callback.AddListener(eventData =>
+            EventEditor.inst.eventDrag = false;
+            EventEditor.inst.UpdateEventOrder();
+            EventManager.inst.updateEvents();
+        });
+
+        public static EventTrigger.Entry CreateEventStartDragTrigger(TimelineObject kf) => CreateEntry(EventTriggerType.BeginDrag, eventData =>
+        {
+            if (kf.Index == 0)
             {
-                if (kf.Index != 0)
+                EditorManager.inst.DisplayNotification("Can't change time of first Event", 2f, EditorManager.NotificationType.Warning);
+                return;
+            }
+
+            if (RTEventEditor.inst.SelectedKeyframes.FindIndex(x => x.Type == kf.Type && x.Index == kf.Index) != -1)
+            {
+                foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
                 {
-                    if (RTEventEditor.inst.SelectedKeyframes.FindIndex(x => x.Type == kf.Type && x.Index == kf.Index) != -1)
-                    {
-                        foreach (var timelineObject in RTEventEditor.inst.SelectedKeyframes)
-                        {
-                            timelineObject.timeOffset = timelineObject.Type == kf.Type && timelineObject.Index == kf.Index ? 0f :
-                            timelineObject.Time - GameData.Current.eventObjects.allEvents[kf.Type][kf.Index].eventTime;
-                        }
-                    }
-                    else
-                        EventEditor.inst.SetCurrentEvent(kf.Type, kf.Index);
-
-                    float timelineTime = EditorManager.inst.GetTimelineTime();
-                    EventEditor.inst.mouseOffsetXForDrag = GameData.Current.eventObjects.allEvents[kf.Type][kf.Index].eventTime - timelineTime;
-                    EventEditor.inst.eventDrag = true;
+                    timelineObject.timeOffset = timelineObject.Type == kf.Type && timelineObject.Index == kf.Index ? 0f :
+                    timelineObject.Time - GameData.Current.eventObjects.allEvents[kf.Type][kf.Index].eventTime;
                 }
-                else
-                    EditorManager.inst.DisplayNotification("Can't change time of first Event", 2f, EditorManager.NotificationType.Warning);
-            });
-            return startDragTrigger;
-        }
+            }
+            else
+                EventEditor.inst.SetCurrentEvent(kf.Type, kf.Index);
 
-        public static EventTrigger.Entry CreateEventSelectTrigger(TimelineObject timelineObject)
+            float timelineTime = EditorManager.inst.GetTimelineTime();
+            EventEditor.inst.mouseOffsetXForDrag = GameData.Current.eventObjects.allEvents[kf.Type][kf.Index].eventTime - timelineTime;
+            EventEditor.inst.eventDrag = true;
+        });
+
+        public static EventTrigger.Entry CreateEventSelectTrigger(TimelineObject timelineObject) => CreateEntry(EventTriggerType.PointerDown, eventData =>
         {
-            var entry = new EventTrigger.Entry();
-            entry.eventID = EventTriggerType.PointerDown;
-            entry.callback.AddListener(eventData =>
-            {
-                if ((eventData as PointerEventData).button == PointerEventData.InputButton.Middle)
-                    AudioManager.inst.SetMusicTime(timelineObject.Time);
+            if ((eventData as PointerEventData).button != PointerEventData.InputButton.Right)
+                return;
 
-            });
-            return entry;
-        }
+            RTEditor.inst.ShowContextMenu(RTEditor.DEFAULT_CONTEXT_MENU_WIDTH,
+                new RTEditor.ButtonFunction("Set Cursor to KF", () => { AudioManager.inst.SetMusicTime(timelineObject.Time); }),
+                new RTEditor.ButtonFunction("Set KF to Cursor", () =>
+                {
+                    var time = AudioManager.inst.CurrentAudioSource.time;
+                    var selected = RTEventEditor.inst.SelectedKeyframes;
+                    for (int i = 0; i < selected.Count; i++)
+                    {
+                        var kf = selected[i];
+                        var eventKeyframe = kf.GetData<EventKeyframe>();
+                        eventKeyframe.eventTime = Mathf.Clamp(time, 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                    }
+
+                    RTEventEditor.inst.UpdateEventOrder();
+                    RTEventEditor.inst.RenderEventObjects();
+                    EventManager.inst.updateEvents();
+                }),
+                new RTEditor.ButtonFunction(true),
+                new RTEditor.ButtonFunction("Reset", () =>
+                {
+                    var eventKeyframe = timelineObject.GetData<EventKeyframe>();
+                    var defaultKeyframe = GameData.DefaultKeyframes[timelineObject.Type];
+                    for (int i = 0; i < eventKeyframe.eventValues.Length; i++)
+                    {
+                        if (defaultKeyframe.eventValues.Length > i)
+                            eventKeyframe.eventValues[i] = defaultKeyframe.eventValues[i];
+                    }
+                }),
+                new RTEditor.ButtonFunction(true),
+                new RTEditor.ButtonFunction("Copy", RTEventEditor.inst.CopyAllSelectedEvents),
+                new RTEditor.ButtonFunction("Paste", () => RTEventEditor.inst.PasteEvents()),
+                new RTEditor.ButtonFunction("Copy Data", () => { RTEventEditor.inst.CopyKeyframeData(RTEventEditor.inst.CurrentSelectedTimelineKeyframe); }),
+                new RTEditor.ButtonFunction("Paste Data", () => { RTEventEditor.inst.PasteKeyframeData(EventEditor.inst.currentEventType); }),
+                new RTEditor.ButtonFunction("Delete", RTEditor.inst.Delete)
+                );
+        });
 
         #endregion
 
         #region Themes
 
-        public static EventTrigger.Entry CreatePreviewClickTrigger(Image _preview, Image _dropper, InputField _hex, Color _col, string popupName = "")
+        public static EventTrigger.Entry CreatePreviewClickTrigger(Image _preview, Image _dropper, InputField _hex, Color _col, string popupName = "") => CreateEntry(EventTriggerType.PointerClick, eventData =>
         {
-            var previewClickTrigger = new EventTrigger.Entry();
-            previewClickTrigger.eventID = EventTriggerType.PointerClick;
-            previewClickTrigger.callback.AddListener(eventData =>
+            EditorManager.inst.ShowDialog("Color Picker");
+            if (!string.IsNullOrEmpty(popupName))
+                EditorManager.inst.HideDialog(popupName);
+
+            var colorPickerTF = EditorManager.inst.GetDialog("Color Picker").Dialog.Find("content/Color Picker");
+            var colorPicker = colorPickerTF.GetComponent<ColorPicker>();
+
+            colorPicker.SwitchCurrentColor(_col);
+
+            var save = colorPickerTF.Find("info/hex/save").GetComponent<Button>();
+
+            save.onClick.ClearAll();
+            save.onClick.AddListener(() =>
             {
-                EditorManager.inst.ShowDialog("Color Picker");
+                EditorManager.inst.ClearPopups();
                 if (!string.IsNullOrEmpty(popupName))
-                    EditorManager.inst.HideDialog(popupName);
+                    EditorManager.inst.ShowDialog(popupName);
 
-                var colorPickerTF = EditorManager.inst.GetDialog("Color Picker").Dialog.Find("content/Color Picker");
-                var colorPicker = colorPickerTF.GetComponent<ColorPicker>();
+                double saturation;
+                double num;
+                LSColors.ColorToHSV(colorPicker.currentColor, out double _, out saturation, out num);
+                _hex.text = colorPicker.currentHex;
+                _preview.color = colorPicker.currentColor;
 
-                colorPicker.SwitchCurrentColor(_col);
+                if (!_dropper)
+                    return;
 
-                var save = colorPickerTF.Find("info/hex/save").GetComponent<Button>();
-
-                save.onClick.ClearAll();
-                save.onClick.AddListener(() =>
-                {
-                    EditorManager.inst.ClearPopups();
-                    if (!string.IsNullOrEmpty(popupName))
-                        EditorManager.inst.ShowDialog(popupName);
-
-                    double saturation;
-                    double num;
-                    LSColors.ColorToHSV(colorPicker.currentColor, out double _, out saturation, out num);
-                    _hex.text = colorPicker.currentHex;
-                    _preview.color = colorPicker.currentColor;
-
-                    if (_dropper == null)
-                        return;
-
-                    _dropper.color = CoreHelper.InvertColorHue(CoreHelper.InvertColorValue(colorPicker.currentColor));
-                });
+                _dropper.color = CoreHelper.InvertColorHue(CoreHelper.InvertColorValue(colorPicker.currentColor));
             });
-            return previewClickTrigger;
-        }
+        });
 
         #endregion
     }
