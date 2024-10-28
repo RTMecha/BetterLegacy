@@ -1,3 +1,10 @@
+snapshot-2024.10.5 - (pre-1.7.0) > [Oct 28, 2024]
+- Fixed the Config Manager UI rounded corners not being on the right corners.
+- Add File to Level Folder (now renamed "Add File to Level") now allows for directly importing a Prefab into your level from anywhere.
+- Fixed some issues with the audioSource modifier.
+- Added a context menu to keyframes.
+- Fixed modifiers activating when they shouldn't. in-editor or when restarting a level due to the smoothed level time.
+- Slightly optimized Follow Player keyframe.
 snapshot-2024.10.4 - (pre-1.7.0) > [Oct 17, 2024]
 - Re-ordered player updates so tail updating occurs after player position is set.
 - Fixed a bug with the last snapshot that broke levels.
