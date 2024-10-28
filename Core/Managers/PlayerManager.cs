@@ -48,6 +48,8 @@ namespace BetterLegacy.Core.Managers
 
         public static List<CustomPlayer> Players => InputDataManager.inst.players.Select(x => x as CustomPlayer).ToList();
 
+        public static bool IsSingleplayer => Players.Count == 1;
+
         public static GameObject healthImages;
         public static Transform healthParent;
         public static Sprite healthSprite;
@@ -96,7 +98,7 @@ namespace BetterLegacy.Core.Managers
         /// <returns>Returns a CustomPlayer closest to the Vector2 parameter.</returns>
         public static CustomPlayer GetClosestPlayer(Vector2 vector2)
         {
-            if (Players.Count == 1)
+            if (IsSingleplayer)
             {
                 var player = Players[0];
 
@@ -124,6 +126,26 @@ namespace BetterLegacy.Core.Managers
             }
 
             return null;
+        }
+
+        public static Vector2 CenterOfPlayers()
+        {
+            if (IsSingleplayer)
+            {
+                var customPlayer = Players[0];
+                if (customPlayer.Player && customPlayer.Player.rb)
+                    return customPlayer.Player.rb.transform.position;
+
+                return Vector2.zero;
+            }
+
+            var list = new List<Vector3>();
+
+            for (int i = 0; i < GameManager.inst.players.transform.childCount; i++)
+                if (GameManager.inst.players.transform.TryFind("Player " + (i + 1).ToString(), out Transform result))
+                    list.Add(result.Find("Player").position);
+
+            return RTMath.CenterOfVectors(list);
         }
 
         #region Level Difficulties

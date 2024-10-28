@@ -1,4 +1,6 @@
 ﻿using BetterLegacy.Core;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,20 +16,8 @@ namespace BetterLegacy.Components
 
         void Awake() => this.tracker = Creator.NewGameObject("camera track", EventManager.inst.transform).transform;
 
-        Vector2 PlayerCenter()
-        {
-            var list = new List<Vector3>();
-
-            for (int i = 0; i < GameManager.inst.players.transform.childCount; i++)
-                if (GameManager.inst.players.transform.TryFind("Player " + (i + 1).ToString(), out Transform result))
-                    list.Add(result.Find("Player").position);
-
-            return RTMath.CenterOfVectors(list);
-        }
-
         void LateUpdate()
         {
-            // todo: implement resetting somehow
             if (!active || !leader || !leader.gameObject.activeSelf || !leader.gameObject.activeInHierarchy)
             {
                 transform.localPosition = Vector3.zero;
@@ -36,13 +26,7 @@ namespace BetterLegacy.Components
             }
 
             if (tracker != null)
-                tracker.position = PlayerCenter();
-
-            float pitch = AudioManager.inst.CurrentAudioSource.pitch;
-            if (pitch < 0f)
-                pitch = -pitch;
-            if (pitch == 0f)
-                pitch = 0.001f;
+                tracker.position = PlayerManager.CenterOfPlayers();
 
             var t = (tracker.position + offset * tracker.transform.right) * anchor;
 
@@ -51,20 +35,17 @@ namespace BetterLegacy.Components
             if (InVerticalBounds)
                 target.y = t.y;
 
-            float p = Time.deltaTime * 60f * pitch;
+            float p = Time.deltaTime * 60f * CoreHelper.ForwardPitch;
             float num = 1f - Mathf.Pow(1f - followSharpness, p);
             if (move)
-            {
                 transform.localPosition += (target - transform.position) * num;
-            }
             else
                 transform.localPosition = Vector3.zero;
+
             if (rotate)
             {
                 if (InHorizontalBounds && InVerticalBounds)
-                {
                     quaternion = Quaternion.Lerp(transform.rotation, Quaternion.Euler(0f, 0f, leader.transform.rotation.eulerAngles.z), num);
-                }
                 transform.localRotation = quaternion;
             }
             else
