@@ -100,32 +100,23 @@ namespace BetterLegacy.Core.Managers
         {
             if (IsSingleplayer)
             {
-                var player = Players[0];
-
-                if (player && player.Player)
-                    return player;
-
-                return null;
+                var singleplayer = Players[0];
+                return singleplayer && singleplayer.Player ? singleplayer : null;
             }
 
-            if (Players.Count > 0)
-            {
-                var orderedList = Players
-                    .Where(x => x.Player && x.Player.transform.Find("Player"))
-                    .OrderBy(x => Vector2.Distance(x.Player.transform.Find("Player").localPosition, vector2));
-
-                if (orderedList.Count() > 0)
-                {
-                    var player = orderedList.ElementAt(0);
-
-                    if (player && player.Player)
-                        return player;
-                }
-
+            if (Players.Count < 1)
                 return null;
-            }
 
-            return null;
+            var orderedList = Players
+                .Where(x => x.Player && x.Player.transform.Find("Player"))
+                .OrderBy(x => Vector2.Distance(x.Player.transform.Find("Player").localPosition, vector2));
+
+            if (orderedList.Count() < 1)
+                return null;
+
+            var player = orderedList.ElementAt(0);
+
+            return player && player.Player ? player : null;
         }
 
         public static Vector2 CenterOfPlayers()
