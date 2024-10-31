@@ -17,7 +17,7 @@
 - Timeline object index order.
 - Figure out custom timeline bin system (Shows a custom amount of rows in the timeline and allows for the timeline to be navigated up and down).
 - Unclamped timeline (timeline can be navigated outside the regular range and objects can be placed before start time 0).
-- New modifiers [prizeObject, setParent, playerAction (PlayerActionSet) trigger].
+- New modifiers [prizeObject, setParent, animateObjectMath, animateObjectMathOther, playerAction (PlayerActionSet) trigger].
 - Add a value for spawning a prefab at the object's position.
 - Add Set Data to image shape for Custom Player objects.
 - More player model limits (move speed, boost speed, etc).
