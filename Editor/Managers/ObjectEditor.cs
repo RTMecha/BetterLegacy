@@ -1538,104 +1538,97 @@ namespace BetterLegacy.Editor.Managers
             return beatmapObject.timelineObject;
         }
 
-        public GameObject RenderTimelineObject(TimelineObject timelineObject, bool ignoreLayer = true)
+        public GameObject RenderTimelineObject(TimelineObject timelineObject)
         {
             var gameObject = !timelineObject.GameObject ? CreateTimelineObject(timelineObject) : timelineObject.GameObject;
 
-            if (ignoreLayer || RTEditor.inst.Layer == timelineObject.Layer)
+            bool locked = false;
+            bool collapsed = false;
+            int bin = 0;
+            string name = "object name";
+            float startTime = 0f;
+            float offset = 0f;
+
+            string nullName = "";
+
+            var image = timelineObject.Image;
+
+            Prefab prefab = timelineObject.ObjectType switch
             {
-                bool locked = false;
-                bool collapsed = false;
-                int bin = 0;
-                string name = "object name";
-                float startTime = 0f;
-                float offset = 0f;
+                TimelineObject.TimelineObjectType.BeatmapObject => timelineObject.GetData<BeatmapObject>().Prefab,
+                TimelineObject.TimelineObjectType.PrefabObject => timelineObject.GetData<PrefabObject>().Prefab,
+                _ => null,
+            };
 
-                string nullName = "";
+            var prefabExists = prefab != null;
 
-                var image = timelineObject.Image;
+            if (timelineObject.IsBeatmapObject)
+            {
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                beatmapObject.timelineObject = timelineObject;
 
-                var color = ObjEditor.inst.NormalColor;
+                locked = beatmapObject.editorData.locked;
+                collapsed = beatmapObject.editorData.collapse;
+                bin = beatmapObject.editorData.Bin;
+                name = beatmapObject.name;
+                startTime = beatmapObject.StartTime;
+                offset = beatmapObject.GetObjectLifeLength(_takeCollapseIntoConsideration: true);
 
-                Prefab prefab = timelineObject.ObjectType switch
+                image.type = GetObjectTypePattern(beatmapObject.objectType);
+                image.sprite = GetObjectTypeSprite(beatmapObject.objectType);
+
+                if (!prefabExists)
                 {
-                    TimelineObject.TimelineObjectType.BeatmapObject => timelineObject.GetData<BeatmapObject>().Prefab,
-                    TimelineObject.TimelineObjectType.PrefabObject => timelineObject.GetData<PrefabObject>().Prefab,
-                    _ => null,
-                };
-
-                var prefabExists = prefab != null;
-
-                if (timelineObject.IsBeatmapObject)
-                {
-                    var beatmapObject = timelineObject.GetData<BeatmapObject>();
-                    beatmapObject.timelineObject = timelineObject;
-
-                    locked = beatmapObject.editorData.locked;
-                    collapsed = beatmapObject.editorData.collapse;
-                    bin = beatmapObject.editorData.Bin;
-                    name = beatmapObject.name;
-                    startTime = beatmapObject.StartTime;
-                    offset = beatmapObject.GetObjectLifeLength(_takeCollapseIntoConsideration: true);
-
-                    image.type = GetObjectTypePattern(beatmapObject.objectType);
-                    image.sprite = GetObjectTypeSprite(beatmapObject.objectType);
-
-                    if (prefabExists)
-                        color = prefab.PrefabType.Color;
-                    else
-                    {
-                        beatmapObject.prefabID = null;
-                        beatmapObject.prefabInstanceID = null;
-                    }
+                    beatmapObject.prefabID = null;
+                    beatmapObject.prefabInstanceID = null;
                 }
-
-                if (timelineObject.IsPrefabObject)
-                {
-                    var prefabObject = timelineObject.GetData<PrefabObject>();
-
-                    locked = prefabObject.editorData.locked;
-                    collapsed = prefabObject.editorData.collapse;
-                    bin = prefabObject.editorData.Bin;
-                    name = prefab.Name;
-                    startTime = prefabObject.StartTime + prefab.Offset;
-                    offset = prefabObject.GetPrefabLifeLength(true);
-                    image.type = Image.Type.Simple;
-                    image.sprite = null;
-
-                    var prefabType = prefab.PrefabType;
-
-                    color = prefabType.Color;
-                    nullName = prefabType.Name;
-                }
-
-                if (timelineObject.Text)
-                {
-                    var textMeshNoob = timelineObject.Text; // ha! take that tmp
-                    textMeshNoob.text = (!string.IsNullOrEmpty(name)) ? string.Format("<mark=#000000aa>{0}</mark>", name) : nullName;
-                    textMeshNoob.color = LSColors.white;
-                }
-
-                gameObject.transform.Find("icons/lock").gameObject.SetActive(locked);
-                gameObject.transform.Find("icons/dots").gameObject.SetActive(collapsed);
-                var typeIcon = gameObject.transform.Find("icons/type").gameObject;
-
-                var renderTypeIcon = prefabExists && RenderPrefabTypeIcon;
-                typeIcon.SetActive(renderTypeIcon);
-                if (renderTypeIcon)
-                    gameObject.transform.Find("icons/type/type").GetComponent<Image>().sprite = prefab.PrefabType.icon;
-
-                float zoom = EditorManager.inst.Zoom;
-
-                offset = offset <= TimelineCollapseLength ? TimelineCollapseLength * zoom : offset * zoom;
-
-                var rectTransform = gameObject.transform.AsRT();
-                rectTransform.sizeDelta = new Vector2(offset, 20f);
-                rectTransform.anchoredPosition = new Vector2(startTime * zoom, (-20 * Mathf.Clamp(bin, 0, 14)));
-                if (timelineObject.Hover)
-                    timelineObject.Hover.size = TimelineObjectHoverSize;
-                gameObject.SetActive(RTEditor.inst.Layer == timelineObject.Layer);
             }
+
+            if (timelineObject.IsPrefabObject)
+            {
+                var prefabObject = timelineObject.GetData<PrefabObject>();
+
+                locked = prefabObject.editorData.locked;
+                collapsed = prefabObject.editorData.collapse;
+                bin = prefabObject.editorData.Bin;
+                name = prefab.Name;
+                startTime = prefabObject.StartTime + prefab.Offset;
+                offset = prefabObject.GetPrefabLifeLength(true);
+                image.type = Image.Type.Simple;
+                image.sprite = null;
+
+                var prefabType = prefab.PrefabType;
+
+                nullName = prefabType.Name;
+            }
+
+            if (timelineObject.Text)
+            {
+                var textMeshNoob = timelineObject.Text; // ha! take that tmp
+                textMeshNoob.text = (!string.IsNullOrEmpty(name)) ? string.Format("<mark=#000000aa>{0}</mark>", name) : nullName;
+                textMeshNoob.color = LSColors.white;
+            }
+
+            gameObject.transform.Find("icons/lock").gameObject.SetActive(locked);
+            gameObject.transform.Find("icons/dots").gameObject.SetActive(collapsed);
+            var typeIcon = gameObject.transform.Find("icons/type").gameObject;
+
+            var renderTypeIcon = prefabExists && RenderPrefabTypeIcon;
+            typeIcon.SetActive(renderTypeIcon);
+            if (renderTypeIcon)
+                gameObject.transform.Find("icons/type/type").GetComponent<Image>().sprite = prefab.PrefabType.icon;
+
+            float zoom = EditorManager.inst.Zoom;
+
+            offset = offset <= TimelineCollapseLength ? TimelineCollapseLength * zoom : offset * zoom;
+
+            var rectTransform = gameObject.transform.AsRT();
+            rectTransform.sizeDelta = new Vector2(offset, 20f);
+            rectTransform.anchoredPosition = new Vector2(startTime * zoom, (-20 * Mathf.Clamp(bin, 0, 14)));
+            if (timelineObject.Hover)
+                timelineObject.Hover.size = TimelineObjectHoverSize;
+
+            timelineObject.Update();
 
             return gameObject;
         }
