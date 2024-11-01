@@ -7980,7 +7980,7 @@ namespace BetterLegacy.Editor.Managers
                 new Document.Element("<b>[VANILLA]</b> <noparse><u></noparse> - Gives text an <u>underline</u>. Use <noparse></u></noparse> to clear.", Document.Element.Type.Text),
                 new Document.Element("<b>[VANILLA]</b> <noparse><s></noparse> - Gives text a <s>strikethrough</s>. Use <noparse></s></noparse> to clear.", Document.Element.Type.Text),
                 new Document.Element("<b>[VANILLA]</b> <br <pos=136>> - Line break.", Document.Element.Type.Text),
-                new Document.Element("<b>[VANILLA]</b> <noparse><material=LiberationSans SDF - Outline></noparse> - Outline effect that only works on the <b><i>LiberationSans SDF</b></i> font.", Document.Element.Type.Text)
+                new Document.Element("<b>[VANILLA]</b> <noparse><material=LiberationSans SDF - Outline></noparse> - Outline effect that only works on the <b><i>LiberationSans SDF</b></i> font.", Document.Element.Type.Text),
                 new Document.Element("<b>[VANILLA]</b> <noparse><line-height=25></noparse> - Type any number you want in place of the 25. Use <noparse></line-height></noparse> to clear.", Document.Element.Type.Text)
                 {
                     Function = () =>
