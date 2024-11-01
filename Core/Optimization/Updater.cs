@@ -457,9 +457,10 @@ namespace BetterLegacy.Core.Optimization
 
                 spawner.RemoveObject(levelObject, false);
                 objects.Remove(levelObject);
-                Object.Destroy(top.gameObject);
-                levelObject.parentObjects.Clear();
+                if (top)
+                    Object.Destroy(top.gameObject);
 
+                levelObject.parentObjects.Clear();
                 converter.beatmapObjects.Remove(id);
 
                 levelObject = null;
