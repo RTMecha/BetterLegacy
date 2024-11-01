@@ -8213,6 +8213,7 @@ namespace BetterLegacy.Editor.Managers
                                      "<b>smoothedTime</b> - Catalyst animation time.\n" +
                                      "<b>volume</b> - Current music volume.\n" +
                                      "<b>pitch</b> - Current music pitch (or game speed).\n" +
+                                     "<b>forwardPitch</b> - Current music pitch (or game speed) but always above 0.001.\n" +
                                      "<b>camPosX</b> - Position X of the camera.\n" +
                                      "<b>camPosY</b> - Position Y of the camera.\n" +
                                      "<b>camZoom</b> - Zoom of the camera.\n" +
