@@ -23,6 +23,15 @@ namespace BetterLegacy.Editor
 
         public List<Element> elements = new List<Element>();
 
+        public enum SupportType
+        {
+            VANILLA,
+            PATCHED,
+            MODDED,
+            ALPHA,
+            LEGACY
+        }
+
         /// <summary>
         /// Class of a document element. This is used to generate a specific UI element on a scrollable list for the documentation dialog.
         /// </summary>
@@ -33,6 +42,24 @@ namespace BetterLegacy.Editor
                 Data = data;
                 this.type = type;
             }
+            
+            public Element(string data, Type type, float height)
+            {
+                Data = data;
+                this.type = type;
+                Autosize = false;
+                Height = height;
+            }
+            
+            public Element(string data, Type type, Action function)
+            {
+                Data = data;
+                this.type = type;
+                Function = function;
+            }
+
+            public bool Autosize { get; set; } = true;
+            public float Height { get; set; } = 22f;
 
             public string Data { get; set; }
 

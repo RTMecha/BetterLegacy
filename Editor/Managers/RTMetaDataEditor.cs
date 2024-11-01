@@ -172,7 +172,8 @@ namespace BetterLegacy.Editor.Managers
                             EditorManager.inst.DisplayNotification("Verifying...", 1.5f, EditorManager.NotificationType.Info);
                             VerifyLevelIsOnServer();
                         }, RTEditor.inst.HideWarningPopup);
-                    })
+                    }),
+                    new RTEditor.ButtonFunction("Guidelines", () => { RTEditor.inst.ShowDocumentation("Uploading a Level"); })
                     );
             };
 
@@ -754,7 +755,15 @@ namespace BetterLegacy.Editor.Managers
             content.Find("agreement/text").GetComponent<Text>().text =
                 "If your level does not use any modded features (not including alpha ported ones) and your level uses a verified song, you can convert the level to an alpha level format and upload it using the alpha editor.*\n" +
                 "However, if your level DOES use modded features not present anywhere in vanilla or the song is not verified, then upload it to the Arcade server.\n\n" +
-                "* Make sure you test the level in vanilla first!";
+                "* Make sure you test the level in vanilla first!\n\n" +
+                "If you want to know more, click this text.";
+
+            var agreementText = content.Find("agreement/text").GetComponent<Clickable>() ?? content.Find("agreement/text").gameObject.AddComponent<Clickable>();
+            agreementText.onClick = eventData =>
+            {
+                EditorManager.inst.ClearDialogs();
+                RTEditor.inst.ShowDocumentation("Uploading a Level");
+            };
 
             content.Find("id/id").GetComponent<Text>().text = !string.IsNullOrEmpty(metadata.ID) ? $"Arcade ID: {metadata.arcadeID} (Click this text to copy)" : "No ID assigned.";
             var idClickable = content.Find("id").GetComponent<Clickable>() ?? content.Find("id").gameObject.AddComponent<Clickable>();
@@ -805,6 +814,8 @@ namespace BetterLegacy.Editor.Managers
 
         public bool VerifyFile(string file) => !file.Contains("autosave") && !file.Contains("backup") && !file.Contains("level-previous") && file != "editor.lse" && !file.Contains("waveform-") &&
             (file.Contains(".lsb") || file.Contains(".jpg") || file.Contains(".png") || file.Contains(".ogg") || file.Contains(".wav") || file.Contains(".mp3") || file.Contains(".mp4"));
+
+        #region Functions
 
         public void VerifyLevelIsOnServer()
         {
@@ -1131,6 +1142,10 @@ namespace BetterLegacy.Editor.Managers
             }, RTEditor.inst.HideWarningPopup);
         }
 
+        #endregion
+
+        #region Login
+
         public void ShowLoginPopup(Action onLogin)
         {
             RTEditor.inst.ShowWarningPopup("You are not logged in.", () =>
@@ -1252,5 +1267,7 @@ namespace BetterLegacy.Editor.Managers
             }
             response.Close();
         }
+
+        #endregion
     }
 }

@@ -7520,6 +7520,14 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
+        Document.Element FontElement(Document.SupportType condition, string name, string desc) => new Document.Element($"<b>[{condition}]</b> {name} - {desc}", Document.Element.Type.Text, () =>
+        {
+            EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
+            LSText.CopyToClipboard($"<font={name}>");
+        });
+
+        Document.Element LinkElement(string text, string url) => new Document.Element(text, Document.Element.Type.Text, () => Application.OpenURL(url));
+
         Document GenerateDocument(string name, string description, List<Document.Element> elements)
         {
             var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(documentationPopup.Content, "Document");
@@ -7596,6 +7604,8 @@ namespace BetterLegacy.Editor.Managers
 
             EditorThemeManager.AddGraphic(editorDialogObject.GetComponent<Image>(), ThemeGroup.Background_1);
 
+            documentationContent.GetComponent<VerticalLayoutGroup>().spacing = 12f;
+
             GenerateDocument("Introduction", "Welcome to Project Arrhythmia Legacy.", new List<Document.Element>
             {
                 new Document.Element("Welcome to <b>Project Arrhythmia</b>!\nWhether you're new to the game, modding or have been around for a while, I'm sure this " +
@@ -7603,107 +7613,49 @@ namespace BetterLegacy.Editor.Managers
                 new Document.Element("These documents only list editor features and how to use them, everything else is listed in the Github wiki.", Document.Element.Type.Text),
                 new Document.Element("<b>DOCUMENTATION INFO</b>", Document.Element.Type.Text),
                 new Document.Element("<b>[VANILLA]</b> represents a feature from original Legacy, with very minor tweaks done to it if any.", Document.Element.Type.Text),
-                new Document.Element("<b>[MODDED]</b> represents a feature added by mods. These features will not work in unmodded PA.", Document.Element.Type.Text),
-                new Document.Element("<b>[PATCHED]</b> represents a feature modified by mods. They're either in newer versions of PA or are partially modded, meaning they might not work in regular PA.", Document.Element.Type.Text)
+                new Document.Element("<b>[MODDED]</b> represents a feature added by BetterLegacy. These features will not work in unmodded PA.", Document.Element.Type.Text),
+                new Document.Element("<b>[PATCHED]</b> represents a feature modified by BetterLegacy. They're either in newer versions of PA or are partially modded, meaning they might not work in regular PA.", Document.Element.Type.Text),
+                new Document.Element("<b>[ALPHA]</b> represents a feature ported from alpha to BetterLegacy and are not present in Legacy.", Document.Element.Type.Text),
+                new Document.Element("<b>[LEGACY]</b> represents a Legacy feature that was discontinued in alpha.", Document.Element.Type.Text)
             });
 
             GenerateDocument("Credits", "All the people who helped the mod development in some way.", new List<Document.Element>
             {
                 new Document.Element("Reimnop's Catalyst (PA object and animation optimization)", Document.Element.Type.Text),
-                new Document.Element("<b>Source code</b>:\nhttps://github.com/Reimnop/Catalyst", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        Application.OpenURL("https://github.com/Reimnop/Catalyst");
-                    }
-                },
+                LinkElement("<b>Source code</b>:\nhttps://github.com/Reimnop/Catalyst", "https://github.com/Reimnop/Catalyst"),
 
                 new Document.Element("", Document.Element.Type.Text),
                 new Document.Element("Keijiro Takahashi's KinoGlitch (AnalogGlitch and DigitalGlitch events)", Document.Element.Type.Text),
-                new Document.Element("<b>Source code</b>:\nhttps://github.com/keijiro/KinoGlitch", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        Application.OpenURL("https://github.com/keijiro/KinoGlitch");
-                    }
-                },
+                LinkElement("<b>Source code</b>:\nhttps://github.com/keijiro/KinoGlitch", "https://github.com/keijiro/KinoGlitch"),
 
                 new Document.Element("", Document.Element.Type.Text),
                 new Document.Element("WestHillApps' UniBpmAnalyzer", Document.Element.Type.Text),
-                new Document.Element("<b>Source code</b>:\nhttps://github.com/WestHillApps/UniBpmAnalyzer", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        Application.OpenURL("https://github.com/WestHillApps/UniBpmAnalyzer");
-                    }
-                },
+                LinkElement("<b>Source code</b>:\nhttps://github.com/WestHillApps/UniBpmAnalyzer", "https://github.com/WestHillApps/UniBpmAnalyzer"),
 
                 new Document.Element("", Document.Element.Type.Text),
                 new Document.Element("Nick Vogt's ColliderCreator (used for creating proper collision for the custom shapes)", Document.Element.Type.Text),
-                new Document.Element("<b>Website</b>:\nhttps://www.h3xed.com/", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        Application.OpenURL("https://www.h3xed.com/");
-                    }
-                },
-                new Document.Element("<b>Source code</b>:\nhttps://www.h3xed.com/programming/automatically-create-polygon-collider-2d-from-2d-mesh-in-unity", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        Application.OpenURL("https://www.h3xed.com/programming/automatically-create-polygon-collider-2d-from-2d-mesh-in-unity");
-                    }
-                },
+                LinkElement("<b>Website</b>:\nhttps://www.h3xed.com/", "https://www.h3xed.com/"),
+                LinkElement("<b>Source code</b>:\nhttps://www.h3xed.com/programming/automatically-create-polygon-collider-2d-from-2d-mesh-in-unity", "https://www.h3xed.com/programming/automatically-create-polygon-collider-2d-from-2d-mesh-in-unity"),
 
                 new Document.Element("", Document.Element.Type.Text),
                 new Document.Element("Crafty Font for the Pixellet font.", Document.Element.Type.Text),
-                new Document.Element("<b>Website</b>:\nhttps://craftyfont.gumroad.com/", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        Application.OpenURL("https://craftyfont.gumroad.com/");
-                    }
-                },
+                LinkElement("<b>Website</b>:\nhttps://craftyfont.gumroad.com/", "https://craftyfont.gumroad.com/"),
 
                 new Document.Element("", Document.Element.Type.Text),
                 new Document.Element("HAWTPIXEL for the File Deletion font.", Document.Element.Type.Text),
-                new Document.Element("<b>Website</b>:\nhttps://www.hawtpixel.com/", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        Application.OpenURL("https://www.hawtpixel.com/");
-                    }
-                },
+                LinkElement("<b>Website</b>:\nhttps://www.hawtpixel.com/", "https://www.hawtpixel.com/"),
 
                 new Document.Element("", Document.Element.Type.Text),
                 new Document.Element("Sans Sans font.", Document.Element.Type.Text),
-                new Document.Element("<b>Website</b>:\nhttps://font.download/font/sans", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        Application.OpenURL("https://font.download/font/sans");
-                    }
-                },
+                LinkElement("<b>Website</b>:\nhttps://www.font.download/font/sans", "https://www.font.download/font/sans"),
 
                 new Document.Element("", Document.Element.Type.Text),
                 new Document.Element("Fontworks for the RocknRoll font.", Document.Element.Type.Text),
-                new Document.Element("<b>Website</b>:\nhttps://github.com/fontworks-fonts/RocknRoll", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        Application.OpenURL("https://github.com/fontworks-fonts/RocknRoll");
-                    }
-                },
+                LinkElement("<b>Website</b>:\nhttps://github.com/fontworks-fonts/RocknRoll", "https://github.com/fontworks-fonts/RocknRoll"),
 
                 new Document.Element("", Document.Element.Type.Text),
                 new Document.Element("ManiackersDesign for the Monomaniac One font.", Document.Element.Type.Text),
-                new Document.Element("<b>Website</b>:\nhttps://github.com/ManiackersDesign/monomaniac", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        Application.OpenURL("https://github.com/ManiackersDesign/monomaniac");
-                    }
-                },
+                LinkElement("<b>Website</b>:\nhttps://github.com/ManiackersDesign/monomaniac", "https://github.com/ManiackersDesign/monomaniac"),
 
                 new Document.Element("", Document.Element.Type.Text),
                 new Document.Element("<b>SPECIAL THANKS</b>", Document.Element.Type.Text),
@@ -7715,7 +7667,45 @@ namespace BetterLegacy.Editor.Managers
                 new Document.Element("MoNsTeR and CubeCube for testing the mods, reporting bugs and giving suggestions.", Document.Element.Type.Text),
             });
 
-            GenerateDocument("Beatmap Objects", "The very objects that make up Project Arrhythmia levels.", new List<Document.Element>
+            GenerateDocument("Uploading a Level", "Guidelines on uploading levels.", new List<Document.Element>
+            {
+                new Document.Element("Want to post a level you made somewhere? Well, make sure you read these guidelines first.", Document.Element.Type.Text),
+                new Document.Element("If you made a level in BetterLegacy <i>with</i> modded features or the song is not verified*, you <b>cannot</b> upload it to the Steam Workshop. You can only share it through the Arcade server or some other means.", Document.Element.Type.Text),
+                new Document.Element("Some modded features (as specified in the Introductions section) are more likely to break vanilla PA than others, but just to be safe: continue with the above point.", Document.Element.Type.Text),
+                new Document.Element("Even if you add warnings to your level where you state that it is modded, it doesn't matter because most people don't read titles / descriptions and will probably end up blaming the game for being broken, even if it really isn't.", Document.Element.Type.Text),
+                new Document.Element("If you made a level in BetterLegacy <i>without</i> modded features and the song is verified, then you can upload it to the Steam Workshop. But you <b>MUST</b> verify that the level works in vanilla first by playtesting it all the way through in both vanilla Alpha and vanilla Legacy.\n\n" +
+                                    "- If you want to playtest in Alpha, you can click the Convert to VG format button in Upload > Publish / Update Level, navigating to beatmaps/exports and moving the exported level to the beatmaps/editor folder where your Project Arrhythmia folder is.\n" +
+                                    "- If you want to playtest in Legacy, you can just copy the level to your beatmaps/editor folder where your Project Arrhythmia folder is.\n" +
+                                    "- Some features like object gradients, ColorGrading (hue only), Gradient event, Player Force event, and Prefab Transforms (position, scale, rotation) can be used in alpha, but it's still recommended to playtest in vanilla Alpha anyways.", Document.Element.Type.Text),
+                new Document.Element("* Non-verified songs are allowed on the Arcade server because the Arcade server is not officially endorsed by Vitamin Games nor the Steam Workshop, much like how some other music-based games have an unofficial server for hosting levels. If a song is super-protected, however, it has a high chance of being taken down regardless of that fact.", Document.Element.Type.Text),
+                new Document.Element("", Document.Element.Type.Text),
+                new Document.Element("When uploading to the Arcade server, you can include tags to better define your level. When uploading a level, you have to keep these tag guidelines in mind:\n" +
+                                    "- Tags are best with underscores replacing spaces, e.g. <b>\"boss_level\"</b>.\n" +
+                                    "- Uppercase and lowercase is acceptable.\n" +
+                                    "- Keep tags relevant to the level.\n" +
+                                    "- Include series name. If the level is not a part of a series, then skip this.\n" +
+                                    "- Include any important characters involved, e.g. <b>\"para\"</b>. If there are no characters, then skip this.\n" +
+                                    "- Include the general theme of the level, e.g. <b>\"spooky\"</b>.\n" +
+                                    "- If your level covers subject matter most people will find uncomfortable, PLEASE include it in the tags so people know to avoid (e.g. gore (<i>looking at you KarasuTori</i>)). If you do not follow this, then the level will be removed." +
+                                    "- Add <b>\"joke_level\"</b> or <b>\"meme\"</b> to tags if your level isn't serious one. Can be both tags.\n" +
+                                    "- If your level has the possibility to cause an epileptic seizure, include <b>\"flashing_lights\"</b>." +
+                                    "- If your level features specific functions (like Window movement, video BG, etc), please tag that as well.\n" +
+                                    "- Add <b>\"high_detail\"</b> to the tags if the level has a ton of objects / is lagging.\n" +
+                                    "- Add <b>\"reupload\"</b> or <b>\"remake\"</b> to the tags if your level is such.\n" +
+                                    "- Unfinished levels can be uploaded, but will need the <b>\"wip\"</b> tag. (do not flood the server with these)\n" +
+                                    "- Older levels can be uploaded, but will need the <b>\"old\"</b> tag.", Document.Element.Type.Text),
+                new Document.Element("", Document.Element.Type.Text),
+                new Document.Element("<i>Do not</i> reupload other people's levels to the server unless you have their permission. If you do reupload, it has to have been a level from the Steam workshop.\n" +
+                                    "Remakes are allowed, as long as you have permission from the original creator(s).", Document.Element.Type.Text),
+                LinkElement("If you want to comment on a level, join the System Error Discord server (<color=#0084FF>https://discord.gg/nB27X2JZcY</color>), go to <b>#arcade-server-uploads</b>, create a thread (if there isn't already one) and make your comment there.\n" +
+                "You can click this element to open the Discord link.", "https://discord.gg/nB27X2JZcY"),
+                new Document.Element("", Document.Element.Type.Text),
+                new Document.Element("When updating a level, make sure you include a message in the changelogs to let users know what changed in your level. Feel free to format it with dot points, or as a regular sentence / paragraph.", Document.Element.Type.Text),
+                new Document.Element("", Document.Element.Type.Text),
+                new Document.Element("If you have any issues with these guidelines or have a suggestion, please contact the BetterLegacy developer (RTMecha) and discuss it with him civilly.", Document.Element.Type.Text),
+            });
+
+            GenerateDocument("[PATCHED] Beatmap Objects", "The very objects that make up Project Arrhythmia levels.", new List<Document.Element>
             {
                 new Document.Element("<b>Beatmap Objects</b> are the objects people use to create a variety of things for their levels. " +
                         "Whether it be backgrounds, characters, attacks, you name it! Below is a list of data Beatmap Objects have.", Document.Element.Type.Text),
@@ -7750,7 +7740,7 @@ namespace BetterLegacy.Editor.Managers
                 new Document.Element("<b>Camera Parent [MODDED]</b>\nBeatmap Objects parented to the camera will always follow it, depending on the parent settings. This includes " +
                         "anything that makes the camera follow the player. This feature does exist in modern PA, but doesn't work the same way this does.", Document.Element.Type.Text),
                 new Document.Element("<b>Clear Parent [MODDED]</b>\nClicking this will remove the Beatmap Object from its parent.", Document.Element.Type.Text),
-                new Document.Element("<b>Parent Picker [MODDED]</b>\nClicking this will activate a dropper. Right clicking will deactivate the dropper. Clicking on an object " +
+                new Document.Element("<b>Parent Picker [ALPHA]</b>\nClicking this will activate a dropper. Right clicking will deactivate the dropper. Clicking on an object " +
                         "in the timeline will set the current selected Beatmap Objects parent to the selected Timeline Object.", Document.Element.Type.Text),
                 new Document.Element("<b>Parent Display [VANILLA]</b>\nShows what the Beatmap Object is parented to. Clicking this button selects the parent. " +
                         "Hovering your mouse over it shows parent chain info in the Hover Info box.", Document.Element.Type.Text),
@@ -7794,7 +7784,7 @@ namespace BetterLegacy.Editor.Managers
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_object_modifiers_edit.png", Document.Element.Type.Image),
             });
 
-            GenerateDocument("Beatmap Object Keyframes (WIP)", "The things that animate objects in different ways.", new List<Document.Element>
+            GenerateDocument("[PATCHED] Beatmap Object Keyframes (WIP)", "The things that animate objects in different ways.", new List<Document.Element>
             {
                 new Document.Element("The keyframes in the Beatmap Objects' keyframe timeline allow animating several aspects of a Beatmap Objects' visual.", Document.Element.Type.Text),
                 new Document.Element("<b>POSITION [PATCHED]</b>", Document.Element.Type.Text),
@@ -7820,7 +7810,7 @@ namespace BetterLegacy.Editor.Managers
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_col_dynamic_homing.png", Document.Element.Type.Image),
             });
 
-            GenerateDocument("Prefabs", "A package of objects that can be transfered from level to level. They can also be added to the level as a Prefab Object.", new List<Document.Element>
+            GenerateDocument("[PATCHED] Prefabs", "A package of objects that can be transfered from level to level. They can also be added to the level as a Prefab Object.", new List<Document.Element>
             {
                     new Document.Element("Prefabs are collections of objects grouped together for easy transfering from level to level.", Document.Element.Type.Text),
                     new Document.Element("<b>Name [VANILLA]</b>\nThe name of the Prefab. External prefabs gets saved with this as its file name, but all lowercase and " +
@@ -7840,7 +7830,7 @@ namespace BetterLegacy.Editor.Managers
 
             });
 
-            GenerateDocument("Prefab Objects", "Individual instances of prefabs that spawn the packed objects at specified offsets.", new List<Document.Element>
+            GenerateDocument("[PATCHED] Prefab Objects (OUTDATED)", "Individual instances of prefabs that spawn the packed objects at specified offsets.", new List<Document.Element>
             {
                 new Document.Element("Prefab Objects are a copied version of the original prefab, placed into the level. They take all the objects stored in the original prefab " +
                     "and add them to the level, meaning you can have multiple copies of the same group of objects. Editing the objects of the prefab by expanding it applies all changes to " +
@@ -7887,501 +7877,209 @@ namespace BetterLegacy.Editor.Managers
                 new Document.Element("<b>Save [MODDED]</b>\nSaves all changes made to the original Prefab to any External Prefab with a matching name.", Document.Element.Type.Text),
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_save.png", Document.Element.Type.Image),
                 new Document.Element("<b>Count [MODDED]</b>\nTells how many objects are in the original Prefab and how many Prefab Objects there are in the timeline " +
-                    "for the Prefab. The Prefab Object Count goes unused for now...", Document.Element.Type.Text),
+                    "for the Prefab. The Prefab Object Count goes unused for now...?", Document.Element.Type.Text),
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_counts.png", Document.Element.Type.Image),
             });
 
-            GenerateDocument("Background Objects (WIP)", "The classic 3D style backgrounds.", new List<Document.Element>
+            GenerateDocument("[LEGACY] Background Objects (WIP)", "The classic 3D style backgrounds.", new List<Document.Element>
             {
                 new Document.Element("Background Object intro.", Document.Element.Type.Text),
             });
 
-            GenerateDocument("Events (WIP)", "Effects to make your level pretty.", new List<Document.Element>
+            GenerateDocument("[PATCHED] Events", "Effects to make your level pretty or to animate properties of the level.", new List<Document.Element>
             {
-                new Document.Element("Events intro.", Document.Element.Type.Text),
+                new Document.Element("BetterLegacy has a total of 40 event types. Below is a list of them all and what they do:", Document.Element.Type.Text),
+
+                new Document.Element("<b>[VANILLA]</b> Move - Moves the camera left, right, up and down.\n" +
+                                    "<b>Values</b>:\n" +
+                                    "<b>[VANILLA]</b> Position X\n" +
+                                    "<b>[VANILLA]</b> Position Y", Document.Element.Type.Text),
+                new Document.Element("<b>[VANILLA]</b> Zoom - Zooms the camera in and out.\n" +
+                                    "<b>Values</b>:\n" +
+                                    "<b>[VANILLA]</b> Zoom", Document.Element.Type.Text),
+                new Document.Element("<b>[VANILLA]</b> Rotate - Rotates the camera around.\n" +
+                                    "<b>Values</b>:\n" +
+                                    "<b>[VANILLA]</b> Rotation", Document.Element.Type.Text),
+                new Document.Element("<b>[PATCHED]</b> Shake - Shakes the camera.\n" +
+                                    "<b>Values</b>:\n" +
+                                    "<b>[VANILLA]</b> Shake Intensity\n" +
+                                    "<b>[MODDED]</b> Direction X\n" +
+                                    "<b>[MODDED]</b> Direction Y\n" +
+                                    "<b>[MODDED]</b> Smoothness\n" +
+                                    "<b>[MODDED]</b> Speed", Document.Element.Type.Text),
+                new Document.Element("<b>[PATCHED]</b> Theme - The current set of colors to use for a level.\n" +
+                                    "<b>Values</b>:\n" +
+                                    "<b>[VANILLA]</b> Theme selection", Document.Element.Type.Text),
+                new Document.Element("<b>[VANILLA]</b> Chroma - Stretches the colors from the border of the screen.\n" +
+                                    "<b>Values</b>:\n" +
+                                    "<b>[VANILLA]</b> Chromatic Aberation Amount", Document.Element.Type.Text),
+                new Document.Element("<b>[PATCHED]</b> Bloom - Applies a glowy effect on the screen.\n" +
+                                    "<b>Values</b>:\n" +
+                                    "<b>[VANILLA]</b> Bloom Amount\n" +
+                                    "<b>[ALPHA]</b> Diffusion\n" +
+                                    "<b>[MODDED]</b> Threshold\n" +
+                                    "<b>[MODDED]</b> Anamorphic Ratio\n" +
+                                    "<b>[ALPHA]</b> Color\n" +
+                                    "<b>[MODDED]</b> HSV (Hue / Saturation / Value)", Document.Element.Type.Text),
+                new Document.Element("<b>[PATCHED]</b> Vignette - Applies a dark / light border around the screen.\n" +
+                                    "<b>Values</b>:\n" +
+                                    "<b>[VANILLA]</b> Intensity\n" +
+                                    "<b>[VANILLA]</b> Smoothness\n" +
+                                    "<b>[LEGACY]</b> Rounded\n" +
+                                    "<b>[VANILLA]</b> Roundness\n" +
+                                    "<b>[VANILLA]</b> Center Position\n" +
+                                    "<b>[ALPHA]</b> Color\n" +
+                                    "<b>[MODDED]</b> HSV (Hue / Saturation / Value)", Document.Element.Type.Text),
+                new Document.Element("<b>[PATCHED]</b> Lens - Pushes the center of the screen in and out.\n" +
+                                    "<b>Values</b>:\n" +
+                                    "<b>[VANILLA]</b> Lens Distort Amount\n" +
+                                    "<b>[ALPHA]</b> Center X\n" +
+                                    "<b>[ALPHA]</b> Center Y\n" +
+                                    "<b>[MODDED]</b> Intensity X\n" +
+                                    "<b>[MODDED]</b> Intensity Y\n" +
+                                    "<b>[MODDED]</b> Scale", Document.Element.Type.Text),
+                new Document.Element("<b>[VANILLA]</b> Grain - Adds a static effect to the screen (or makes it flash in Legacy if Grain size is 0.\n" +
+                                    "<b>Values</b>:\n" +
+                                    "<b>[VANILLA]</b> Intensity Amount\n" +
+                                    "<b>[VANILLA]</b> Size of Grains\n" +
+                                    "<b>[VANILLA]</b> Colored", Document.Element.Type.Text),
+                new Document.Element("<b>[MODDED]</b> ColorGrading - Affects the colors of the whole level, regardless of theme. If the level is converted to the VG format, this event will be turned into the Hue event and will only have the Hueshift value.\n" +
+                                    "<b>Values</b>:\n" +
+                                    "<b>[ALPHA]</b> Hueshift\n" +
+                                    "<b>[MODDED]</b> Contrast\n" +
+                                    "<b>[MODDED]</b> Saturation\n" +
+                                    "<b>[MODDED]</b> Temperature\n" +
+                                    "<b>[MODDED]</b> Tint\n" +
+                                    "<b>[MODDED]</b> Gamma X\n" +
+                                    "<b>[MODDED]</b> Gamma Y\n" +
+                                    "<b>[MODDED]</b> Gamma Z\n" +
+                                    "<b>[MODDED]</b> Gamma W", Document.Element.Type.Text),
+                new Document.Element("<b>[ALPHA]</b> Gradient - Applies a gradient over the screen. If the level is converted to the VG format, all values (except OHSV) will be carried over.\n" +
+                                    "<b>Values</b>:\n" +
+                                    "<b>[ALPHA]</b> Intensity\n" +
+                                    "<b>[ALPHA]</b> Rotation\n" +
+                                    "<b>[ALPHA]</b> Color Top\n" +
+                                    "<b>[MODDED]</b> OHSV Top (Opacity / Hue / Saturation / Value)\n" +
+                                    "<b>[ALPHA]</b> Color Bottom\n" +
+                                    "<b>[MODDED]</b> OHSV Bottom (Opacity / Hue / Saturation / Value)\n" +
+                                    "<b>[ALPHA]</b> Mode", Document.Element.Type.Text),
+                new Document.Element("<b>[ALPHA]</b> Player Force - Forces the player to constantly move in a direction. If the level is converted to the VG format, all values will be carried over to the Player event.\n" +
+                                    "<b>Values</b>:\n" +
+                                    "<b>[ALPHA]</b> Force X\n" +
+                                    "<b>[ALPHA]</b> Force Y", Document.Element.Type.Text),
+                // todo: add the rest
             });
 
-            GenerateDocument("Text Objects", "Flavor your levels with text!", new List<Document.Element>
+            GenerateDocument("[PATCHED] Text Objects", "Flavor your levels with text!", new List<Document.Element>
             {
                 new Document.Element("Text Objects can be used in extensive ways, from conveying character dialogue to decoration. This document is for showcasing usable " +
-                    "fonts and formats Text Objects can use. Also do note to ignore the spaces in the formattings as the UI text will just make the text like <b>this</b>.", Document.Element.Type.Text),
+                    "fonts and formats Text Objects can use.", Document.Element.Type.Text),
                 new Document.Element("<b>- FORMATTING -</b>", Document.Element.Type.Text),
-                new Document.Element("<b>[VANILLA]</b> < b> - For making text <b>BOLD</b>. Use </ b> to clear.", Document.Element.Type.Text),
-                new Document.Element("<b>[VANILLA]</b> < i> - For making text <i>italic</i>. Use </ i> to clear.", Document.Element.Type.Text),
-                new Document.Element("<b>- FONTS -</b>", Document.Element.Type.Text),
+                new Document.Element("<b>[VANILLA]</b> <noparse><b></noparse> - For making text <b>BOLD</b>. Use <noparse></b></noparse> to clear.", Document.Element.Type.Text),
+                new Document.Element("<b>[VANILLA]</b> <noparse><i></noparse> - For making text <i>italic</i>. Use <noparse></i></noparse> to clear.", Document.Element.Type.Text),
+                new Document.Element("<b>[VANILLA]</b> <noparse><u></noparse> - Gives text an <u>underline</u>. Use <noparse></u></noparse> to clear.", Document.Element.Type.Text),
+                new Document.Element("<b>[VANILLA]</b> <noparse><s></noparse> - Gives text a <s>strikethrough</s>. Use <noparse></s></noparse> to clear.", Document.Element.Type.Text),
+                new Document.Element("<b>[VANILLA]</b> <br <pos=136>> - Line break.", Document.Element.Type.Text),
+                new Document.Element("<b>[VANILLA]</b> <noparse><material=LiberationSans SDF - Outline></noparse> - Outline effect that only works on the <b><i>LiberationSans SDF</b></i> font.", Document.Element.Type.Text)
+                new Document.Element("<b>[VANILLA]</b> <noparse><line-height=25></noparse> - Type any number you want in place of the 25. Use <noparse></line-height></noparse> to clear.", Document.Element.Type.Text)
+                {
+                    Function = () =>
+                    {
+                        EditorManager.inst.DisplayNotification($"Copied material!", 2f, EditorManager.NotificationType.Success);
+                        LSText.CopyToClipboard($"<material=LiberationSans SDF - Outline>");
+                    }
+                },
+
+                new Document.Element("<b><size=36><align=center>- FONTS -</b>", Document.Element.Type.Text, 40f),
                 new Document.Element(RTFile.BepInExAssetsPath + "Documentation/doc_fonts.png", Document.Element.Type.Image)
                 { Function = () => { RTFile.OpenInFileBrowser.OpenFile(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "Documentation/doc_fonts.png"); }},
-                new Document.Element("To use a font, do <font=Font Name>. To clear, do </font>. Click on one of the fonts below to copy the <font=Font Name> to your clipboard. " +
+                new Document.Element("To use a font, do <font=Font Name>. To clear, do <noparse></font></noparse>. Click on one of the fonts below to copy the <font=Font Name> to your clipboard. " +
                     "Click on the image above to open the folder to the documentation assets folder where a higher resolution screenshot is located.", Document.Element.Type.Text),
-                new Document.Element("<b>[MODDED]</b> Adam Warren Pro Bold - A comic style font.", Document.Element.Type.Text)
-                { Function = () => {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard("<font=Adam Warren Pro Bold>");
-                }},
-                new Document.Element("<b>[MODDED]</b> Adam Warren Pro BoldItalic - A comic style font.", Document.Element.Type.Text)
-                { Function = () => {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard("<font=Adam Warren Pro BoldItalic>");
-                }},
-                new Document.Element("<b>[MODDED]</b> Adam Warren Pro - A comic style font.", Document.Element.Type.Text)
-                { Function = () => {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard("<font=Adam Warren Pro>");
-                }},
-                new Document.Element("<b>[MODDED]</b> Arrhythmia - The font from the earliest builds of Project Arrhythmia.", Document.Element.Type.Text)
-                { Function = () => {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard("<font=Arrhythmia>");
-                }},
-                new Document.Element("<b>[MODDED]</b> BadaBoom BB - A comic style font.", Document.Element.Type.Text)
-                { Function = () => {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard("<font=BadaBoom BB>");
-                }},
-                new Document.Element("<b>[MODDED]</b> Matoran Language 1 - The language used by the Matoran in the BIONICLE series.", Document.Element.Type.Text)
-                { Function = () => {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard("<font=Matoran Language 1>");
-                }},
-                new Document.Element("<b>[MODDED]</b> Matoran Language 2 - The language used by the Matoran in the BIONICLE series.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard("<font=Matoran Language 2>");
-                }},
-                new Document.Element("<b>[MODDED]</b> Determination Mono - The font UNDERTALE/deltarune uses for its interfaces.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard("<font=Determination Mono>");
-                }},
-                new Document.Element("<b>[MODDED]</b> determination sans - sans undertale.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard("<font=determination sans>");
-                }},
-                new Document.Element($"<b>[MODDED]</b> Determination Wingdings - Beware the man who speaks in hands.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard($"<font=Determination Wingdings>");
-                }},
-                new Document.Element("<b>[MODDED]</b> Flow Circular - A fun line font suggested by ManIsLiS.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard("<font=Flow Circular>");
-                }},
-                new Document.Element("<b>[MODDED]</b> Fredoka One - The font from the Vitamin Games website.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard("<font=Fredoka One>");
-                }},
-                new Document.Element("<b>[MODDED]</b> Ancient Autobot - The launguage used by ancient Autobots in the original Transformers cartoon.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard("<font=Ancient Autobot>");
-                }},
-                new Document.Element("<b>[MODDED]</b> Hachicro - The font used by UNDERTALE's hit text.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard("<font=Hachicro>");
-                }},
-                new Document.Element($"<b>[MODDED]</b> Inconsolata Variable - The default PA font.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard($"<font=Inconsolata Variable>");
-                }},
-                new Document.Element($"<b>[VANILLA]</b> LiberationSans SDF - An extra font unmodded Legacy has.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard($"<font=LiberationSans SDF>");
-                }},
-                new Document.Element($"<b>[MODDED]</b> Komika Hand - A comic style font.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard($"<font=font>");
-                }},
-                new Document.Element($"<b>[MODDED]</b> Komika Hand Bold - A comic style font.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard($"<font=Komika Hand Bold>");
-                }},
-                new Document.Element($"<b>[MODDED]</b> Komika Slick - A comic style font.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard($"<font=Komika Slick>");
-                }},
-                new Document.Element($"<b>[MODDED]</b> Komika Slim - A comic style font.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard($"<font=Komika Slim>");
-                }},
-                new Document.Element($"<b>[MODDED]</b> Komika Hand BoldItalic - A comic style font.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard($"<font=Komika Hand BoldItalic>");
-                }},
-                new Document.Element($"<b>[MODDED]</b> Komika Hand Italic - A comic style font.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard($"<font=Komika Hand Italic>");
-                }},
-                new Document.Element($"<b>[MODDED]</b> Komika Jam - A comic style font.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard($"<font=Komika Jam>");
-                }},
-                new Document.Element($"<b>[MODDED]</b> Komika Jam Italic - A comic style font.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard($"<font=Komika Jam Italic>");
-                }},
-                new Document.Element($"<b>[MODDED]</b> Komika Slick Italic - A comic style font.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard($"<font=Komika Slick Italic>");
-                }},
-                new Document.Element($"<b>[MODDED]</b> Komika Slim Italic - A comic style font.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard($"<font=Komika Slim Italic>");
-                }},
-                new Document.Element($"<b>[MODDED]</b> Minecraft Text Bold - The font used for the text UI in Minecraft.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard($"<font=Minecraft Text Bold>");
-                }},
-                new Document.Element($"<b>[MODDED]</b> font - The font used for the text UI in Minecraft.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied Minecraft Text BoldItalic!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard($"<font=Minecraft Text BoldItalic>");
-                }},
-                new Document.Element($"<b>[MODDED]</b> Minecraft Text Italic - The font used for the text UI in Minecraft.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard($"<font=Minecraft Text Italic>");
-                }},
-                new Document.Element($"<b>[MODDED]</b> Minecraft Text - The font used for the text UI in Minecraft.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard($"<font=Minecraft Text>");
-                }},
-                new Document.Element($"<b>[MODDED]</b> Minecraftory - Geometry Dash font mainly used in Geometry Dash SubZero.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard($"<font=Minecraftory>");
-                }},
-                new Document.Element($"<b>[MODDED]</b> Monster Friend Back - A font based on UNDERTALE's title.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard($"<font=Monster Friend Back>");
-                }},
-                new Document.Element($"<b>[MODDED]</b> Monster Friend Fore - A font based on UNDERTALE's title.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard($"<font=Monster Friend Fore>");
-                }},
-                new Document.Element($"<b>[MODDED]</b> About Friend - A font suggested by Ama.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard($"<font=About Friend>");
-                }},
-                new Document.Element("<b>[MODDED]</b> Oxygene - The font from the title of Geometry Dash.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard("<font=Oxygene>");
-                }},
-                new Document.Element($"<b>[MODDED]</b> Piraka Theory - The language used by the Piraka in the BIONICLE series.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard($"<font=Piraka Theory>");
-                }},
-                new Document.Element($"<b>[MODDED]</b> Piraka - The language used by the Piraka in the BIONICLE series.", Document.Element.Type.Text)
-                { Function = () =>
-                {
-                    EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                    LSText.CopyToClipboard($"<font=Piraka>");
-                }},
-                new Document.Element("<b>[MODDED]</b> Pusab - The font from the hit game Geometry Dash. And yes, it is the right one.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard("<font=Pusab>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> Rahkshi - The font used for promoting the Rahkshi sets in the BIONICLE series.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=Rahkshi>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> Revue - The font used early 2000s Transformers titles.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=Revue>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> Transdings - A font that contains a ton of Transformer insignias / logos. Below is an image featuring each letter " +
-                    $"of the alphabet.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=Transdings>");
-                    }
-                },
+
+                new Document.Element("<b><size=30><align=center>- PROJECT ARRHYTHMIA FONTS -</b>", Document.Element.Type.Text, 32f),
+                FontElement(Document.SupportType.MODDED, "Arrhythmia", "The font from the earliest builds of Project Arrhythmia."),
+                FontElement(Document.SupportType.MODDED, "Fredoka One", "The font used in the Vitamin Games website."),
+                FontElement(Document.SupportType.MODDED, "Inconsolata Variable", "The default PA font."),
+                FontElement(Document.SupportType.MODDED, "LiberationSans SDF", "An extra font Vanilla Legacy has."),
+                FontElement(Document.SupportType.MODDED, "File Deletion", "A font pretty similar to the modern PA title font."),
+
+                new Document.Element("<b><size=30><align=center>- GEOMETRY DASH FONTS -</b>", Document.Element.Type.Text, 32f),
+                FontElement(Document.SupportType.MODDED, "Oxygene", "The font used for the title of Geometry Dash."),
+                FontElement(Document.SupportType.MODDED, "Pusab", "The main font used in the hit game Geometry Dash. And yes, it is the right one."),
+                FontElement(Document.SupportType.MODDED, "Minecraftory", "Geometry Dash font mainly used in Geometry Dash SubZero."),
+
+                new Document.Element("<b><size=30><align=center>- COMIC FONTS -</b>", Document.Element.Type.Text, 32f),
+                FontElement(Document.SupportType.MODDED, "Adam Warren Pro Bold", "A comic style font."),
+                FontElement(Document.SupportType.MODDED, "Adam Warren Pro BoldItalic", "A comic style font."),
+                FontElement(Document.SupportType.MODDED, "Adam Warren Pro", "A comic style font."),
+                FontElement(Document.SupportType.MODDED, "BadaBoom BB", "A comic style font."),
+                FontElement(Document.SupportType.MODDED, "Komika Hand", "A comic style font."),
+                FontElement(Document.SupportType.MODDED, "Komika Hand Bold", "A comic style font."),
+                FontElement(Document.SupportType.MODDED, "Komika Slim", "A comic style font."),
+                FontElement(Document.SupportType.MODDED, "Komika Hand BoldItalic", "A comic style font."),
+                FontElement(Document.SupportType.MODDED, "Komika Hand Italic", "A comic style font."),
+                FontElement(Document.SupportType.MODDED, "Komika Jam", "A comic style font."),
+                FontElement(Document.SupportType.MODDED, "Komika Jam Italic", "A comic style font."),
+                FontElement(Document.SupportType.MODDED, "Komika Slick Italic", "A comic style font."),
+                FontElement(Document.SupportType.MODDED, "Komika Slim Italic", "A comic style font."),
+
+                new Document.Element("<b><size=30><align=center>- BIONICLE FONTS -</b>", Document.Element.Type.Text, 32f),
+                FontElement(Document.SupportType.MODDED, "Matoran Language 1", "The language used by the Matoran in the BIONICLE series."),
+                FontElement(Document.SupportType.MODDED, "Matoran Language 2", "The language used by the Matoran in the BIONICLE series."),
+                FontElement(Document.SupportType.MODDED, "Piraka Theory", "The language used by the Piraka in the BIONICLE series."),
+                FontElement(Document.SupportType.MODDED, "Piraka", "The language used by the Piraka in the BIONICLE series."),
+                FontElement(Document.SupportType.MODDED, "Rahkshi", "The font used for promoting the Rahkshi sets in the BIONICLE series."),
+
+                new Document.Element("<b><size=30><align=center>- UNDERTALE / DELTARUNE FONTS -</b>", Document.Element.Type.Text, 32f),
+                FontElement(Document.SupportType.MODDED, "Monster Friend Back", "A font based on UNDERTALE's title."),
+                FontElement(Document.SupportType.MODDED, "Monster Friend Fore", "A font based on UNDERTALE's title."),
+                FontElement(Document.SupportType.MODDED, "Determination Mono", "The font UNDERTALE/deltarune uses for its interfaces."),
+                FontElement(Document.SupportType.MODDED, "determination sans", "sans undertale."),
+                FontElement(Document.SupportType.MODDED, "Determination Wingdings", "Beware the man who speaks in hands."),
+                FontElement(Document.SupportType.MODDED, "Hachicro", "The font used by UNDERTALE's hit text."),
+
+                new Document.Element("<b><size=30><align=center>- TRANSFORMERS FONTS -</b>", Document.Element.Type.Text, 32f),
+                FontElement(Document.SupportType.MODDED, "Ancient Autobot", "The language used by ancient Autobots in the original Transformers cartoon."),
+                FontElement(Document.SupportType.MODDED, "Revue", "The font used early 2000s Transformers titles."),
+                FontElement(Document.SupportType.MODDED, "Revue 1", "The font used early 2000s Transformers titles."),
+                FontElement(Document.SupportType.MODDED, "Transdings", "A font that contains a ton of Transformer insignias / logos. Below is an image featuring each letter of the alphabet."),
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_tf.png", Document.Element.Type.Image),
-                new Document.Element($"<b>[MODDED]</b> Transformers Movie - A font based on the Transformers movies title font.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=Transformers Movie>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> Nexa Book - A font suggested by CubeCube.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=Nexa Book>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> Nexa Bold - A font suggested by CubeCube.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=Nexa Bold>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> Angsana - A font suggested by KarasuTori. Supports non-English languages like Thai.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=Angsana>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> Angsana Bold - A font suggested by KarasuTori. Supports non-English languages like Thai.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=Angsana Bold>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> Angsana Italic - A font suggested by KarasuTori. Supports non-English languages like Thai.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=Angsana Italic>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> Angsana Bold Italic - A font suggested by KarasuTori. Supports non-English languages like Thai.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=Angsana Bold Italic>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> VAG Rounded - A font suggested by KarasuTori. Supports non-English languages like Russian.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=VAG Rounded>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> Comic Sans - You know the font.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=Comic Sans>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> Comic Sans Bold - You know the font.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=Comic Sans Bold>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> Comic Sans Hairline - You know the font.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=Comic Sans Hairline>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> Comic Sans Light - You know the font.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=Comic Sans Light>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> Pixellet - Neat pixel font that supports Thai.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=Pixellet>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> File Deletion - A font pretty similar to the current PA title font.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=File Deletion>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> Sans Sans - Sans Sans.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=Sans Sans>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> Monomaniac One - Japanese support font.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=Monomaniac One>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> RocknRoll One - Japanese support font.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=RocknRoll One>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> Roboto Mono Bold - Russian support font.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=Roboto Mono Bold>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> Roboto Mono Italic - Russian support font.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=Roboto Mono Italic>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> Roboto Mono Light - Russian support font.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=Roboto Mono Light>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> Roboto Mono Light 1 - Russian support font.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=Roboto Mono Light 1>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> Roboto Mono Light Italic - Russian support font.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=Roboto Mono Light Italic>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> Roboto Mono Light Italic 1 - Russian support font.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=Roboto Mono Light Italic 1>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> Roboto Mono Thin - Russian support font.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=Roboto Mono Thin>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> Roboto Mono Thin 1 - Russian support font.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=Roboto Mono Thin 1>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> Roboto Mono Thin Italic - Russian support font.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=Roboto Mono Thin Italic>");
-                    }
-                },
-                new Document.Element($"<b>[MODDED]</b> Roboto Mono Thin Italic 1 - Russian support font.", Document.Element.Type.Text)
-                {
-                    Function = () =>
-                    {
-                        EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
-                        LSText.CopyToClipboard($"<font=Roboto Mono Thin Italic 1>");
-                    }
-                },
+                FontElement(Document.SupportType.MODDED, "Transformers Movie", "A font based on the Transformers movies title font."),
+
+                new Document.Element("<b><size=30><align=center>- LANGUAGE SUPPORT FONTS -</b>", Document.Element.Type.Text, 32f),
+                FontElement(Document.SupportType.MODDED, "Monomaniac One", "Japanese support font."),
+                FontElement(Document.SupportType.MODDED, "Roboto Mono Bold", "Russian support font."),
+                FontElement(Document.SupportType.MODDED, "Roboto Mono Italic", "Russian support font."),
+                FontElement(Document.SupportType.MODDED, "Roboto Mono Light 1", "Russian support font."),
+                FontElement(Document.SupportType.MODDED, "Roboto Mono Light Italic", "Russian support font."),
+                FontElement(Document.SupportType.MODDED, "Roboto Mono Light Italic 1", "Russian support font."),
+                FontElement(Document.SupportType.MODDED, "Roboto Mono Thin", "Russian support font."),
+                FontElement(Document.SupportType.MODDED, "Roboto Mono Thin 1", "Russian support font."),
+                FontElement(Document.SupportType.MODDED, "Roboto Mono Thin Italic", "Russian support font."),
+                FontElement(Document.SupportType.MODDED, "Roboto Mono Thin Italic 1", "Russian support font."),
+                FontElement(Document.SupportType.MODDED, "Pixellet", "A neat pixel font that supports Thai."),
+                FontElement(Document.SupportType.MODDED, "Angsana Bold", "A font suggested by KarasuTori. Supports non-English languages like Thai."),
+                FontElement(Document.SupportType.MODDED, "Angsana Italic", "A font suggested by KarasuTori. Supports non-English languages like Thai."),
+                FontElement(Document.SupportType.MODDED, "Angsana Bold Italic", "A font suggested by KarasuTori. Supports non-English languages like Thai."),
+                FontElement(Document.SupportType.MODDED, "VAG Rounded", "A font suggested by KarasuTori. Supports non-English languages like Russian."),
+
+                new Document.Element("<b><size=30><align=center>- OTHER FONTS -</b>", Document.Element.Type.Text, 32f),
+                FontElement(Document.SupportType.MODDED, "About Friend", "A font suggested by Ama."),
+                FontElement(Document.SupportType.MODDED, "Flow Circular", "A fun line font suggested by ManIsLiS."),
+                FontElement(Document.SupportType.MODDED, "Minecraft Text Bold", "The font used for the text UI in Minecraft."),
+                FontElement(Document.SupportType.MODDED, "Minecraft Text BoldItalic", "The font used for the text UI in Minecraft."),
+                FontElement(Document.SupportType.MODDED, "Minecraft Text", "The font used for the text UI in Minecraft."),
+                FontElement(Document.SupportType.MODDED, "Nexa Book", "A font suggested by CubeCube."),
+                FontElement(Document.SupportType.MODDED, "Nexa Bold", "A font suggested by CubeCube."),
+                FontElement(Document.SupportType.MODDED, "Comic Sans", "You know the font."),
+                FontElement(Document.SupportType.MODDED, "Comic Sans Bold", "You know the font."),
+                FontElement(Document.SupportType.MODDED, "Comic Sans Hairline", "You know the font."),
+                FontElement(Document.SupportType.MODDED, "Comic Sans Light", "You know the font."),
+                FontElement(Document.SupportType.MODDED, "Sans Sans", "Sans Sans."),
+                FontElement(Document.SupportType.MODDED, "Angsana Z", "Classical font."),
             });
 
-            GenerateDocument("Markers", "Organize and remember details about a level.", new List<Document.Element>
+            GenerateDocument("Markers (OUTDATED)", "Organize and remember details about a level.", new List<Document.Element>
             {
                 new Document.Element("Markers can organize certain parts of your level or help with aligning objects to a specific time.", Document.Element.Type.Text),
                 new Document.Element("In the image below is two types of markers. The blue marker is the Audio Marker and the marker with a circle on the top is just a Marker. " +
@@ -8405,7 +8103,7 @@ namespace BetterLegacy.Editor.Managers
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_marker_delete.png", Document.Element.Type.Image),
             });
 
-            GenerateDocument("Title Bar", "The thing at the top of the editor UI with dropdowns.", new List<Document.Element>
+            GenerateDocument("Title Bar (OUTDATED)", "The thing at the top of the editor UI with dropdowns.", new List<Document.Element>
             {
                 new Document.Element("Title Bar has the main functions for loading, saving and editing.", Document.Element.Type.Text),
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_td.png", Document.Element.Type.Image),
@@ -8451,7 +8149,7 @@ namespace BetterLegacy.Editor.Managers
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_td_help.png", Document.Element.Type.Image),
             });
 
-            GenerateDocument("Timeline Bar", "The main toolbar used for editing main editor things such as audio time, editor layers, etc.", new List<Document.Element>
+            GenerateDocument("Timeline Bar (OUTDATED)", "The main toolbar used for editing main editor things such as audio time, editor layers, etc.", new List<Document.Element>
             {
                 new Document.Element("The Timeline Bar is where you can see and edit general game and editor info.", Document.Element.Type.Text),
                 new Document.Element("<b>Audio Time (Precise) [MODDED]</b>\nText shows the precise audio time. This can be edited to set a specific time for the audio.", Document.Element.Type.Text),
@@ -8474,41 +8172,16 @@ namespace BetterLegacy.Editor.Managers
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_tb_preview_mode.png", Document.Element.Type.Image),
             });
 
-            GenerateDocument("Keybinds (WIP)", "Perform specific actions when pressing set keys.", new List<Document.Element>
+            GenerateDocument("[MODDED] Keybinds (WIP)", "Perform specific actions when pressing set keys.", new List<Document.Element>
             {
                 new Document.Element("Keybinds intro.", Document.Element.Type.Text),
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_keybind_list.png", Document.Element.Type.Image),
                 new Document.Element("BepInEx/plugins/Assets/Documentation/doc_keybind_editor.png", Document.Element.Type.Image),
             });
 
-            GenerateDocument("Editor Properties (WIP)", "Configure the editor!", new List<Document.Element>
+            GenerateDocument("[MODDED] Object Modifiers", "Make your levels dynamic!", new List<Document.Element>
             {
-                new Document.Element("Editor Properties intro.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_editor_properties.png", Document.Element.Type.Image),
-            });
-
-            GenerateDocument("Misc", "The stuff that didn't fit in a document of its own.", new List<Document.Element>
-            {
-                new Document.Element("<b>Editor Level Path [MODDED]</b>\nThe path within the Project Arrhythmia/beatmaps directory that is used for the editor level list.", Document.Element.Type.Text),
-                new Document.Element("<b>Refresh [MODDED]</b>\nRefreshes the editor level list.", Document.Element.Type.Text),
-                new Document.Element("<b>Descending [MODDED]</b>\nIf the editor level list should be descending or ascending.", Document.Element.Type.Text),
-                new Document.Element("<b>Order [MODDED]</b>\nHow the editor level list should be ordered." +
-                    "\nCover - Order by if the level has a cover or not." +
-                    "\nArtist - Order by Artist Name." +
-                    "\nCreator - Order by Creator Name." +
-                    "\nFolder - Order by Folder Name." +
-                    "\nTitle - Order by Song Title." +
-                    "\nDifficulty - Order by (Easy, Normal, Hard, Expert, Expert+, Master, Animation)" +
-                    "\nDate Edited - Order by last saved time, so recently edited levels appear at one side and older levels appear at the other.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_open_level_top.png", Document.Element.Type.Image),
-                new Document.Element("<b>Loading Autosaves [MODDED]</b>\nHolding shift when you click on a level in the level list will open an Autosave popup instead of " +
-                    "loading the level. This allows you to load any autosaved file so you don't need to go into the level folder and change one of the autosaves to the level.lsb.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_autosaves.png", Document.Element.Type.Image),
-            });
-
-            GenerateDocument("Object Modifiers", "Make your levels dynamic!", new List<Document.Element>
-            {
-                new Document.Element("ObjectModifiers adds a trigger / action based system to Beatmap Objects called \"Modifiers\". " +
+                new Document.Element("BetterLegacy adds a trigger / action based system to Beatmap Objects called \"Modifiers\". " +
                     "Modifiers have two types: Triggers check if something is happening and if it is, it activates any Action type modifiers. If there are no Triggers, then the Action modifiers " +
                     "activates. This document is heavily WIP and will be added to over time.", Document.Element.Type.Text),
                 new Document.Element("<b>setPitch</b> - Modifies the speed of the game and the pitch of the audio. It sets a multiplied offset from the " +
@@ -8525,6 +8198,108 @@ namespace BetterLegacy.Editor.Managers
                 new Document.Element("<b>playSoundOnline</b> - Same as above except plays from a link. The global toggle does nothing here.", Document.Element.Type.Text),
                 new Document.Element("<b>loadLevel</b> - Loads a level from the current level folder path.", Document.Element.Type.Text),
                 new Document.Element("<b>loadLevelInternal</b> - Same as above, except it always loads from the current levels own path.", Document.Element.Type.Text),
+            });
+
+            GenerateDocument("[MODDED] Math Evaluation", "Some places you can write out a math equation and get a result from it.", new List<Document.Element>
+            {
+                new Document.Element("Below is a list of variables that can be used with math evaluation.", Document.Element.Type.Text),
+                new Document.Element("<b>deathCount</b> - Amount of deaths in a level (Arcade only).\n" +
+                                     "<b>hitCount</b> - Amount of hits in a level (Arcade only).\n" +
+                                     "<b>actionMoveX</b> - WASD / joystick move.\n" +
+                                     "<b>actionMoveY</b> - WASD / joystick move.\n" +
+                                     "<b>time</b> - Unity's time property. (seconds since game start)\n" +
+                                     "<b>deltaTime</b> - Unity's deltaTime property.\n" +
+                                     "<b>audioTime</b> - The main audio time.\n" +
+                                     "<b>smoothedTime</b> - Catalyst animation time.\n" +
+                                     "<b>volume</b> - Current music volume.\n" +
+                                     "<b>pitch</b> - Current music pitch (or game speed).\n" +
+                                     "<b>camPosX</b> - Position X of the camera.\n" +
+                                     "<b>camPosY</b> - Position Y of the camera.\n" +
+                                     "<b>camZoom</b> - Zoom of the camera.\n" +
+                                     "<b>camRot</b> - Rotation of the camera.\n" +
+                                     "<b>player0PosX</b> - Position X of a specific player. You can swap the 0 out with a different number to get a different players' position X. If that number is higher than or equal to the player count, the result will be 0.\n" +
+                                     "<b>player0PosY</b> - Position Y of a specific player. You can do the same as the above variable.\n" +
+                                     "<b>player0Health</b> - Health of a specific player. You can do the same as the above variable.\n" +
+                                     "<b>playerHealthTotal</b> - Health of all players in total.", Document.Element.Type.Text),
+                new Document.Element("If you have a few functions listed, follow this example:\n" +
+                                    "clamp(random(), 0, 1); + clamp(random() * 0.1, 0, 1);\n" +
+                                    "As you can see, top-level functions need to end with a ';'. This is so the math evaluators know when to stop for each math function, instead of collapsing everything into one function. Nested functions inside top-level functions don't need to end with a ';'."
+                                    , Document.Element.Type.Text),
+                new Document.Element("Below is a list of functions that can be used with math evaluation.", Document.Element.Type.Text),
+                new Document.Element("<b>playerTailPosX(playerIndex, tailIndex)</b> - Gets the tails' position X of a player. playerIndex is the index of the player, e.g. 0 for the first player. tailIndex is for the tail part of that player, e.g. 2 would be the 3rd tail part.\n" +
+                                    "<b>playerTailPosY(playerIndex, tailIndex)</b> - Gets the tails' position Y of a player. playerIndex is the index of the player, e.g. 0 for the first player. tailIndex is for the tail part of that player, e.g. 2 would be the 3rd tail part.\n" +
+                                    "<b>sin(value)</b> - sin function.\n" +
+                                    "<b>cos(value)</b> - cos function.\n" +
+                                    "<b>atan(value)</b> - atan function.\n" +
+                                    "<b>tan(value)</b> - tan function.\n" +
+                                    "<b>asin(value)</b> - asin function.\n" +
+                                    "<b>sqrt(value)</b> - sqrt function.\n" +
+                                    "<b>abs(value)</b> - abs function.\n" +
+                                    "<b>min(a, b)</b> - Limits a to always be below b.\n" +
+                                    "<b>max(a, b)</b> - Limits a to always be above b.\n" +
+                                    "<b>clamp(value, min, max)</b> - Limits the value to always be between min and max.\n" +
+                                    "<b>clampZero(value, min, max)</b> - If both min and max are zero, then it will not clamp.\n" +
+                                    "<b>pow(f, p)</b> - pow function.\n" +
+                                    "<b>exp(power)</b> - exponent function.\n" +
+                                    "<b>log(f)</b> - log function.\n" +
+                                    "<b>log(f, p)</b> - log function.\n" +
+                                    "<b>log10(f)</b> - log function.\n" +
+                                    "<b>ceil(f)</b> - ceiling function.\n" +
+                                    "<b>floor(f)</b> - floor function.\n" +
+                                    "<b>round(f)</b> - Rounds 'f' to the nearest whole number.\n" +
+                                    "<b>sign(f)</b> - sign function.\n" +
+                                    "<b>lerp(a, b, t)</b> - Interpolates between a (start) and b (end) depending on t (time).\n" +
+                                    "<b>lerpAngle(a, b, t)</b> - Interpolates between a (start) and b (end) depending on t (time).\n" +
+                                    "<b>inverseLerp(a, b, t)</b> - Interpolates between a (start) and b (end) depending on t (time).\n" +
+                                    "<b>moveTowards(current, target, maxDelta)</b> - Moves current towards the target depending on maxDelta.\n" +
+                                    "<b>moveTowardsAngle(current, target, maxDelta)</b> - Moves current towards the target depending on maxDelta.\n" +
+                                    "<b>smoothStep(from, to, t)</b> - Like lerp, except smoothly interpolates.\n" +
+                                    "<b>gamma(value, absmax, gamma)</b> - gamma function.\n" +
+                                    "<b>approximately(a, b)</b> - Checks if a and b are almost or fully equal.\n" +
+                                    "<b>repeat(t, length)</b> - Repeats t by length.\n" +
+                                    "<b>pingPong(t, length)</b> - Ping-pongs between t by length.\n" +
+                                    "<b>deltaAngle(current, target)</b> - Calculates an angle from current to target.\n" +
+                                    "<b>random()</b> - Gets a random seed and returns a non-whole number by the seed.\n" +
+                                    "<b>random(seed)</b> - Returns a non-whole number by the seed.\n" +
+                                    "<b>random(seed, index)</b> - Returns a consistent non-whole number by the seed and index.\n" +
+                                    "<b>randomRange(seed, min, max)</b> - Returns a non-whole number between min and max by the seed.\n" +
+                                    "<b>randomRange(seed, min, max, index)</b> - Returns a consistent non-whole number between min and max by the seed and index.\n" +
+                                    "<b>randomInt()</b> - Gets a random seed and returns a whole number by the seed.\n" +
+                                    "<b>randomInt(seed)</b> - Returns a whole number by the seed.\n" +
+                                    "<b>randomInt(seed, index)</b> - Returns a consistent whole number by the seed and index.\n" +
+                                    "<b>randomRangeInt(seed, min, max)</b> - Returns a whole number between min and max by the seed.\n" +
+                                    "<b>randomRangeInt(seed, min, max, index)</b> - Returns a consistent whole number between min and max by the seed and index.\n" +
+                                    "<b>roundToNearestNumber(value, multipleOf)</b> - Rounds the value to the nearest 'multipleOf'.\n" +
+                                    "<b>roundToNearestDecimal(value, places)</b> - Ensures a specific decimal length. E.g. value is 0.51514656 and places 3 would make the value 0.515.\n" +
+                                    "<b>percentage(t, length)</b> - Calculates a percentage (100%) from t and length.\n" +
+                                    "<b>equals(a, b, trueResult, falseResult)</b> - If a and b are equal, then the function returns the trueResult, otherwise returns the falseResult.\n" +
+                                    "<b>lesserEquals(a, b, trueResult, falseResult)</b> - If a and b are lesser or equal, then the function returns the trueResult, otherwise returns the falseResult.\n" +
+                                    "<b>greaterEquals(a, b, trueResult, falseResult)</b> - If a and b are greater or equal, then the function returns the trueResult, otherwise returns the falseResult.\n" +
+                                    "<b>lesser(a, b, trueResult, falseResult)</b> - If a and b are lesser, then the function returns the trueResult, otherwise returns the falseResult.\n" +
+                                    "<b>greater(a, b, trueResult, falseResult)</b> - If a and b are greater, then the function returns the trueResult, otherwise returns the falseResult.\n" +
+                                    "<b>findAxis(\"tag\", fromType, fromAxis, time)</b> - Finds an object with the matching tag, takes an axis from fromType and fromAxis and interpolates it via time.\n" +
+                                    "<b>easing(\"curveType\", t)</b> - Calculates an easing from the easing list. \"curveType\" is easings such as \"Linear\", \"Instant\", etc.\n" +
+                                    "<b>int(value)</b> - Casts floating point numbers (non-whole numbers) into integers (whole numbers).\n" +
+                                    "<b>date(\"format\")</b> - Takes a specific part of the current date and uses it.\n", Document.Element.Type.Text),
+            });
+
+            GenerateDocument("Misc (OUTDATED)", "The stuff that didn't fit in a document of its own.", new List<Document.Element>
+            {
+                new Document.Element("<b>Editor Level Path [MODDED]</b>\nThe path within the Project Arrhythmia/beatmaps directory that is used for the editor level list.", Document.Element.Type.Text),
+                new Document.Element("<b>Refresh [MODDED]</b>\nRefreshes the editor level list.", Document.Element.Type.Text),
+                new Document.Element("<b>Descending [MODDED]</b>\nIf the editor level list should be descending or ascending.", Document.Element.Type.Text),
+                new Document.Element("<b>Order [MODDED]</b>\nHow the editor level list should be ordered." +
+                    "\nCover - Order by if the level has a cover or not." +
+                    "\nArtist - Order by Artist Name." +
+                    "\nCreator - Order by Creator Name." +
+                    "\nFolder - Order by Folder Name." +
+                    "\nTitle - Order by Song Title." +
+                    "\nDifficulty - Order by (Easy, Normal, Hard, Expert, Expert+, Master, Animation)" +
+                    "\nDate Edited - Order by last saved time, so recently edited levels appear at one side and older levels appear at the other.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_open_level_top.png", Document.Element.Type.Image),
+                new Document.Element("<b>Loading Autosaves [MODDED]</b>\nHolding shift when you click on a level in the level list will open an Autosave popup instead of " +
+                    "loading the level. This allows you to load any autosaved file so you don't need to go into the level folder and change one of the autosaves to the level.lsb.", Document.Element.Type.Text),
+                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_autosaves.png", Document.Element.Type.Image),
             });
 
             if (CoreHelper.AprilFools)
@@ -11233,12 +11008,18 @@ namespace BetterLegacy.Editor.Managers
                 }
         }
 
+        public void ShowDocumentation(string name)
+        {
+            if (documentations.TryFind(x => x.Name == name, out Document document))
+                SelectDocumentation(document);
+        }
+
         public void SelectDocumentation(Document document)
         {
             documentationTitle.text = $"- {document.Name} -";
 
             var singleInput = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/right/move/position/x");
-            var label = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View/Viewport/Content").transform.GetChild(3).gameObject;
+            var font = FontManager.inst.allFontAssets["Inconsolata Variable"];
 
             LSHelpers.DeleteChildren(documentationContent);
 
@@ -11252,41 +11033,95 @@ namespace BetterLegacy.Editor.Managers
                             if (string.IsNullOrEmpty(element.Data))
                                 break;
 
-                            var bar = singleInput.Duplicate(documentationContent, "element");
-                            DestroyImmediate(bar.GetComponent<InputField>());
-                            DestroyImmediate(bar.GetComponent<EventInfo>());
-                            DestroyImmediate(bar.GetComponent<EventTrigger>());
-
-                            LSHelpers.DeleteChildren(bar.transform);
-                            bar.transform.localScale = Vector3.one;
-                            bar.transform.AsRT().sizeDelta = new Vector2(722f, 22f * LSText.WordWrap(element.Data, 67).Count);
-
-                            var l = label.Duplicate(bar.transform, "label");
-                            l.transform.localScale = Vector3.one;
-                            var text = l.transform.GetChild(0).GetComponent<Text>();
-                            text.text = element.Data;
-                            text.alignment = TextAnchor.UpperLeft;
-                            EditorThemeManager.ApplyLightText(text);
-
-                            l.transform.AsRT().sizeDelta = new Vector2(722f, 22f);
-                            l.transform.GetChild(0).AsRT().anchoredPosition = new Vector2(10f, -5f);
-                            l.transform.GetChild(0).AsRT().sizeDelta = new Vector2(722f, 22f);
-
-                            var barImage = bar.GetComponent<Image>();
-                            barImage.enabled = true;
-                            barImage.fillCenter = true;
-
-                            if (element.Function != null)
                             {
-                                var button = bar.AddComponent<Button>();
-                                button.onClick.AddListener(() => element.Function.Invoke());
-                                button.image = barImage;
-                                EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
+                                var gameObject = Creator.NewUIObject("element", documentationContent, RectValues.Default
+                                    .AnchoredPosition(1f, 0f)
+                                    .AnchorMax(0f, 1f)
+                                    .AnchorMin(0f, 1f)
+                                    .Pivot(0f, 1f)
+                                    .SizeDelta(722f, element.Autosize || element.Height == 0f ? (22f * LSText.WordWrap(element.Data, 67).Count) : element.Height));
+
+                                var horizontalLayoutGroup = gameObject.AddComponent<HorizontalLayoutGroup>();
+
+                                horizontalLayoutGroup.childControlHeight = false;
+                                horizontalLayoutGroup.childControlWidth = false;
+                                horizontalLayoutGroup.childForceExpandWidth = false;
+                                horizontalLayoutGroup.spacing = 8f;
+                                var image = gameObject.AddComponent<Image>();
+
+                                var labels = Creator.NewUIObject("label", gameObject.transform, RectValues.Default
+                                    .AnchorMax(0f, 1f)
+                                    .AnchorMin(0f, 1f)
+                                    .Pivot(0f, 1f)
+                                    .SizeDelta(722f, 22f));
+
+                                var labelsHLG = labels.AddComponent<HorizontalLayoutGroup>();
+
+                                labelsHLG.childControlHeight = false;
+                                labelsHLG.childControlWidth = false;
+                                labelsHLG.spacing = 8f;
+
+                                var label = Creator.NewUIObject("text", labels.transform);
+
+                                var text = label.AddComponent<TextMeshProUGUI>();
+                                text.font = font;
+                                text.fontSize = 20;
+                                text.enableWordWrapping = true;
+                                text.text = element.Data;
+                                EditorThemeManager.ApplyGraphic(text, ThemeGroup.Light_Text);
+
+                                if (element.Function != null)
+                                {
+                                    var button = gameObject.AddComponent<Button>();
+                                    button.onClick.AddListener(() => element.Function.Invoke());
+                                    button.image = image;
+                                    EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
+                                }
+                                else
+                                    EditorThemeManager.ApplyGraphic(image, ThemeGroup.List_Button_1_Normal, true);
+
+                                RectValues.Default
+                                    .AnchorMax(0f, 1f)
+                                    .AnchorMin(0f, 1f)
+                                    .Pivot(0f, 1f)
+                                    .SizeDelta(722f, 22f).AssignToRectTransform(label.transform.AsRT());
                             }
-                            else
-                            {
-                                EditorThemeManager.ApplyGraphic(barImage, ThemeGroup.List_Button_1_Normal, true);
-                            }
+
+                            //var bar = singleInput.Duplicate(documentationContent, "element");
+                            //DestroyImmediate(bar.GetComponent<InputField>());
+                            //DestroyImmediate(bar.GetComponent<EventInfo>());
+                            //DestroyImmediate(bar.GetComponent<EventTrigger>());
+
+                            //LSHelpers.DeleteChildren(bar.transform);
+                            //bar.transform.localScale = Vector3.one;
+                            //bar.transform.AsRT().sizeDelta = new Vector2(722f, 22f * LSText.WordWrap(element.Data, 67).Count);
+
+                            //var l = label.Duplicate(bar.transform, "label");
+                            //l.transform.localScale = Vector3.one;
+                            //var text = l.transform.GetChild(0).GetComponent<Text>();
+                            //text.text = element.Data;
+                            //text.alignment = TextAnchor.UpperLeft;
+                            //EditorThemeManager.ApplyLightText(text);
+
+                            //l.transform.AsRT().sizeDelta = new Vector2(722f, 22f);
+                            //l.transform.GetChild(0).AsRT().anchoredPosition = new Vector2(10f, -5f);
+                            //l.transform.GetChild(0).AsRT().sizeDelta = new Vector2(722f, 22f);
+
+                            //var barImage = bar.GetComponent<Image>();
+                            //barImage.enabled = true;
+                            //barImage.fillCenter = true;
+
+                            //if (element.Function != null)
+                            //{
+                            //    var button = bar.AddComponent<Button>();
+                            //    button.onClick.AddListener(() => element.Function.Invoke());
+                            //    button.image = barImage;
+                            //    EditorThemeManager.ApplySelectable(button, ThemeGroup.List_Button_1);
+                            //}
+                            //else
+                            //{
+                            //    EditorThemeManager.ApplyGraphic(barImage, ThemeGroup.List_Button_1_Normal, true);
+                            //}
 
                             break;
                         }
@@ -11295,47 +11130,85 @@ namespace BetterLegacy.Editor.Managers
                             if (string.IsNullOrEmpty(element.Data))
                                 break;
 
-                            var bar = singleInput.Duplicate(documentationContent, "element");
-                            LSHelpers.DeleteChildren(bar.transform);
-                            DestroyImmediate(bar.GetComponent<InputField>());
-                            DestroyImmediate(bar.GetComponent<EventInfo>());
-                            DestroyImmediate(bar.GetComponent<EventTrigger>());
-                            DestroyImmediate(bar.GetComponent<HorizontalLayoutGroup>());
-
-                            bar.transform.localScale = Vector3.one;
-
-                            var imageObj = bar.Duplicate(bar.transform, "image");
-                            imageObj.transform.AsRT().anchoredPosition = Vector2.zero;
-
-                            LSHelpers.DeleteChildren(imageObj.transform);
-
-                            var barImage = bar.GetComponent<Image>();
-                            barImage.enabled = true;
-                            barImage.fillCenter = true;
-                            var barMask = bar.AddComponent<Mask>();
-
-                            EditorThemeManager.ApplyGraphic(barImage, ThemeGroup.List_Button_1_Normal, true);
-
-                            var imageObjImage = imageObj.GetComponent<Image>();
-                            imageObjImage.enabled = true;
-                            imageObjImage.color = new Color(1f, 1f, 1f, 1f);
-
-                            if (RTFile.FileExists($"{RTFile.ApplicationDirectory}{element.Data}"))
-                                imageObjImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{element.Data}");
-                            else
-                                imageObjImage.enabled = false;
-
-                            if (imageObjImage.sprite && imageObjImage.sprite.texture)
                             {
-                                var width = Mathf.Clamp(imageObjImage.sprite.texture.width, 0, 718);
-                                bar.transform.AsRT().sizeDelta = new Vector2(width, imageObjImage.sprite.texture.height);
-                                imageObj.transform.AsRT().sizeDelta = new Vector2(width, imageObjImage.sprite.texture.height);
+                                var gameObject = Creator.NewUIObject("element", documentationContent, RectValues.Default
+                                    .AnchoredPosition(1f, -48f)
+                                    .AnchorMax(0f, 1f)
+                                    .AnchorMin(0f, 1f)
+                                    .Pivot(0f, 1f)
+                                    .SizeDelta(720f, 432f));
+
+                                var baseImage = gameObject.AddComponent<Image>();
+                                var mask = gameObject.AddComponent<Mask>();
+
+                                EditorThemeManager.ApplyGraphic(baseImage, ThemeGroup.List_Button_1_Normal, true);
+
+                                var imageObject = Creator.NewUIObject("image", gameObject.transform, RectValues.Default
+                                    .AnchorMax(0f, 1f)
+                                    .AnchorMin(0f, 1f)
+                                    .Pivot(0f, 1f)
+                                    .SizeDelta(632f, 432f));
+
+                                var image = imageObject.AddComponent<Image>();
+                                image.color = new Color(1f, 1f, 1f, 1f);
+
+                                if (RTFile.FileExists($"{RTFile.ApplicationDirectory}{element.Data}"))
+                                    image.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{element.Data}");
+                                else
+                                    image.enabled = false;
+
+                                if (image.sprite && image.sprite.texture)
+                                {
+                                    var width = Mathf.Clamp(image.sprite.texture.width, 0, 718);
+                                    gameObject.transform.AsRT().sizeDelta = new Vector2(width, image.sprite.texture.height);
+                                    imageObject.transform.AsRT().sizeDelta = new Vector2(width, image.sprite.texture.height);
+                                }
+
+                                if (element.Function != null)
+                                    imageObject.AddComponent<Button>().onClick.AddListener(() => element.Function.Invoke());
                             }
 
-                            if (element.Function != null)
-                            {
-                                bar.AddComponent<Button>().onClick.AddListener(() => element.Function.Invoke());
-                            }
+                            //var bar = singleInput.Duplicate(documentationContent, "element");
+                            //LSHelpers.DeleteChildren(bar.transform);
+                            //DestroyImmediate(bar.GetComponent<InputField>());
+                            //DestroyImmediate(bar.GetComponent<EventInfo>());
+                            //DestroyImmediate(bar.GetComponent<EventTrigger>());
+                            //DestroyImmediate(bar.GetComponent<HorizontalLayoutGroup>());
+
+                            //bar.transform.localScale = Vector3.one;
+
+                            //var imageObj = bar.Duplicate(bar.transform, "image");
+                            //imageObj.transform.AsRT().anchoredPosition = Vector2.zero;
+
+                            //LSHelpers.DeleteChildren(imageObj.transform);
+
+                            //var barImage = bar.GetComponent<Image>();
+                            //barImage.enabled = true;
+                            //barImage.fillCenter = true;
+                            //var barMask = bar.AddComponent<Mask>();
+
+                            //EditorThemeManager.ApplyGraphic(barImage, ThemeGroup.List_Button_1_Normal, true);
+
+                            //var imageObjImage = imageObj.GetComponent<Image>();
+                            //imageObjImage.enabled = true;
+                            //imageObjImage.color = new Color(1f, 1f, 1f, 1f);
+
+                            //if (RTFile.FileExists($"{RTFile.ApplicationDirectory}{element.Data}"))
+                            //    imageObjImage.sprite = SpriteHelper.LoadSprite($"{RTFile.ApplicationDirectory}{element.Data}");
+                            //else
+                            //    imageObjImage.enabled = false;
+
+                            //if (imageObjImage.sprite && imageObjImage.sprite.texture)
+                            //{
+                            //    var width = Mathf.Clamp(imageObjImage.sprite.texture.width, 0, 718);
+                            //    bar.transform.AsRT().sizeDelta = new Vector2(width, imageObjImage.sprite.texture.height);
+                            //    imageObj.transform.AsRT().sizeDelta = new Vector2(width, imageObjImage.sprite.texture.height);
+                            //}
+
+                            //if (element.Function != null)
+                            //{
+                            //    bar.AddComponent<Button>().onClick.AddListener(() => element.Function.Invoke());
+                            //}
 
                             break;
                         }
@@ -11645,7 +11518,7 @@ namespace BetterLegacy.Editor.Managers
                     if (dialogAnimation.RotActive)
                         dialog.localRotation = Quaternion.Euler(0f, 0f, dialogAnimation.RotEnd);
 
-                    AnimationManager.inst.RemoveID(animation.id);
+                    AnimationManager.inst.Remove(animation.id);
                 };
 
                 AnimationManager.inst.Play(animation);
