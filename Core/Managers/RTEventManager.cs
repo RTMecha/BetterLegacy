@@ -332,11 +332,85 @@ namespace BetterLegacy.Core.Managers
         bool IsLerper(int i, int j)
             => !(i == 4 || i == 6 && j == 4 || i == 7 && j == 6 || i == 15 && (j == 2 || j == 3) || i == 20 && j == 0 || i == 22 && j == 6 || i == 30 && j == 2);
 
+        public float Interpolate(int type, int valueIndex, float time)
+        {
+            var allEvents = GameData.Current.eventObjects.allEvents;
+
+            var list = allEvents[type].OrderBy(x => x.eventTime).ToList();
+
+            var nextKFIndex = list.FindIndex(x => x.eventTime > time);
+
+            if (nextKFIndex < 0)
+                nextKFIndex = 0;
+
+            var prevKFIndex = nextKFIndex - 1;
+            if (prevKFIndex < 0)
+                prevKFIndex = 0;
+
+            var nextKF = list[nextKFIndex] as EventKeyframe;
+            var prevKF = list[prevKFIndex] as EventKeyframe;
+
+            type = Mathf.Clamp(type, 0, events.Length);
+            valueIndex = Mathf.Clamp(valueIndex, 0, events[type].Length);
+
+            if (prevKF.eventValues.Length <= valueIndex)
+                return 0f;
+
+            var total = 0f;
+            var prevtotal = 0f;
+            for (int k = 0; k < nextKFIndex; k++)
+            {
+                if (((EventKeyframe)allEvents[type][k + 1]).relative)
+                    total += allEvents[type][k].eventValues[valueIndex];
+                else
+                    total = 0f;
+
+                if (((EventKeyframe)allEvents[type][k]).relative)
+                    prevtotal += allEvents[type][k].eventValues[valueIndex];
+                else
+                    prevtotal = 0f;
+            }
+
+            var next = nextKF.relative ? total + nextKF.eventValues[valueIndex] : nextKF.eventValues[valueIndex];
+            var prev = prevKF.relative || nextKF.relative ? prevtotal : prevKF.eventValues[valueIndex];
+
+            bool isLerper = IsLerper(type, valueIndex);
+
+            if (float.IsNaN(prev) || !isLerper)
+                prev = 0f;
+
+            if (float.IsNaN(next))
+                next = 0f;
+
+            if (!isLerper)
+                next = 1f;
+
+            if (prevKFIndex == nextKFIndex)
+                return next;
+
+            var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curveType.Name)(RTMath.InverseLerp(prevKF.eventTime, nextKF.eventTime, time)));
+
+            if (prevKFIndex == nextKFIndex)
+                x = next;
+
+            float offset = 0f;
+            if (offsets.Count > type && offsets[type].Count > valueIndex && isLerper)
+                offset = offsets[type][valueIndex];
+
+            if (float.IsNaN(offset) || float.IsInfinity(offset))
+                offset = 0f;
+
+            if (float.IsNaN(x) || float.IsInfinity(x))
+                x = next;
+
+            return x + offset;
+        }
+
         public float fieldOfView = 50f;
         public bool setPerspectiveCamClip = false;
         public float camPerspectiveOffset = 10f;
 
-        float currentTime;
+        public float currentTime;
 
         public bool windowHasChanged;
 
