@@ -4457,9 +4457,9 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 var color = CoreHelper.CurrentBeatmapTheme.GetObjColor(tmpIndex);
 
-                                float hueNum = beatmapObject.Interpolate(eventTime, type, 2);
-                                float satNum = beatmapObject.Interpolate(eventTime, type, 3);
-                                float valNum = beatmapObject.Interpolate(eventTime, type, 4);
+                                float hueNum = beatmapObject.Interpolate(type, 2, eventTime);
+                                float satNum = beatmapObject.Interpolate(type, 3, eventTime);
+                                float valNum = beatmapObject.Interpolate(type, 4, eventTime);
 
                                 toggle.image.color = CoreHelper.ChangeColorHSV(color, hueNum, satNum, valNum);
                             }
@@ -4558,9 +4558,9 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 var color = CoreHelper.CurrentBeatmapTheme.GetObjColor(tmpIndex);
 
-                                float hueNum = beatmapObject.Interpolate(eventTime, type, 7);
-                                float satNum = beatmapObject.Interpolate(eventTime, type, 8);
-                                float valNum = beatmapObject.Interpolate(eventTime, type, 9);
+                                float hueNum = beatmapObject.Interpolate(type, 7, eventTime);
+                                float satNum = beatmapObject.Interpolate(type, 8, eventTime);
+                                float valNum = beatmapObject.Interpolate(type, 9, eventTime);
 
                                 toggle.image.color = CoreHelper.ChangeColorHSV(color, hueNum, satNum, valNum);
                             }

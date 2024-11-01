@@ -9,6 +9,7 @@ using SimpleJSON;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using BaseBeatmapObject = DataManager.GameData.BeatmapObject;
 using BaseEventKeyframe = DataManager.GameData.EventKeyframe;
@@ -1120,6 +1121,8 @@ namespace BetterLegacy.Core.Data
             }
         }
 
+        #region Custom Interpolation
+
         public void SetTransform(int toType, Vector3 value)
         {
             switch (toType)
@@ -1182,48 +1185,336 @@ namespace BetterLegacy.Core.Data
             }
         }
 
-        public float Interpolate(int type, int value) => Interpolate(AudioManager.inst.CurrentAudioSource.time, type, value);
+        public float Interpolate(int type, int valueIndex) => Interpolate(type, valueIndex, Updater.CurrentTime - StartTime);
         
-        public float Interpolate(float t, int type, int value)
+        public float Interpolate(int type, int valueIndex, float time)
         {
-            var time = t - StartTime;
+            var list = events[type].OrderBy(x => x.eventTime).ToList();
 
-            var nextKFIndex = events[type].FindIndex(x => x.eventTime > time);
+            var nextKFIndex = list.FindIndex(x => x.eventTime > time);
 
-            if (nextKFIndex >= 0)
+            if (nextKFIndex < 0)
+                nextKFIndex = list.Count - 1;
+
+            var prevKFIndex = nextKFIndex - 1;
+            if (prevKFIndex < 0)
+                prevKFIndex = 0;
+
+            var nextKF = list[nextKFIndex] as EventKeyframe;
+            var prevKF = list[prevKFIndex] as EventKeyframe;
+
+            type = Mathf.Clamp(type, 0, list.Count);
+            valueIndex = Mathf.Clamp(valueIndex, 0, list[0].eventValues.Length);
+
+            if (prevKF.eventValues.Length <= valueIndex)
+                return 0f;
+
+            var total = 0f;
+            var prevtotal = 0f;
+            for (int k = 0; k < nextKFIndex; k++)
             {
-                var prevKFIndex = nextKFIndex - 1;
-                if (prevKFIndex < 0)
-                    prevKFIndex = 0;
+                if (((EventKeyframe)list[k + 1]).relative)
+                    total += list[k].eventValues[valueIndex];
+                else
+                    total = 0f;
 
-                var nextKF = events[type][nextKFIndex];
-                var prevKF = events[type][prevKFIndex];
-
-                var next = nextKF.eventValues[value];
-                var prev = prevKF.eventValues[value];
-
-                if (float.IsNaN(prev))
-                    prev = 0f;
-
-                if (float.IsNaN(next))
-                    next = 0f;
-
-                var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curveType.Name)(RTMath.InverseLerp(prevKF.eventTime, nextKF.eventTime, time)));
-
-                if (prevKFIndex == nextKFIndex || float.IsNaN(x) || float.IsInfinity(x))
-                    x = next;
-
-                return x;
+                if (((EventKeyframe)list[k]).relative)
+                    prevtotal += list[k].eventValues[valueIndex];
+                else
+                    prevtotal = 0f;
             }
-            else
+
+            var next = nextKF.relative ? total + nextKF.eventValues[valueIndex] : nextKF.eventValues[valueIndex];
+            var prev = prevKF.relative || nextKF.relative ? prevtotal : prevKF.eventValues[valueIndex];
+
+            bool isLerper = type != 3 || valueIndex != 0;
+
+            if (float.IsNaN(prev) || !isLerper)
+                prev = 0f;
+
+            if (float.IsNaN(next))
+                next = 0f;
+
+            if (!isLerper)
+                next = 1f;
+
+            if (prevKFIndex == nextKFIndex)
+                return next;
+
+            var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curveType.Name)(RTMath.InverseLerp(prevKF.eventTime, nextKF.eventTime, time)));
+
+            if (prevKFIndex == nextKFIndex)
+                x = next;
+
+            if (float.IsNaN(x) || float.IsInfinity(x))
+                x = next;
+
+            return x;
+        }
+
+        public float InterpolateChain(int type, int valueIndex, float time)
+        {
+            float result = 0f;
+
+            var parents = GetParentChain();
+            parents.Reverse();
+
+            for (int i = 0; i < parents.Count; i++)
             {
-                var x = events[type][events[type].Count - 1].eventValues[value];
-
-                if (float.IsNaN(x))
-                    x = 0f;
-
-                return x;
+                result += parents[i].Interpolate(type, valueIndex, time);
             }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Gets the accurate object position regardless of whether it's empty or not. (does not include homing nor random)
+        /// </summary>
+        /// <param name="includeDepth">If depth should be considered.</param>
+        /// <returns>Returns an accurate object position.</returns>
+        public Vector3 InterpolateChainPosition(bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true) => InterpolateChainPosition(Updater.CurrentTime - StartTime, includeDepth, includeOffsets, includeSelf);
+
+        /// <summary>
+        /// Gets the accurate object position regardless of whether it's empty or not. (does not include homing nor random)
+        /// </summary>
+        /// <param name="time">The time to interpolate.</param>
+        /// <param name="includeDepth">If depth should be considered.</param>
+        /// <returns>Returns an accurate object position.</returns>
+        public Vector3 InterpolateChainPosition(float time, bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true)
+        {
+            Vector3 result = Vector3.zero;
+
+            var parents = GetParentChain();
+
+            bool animatePosition = true;
+            bool animateScale = true;
+            bool animateRotation = true;
+
+            for (int i = 0; i < parents.Count; i++)
+            {
+                if (!includeSelf && i == 0)
+                    continue;
+
+                var parent = parents[i];
+
+                if (animateScale)
+                    result = RTMath.Scale(result, new Vector2(parent.Interpolate(1, 0, time), parent.Interpolate(1, 1, time)));
+
+                if (animateRotation)
+                    result = RTMath.Rotate(result, parent.Interpolate(2, 0, time));
+
+                if (animatePosition)
+                    result = RTMath.Move(result, new Vector3(parent.Interpolate(0, 0, time), parent.Interpolate(0, 1, time), parent.Interpolate(0, 2, time)));
+
+                animatePosition = parent.GetParentType(0);
+                animateScale = parent.GetParentType(1);
+                animateRotation = parent.GetParentType(2);
+
+                if (includeOffsets)
+                    result += parent.positionOffset;
+            }
+
+            result.z += includeDepth ? Depth : 0f;
+            return result;
+        }
+
+        public Vector2 InterpolateChainScale(bool includeOffsets = true, bool includeSelf = true) => InterpolateChainScale(Updater.CurrentTime - StartTime, includeOffsets, includeSelf);
+
+        public Vector2 InterpolateChainScale(float time, bool includeOffsets = true, bool includeSelf = true)
+        {
+            Vector2 result = Vector2.one;
+
+            var parents = GetParentChain();
+
+            bool animateScale = true;
+
+            for (int i = 0; i < parents.Count; i++)
+            {
+                if (!includeSelf && i == 0)
+                    continue;
+
+                var parent = parents[i];
+
+                if (animateScale)
+                    result = RTMath.Scale(result, new Vector2(parent.Interpolate(1, 0, time), parent.Interpolate(1, 1, time)));
+
+                animateScale = parent.GetParentType(1);
+
+                if (includeOffsets)
+                    result = new Vector2(result.x + parent.scaleOffset.x, result.y + parent.scaleOffset.y);
+            }
+
+            return result;
+        }
+
+        public float InterpolateChainRotation(bool includeOffsets = true, bool includeSelf = true) => InterpolateChainRotation(Updater.CurrentTime - StartTime, includeOffsets, includeSelf);
+
+        public float InterpolateChainRotation(float time, bool includeOffsets = true, bool includeSelf = true)
+        {
+            float result = 0f;
+
+            var parents = GetParentChain();
+
+            bool animateRotation = true;
+
+            for (int i = 0; i < parents.Count; i++)
+            {
+                if (!includeSelf && i == 0)
+                    continue;
+
+                var parent = parents[i];
+
+                if (animateRotation)
+                    result += parent.Interpolate(2, 0, time);
+
+                animateRotation = parent.GetParentType(2);
+
+                if (includeOffsets)
+                    result += parent.rotationOffset.z;
+            }
+
+            return result;
+        }
+
+        public ObjectAnimationResult InterpolateChain(bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true) => InterpolateChain(Updater.CurrentTime - StartTime, includeDepth, includeOffsets, includeSelf);
+
+        public ObjectAnimationResult InterpolateChain(float time, bool includeDepth = false, bool includeOffsets = true, bool includeSelf = true)
+        {
+            var result = ObjectAnimationResult.Default;
+
+            var parents = GetParentChain();
+
+            bool animatePosition = true;
+            bool animateScale = true;
+            bool animateRotation = true;
+
+            for (int i = 0; i < parents.Count; i++)
+            {
+                if (!includeSelf && i == 0)
+                    continue;
+
+                var parent = parents[i];
+
+                if (animateScale)
+                {
+                    var scale = new Vector2(parent.Interpolate(1, 0, time), parent.Interpolate(1, 1, time));
+                    result.position = RTMath.Scale(result.position, scale);
+                    result.scale = RTMath.Scale(result.scale, scale);
+                }
+
+                if (animateRotation)
+                {
+                    var rotation = parent.Interpolate(2, 0, time);
+                    result.position = RTMath.Rotate(result.position, rotation);
+                    result.rotation += parent.Interpolate(2, 0, time);
+                }
+
+                if (animatePosition)
+                    result.position = RTMath.Move(result.position, new Vector3(parent.Interpolate(0, 0, time), parent.Interpolate(0, 1, time), parent.Interpolate(0, 2, time)));
+
+                animatePosition = parent.GetParentType(0);
+                animateScale = parent.GetParentType(1);
+                animateRotation = parent.GetParentType(2);
+
+                if (includeOffsets)
+                {
+                    result.position += parent.positionOffset;
+                    result.scale = new Vector2(result.scale.x + parent.scaleOffset.x, result.scale.y + parent.scaleOffset.y);
+                    result.rotation += parent.rotationOffset.z;
+                }
+            }
+
+            result.position.z += includeDepth ? Depth : 0f;
+
+            return result;
+        }
+
+        public struct ObjectAnimationResult
+        {
+            public static ObjectAnimationResult Default => new ObjectAnimationResult(Vector3.zero, Vector2.one, 0f);
+
+            public ObjectAnimationResult(Vector3 position, Vector2 scale, float rotation)
+            {
+                this.position = position;
+                this.scale = scale;
+                this.rotation = rotation;
+            }
+
+            public Vector3 position;
+            public Vector2 scale;
+            public float rotation;
+        }
+
+        #endregion
+
+        public string ReplaceObjectVariables(string input, bool includeEnd = true)
+        {
+            input = input.Replace("intVariable", integerVariable.ToString());
+
+            if (input.Contains("objectEventCopy"))
+            {
+                CoreHelper.RegexMatches(input, new Regex(RTMath.GetFunctionPattern(@"objectEventCopy\((.*?),(.*?),(.*?)\)", includeEnd)), match =>
+                {
+                    try
+                    {
+                        var type = Parser.TryParse(match.Groups[1].ToString(), 0);
+                        var valueIndex = Parser.TryParse(match.Groups[2].ToString(), 0);
+                        var time = (float)RTMath.Evaluate(RTMath.Replace(ReplaceObjectVariables(match.Groups[3].ToString().Trim(), false), false));
+
+                        input = input.Replace(match.Groups[0].ToString(), Interpolate(type, valueIndex, time).ToString());
+                    }
+                    catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
+                });
+            }
+
+            if (input.Contains("positionOffsetX"))
+                input = input.Replace("positionOffsetX", positionOffset.x.ToString());
+            if (input.Contains("positionOffsetY"))
+                input = input.Replace("positionOffsetY", positionOffset.y.ToString());
+            if (input.Contains("positionOffsetZ"))
+                input = input.Replace("positionOffsetZ", positionOffset.z.ToString());
+
+            if (input.Contains("scaleOffsetX"))
+                input = input.Replace("scaleOffsetX", scaleOffset.x.ToString());
+            if (input.Contains("scaleOffsetY"))
+                input = input.Replace("scaleOffsetY", scaleOffset.y.ToString());
+            if (input.Contains("scaleOffsetZ"))
+                input = input.Replace("scaleOffsetZ", scaleOffset.z.ToString());
+
+            if (input.Contains("rotationOffsetX"))
+                input = input.Replace("rotationOffsetX", rotationOffset.x.ToString());
+            if (input.Contains("rotationOffsetY"))
+                input = input.Replace("rotationOffsetY", rotationOffset.y.ToString());
+            if (input.Contains("rotationOffsetZ"))
+                input = input.Replace("rotationOffsetZ", rotationOffset.z.ToString());
+
+            if (Updater.TryGetObject(this, out Optimization.Objects.LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
+            {
+                var transform = levelObject.visualObject.GameObject.transform;
+
+                if (input.Contains("visualPosX"))
+                    input.Replace("visualPosX", transform.position.x.ToString());
+                if (input.Contains("visualPosY"))
+                    input.Replace("visualPosY", transform.position.y.ToString());
+                if (input.Contains("visualPosZ"))
+                    input.Replace("visualPosZ", transform.position.z.ToString());
+
+                if (input.Contains("visualScaX"))
+                    input.Replace("visualScaX", transform.lossyScale.x.ToString());
+                if (input.Contains("visualScaY"))
+                    input.Replace("visualScaY", transform.lossyScale.y.ToString());
+                if (input.Contains("visualScaZ"))
+                    input.Replace("visualScaZ", transform.lossyScale.z.ToString());
+
+                if (input.Contains("visualRotX"))
+                    input.Replace("visualRotX", transform.rotation.eulerAngles.x.ToString());
+                if (input.Contains("visualRotY"))
+                    input.Replace("visualRotY", transform.rotation.eulerAngles.y.ToString());
+                if (input.Contains("visualRotZ"))
+                    input.Replace("visualRotZ", transform.rotation.eulerAngles.z.ToString());
+            }
+
+            return input;
         }
 
         /// <summary>

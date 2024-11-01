@@ -24,6 +24,7 @@ namespace BetterLegacy.Core.Data
         public bool not = false;
 
         public object Result { get; set; }
+        public float ResultTimer { get; set; }
 
         public bool hasChanged;
     }
