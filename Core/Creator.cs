@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BetterLegacy.Core.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -23,6 +24,15 @@ namespace BetterLegacy.Core
         {
             var gameObject = NewGameObject(name, parent, siblingIndex);
             gameObject.AddComponent<RectTransform>();
+
+            return gameObject;
+        }
+
+        public static GameObject NewUIObject(string name, Transform parent, RectValues rectValues, int siblingIndex = -1)
+        {
+            var gameObject = NewGameObject(name, parent, siblingIndex);
+            var rectTransform = gameObject.AddComponent<RectTransform>();
+            rectValues.AssignToRectTransform(rectTransform);
 
             return gameObject;
         }
