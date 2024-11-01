@@ -502,7 +502,7 @@ namespace BetterLegacy.Patchers
                         {
                             if (ObjEditor.inst)
                                 ObjEditor.inst.KeyframeDialogs[3].transform.AsRT().anchoredPosition = new Vector2(0f, _val ? 195f : 0f);
-                            AnimationManager.inst.RemoveID(animation.id);
+                            AnimationManager.inst.Remove(animation.id);
                         };
 
                         AnimationManager.inst.Play(animation);

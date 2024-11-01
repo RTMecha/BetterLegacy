@@ -814,7 +814,7 @@ namespace BetterLegacy.Components.Player
 
             if (spawnAnimation != null)
             {
-                AnimationManager.inst.RemoveID(spawnAnimation.id);
+                AnimationManager.inst.Remove(spawnAnimation.id);
                 spawnAnimation = null;
             }
 
@@ -918,7 +918,7 @@ namespace BetterLegacy.Components.Player
             };
             spawnAnimation.onComplete = () =>
             {
-                AnimationManager.inst.RemoveID(spawnAnimation.id);
+                AnimationManager.inst.Remove(spawnAnimation.id);
                 spawnAnimation = null;
 
                 if (transform)
@@ -1567,7 +1567,7 @@ namespace BetterLegacy.Components.Player
 
                                 if (rotateResetAnimation != null)
                                 {
-                                    AnimationManager.inst.RemoveID(rotateResetAnimation.id);
+                                    AnimationManager.inst.Remove(rotateResetAnimation.id);
                                     rotateResetAnimation = null;
                                 }
 
@@ -1586,7 +1586,7 @@ namespace BetterLegacy.Components.Player
 
                                 if (rotateResetAnimation != null)
                                 {
-                                    AnimationManager.inst.RemoveID(rotateResetAnimation.id);
+                                    AnimationManager.inst.Remove(rotateResetAnimation.id);
                                     rotateResetAnimation = null;
                                 }
 
@@ -1613,7 +1613,7 @@ namespace BetterLegacy.Components.Player
                                     if (rotateResetAnimation == null)
                                         return;
 
-                                    AnimationManager.inst.RemoveID(rotateResetAnimation.id);
+                                    AnimationManager.inst.Remove(rotateResetAnimation.id);
                                     rotateResetAnimation = null;
                                     animatingRotateReset = false;
                                 };

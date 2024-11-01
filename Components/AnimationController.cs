@@ -1,24 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 using UnityEngine;
 
-namespace BetterLegacy.Core.Animation
+using BetterLegacy.Core;
+using BetterLegacy.Core.Animation;
+using BetterLegacy.Core.Animation.Keyframe;
+using System;
+
+namespace BetterLegacy.Components
 {
     /// <summary>
-    /// All animation code is based on https://github.com/Reimnop/Catalyst
+    /// Same as AnimationManager except not a global manager and can be used for any single instance case.
     /// </summary>
-    public class AnimationManager : MonoBehaviour
+    public class AnimationController : MonoBehaviour
     {
-        #region Init
-
-        public static AnimationManager inst;
-
-        public static void Init() => Creator.NewGameObject(nameof(AnimationManager), SystemManager.inst.transform).AddComponent<AnimationManager>();
-
-        void Awake() => inst = this;
-
-        #endregion
 
         public List<RTAnimation> animations = new List<RTAnimation>();
 

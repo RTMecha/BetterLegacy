@@ -202,7 +202,7 @@ namespace BetterLegacy.Patchers
 
             animation.onComplete = () =>
             {
-                AnimationManager.inst.RemoveID(animation.id);
+                AnimationManager.inst.Remove(animation.id);
             };
 
             AnimationManager.inst.Play(animation);

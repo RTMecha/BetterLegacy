@@ -179,7 +179,7 @@ namespace BetterLegacy.Core.Data
 
                                 animation.onComplete = () =>
                                 {
-                                    AnimationManager.inst.RemoveID(animation.id);
+                                    AnimationManager.inst.Remove(animation.id);
                                     if (tf)
                                         tf.localPosition = new Vector2(x, y);
                                 };

@@ -146,7 +146,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
             if (exitAnimation != null)
             {
-                AnimationManager.inst.RemoveID(exitAnimation.id);
+                AnimationManager.inst.Remove(exitAnimation.id);
                 exitAnimation = null;
             }
 
@@ -166,7 +166,7 @@ namespace BetterLegacy.Menus.UI.Elements
             };
             enterAnimation.onComplete = () =>
             {
-                AnimationManager.inst.RemoveID(enterAnimation.id);
+                AnimationManager.inst.Remove(enterAnimation.id);
                 enterAnimation = null;
             };
             AnimationManager.inst.Play(enterAnimation);
@@ -193,7 +193,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
             if (enterAnimation != null)
             {
-                AnimationManager.inst.RemoveID(enterAnimation.id);
+                AnimationManager.inst.Remove(enterAnimation.id);
                 enterAnimation = null;
             }
 
@@ -211,7 +211,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         gameObject.transform.localScale = new Vector3(x, x, 1f);
                 }),
             };
-            exitAnimation.onComplete = () => { AnimationManager.inst.RemoveID(exitAnimation.id); };
+            exitAnimation.onComplete = () => { AnimationManager.inst.Remove(exitAnimation.id); };
             AnimationManager.inst.Play(exitAnimation);
         }
 

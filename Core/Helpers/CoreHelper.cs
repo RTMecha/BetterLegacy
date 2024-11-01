@@ -1025,7 +1025,7 @@ namespace BetterLegacy.Core.Helpers
 
                     Destroy(inter);
 
-                    AnimationManager.inst?.RemoveID(animation.id);
+                    AnimationManager.inst?.Remove(animation.id);
                 }),
             };
 

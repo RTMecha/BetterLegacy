@@ -229,7 +229,7 @@ namespace BetterLegacy.Menus.UI.Elements
         public virtual void Clear()
         {
             for (int i = 0; i < animations.Count; i++)
-                AnimationManager.inst.RemoveID(animations[i].id);
+                AnimationManager.inst.Remove(animations[i].id);
             animations.Clear();
         }
 
@@ -1336,7 +1336,7 @@ namespace BetterLegacy.Menus.UI.Elements
                                     return;
                                 }
 
-                                AnimationManager.inst.RemoveID(animation.id);
+                                AnimationManager.inst.Remove(animation.id);
                                 animations.RemoveAll(x => x.id == animation.id);
 
                                 if (!isColor && lastX != null)
@@ -1439,7 +1439,7 @@ namespace BetterLegacy.Menus.UI.Elements
                                     return;
                                 }
 
-                                AnimationManager.inst.RemoveID(animation.id);
+                                AnimationManager.inst.Remove(animation.id);
                                 animations.RemoveAll(x => x.id == animation.id);
 
                                 if (lastX != null)
@@ -1514,7 +1514,7 @@ namespace BetterLegacy.Menus.UI.Elements
                                 animation.onComplete?.Invoke();
 
                             animation.Stop();
-                            AnimationManager.inst.RemoveID(animation.id);
+                            AnimationManager.inst.Remove(animation.id);
                         }
 
                         break;
@@ -1644,7 +1644,7 @@ namespace BetterLegacy.Menus.UI.Elements
                                             return;
                                         }
 
-                                        AnimationManager.inst.RemoveID(animation.id);
+                                        AnimationManager.inst.Remove(animation.id);
                                         animations.RemoveAll(x => x.id == animation.id);
 
                                         if (lastX != null)
@@ -1687,7 +1687,7 @@ namespace BetterLegacy.Menus.UI.Elements
                                             return;
                                         }
 
-                                        AnimationManager.inst.RemoveID(animation.id);
+                                        AnimationManager.inst.Remove(animation.id);
                                         animations.RemoveAll(x => x.id == animation.id);
 
                                         if (lastX != null)
@@ -1728,7 +1728,7 @@ namespace BetterLegacy.Menus.UI.Elements
                                             return;
                                         }
 
-                                        AnimationManager.inst.RemoveID(animation.id);
+                                        AnimationManager.inst.Remove(animation.id);
                                         animations.RemoveAll(x => x.id == animation.id);
 
                                         if (lastX != null)
@@ -1770,7 +1770,7 @@ namespace BetterLegacy.Menus.UI.Elements
                                             return;
                                         }
 
-                                        AnimationManager.inst.RemoveID(animation.id);
+                                        AnimationManager.inst.Remove(animation.id);
                                         animations.RemoveAll(x => x.id == animation.id);
 
                                         if (lastX != null)
@@ -1862,7 +1862,7 @@ namespace BetterLegacy.Menus.UI.Elements
                                             return;
                                         }
 
-                                        AnimationManager.inst.RemoveID(animation.id);
+                                        AnimationManager.inst.Remove(animation.id);
                                         animations.RemoveAll(x => x.id == animation.id);
 
                                         if (lastX != null)
@@ -1995,7 +1995,7 @@ namespace BetterLegacy.Menus.UI.Elements
                                             return;
                                         }
 
-                                        AnimationManager.inst.RemoveID(animation.id);
+                                        AnimationManager.inst.Remove(animation.id);
                                         animations.RemoveAll(x => x.id == animation.id);
 
                                         if (lastX != null)

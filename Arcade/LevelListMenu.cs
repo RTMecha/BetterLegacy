@@ -418,9 +418,9 @@ namespace BetterLegacy.Arcade
                     allowOriginalHoverMethods = true,
                     enterFunc = () =>
                     {
-                        if (AnimationManager.inst.animations.TryFindAll(x => x.name.Contains("Level Shine"), out List<RTAnimation> animations))
+                        if (AnimationManager.inst.TryFindAnimations(x => x.name.Contains("Level Shine"), out List<RTAnimation> animations))
                             for (int i = 0; i < animations.Count; i++)
-                                AnimationManager.inst.RemoveID(animations[i].id);
+                                AnimationManager.inst.Remove(animations[i].id);
 
                         if (!isSSRank)
                             return;
@@ -442,9 +442,9 @@ namespace BetterLegacy.Arcade
                     },
                     exitFunc = () =>
                     {
-                        if (AnimationManager.inst.animations.TryFindAll(x => x.name.Contains("Level Shine"), out List<RTAnimation> animations))
+                        if (AnimationManager.inst.TryFindAnimations(x => x.name.Contains("Level Shine"), out List<RTAnimation> animations))
                             for (int i = 0; i < animations.Count; i++)
-                                AnimationManager.inst.RemoveID(animations[i].id);
+                                AnimationManager.inst.Remove(animations[i].id);
 
                         if (!isSSRank)
                             return;
@@ -497,17 +497,17 @@ namespace BetterLegacy.Arcade
                         };
                         animation.onComplete = () =>
                         {
-                            AnimationManager.inst.RemoveID(animation.id);
+                            AnimationManager.inst.Remove(animation.id);
                             if (button.gameObject)
                                 button.gameObject.transform.SetLocalRotationEulerZ(0f);
                             if (locked.gameObject)
                                 locked.gameObject.transform.SetLocalRotationEulerZ(0f);
                         };
 
-                        AnimationManager.inst.animations.FindAll(x => x.name == animation.name).ForEach(x =>
+                        AnimationManager.inst.FindAnimationsByName(animation.name).ForEach(x =>
                         {
                             x.Stop();
-                            AnimationManager.inst.RemoveID(x.id);
+                            AnimationManager.inst.Remove(x.id);
                         });
                         AnimationManager.inst.Play(animation);
 

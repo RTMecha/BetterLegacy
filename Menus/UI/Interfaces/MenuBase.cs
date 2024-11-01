@@ -891,9 +891,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             UnityEngine.Object.Destroy(canvas?.GameObject);
             if (loopingEvents != null)
-                AnimationManager.inst.RemoveID(loopingEvents.id);
+                AnimationManager.inst.Remove(loopingEvents.id);
             if (spawnEvents != null)
-                AnimationManager.inst.RemoveID(spawnEvents.id);
+                AnimationManager.inst.Remove(spawnEvents.id);
         }
 
         /// <summary>

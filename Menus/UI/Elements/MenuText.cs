@@ -67,7 +67,7 @@ namespace BetterLegacy.Menus.UI.Elements
             };
             textInterpolation.onComplete = () =>
             {
-                AnimationManager.inst.RemoveID(textInterpolation.id);
+                AnimationManager.inst.Remove(textInterpolation.id);
                 Interpolate(textWithoutFormatting.Length);
                 isSpawning = false;
                 textInterpolation = null;
@@ -128,7 +128,7 @@ namespace BetterLegacy.Menus.UI.Elements
         {
             if (textInterpolation != null)
             {
-                AnimationManager.inst.RemoveID(textInterpolation.id);
+                AnimationManager.inst.Remove(textInterpolation.id);
                 textInterpolation = null;
             }
 
