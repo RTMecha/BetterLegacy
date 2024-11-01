@@ -49,7 +49,7 @@ namespace BetterLegacy.Core
         public static bool logException2 = false;
         public static bool logException3 = false;
 
-        static string GetFunctionPattern(string p, bool includeEnd) => p + (includeEnd ? ";" : "") + "";
+        public static string GetFunctionPattern(string p, bool includeEnd) => p + (includeEnd ? ";" : "") + "";
 
         public static bool TryEvaluate(string input, float current, out float result)
         {
@@ -88,7 +88,8 @@ namespace BetterLegacy.Core
                     .Replace("audioTime", AudioManager.inst.CurrentAudioSource.time.ToString())
                     .Replace("smoothedTime", RTEventManager.inst.currentTime.ToString())
                     .Replace("volume", AudioManager.inst.musicVol.ToString())
-                    .Replace("pitch", AudioManager.inst.pitch.ToString());
+                    .Replace("pitch", AudioManager.inst.pitch.ToString())
+                    .Replace("forwardPitch", CoreHelper.ForwardPitch.ToString());
 
                 try
                 {
@@ -1015,6 +1016,120 @@ namespace BetterLegacy.Core
             }
         }
 
+        public static string EvaluateFunctions(string input, Dictionary<string, float> variables = null)
+        {
+            var startMethods = new List<int>();
+            var endMethods = new List<int>();
+            var test = new List<int>();
+
+            int methodCount = 0;
+            int index = 0;
+
+            while (index < input.Length)
+            {
+                if (input[index] == '(')
+                {
+                    startMethods.Add(index);
+                    methodCount++;
+                }
+
+                if (input[index] == ')')
+                {
+                    endMethods.Add(index);
+                    methodCount--;
+                    test.Add(startMethods[methodCount]);
+                    startMethods.RemoveAt(methodCount);
+                }
+
+                index++;
+            }
+
+            Predicate<char> predicate = x => char.IsLetter(x) || char.IsDigit(x);
+
+            for (int i = 0; i < test.Count; i++)
+            {
+                var result = input.Substring(test[i], endMethods[i] - test[i] + 1);
+                int num = test[i];
+                string methodName = "";
+
+                while (num > 0)
+                {
+                    num--;
+                    if (!predicate(input[num]))
+                        break;
+
+                    methodName += input[num];
+                }
+
+                methodName = new string(methodName.Reverse().ToArray());
+                var fullMethod = methodName + result;
+                var startMethodIndex = test[i] - methodName.Length;
+
+                Action<string> update = (string calc) =>
+                {
+                    for (int j = i + 1; j < test.Count; j++)
+                    {
+                        var a = fullMethod.Length;
+                        var b = calc.Length;
+
+                        if (test[j] > test[i])
+                        {
+                            test[j] -= a;
+                            endMethods[j] -= a;
+
+                            test[j] += b;
+                            endMethods[j] += b;
+                        }
+                    }
+                };
+
+                // Functions
+
+                switch (methodName)
+                {
+                    case "random":
+                        {
+                            var calc = ((float)new System.Random().NextDouble()).ToString();
+
+                            input = CoreHelper.ReplaceInsert(input, calc, startMethodIndex, endMethods[i]);
+
+                            update(calc);
+
+                            break;
+                        }
+                    case "clamp":
+                        {
+                            CoreHelper.RegexMatches(fullMethod, new Regex(@"clamp\((.*?),(.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var a = (float)Evaluate(match.Groups[1].ToString());
+                                    var b = (float)Evaluate(match.Groups[2].ToString());
+                                    var c = (float)Evaluate(match.Groups[3].ToString());
+                                    var calc = Clamp(a, b, c).ToString();
+
+                                    input = CoreHelper.ReplaceInsert(input, calc, startMethodIndex, endMethods[i]);
+
+                                    update(calc);
+                                }
+                                catch
+                                {
+                                    var calc = "0";
+
+                                    input = CoreHelper.ReplaceInsert(input, calc, startMethodIndex, endMethods[i]);
+
+                                    update(calc);
+                                }
+                            });
+
+                            break;
+                        }
+                }
+            }
+
+            return input;
+        }
+
         public static float Lerp(float x, float y, float t) => x + (y - x) * t;
         public static Vector2 Lerp(Vector2 x, Vector2 y, float t) => x + (y - x) * t;
         public static Vector3 Lerp(Vector3 x, Vector3 y, float t) => x + (y - x) * t;
@@ -1122,7 +1237,40 @@ namespace BetterLegacy.Core
 
         static float VectorAngle90(Vector2 vector2) => vector2 == Vector2.zero ? 0f : ((vector2.normalized.x - vector2.normalized.y) + 1f) * 45f;
 
+        public static Vector2 Multiply(Vector2 a, Vector2 b) => new Vector2
+        {
+            x = a.x * b.x,
+            y = a.y * b.y,
+        };
+        
+        public static Vector3 Multiply(Vector3 a, Vector3 b) => new Vector3
+        {
+            x = a.x * b.x,
+            y = a.y * b.y,
+            z = a.z * b.z,
+        };
+
+        public static float RecursiveLerp(float t, float count)
+        {
+            return 0f;
+        }
+
+        public static float Recursive(float t, int count)
+        {
+            float result = t;
+            int num = count;
+            while (num > 1)
+            {
+                result *= t;
+
+                num--;
+            }
+
+            return result;
+        }
+
         public static Vector3 Move(Vector3 a, Vector2 b) => new Vector3(a.x + b.x, a.y + b.y, a.z);
+        public static Vector3 Move(Vector3 a, Vector3 b) => new Vector3(a.x + b.x, a.y + b.y, a.z + b.z);
         public static Vector3 Scale(Vector3 a, Vector2 b) => new Vector3(a.x * b.x, a.y * b.y, a.z);
         public static Vector3 Rotate(Vector3 a, float b) => Quaternion.Euler(0, 0, b) * a;
 

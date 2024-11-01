@@ -470,6 +470,28 @@ namespace BetterLegacy.Core.Helpers
             return str;
         }
 
+        public static string ReplaceInsert(string str, string insert, int startIndex, int endIndex)
+        {
+            startIndex = Mathf.Clamp(startIndex, 0, str.Length - 1);
+            endIndex = Mathf.Clamp(endIndex, 0, str.Length - 1);
+
+            //if (endIndex <= startIndex)
+            //    return str;
+
+            while (startIndex <= endIndex)
+            {
+                var list = str.ToCharArray().ToList();
+                list.RemoveAt(startIndex);
+
+                str = new string(list.ToArray());
+                endIndex--;
+            }
+
+            return str.Insert(startIndex, insert);
+        }
+
+        public static string SectionString(string str, int startIndex, int endIndex) => str.Substring(startIndex, endIndex - startIndex + 1);
+
         public static string[] GetLines(string str) => str.Split(new string[] { "\n", "\r\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
 
         public static string InterpolateString(string str, float t) => str.Substring(0, Mathf.Clamp((int)RTMath.Lerp(0, str.Length, t), 0, str.Length));
