@@ -1,3 +1,9 @@
+snapshot-2024.11.1 - (pre-1.7.0) > [Nov 1, 2024]
+- Fixed objects rendering on the event layer and other layers its not supposed to.
+- Added animateObjectMath modifiers.
+- Added copyEvent(type, valueIndex, time) to math evaluators.
+- Updated Editor Documentation.
+- You can now right click the Upload Acknowledgements text to show the Upload a Level documentation.
 snapshot-2024.10.5 - (pre-1.7.0) > [Oct 28, 2024]
 - Fixed the Config Manager UI rounded corners not being on the right corners.
 - Add File to Level Folder (now renamed "Add File to Level") now allows for directly importing a Prefab into your level from anywhere.
