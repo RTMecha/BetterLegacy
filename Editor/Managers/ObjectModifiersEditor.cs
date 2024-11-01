@@ -390,7 +390,11 @@ namespace BetterLegacy.Editor.Managers
                             StartCoroutine(RenderModifiers(beatmapObject));
                         }),
                         new RTEditor.ButtonFunction(true),
-                        new RTEditor.ButtonFunction("Update Modifier", () => { modifier.active = false; }),
+                        new RTEditor.ButtonFunction("Update Modifier", () =>
+                        {
+                            modifier.active = false;
+                            modifier.Result = null;
+                        }),
                     };
                     if (ModCompatibility.UnityExplorerInstalled)
                         buttonFunctions.Add(new RTEditor.ButtonFunction("Inspect", () => { ModCompatibility.Inspect(modifier); }));
@@ -1948,6 +1952,8 @@ namespace BetterLegacy.Editor.Managers
 
                             SingleGenerator(modifier, layout, "X", 1, -1f);
                             SingleGenerator(modifier, layout, "Y", 2, 0f);
+                            SingleGenerator(modifier, layout, "Time Multiply", 3, 1f);
+                            IntegerGenerator(modifier, layout, "Curve", 4, 2);
 
                             break;
                         }
