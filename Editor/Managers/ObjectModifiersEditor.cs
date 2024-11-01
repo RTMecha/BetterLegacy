@@ -1695,15 +1695,34 @@ namespace BetterLegacy.Editor.Managers
                     case "animateObjectOther":
                     case "animateSignal":
                     case "animateSignalOther":
+                    case "animateObjectMath":
+                    case "animateObjectMathOther":
+                    case "animateSignalMath":
+                    case "animateSignalMathOther":
                         {
                             if (cmd.Contains("Signal") || cmd.Contains("Other"))
                                 PrefabGroupOnly(modifier, layout);
 
-                            SingleGenerator(modifier, layout, "Time", 0, 1f);
+                            if (cmd.Contains("Math"))
+                                StringGenerator(modifier, layout, "Time", 0);
+                            else
+                                SingleGenerator(modifier, layout, "Time", 0, 1f);
+
                             DropdownGenerator(modifier, layout, "Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation"));
-                            SingleGenerator(modifier, layout, "X", 2, 0f);
-                            SingleGenerator(modifier, layout, "Y", 3, 0f);
-                            SingleGenerator(modifier, layout, "Z", 4, 0f);
+
+                            if (cmd.Contains("Math"))
+                            {
+                                StringGenerator(modifier, layout, "X", 2);
+                                StringGenerator(modifier, layout, "Y", 3);
+                                StringGenerator(modifier, layout, "Z", 4);
+                            }
+                            else
+                            {
+                                SingleGenerator(modifier, layout, "X", 2, 0f);
+                                SingleGenerator(modifier, layout, "Y", 3, 0f);
+                                SingleGenerator(modifier, layout, "Z", 4, 0f);
+                            }
+
                             BoolGenerator(modifier, layout, "Relative", 5, true);
 
                             DropdownGenerator(modifier, layout, "Easing", 6, EditorManager.inst.CurveOptions.Select(x => new Dropdown.OptionData(x.name, x.icon)).ToList());
@@ -1721,7 +1740,10 @@ namespace BetterLegacy.Editor.Managers
                                     m = 1;
 
                                 StringGenerator(modifier, layout, "Signal Group", 7 + m);
-                                SingleGenerator(modifier, layout, "Signal Delay", 8 + m, 0f);
+                                if (cmd.Contains("Math"))
+                                    StringGenerator(modifier, layout, "Signal Delay", 8 + m);
+                                else
+                                    SingleGenerator(modifier, layout, "Signal Delay", 8 + m, 0f);
                                 BoolGenerator(modifier, layout, "Signal Deactivate", 9 + m, true);
                             }
 

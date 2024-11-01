@@ -3159,7 +3159,7 @@ namespace BetterLegacy.Core.Helpers
                                             new FloatKeyframe(Parser.TryParse(modifier.commands[3], 1f) + 0.1f, value, Ease.Linear),
                                         }, x => { RTEventManager.inst.offsets[indexArray][indexValue] = x; })
                                     };
-                                    animation.onComplete = () => { AnimationManager.inst.RemoveID(animation.id); };
+                                    animation.onComplete = () => { AnimationManager.inst.Remove(animation.id); };
                                 }
                             }
                             break;
@@ -4191,7 +4191,7 @@ namespace BetterLegacy.Core.Helpers
                                     };
                                     animation.onComplete = () =>
                                     {
-                                        AnimationManager.inst.RemoveID(animation.id);
+                                        AnimationManager.inst.Remove(animation.id);
                                         modifier.reference.SetTransform(type, setVector);
                                     };
                                     AnimationManager.inst.Play(animation);
@@ -4243,7 +4243,7 @@ namespace BetterLegacy.Core.Helpers
                                         };
                                         animation.onComplete = () =>
                                         {
-                                            AnimationManager.inst.RemoveID(animation.id);
+                                            AnimationManager.inst.Remove(animation.id);
                                             bm.SetTransform(type, setVector);
                                         };
                                         AnimationManager.inst.Play(animation);
@@ -4322,7 +4322,7 @@ namespace BetterLegacy.Core.Helpers
                                     };
                                     animation.onComplete = () =>
                                     {
-                                        AnimationManager.inst.RemoveID(animation.id);
+                                        AnimationManager.inst.Remove(animation.id);
 
                                         switch (type)
                                         {
@@ -4448,7 +4448,7 @@ namespace BetterLegacy.Core.Helpers
                                         };
                                         animation.onComplete = () =>
                                         {
-                                            AnimationManager.inst.RemoveID(animation.id);
+                                            AnimationManager.inst.Remove(animation.id);
 
                                             switch (type)
                                             {
@@ -4500,6 +4500,249 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+
+                    case "animateObjectMath":
+                        {
+                            if (!int.TryParse(modifier.commands[1], out int type) || !bool.TryParse(modifier.commands[5], out bool relative))
+                                break;
+
+                            string easing = modifier.commands[6];
+                            if (int.TryParse(modifier.commands[6], out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                                easing = DataManager.inst.AnimationList[e].Name;
+
+                            float time = (float)RTMath.Evaluate(RTMath.Replace(modifier.value.Replace("var", modifier.reference.integerVariable.ToString())));
+                            float x = (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[2].Replace("var", modifier.reference.integerVariable.ToString())));
+                            float y = (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[3].Replace("var", modifier.reference.integerVariable.ToString())));
+                            float z = (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[4].Replace("var", modifier.reference.integerVariable.ToString())));
+
+                            Vector3 vector = type switch
+                            {
+                                0 => modifier.reference.positionOffset,
+                                1 => modifier.reference.scaleOffset,
+                                _ => modifier.reference.rotationOffset,
+                            };
+
+                            var setVector = new Vector3(x, y, z) + (relative ? vector : Vector3.zero);
+
+                            if (!modifier.constant)
+                            {
+                                var animation = new RTAnimation("Animate Object Offset");
+
+                                animation.animationHandlers = new List<AnimationHandlerBase>
+                                {
+                                    new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                                    {
+                                        new Vector3Keyframe(0f, vector, Ease.Linear),
+                                        new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.HasEaseFunction(easing) ? Ease.GetEaseFunction(easing) : Ease.Linear),
+                                    }, vector3 => { modifier.reference.SetTransform(type, vector3); }),
+                                };
+                                animation.onComplete = () =>
+                                {
+                                    AnimationManager.inst.Remove(animation.id);
+                                    modifier.reference.SetTransform(type, setVector);
+                                };
+                                AnimationManager.inst.Play(animation);
+                                break;
+                            }
+
+                            modifier.reference.SetTransform(type, setVector);
+
+                            break;
+                        }
+                    case "animateObjectMathOther":
+                        {
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[7]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
+
+                            if (list.Count < 1 || !int.TryParse(modifier.commands[1], out int type) || !bool.TryParse(modifier.commands[5], out bool relative))
+                                break;
+
+                            string easing = modifier.commands[6];
+                            if (int.TryParse(modifier.commands[6], out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                                easing = DataManager.inst.AnimationList[e].Name;
+
+                            // for optimization sake, we evaluate this outside of the foreach loop. normally I'd place this inside and replace "otherVar" with bm.integerVariable.ToString(), however I feel that would result in a worse experience so the tradeoff is not worth it.
+                            float time = (float)RTMath.Evaluate(RTMath.Replace(modifier.value.Replace("var", modifier.reference.integerVariable.ToString())));
+                            float x = (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[2].Replace("var", modifier.reference.integerVariable.ToString())));
+                            float y = (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[3].Replace("var", modifier.reference.integerVariable.ToString())));
+                            float z = (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[4].Replace("var", modifier.reference.integerVariable.ToString())));
+
+                            foreach (var bm in list)
+                            {
+                                Vector3 vector = type switch
+                                {
+                                    0 => bm.positionOffset,
+                                    1 => bm.scaleOffset,
+                                    _ => bm.rotationOffset,
+                                };
+
+                                var setVector = new Vector3(x, y, z) + (relative ? vector : Vector3.zero);
+
+                                if (!modifier.constant)
+                                {
+                                    var animation = new RTAnimation("Animate Other Object Offset");
+
+                                    animation.animationHandlers = new List<AnimationHandlerBase>
+                                    {
+                                        new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                                        {
+                                            new Vector3Keyframe(0f, vector, Ease.Linear),
+                                            new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.HasEaseFunction(easing) ? Ease.GetEaseFunction(easing) : Ease.Linear),
+                                        }, vector3 => { bm.SetTransform(type, vector3); }),
+                                    };
+                                    animation.onComplete = () =>
+                                    {
+                                        AnimationManager.inst.Remove(animation.id);
+                                        bm.SetTransform(type, setVector);
+                                    };
+                                    AnimationManager.inst.Play(animation);
+                                    break;
+                                }
+
+                                bm.SetTransform(type, setVector);
+                            }
+
+                            break;
+                        }
+                    case "animateSignalMath":
+                        {
+                            if (!int.TryParse(modifier.commands[1], out int type) || !bool.TryParse(modifier.commands[5], out bool relative))
+                                break;
+
+                            if (!Parser.TryParse(modifier.commands[9], true))
+                            {
+                                var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[7]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
+
+                                foreach (var bm in list)
+                                {
+                                    if (bm.modifiers.Count > 0 && bm.modifiers.Where(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger).Count() > 0 &&
+                                        bm.modifiers.TryFind(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> m))
+                                        m.Result = null;
+                                }
+                            }
+
+                            string easing = modifier.commands[6];
+                            if (int.TryParse(modifier.commands[6], out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                                easing = DataManager.inst.AnimationList[e].Name;
+
+                            float time = (float)RTMath.Evaluate(RTMath.Replace(modifier.value.Replace("var", modifier.reference.integerVariable.ToString())));
+                            float x = (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[2].Replace("var", modifier.reference.integerVariable.ToString())));
+                            float y = (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[3].Replace("var", modifier.reference.integerVariable.ToString())));
+                            float z = (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[4].Replace("var", modifier.reference.integerVariable.ToString())));
+                            float signalTime = (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[8].Replace("var", modifier.reference.integerVariable.ToString())));
+
+                            Vector3 vector = type switch
+                            {
+                                0 => modifier.reference.positionOffset,
+                                1 => modifier.reference.scaleOffset,
+                                _ => modifier.reference.rotationOffset,
+                            };
+
+                            var setVector = new Vector3(x, y, z) + (relative ? vector : Vector3.zero);
+
+                            if (!modifier.constant)
+                            {
+                                var animation = new RTAnimation("Animate Object Offset");
+
+                                animation.animationHandlers = new List<AnimationHandlerBase>
+                                {
+                                    new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                                    {
+                                        new Vector3Keyframe(0f, vector, Ease.Linear),
+                                        new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.HasEaseFunction(easing) ? Ease.GetEaseFunction(easing) : Ease.Linear),
+                                    }, vector3 => { modifier.reference.SetTransform(type, vector3); }),
+                                };
+                                animation.onComplete = () =>
+                                {
+                                    AnimationManager.inst.Remove(animation.id);
+
+                                    modifier.reference.SetTransform(type, setVector);
+
+                                    var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[7]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
+
+                                    foreach (var bm in list)
+                                        CoreHelper.StartCoroutine(ModifiersManager.ActivateModifier(bm, signalTime));
+                                };
+                                AnimationManager.inst.Play(animation);
+                                break;
+                            }
+
+                            modifier.reference.SetTransform(type, setVector);
+
+                            break;
+                        }
+                    case "animateSignalMathOther":
+                        {
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[7]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[7]);
+
+                            if (list.Count < 1 || !int.TryParse(modifier.commands[1], out int type) || !bool.TryParse(modifier.commands[5], out bool relative))
+                                break;
+
+                            if (!Parser.TryParse(modifier.commands[10], true))
+                            {
+                                var list2 = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[8]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[8]);
+
+                                foreach (var bm in list2)
+                                {
+                                    if (bm.modifiers.Count > 0 && bm.modifiers.FindAll(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger).Count > 0 &&
+                                        bm.modifiers.TryFind(x => x.commands[0] == "requireSignal" && x.type == ModifierBase.Type.Trigger, out Modifier<BeatmapObject> m))
+                                        m.Result = null;
+                                }
+                            }
+
+                            string easing = modifier.commands[6];
+                            if (int.TryParse(modifier.commands[6], out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
+                                easing = DataManager.inst.AnimationList[e].Name;
+
+                            float time = (float)RTMath.Evaluate(RTMath.Replace(modifier.value.Replace("var", modifier.reference.integerVariable.ToString())));
+                            float x = (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[2].Replace("var", modifier.reference.integerVariable.ToString())));
+                            float y = (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[3].Replace("var", modifier.reference.integerVariable.ToString())));
+                            float z = (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[4].Replace("var", modifier.reference.integerVariable.ToString())));
+                            float signalTime = (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[9].Replace("var", modifier.reference.integerVariable.ToString())));
+
+                            foreach (var bm in list)
+                            {
+                                Vector3 vector = type switch
+                                {
+                                    0 => bm.positionOffset,
+                                    1 => bm.scaleOffset,
+                                    _ => bm.rotationOffset,
+                                };
+
+                                var setVector = new Vector3(x, y, z) + (relative ? vector : Vector3.zero);
+
+                                if (!modifier.constant)
+                                {
+                                    var animation = new RTAnimation("Animate Other Object Offset");
+
+                                    animation.animationHandlers = new List<AnimationHandlerBase>
+                                    {
+                                        new AnimationHandler<Vector3>(new List<IKeyframe<Vector3>>
+                                        {
+                                            new Vector3Keyframe(0f, vector, Ease.Linear),
+                                            new Vector3Keyframe(Mathf.Clamp(time, 0f, 9999f), setVector, Ease.HasEaseFunction(easing) ? Ease.GetEaseFunction(easing) : Ease.Linear),
+                                        }, vector3 => { modifier.reference.SetTransform(type, vector3); }),
+                                    };
+                                    animation.onComplete = () =>
+                                    {
+                                        AnimationManager.inst.Remove(animation.id);
+
+                                        modifier.reference.SetTransform(type, setVector);
+
+                                        var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[8]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[8]);
+
+                                        foreach (var bm in list)
+                                            CoreHelper.StartCoroutine(ModifiersManager.ActivateModifier(bm, signalTime));
+                                    };
+                                    AnimationManager.inst.Play(animation);
+                                    break;
+                                }
+
+                                modifier.reference.SetTransform(type, setVector);
+                            }
+
+                            break;
+                        }
+
                     case "gravity":
                         {
                             if (float.TryParse(modifier.commands[1], out float gravityX) && float.TryParse(modifier.commands[2], out float gravityY)
@@ -5831,7 +6074,7 @@ namespace BetterLegacy.Core.Helpers
                                 };
                                 animation.onComplete = () =>
                                 {
-                                    AnimationManager.inst.RemoveID(animation.id);
+                                    AnimationManager.inst.Remove(animation.id);
                                     modifier.reference.SetTransform(type, setVector);
                                 };
                                 AnimationManager.inst.Play(animation);
@@ -5884,7 +6127,7 @@ namespace BetterLegacy.Core.Helpers
                                     };
                                     animation.onComplete = () =>
                                     {
-                                        AnimationManager.inst.RemoveID(animation.id);
+                                        AnimationManager.inst.Remove(animation.id);
                                         bg.SetTransform(type, setVector);
                                     };
                                     AnimationManager.inst.Play(animation);

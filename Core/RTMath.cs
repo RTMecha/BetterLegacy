@@ -86,6 +86,7 @@ namespace BetterLegacy.Core
                     .Replace("time", Time.time.ToString())
                     .Replace("deltaTime", Time.deltaTime.ToString())
                     .Replace("audioTime", AudioManager.inst.CurrentAudioSource.time.ToString())
+                    .Replace("smoothedTime", RTEventManager.inst.currentTime.ToString())
                     .Replace("volume", AudioManager.inst.musicVol.ToString())
                     .Replace("pitch", AudioManager.inst.pitch.ToString());
 
@@ -964,6 +965,20 @@ namespace BetterLegacy.Core
                             try
                             {
                                 input = input.Replace(match.Groups[0].ToString(), Updater.GetSample(Parser.TryParse(match.Groups[1].ToString().Trim(), 0), Parser.TryParse(match.Groups[2].ToString().Trim(), 0f)).ToString());
+                            }
+                            catch { }
+                        });
+                    }
+
+                    if (input.Contains("copyEvent"))
+                    {
+                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"copyEvent\((.*?),(.*?),(.*?)\)", includeEnd)), match =>
+                        {
+                            try
+                            {
+                                var t = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
+
+                                input = input.Replace(match.Groups[0].ToString(), RTEventManager.inst.Interpolate(Parser.TryParse(match.Groups[1].ToString().Trim(), 0), Parser.TryParse(match.Groups[2].ToString().Trim(), 0), t).ToString());
                             }
                             catch { }
                         });
