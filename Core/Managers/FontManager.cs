@@ -344,11 +344,7 @@ namespace BetterLegacy.Core.Managers
                     {
                         try
                         {
-                            var replace = RTMath.Replace(match.Groups[1].ToString());
-
-                            var math = RTMath.Evaluate(replace);
-
-                            str = str.Replace(match.Groups[0].ToString(), math.ToString());
+                            str = str.Replace(match.Groups[0].ToString(), RTMath.Parse(match.Groups[1].ToString()).ToString());
                         }
                         catch
                         {
@@ -359,11 +355,7 @@ namespace BetterLegacy.Core.Managers
                     {
                         try
                         {
-                            var replace = RTMath.Replace(match.Groups[1].ToString());
-
-                            var math = RTMath.Evaluate(replace);
-
-                            str = str.Replace(match.Groups[0].ToString(), math.ToString());
+                            str = str.Replace(match.Groups[0].ToString(), RTMath.Parse(match.Groups[1].ToString()).ToString());
                         }
                         catch
                         {

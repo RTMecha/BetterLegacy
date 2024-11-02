@@ -4510,10 +4510,13 @@ namespace BetterLegacy.Core.Helpers
                             if (int.TryParse(modifier.commands[6], out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
                                 easing = DataManager.inst.AnimationList[e].Name;
 
-                            float time = (float)RTMath.Evaluate(RTMath.Replace(modifier.reference.ReplaceObjectVariables(modifier.value)));
-                            float x = (float)RTMath.Evaluate(RTMath.Replace(modifier.reference.ReplaceObjectVariables(modifier.commands[2])));
-                            float y = (float)RTMath.Evaluate(RTMath.Replace(modifier.reference.ReplaceObjectVariables(modifier.commands[3])));
-                            float z = (float)RTMath.Evaluate(RTMath.Replace(modifier.reference.ReplaceObjectVariables(modifier.commands[4])));
+                            Dictionary<string, float> variables = new Dictionary<string, float>();
+                            modifier.reference.ReplaceObjectVariables(variables);
+
+                            float time = (float)RTMath.Parse(modifier.value, variables);
+                            float x = (float)RTMath.Parse(modifier.commands[2], variables);
+                            float y = (float)RTMath.Parse(modifier.commands[3], variables);
+                            float z = (float)RTMath.Parse(modifier.commands[4], variables);
 
                             Vector3 vector = type switch
                             {
@@ -4560,11 +4563,14 @@ namespace BetterLegacy.Core.Helpers
                             if (int.TryParse(modifier.commands[6], out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
                                 easing = DataManager.inst.AnimationList[e].Name;
 
+                            Dictionary<string, float> variables = new Dictionary<string, float>();
+                            modifier.reference.ReplaceObjectVariables(variables);
+
                             // for optimization sake, we evaluate this outside of the foreach loop. normally I'd place this inside and replace "otherVar" with bm.integerVariable.ToString(), however I feel that would result in a worse experience so the tradeoff is not worth it.
-                            float time = (float)RTMath.Evaluate(RTMath.Replace(modifier.reference.ReplaceObjectVariables(modifier.value)));
-                            float x = (float)RTMath.Evaluate(RTMath.Replace(modifier.reference.ReplaceObjectVariables(modifier.commands[2])));
-                            float y = (float)RTMath.Evaluate(RTMath.Replace(modifier.reference.ReplaceObjectVariables(modifier.commands[3])));
-                            float z = (float)RTMath.Evaluate(RTMath.Replace(modifier.reference.ReplaceObjectVariables(modifier.commands[4])));
+                            float time = (float)RTMath.Parse(modifier.value, variables);
+                            float x = (float)RTMath.Parse(modifier.commands[2], variables);
+                            float y = (float)RTMath.Parse(modifier.commands[3], variables);
+                            float z = (float)RTMath.Parse(modifier.commands[4], variables);
 
                             foreach (var bm in list)
                             {
@@ -4624,11 +4630,14 @@ namespace BetterLegacy.Core.Helpers
                             if (int.TryParse(modifier.commands[6], out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
                                 easing = DataManager.inst.AnimationList[e].Name;
 
-                            float time = (float)RTMath.Evaluate(RTMath.Replace(modifier.reference.ReplaceObjectVariables(modifier.value)));
-                            float x = (float)RTMath.Evaluate(RTMath.Replace(modifier.reference.ReplaceObjectVariables(modifier.commands[2])));
-                            float y = (float)RTMath.Evaluate(RTMath.Replace(modifier.reference.ReplaceObjectVariables(modifier.commands[3])));
-                            float z = (float)RTMath.Evaluate(RTMath.Replace(modifier.reference.ReplaceObjectVariables(modifier.commands[4])));
-                            float signalTime = (float)RTMath.Evaluate(RTMath.Replace(modifier.reference.ReplaceObjectVariables(modifier.commands[8])));
+                            Dictionary<string, float> variables = new Dictionary<string, float>();
+                            modifier.reference.ReplaceObjectVariables(variables);
+
+                            float time = (float)RTMath.Parse(modifier.value, variables);
+                            float x = (float)RTMath.Parse(modifier.commands[2], variables);
+                            float y = (float)RTMath.Parse(modifier.commands[3], variables);
+                            float z = (float)RTMath.Parse(modifier.commands[4], variables);
+                            float signalTime = (float)RTMath.Parse(modifier.commands[8], variables);
 
                             Vector3 vector = type switch
                             {
@@ -4692,12 +4701,15 @@ namespace BetterLegacy.Core.Helpers
                             string easing = modifier.commands[6];
                             if (int.TryParse(modifier.commands[6], out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
                                 easing = DataManager.inst.AnimationList[e].Name;
+                            
+                            Dictionary<string, float> variables = new Dictionary<string, float>();
+                            modifier.reference.ReplaceObjectVariables(variables);
 
-                            float time = (float)RTMath.Evaluate(RTMath.Replace(modifier.reference.ReplaceObjectVariables(modifier.value)));
-                            float x = (float)RTMath.Evaluate(RTMath.Replace(modifier.reference.ReplaceObjectVariables(modifier.commands[2])));
-                            float y = (float)RTMath.Evaluate(RTMath.Replace(modifier.reference.ReplaceObjectVariables(modifier.commands[3])));
-                            float z = (float)RTMath.Evaluate(RTMath.Replace(modifier.reference.ReplaceObjectVariables(modifier.commands[4])));
-                            float signalTime = (float)RTMath.Evaluate(RTMath.Replace(modifier.reference.ReplaceObjectVariables(modifier.commands[8])));
+                            float time = (float)RTMath.Parse(modifier.value, variables);
+                            float x = (float)RTMath.Parse(modifier.commands[2], variables);
+                            float y = (float)RTMath.Parse(modifier.commands[3], variables);
+                            float z = (float)RTMath.Parse(modifier.commands[4], variables);
+                            float signalTime = (float)RTMath.Parse(modifier.commands[8], variables);
 
                             foreach (var bm in list)
                             {
@@ -4963,7 +4975,12 @@ namespace BetterLegacy.Core.Helpers
                                                 {
                                                     var sequence = cachedSequence.Position3DSequence.Interpolate(time - bm.StartTime - delay);
                                                     var axis = fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z;
-                                                    float value = (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[8].Replace("axis", axis.ToString()).Replace("intVariable", modifier.reference.integerVariable.ToString())));
+                                                    float value = RTMath.Parse(modifier.commands[8], new Dictionary<string, float>
+                                                    {
+                                                        { "axis", axis },
+                                                        { "intVariable", modifier.reference.integerVariable },
+                                                        { "otherIntVariable", bm.integerVariable },
+                                                    });
 
                                                     modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                                     break;
@@ -4972,16 +4989,26 @@ namespace BetterLegacy.Core.Helpers
                                                 {
                                                     var sequence = cachedSequence.ScaleSequence.Interpolate(time - bm.StartTime - delay);
                                                     var axis = fromAxis == 0 ? sequence.x : sequence.y;
-                                                    float value = (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[8].Replace("axis", axis.ToString()).Replace("intVariable", modifier.reference.integerVariable.ToString())));
+                                                    float value = RTMath.Parse(modifier.commands[8], new Dictionary<string, float>
+                                                    {
+                                                        { "axis", axis },
+                                                        { "intVariable", modifier.reference.integerVariable },
+                                                        { "otherIntVariable", bm.integerVariable },
+                                                    });
 
                                                     modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                                     break;
                                                 }
                                             case 2:
                                                 {
-                                                    float sequence = (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[8].Replace("axis", cachedSequence.RotationSequence.Interpolate(time - bm.StartTime - delay).ToString()).Replace("intVariable", modifier.reference.integerVariable.ToString())));
+                                                    float value = RTMath.Parse(modifier.commands[8], new Dictionary<string, float>
+                                                    {
+                                                        { "axis", cachedSequence.RotationSequence.Interpolate(time - bm.StartTime - delay) },
+                                                        { "intVariable", modifier.reference.integerVariable },
+                                                        { "otherIntVariable", bm.integerVariable },
+                                                    });
 
-                                                    modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(sequence, min, max));
+                                                    modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                                     break;
                                                 }
                                             case 3:
@@ -4994,7 +5021,17 @@ namespace BetterLegacy.Core.Helpers
 
                                                         var renderer = modifier.reference.levelObject.visualObject.Renderer;
 
-                                                        renderer.material.color = RTMath.Lerp(renderer.material.color, sequence, (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[8].Replace("intVariable", modifier.reference.integerVariable.ToString()))));
+                                                        float value = RTMath.Parse(modifier.commands[8], new Dictionary<string, float>
+                                                        {
+                                                            { "colorR", sequence.r },
+                                                            { "colorG", sequence.g },
+                                                            { "colorB", sequence.b },
+                                                            { "colorA", sequence.a },
+                                                            { "intVariable", modifier.reference.integerVariable },
+                                                            { "otherIntVariable", bm.integerVariable },
+                                                        });
+
+                                                        renderer.material.color = RTMath.Lerp(renderer.material.color, sequence, Mathf.Clamp(value, min, max));
                                                     }
                                                     break;
                                                 }
@@ -5009,8 +5046,13 @@ namespace BetterLegacy.Core.Helpers
                                             case 0:
                                                 {
                                                     var sequence = transform.position;
-                                                    var axis = fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z;
-                                                    float value = (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[8].Replace("axis", axis.ToString()).Replace("intVariable", modifier.reference.integerVariable.ToString())));
+                                                    var axis = sequence[fromAxis];
+                                                    float value = RTMath.Parse(modifier.commands[8], new Dictionary<string, float>
+                                                    {
+                                                        { "axis", axis },
+                                                        { "intVariable", modifier.reference.integerVariable },
+                                                        { "otherIntVariable", bm.integerVariable },
+                                                    });
 
                                                     modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                                     break;
@@ -5018,8 +5060,13 @@ namespace BetterLegacy.Core.Helpers
                                             case 1:
                                                 {
                                                     var sequence = transform.lossyScale;
-                                                    var axis = fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z;
-                                                    float value = (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[8].Replace("axis", axis.ToString()).Replace("intVariable", modifier.reference.integerVariable.ToString())));
+                                                    var axis = sequence[fromAxis];
+                                                    float value = RTMath.Parse(modifier.commands[8], new Dictionary<string, float>
+                                                    {
+                                                        { "axis", axis },
+                                                        { "intVariable", modifier.reference.integerVariable },
+                                                        { "otherIntVariable", bm.integerVariable },
+                                                    });
 
                                                     modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                                     break;
@@ -5027,8 +5074,13 @@ namespace BetterLegacy.Core.Helpers
                                             case 2:
                                                 {
                                                     var sequence = transform.rotation.eulerAngles;
-                                                    var axis = fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z;
-                                                    float value = (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[8].Replace("axis", axis.ToString()).Replace("intVariable", modifier.reference.integerVariable.ToString())));
+                                                    var axis = sequence[fromAxis];
+                                                    float value = RTMath.Parse(modifier.commands[8], new Dictionary<string, float>
+                                                    {
+                                                        { "axis", axis },
+                                                        { "intVariable", modifier.reference.integerVariable },
+                                                        { "otherIntVariable", bm.integerVariable },
+                                                    });
 
                                                     modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                                     break;
@@ -5043,7 +5095,12 @@ namespace BetterLegacy.Core.Helpers
                                                 {
                                                     var sequence = bm.InterpolateChainPosition();
                                                     float axis = sequence[fromAxis];
-                                                    float value = (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[8].Replace("axis", axis.ToString()).Replace("intVariable", modifier.reference.integerVariable.ToString())));
+                                                    float value = RTMath.Parse(modifier.commands[8], new Dictionary<string, float>
+                                                    {
+                                                        { "axis", axis },
+                                                        { "intVariable", modifier.reference.integerVariable },
+                                                        { "otherIntVariable", bm.integerVariable },
+                                                    });
 
                                                     modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                                     break;
@@ -5052,7 +5109,12 @@ namespace BetterLegacy.Core.Helpers
                                                 {
                                                     var sequence = bm.InterpolateChainScale();
                                                     float axis = sequence[fromAxis];
-                                                    float value = (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[8].Replace("axis", axis.ToString()).Replace("intVariable", modifier.reference.integerVariable.ToString())));
+                                                    float value = RTMath.Parse(modifier.commands[8], new Dictionary<string, float>
+                                                    {
+                                                        { "axis", axis },
+                                                        { "intVariable", modifier.reference.integerVariable },
+                                                        { "otherIntVariable", bm.integerVariable },
+                                                    });
 
                                                     modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                                     break;
@@ -5060,7 +5122,12 @@ namespace BetterLegacy.Core.Helpers
                                             case 2:
                                                 {
                                                     float axis = bm.InterpolateChainRotation();
-                                                    float value = (float)RTMath.Evaluate(RTMath.Replace(modifier.commands[8].Replace("axis", axis.ToString()).Replace("intVariable", modifier.reference.integerVariable.ToString())));
+                                                    float value = RTMath.Parse(modifier.commands[8], new Dictionary<string, float>
+                                                    {
+                                                        { "axis", axis },
+                                                        { "intVariable", modifier.reference.integerVariable },
+                                                        { "otherIntVariable", bm.integerVariable },
+                                                    });
 
                                                     modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                                     break;
@@ -5093,6 +5160,10 @@ namespace BetterLegacy.Core.Helpers
                                 var prefabObjects = GameData.Current.prefabObjects;
 
                                 var time = Updater.CurrentTime;
+                                Dictionary<string, float> variables = new Dictionary<string, float>
+                                {
+                                    { "intVariable", modifier.reference.integerVariable },
+                                };
 
                                 for (int i = 3; i < modifier.commands.Count; i += 8)
                                 {
@@ -5119,8 +5190,7 @@ namespace BetterLegacy.Core.Helpers
                                             case 0:
                                                 {
                                                     var vector = cachedSequence.Position3DSequence.Interpolate(time - beatmapObject.StartTime - delay);
-
-                                                    evaluation = evaluation.Replace(name, Mathf.Clamp(fromAxis == 0 ? vector.x : fromAxis == 1 ? vector.y : vector.z, min, max).ToString());
+                                                    variables[name] = Mathf.Clamp(vector[fromAxis], min, max);
                                                     break;
                                                 }
                                             case 1:
@@ -5128,7 +5198,7 @@ namespace BetterLegacy.Core.Helpers
                                                     var value = cachedSequence.ScaleSequence.Interpolate(time - beatmapObject.StartTime - delay);
                                                     var vector = new Vector3(value.x, value.y, 0f);
 
-                                                    evaluation = evaluation.Replace(name, Mathf.Clamp(fromAxis == 0 ? vector.x : fromAxis == 1 ? vector.y : vector.z, min, max).ToString());
+                                                    variables[name] = Mathf.Clamp(vector[fromAxis], min, max);
                                                     break;
                                                 }
                                             case 2:
@@ -5136,12 +5206,7 @@ namespace BetterLegacy.Core.Helpers
                                                     var value = cachedSequence.RotationSequence.Interpolate(time - beatmapObject.StartTime - delay);
                                                     var vector = new Vector3(value, value, value);
 
-                                                    evaluation = evaluation.Replace(name, Mathf.Clamp(fromAxis == 0 ? vector.x : fromAxis == 1 ? vector.y : vector.z, min, max).ToString());
-                                                    break;
-                                                }
-                                            case 4:
-                                                {
-                                                    evaluation = evaluation.Replace(name, Mathf.Clamp(beatmapObject.integerVariable, min, max).ToString());
+                                                    variables[name] = Mathf.Clamp(vector[fromAxis], min, max);
                                                     break;
                                                 }
                                         }
@@ -5154,26 +5219,21 @@ namespace BetterLegacy.Core.Helpers
                                                 {
                                                     var vector = levelObject.visualObject.GameObject.transform.position;
 
-                                                    evaluation = evaluation.Replace(name, Mathf.Clamp(fromAxis == 0 ? vector.x : fromAxis == 1 ? vector.y : vector.z, min, max).ToString());
+                                                    variables[name] = Mathf.Clamp(vector[fromAxis], min, max);
                                                     break;
                                                 }
                                             case 1:
                                                 {
                                                     var vector = levelObject.visualObject.GameObject.transform.lossyScale;
 
-                                                    evaluation = evaluation.Replace(name, Mathf.Clamp(fromAxis == 0 ? vector.x : fromAxis == 1 ? vector.y : vector.z, min, max).ToString());
+                                                    variables[name] = Mathf.Clamp(vector[fromAxis], min, max);
                                                     break;
                                                 }
                                             case 2:
                                                 {
                                                     var vector = levelObject.visualObject.GameObject.transform.rotation.eulerAngles;
 
-                                                    evaluation = evaluation.Replace(name, Mathf.Clamp(fromAxis == 0 ? vector.x : fromAxis == 1 ? vector.y : vector.z, min, max).ToString());
-                                                    break;
-                                                }
-                                            case 4:
-                                                {
-                                                    evaluation = evaluation.Replace(name, Mathf.Clamp(beatmapObject.integerVariable, min, max).ToString());
+                                                    variables[name] = Mathf.Clamp(vector[fromAxis], min, max);
                                                     break;
                                                 }
                                         }
@@ -5186,31 +5246,29 @@ namespace BetterLegacy.Core.Helpers
                                                 {
                                                     var sequence = beatmapObject.InterpolateChainPosition();
 
-                                                    evaluation = evaluation.Replace(name, Mathf.Clamp(sequence[fromAxis], min, max).ToString());
+                                                    variables[name] = Mathf.Clamp(sequence[fromAxis], min, max);
                                                     break;
                                                 }
                                             case 1:
                                                 {
                                                     var sequence = beatmapObject.InterpolateChainScale();
 
-                                                    evaluation = evaluation.Replace(name, Mathf.Clamp(sequence[fromAxis], min, max).ToString());
+                                                    variables[name] = Mathf.Clamp(sequence[fromAxis], min, max);
                                                     break;
                                                 }
                                             case 2:
                                                 {
-                                                    evaluation = evaluation.Replace(name, Mathf.Clamp(beatmapObject.InterpolateChainRotation(), min, max).ToString());
-                                                    break;
-                                                }
-                                            case 4:
-                                                {
-                                                    evaluation = evaluation.Replace(name, Mathf.Clamp(beatmapObject.integerVariable, min, max).ToString());
+                                                    variables[name] = Mathf.Clamp(beatmapObject.InterpolateChainRotation(), min, max);
                                                     break;
                                                 }
                                         }
                                     }
+
+                                    if (fromType == 4)
+                                        variables[name] = Mathf.Clamp(beatmapObject.integerVariable, min, max);
                                 }
 
-                                modifier.reference.SetTransform(toType, toAxis, (float)RTMath.Evaluate(RTMath.Replace(evaluation)));
+                                modifier.reference.SetTransform(toType, toAxis, RTMath.Parse(evaluation, variables));
                             }
                             catch (Exception ex)
                             {
@@ -5233,10 +5291,10 @@ namespace BetterLegacy.Core.Helpers
                                 && int.TryParse(modifier.commands[3], out int toType) && int.TryParse(modifier.commands[4], out int toAxis)
                                 && float.TryParse(modifier.commands[5], out float delay) && float.TryParse(modifier.commands[6], out float multiply)
                                 && float.TryParse(modifier.commands[7], out float offset) && float.TryParse(modifier.commands[8], out float min) && float.TryParse(modifier.commands[9], out float max)
-                                && InputDataManager.inst.players.TryFind(x => x is CustomPlayer customPlayer && customPlayer.Player, out InputDataManager.CustomPlayer p))
+                                && InputDataManager.inst.players.TryFind(x => x is CustomPlayer customPlayer && customPlayer.Player && customPlayer.Player.rb, out InputDataManager.CustomPlayer p))
                             {
                                 var player = (CustomPlayer)p;
-                                var rb = player.Player.playerObjects["RB Parent"].gameObject.transform;
+                                var rb = player.Player.rb.transform;
 
                                 switch (fromType)
                                 {

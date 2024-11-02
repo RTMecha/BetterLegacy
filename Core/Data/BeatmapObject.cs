@@ -1447,74 +1447,38 @@ namespace BetterLegacy.Core.Data
 
         #endregion
 
-        public string ReplaceObjectVariables(string input, bool includeEnd = true)
+        public void ReplaceObjectVariables(Dictionary<string, float> variables)
         {
-            input = input.Replace("intVariable", integerVariable.ToString());
+            variables["intVariable"] = integerVariable;
 
-            if (input.Contains("objectEventCopy"))
-            {
-                CoreHelper.RegexMatches(input, new Regex(RTMath.GetFunctionPattern(@"objectEventCopy\((.*?),(.*?),(.*?)\)", includeEnd)), match =>
-                {
-                    try
-                    {
-                        var type = Parser.TryParse(match.Groups[1].ToString(), 0);
-                        var valueIndex = Parser.TryParse(match.Groups[2].ToString(), 0);
-                        var time = (float)RTMath.Evaluate(RTMath.Replace(ReplaceObjectVariables(match.Groups[3].ToString().Trim(), false), false));
+            variables["positionOffsetX"] = positionOffset.x;
+            variables["positionOffsetY"] = positionOffset.y;
+            variables["positionOffsetZ"] = positionOffset.z;
 
-                        input = input.Replace(match.Groups[0].ToString(), Interpolate(type, valueIndex, time).ToString());
-                    }
-                    catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                });
-            }
+            variables["scaleOffsetX"] = scaleOffset.x;
+            variables["scaleOffsetY"] = scaleOffset.y;
+            variables["scaleOffsetZ"] = scaleOffset.z;
 
-            if (input.Contains("positionOffsetX"))
-                input = input.Replace("positionOffsetX", positionOffset.x.ToString());
-            if (input.Contains("positionOffsetY"))
-                input = input.Replace("positionOffsetY", positionOffset.y.ToString());
-            if (input.Contains("positionOffsetZ"))
-                input = input.Replace("positionOffsetZ", positionOffset.z.ToString());
-
-            if (input.Contains("scaleOffsetX"))
-                input = input.Replace("scaleOffsetX", scaleOffset.x.ToString());
-            if (input.Contains("scaleOffsetY"))
-                input = input.Replace("scaleOffsetY", scaleOffset.y.ToString());
-            if (input.Contains("scaleOffsetZ"))
-                input = input.Replace("scaleOffsetZ", scaleOffset.z.ToString());
-
-            if (input.Contains("rotationOffsetX"))
-                input = input.Replace("rotationOffsetX", rotationOffset.x.ToString());
-            if (input.Contains("rotationOffsetY"))
-                input = input.Replace("rotationOffsetY", rotationOffset.y.ToString());
-            if (input.Contains("rotationOffsetZ"))
-                input = input.Replace("rotationOffsetZ", rotationOffset.z.ToString());
+            variables["rotationOffsetX"] = rotationOffset.x;
+            variables["rotationOffsetX"] = rotationOffset.y;
+            variables["rotationOffsetX"] = rotationOffset.z;
 
             if (Updater.TryGetObject(this, out Optimization.Objects.LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
             {
                 var transform = levelObject.visualObject.GameObject.transform;
 
-                if (input.Contains("visualPosX"))
-                    input.Replace("visualPosX", transform.position.x.ToString());
-                if (input.Contains("visualPosY"))
-                    input.Replace("visualPosY", transform.position.y.ToString());
-                if (input.Contains("visualPosZ"))
-                    input.Replace("visualPosZ", transform.position.z.ToString());
+                variables["visualPosX"] = transform.position.x;
+                variables["visualPosY"] = transform.position.y;
+                variables["visualPosZ"] = transform.position.z;
 
-                if (input.Contains("visualScaX"))
-                    input.Replace("visualScaX", transform.lossyScale.x.ToString());
-                if (input.Contains("visualScaY"))
-                    input.Replace("visualScaY", transform.lossyScale.y.ToString());
-                if (input.Contains("visualScaZ"))
-                    input.Replace("visualScaZ", transform.lossyScale.z.ToString());
+                variables["visualScaX"] = transform.lossyScale.x;
+                variables["visualScaY"] = transform.lossyScale.y;
+                variables["visualScaZ"] = transform.lossyScale.z;
 
-                if (input.Contains("visualRotX"))
-                    input.Replace("visualRotX", transform.rotation.eulerAngles.x.ToString());
-                if (input.Contains("visualRotY"))
-                    input.Replace("visualRotY", transform.rotation.eulerAngles.y.ToString());
-                if (input.Contains("visualRotZ"))
-                    input.Replace("visualRotZ", transform.rotation.eulerAngles.z.ToString());
+                variables["visualRotX"] = transform.rotation.eulerAngles.x;
+                variables["visualRotY"] = transform.rotation.eulerAngles.y;
+                variables["visualRotZ"] = transform.rotation.eulerAngles.z;
             }
-
-            return input;
         }
 
         /// <summary>

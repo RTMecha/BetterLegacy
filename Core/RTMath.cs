@@ -23,7 +23,7 @@ namespace BetterLegacy.Core
             }
             catch (Exception ex)
             {
-                if (logException1)
+                if (logException)
                     CoreHelper.LogError($"Error!\nMath: {str}\nException: {ex}");
                 return 0;
             }
@@ -38,989 +38,46 @@ namespace BetterLegacy.Core
             }
             catch (Exception ex)
             {
-                if (logException1)
+                if (logException)
                     CoreHelper.LogError($"Error!\nMath: {str}\nException: {ex}");
                 result = 0;
                 return false;
             }
         }
 
-        public static bool logException1 = false;
-        public static bool logException2 = false;
-        public static bool logException3 = false;
+        public static bool logException = false;
 
-        public static string GetFunctionPattern(string p, bool includeEnd) => p + (includeEnd ? ";" : "") + "";
-
-        public static bool TryEvaluate(string input, float current, out float result)
+        public static bool TryParse(string input, float defaultValue, Dictionary<string, float> variables, out float result)
         {
             try
             {
-                var a = TryEvaluate(Replace(input.Replace("c", current.ToString())), out double b);
-                result = a ? (float)b : current;
-                return a;
+                result = Parse(input, variables);
+                return true;
             }
-            catch (Exception ex)
+            catch
             {
-                CoreHelper.LogError($"Couldn't evaluate math.{ex}");
-                result = current;
+                result = defaultValue;
                 return false;
             }
         }
+
+        // RTMath.Parse("pitch + clamp(pitch, 0, 1) * pitch");
 
         /// <summary>
         /// Takes any user-written variables and functions, calculates them and replaces their strings.
         /// </summary>
         /// <param name="input">Input to replace.</param>
-        /// <param name="includeEnd">If each function needs to be capped with a ;.</param>
-        /// <returns>Returns a calculated string.</returns>
-        public static string Replace(string input, bool includeEnd = true)
+        /// <returns>Returns a calculated single.</returns>
+        public static float Parse(string input, Dictionary<string, float> variables = null)
         {
-            try
-            {
-                input = input
-                    .Replace("deathCount", GameManager.inst.deaths.Count.ToString())
-                    .Replace("hitCount", GameManager.inst.hits.Count.ToString())
-                    .Replace("boostCount", LevelManager.BoostCount.ToString())
-                    .Replace("actionMoveX", InputDataManager.inst.menuActions.Move.X.ToString())
-                    .Replace("actionMoveY", InputDataManager.inst.menuActions.Move.Y.ToString())
-                    .Replace("time", Time.time.ToString())
-                    .Replace("deltaTime", Time.deltaTime.ToString())
-                    .Replace("audioTime", AudioManager.inst.CurrentAudioSource.time.ToString())
-                    .Replace("smoothedTime", RTEventManager.inst.currentTime.ToString())
-                    .Replace("volume", AudioManager.inst.musicVol.ToString())
-                    .Replace("pitch", AudioManager.inst.pitch.ToString())
-                    .Replace("forwardPitch", CoreHelper.ForwardPitch.ToString());
+            if (string.IsNullOrEmpty(input))
+                return 0f;
 
-                try
-                {
-                    if (input.Contains("cam"))
-                    {
-                        if (input.Contains("camPosX"))
-                            input = input.Replace("camPosX", EventManager.inst.cam.transform.position.x.ToString());
-                        if (input.Contains("camPosY"))
-                            input = input.Replace("camPosY", EventManager.inst.cam.transform.position.y.ToString());
-                        if (input.Contains("camZoom"))
-                            input = input.Replace("camZoom", EventManager.inst.cam.orthographicSize.ToString());
-                        if (input.Contains("camRot"))
-                            input = input.Replace("camRot", EventManager.inst.cam.transform.localEulerAngles.z.ToString());
-                    }
+            input = input.Remove(";"); // we remove ; because of the old math parser requiring it, so people who made things with the math evaluators won't need to update
 
-                    if (input.Contains("player"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(@"player([0-9]+)PosX"), match =>
-                        {
-                            var baseString = match.Groups[0].ToString();
-                            var index = Mathf.Clamp(Parser.TryParse(match.Groups[1].ToString(), 0), 0, int.MaxValue);
-
-                            if (PlayerManager.Players.Count <= index || !PlayerManager.Players[index].Player || !PlayerManager.Players[index].Player.rb)
-                                input = input.Replace(baseString, "0");
-                            else
-                                input = input.Replace(baseString, PlayerManager.Players[index].Player.rb.position.x.ToString());
-                        });
-
-                        CoreHelper.RegexMatches(input, new Regex(@"player([0-9]+)PosY"), match =>
-                        {
-                            var baseString = match.Groups[0].ToString();
-                            var index = Mathf.Clamp(Parser.TryParse(match.Groups[1].ToString(), 0), 0, int.MaxValue);
-
-                            if (PlayerManager.Players.Count <= index || !PlayerManager.Players[index].Player || !PlayerManager.Players[index].Player.rb)
-                                input = input.Replace(baseString, "0");
-                            else
-                                input = input.Replace(baseString, PlayerManager.Players[index].Player.rb.position.y.ToString());
-                        });
-
-                        CoreHelper.RegexMatches(input, new Regex(@"player([0-9]+)Health"), match =>
-                        {
-                            var baseString = match.Groups[0].ToString();
-                            var index = Mathf.Clamp(Parser.TryParse(match.Groups[1].ToString(), 0), 0, int.MaxValue);
-
-                            if (PlayerManager.Players.Count <= index)
-                                input = input.Replace(baseString, "0");
-                            else
-                                input = input.Replace(baseString, PlayerManager.Players[index].Health.ToString());
-                        });
-
-                        if (input.Contains("playerHealthTotal"))
-                            input = input.Replace("playerHealthTotal", PlayerManager.Players.Sum(x => x.Health).ToString());
-
-                        if (input.Contains("playerTailPosX"))
-                        {
-                            CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"playerTailPosX\((.*?),(.*?)\)", includeEnd)), match =>
-                            {
-                                try
-                                {
-                                    var baseString = match.Groups[0].ToString();
-                                    var index = Mathf.Clamp((int)Evaluate(Replace(match.Groups[1].ToString().Trim(), false)), 0, int.MaxValue);
-                                    var tailIndex = Mathf.Clamp((int)Evaluate(Replace(match.Groups[2].ToString().Trim(), false)), 0, int.MaxValue);
-
-                                    if (PlayerManager.Players.Count <= index || !PlayerManager.Players[index].Player || !PlayerManager.Players[index].Player.rb)
-                                        input = input.Replace(baseString, "0");
-                                    else
-                                        input = input.Replace(baseString, PlayerManager.Players[index].Player.tailParts[tailIndex].Transform.position.x.ToString());
-                                }
-                                catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                            });
-                        }
-
-                        if (input.Contains("playerTailPosY"))
-                        {
-                            CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"playerTailPosY\((.*?),(.*?)\)", includeEnd)), match =>
-                            {
-                                try
-                                {
-                                    var baseString = match.Groups[0].ToString();
-                                    var index = Mathf.Clamp((int)Evaluate(Replace(match.Groups[1].ToString().Trim(), false)), 0, int.MaxValue);
-                                    var tailIndex = Mathf.Clamp((int)Evaluate(Replace(match.Groups[2].ToString().Trim(), false)), 0, int.MaxValue);
-
-                                    if (PlayerManager.Players.Count <= index || !PlayerManager.Players[index].Player || !PlayerManager.Players[index].Player.rb)
-                                        input = input.Replace(baseString, "0");
-                                    else
-                                        input = input.Replace(baseString, PlayerManager.Players[index].Player.tailParts[tailIndex].Transform.position.y.ToString());
-                                }
-                                catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                            });
-                        }
-                    }
-
-                    // math functions
-
-                    if (input.Contains("sin"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"sin\((.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Sin((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("cos"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"cos\((.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Cos((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("atan"))
-                    {
-                        
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"atan\((.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Atan((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("tan"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"tan\((.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Tan((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("asin"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"asin\((.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Asin((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("acos"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"acos\((.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Acos((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("sqrt"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"sqrt\((.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Sqrt((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("abs"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"abs\((.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Abs((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("min"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"min\((.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var a = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var b = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Min(a, b).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("max"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"max\((.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var a = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var b = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Max(a, b).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("clamp"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"clamp\((.*?),(.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var a = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var b = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-                                var c = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
-                                input = input.Replace(match.Groups[0].ToString(), Clamp(a, b, c).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("clampZero"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"clampZero\((.*?),(.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var a = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var b = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-                                var c = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
-                                input = input.Replace(match.Groups[0].ToString(), ClampZero(a, b, c).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("pow"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"pow\((.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var a = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var b = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Pow(a, b).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("exp"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"exp\((.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Exp((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("log"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"log\((.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Log((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"log\((.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var a = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var b = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Log(a, b).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("log10"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"log10\((.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Log10((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("ceil"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"ceil\((.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Ceil((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("floor"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"floor\((.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Floor((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("round"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"round\((.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Round((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("sign"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"sign\((.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Sign((float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("lerp"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"lerp\((.*?),(.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var x = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var y = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-                                var t = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), Lerp(x, y, t).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("lerpAngle"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"lerpAngle\((.*?),(.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var x = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var y = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-                                var t = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.LerpAngle(x, y, t).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("inverseLerp"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"inverseLerp\((.*?),(.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var x = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var y = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-                                var t = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.InverseLerp(x, y, t).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("moveTowards"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"moveTowards\((.*?),(.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var x = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var y = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-                                var t = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.MoveTowards(x, y, t).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("moveTowardsAngle"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"moveTowardsAngle\((.*?),(.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var x = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var y = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-                                var t = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.MoveTowardsAngle(x, y, t).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("smoothStep"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"smoothStep\((.*?),(.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var x = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var y = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-                                var t = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.SmoothStep(x, y, t).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("gamma"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"gamma\((.*?),(.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var x = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var y = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-                                var t = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Gamma(x, y, t).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("approximately"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"approximately\((.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var x = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var y = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Approximately(x, y).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("repeat"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"repeat\((.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var x = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var y = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.Repeat(x, y).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("pingPong"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"pingPong\((.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var x = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var y = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.PingPong(x, y).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("deltaAngle"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"deltaAngle\((.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var x = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var y = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), Mathf.DeltaAngle(x, y).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("random"))
-                    {
-                        input = input.Replace("random()", ((float)new System.Random().NextDouble()).ToString());
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"random\((.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var seed = (int)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), ((float)(new System.Random(seed).NextDouble())).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"random\((.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var seed = (int)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var index = (int)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), RandomHelper.RandomInstanceSingle(seed, index).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("randomRange"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"randomRange\((.*?),(.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var seed = (int)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var min = (int)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-                                var max = (int)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), RandomHelper.RandomInstanceSingleRange(seed, min, max, new System.Random().Next()).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"randomRange\((.*?),(.*?),(.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var seed = (int)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var min = (int)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-                                var max = (int)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
-                                var index = (int)Evaluate(Replace(match.Groups[4].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), RandomHelper.RandomInstanceSingleRange(seed, min, max, index).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("randomInt"))
-                    {
-                        input = input.Replace("randomInt()", new System.Random().Next().ToString());
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"randomInt\((.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var seed = (int)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), new System.Random(seed).Next().ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"randomInt\((.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var seed = (int)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var index = (int)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), RandomHelper.RandomInstance(seed, index).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("randomRangeInt"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"randomRangeInt\((.*?),(.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var seed = (int)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var min = (int)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-                                var max = (int)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), RandomHelper.RandomInstanceRange(seed, min, max, new System.Random().Next()).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"randomRangeInt\((.*?),(.*?),(.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var seed = (int)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var min = (int)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-                                var max = (int)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
-                                var index = (int)Evaluate(Replace(match.Groups[4].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), RandomHelper.RandomInstanceRange(seed, min, max, index).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("roundToNearestNumber"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"roundToNearestNumber\((.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var value = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var multipleOf = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), RoundToNearestNumber(value, multipleOf).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("roundToNearestDecimal"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"roundToNearestDecimal\((.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var value = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var places = (int)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), RoundToNearestDecimal(value, places).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("percentage"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"percentage\((.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var t = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var length = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), Percentage(t, length).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("equals"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"equals\((.*?),(.*?),(.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var a = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var b = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-                                var a2 = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
-                                var b2 = (float)Evaluate(Replace(match.Groups[4].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), (a == b ? a2 : b2).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-                    
-                    if (input.Contains("lesserEquals"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"lesserEquals\((.*?),(.*?),(.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var a = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var b = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-                                var a2 = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
-                                var b2 = (float)Evaluate(Replace(match.Groups[4].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), (a <= b ? a2 : b2).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-                    
-                    if (input.Contains("greaterEquals"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"greaterEquals\((.*?),(.*?),(.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var a = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var b = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-                                var a2 = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
-                                var b2 = (float)Evaluate(Replace(match.Groups[4].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), (a >= b ? a2 : b2).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-                    
-                    if (input.Contains("lesser"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"lesser\((.*?),(.*?),(.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var a = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var b = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-                                var a2 = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
-                                var b2 = (float)Evaluate(Replace(match.Groups[4].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), (a < b ? a2 : b2).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-                    
-                    if (input.Contains("greater"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"greater\((.*?),(.*?),(.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var a = (float)Evaluate(Replace(match.Groups[1].ToString().Trim(), false));
-                                var b = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-                                var a2 = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
-                                var b2 = (float)Evaluate(Replace(match.Groups[4].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), (a > b ? a2 : b2).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-                    
-                    if (input.Contains("findAxis"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"findAxis\((.*?),(.*?),(.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var tag = match.Groups[1].ToString().Trim();
-
-                                var bm = CoreHelper.FindObjectWithTag(tag);
-                                if (bm)
-                                {
-                                    var fromType = (int)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-
-                                    if (fromType < 0 || fromType > 2)
-                                    {
-                                        input = input.Replace(match.Groups[0].ToString(), "0");
-                                        return;
-                                    }
-
-                                    var fromAxis = (int)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
-                                    var time = (float)Evaluate(Replace(match.Groups[4].ToString().Trim(), false));
-                                    float value = 0f;
-
-                                    if (!Optimization.Updater.levelProcessor.converter.cachedSequences.TryGetValue(bm.id, out Optimization.Objects.ObjectConverter.CachedSequences cachedSequence))
-                                    {
-                                        input = input.Replace(match.Groups[0].ToString(), "0");
-                                        return;
-                                    }
-
-                                    switch (fromType)
-                                    {
-                                        case 0:
-                                            {
-                                                var sequence = cachedSequence.Position3DSequence.Interpolate(time - bm.StartTime);
-                                                value = fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z;
-                                                break;
-                                            }
-                                        case 1:
-                                            {
-                                                var sequence = cachedSequence.ScaleSequence.Interpolate(time - bm.StartTime);
-                                                value = fromAxis == 0 ? sequence.x : sequence.y;
-                                                break;
-                                            }
-                                        case 2:
-                                            {
-                                                value = cachedSequence.RotationSequence.Interpolate(time - bm.StartTime);
-                                                break;
-                                            }
-                                    }
-
-                                    input = input.Replace(match.Groups[0].ToString(), value.ToString());
-                                }
-                                else
-                                {
-                                    input = input.Replace(match.Groups[0].ToString(), "0");
-                                }
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("easing"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"easing\((.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var curveType = Ease.GetEaseFunction(match.Groups[1].ToString().Trim());
-                                var x = (float)Evaluate(Replace(match.Groups[2].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), curveType(x).ToString());
-                            }
-                            catch { input = input.Replace(match.Groups[0].ToString(), "0"); }
-                        });
-                    }
-
-                    if (input.Contains("int"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"int\((.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                input = input.Replace(match.Groups[0].ToString(), ((int)Evaluate(Replace(match.Groups[1].ToString().Trim(), false))).ToString());
-                            }
-                            catch { }
-                        });
-                    }
-
-                    if (input.Contains("date"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"date\((.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                input = input.Replace(match.Groups[0].ToString(), DateTime.Now.ToString(match.Groups[1].ToString().Trim()));
-                            }
-                            catch { }
-                        });
-                    }
-
-                    if (input.Contains("sampleAudio"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"sampleAudio\((.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                input = input.Replace(match.Groups[0].ToString(), Updater.GetSample(Parser.TryParse(match.Groups[1].ToString().Trim(), 0), Parser.TryParse(match.Groups[2].ToString().Trim(), 0f)).ToString());
-                            }
-                            catch { }
-                        });
-                    }
-
-                    if (input.Contains("copyEvent"))
-                    {
-                        CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"copyEvent\((.*?),(.*?),(.*?)\)", includeEnd)), match =>
-                        {
-                            try
-                            {
-                                var t = (float)Evaluate(Replace(match.Groups[3].ToString().Trim(), false));
-
-                                input = input.Replace(match.Groups[0].ToString(), RTEventManager.inst.Interpolate(Parser.TryParse(match.Groups[1].ToString().Trim(), 0), Parser.TryParse(match.Groups[2].ToString().Trim(), 0), t).ToString());
-                            }
-                            catch { }
-                        });
-                    }
-
-                    //if (input.Contains("copyEvent"))
-                    //{
-                    //    CoreHelper.RegexMatches(input, new Regex(GetFunctionPattern(@"copyEvent\((.*?)\)", includeEnd)), match =>
-                    //    {
-                    //        try
-                    //        {
-                    //            var type = (int)Evaluate(Replace(match.Groups[1].ToString(), false));
-                    //            var valIndex = (int)Evaluate(Replace(match.Groups[2].ToString(), false));
-
-                    //            input = input.Replace(match.Groups[0].ToString(), type.ToString());
-                    //        }
-                    //        catch { }
-                    //    });
-                    //}
-                }
-                catch (Exception ex)
-                {
-                    if (logException2)
-                        CoreHelper.LogError($"Error!\nMath: {input}\nException: {ex}");
-                }
-
-                return input;
-            }
-            catch (Exception ex)
-            {
-                if (logException3)
-                    CoreHelper.LogError($"Error!\nMath: {input}\nException: {ex}");
-                return input;
-            }
-        }
-
-        public static string EvaluateFunctions(string input, Dictionary<string, float> variables = null)
-        {
+            var methodIndexer = new List<int>();
             var startMethods = new List<int>();
             var endMethods = new List<int>();
-            var test = new List<int>();
 
             int methodCount = 0;
             int index = 0;
@@ -1029,7 +86,7 @@ namespace BetterLegacy.Core
             {
                 if (input[index] == '(')
                 {
-                    startMethods.Add(index);
+                    methodIndexer.Add(index);
                     methodCount++;
                 }
 
@@ -1037,8 +94,8 @@ namespace BetterLegacy.Core
                 {
                     endMethods.Add(index);
                     methodCount--;
-                    test.Add(startMethods[methodCount]);
-                    startMethods.RemoveAt(methodCount);
+                    startMethods.Add(methodIndexer[methodCount]);
+                    methodIndexer.RemoveAt(methodCount);
                 }
 
                 index++;
@@ -1046,10 +103,10 @@ namespace BetterLegacy.Core
 
             Predicate<char> predicate = x => char.IsLetter(x) || char.IsDigit(x);
 
-            for (int i = 0; i < test.Count; i++)
+            for (int i = 0; i < startMethods.Count; i++)
             {
-                var result = input.Substring(test[i], endMethods[i] - test[i] + 1);
-                int num = test[i];
+                var result = input.Substring(startMethods[i], endMethods[i] - startMethods[i] + 1);
+                int num = startMethods[i];
                 string methodName = "";
 
                 while (num > 0)
@@ -1063,62 +120,1128 @@ namespace BetterLegacy.Core
 
                 methodName = new string(methodName.Reverse().ToArray());
                 var fullMethod = methodName + result;
-                var startMethodIndex = test[i] - methodName.Length;
-
-                Action<string> update = (string calc) =>
-                {
-                    for (int j = i + 1; j < test.Count; j++)
-                    {
-                        var a = fullMethod.Length;
-                        var b = calc.Length;
-
-                        if (test[j] > test[i])
-                        {
-                            test[j] -= a;
-                            endMethods[j] -= a;
-
-                            test[j] += b;
-                            endMethods[j] += b;
-                        }
-                    }
-                };
-
-                // Functions
+                var startMethodIndex = startMethods[i] - methodName.Length;
 
                 switch (methodName)
                 {
-                    case "random":
+                    case "sin":
                         {
-                            var calc = ((float)new System.Random().NextDouble()).ToString();
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"sin\((.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var calc = Mathf.Sin(ParseVariables(match.Groups[1].ToString().Trim(), variables)).ToString();
 
-                            input = CoreHelper.ReplaceInsert(input, calc, startMethodIndex, endMethods[i]);
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
 
-                            update(calc);
+                            break;
+                        }
+                    case "cos":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"cos\((.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var calc = Mathf.Cos(ParseVariables(match.Groups[1].ToString().Trim(), variables)).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "atan":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"atan\((.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var calc = Mathf.Atan(ParseVariables(match.Groups[1].ToString().Trim(), variables)).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "tan":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"tan\((.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var calc = Mathf.Tan(ParseVariables(match.Groups[1].ToString().Trim(), variables)).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "asin":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"asin\((.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var calc = Mathf.Asin(ParseVariables(match.Groups[1].ToString().Trim(), variables)).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "acos":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"asin\((.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var calc = Mathf.Acos(ParseVariables(match.Groups[1].ToString().Trim(), variables)).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "sqrt":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"sqrt\((.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var calc = Mathf.Sqrt(ParseVariables(match.Groups[1].ToString().Trim(), variables)).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "abs":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"abs\((.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var calc = Mathf.Abs(ParseVariables(match.Groups[1].ToString().Trim(), variables)).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "min":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"abs\((.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var value = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var min = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var calc = Mathf.Min(value, min).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "max":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"max\((.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var value = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var max = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var calc = Mathf.Max(value, max).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
 
                             break;
                         }
                     case "clamp":
                         {
-                            CoreHelper.RegexMatches(fullMethod, new Regex(@"clamp\((.*?),(.*?),(.*?)\)"), match =>
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"clamp\((.*?),(.*?),(.*?)\)"), match =>
                             {
                                 try
                                 {
-                                    var a = (float)Evaluate(match.Groups[1].ToString());
-                                    var b = (float)Evaluate(match.Groups[2].ToString());
-                                    var c = (float)Evaluate(match.Groups[3].ToString());
-                                    var calc = Clamp(a, b, c).ToString();
+                                    var value = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var min = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var max = ParseVariables(match.Groups[3].ToString().Trim(), variables);
+                                    var calc = Clamp(value, min, max).ToString();
 
-                                    input = CoreHelper.ReplaceInsert(input, calc, startMethodIndex, endMethods[i]);
-
-                                    update(calc);
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
                                 }
                                 catch
                                 {
-                                    var calc = "0";
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
 
-                                    input = CoreHelper.ReplaceInsert(input, calc, startMethodIndex, endMethods[i]);
+                            break;
+                        }
+                    case "clampZero":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"clampZero\((.*?),(.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var value = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var min = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var max = ParseVariables(match.Groups[3].ToString().Trim(), variables);
+                                    var calc = ClampZero(value, min, max).ToString();
 
-                                    update(calc);
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "pow":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"pow\((.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var f = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var p = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var calc = Mathf.Pow(f, p).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "exp":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"exp\((.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var power = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var calc = Mathf.Exp(power).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "log":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"log\((.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var f = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var calc = Mathf.Log(f).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "log10":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"log10\((.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var f = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var calc = Mathf.Log10(f).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "ceil":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"ceil\((.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var f = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var calc = Mathf.Ceil(f).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "floor":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"floor\((.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var f = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var calc = Mathf.Floor(f).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "round":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"round\((.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var f = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var calc = Mathf.Round(f).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "sign":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"sign\((.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var f = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var calc = Mathf.Sign(f).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "lerp":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"lerp\((.*?),(.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var start = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var end = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var t = ParseVariables(match.Groups[3].ToString().Trim(), variables);
+                                    var calc = Lerp(start, end, t).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "lerpAngle":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"lerpAngle\((.*?),(.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var start = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var end = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var t = ParseVariables(match.Groups[3].ToString().Trim(), variables);
+                                    var calc = Mathf.LerpAngle(start, end, t).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "inverseLerp":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"inverseLerp\((.*?),(.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var start = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var end = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var t = ParseVariables(match.Groups[3].ToString().Trim(), variables);
+                                    var calc = Mathf.InverseLerp(start, end, t).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "moveTowards":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"moveTowards\((.*?),(.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var current = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var target = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var maxDelta = ParseVariables(match.Groups[3].ToString().Trim(), variables);
+                                    var calc = Mathf.MoveTowards(current, target, maxDelta).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "moveTowardsAngle":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"moveTowardsAngle\((.*?),(.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var current = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var target = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var maxDelta = ParseVariables(match.Groups[3].ToString().Trim(), variables);
+                                    var calc = Mathf.MoveTowardsAngle(current, target, maxDelta).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "smoothStep":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"smoothStep\((.*?),(.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var from = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var to = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var t = ParseVariables(match.Groups[3].ToString().Trim(), variables);
+                                    var calc = Mathf.SmoothStep(from, to, t).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "gamma":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"gamma\((.*?),(.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var value = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var absmax = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var gamma = ParseVariables(match.Groups[3].ToString().Trim(), variables);
+                                    var calc = Mathf.Gamma(value, absmax, gamma).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "approximately":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"approximately\((.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var a = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var b = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var calc = Mathf.Approximately(a, b).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "repeat":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"repeat\((.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var t = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var length = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var calc = Mathf.Repeat(t, length).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "pingPong":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"pingPong\((.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var t = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var length = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var calc = Mathf.PingPong(t, length).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "deltaAngle":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"deltaAngle\((.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var current = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var target = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var calc = Mathf.DeltaAngle(current, target).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "random":
+                        {
+
+                            if (CoreHelper.RegexMatch(fullMethod, new Regex(@"random\((.*?),(.*?)\)"), out Match match1))
+                            {
+                                try
+                                {
+                                    var seed = (int)ParseVariables(match1.Groups[1].ToString().Trim(), variables);
+                                    var seedIndex = (int)ParseVariables(match1.Groups[2].ToString().Trim(), variables);
+                                    var calc = RandomHelper.RandomInstanceSingle(seed, seedIndex).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            }
+                            else if (CoreHelper.RegexMatch(fullMethod, new Regex(@"random\((.*?)\)"), out Match match2))
+                            {
+                                try
+                                {
+                                    var seed = (int)ParseVariables(match1.Groups[1].ToString().Trim(), variables);
+                                    var calc = ((float)new System.Random(seed).NextDouble()).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            }
+                            else
+                            {
+                                var calc = ((float)new System.Random().NextDouble()).ToString();
+
+                                input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+
+                                //CoreHelper.Log($"calc: {calc}\n" +
+                                //    $"fullMethod: {fullMethod}\n" +
+                                //    $"input: {input}");
+                            }
+
+                            break;
+                        }
+                    case "randomRange":
+                        {
+
+                            if (CoreHelper.RegexMatch(fullMethod, new Regex(@"randomRange\((.*?),(.*?),(.*?)\)"), out Match match1))
+                            {
+                                try
+                                {
+                                    var seed = (int)ParseVariables(match1.Groups[1].ToString().Trim(), variables);
+                                    var min = ParseVariables(match1.Groups[2].ToString().Trim(), variables);
+                                    var max = ParseVariables(match1.Groups[3].ToString().Trim(), variables);
+
+                                    var calc = RandomHelper.RandomInstanceSingleRange(seed, min, max, new System.Random().Next()).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            }
+                            else if (CoreHelper.RegexMatch(fullMethod, new Regex(@"randomRange\((.*?),(.*?),(.*?),(.*?)\)"), out Match match2))
+                            {
+                                try
+                                {
+                                    var seed = (int)ParseVariables(match1.Groups[1].ToString().Trim(), variables);
+                                    var min = ParseVariables(match1.Groups[2].ToString().Trim(), variables);
+                                    var max = ParseVariables(match1.Groups[3].ToString().Trim(), variables);
+                                    var seedIndex = (int)ParseVariables(match1.Groups[4].ToString().Trim(), variables);
+
+                                    var calc = RandomHelper.RandomInstanceSingleRange(seed, min, max, seedIndex).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            }
+                            else
+                                input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+
+                            break;
+                        }
+                    case "randomInt":
+                        {
+
+                            if (CoreHelper.RegexMatch(fullMethod, new Regex(@"random\((.*?),(.*?)\)"), out Match match1))
+                            {
+                                try
+                                {
+                                    var seed = (int)ParseVariables(match1.Groups[1].ToString().Trim(), variables);
+                                    var seedIndex = (int)ParseVariables(match1.Groups[2].ToString().Trim(), variables);
+                                    var calc = RandomHelper.RandomInstance(seed, seedIndex).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            }
+                            else if (CoreHelper.RegexMatch(fullMethod, new Regex(@"random\((.*?)\)"), out Match match2))
+                            {
+                                try
+                                {
+                                    var seed = (int)ParseVariables(match1.Groups[1].ToString().Trim(), variables);
+                                    var calc = ((float)new System.Random(seed).Next()).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            }
+                            else
+                            {
+                                var calc = ((float)new System.Random().Next()).ToString();
+
+                                input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                            }
+
+                            break;
+                        }
+                    case "randomRangeInt":
+                        {
+
+                            if (CoreHelper.RegexMatch(fullMethod, new Regex(@"randomRangeInt\((.*?),(.*?),(.*?)\)"), out Match match1))
+                            {
+                                try
+                                {
+                                    var seed = (int)ParseVariables(match1.Groups[1].ToString().Trim(), variables);
+                                    var min = (int)ParseVariables(match1.Groups[2].ToString().Trim(), variables);
+                                    var max = (int)ParseVariables(match1.Groups[3].ToString().Trim(), variables);
+
+                                    var calc = RandomHelper.RandomInstanceRange(seed, min, max, new System.Random().Next()).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            }
+                            else if (CoreHelper.RegexMatch(fullMethod, new Regex(@"randomRangeInt\((.*?),(.*?),(.*?),(.*?)\)"), out Match match2))
+                            {
+                                try
+                                {
+                                    var seed = (int)ParseVariables(match1.Groups[1].ToString().Trim(), variables);
+                                    var min = (int)ParseVariables(match1.Groups[2].ToString().Trim(), variables);
+                                    var max = (int)ParseVariables(match1.Groups[3].ToString().Trim(), variables);
+                                    var seedIndex = (int)ParseVariables(match1.Groups[4].ToString().Trim(), variables);
+
+                                    var calc = RandomHelper.RandomInstanceRange(seed, min, max, seedIndex).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            }
+                            else
+                                input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+
+                            break;
+                        }
+                    case "roundToNearestNumber":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"roundToNearestNumber\((.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var value = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var multipleOf = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var calc = RoundToNearestNumber(value, multipleOf).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "roundToNearestDecimal":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"roundToNearestDecimal\((.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var value = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var places = (int)ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var calc = RoundToNearestDecimal(value, places).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "percentage":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"percentage\((.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var t = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var length = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var calc = Percentage(t, length).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "equals":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"equals\((.*?),(.*?),(.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var a = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var b = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var trueResult = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var falseResult = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+
+                                    var calc = (a == b ? trueResult : falseResult).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "lesserEquals":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"lesserEquals\((.*?),(.*?),(.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var a = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var b = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var trueResult = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var falseResult = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+
+                                    var calc = (a <= b ? trueResult : falseResult).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "greaterEquals":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"greaterEquals\((.*?),(.*?),(.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var a = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var b = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var trueResult = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var falseResult = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+
+                                    var calc = (a >= b ? trueResult : falseResult).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "lesser":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"lesser\((.*?),(.*?),(.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var a = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var b = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var trueResult = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var falseResult = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+
+                                    var calc = (a < b ? trueResult : falseResult).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "greater":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"greater\((.*?),(.*?),(.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var a = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var b = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var trueResult = ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var falseResult = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+
+                                    var calc = (a > b ? trueResult : falseResult).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "findAxis":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"findAxis\((.*?),(.*?),(.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var tag = match.Groups[1].ToString().Trim();
+
+                                    var bm = CoreHelper.FindObjectWithTag(tag);
+                                    float value = 0f;
+                                    if (bm)
+                                    {
+                                        var fromType = (int)ParseVariables(match.Groups[2].ToString().Trim(), variables);
+
+                                        if (fromType < 0 || fromType > 2)
+                                        {
+                                            input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                            return;
+                                        }
+
+                                        var fromAxis = (int)ParseVariables(match.Groups[1].ToString().Trim(), variables);
+
+                                        if (variables != null)
+                                            variables["foundObjectStartTime"] = bm.StartTime;
+
+                                        var time = ParseVariables(match.Groups[2].ToString().Trim(), variables ?? new Dictionary<string, float>
+                                        {
+                                            { "foundObjectStartTime", bm.StartTime }
+                                        });
+
+                                        if (!Updater.levelProcessor.converter.cachedSequences.TryGetValue(bm.id, out Optimization.Objects.ObjectConverter.CachedSequences cachedSequence))
+                                        {
+                                            input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                            return;
+                                        }
+
+                                        switch (fromType)
+                                        {
+                                            case 0:
+                                                {
+                                                    var sequence = cachedSequence.Position3DSequence.Interpolate(time);
+                                                    value = fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z;
+                                                    break;
+                                                }
+                                            case 1:
+                                                {
+                                                    var sequence = cachedSequence.ScaleSequence.Interpolate(time);
+                                                    value = fromAxis == 0 ? sequence.x : sequence.y;
+                                                    break;
+                                                }
+                                            case 2:
+                                                {
+                                                    value = cachedSequence.RotationSequence.Interpolate(time);
+                                                    break;
+                                                }
+                                        }
+
+                                    }
+
+                                    input = UpdateInput(input, i, value.ToString(), fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "easing":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"easing\((.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var curveType = Ease.GetEaseFunction(match.Groups[1].ToString().Trim());
+                                    var x = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var calc = curveType(x).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "int":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"int\((.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var x = (int)ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var calc = x.ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "date":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"date\((.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var calc = DateTime.Now.ToString(match.Groups[1].ToString().Trim());
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "sampleAudio":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"sampleAudio\((.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var sample = (int)ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var intensity = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var calc = Updater.GetSample(sample, intensity).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "copyEvent":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"copyEvent\((.*?),(.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var type = (int)ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var valueIndex = (int)ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var time = ParseVariables(match.Groups[3].ToString().Trim(), variables);
+                                    var calc = RTEventManager.inst.Interpolate(type, valueIndex, time).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
                                 }
                             });
 
@@ -1127,7 +1250,225 @@ namespace BetterLegacy.Core
                 }
             }
 
+            methodIndexer.Clear();
+            startMethods.Clear();
+            endMethods.Clear();
+            methodIndexer = null;
+            startMethods = null;
+            endMethods = null;
+
+            // move onto replacing top-level variables that aren't a part of function parameters.
+
+            //input = input.Remove(" ");
+
+            //int search = 0;
+            //int startIndex = 0;
+            //while (search < input.Length)
+            //{
+            //    var c = input[search];
+            //    var endOfInput = search == input.Length - 1;
+
+            //    if (CharacterIsMathSymbol(c) || endOfInput)
+            //    {
+            //        var substring = input.Substring(startIndex, search - startIndex + (endOfInput ? 1 : 0));
+            //        var length = substring.Length;
+
+            //        substring = ParseVariable(substring, variables).ToString();
+
+            //        input = CoreHelper.ReplaceInsert(input, substring, startIndex, endOfInput ? search : search - 1);
+
+            //        if (!endOfInput)
+            //        {
+            //            search -= length;
+            //            search += substring.Length;
+
+            //            startIndex = search + 1;
+            //        }
+            //    }
+
+            //    search++;
+            //}
+
+            return ParseVariables(input, variables);
+        }
+
+        /// <summary>
+        /// Checks if a character is a math symbol.
+        /// </summary>
+        /// <param name="c">The character to check.</param>
+        /// <returns>Returns true if the character is a math symbol, otherwise returns false.</returns>
+        public static bool CharacterIsMathSymbol(char c) => c == '+' || c == '-' || c == '/' || c == '%' || c == '*';
+
+        static string UpdateInput(string input, int index, string calc, string fullMethod, int startMethodIndex, List<int> startMethods, List<int> endMethods)
+        {
+            input = CoreHelper.ReplaceInsert(input, calc, startMethodIndex, endMethods[index]);
+
+            UpdateFunctionLengths(index, fullMethod, calc, startMethods, endMethods);
+
             return input;
+        }
+
+        static void UpdateFunctionLengths(int index, string fullMethod, string calc, List<int> startMethods, List<int> endMethods)
+        {
+            var a = fullMethod.Length;
+            var b = calc.Length;
+
+            for (int j = index + 1; j < startMethods.Count; j++)
+            {
+                if (startMethods[j] > startMethods[index])
+                {
+                    startMethods[j] -= a;
+                    startMethods[j] += b;
+                }
+
+                if (endMethods[j] > endMethods[index])
+                {
+                    endMethods[j] -= a;
+                    endMethods[j] += b;
+                }
+            }
+        }
+
+        // RTMath.Parse("(1 + 1) * 1");
+        public static float ParseVariables(string input, Dictionary<string, float> variables = null)
+            => string.IsNullOrEmpty(input) ? 0f : (float)Evaluate(ParseVariablesToString(input, variables));
+
+        // RTMath.ParseVariablesToString("(1+1)*1")
+        public static string ParseVariablesToString(string input, Dictionary<string, float> variables = null)
+        {
+            if (string.IsNullOrEmpty(input))
+                return input;
+
+            input = input.Remove(" ");
+
+            int search = 0;
+            int startIndex = 0;
+            bool isInVariable = false;
+            bool lastSymbolWasClosing = false;
+            while (search < input.Length)
+            {
+                var c = input[search];
+
+                // we only need to check if the character is a math symbol once the variable has been declared, so we can consider negative numbers.
+                if (char.IsDigit(c) || char.IsLetter(c) || c == '_' || c == '[' || c == ']' || c == '{' || c == '}')
+                    isInVariable = true;
+
+                if (c == '(' || c == ')')
+                {
+                    search++;
+                    startIndex = search;
+                    isInVariable = false;
+                    lastSymbolWasClosing = c == ')';
+                    continue;
+                }
+
+                var endOfInput = search >= input.Length - 1;
+
+                // there aren't any cases of a variable being right next to a closing bracket ) so we skip.
+                if (lastSymbolWasClosing)
+                {
+                    lastSymbolWasClosing = false;
+
+                    search++;
+                    startIndex = search;
+                    isInVariable = false;
+                    continue;
+                }
+
+                if (isInVariable && CharacterIsMathSymbol(c) || endOfInput)
+                {
+                    isInVariable = false;
+                    var substring = input.Substring(startIndex, search - startIndex + (endOfInput ? 1 : 0));
+                    var length = substring.Length;
+
+                    substring = ParseVariable(substring, variables).ToString();
+
+                    input = CoreHelper.ReplaceInsert(input, substring, startIndex, endOfInput ? search : search - 1);
+
+                    if (!endOfInput)
+                    {
+                        search -= length;
+                        search += substring.Length;
+
+                        startIndex = search + 1;
+                    }
+                }
+
+                search++;
+            }
+
+            return input;
+        }
+
+        public static float ParseVariable(string name, Dictionary<string, float> variables = null)
+        {
+            switch (name)
+            {
+                case "deathCount":  return GameManager.inst.deaths.Count;
+                case "hitCount":  return GameManager.inst.hits.Count;
+                case "boostCount":  return LevelManager.BoostCount;
+                case "actionMoveX":  return InputDataManager.inst.menuActions.Move.X;
+                case "actionMoveY":  return InputDataManager.inst.menuActions.Move.Y;
+                case "time":  return Time.time;
+                case "deltaTime":  return Time.deltaTime;
+                case "audioTime":  return AudioManager.inst.CurrentAudioSource.time;
+                case "smoothedTime":  return RTEventManager.inst.currentTime;
+                case "volume":  return AudioManager.inst.musicVol;
+                case "pitch":  return AudioManager.inst.pitch;
+                case "forwardPitch":  return CoreHelper.ForwardPitch;
+                case "playerHealthTotal":  return PlayerManager.Players.Sum(x => x.Health);
+                case "camPosX": return EventManager.inst.cam.transform.position.x;
+                case "camPosY": return EventManager.inst.cam.transform.position.y;
+                case "camZoom": return EventManager.inst.cam.orthographicSize;
+                case "camRot": return EventManager.inst.cam.transform.localEulerAngles.z;
+            }
+
+            float output = 0f;
+            bool set = false;
+            CoreHelper.RegexMatch(name, new Regex(@"player([0-9]+)PosX"), match =>
+            {
+                var index = Mathf.Clamp(Parser.TryParse(match.Groups[1].ToString(), 0), 0, int.MaxValue);
+
+                var players = PlayerManager.Players;
+                if (players.Count <= index || !players[index].Player || !players[index].Player.rb)
+                    output = 0f;
+                else
+                    output = players[index].Player.rb.position.x;
+                set = true;
+            });
+            CoreHelper.RegexMatch(name, new Regex(@"player([0-9]+)PosY"), match =>
+            {
+                var index = Mathf.Clamp(Parser.TryParse(match.Groups[1].ToString(), 0), 0, int.MaxValue);
+
+                var players = PlayerManager.Players;
+                if (players.Count <= index || !players[index].Player || !players[index].Player.rb)
+                    output = 0f;
+                else
+                    output = players[index].Player.rb.position.y;
+                set = true;
+            });
+            CoreHelper.RegexMatch(name, new Regex(@"player([0-9]+)Health"), match =>
+            {
+                var index = Mathf.Clamp(Parser.TryParse(match.Groups[1].ToString(), 0), 0, int.MaxValue);
+
+                var players = PlayerManager.Players;
+                if (players.Count <= index)
+                    output = 0f;
+                else
+                    output = players[index].Health;
+                set = true;
+            });
+
+            if (set)
+                return output;
+
+            if (variables != null && variables.TryGetValue(name, out float value))
+                return value;
+
+            if (TryEvaluate(name, out double result))
+                return (float)result;
+
+            return 0f;
         }
 
         public static float Lerp(float x, float y, float t) => x + (y - x) * t;

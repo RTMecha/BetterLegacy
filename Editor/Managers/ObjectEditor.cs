@@ -3637,7 +3637,13 @@ namespace BetterLegacy.Editor.Managers
             });
             valueInputField.onEndEdit.AddListener(_val =>
             {
-                if (!float.TryParse(_val, out float n) && RTMath.TryEvaluate(_val.Replace("eventTime", firstKF.GetData<EventKeyframe>().eventTime.ToString()), firstKF.GetData<EventKeyframe>().eventValues[current], out float calc))
+                var variables = new Dictionary<string, float>
+                {
+                    { "eventTime", firstKF.GetData<EventKeyframe>().eventTime },
+                    { "currentValue", firstKF.GetData<EventKeyframe>().eventValues[current] }
+                };
+
+                if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, firstKF.GetData<EventKeyframe>().eventValues[current], variables, out float calc))
                     valueInputField.text = calc.ToString();
             });
 

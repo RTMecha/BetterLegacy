@@ -2979,7 +2979,13 @@ namespace BetterLegacy.Editor.Managers
             });
             zoom.onEndEdit.AddListener(_val =>
             {
-                if (!float.TryParse(_val, out float n) && RTMath.TryEvaluate(_val.Replace("eventTime", currentKeyframe.eventTime.ToString()), currentKeyframe.eventValues[index], out float calc))
+                var variables = new Dictionary<string, float>
+                {
+                    { "eventTime", currentKeyframe.eventTime },
+                    { "currentValue", currentKeyframe.eventValues[index] }
+                };
+
+                if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, currentKeyframe.eventValues[index], variables, out float calc))
                     zoom.text = calc.ToString();
             });
 
@@ -3163,7 +3169,14 @@ namespace BetterLegacy.Editor.Managers
             });
             posX.onEndEdit.AddListener(_val =>
             {
-                if (!float.TryParse(_val, out float n) && RTMath.TryEvaluate(_val.Replace("eventTime", currentKeyframe.eventTime.ToString()), currentKeyframe.eventValues[xindex], out float calc))
+                var variables = new Dictionary<string, float>
+                {
+                    { "eventTime", currentKeyframe.eventTime },
+                    { "currentValueX", currentKeyframe.eventValues[xindex] },
+                    { "currentValueY", currentKeyframe.eventValues[yindex] }
+                };
+
+                if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, currentKeyframe.eventValues[xindex], variables, out float calc))
                     posX.text = calc.ToString();
             });
 
@@ -3186,7 +3199,14 @@ namespace BetterLegacy.Editor.Managers
             });
             posY.onEndEdit.AddListener(_val =>
             {
-                if (!float.TryParse(_val, out float n) && RTMath.TryEvaluate(_val.Replace("eventTime", currentKeyframe.eventTime.ToString()), currentKeyframe.eventValues[yindex], out float calc))
+                var variables = new Dictionary<string, float>
+                {
+                    { "eventTime", currentKeyframe.eventTime },
+                    { "currentValueX", currentKeyframe.eventValues[xindex] },
+                    { "currentValueY", currentKeyframe.eventValues[yindex] }
+                };
+
+                if (!float.TryParse(_val, out float n) && RTMath.TryParse(_val, currentKeyframe.eventValues[yindex], variables, out float calc))
                     posY.text = calc.ToString();
             });
 
