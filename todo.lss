@@ -47,6 +47,7 @@
 - Multiplayer editor, possibly. (everyone has their own perspective of the hosts' editor but have limited functionality compared to the host)
 ### Internal
 - Make Editor Documentation read from a json file.
+- Rework shapes to read from a singular json file.
 - Clean up UIManager.
 - Clean up PlayerManager.
 - Summary and note as much as I can (or need to).
