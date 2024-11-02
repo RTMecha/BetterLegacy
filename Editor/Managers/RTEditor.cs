@@ -8223,12 +8223,10 @@ namespace BetterLegacy.Editor.Managers
                                      "<b>player0Health</b> - Health of a specific player. You can do the same as the above variable.\n" +
                                      "<b>playerHealthTotal</b> - Health of all players in total.", Document.Element.Type.Text),
                 new Document.Element("If you have a few functions listed, follow this example:\n" +
-                                    "clamp(random(), 0, 1); + clamp(random() * 0.1, 0, 1);\n" +
-                                    "As you can see, top-level functions need to end with a ';'. This is so the math evaluators know when to stop for each math function, instead of collapsing everything into one function. Nested functions inside top-level functions don't need to end with a ';'."
+                                    "clamp(random(), 0, 1) + clamp(random(034) * 0.1, 0, 1) * pitch"
                                     , Document.Element.Type.Text),
                 new Document.Element("Below is a list of functions that can be used with math evaluation.", Document.Element.Type.Text),
-                new Document.Element("<b>playerTailPosX(playerIndex, tailIndex)</b> - Gets the tails' position X of a player. playerIndex is the index of the player, e.g. 0 for the first player. tailIndex is for the tail part of that player, e.g. 2 would be the 3rd tail part.\n" +
-                                    "<b>playerTailPosY(playerIndex, tailIndex)</b> - Gets the tails' position Y of a player. playerIndex is the index of the player, e.g. 0 for the first player. tailIndex is for the tail part of that player, e.g. 2 would be the 3rd tail part.\n" +
+                new Document.Element(
                                     "<b>sin(value)</b> - sin function.\n" +
                                     "<b>cos(value)</b> - cos function.\n" +
                                     "<b>atan(value)</b> - atan function.\n" +
@@ -8261,11 +8259,11 @@ namespace BetterLegacy.Editor.Managers
                                     "<b>pingPong(t, length)</b> - Ping-pongs between t by length.\n" +
                                     "<b>deltaAngle(current, target)</b> - Calculates an angle from current to target.\n" +
                                     "<b>random()</b> - Gets a random seed and returns a non-whole number by the seed.\n" +
-                                    "<b>random(seed)</b> - Returns a non-whole number by the seed.\n" +
+                                    "<b>random(seed)</b> - Returns a non-whole number by the seed. Example: random(4104) will always result in the same random number.\n" +
                                     "<b>random(seed, index)</b> - Returns a consistent non-whole number by the seed and index.\n" +
                                     "<b>randomRange(seed, min, max)</b> - Returns a non-whole number between min and max by the seed.\n" +
                                     "<b>randomRange(seed, min, max, index)</b> - Returns a consistent non-whole number between min and max by the seed and index.\n" +
-                                    "<b>randomInt()</b> - Gets a random seed and returns a whole number by the seed.\n" +
+                                    "<b>randomInt()</b> - Gets a random seed and returns a whole number by the seed. Example: random(4104) will always result in the same random number.\n" +
                                     "<b>randomInt(seed)</b> - Returns a whole number by the seed.\n" +
                                     "<b>randomInt(seed, index)</b> - Returns a consistent whole number by the seed and index.\n" +
                                     "<b>randomRangeInt(seed, min, max)</b> - Returns a whole number between min and max by the seed.\n" +
