@@ -1,3 +1,8 @@
+snapshot-2024.11.2 - (pre-1.7.0) > [Nov 2, 2024]
+- Completely reworked the way math evaluators work. They no longer need a ; at the end of each top-level function, supports proper matching of variables and deep nested functions.
+- Added forwardPitch to math evaluators.
+- blackHole modifier and copyAxis visual now allows for empty objects.
+- Hopefully fixed the cases where objects wouldn't properly delete.
 snapshot-2024.11.1 - (pre-1.7.0) > [Nov 1, 2024]
 - Fixed objects rendering on the event layer and other layers its not supposed to.
 - Added animateObjectMath modifiers.
