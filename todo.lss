@@ -1,7 +1,7 @@
 ﻿### Major feature
 - Level collections.
 - Custom Achievement system.
-- Story mode.
+- Story mode. (rework story system to use a json file for customizable story modes and have different load states, for example when user loads a new save it will load the intro interface but then when its done the load state will be set to chapter 1, so when they reload the story save it will load that interface)
 - Example tutorials. (Either ask Example about something or right click an element to show the context menu with a "Tutorial" button)
 - Online multiplayer.
 ### Minor feature
