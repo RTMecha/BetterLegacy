@@ -301,6 +301,8 @@ namespace BetterLegacy.Core
         
         public static string[] GetLines(this string str) => str.Split(new string[] { "\n", "\n\r", "\r" }, StringSplitOptions.RemoveEmptyEntries);
 
+        public static string Remove(this string str, string remove) => str.Replace(remove, "");
+
         #endregion
 
         #region JSON
