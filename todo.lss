@@ -4,6 +4,7 @@
 - Story mode. (rework story system to use a json file for customizable story modes and have different load states, for example when user loads a new save it will load the intro interface but then when its done the load state will be set to chapter 1, so when they reload the story save it will load that interface)
 - Example tutorials. (Either ask Example about something or right click an element to show the context menu with a "Tutorial" button)
 - Online multiplayer.
+
 ### Minor feature
 - Animation editor (for player animations).
 - Player modifiers.
@@ -12,23 +13,27 @@
 - Camera Jiggle event keyframe? (instead of a single thing that doesn't change throughout the entire level)
 - Add feedback (KinoFeedback) effect to event keyframes.
 - Add a fake Desktop thing like Rhythm Doctor for Window event keyframes. (The Desktop will look like a PA interface)
+- Config presets (Beginner, Legacy, Alpha, Modded, etc.) that affects editor themes, rounded UI and complexity.
 - Color picker rework.
 - Somehow figure out mutli BG object editing.
 - Timeline object index order.
 - Figure out custom timeline bin system (Shows a custom amount of rows in the timeline and allows for the timeline to be navigated up and down).
 - Unclamped timeline (timeline can be navigated outside the regular range and objects can be placed before start time 0).
 - New modifiers [prizeObject, setParent, playerAction trigger (allows for multiple different keybinds and buttons)].
+- Custom end level function [end level screen, return to hub, return to previous, return to arcade, return to main menu].
+- loadLevel modifiers custom end function (same as above).
 - Add a value for spawning a prefab at the object's position.
 - Add Set Data to image shape for Custom Player objects.
 - More player model limits (move speed, boost speed, etc).
+- Controller Preferences metadata.
 - Prefab preview image. Can set the specific capture size and position.
 - Asset sharing on the online server. (Prefabs, themes, player models, etc)
 - Collab sharing via server?
 - Editor online backups?
+- Multiplayer editor, possibly. (everyone has their own perspective of the hosts' editor but have limited functionality compared to the host)
+
 ### Misc
-- Controller Preferences metadata.
 - A way to detect duplicate object IDs.
-- Config presets (Beginner, Legacy, Alpha, Modded, etc.) that affects editor themes, rounded UI and complexity.
 - Some way to replace the song in-editor. (Have the current song update if the song that's being replaced is the same level)
 - Possibly update input select scene to use new interface system.
 - Glow object that acts like bloom.
@@ -41,16 +46,17 @@
 - Documentation & tooltips.
 - Example customization.
 - Somehow figure out how to convert parallax in alpha to BG objects in BetterLegacy.
-- Custom end level function [end level screen, return to hub, return to previous, return to arcade, return to main menu].
-- loadLevel modifiers custom end function (same as above).
+- PrefabOnObject implementation?
 - Possible multi object editor rework???
-- Multiplayer editor, possibly. (everyone has their own perspective of the hosts' editor but have limited functionality compared to the host)
+
 ### Internal
 - Make Editor Documentation read from a json file.
 - Rework shapes to read from a singular json file.
+- Add support for VG text object origin offset.
 - Clean up UIManager.
 - Clean up PlayerManager.
 - Summary and note as much as I can (or need to).
+
 ### Bugs
 - Fix window event keyframe not resetting when player pauses or when the user exits preview mode.
 - Fix up menu themes.
