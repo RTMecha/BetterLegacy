@@ -973,8 +973,8 @@ namespace BetterLegacy.Core
                                 {
                                     var a = ParseVariables(match.Groups[1].ToString().Trim(), variables);
                                     var b = ParseVariables(match.Groups[2].ToString().Trim(), variables);
-                                    var trueResult = ParseVariables(match.Groups[1].ToString().Trim(), variables);
-                                    var falseResult = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var trueResult = ParseVariables(match.Groups[3].ToString().Trim(), variables);
+                                    var falseResult = ParseVariables(match.Groups[4].ToString().Trim(), variables);
 
                                     var calc = (a == b ? trueResult : falseResult).ToString();
 
@@ -996,8 +996,8 @@ namespace BetterLegacy.Core
                                 {
                                     var a = ParseVariables(match.Groups[1].ToString().Trim(), variables);
                                     var b = ParseVariables(match.Groups[2].ToString().Trim(), variables);
-                                    var trueResult = ParseVariables(match.Groups[1].ToString().Trim(), variables);
-                                    var falseResult = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var trueResult = ParseVariables(match.Groups[3].ToString().Trim(), variables);
+                                    var falseResult = ParseVariables(match.Groups[4].ToString().Trim(), variables);
 
                                     var calc = (a <= b ? trueResult : falseResult).ToString();
 
@@ -1019,8 +1019,8 @@ namespace BetterLegacy.Core
                                 {
                                     var a = ParseVariables(match.Groups[1].ToString().Trim(), variables);
                                     var b = ParseVariables(match.Groups[2].ToString().Trim(), variables);
-                                    var trueResult = ParseVariables(match.Groups[1].ToString().Trim(), variables);
-                                    var falseResult = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var trueResult = ParseVariables(match.Groups[3].ToString().Trim(), variables);
+                                    var falseResult = ParseVariables(match.Groups[4].ToString().Trim(), variables);
 
                                     var calc = (a >= b ? trueResult : falseResult).ToString();
 
@@ -1042,8 +1042,8 @@ namespace BetterLegacy.Core
                                 {
                                     var a = ParseVariables(match.Groups[1].ToString().Trim(), variables);
                                     var b = ParseVariables(match.Groups[2].ToString().Trim(), variables);
-                                    var trueResult = ParseVariables(match.Groups[1].ToString().Trim(), variables);
-                                    var falseResult = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var trueResult = ParseVariables(match.Groups[3].ToString().Trim(), variables);
+                                    var falseResult = ParseVariables(match.Groups[4].ToString().Trim(), variables);
 
                                     var calc = (a < b ? trueResult : falseResult).ToString();
 
@@ -1065,8 +1065,8 @@ namespace BetterLegacy.Core
                                 {
                                     var a = ParseVariables(match.Groups[1].ToString().Trim(), variables);
                                     var b = ParseVariables(match.Groups[2].ToString().Trim(), variables);
-                                    var trueResult = ParseVariables(match.Groups[1].ToString().Trim(), variables);
-                                    var falseResult = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var trueResult = ParseVariables(match.Groups[3].ToString().Trim(), variables);
+                                    var falseResult = ParseVariables(match.Groups[4].ToString().Trim(), variables);
 
                                     var calc = (a > b ? trueResult : falseResult).ToString();
 
@@ -1257,38 +1257,6 @@ namespace BetterLegacy.Core
             startMethods = null;
             endMethods = null;
 
-            // move onto replacing top-level variables that aren't a part of function parameters.
-
-            //input = input.Remove(" ");
-
-            //int search = 0;
-            //int startIndex = 0;
-            //while (search < input.Length)
-            //{
-            //    var c = input[search];
-            //    var endOfInput = search == input.Length - 1;
-
-            //    if (CharacterIsMathSymbol(c) || endOfInput)
-            //    {
-            //        var substring = input.Substring(startIndex, search - startIndex + (endOfInput ? 1 : 0));
-            //        var length = substring.Length;
-
-            //        substring = ParseVariable(substring, variables).ToString();
-
-            //        input = CoreHelper.ReplaceInsert(input, substring, startIndex, endOfInput ? search : search - 1);
-
-            //        if (!endOfInput)
-            //        {
-            //            search -= length;
-            //            search += substring.Length;
-
-            //            startIndex = search + 1;
-            //        }
-            //    }
-
-            //    search++;
-            //}
-
             return ParseVariables(input, variables);
         }
 
@@ -1333,6 +1301,7 @@ namespace BetterLegacy.Core
         public static float ParseVariables(string input, Dictionary<string, float> variables = null)
             => string.IsNullOrEmpty(input) ? 0f : (float)Evaluate(ParseVariablesToString(input, variables));
 
+        // RTMath.ParseVariablesToString("(1 + pitch");
         // RTMath.ParseVariablesToString("(1+1)*1")
         public static string ParseVariablesToString(string input, Dictionary<string, float> variables = null)
         {
@@ -1353,12 +1322,11 @@ namespace BetterLegacy.Core
                 if (char.IsDigit(c) || char.IsLetter(c) || c == '_' || c == '[' || c == ']' || c == '{' || c == '}')
                     isInVariable = true;
 
-                if (c == '(' || c == ')')
+                if (c == '(')
                 {
                     search++;
                     startIndex = search;
                     isInVariable = false;
-                    lastSymbolWasClosing = c == ')';
                     continue;
                 }
 
@@ -1369,17 +1337,28 @@ namespace BetterLegacy.Core
                 {
                     lastSymbolWasClosing = false;
 
+                    //search += 2;
                     search++;
                     startIndex = search;
                     isInVariable = false;
                     continue;
                 }
 
-                if (isInVariable && CharacterIsMathSymbol(c) || endOfInput)
+                if (c == ')')
+                {
+                    //search--;
+                    lastSymbolWasClosing = true;
+                }
+
+                //c = input[search];
+
+                if (isInVariable && (CharacterIsMathSymbol(c) || lastSymbolWasClosing) || endOfInput)
                 {
                     isInVariable = false;
-                    var substring = input.Substring(startIndex, search - startIndex + (endOfInput ? 1 : 0));
+                    var substring = input.Substring(startIndex, search - startIndex + (endOfInput && c != ')' ? 1 : 0));
                     var length = substring.Length;
+
+                    //CoreHelper.Log($"substring: {substring}");
 
                     int minusCount = 0;
                     while (substring.Length > 0 && substring[0] == '-')
@@ -1407,7 +1386,7 @@ namespace BetterLegacy.Core
 
                     substring = variable.ToString();
 
-                    input = CoreHelper.ReplaceInsert(input, substring, startIndex, endOfInput ? search : search - 1);
+                    input = CoreHelper.ReplaceInsert(input, substring, startIndex, endOfInput && c != ')' ? search : search - 1);
 
                     if (!endOfInput)
                     {
@@ -1426,6 +1405,8 @@ namespace BetterLegacy.Core
 
         public static float ParseVariable(string name, Dictionary<string, float> variables = null)
         {
+            //CoreHelper.Log($"Name: \"{name}\"\nvariables == null {variables == null}");
+
             switch (name)
             {
                 case "deathCount":  return GameManager.inst.deaths.Count;
@@ -1487,10 +1468,16 @@ namespace BetterLegacy.Core
                 return output;
 
             if (variables != null && variables.TryGetValue(name, out float value))
+            {
+                //CoreHelper.Log($"Name: \"{name}\"\nValue: {value}");
                 return value;
+            }
 
             if (TryEvaluate(name, out double result))
+            {
+                //CoreHelper.Log($"Name: \"{name}\"\nResult: {result}");
                 return (float)result;
+            }
 
             return 0f;
         }
