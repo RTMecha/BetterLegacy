@@ -1447,7 +1447,55 @@ namespace BetterLegacy.Core.Data
 
         #endregion
 
-        public void ReplaceObjectVariables(Dictionary<string, float> variables)
+        public Dictionary<string, float> GetObjectVariables()
+        {
+            var variables = new Dictionary<string, float>();
+            SetObjectVariables(variables);
+            return variables;
+        }
+        
+        public Dictionary<string, float> GetOtherObjectVariables()
+        {
+            var variables = new Dictionary<string, float>();
+            SetOtherObjectVariables(variables);
+            return variables;
+        }
+
+        public void SetOtherObjectVariables(Dictionary<string, float> variables)
+        {
+            variables["otherIntVariable"] = integerVariable;
+
+            variables["otherPositionOffsetX"] = positionOffset.x;
+            variables["otherPositionOffsetY"] = positionOffset.y;
+            variables["otherPositionOffsetZ"] = positionOffset.z;
+
+            variables["otherScaleOffsetX"] = scaleOffset.x;
+            variables["otherScaleOffsetY"] = scaleOffset.y;
+            variables["otherScaleOffsetZ"] = scaleOffset.z;
+
+            variables["otherRotationOffsetX"] = rotationOffset.x;
+            variables["otherRotationOffsetY"] = rotationOffset.y;
+            variables["otherRotationOffsetZ"] = rotationOffset.z;
+
+            if (Updater.TryGetObject(this, out Optimization.Objects.LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
+            {
+                var transform = levelObject.visualObject.GameObject.transform;
+
+                variables["otherVisualPosX"] = transform.position.x;
+                variables["otherVisualPosY"] = transform.position.y;
+                variables["otherVisualPosZ"] = transform.position.z;
+
+                variables["otherVisualScaX"] = transform.lossyScale.x;
+                variables["otherVisualScaY"] = transform.lossyScale.y;
+                variables["otherVisualScaZ"] = transform.lossyScale.z;
+
+                variables["otherVisualRotX"] = transform.rotation.eulerAngles.x;
+                variables["otherVisualRotY"] = transform.rotation.eulerAngles.y;
+                variables["otherVisualRotZ"] = transform.rotation.eulerAngles.z;
+            }
+        }
+
+        public void SetObjectVariables(Dictionary<string, float> variables)
         {
             variables["intVariable"] = integerVariable;
 
@@ -1460,8 +1508,8 @@ namespace BetterLegacy.Core.Data
             variables["scaleOffsetZ"] = scaleOffset.z;
 
             variables["rotationOffsetX"] = rotationOffset.x;
-            variables["rotationOffsetX"] = rotationOffset.y;
-            variables["rotationOffsetX"] = rotationOffset.z;
+            variables["rotationOffsetY"] = rotationOffset.y;
+            variables["rotationOffsetZ"] = rotationOffset.z;
 
             if (Updater.TryGetObject(this, out Optimization.Objects.LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
             {
