@@ -68,6 +68,16 @@ namespace BetterLegacy.Core
 
         public static RectTransform AsRT(this Transform transform) => (RectTransform)transform;
 
+        public static void SetPosition(this Transform transform, int axis, float value)
+        {
+            switch (axis)
+            {
+                case 0: transform.SetPositionX(value); break;
+                case 1: transform.SetPositionY(value); break;
+                case 2: transform.SetPositionZ(value); break;
+            }
+        }
+
         public static void SetPositionX(this Transform transform, float x)
         {
             var pos = transform.position;
@@ -87,6 +97,16 @@ namespace BetterLegacy.Core
             var pos = transform.position;
             pos.z = z;
             transform.position = pos;
+        }
+
+        public static void SetLocalPosition(this Transform transform, int axis, float value)
+        {
+            switch (axis)
+            {
+                case 0: transform.SetLocalPositionX(value); break;
+                case 1: transform.SetLocalPositionY(value); break;
+                case 2: transform.SetLocalPositionZ(value); break;
+            }
         }
 
         public static void SetLocalPositionX(this Transform transform, float x)
@@ -110,6 +130,16 @@ namespace BetterLegacy.Core
             transform.localPosition = pos;
         }
 
+        public static void SetLocalScale(this Transform transform, int axis, float value)
+        {
+            switch (axis)
+            {
+                case 0: transform.SetLocalScaleX(value); break;
+                case 1: transform.SetLocalScaleY(value); break;
+                case 2: transform.SetLocalScaleZ(value); break;
+            }
+        }
+
         public static void SetLocalScaleX(this Transform transform, float x)
         {
             var sca = transform.localScale;
@@ -129,6 +159,16 @@ namespace BetterLegacy.Core
             var sca = transform.localScale;
             sca.z = z;
             transform.localScale = sca;
+        }
+
+        public static void SetLocalRotationEuler(this Transform transform, int axis, float value)
+        {
+            switch (axis)
+            {
+                case 0: transform.SetLocalRotationEulerX(value); break;
+                case 1: transform.SetLocalRotationEulerY(value); break;
+                case 2: transform.SetLocalRotationEulerZ(value); break;
+            }
         }
 
         public static void SetLocalRotationEulerX(this Transform transform, float x)

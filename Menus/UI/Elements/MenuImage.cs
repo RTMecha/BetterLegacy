@@ -2507,28 +2507,24 @@ namespace BetterLegacy.Menus.UI.Elements
 
             switch (type)
             {
-                case 0: ((Action<float>)(axis == 0 ? gameObject.transform.SetLocalPositionX : axis == 1 ? gameObject.transform.SetLocalPositionY : gameObject.transform.SetLocalPositionZ)).Invoke(value);
-                    break;
-                case 1: ((Action<float>)(axis == 0 ? gameObject.transform.SetLocalScaleX : axis == 1 ? gameObject.transform.SetLocalScaleY : gameObject.transform.SetLocalScaleZ)).Invoke(value);
-                    break;
-                case 2: ((Action<float>)(axis == 0 ? gameObject.transform.SetLocalRotationEulerX : axis == 1 ? gameObject.transform.SetLocalRotationEulerY : gameObject.transform.SetLocalRotationEulerZ)).Invoke(value);
-                    break;
+                case 0: gameObject.transform.SetLocalPosition(axis, value); break;
+                case 1: gameObject.transform.SetLocalScale(axis, value); break;
+                case 2: gameObject.transform.SetLocalRotationEuler(axis, value); break;
             }
         }
 
         public float GetTransform(int type, int axis)
         {
-            if (!gameObject)
+            if (!gameObject || axis < 0 || axis > 2)
                 return 0f;
 
-            switch (type)
+            return type switch
             {
-                case 0: return axis == 0 ? gameObject.transform.localPosition.x : axis == 1 ? gameObject.transform.localPosition.y : gameObject.transform.localPosition.z;
-                case 1: return axis == 0 ? gameObject.transform.localScale.x : axis == 1 ? gameObject.transform.localScale.y : gameObject.transform.localScale.z;
-                case 2: return axis == 0 ? gameObject.transform.localEulerAngles.x : axis == 1 ? gameObject.transform.localEulerAngles.y : gameObject.transform.localEulerAngles.z;
-            }
-
-            return 0f;
+                0 => gameObject.transform.localPosition[axis],
+                1 => gameObject.transform.localScale[axis],
+                2 => gameObject.transform.localEulerAngles[axis],
+                _ => 0f
+            };
         }
 
         public static MenuImage DeepCopy(MenuImage orig, bool newID = true) => new MenuImage
