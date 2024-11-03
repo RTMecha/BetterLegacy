@@ -293,6 +293,61 @@ namespace BetterLegacy.Story
             yield break;
         }
 
+        public void Play(int chapter, int level) => StartCoroutine(IPlay(chapter, level));
+
+        public IEnumerator IPlay(int chapter, int level)
+        {
+            yield return StartCoroutine(ILoad(chapter, level));
+
+            if (!Loaded)
+            {
+                CoreHelper.InStory = false;
+                LevelManager.OnLevelEnd = null;
+                SceneManager.inst.LoadScene("Main Menu");
+                yield break;
+            }
+
+            CoreHelper.InStory = true;
+            StoryLevel storyLevel = LoadCurrentLevel();
+
+            if (storyLevel == null)
+            {
+                LevelManager.OnLevelEnd = null;
+                SceneManager.inst.LoadScene("Interface");
+                yield break;
+            }
+
+            LevelManager.OnLevelEnd = () =>
+            {
+                LevelManager.Clear();
+                Updater.OnLevelEnd();
+                UpdateCurrentLevelProgress(); // allow players to get a better rank
+
+                if (!ContinueStory)
+                {
+                    CoreHelper.InStory = true;
+                    LevelManager.OnLevelEnd = null;
+                    ContinueStory = true;
+                    SceneManager.inst.LoadScene("Interface");
+                    return;
+                }
+
+                CoreHelper.InStory = true;
+                LevelManager.OnLevelEnd = null;
+                SceneManager.inst.LoadScene("Interface");
+            };
+
+            if (!storyLevel.music)
+            {
+                CoreHelper.LogError($"Music is null for some reason wtf");
+                yield break;
+            }
+
+            StartCoroutine(LevelManager.Play(storyLevel));
+
+            yield break;
+        }
+
         public void Play() => StartCoroutine(IPlay());
 
         public IEnumerator IPlay()
