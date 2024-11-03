@@ -1,3 +1,11 @@
+snapshot-2024.11.3 > (pre-1.7.0) > [Nov 4, 2024]
+- Added a preset setting to Editor > Editor GUI > User Preference.
+- Render depth now uses the limited range if your Editor Complexity is not set to advanced.
+- 1.7.0 is still the story mode update, so currently doing some rework so I can finally finish the chapter 1 demo for the full release of the update.
+- Math evaluators now allow for variables to be turned to negative using a -.
+- Fixed some more problems with the math evaluators, behaviour should be fully consistent now.
+- Added a ton of math related modifiers.
+- Some more player modifiers can now allow empty objects.
 snapshot-2024.11.2 - (pre-1.7.0) > [Nov 2, 2024]
 - Completely reworked the way math evaluators work. They no longer need a ; at the end of each top-level function, supports proper matching of variables and deep nested functions.
 - Added forwardPitch to math evaluators.
