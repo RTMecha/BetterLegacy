@@ -9,17 +9,26 @@
 - Animation editor (for player animations).
 - Player modifiers.
 - Level modifiers (supports VG triggers).
+- Global Player toggle for if the players should have their movement speed multiplied by the pitch or not.
 - 2D option for BG objects (VG parallax support?)
 - Camera Jiggle event keyframe? (instead of a single thing that doesn't change throughout the entire level)
 - Add feedback (KinoFeedback) effect to event keyframes.
 - Add a fake Desktop thing like Rhythm Doctor for Window event keyframes. (The Desktop will look like a PA interface)
-- Config presets (Beginner, Legacy, Alpha, Modded, etc.) that affects editor themes, rounded UI and complexity.
 - Color picker rework.
 - Somehow figure out mutli BG object editing.
 - Timeline object index order.
 - Figure out custom timeline bin system (Shows a custom amount of rows in the timeline and allows for the timeline to be navigated up and down).
 - Unclamped timeline (timeline can be navigated outside the regular range and objects can be placed before start time 0).
-- New modifiers [prizeObject, setParent, playerAction trigger (allows for multiple different keybinds and buttons)].
+
+- New modifiers
+> prizeObject
+> setParent
+> playerAction trigger (allows for multiple different keybinds and buttons)
+> trailRendererGradient
+> trailRendererColored
+> particleSystemColored
+> spawnPrefabOffset
+
 - Custom end level function [end level screen, return to hub, return to previous, return to arcade, return to main menu].
 - loadLevel modifiers custom end function (same as above).
 - Add a value for spawning a prefab at the object's position.
