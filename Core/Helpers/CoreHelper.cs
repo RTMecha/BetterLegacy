@@ -1081,12 +1081,12 @@ namespace BetterLegacy.Core.Helpers
             return value;
         }
 
-        public static void SetConfigPreset(int preset)
+        public static void SetConfigPreset(UserPreferenceType preset)
         {
             switch (preset)
             {
                 // Beginner
-                case 0:
+                case UserPreferenceType.Beginner:
                     {
                         EditorConfig.Instance.EditorComplexity.Value = Complexity.Simple;
                         EditorConfig.Instance.EditorTheme.Value = EditorTheme.Legacy;
@@ -1125,7 +1125,7 @@ namespace BetterLegacy.Core.Helpers
                     }
 
                 // Legacy
-                case 1:
+                case UserPreferenceType.Legacy:
                     {
                         EditorConfig.Instance.EditorComplexity.Value = Complexity.Normal;
                         EditorConfig.Instance.EditorTheme.Value = EditorTheme.Legacy;
@@ -1164,7 +1164,7 @@ namespace BetterLegacy.Core.Helpers
                     }
 
                 // Alpha
-                case 2:
+                case UserPreferenceType.Alpha:
                     {
                         EditorConfig.Instance.EditorComplexity.Value = Complexity.Normal;
                         EditorConfig.Instance.EditorTheme.Value = EditorTheme.Modern;
@@ -1203,7 +1203,7 @@ namespace BetterLegacy.Core.Helpers
                     }
 
                 // Modded
-                case 3:
+                case UserPreferenceType.None:
                     {
                         EditorConfig.Instance.EditorComplexity.Value = Complexity.Advanced;
                         EditorConfig.Instance.EditorTheme.Value = EditorTheme.Dark;

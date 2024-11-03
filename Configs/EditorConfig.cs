@@ -151,6 +151,7 @@ namespace BetterLegacy.Configs
         public Setting<bool> RoundedUI { get; set; }
         public Setting<Complexity> EditorComplexity { get; set; }
         public Setting<bool> ShowExperimental { get; set; }
+        public Setting<UserPreferenceType> UserPreference { get; set; }
         public Setting<bool> HoverUIPlaySound { get; set; }
         public Setting<bool> ImportPrefabsDirectly { get; set; }
         public Setting<int> ThemesPerPage { get; set; }
@@ -1345,6 +1346,7 @@ namespace BetterLegacy.Configs
             RoundedUI = Bind(this, "Editor GUI", "Rounded UI", false, "If all elements that can be rounded should be so.");
             EditorComplexity = BindEnum(this, "Editor GUI", "Editor Complexity", Complexity.Advanced, "What features show in the editor.");
             ShowExperimental = Bind(this, "Editor GUI", "Show Experimental Features", false, "If experimental features should display. These features are not gauranteed to always work and have a chance to be changed in future updates.");
+            UserPreference = BindEnum(this, "Editor GUI", "User Preference", UserPreferenceType.None, "Change this to whatever config preset you want to use. THIS WILL CHANGE A LOT OF SETTINGS, SO USE WITH CAUTION.");
             HoverUIPlaySound = Bind(this, "Editor GUI", "Hover UI Play Sound", false, "Plays a sound when the hover UI element is hovered over.");
             ImportPrefabsDirectly = Bind(this, "Editor GUI", "Import Prefabs Directly", false, "When clicking on an External Prefab, instead of importing it directly it'll bring up a Prefab External View Dialog if this config is off.");
             ThemesPerPage = Bind(this, "Editor GUI", "Themes Per Page", 10, "How many themes are shown per page in the Beatmap Themes popup.");
@@ -2577,7 +2579,11 @@ namespace BetterLegacy.Configs
             PrefabExternalTypeFontSize.SettingChanged += PrefabPopupsItemsChanged;
             PrefabExternalTypeHorizontalWrap.SettingChanged += PrefabPopupsItemsChanged;
             PrefabExternalTypeVerticalWrap.SettingChanged += PrefabPopupsItemsChanged;
+
+            UserPreference.SettingChanged += UserPreferenceChanged;
         }
+
+        void UserPreferenceChanged() => CoreHelper.SetConfigPreset(UserPreference.Value);
 
         void PrefabPopupsItemsChanged()
         {
