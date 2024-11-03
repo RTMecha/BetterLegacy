@@ -1381,7 +1381,31 @@ namespace BetterLegacy.Core
                     var substring = input.Substring(startIndex, search - startIndex + (endOfInput ? 1 : 0));
                     var length = substring.Length;
 
-                    substring = ParseVariable(substring, variables).ToString();
+                    int minusCount = 0;
+                    while (substring.Length > 0 && substring[0] == '-')
+                    {
+                        substring = substring.Substring(1, substring.Length - 1);
+                        minusCount++;
+                    }
+
+                    var variable = ParseVariable(substring, variables);
+
+                    // -pitch
+                    // remove - and set minusCount to 1 since there was only 1 minus
+                    // minusCount = 1
+                    // minusCount > 0 = true
+                    // variable = -variable
+                    // minusCount--
+                    // minusCount = 0
+                    // minusCount > 0 = false
+
+                    while (minusCount > 0)
+                    {
+                        variable = -variable;
+                        minusCount--;
+                    }
+
+                    substring = variable.ToString();
 
                     input = CoreHelper.ReplaceInsert(input, substring, startIndex, endOfInput ? search : search - 1);
 
