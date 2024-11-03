@@ -340,22 +340,22 @@ namespace BetterLegacy.Core.Managers
 
                 if (str.Contains("math"))
                 {
-                    CoreHelper.RegexMatch(str, new Regex(@"<math=""(.*?)>"""), match =>
+                    CoreHelper.RegexMatches(str, new Regex(@"<math=""(.*?)>"""), match =>
                     {
                         try
                         {
-                            str = str.Replace(match.Groups[0].ToString(), RTMath.Parse(match.Groups[1].ToString()).ToString());
+                            str = str.Replace(match.Groups[0].ToString(), RTMath.Parse(match.Groups[1].ToString(), beatmapObject.GetObjectVariables()).ToString());
                         }
                         catch
                         {
                         }
                     });
 
-                    CoreHelper.RegexMatch(str, new Regex(@"<math=(.*?)>"), match =>
+                    CoreHelper.RegexMatches(str, new Regex(@"<math=(.*?)>"), match =>
                     {
                         try
                         {
-                            str = str.Replace(match.Groups[0].ToString(), RTMath.Parse(match.Groups[1].ToString()).ToString());
+                            str = str.Replace(match.Groups[0].ToString(), RTMath.Parse(match.Groups[1].ToString(), beatmapObject.GetObjectVariables()).ToString());
                         }
                         catch
                         {
