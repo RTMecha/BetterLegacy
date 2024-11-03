@@ -1277,6 +1277,7 @@ namespace BetterLegacy.Editor.Managers
                     case "eventOffset":
                     case "eventOffsetVariable":
                     case "eventOffsetAnimate":
+                    case "eventOffsetMath":
                         {
                             // Event Keyframe Type
                             DropdownGenerator(modifier, layout, "Event Type", 1, CoreHelper.StringToOptionData(RTEventEditor.EventTypes));
@@ -1310,7 +1311,10 @@ namespace BetterLegacy.Editor.Managers
                             TriggerHelper.IncreaseDecreaseButtonsInt(vindexIF, 1, 0, GameData.DefaultKeyframes[Parser.TryParse(modifier.commands[1], 0)].eventValues.Length - 1, vindex.transform);
                             TriggerHelper.AddEventTriggers(vindexIF.gameObject, TriggerHelper.ScrollDeltaInt(vindexIF, 1, 0, GameData.DefaultKeyframes[Parser.TryParse(modifier.commands[1], 0)].eventValues.Length - 1));
 
-                            SingleGenerator(modifier, layout, cmd == "eventOffsetVariable" ? "Multiply Var" : "Value", 0, 0f);
+                            if (cmd == "eventOffsetMath")
+                                StringGenerator(modifier, layout, "Value", 0);
+                            else
+                                SingleGenerator(modifier, layout, cmd == "eventOffsetVariable" ? "Multiply Var" : "Value", 0, 0f);
 
                             if (cmd == "eventOffsetAnimate")
                             {
@@ -2052,6 +2056,35 @@ namespace BetterLegacy.Editor.Managers
                             var str = StringGenerator(modifier, layout, "BG Group", 1);
                             EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
+                            break;
+                        }
+
+                    #endregion
+
+                    #region Math
+
+                    case "mathEquals":
+                    case "mathLesserEquals":
+                    case "mathGreaterEquals":
+                    case "mathLesser":
+                    case "mathGreater":
+                        {
+                            StringGenerator(modifier, layout, "First", 0);
+                            StringGenerator(modifier, layout, "Second", 1);
+
+                            break;
+                        }
+
+                    case "setPitchMath":
+                    case "addPitchMath":
+                        {
+                            StringGenerator(modifier, layout, "Pitch", 0);
+                            break;
+                        }
+
+                    case "setMusicTimeMath":
+                        {
+                            StringGenerator(modifier, layout, "Time", 0);
                             break;
                         }
 

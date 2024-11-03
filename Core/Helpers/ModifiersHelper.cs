@@ -646,6 +646,35 @@ namespace BetterLegacy.Core.Helpers
                         return modifier.Result != null && (bool)modifier.Result;
                     }
                 #endregion
+                #region Math
+
+                case "mathEquals":
+                    {
+                        var variables = modifier.reference.GetObjectVariables();
+                        return RTMath.Parse(modifier.value, variables) == RTMath.Parse(modifier.commands[1], variables);
+                    }
+                case "mathLesserEquals":
+                    {
+                        var variables = modifier.reference.GetObjectVariables();
+                        return RTMath.Parse(modifier.value, variables) <= RTMath.Parse(modifier.commands[1], variables);
+                    }
+                case "mathGreaterEquals":
+                    {
+                        var variables = modifier.reference.GetObjectVariables();
+                        return RTMath.Parse(modifier.value, variables) >= RTMath.Parse(modifier.commands[1], variables);
+                    }
+                case "mathLesser":
+                    {
+                        var variables = modifier.reference.GetObjectVariables();
+                        return RTMath.Parse(modifier.value, variables) < RTMath.Parse(modifier.commands[1], variables);
+                    }
+                case "mathGreater":
+                    {
+                        var variables = modifier.reference.GetObjectVariables();
+                        return RTMath.Parse(modifier.value, variables) > RTMath.Parse(modifier.commands[1], variables);
+                    }
+
+                #endregion
                 #region Axis
                 case "axisEquals":
                     {
@@ -1267,7 +1296,7 @@ namespace BetterLegacy.Core.Helpers
                     #endregion
             }
 
-            modifier.Inactive?.Invoke(modifier);
+            modifier.Inactive?.Invoke(modifier); // ?
             return false;
         }
 
@@ -1297,6 +1326,7 @@ namespace BetterLegacy.Core.Helpers
                 switch (modifier.commands[0])
                 {
                     #region Audio
+
                     case "setPitch":
                         {
                             if (float.TryParse(modifier.value, out float num))
@@ -1311,10 +1341,25 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+                    case "setPitchMath":
+                        {
+                            RTEventManager.inst.pitchOffset = RTMath.Parse(modifier.value, modifier.reference.GetObjectVariables());
+                            break;
+                        }
+                    case "addPitchMath":
+                        {
+                            RTEventManager.inst.pitchOffset += RTMath.Parse(modifier.value, modifier.reference.GetObjectVariables());
+                            break;
+                        }
                     case "setMusicTime":
                         {
                             if (float.TryParse(modifier.value, out float num))
                                 AudioManager.inst.SetMusicTime(num);
+                            break;
+                        }
+                    case "setMusicTimeMath":
+                        {
+                            AudioManager.inst.SetMusicTime(RTMath.Parse(modifier.value, modifier.reference.GetObjectVariables()));
                             break;
                         }
                     case "setMusicTimeStartTime":
@@ -1420,6 +1465,7 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+
                     #endregion
                     #region Level
                     case "loadLevel":
@@ -2088,28 +2134,26 @@ namespace BetterLegacy.Core.Helpers
                         }
                     #endregion
                     #region Player
+
                     case "playerHit":
                         {
-                            if (PlayerManager.Invincible || modifier.constant ||
-                                !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject || !int.TryParse(modifier.value, out int hit))
+                            if (!modifier.reference || PlayerManager.Invincible || modifier.constant || !int.TryParse(modifier.value, out int hit))
                                 break;
 
-                            var orderedList = PlayerManager.Players
-                                .Where(x => x.Player)
-                                .OrderBy(x => Vector2.Distance(x.Player.playerObjects["RB Parent"].gameObject.transform.position, levelObject.visualObject.GameObject.transform.position)).ToList();
+                            var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject ? levelObject.visualObject.GameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
-                            if (orderedList.Count <= 0)
-                                break;
+                            var player = PlayerManager.GetClosestPlayer(pos);
 
-                            var closest = orderedList[0];
-
-                            closest?.Player?.Hit();
-
-                            if (hit > 1 && closest)
-                                closest.Health -= hit;
+                            if (player && player.Player)
+                            {
+                                player.Player.Hit();
+                                if (hit > 1)
+                                    player.Health -= hit;
+                            }
 
                             break;
                         }
+
                     case "playerHitAll":
                         {
                             if (!PlayerManager.Invincible && !modifier.constant && int.TryParse(modifier.value, out int hit))
@@ -2125,14 +2169,16 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playerHeal":
                         {
-                            if (!PlayerManager.Invincible && !modifier.constant)
-                                if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject && int.TryParse(modifier.value, out int hit))
-                                {
-                                    var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
+                            if (!modifier.reference || PlayerManager.Invincible || modifier.constant || !int.TryParse(modifier.value, out int hit))
+                                break;
 
-                                    if (player)
-                                        player.Health += hit;
-                                }
+                            var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject ? levelObject.visualObject.GameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                            var player = PlayerManager.GetClosestPlayer(pos);
+
+                            if (player)
+                                player.Health += hit;
+
                             break;
                         }
                     case "playerHealAll":
@@ -2146,14 +2192,15 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playerKill":
                         {
-                            if (!PlayerManager.Invincible && !modifier.constant)
-                                if (modifier.reference != null && Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject.GameObject)
-                                {
-                                    var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
+                            if (!modifier.reference || PlayerManager.Invincible || modifier.constant)
+                                break;
 
-                                    if (player)
-                                        player.Health = 0;
-                                }
+                            var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject ? levelObject.visualObject.GameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                            var player = PlayerManager.GetClosestPlayer(pos);
+
+                            if (player)
+                                player.Health = 0;
 
                             break;
                         }
@@ -2170,12 +2217,14 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playerMove":
                         {
-                            if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
+                            if (!modifier.reference)
                                 break;
 
-                            var vector = modifier.value.Split(new char[] { ',' });
+                            var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject ? levelObject.visualObject.GameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
-                            var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
+                            var player = PlayerManager.GetClosestPlayer(pos);
+
+                            var vector = modifier.value.Split(new char[] { ',' });
 
                             bool relative = Parser.TryParse(modifier.commands[3], false);
                             if (!player)
@@ -2211,10 +2260,12 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playerMoveX":
                         {
-                            if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
+                            if (!modifier.reference)
                                 break;
 
-                            var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
+                            var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject ? levelObject.visualObject.GameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                            var player = PlayerManager.GetClosestPlayer(pos);
 
                             bool relative = Parser.TryParse(modifier.commands[3], false);
                             if (!player)
@@ -2256,10 +2307,12 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playerMoveY":
                         {
-                            if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
+                            if (!modifier.reference)
                                 break;
 
-                            var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
+                            var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject ? levelObject.visualObject.GameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                            var player = PlayerManager.GetClosestPlayer(pos);
 
                             bool relative = Parser.TryParse(modifier.commands[3], false);
                             if (!player)
@@ -2301,10 +2354,12 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playerRotate":
                         {
-                            if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
+                            if (!modifier.reference)
                                 break;
 
-                            var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
+                            var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject ? levelObject.visualObject.GameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                            var player = PlayerManager.GetClosestPlayer(pos);
 
                             bool relative = Parser.TryParse(modifier.commands[3], false);
                             if (!player)
@@ -2345,10 +2400,11 @@ namespace BetterLegacy.Core.Helpers
 
                     case "playerMoveToObject":
                         {
-                            if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
+                            if (!modifier.reference)
                                 break;
 
-                            var pos = levelObject.visualObject.GameObject.transform.position;
+                            var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject ? levelObject.visualObject.GameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
                             var player = PlayerManager.GetClosestPlayer(pos);
 
                             if (!player || !player.Player || !player.Player.rb)
@@ -2360,10 +2416,10 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playerMoveAllToObject":
                         {
-                            if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
+                            if (!modifier.reference)
                                 break;
 
-                            var pos = levelObject.visualObject.GameObject.transform.position;
+                            var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject ? levelObject.visualObject.GameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
                             foreach (var player in PlayerManager.Players.Where(x => x.Player))
                             {
@@ -2377,10 +2433,11 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playerMoveXToObject":
                         {
-                            if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
+                            if (!modifier.reference)
                                 break;
 
-                            var pos = levelObject.visualObject.GameObject.transform.position;
+                            var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject ? levelObject.visualObject.GameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
                             var player = PlayerManager.GetClosestPlayer(pos);
 
                             if (!player || !player.Player || !player.Player.rb)
@@ -2393,10 +2450,10 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playerMoveXAllToObject":
                         {
-                            if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
+                            if (!modifier.reference)
                                 break;
 
-                            var pos = levelObject.visualObject.GameObject.transform.position;
+                            var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject ? levelObject.visualObject.GameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
                             foreach (var player in PlayerManager.Players.Where(x => x.Player))
                             {
@@ -2411,10 +2468,11 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playerMoveYToObject":
                         {
-                            if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
+                            if (!modifier.reference)
                                 break;
 
-                            var pos = levelObject.visualObject.GameObject.transform.position;
+                            var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject ? levelObject.visualObject.GameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
                             var player = PlayerManager.GetClosestPlayer(pos);
 
                             if (!player || !player.Player || !player.Player.rb)
@@ -2427,10 +2485,10 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playerMoveYAllToObject":
                         {
-                            if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
+                            if (!modifier.reference)
                                 break;
 
-                            var pos = levelObject.visualObject.GameObject.transform.position;
+                            var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject ? levelObject.visualObject.GameObject.transform.position : modifier.reference.InterpolateChainPosition();
 
                             foreach (var player in PlayerManager.Players.Where(x => x.Player))
                             {
@@ -2445,10 +2503,12 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playerRotateToObject":
                         {
-                            if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
+                            if (!modifier.reference)
                                 break;
 
-                            var player = PlayerManager.GetClosestPlayer(levelObject.visualObject.GameObject.transform.position);
+                            var pos = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject ? levelObject.visualObject.GameObject.transform.position : modifier.reference.InterpolateChainPosition();
+
+                            var player = PlayerManager.GetClosestPlayer(pos);
 
                             if (!player || !player.Player || !player.Player.rb)
                                 break;
@@ -2459,15 +2519,17 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "playerRotateAllToObject":
                         {
-                            if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
+                            if (!modifier.reference)
                                 break;
+
+                            var rot = Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject ? levelObject.visualObject.GameObject.transform.localRotation.eulerAngles.z : modifier.reference.InterpolateChainRotation();
 
                             foreach (var player in PlayerManager.Players.Where(x => x.Player))
                             {
                                 if (!player.Player.rb)
                                     break;
 
-                                player.Player.rb.transform.SetLocalRotationEulerZ(levelObject.visualObject.GameObject.transform.localRotation.eulerAngles.z);
+                                player.Player.rb.transform.SetLocalRotationEulerZ(rot);
                             }
 
                             break;
@@ -2605,6 +2667,7 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+
                     #endregion
                     #region Mouse Cursor
                     case "showMouse":
@@ -3105,6 +3168,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     #endregion
                     #region Event Offset
+
                     case "eventOffset":
                         {
                             if (RTEventManager.inst && RTEventManager.inst.offsets != null)
@@ -3127,6 +3191,19 @@ namespace BetterLegacy.Core.Helpers
                                 if (indexArray < RTEventManager.inst.offsets.Count && indexValue < RTEventManager.inst.offsets[indexArray].Count)
                                     RTEventManager.inst.offsets[indexArray][indexValue] = modifier.reference.integerVariable * Parser.TryParse(modifier.value, 1f);
                             }
+                            break;
+                        }
+                    case "eventOffsetMath":
+                        {
+                            if (RTEventManager.inst && RTEventManager.inst.offsets != null)
+                            {
+                                var type = Parser.TryParse(modifier.commands[1], 0);
+                                var valueIndex = Parser.TryParse(modifier.commands[2], 0);
+
+                                if (type < RTEventManager.inst.offsets.Count && valueIndex < RTEventManager.inst.offsets[type].Count)
+                                    RTEventManager.inst.offsets[type][valueIndex] = RTMath.Parse(modifier.value, modifier.reference.GetObjectVariables());
+                            }
+
                             break;
                         }
                     case "eventOffsetAnimate":
@@ -3288,6 +3365,7 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+
                     #endregion
                     #region Color
                     case "addColor":
@@ -4158,6 +4236,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     #endregion
                     #region Animation
+
                     case "animateObject":
                         {
                             if (int.TryParse(modifier.commands[1], out int type)
@@ -4510,8 +4589,7 @@ namespace BetterLegacy.Core.Helpers
                             if (int.TryParse(modifier.commands[6], out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
                                 easing = DataManager.inst.AnimationList[e].Name;
 
-                            Dictionary<string, float> variables = new Dictionary<string, float>();
-                            modifier.reference.ReplaceObjectVariables(variables);
+                            var variables = modifier.reference.GetObjectVariables();
 
                             float time = (float)RTMath.Parse(modifier.value, variables);
                             float x = (float)RTMath.Parse(modifier.commands[2], variables);
@@ -4563,8 +4641,7 @@ namespace BetterLegacy.Core.Helpers
                             if (int.TryParse(modifier.commands[6], out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
                                 easing = DataManager.inst.AnimationList[e].Name;
 
-                            Dictionary<string, float> variables = new Dictionary<string, float>();
-                            modifier.reference.ReplaceObjectVariables(variables);
+                            var variables = modifier.reference.GetObjectVariables();
 
                             // for optimization sake, we evaluate this outside of the foreach loop. normally I'd place this inside and replace "otherVar" with bm.integerVariable.ToString(), however I feel that would result in a worse experience so the tradeoff is not worth it.
                             float time = (float)RTMath.Parse(modifier.value, variables);
@@ -4630,8 +4707,7 @@ namespace BetterLegacy.Core.Helpers
                             if (int.TryParse(modifier.commands[6], out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
                                 easing = DataManager.inst.AnimationList[e].Name;
 
-                            Dictionary<string, float> variables = new Dictionary<string, float>();
-                            modifier.reference.ReplaceObjectVariables(variables);
+                            var variables = modifier.reference.GetObjectVariables();
 
                             float time = (float)RTMath.Parse(modifier.value, variables);
                             float x = (float)RTMath.Parse(modifier.commands[2], variables);
@@ -4701,9 +4777,8 @@ namespace BetterLegacy.Core.Helpers
                             string easing = modifier.commands[6];
                             if (int.TryParse(modifier.commands[6], out int e) && e >= 0 && e < DataManager.inst.AnimationList.Count)
                                 easing = DataManager.inst.AnimationList[e].Name;
-                            
-                            Dictionary<string, float> variables = new Dictionary<string, float>();
-                            modifier.reference.ReplaceObjectVariables(variables);
+
+                            var variables = modifier.reference.GetObjectVariables();
 
                             float time = (float)RTMath.Parse(modifier.value, variables);
                             float x = (float)RTMath.Parse(modifier.commands[2], variables);
@@ -4975,12 +5050,12 @@ namespace BetterLegacy.Core.Helpers
                                                 {
                                                     var sequence = cachedSequence.Position3DSequence.Interpolate(time - bm.StartTime - delay);
                                                     var axis = fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z;
-                                                    float value = RTMath.Parse(modifier.commands[8], new Dictionary<string, float>
-                                                    {
-                                                        { "axis", axis },
-                                                        { "intVariable", modifier.reference.integerVariable },
-                                                        { "otherIntVariable", bm.integerVariable },
-                                                    });
+
+                                                    var variables = modifier.reference.GetObjectVariables();
+                                                    variables["axis"] = axis;
+                                                    bm.SetOtherObjectVariables(variables);
+
+                                                    float value = RTMath.Parse(modifier.commands[8], variables);
 
                                                     modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                                     break;
@@ -4989,24 +5064,23 @@ namespace BetterLegacy.Core.Helpers
                                                 {
                                                     var sequence = cachedSequence.ScaleSequence.Interpolate(time - bm.StartTime - delay);
                                                     var axis = fromAxis == 0 ? sequence.x : sequence.y;
-                                                    float value = RTMath.Parse(modifier.commands[8], new Dictionary<string, float>
-                                                    {
-                                                        { "axis", axis },
-                                                        { "intVariable", modifier.reference.integerVariable },
-                                                        { "otherIntVariable", bm.integerVariable },
-                                                    });
+
+                                                    var variables = modifier.reference.GetObjectVariables();
+                                                    variables["axis"] = axis;
+                                                    bm.SetOtherObjectVariables(variables);
+
+                                                    float value = RTMath.Parse(modifier.commands[8], variables);
 
                                                     modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                                     break;
                                                 }
                                             case 2:
                                                 {
-                                                    float value = RTMath.Parse(modifier.commands[8], new Dictionary<string, float>
-                                                    {
-                                                        { "axis", cachedSequence.RotationSequence.Interpolate(time - bm.StartTime - delay) },
-                                                        { "intVariable", modifier.reference.integerVariable },
-                                                        { "otherIntVariable", bm.integerVariable },
-                                                    });
+                                                    var variables = modifier.reference.GetObjectVariables();
+                                                    variables["axis"] = cachedSequence.RotationSequence.Interpolate(time - bm.StartTime - delay);
+                                                    bm.SetOtherObjectVariables(variables);
+
+                                                    float value = RTMath.Parse(modifier.commands[8], variables);
 
                                                     modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                                     break;
@@ -5021,15 +5095,14 @@ namespace BetterLegacy.Core.Helpers
 
                                                         var renderer = modifier.reference.levelObject.visualObject.Renderer;
 
-                                                        float value = RTMath.Parse(modifier.commands[8], new Dictionary<string, float>
-                                                        {
-                                                            { "colorR", sequence.r },
-                                                            { "colorG", sequence.g },
-                                                            { "colorB", sequence.b },
-                                                            { "colorA", sequence.a },
-                                                            { "intVariable", modifier.reference.integerVariable },
-                                                            { "otherIntVariable", bm.integerVariable },
-                                                        });
+                                                        var variables = modifier.reference.GetObjectVariables();
+                                                        variables["colorR"] = sequence.r;
+                                                        variables["colorG"] = sequence.g;
+                                                        variables["colorB"] = sequence.b;
+                                                        variables["colorA"] = sequence.a;
+                                                        bm.SetOtherObjectVariables(variables);
+
+                                                        float value = RTMath.Parse(modifier.commands[8], variables);
 
                                                         renderer.material.color = RTMath.Lerp(renderer.material.color, sequence, Mathf.Clamp(value, min, max));
                                                     }
@@ -5047,12 +5120,12 @@ namespace BetterLegacy.Core.Helpers
                                                 {
                                                     var sequence = transform.position;
                                                     var axis = sequence[fromAxis];
-                                                    float value = RTMath.Parse(modifier.commands[8], new Dictionary<string, float>
-                                                    {
-                                                        { "axis", axis },
-                                                        { "intVariable", modifier.reference.integerVariable },
-                                                        { "otherIntVariable", bm.integerVariable },
-                                                    });
+
+                                                    var variables = modifier.reference.GetObjectVariables();
+                                                    variables["axis"] = axis;
+                                                    bm.SetOtherObjectVariables(variables);
+
+                                                    float value = RTMath.Parse(modifier.commands[8], variables);
 
                                                     modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                                     break;
@@ -5061,12 +5134,12 @@ namespace BetterLegacy.Core.Helpers
                                                 {
                                                     var sequence = transform.lossyScale;
                                                     var axis = sequence[fromAxis];
-                                                    float value = RTMath.Parse(modifier.commands[8], new Dictionary<string, float>
-                                                    {
-                                                        { "axis", axis },
-                                                        { "intVariable", modifier.reference.integerVariable },
-                                                        { "otherIntVariable", bm.integerVariable },
-                                                    });
+
+                                                    var variables = modifier.reference.GetObjectVariables();
+                                                    variables["axis"] = axis;
+                                                    bm.SetOtherObjectVariables(variables);
+
+                                                    float value = RTMath.Parse(modifier.commands[8], variables);
 
                                                     modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                                     break;
@@ -5075,12 +5148,12 @@ namespace BetterLegacy.Core.Helpers
                                                 {
                                                     var sequence = transform.rotation.eulerAngles;
                                                     var axis = sequence[fromAxis];
-                                                    float value = RTMath.Parse(modifier.commands[8], new Dictionary<string, float>
-                                                    {
-                                                        { "axis", axis },
-                                                        { "intVariable", modifier.reference.integerVariable },
-                                                        { "otherIntVariable", bm.integerVariable },
-                                                    });
+
+                                                    var variables = modifier.reference.GetObjectVariables();
+                                                    variables["axis"] = axis;
+                                                    bm.SetOtherObjectVariables(variables);
+
+                                                    float value = RTMath.Parse(modifier.commands[8], variables);
 
                                                     modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                                     break;
@@ -5095,12 +5168,12 @@ namespace BetterLegacy.Core.Helpers
                                                 {
                                                     var sequence = bm.InterpolateChainPosition();
                                                     float axis = sequence[fromAxis];
-                                                    float value = RTMath.Parse(modifier.commands[8], new Dictionary<string, float>
-                                                    {
-                                                        { "axis", axis },
-                                                        { "intVariable", modifier.reference.integerVariable },
-                                                        { "otherIntVariable", bm.integerVariable },
-                                                    });
+
+                                                    var variables = modifier.reference.GetObjectVariables();
+                                                    variables["axis"] = axis;
+                                                    bm.SetOtherObjectVariables(variables);
+
+                                                    float value = RTMath.Parse(modifier.commands[8], variables);
 
                                                     modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                                     break;
@@ -5109,12 +5182,12 @@ namespace BetterLegacy.Core.Helpers
                                                 {
                                                     var sequence = bm.InterpolateChainScale();
                                                     float axis = sequence[fromAxis];
-                                                    float value = RTMath.Parse(modifier.commands[8], new Dictionary<string, float>
-                                                    {
-                                                        { "axis", axis },
-                                                        { "intVariable", modifier.reference.integerVariable },
-                                                        { "otherIntVariable", bm.integerVariable },
-                                                    });
+
+                                                    var variables = modifier.reference.GetObjectVariables();
+                                                    variables["axis"] = axis;
+                                                    bm.SetOtherObjectVariables(variables);
+
+                                                    float value = RTMath.Parse(modifier.commands[8], variables);
 
                                                     modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                                     break;
@@ -5122,12 +5195,12 @@ namespace BetterLegacy.Core.Helpers
                                             case 2:
                                                 {
                                                     float axis = bm.InterpolateChainRotation();
-                                                    float value = RTMath.Parse(modifier.commands[8], new Dictionary<string, float>
-                                                    {
-                                                        { "axis", axis },
-                                                        { "intVariable", modifier.reference.integerVariable },
-                                                        { "otherIntVariable", bm.integerVariable },
-                                                    });
+
+                                                    var variables = modifier.reference.GetObjectVariables();
+                                                    variables["axis"] = axis;
+                                                    bm.SetOtherObjectVariables(variables);
+
+                                                    float value = RTMath.Parse(modifier.commands[8], variables);
 
                                                     modifier.reference.SetTransform(toType, toAxis, Mathf.Clamp(value, min, max));
                                                     break;
@@ -5160,10 +5233,7 @@ namespace BetterLegacy.Core.Helpers
                                 var prefabObjects = GameData.Current.prefabObjects;
 
                                 var time = Updater.CurrentTime;
-                                Dictionary<string, float> variables = new Dictionary<string, float>
-                                {
-                                    { "intVariable", modifier.reference.integerVariable },
-                                };
+                                var variables = modifier.reference.GetObjectVariables();
 
                                 for (int i = 3; i < modifier.commands.Count; i += 8)
                                 {
@@ -5384,6 +5454,7 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+
                     #endregion
                     #region BG Object
                     case "setBGActive":
