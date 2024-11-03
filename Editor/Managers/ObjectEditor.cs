@@ -3360,14 +3360,15 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
-        public void SetDepthSlider(BeatmapObject beatmapObject, float _value, InputField inputField, Slider slider)
+        public void SetDepthSlider(BeatmapObject beatmapObject, int value, InputField inputField, Slider slider)
         {
-            var num = (int)_value;
+            if (!RTEditor.ShowModdedUI)
+                value = Mathf.Clamp(value, EditorConfig.Instance.RenderDepthRange.Value.y, EditorConfig.Instance.RenderDepthRange.Value.x);
 
-            beatmapObject.Depth = num;
+            beatmapObject.Depth = value;
 
-            slider.onValueChanged.RemoveAllListeners();
-            slider.value = num;
+            slider.onValueChanged.ClearAll();
+            slider.value = value;
             slider.onValueChanged.AddListener(_val => { SetDepthInputField(beatmapObject, ((int)_val).ToString(), inputField, slider); });
 
             // Since depth has no affect on the timeline object, we will only need to update the physical object.
@@ -3375,13 +3376,17 @@ namespace BetterLegacy.Editor.Managers
                 Updater.UpdateObject(beatmapObject, "Depth");
         }
 
-        public void SetDepthInputField(BeatmapObject beatmapObject, string _value, InputField inputField, Slider slider)
+        public void SetDepthInputField(BeatmapObject beatmapObject, string value, InputField inputField, Slider slider)
         {
-            var num = int.Parse(_value);
+            if (!int.TryParse(value, out int num))
+                return;
+
+            if (!RTEditor.ShowModdedUI)
+                num = Mathf.Clamp(num, EditorConfig.Instance.RenderDepthRange.Value.y, EditorConfig.Instance.RenderDepthRange.Value.x);
 
             beatmapObject.Depth = num;
 
-            inputField.onValueChanged.RemoveAllListeners();
+            inputField.onValueChanged.ClearAll();
             inputField.text = num.ToString();
             inputField.onValueChanged.AddListener(_val =>
             {
@@ -3418,17 +3423,26 @@ namespace BetterLegacy.Editor.Managers
                     SetDepthSlider(beatmapObject, num, depthText, depthSlider);
             });
 
-            depthSlider.maxValue = EditorConfig.Instance.RenderDepthRange.Value.x;
-            depthSlider.minValue = EditorConfig.Instance.RenderDepthRange.Value.y;
+            var max = EditorConfig.Instance.EditorComplexity.Value == Complexity.Simple ? 30 : EditorConfig.Instance.RenderDepthRange.Value.x;
+            var min = EditorConfig.Instance.EditorComplexity.Value == Complexity.Simple ? 0 : EditorConfig.Instance.RenderDepthRange.Value.y;
+
+            depthSlider.maxValue = max;
+            depthSlider.minValue = min;
 
             depthSlider.onValueChanged.ClearAll();
             depthSlider.value = beatmapObject.Depth;
             depthSlider.onValueChanged.AddListener(_val => { SetDepthInputField(beatmapObject, _val.ToString(), depthText, depthSlider); });
 
-            TriggerHelper.IncreaseDecreaseButtonsInt(depthText, -1);
-            TriggerHelper.AddEventTriggers(depthText.gameObject, TriggerHelper.ScrollDeltaInt(depthText, 1));
+            if (RTEditor.ShowModdedUI)
+            {
+                max = 0;
+                min = 0;
+            }
 
-            TriggerHelper.IncreaseDecreaseButtonsInt(depthText, -1, t: ObjEditor.inst.ObjectView.transform.Find("depth"));
+            TriggerHelper.IncreaseDecreaseButtonsInt(depthText, -1, min, max);
+            TriggerHelper.AddEventTriggers(depthText.gameObject, TriggerHelper.ScrollDeltaInt(depthText, 1, min, max));
+
+            TriggerHelper.IncreaseDecreaseButtonsInt(depthText, -1, min, max, ObjEditor.inst.ObjectView.transform.Find("depth"));
 
             var renderType = (Dropdown)ObjectUIElements["Render Type"];
             renderType.onValueChanged.ClearAll();
