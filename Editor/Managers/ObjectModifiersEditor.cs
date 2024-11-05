@@ -1632,6 +1632,7 @@ namespace BetterLegacy.Editor.Managers
                     #region Prefab
 
                     case "spawnPrefab":
+                    case "spawnPrefabOffset":
                         {
                             var prefabIndex = numberInput.Duplicate(layout, "Index");
                             var prefabIndexLabel = prefabIndex.transform.Find("Text").GetComponent<Text>();

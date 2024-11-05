@@ -5550,6 +5550,28 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+                    case "spawnPrefabOffset":
+                        {
+                            if (!modifier.constant && int.TryParse(modifier.value, out int num) && GameData.Current.prefabs.Count > num
+                                && float.TryParse(modifier.commands[1], out float posX) && float.TryParse(modifier.commands[2], out float posY)
+                                && float.TryParse(modifier.commands[3], out float scaX) && float.TryParse(modifier.commands[4], out float scaY) && float.TryParse(modifier.commands[5], out float rot)
+                                && int.TryParse(modifier.commands[6], out int repeatCount) && float.TryParse(modifier.commands[7], out float repeatOffsetTime) && float.TryParse(modifier.commands[8], out float speed))
+                            {
+                                var animationResult = modifier.reference.InterpolateChain();
+
+                                modifier.Result = ModifiersManager.AddPrefabObjectToLevel(GameData.Current.prefabs[num],
+                                    AudioManager.inst.CurrentAudioSource.time,
+                                    new Vector2(posX, posY) + (Vector2)animationResult.position,
+                                    new Vector2(scaX, scaY) + animationResult.scale,
+                                    rot + animationResult.rotation, repeatCount, repeatOffsetTime, speed);
+
+                                GameData.Current.prefabObjects.Add((PrefabObject)modifier.Result);
+
+                                Updater.AddPrefabToLevel((PrefabObject)modifier.Result);
+                            }
+
+                            break;
+                        }
                     case "blackHole":
                         {
                             if (!modifier.reference)
