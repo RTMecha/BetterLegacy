@@ -437,7 +437,23 @@ namespace BetterLegacy.Editor.Managers
                             .Where(c => c.prefabInstanceID == x.ID)
                         .Select(c => c.id)));
 
-            gameData.beatmapObjects.FindAll(x => beatmapObjectIDs.Contains(x.id)).ForEach(x => Updater.UpdateObject(x, reinsert: false, recalculate: false));
+            gameData.beatmapObjects.FindAll(x => beatmapObjectIDs.Contains(x.id)).ForEach(x =>
+                {
+                    for (int i = 0; i < x.modifiers.Count; i++)
+                    {
+                        var modifier = x.modifiers[i];
+                        try
+                        {
+                            modifier.Inactive?.Invoke(modifier); // for cases where we want to clear data.
+                        }
+                        catch (Exception ex)
+                        {
+                            CoreHelper.LogException(ex);
+                        } // allow further objects to be deleted if a modifiers' inactive state throws an error
+                    }
+
+                    Updater.UpdateObject(x, reinsert: false, recalculate: false);
+                });
             gameData.beatmapObjects.FindAll(x => prefabObjectIDs.Contains(x.prefabInstanceID)).ForEach(x => Updater.UpdateObject(x, reinsert: false, recalculate: false));
 
             gameData.beatmapObjects.RemoveAll(x => beatmapObjectIDs.Contains(x.id));
