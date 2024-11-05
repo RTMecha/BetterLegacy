@@ -1,3 +1,5 @@
+snapshot-2024.11.5 > (pre-1.7.0) > [Nov 5, 2024]
+- Completely replaced the math evaluator system with a better one written by Reimnop. Some functions will need to be changed to work, such as findAxis(object_tag, ...) now being findAxis#object_tag(...). Learn more in the editor documentation.
 snapshot-2024.11.4 > (pre-1.7.0) > [Nov 5, 2024]
 - Fixed an edge case with math evaluators where multiple brackets weren't recognized. For example, "((1 + 1) * 2) * 15".
 - Added spawnPrefabOffset modifier. This will spawn a prefab at the objects' exact position / scale / rotation, regardless of if the object is an empty or not.
