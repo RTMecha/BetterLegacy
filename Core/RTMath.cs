@@ -63,12 +63,175 @@ namespace BetterLegacy.Core
 
         // RTMath.Parse("pitch + clamp(pitch, 0, 1) * pitch");
 
+        public static float Parse(string input, Dictionary<string, float> variables = null)
+        {
+            try
+            {
+                input = input.Replace(";", ""); // replaces ; due to really old math evaluator
+                var context = ILMath.EvaluationContext.CreateDefault();
+
+                //context.RegisterFunction("myFunction", parameters => parameters[0] + parameters[1]);
+
+                if (variables != null)
+                    foreach (var variable in variables)
+                        context.RegisterVariable(variable.Key, variable.Value);
+
+                context.RegisterVariable("deathCount", GameManager.inst.deaths.Count);
+                context.RegisterVariable("hitCount", GameManager.inst.hits.Count);
+                context.RegisterVariable("boostCount", LevelManager.BoostCount);
+                context.RegisterVariable("actionMoveX", InputDataManager.inst.menuActions.Move.X);
+                context.RegisterVariable("actionMoveY", InputDataManager.inst.menuActions.Move.Y);
+                context.RegisterVariable("time", Time.time);
+                context.RegisterVariable("deltaTime", Time.deltaTime);
+                context.RegisterVariable("audioTime", AudioManager.inst.CurrentAudioSource.time);
+                context.RegisterVariable("smoothedTime", RTEventManager.inst.currentTime);
+                context.RegisterVariable("volume", AudioManager.inst.musicVol);
+                context.RegisterVariable("pitch", AudioManager.inst.pitch);
+                context.RegisterVariable("forwardPitch", CoreHelper.ForwardPitch);
+                context.RegisterVariable("playerHealthTotal", PlayerManager.Players.Sum(x => x.Health));
+                context.RegisterVariable("camPosX", EventManager.inst.cam.transform.position.x);
+                context.RegisterVariable("camPosY", EventManager.inst.cam.transform.position.y);
+                context.RegisterVariable("camZoom", EventManager.inst.cam.orthographicSize);
+                context.RegisterVariable("camRot", EventManager.inst.cam.transform.localEulerAngles.z);
+
+                var players = PlayerManager.Players;
+                for (int i = 0; i < players.Count; i++)
+                {
+                    var player = players[i];
+                    var isNull = !player.Player || !player.Player.rb;
+                    float posX = isNull ? 0f : player.Player.rb.position.x;
+                    float posY = isNull ? 0f : player.Player.rb.position.y;
+                    context.RegisterVariable($"player{i}PosX", posX);
+                    context.RegisterVariable($"player{i}PosY", posY);
+                    context.RegisterVariable($"player{i}Health", player.Health);
+                }
+
+                context.RegisterFunction("clampZero", parameters => ClampZero(parameters[0], parameters[1], parameters[2]));
+                context.RegisterFunction("lerpAngle", parameters => Mathf.LerpAngle((float)parameters[0], (float)parameters[1], (float)parameters[2]));
+                context.RegisterFunction("moveTowards", parameters => Mathf.MoveTowards((float)parameters[0], (float)parameters[1], (float)parameters[2]));
+                context.RegisterFunction("moveTowardsAngle", parameters => Mathf.MoveTowardsAngle((float)parameters[0], (float)parameters[1], (float)parameters[2]));
+                context.RegisterFunction("smoothStep", parameters => Mathf.SmoothStep((float)parameters[0], (float)parameters[1], (float)parameters[2]));
+                context.RegisterFunction("gamma", parameters => Mathf.Gamma((float)parameters[0], (float)parameters[1], (float)parameters[2]));
+                context.RegisterFunction("repeat", parameters => Mathf.Repeat((float)parameters[0], (float)parameters[1]));
+                context.RegisterFunction("pingPong", parameters => Mathf.PingPong((float)parameters[0], (float)parameters[1]));
+                context.RegisterFunction("deltaAngle", parameters => Mathf.DeltaAngle((float)parameters[0], (float)parameters[1]));
+                context.RegisterFunction("random", parameters => parameters.Length switch
+                {
+                    0 => new System.Random().NextDouble(),
+                    1 => new System.Random((int)parameters[0]).NextDouble(),
+                    2 => RandomHelper.RandomInstanceSingle((int)parameters[0], (int)parameters[1]),
+                    _ => 0
+                });
+                context.RegisterFunction("randomRange", parameters => parameters.Length switch
+                {
+                    3 => RandomHelper.RandomInstanceSingleRange((int)parameters[0], (float)parameters[1], (float)parameters[2], new System.Random().Next()),
+                    4 => RandomHelper.RandomInstanceSingleRange((int)parameters[0], (float)parameters[1], (float)parameters[2], (int)parameters[3]),
+                    _ => 0
+                });
+                context.RegisterFunction("randomInt", parameters => parameters.Length switch
+                {
+                    0 => new System.Random().Next(),
+                    1 => new System.Random((int)parameters[0]).Next(),
+                    2 => RandomHelper.RandomInstance((int)parameters[0], (int)parameters[1]),
+                    _ => 0
+                });
+                context.RegisterFunction("randomRangeInt", parameters => parameters.Length switch
+                {
+                    3 => RandomHelper.RandomInstanceRange((int)parameters[0], (int)parameters[1], (int)parameters[2], new System.Random().Next()),
+                    4 => RandomHelper.RandomInstanceRange((int)parameters[0], (int)parameters[1], (int)parameters[2], (int)parameters[3]),
+                    _ => 0
+                });
+                context.RegisterFunction("roundToNearestNumber", parameters => RoundToNearestNumber((float)parameters[0], (float)parameters[1]));
+                context.RegisterFunction("roundToNearestDecimal", parameters => RoundToNearestDecimal((float)parameters[0], (int)parameters[1]));
+                context.RegisterFunction("percentage", parameters => Percentage((float)parameters[0], (float)parameters[1]));
+                context.RegisterFunction("equals", parameters => parameters[0] == parameters[1] ? parameters[2] : parameters[3]);
+                context.RegisterFunction("lesserEquals", parameters => parameters[0] <= parameters[1] ? parameters[2] : parameters[3]);
+                context.RegisterFunction("greaterEquals", parameters => parameters[0] >= parameters[1] ? parameters[2] : parameters[3]);
+                context.RegisterFunction("lesser", parameters => parameters[0] < parameters[1] ? parameters[2] : parameters[3]);
+                context.RegisterFunction("greater", parameters => parameters[0] > parameters[1] ? parameters[2] : parameters[3]);
+                context.RegisterFunction("int", parameters => (int)parameters[0]);
+
+
+                /*
+                    case "date":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"date\((.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var calc = DateTime.Now.ToString(match.Groups[1].ToString().Trim());
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "sampleAudio":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"sampleAudio\((.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var sample = (int)ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var intensity = ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var calc = Updater.GetSample(sample, intensity).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                    case "copyEvent":
+                        {
+                            CoreHelper.RegexMatch(fullMethod, new Regex(@"copyEvent\((.*?),(.*?),(.*?)\)"), match =>
+                            {
+                                try
+                                {
+                                    var type = (int)ParseVariables(match.Groups[1].ToString().Trim(), variables);
+                                    var valueIndex = (int)ParseVariables(match.Groups[2].ToString().Trim(), variables);
+                                    var time = ParseVariables(match.Groups[3].ToString().Trim(), variables);
+                                    var calc = RTEventManager.inst.Interpolate(type, valueIndex, time).ToString();
+
+                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                                catch
+                                {
+                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
+                                }
+                            });
+
+                            break;
+                        }
+                }
+                 
+                 */
+
+                var evaluator = ILMath.MathEvaluation.CompileExpression("ResultFunction", input);
+
+                return (float)evaluator.Invoke(context);
+            }
+            catch
+            {
+                return 0f;
+            }
+        }
+
         /// <summary>
         /// Takes any user-written variables and functions, calculates them and replaces their strings.
         /// </summary>
         /// <param name="input">Input to replace.</param>
         /// <returns>Returns a calculated single.</returns>
-        public static float Parse(string input, Dictionary<string, float> variables = null)
+        public static float OldParse(string input, Dictionary<string, float> variables = null)
         {
             if (string.IsNullOrEmpty(input))
                 return 0f;
@@ -1483,12 +1646,17 @@ namespace BetterLegacy.Core
 
         public static bool IsNaNInfinity(float f) => float.IsNaN(f) || float.IsInfinity(f);
 
+        public static double Clamp(double value, double min, double max) => value < min ? min : value > max ? max : value;
+
         public static float Clamp(float value, float min, float max) => Mathf.Clamp(value, min, max);
         public static int Clamp(int value, int min, int max) => Mathf.Clamp(value, min, max);
         public static Vector2 Clamp(Vector2 value, Vector2 min, Vector2 max) => new Vector2(Mathf.Clamp(value.x, min.x, max.x), Mathf.Clamp(value.y, min.y, max.y));
         public static Vector2Int Clamp(Vector2Int value, Vector2Int min, Vector2Int max) => new Vector2Int(Mathf.Clamp(value.x, min.x, max.x), Mathf.Clamp(value.y, min.y, max.y));
         public static Vector3 Clamp(Vector3 value, Vector3 min, Vector3 max) => new Vector3(Mathf.Clamp(value.x, min.x, max.x), Mathf.Clamp(value.y, min.y, max.y), Mathf.Clamp(value.z, min.z, max.z));
         public static Vector3Int Clamp(Vector3Int value, Vector3Int min, Vector3Int max) => new Vector3Int(Mathf.Clamp(value.x, min.x, max.x), Mathf.Clamp(value.y, min.y, max.y), Mathf.Clamp(value.z, min.z, max.z));
+
+        public static double ClampZero(double value, double min, double max)
+            => min != 0 && max != 0 ? Clamp(value, min, max) : value;
 
         public static float ClampZero(float value, float min, float max)
             => min != 0f || max != 0f ? Clamp(value, min, max) : value;

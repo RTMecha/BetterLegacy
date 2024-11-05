@@ -7623,6 +7623,9 @@ namespace BetterLegacy.Editor.Managers
             {
                 new Document.Element("Reimnop's Catalyst (PA object and animation optimization)", Document.Element.Type.Text),
                 LinkElement("<b>Source code</b>:\nhttps://github.com/Reimnop/Catalyst", "https://github.com/Reimnop/Catalyst"),
+                
+                new Document.Element("Reimnop's ILMath (fast math parser / evaluator)", Document.Element.Type.Text),
+                LinkElement("<b>Source code</b>:\nhttps://github.com/Reimnop/ILMath", "https://github.com/Reimnop/ILMath"),
 
                 new Document.Element("", Document.Element.Type.Text),
                 new Document.Element("Keijiro Takahashi's KinoGlitch (AnalogGlitch and DigitalGlitch events)", Document.Element.Type.Text),
@@ -8202,6 +8205,7 @@ namespace BetterLegacy.Editor.Managers
 
             GenerateDocument("[MODDED] Math Evaluation", "Some places you can write out a math equation and get a result from it.", new List<Document.Element>
             {
+                LinkElement("Math Evaluation is implemented from ILMath, created by Reimnop. If you want to know more, visit the link: https://github.com/Reimnop/ILMath", "https://github.com/Reimnop/ILMath"),
                 new Document.Element("Below is a list of variables that can be used with math evaluation.", Document.Element.Type.Text),
                 new Document.Element("<b>deathCount</b> - Amount of deaths in a level (Arcade only).\n" +
                                      "<b>hitCount</b> - Amount of hits in a level (Arcade only).\n" +
@@ -8276,11 +8280,41 @@ namespace BetterLegacy.Editor.Managers
                                     "<b>greaterEquals(a, b, trueResult, falseResult)</b> - If a and b are greater or equal, then the function returns the trueResult, otherwise returns the falseResult.\n" +
                                     "<b>lesser(a, b, trueResult, falseResult)</b> - If a and b are lesser, then the function returns the trueResult, otherwise returns the falseResult.\n" +
                                     "<b>greater(a, b, trueResult, falseResult)</b> - If a and b are greater, then the function returns the trueResult, otherwise returns the falseResult.\n" +
-                                    "<b>findAxis(\"tag\", fromType, fromAxis, time)</b> - Finds an object with the matching tag, takes an axis from fromType and fromAxis and interpolates it via time.\n" +
-                                    "<b>easing(\"curveType\", t)</b> - Calculates an easing from the easing list. \"curveType\" is easings such as \"Linear\", \"Instant\", etc.\n" +
+                                    "<b>findAxis#object_group(fromType, fromAxis, time)</b> - Finds an object with the matching tag, takes an axis from fromType and fromAxis and interpolates it via time.\n" +
+                                    "<b>easing#curveType(t)</b> - Calculates an easing from the easing list. \"curveType\" is easings such as \"Linear\", \"Instant\", etc.\n" +
                                     "<b>int(value)</b> - Casts floating point numbers (non-whole numbers) into integers (whole numbers).\n" +
-                                    "<b>date(\"format\")</b> - Takes a specific part of the current date and uses it.\n", Document.Element.Type.Text),
+                                    "<b>date#format()</b> - Takes a specific part of the current date and uses it.\n" +
+                                    "Acceptable formats:\n" +
+                                    "yyyy = full year (e.g. 2019)\n" +
+                                    "yy = decade year (e.g. 19)\n" +
+                                    "MM = month (e.g. 06)\n" +
+                                    "dd = day (e.g. 15)\n" +
+                                    "HH = 24 hour (e.g. 13)\n" +
+                                    "hh = 12 hour (e.g. 1)\n" +
+                                    "mm = minute (e.g. 59)\n" +
+                                    "ss = second (e.g. 12)", Document.Element.Type.Text),
             });
+
+            //DateTime.Now.ToString("ff"); // yes
+            //DateTime.Now.ToString("fff"); // yes
+            //DateTime.Now.ToString("ffff"); // yes
+            //DateTime.Now.ToString("fffff"); // yes
+            //DateTime.Now.ToString("ffffff"); // yes
+            //DateTime.Now.ToString("fffffff"); // yes
+            //DateTime.Now.ToString("FF"); // yes
+            //DateTime.Now.ToString("FFF"); // yes
+            //DateTime.Now.ToString("FFFF"); // yes
+            //DateTime.Now.ToString("FFFFF"); // yes
+            //DateTime.Now.ToString("FFFFFF"); // yes
+            //DateTime.Now.ToString("FFFFFFF"); // yes
+            //DateTime.Now.ToString("yyyy"); // yes = year full
+            //DateTime.Now.ToString("yy"); // yes = year decade
+            //DateTime.Now.ToString("MM"); // yes = month
+            //DateTime.Now.ToString("dd"); // yes = day
+            //DateTime.Now.ToString("HH"); // yes = 24 hour
+            //DateTime.Now.ToString("hh"); // yes = 12 hour
+            //DateTime.Now.ToString("mm"); // yes = minute
+            //DateTime.Now.ToString("ss"); // yes = second
 
             GenerateDocument("Misc (OUTDATED)", "The stuff that didn't fit in a document of its own.", new List<Document.Element>
             {
