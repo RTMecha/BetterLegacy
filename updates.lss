@@ -1,3 +1,10 @@
+snapshot-2024.11.6 > (pre-1.7.0) > [Nov 6, 2024]
+- Fixed the inactive state of spawnPrefabOffset not occuring.
+- Modifiers now clear specific things when their parent object is deleted.
+- Fixed the editor for spawnPrefab modifiers being broken.
+- If you want a Prefab spawned from a modifier to not despawn when the main objects' lifespan is done, then you can turn Permanent on.
+- Added a way to remove any unwanted spawned modifier Prefabs from the level via Edit > Clear Modifier Prefabs.
+- And finishing off the spawnPrefab theme with this snapshot, added a few new prefab spawning related modifiers.
 snapshot-2024.11.5 > (pre-1.7.0) > [Nov 5, 2024]
 - Completely replaced the math evaluator system with a better one written by Reimnop. Some functions will need to be changed to work, such as findAxis(object_tag, ...) now being findAxis#object_tag(...). Learn more in the editor documentation.
 snapshot-2024.11.4 > (pre-1.7.0) > [Nov 5, 2024]
