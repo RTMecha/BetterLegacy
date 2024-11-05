@@ -19,16 +19,6 @@
 - Timeline object index order.
 - Figure out custom timeline bin system (Shows a custom amount of rows in the timeline and allows for the timeline to be navigated up and down).
 - Unclamped timeline (timeline can be navigated outside the regular range and objects can be placed before start time 0).
-
-- New modifiers
-> prizeObject
-> setParent
-> playerAction trigger (allows for multiple different keybinds and buttons)
-> trailRendererGradient
-> trailRendererColored
-> particleSystemColored
-> spawnPrefabOffset
-
 - Custom end level function [end level screen, return to hub, return to previous, return to arcade, return to main menu].
 - loadLevel modifiers custom end function (same as above).
 - Add a value for spawning a prefab at the object's position.
@@ -40,6 +30,13 @@
 - Collab sharing via server?
 - Editor online backups?
 - Multiplayer editor, possibly. (everyone has their own perspective of the hosts' editor but have limited functionality compared to the host)
+- New modifiers
+> prizeObject
+> setParent
+> playerAction trigger (allows for multiple different keybinds and buttons)
+> trailRendererGradient
+> trailRendererColored
+> particleSystemColored
 
 ### Misc
 - A way to detect duplicate object IDs.
