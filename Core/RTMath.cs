@@ -1333,11 +1333,10 @@ namespace BetterLegacy.Core
                 var endOfInput = search >= input.Length - 1;
 
                 // there aren't any cases of a variable being right next to a closing bracket ) so we skip.
-                if (lastSymbolWasClosing)
+                if (lastSymbolWasClosing || !isInVariable && (CharacterIsMathSymbol(c) || c == ')'))
                 {
                     lastSymbolWasClosing = false;
 
-                    //search += 2;
                     search++;
                     startIndex = search;
                     isInVariable = false;
@@ -1345,12 +1344,7 @@ namespace BetterLegacy.Core
                 }
 
                 if (c == ')')
-                {
-                    //search--;
                     lastSymbolWasClosing = true;
-                }
-
-                //c = input[search];
 
                 if (isInVariable && (CharacterIsMathSymbol(c) || lastSymbolWasClosing) || endOfInput)
                 {
