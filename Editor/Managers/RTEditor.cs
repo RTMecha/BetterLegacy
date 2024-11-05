@@ -3348,6 +3348,25 @@ namespace BetterLegacy.Editor.Managers
                     HideWarningPopup();
                 }, HideWarningPopup);
             });
+            
+            EditorHelper.AddEditorDropdown("Clear Modifier Prefabs", "", "Edit", titleBar.Find("File/File Dropdown/Quit to Main Menu/Image").GetComponent<Image>().sprite, () =>
+            {
+                ShowWarningPopup("Are you sure you want to remove all Prefab Objects spawned from modifiers?", () =>
+                {
+                    var prefabObjects = GameData.Current.prefabObjects;
+                    for (int i = prefabObjects.Count - 1; i >= 0; i--)
+                    {
+                        var prefabObject = prefabObjects[i];
+                        if (prefabObject.fromModifier)
+                        {
+                            Updater.UpdatePrefab(prefabObject, false);
+                            prefabObjects.RemoveAt(i);
+                        }
+                    }
+
+                    HideWarningPopup();
+                }, HideWarningPopup);
+            });
 
             EditorHelper.AddEditorDropdown("Reset Event Offsets", "", "Edit", CloseSprite, () =>
             {
