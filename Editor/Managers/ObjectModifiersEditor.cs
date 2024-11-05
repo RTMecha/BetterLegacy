@@ -1633,6 +1633,8 @@ namespace BetterLegacy.Editor.Managers
 
                     case "spawnPrefab":
                     case "spawnPrefabOffset":
+                    case "spawnMultiPrefab":
+                    case "spawnMultiPrefabOffset":
                         {
                             var prefabIndex = numberInput.Duplicate(layout, "Index");
                             var prefabIndexLabel = prefabIndex.transform.Find("Text").GetComponent<Text>();
@@ -1646,7 +1648,15 @@ namespace BetterLegacy.Editor.Managers
                             {
                                 if (int.TryParse(_val, out int result))
                                 {
-                                    modifier.value = Mathf.Clamp(result, 0, GameData.Current.prefabObjects.Count - 1).ToString();
+                                    try
+                                    {
+                                        modifier.Inactive?.Invoke(modifier);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        CoreHelper.LogException(ex);
+                                    }
+                                    modifier.value = Mathf.Clamp(result, 0, GameData.Current.prefabs.Count - 1).ToString();
                                     modifier.active = false;
                                 }
                             });
@@ -1660,18 +1670,28 @@ namespace BetterLegacy.Editor.Managers
                             EditorThemeManager.ApplySelectable(prefabIndexLeftButton, ThemeGroup.Function_2, false);
                             EditorThemeManager.ApplySelectable(prefabIndexRightButton, ThemeGroup.Function_2, false);
 
-                            TriggerHelper.IncreaseDecreaseButtonsInt(prefabIndexIF, 1, 0, GameData.Current.prefabObjects.Count - 1, prefabIndex.transform);
-                            TriggerHelper.AddEventTriggers(prefabIndexIF.gameObject, TriggerHelper.ScrollDeltaInt(prefabIndexIF, 1, 0, GameData.Current.prefabObjects.Count - 1));
+                            TriggerHelper.IncreaseDecreaseButtonsInt(prefabIndexIF, 1, 0, GameData.Current.prefabs.Count - 1, prefabIndex.transform);
+                            TriggerHelper.AddEventTriggers(prefabIndexIF.gameObject, TriggerHelper.ScrollDeltaInt(prefabIndexIF, 1, 0, GameData.Current.prefabs.Count - 1));
 
                             SingleGenerator(modifier, layout, "Position X", 1, 0f);
                             SingleGenerator(modifier, layout, "Position Y", 2, 0f);
                             SingleGenerator(modifier, layout, "Scale X", 3, 0f);
                             SingleGenerator(modifier, layout, "Scale Y", 4, 0f);
-                            SingleGenerator(modifier, layout, "Rotation", 5, 0f);
+                            SingleGenerator(modifier, layout, "Rotation", 5, 0f, 15f, 3f);
 
                             IntegerGenerator(modifier, layout, "Repeat Count", 6, 0);
                             SingleGenerator(modifier, layout, "Repeat Offset Time", 7, 0f);
                             SingleGenerator(modifier, layout, "Speed", 8, 1f);
+
+                            if (!cmd.Contains("Multi"))
+                                BoolGenerator(modifier, layout, "Permanent", 9, false);
+
+                            break;
+                        }
+
+                    case "clearSpawnedPrefabs":
+                        {
+                            StringGenerator(modifier, layout, "Object Group", 0);
 
                             break;
                         }
@@ -2297,6 +2317,16 @@ namespace BetterLegacy.Editor.Managers
             else
                 modifier.commands[index] = currentValue.ToString();
 
+            try
+            {
+                modifier.Inactive?.Invoke(modifier);
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
+            modifier.active = false;
+
             int num = 0;
             foreach (var toggle in toggles)
             {
@@ -2361,6 +2391,14 @@ namespace BetterLegacy.Editor.Managers
                         modifier.commands[type] = num.ToString();
                 }
 
+                try
+                {
+                    modifier.Inactive?.Invoke(modifier);
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
                 modifier.active = false;
             });
 
@@ -2402,6 +2440,14 @@ namespace BetterLegacy.Editor.Managers
                         modifier.commands[type] = num.ToString();
                 }
 
+                try
+                {
+                    modifier.Inactive?.Invoke(modifier);
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
                 modifier.active = false;
             });
 
@@ -2438,6 +2484,15 @@ namespace BetterLegacy.Editor.Managers
                     modifier.value = _val.ToString();
                 else
                     modifier.commands[type] = _val.ToString();
+
+                try
+                {
+                    modifier.Inactive?.Invoke(modifier);
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
                 modifier.active = false;
             });
 
@@ -2463,6 +2518,15 @@ namespace BetterLegacy.Editor.Managers
                     modifier.value = _val;
                 else
                     modifier.commands[type] = _val;
+
+                try
+                {
+                    modifier.Inactive?.Invoke(modifier);
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
                 modifier.active = false;
             });
 
@@ -2543,6 +2607,15 @@ namespace BetterLegacy.Editor.Managers
                     modifier.value = _val.ToString();
                 else
                     modifier.commands[type] = _val.ToString();
+
+                try
+                {
+                    modifier.Inactive?.Invoke(modifier);
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
                 modifier.active = false;
             });
 
@@ -2575,6 +2648,15 @@ namespace BetterLegacy.Editor.Managers
                     modifier.value = _val.ToString();
                 else
                     modifier.commands[type] = _val.ToString();
+
+                try
+                {
+                    modifier.Inactive?.Invoke(modifier);
+                }
+                catch (Exception ex)
+                {
+                    CoreHelper.LogException(ex);
+                }
                 modifier.active = false;
             });
 
