@@ -5953,6 +5953,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "spawnPrefab":
+                    case "spawnPrefabOffset":
                         {
                             if (!modifier.constant && modifier.Result != null && modifier.Result is PrefabObject)
                             {
