@@ -1,3 +1,6 @@
+snapshot-2024.11.4 > (pre-1.7.0) > [Nov 5, 2024]
+- Fixed an edge case with math evaluators where multiple brackets weren't recognized. For example, "((1 + 1) * 2) * 15".
+- Added spawnPrefabOffset modifier. This will spawn a prefab at the objects' exact position / scale / rotation, regardless of if the object is an empty or not.
 snapshot-2024.11.3 > (pre-1.7.0) > [Nov 4, 2024]
 - Added a preset setting to Editor > Editor GUI > User Preference.
 - Render depth now uses the limited range if your Editor Complexity is not set to advanced.
