@@ -646,7 +646,7 @@ namespace BetterLegacy.Editor.Managers
 
         #region Documentation
 
-        public List<Document> documentations = new List<Document>();
+        public List<EditorDocument> documentations = new List<EditorDocument>();
 
         public Text documentationTitle;
         public string documentationSearch;
@@ -7539,18 +7539,18 @@ namespace BetterLegacy.Editor.Managers
 
         #endregion
 
-        Document.Element FontElement(Document.SupportType condition, string name, string desc) => new Document.Element($"<b>[{condition}]</b> {name} - {desc}", Document.Element.Type.Text, () =>
+        EditorDocument.Element FontElement(EditorDocument.SupportType condition, string name, string desc) => new EditorDocument.Element($"<b>[{condition}]</b> {name} - {desc}", EditorDocument.Element.Type.Text, () =>
         {
             EditorManager.inst.DisplayNotification($"Copied font!", 2f, EditorManager.NotificationType.Success);
             LSText.CopyToClipboard($"<font={name}>");
         });
 
-        Document.Element LinkElement(string text, string url) => new Document.Element(text, Document.Element.Type.Text, () => Application.OpenURL(url));
+        EditorDocument.Element LinkElement(string text, string url) => new EditorDocument.Element(text, EditorDocument.Element.Type.Text, () => Application.OpenURL(url));
 
-        Document GenerateDocument(string name, string description, List<Document.Element> elements)
+        EditorDocument GenerateDocument(string name, string description, List<EditorDocument.Element> elements)
         {
             var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(documentationPopup.Content, "Document");
-            var documentation = new Document(gameObject, name, description);
+            var documentation = new EditorDocument(gameObject, name, description);
 
             EditorThemeManager.AddSelectable(gameObject.GetComponent<Button>(), ThemeGroup.List_Button_1);
 
@@ -7625,83 +7625,83 @@ namespace BetterLegacy.Editor.Managers
 
             documentationContent.GetComponent<VerticalLayoutGroup>().spacing = 12f;
 
-            GenerateDocument("Introduction", "Welcome to Project Arrhythmia Legacy.", new List<Document.Element>
+            GenerateDocument("Introduction", "Welcome to Project Arrhythmia Legacy.", new List<EditorDocument.Element>
             {
-                new Document.Element("Welcome to <b>Project Arrhythmia</b>!\nWhether you're new to the game, modding or have been around for a while, I'm sure this " +
-                        "documentation will help massively in understanding the ins and outs of the editor and the game as a whole.", Document.Element.Type.Text),
-                new Document.Element("These documents only list editor features and how to use them, everything else is listed in the Github wiki.", Document.Element.Type.Text),
-                new Document.Element("<b>DOCUMENTATION INFO</b>", Document.Element.Type.Text),
-                new Document.Element("<b>[VANILLA]</b> represents a feature from original Legacy, with very minor tweaks done to it if any.", Document.Element.Type.Text),
-                new Document.Element("<b>[MODDED]</b> represents a feature added by BetterLegacy. These features will not work in unmodded PA.", Document.Element.Type.Text),
-                new Document.Element("<b>[PATCHED]</b> represents a feature modified by BetterLegacy. They're either in newer versions of PA or are partially modded, meaning they might not work in regular PA.", Document.Element.Type.Text),
-                new Document.Element("<b>[ALPHA]</b> represents a feature ported from alpha to BetterLegacy and are not present in Legacy.", Document.Element.Type.Text),
-                new Document.Element("<b>[LEGACY]</b> represents a Legacy feature that was discontinued in alpha.", Document.Element.Type.Text)
+                new EditorDocument.Element("Welcome to <b>Project Arrhythmia</b>!\nWhether you're new to the game, modding or have been around for a while, I'm sure this " +
+                        "documentation will help massively in understanding the ins and outs of the editor and the game as a whole.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("These documents only list editor features and how to use them, everything else is listed in the Github wiki.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>DOCUMENTATION INFO</b>", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>[VANILLA]</b> represents a feature from original Legacy, with very minor tweaks done to it if any.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>[MODDED]</b> represents a feature added by BetterLegacy. These features will not work in unmodded PA.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>[PATCHED]</b> represents a feature modified by BetterLegacy. They're either in newer versions of PA or are partially modded, meaning they might not work in regular PA.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>[ALPHA]</b> represents a feature ported from alpha to BetterLegacy and are not present in Legacy.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>[LEGACY]</b> represents a Legacy feature that was discontinued in alpha.", EditorDocument.Element.Type.Text)
             });
 
-            GenerateDocument("Credits", "All the people who helped the mod development in some way.", new List<Document.Element>
+            GenerateDocument("Credits", "All the people who helped the mod development in some way.", new List<EditorDocument.Element>
             {
-                new Document.Element("Reimnop's Catalyst (PA object and animation optimization)", Document.Element.Type.Text),
+                new EditorDocument.Element("Reimnop's Catalyst (PA object and animation optimization)", EditorDocument.Element.Type.Text),
                 LinkElement("<b>Source code</b>:\nhttps://github.com/Reimnop/Catalyst", "https://github.com/Reimnop/Catalyst"),
                 
-                new Document.Element("Reimnop's ILMath (fast math parser / evaluator)", Document.Element.Type.Text),
+                new EditorDocument.Element("Reimnop's ILMath (fast math parser / evaluator)", EditorDocument.Element.Type.Text),
                 LinkElement("<b>Source code</b>:\nhttps://github.com/Reimnop/ILMath", "https://github.com/Reimnop/ILMath"),
 
-                new Document.Element("", Document.Element.Type.Text),
-                new Document.Element("Keijiro Takahashi's KinoGlitch (AnalogGlitch and DigitalGlitch events)", Document.Element.Type.Text),
+                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("Keijiro Takahashi's KinoGlitch (AnalogGlitch and DigitalGlitch events)", EditorDocument.Element.Type.Text),
                 LinkElement("<b>Source code</b>:\nhttps://github.com/keijiro/KinoGlitch", "https://github.com/keijiro/KinoGlitch"),
 
-                new Document.Element("", Document.Element.Type.Text),
-                new Document.Element("WestHillApps' UniBpmAnalyzer", Document.Element.Type.Text),
+                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("WestHillApps' UniBpmAnalyzer", EditorDocument.Element.Type.Text),
                 LinkElement("<b>Source code</b>:\nhttps://github.com/WestHillApps/UniBpmAnalyzer", "https://github.com/WestHillApps/UniBpmAnalyzer"),
 
-                new Document.Element("", Document.Element.Type.Text),
-                new Document.Element("Nick Vogt's ColliderCreator (used for creating proper collision for the custom shapes)", Document.Element.Type.Text),
+                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("Nick Vogt's ColliderCreator (used for creating proper collision for the custom shapes)", EditorDocument.Element.Type.Text),
                 LinkElement("<b>Website</b>:\nhttps://www.h3xed.com/", "https://www.h3xed.com/"),
                 LinkElement("<b>Source code</b>:\nhttps://www.h3xed.com/programming/automatically-create-polygon-collider-2d-from-2d-mesh-in-unity", "https://www.h3xed.com/programming/automatically-create-polygon-collider-2d-from-2d-mesh-in-unity"),
 
-                new Document.Element("", Document.Element.Type.Text),
-                new Document.Element("Crafty Font for the Pixellet font.", Document.Element.Type.Text),
+                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("Crafty Font for the Pixellet font.", EditorDocument.Element.Type.Text),
                 LinkElement("<b>Website</b>:\nhttps://craftyfont.gumroad.com/", "https://craftyfont.gumroad.com/"),
 
-                new Document.Element("", Document.Element.Type.Text),
-                new Document.Element("HAWTPIXEL for the File Deletion font.", Document.Element.Type.Text),
+                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("HAWTPIXEL for the File Deletion font.", EditorDocument.Element.Type.Text),
                 LinkElement("<b>Website</b>:\nhttps://www.hawtpixel.com/", "https://www.hawtpixel.com/"),
 
-                new Document.Element("", Document.Element.Type.Text),
-                new Document.Element("Sans Sans font.", Document.Element.Type.Text),
+                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("Sans Sans font.", EditorDocument.Element.Type.Text),
                 LinkElement("<b>Website</b>:\nhttps://www.font.download/font/sans", "https://www.font.download/font/sans"),
 
-                new Document.Element("", Document.Element.Type.Text),
-                new Document.Element("Fontworks for the RocknRoll font.", Document.Element.Type.Text),
+                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("Fontworks for the RocknRoll font.", EditorDocument.Element.Type.Text),
                 LinkElement("<b>Website</b>:\nhttps://github.com/fontworks-fonts/RocknRoll", "https://github.com/fontworks-fonts/RocknRoll"),
 
-                new Document.Element("", Document.Element.Type.Text),
-                new Document.Element("ManiackersDesign for the Monomaniac One font.", Document.Element.Type.Text),
+                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("ManiackersDesign for the Monomaniac One font.", EditorDocument.Element.Type.Text),
                 LinkElement("<b>Website</b>:\nhttps://github.com/ManiackersDesign/monomaniac", "https://github.com/ManiackersDesign/monomaniac"),
 
-                new Document.Element("", Document.Element.Type.Text),
-                new Document.Element("<b>SPECIAL THANKS</b>", Document.Element.Type.Text),
-                new Document.Element("Pidge (developer of the game) - Obviously for making the game itself and inspiring some features in BetterLegacy.", Document.Element.Type.Text),
-                new Document.Element("enchart - Massively helped RTMecha get into modding in the first place. Without enchart, none of this would have been possible.", Document.Element.Type.Text),
-                new Document.Element("aiden_ytarame - Ported gradient objects from alpha to BetterLegacy.", Document.Element.Type.Text),
-                new Document.Element("SleepyzGamer - Helped a lot in finding things", Document.Element.Type.Text),
-                new Document.Element("KarasuTori - For motivating RTMecha to keep going and experimenting with modding.", Document.Element.Type.Text),
-                new Document.Element("MoNsTeR and CubeCube for testing the mods, reporting bugs and giving suggestions.", Document.Element.Type.Text),
+                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>SPECIAL THANKS</b>", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("Pidge (developer of the game) - Obviously for making the game itself and inspiring some features in BetterLegacy.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("enchart - Massively helped RTMecha get into modding in the first place. Without enchart, none of this would have been possible.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("aiden_ytarame - Ported gradient objects from alpha to BetterLegacy.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("SleepyzGamer - Helped a lot in finding things", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("KarasuTori - For motivating RTMecha to keep going and experimenting with modding.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("MoNsTeR and CubeCube for testing the mods, reporting bugs and giving suggestions.", EditorDocument.Element.Type.Text),
             });
 
-            GenerateDocument("Uploading a Level", "Guidelines on uploading levels.", new List<Document.Element>
+            GenerateDocument("Uploading a Level", "Guidelines on uploading levels.", new List<EditorDocument.Element>
             {
-                new Document.Element("Want to post a level you made somewhere? Well, make sure you read these guidelines first.", Document.Element.Type.Text),
-                new Document.Element("If you made a level in BetterLegacy <i>with</i> modded features or the song is not verified*, you <b>cannot</b> upload it to the Steam Workshop. You can only share it through the Arcade server or some other means.", Document.Element.Type.Text),
-                new Document.Element("Some modded features (as specified in the Introductions section) are more likely to break vanilla PA than others, but just to be safe: continue with the above point.", Document.Element.Type.Text),
-                new Document.Element("Even if you add warnings to your level where you state that it is modded, it doesn't matter because most people don't read titles / descriptions and will probably end up blaming the game for being broken, even if it really isn't.", Document.Element.Type.Text),
-                new Document.Element("If you made a level in BetterLegacy <i>without</i> modded features and the song is verified, then you can upload it to the Steam Workshop. But you <b>MUST</b> verify that the level works in vanilla first by playtesting it all the way through in both vanilla Alpha and vanilla Legacy.\n\n" +
+                new EditorDocument.Element("Want to post a level you made somewhere? Well, make sure you read these guidelines first.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("If you made a level in BetterLegacy <i>with</i> modded features or the song is not verified*, you <b>cannot</b> upload it to the Steam Workshop. You can only share it through the Arcade server or some other means.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("Some modded features (as specified in the Introductions section) are more likely to break vanilla PA than others, but just to be safe: continue with the above point.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("Even if you add warnings to your level where you state that it is modded, it doesn't matter because most people don't read titles / descriptions and will probably end up blaming the game for being broken, even if it really isn't.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("If you made a level in BetterLegacy <i>without</i> modded features and the song is verified, then you can upload it to the Steam Workshop. But you <b>MUST</b> verify that the level works in vanilla first by playtesting it all the way through in both vanilla Alpha and vanilla Legacy.\n\n" +
                                     "- If you want to playtest in Alpha, you can click the Convert to VG format button in Upload > Publish / Update Level, navigating to beatmaps/exports and moving the exported level to the beatmaps/editor folder where your Project Arrhythmia folder is.\n" +
                                     "- If you want to playtest in Legacy, you can just copy the level to your beatmaps/editor folder where your Project Arrhythmia folder is.\n" +
-                                    "- Some features like object gradients, ColorGrading (hue only), Gradient event, Player Force event, and Prefab Transforms (position, scale, rotation) can be used in alpha, but it's still recommended to playtest in vanilla Alpha anyways.", Document.Element.Type.Text),
-                new Document.Element("* Non-verified songs are allowed on the Arcade server because the Arcade server is not officially endorsed by Vitamin Games nor the Steam Workshop, much like how some other music-based games have an unofficial server for hosting levels. If a song is super-protected, however, it has a high chance of being taken down regardless of that fact.", Document.Element.Type.Text),
-                new Document.Element("", Document.Element.Type.Text),
-                new Document.Element("When uploading to the Arcade server, you can include tags to better define your level. When uploading a level, you have to keep these tag guidelines in mind:\n" +
+                                    "- Some features like object gradients, ColorGrading (hue only), Gradient event, Player Force event, and Prefab Transforms (position, scale, rotation) can be used in alpha, but it's still recommended to playtest in vanilla Alpha anyways.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("* Non-verified songs are allowed on the Arcade server because the Arcade server is not officially endorsed by Vitamin Games nor the Steam Workshop, much like how some other music-based games have an unofficial server for hosting levels. If a song is super-protected, however, it has a high chance of being taken down regardless of that fact.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("When uploading to the Arcade server, you can include tags to better define your level. When uploading a level, you have to keep these tag guidelines in mind:\n" +
                                     "- Tags are best with underscores replacing spaces, e.g. <b>\"boss_level\"</b>.\n" +
                                     "- Uppercase and lowercase is acceptable.\n" +
                                     "- Keep tags relevant to the level.\n" +
@@ -7715,235 +7715,235 @@ namespace BetterLegacy.Editor.Managers
                                     "- Add <b>\"high_detail\"</b> to the tags if the level has a ton of objects / is lagging.\n" +
                                     "- Add <b>\"reupload\"</b> or <b>\"remake\"</b> to the tags if your level is such.\n" +
                                     "- Unfinished levels can be uploaded, but will need the <b>\"wip\"</b> tag. (do not flood the server with these)\n" +
-                                    "- Older levels can be uploaded, but will need the <b>\"old\"</b> tag.", Document.Element.Type.Text),
-                new Document.Element("", Document.Element.Type.Text),
-                new Document.Element("<i>Do not</i> reupload other people's levels to the server unless you have their permission. If you do reupload, it has to have been a level from the Steam workshop.\n" +
-                                    "Remakes are allowed, as long as you have permission from the original creator(s).", Document.Element.Type.Text),
+                                    "- Older levels can be uploaded, but will need the <b>\"old\"</b> tag.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<i>Do not</i> reupload other people's levels to the server unless you have their permission. If you do reupload, it has to have been a level from the Steam workshop.\n" +
+                                    "Remakes are allowed, as long as you have permission from the original creator(s).", EditorDocument.Element.Type.Text),
                 LinkElement("If you want to comment on a level, join the System Error Discord server (<color=#0084FF>https://discord.gg/nB27X2JZcY</color>), go to <b>#arcade-server-uploads</b>, create a thread (if there isn't already one) and make your comment there.\n" +
                 "You can click this element to open the Discord link.", "https://discord.gg/nB27X2JZcY"),
-                new Document.Element("", Document.Element.Type.Text),
-                new Document.Element("When updating a level, make sure you include a message in the changelogs to let users know what changed in your level. Feel free to format it with dot points, or as a regular sentence / paragraph.", Document.Element.Type.Text),
-                new Document.Element("", Document.Element.Type.Text),
-                new Document.Element("If you have any issues with these guidelines or have a suggestion, please contact the BetterLegacy developer (RTMecha) and discuss it with him civilly.", Document.Element.Type.Text),
+                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("When updating a level, make sure you include a message in the changelogs to let users know what changed in your level. Feel free to format it with dot points, or as a regular sentence / paragraph.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("If you have any issues with these guidelines or have a suggestion, please contact the BetterLegacy developer (RTMecha) and discuss it with him civilly.", EditorDocument.Element.Type.Text),
             });
 
-            GenerateDocument("[PATCHED] Beatmap Objects", "The very objects that make up Project Arrhythmia levels.", new List<Document.Element>
+            GenerateDocument("[PATCHED] Beatmap Objects", "The very objects that make up Project Arrhythmia levels.", new List<EditorDocument.Element>
             {
-                new Document.Element("<b>Beatmap Objects</b> are the objects people use to create a variety of things for their levels. " +
-                        "Whether it be backgrounds, characters, attacks, you name it! Below is a list of data Beatmap Objects have.", Document.Element.Type.Text),
-                new Document.Element("<b>ID [PATCHED]</b>\nThe ID is used for specifying a Beatmap Object, otherwise it'd most likely get lost in a sea of other objects! " +
+                new EditorDocument.Element("<b>Beatmap Objects</b> are the objects people use to create a variety of things for their levels. " +
+                        "Whether it be backgrounds, characters, attacks, you name it! Below is a list of data Beatmap Objects have.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>ID [PATCHED]</b>\nThe ID is used for specifying a Beatmap Object, otherwise it'd most likely get lost in a sea of other objects! " +
                         "It's mostly used with parenting. This is patched because in unmodded PA, creators aren't able to see the ID of an object unless they look at the level.lsb.\n" +
-                        "Clicking on the ID will copy it to your clipboard.", Document.Element.Type.Text),
-                new Document.Element("<b>LDM (Low Detail Mode) [MODDED]</b>\nLDM is useful for having objects not render for lower end devices. If the option is on and the user has " +
-                        "Low Detail Mode enabled through the RTFunctions mod config, the Beatmap Object will not render.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_id_ldm.png", Document.Element.Type.Image),
-                new Document.Element("<b>Name [VANILLA]</b>\nNaming an object is incredibly helpful for readablility and knowing what an object does at a glance. " +
-                        "Clicking your scroll wheel over it will flip any left / right.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_name_type.png", Document.Element.Type.Image),
-                new Document.Element("<b>Tags [MODDED]</b>\nBeing able to group objects together or even specify things about an object is possible with Object Tags. This feature " +
-                        "is mostly used by modifiers, but can be used in other ways such as a \"DontRotate\" tag which prevents Player Shapes from rotating automatically.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_tags.png", Document.Element.Type.Image),
-                new Document.Element("<b>Locked [PATCHED]</b>\nIf on, prevents Beatmap Objects' start time from being changed. It's patched because unmodded PA doesn't " +
-                        "have the toggle UI for this, however you can still use it in unmodded PA via hitting Ctrl + L.", Document.Element.Type.Text),
-                new Document.Element("<b>Start Time [VANILLA]</b>\nUsed for when the Beatmap Object spawns.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_start_time.png", Document.Element.Type.Image),
-                new Document.Element("<b>Time of Death [VANILLA]</b>\nUsed for when the Beatmap Object despawns." +
+                        "Clicking on the ID will copy it to your clipboard.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>LDM (Low Detail Mode) [MODDED]</b>\nLDM is useful for having objects not render for lower end devices. If the option is on and the user has " +
+                        "Low Detail Mode enabled through the RTFunctions mod config, the Beatmap Object will not render.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_id_ldm.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Name [VANILLA]</b>\nNaming an object is incredibly helpful for readablility and knowing what an object does at a glance. " +
+                        "Clicking your scroll wheel over it will flip any left / right.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_name_type.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Tags [MODDED]</b>\nBeing able to group objects together or even specify things about an object is possible with Object Tags. This feature " +
+                        "is mostly used by modifiers, but can be used in other ways such as a \"DontRotate\" tag which prevents Player Shapes from rotating automatically.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_tags.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Locked [PATCHED]</b>\nIf on, prevents Beatmap Objects' start time from being changed. It's patched because unmodded PA doesn't " +
+                        "have the toggle UI for this, however you can still use it in unmodded PA via hitting Ctrl + L.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>Start Time [VANILLA]</b>\nUsed for when the Beatmap Object spawns.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_start_time.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Time of Death [VANILLA]</b>\nUsed for when the Beatmap Object despawns." +
                         "\n<b>[PATCHED]</b> No Autokill - Beatmap Objects never despawn. This option is viable in modded PA due to heavily optimized object code, so don't worry " +
                         "about having a couple of objects with this. Just make sure to only use this when necessary, like for backgrounds or a persistent character." +
                         "\n<b>[VANILLA]</b> Last KF - Beatmap Objects despawn once all animations are finished. This does NOT include parent animations. When the level " +
                         "time reaches after the last keyframe, the object despawns." +
                         "\n<b>[VANILLA]</b> Last KF Offset - Same as above but at an offset." +
                         "\n<b>[VANILLA]</b> Fixed Time - Beatmap Objects despawn at a fixed time, regardless of animations. Fixed time is Beatmap Objects Start Time with an offset added to it." +
-                        "\n<b>[VANILLA]</b> Song Time - Same as above, except it ignores the Beatmap Object Start Time, despawning the object at song time.", Document.Element.Type.Text),
-                new Document.Element("<b>Collapse [VANILLA]</b>\nBeatmap Objects in the editor timeline have their length shortened to the smallest amount if this is on.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_tod.png", Document.Element.Type.Image),
-                new Document.Element("<b>Parent Search [PATCHED]</b>\nHere you can search for an object to parent the Beatmap Object to. It includes Camera Parenting.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_parent_search.png", Document.Element.Type.Image),
-                new Document.Element("<b>Camera Parent [MODDED]</b>\nBeatmap Objects parented to the camera will always follow it, depending on the parent settings. This includes " +
-                        "anything that makes the camera follow the player. This feature does exist in modern PA, but doesn't work the same way this does.", Document.Element.Type.Text),
-                new Document.Element("<b>Clear Parent [MODDED]</b>\nClicking this will remove the Beatmap Object from its parent.", Document.Element.Type.Text),
-                new Document.Element("<b>Parent Picker [ALPHA]</b>\nClicking this will activate a dropper. Right clicking will deactivate the dropper. Clicking on an object " +
-                        "in the timeline will set the current selected Beatmap Objects parent to the selected Timeline Object.", Document.Element.Type.Text),
-                new Document.Element("<b>Parent Display [VANILLA]</b>\nShows what the Beatmap Object is parented to. Clicking this button selects the parent. " +
-                        "Hovering your mouse over it shows parent chain info in the Hover Info box.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_parent.png", Document.Element.Type.Image),
-                new Document.Element("<b>Parent Settings [PATCHED]</b>\nParent settings can be adjusted here. Each of the below settings refer to both " +
-                        "position / scale / rotation. Position, scale and rotation are the rows and the types of Parent Settings are the columns.", Document.Element.Type.Text),
-                new Document.Element("<b>Parent Type [VANILLA]</b>\nWhether the Beatmap Object applies this type of animation from the parent. " +
-                        "It is the first column in the Parent Settings UI.", Document.Element.Type.Text),
-                new Document.Element("<b>Parent Offset [VANILLA]</b>\nParent animations applied to the Beatmap Objects own parent chain get delayed at this offset. Normally, only " +
-                        "the objects current parent gets delayed. It is the second column in the Parent Settings UI.", Document.Element.Type.Text),
-                new Document.Element("<b>Parent Additive [MODDED]</b>\nForces Parent Offset to apply to every parent chain connected to the Beatmap Object. With this off, it only " +
+                        "\n<b>[VANILLA]</b> Song Time - Same as above, except it ignores the Beatmap Object Start Time, despawning the object at song time.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>Collapse [VANILLA]</b>\nBeatmap Objects in the editor timeline have their length shortened to the smallest amount if this is on.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_tod.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Parent Search [PATCHED]</b>\nHere you can search for an object to parent the Beatmap Object to. It includes Camera Parenting.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_parent_search.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Camera Parent [MODDED]</b>\nBeatmap Objects parented to the camera will always follow it, depending on the parent settings. This includes " +
+                        "anything that makes the camera follow the player. This feature does exist in modern PA, but doesn't work the same way this does.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>Clear Parent [MODDED]</b>\nClicking this will remove the Beatmap Object from its parent.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>Parent Picker [ALPHA]</b>\nClicking this will activate a dropper. Right clicking will deactivate the dropper. Clicking on an object " +
+                        "in the timeline will set the current selected Beatmap Objects parent to the selected Timeline Object.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>Parent Display [VANILLA]</b>\nShows what the Beatmap Object is parented to. Clicking this button selects the parent. " +
+                        "Hovering your mouse over it shows parent chain info in the Hover Info box.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_parent.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Parent Settings [PATCHED]</b>\nParent settings can be adjusted here. Each of the below settings refer to both " +
+                        "position / scale / rotation. Position, scale and rotation are the rows and the types of Parent Settings are the columns.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>Parent Type [VANILLA]</b>\nWhether the Beatmap Object applies this type of animation from the parent. " +
+                        "It is the first column in the Parent Settings UI.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>Parent Offset [VANILLA]</b>\nParent animations applied to the Beatmap Objects own parent chain get delayed at this offset. Normally, only " +
+                        "the objects current parent gets delayed. It is the second column in the Parent Settings UI.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>Parent Additive [MODDED]</b>\nForces Parent Offset to apply to every parent chain connected to the Beatmap Object. With this off, it only " +
                         "uses the Beatmap Objects' current parent. For example, say we have objects A, B, C and D. With this on, D delays the animation of every parent. With this off, it delays only C. " +
-                        "It is the third column in the Parent Settings UI.", Document.Element.Type.Text),
-                new Document.Element("<b>Parent Parallax [MODDED]</b>\nParent animations are multiplied by this amount, allowing for a parallax effect. Say the amount was 2 and the parent " +
+                        "It is the third column in the Parent Settings UI.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>Parent Parallax [MODDED]</b>\nParent animations are multiplied by this amount, allowing for a parallax effect. Say the amount was 2 and the parent " +
                         "moves to position X 20, the object would move to 40 due to it being multiplied by 2. " +
-                        "It is the fourth column in the Parent Settings UI.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_parent_more.png", Document.Element.Type.Image),
-                new Document.Element("<b>Origin [PATCHED]</b>\nOrigin is the offset applied to the visual of the Beatmap Object. Only usable for non-Empty object types. " +
-                        "It's patched because of the number input fields instead of the direction buttons.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_origin.png", Document.Element.Type.Image),
-                new Document.Element("<b>Shape [PATCHED]</b>\nShape is whatever the visual of the Beatmap Object displays as. This doesn't just include actual shapes but stuff " +
-                        "like text, images and player models too. More shape types and options were added. Unmodded PA does not include Image Shape, Pentagon Shape, Misc Shape, Player Shape.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_shape.png", Document.Element.Type.Image),
-                new Document.Element("<b>Render Depth [PATCHED]</b>\nDepth is how deep an object is in visual layers. Higher amount of Render Depth means the object is lower " +
+                        "It is the fourth column in the Parent Settings UI.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_parent_more.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Origin [PATCHED]</b>\nOrigin is the offset applied to the visual of the Beatmap Object. Only usable for non-Empty object types. " +
+                        "It's patched because of the number input fields instead of the direction buttons.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_origin.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Shape [PATCHED]</b>\nShape is whatever the visual of the Beatmap Object displays as. This doesn't just include actual shapes but stuff " +
+                        "like text, images and player models too. More shape types and options were added. Unmodded PA does not include Image Shape, Pentagon Shape, Misc Shape, Player Shape.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_shape.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Render Depth [PATCHED]</b>\nDepth is how deep an object is in visual layers. Higher amount of Render Depth means the object is lower " +
                         "in the layers. Unmodded PA Legacy allows from 219 to -98. PA Alpha only allows from 40 to 0. Player is located at -60 depth. Z Axis Position keyframes use depth as a " +
-                        "multiplied offset.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_depth.png", Document.Element.Type.Image),
-                new Document.Element("<b>Render Type [MODDED]</b>\nRender Type is if the visual of the Beatmap Object renders in the 2D layer or the 3D layer, aka Foreground / Background.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_render_type.png", Document.Element.Type.Image),
-                new Document.Element("<b>Layer [PATCHED]</b>\nLayer is what editor layer the Beatmap Object renders on. It can go as high as 2147483646. " +
-                        "In unmodded PA its limited from layers 1 to 5, though in PA Editor Alpha another layer was introduced.", Document.Element.Type.Text),
-                new Document.Element("<b>Bin [VANILLA]</b>\nBin is what row of the timeline the Beatmap Objects' timeline object renders on.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_editordata.png", Document.Element.Type.Image),
-                new Document.Element("<b>Object Debug [MODDED]</b>\nThis UI element only generates if UnityExplorer is installed. If it is, clicking on either button will inspect " +
-                        "the internal data of the respective item.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_object_debug.png", Document.Element.Type.Image),
-                new Document.Element("<b>Integer Variable [MODDED]</b>\nEvery object has a whole number stored that Modifiers can use.", Document.Element.Type.Text),
-                new Document.Element("<b>Modifiers [MODDED]</b>\nModifiers are made up of two different types: Triggers and Actions. " +
+                        "multiplied offset.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_depth.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Render Type [MODDED]</b>\nRender Type is if the visual of the Beatmap Object renders in the 2D layer or the 3D layer, aka Foreground / Background.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_render_type.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Layer [PATCHED]</b>\nLayer is what editor layer the Beatmap Object renders on. It can go as high as 2147483646. " +
+                        "In unmodded PA its limited from layers 1 to 5, though in PA Editor Alpha another layer was introduced.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>Bin [VANILLA]</b>\nBin is what row of the timeline the Beatmap Objects' timeline object renders on.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_editordata.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Object Debug [MODDED]</b>\nThis UI element only generates if UnityExplorer is installed. If it is, clicking on either button will inspect " +
+                        "the internal data of the respective item.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_object_debug.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Integer Variable [MODDED]</b>\nEvery object has a whole number stored that Modifiers can use.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>Modifiers [MODDED]</b>\nModifiers are made up of two different types: Triggers and Actions. " +
                             "Triggers check if a specified thing is happening and Actions do things depending on if any triggers are active or there aren't any. A detailed description of every modifier " +
-                            "can be found in the Modifiers documentation. [WIP]", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_object_modifiers_edit.png", Document.Element.Type.Image),
+                            "can be found in the Modifiers documentation. [WIP]", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_object_modifiers_edit.png", EditorDocument.Element.Type.Image),
             });
 
-            GenerateDocument("[PATCHED] Beatmap Object Keyframes (WIP)", "The things that animate objects in different ways.", new List<Document.Element>
+            GenerateDocument("[PATCHED] Beatmap Object Keyframes (WIP)", "The things that animate objects in different ways.", new List<EditorDocument.Element>
             {
-                new Document.Element("The keyframes in the Beatmap Objects' keyframe timeline allow animating several aspects of a Beatmap Objects' visual.", Document.Element.Type.Text),
-                new Document.Element("<b>POSITION [PATCHED]</b>", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pos_none.png", Document.Element.Type.Image),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pos_normal.png", Document.Element.Type.Image),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pos_toggle.png", Document.Element.Type.Image),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pos_scale.png", Document.Element.Type.Image),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pos_static_homing.png", Document.Element.Type.Image),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pos_dynamic_homing.png", Document.Element.Type.Image),
-                new Document.Element("<b>SCALE [VANILLA]</b>", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_sca_none.png", Document.Element.Type.Image),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_sca_normal.png", Document.Element.Type.Image),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_sca_toggle.png", Document.Element.Type.Image),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_sca_scale.png", Document.Element.Type.Image),
-                new Document.Element("<b>ROTATION [VANILLA]</b>", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_rot_none.png", Document.Element.Type.Image),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_rot_normal.png", Document.Element.Type.Image),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_rot_toggle.png", Document.Element.Type.Image),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_rot_static_homing.png", Document.Element.Type.Image),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_rot_dynamic_homing.png", Document.Element.Type.Image),
-                new Document.Element("<b>COLOR [PATCHED]</b>", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_col_none.png", Document.Element.Type.Image),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_col_dynamic_homing.png", Document.Element.Type.Image),
+                new EditorDocument.Element("The keyframes in the Beatmap Objects' keyframe timeline allow animating several aspects of a Beatmap Objects' visual.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>POSITION [PATCHED]</b>", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_pos_none.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_pos_normal.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_pos_toggle.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_pos_scale.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_pos_static_homing.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_pos_dynamic_homing.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>SCALE [VANILLA]</b>", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_sca_none.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_sca_normal.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_sca_toggle.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_sca_scale.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>ROTATION [VANILLA]</b>", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_rot_none.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_rot_normal.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_rot_toggle.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_rot_static_homing.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_rot_dynamic_homing.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>COLOR [PATCHED]</b>", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_col_none.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_col_dynamic_homing.png", EditorDocument.Element.Type.Image),
             });
 
-            GenerateDocument("[PATCHED] Prefabs", "A package of objects that can be transfered from level to level. They can also be added to the level as a Prefab Object.", new List<Document.Element>
+            GenerateDocument("[PATCHED] Prefabs", "A package of objects that can be transfered from level to level. They can also be added to the level as a Prefab Object.", new List<EditorDocument.Element>
             {
-                    new Document.Element("Prefabs are collections of objects grouped together for easy transfering from level to level.", Document.Element.Type.Text),
-                    new Document.Element("<b>Name [VANILLA]</b>\nThe name of the Prefab. External prefabs gets saved with this as its file name, but all lowercase and " +
-                        "spaces replaced with underscores.", Document.Element.Type.Text),
-                    new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pc_name.png", Document.Element.Type.Image),
-                    new Document.Element("<b>Offset [VANILLA]</b>\nThe delay set to every Prefab Objects' spawned objects related to this Prefab.", Document.Element.Type.Text),
-                    new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pc_offset.png", Document.Element.Type.Image),
-                    new Document.Element("<b>Type [PATCHED]</b>\nThe group name and color of the Prefab. Good for color coding what a Prefab does at a glance.", Document.Element.Type.Text),
-                    new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pc_type.png", Document.Element.Type.Image),
-                    new Document.Element("<b>Description [MODDED]</b>\nA good way to tell you and others what the Prefab does or contains in great detail.", Document.Element.Type.Text),
-                    new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pc_description.png", Document.Element.Type.Image),
-                    new Document.Element("<b>Seletion List [PATCHED]</b>\nShows every object, you can toggle the selection on any of them to add them to the prefab. All selected " +
-                        "objects will be copied into the Prefab. This is patched because the UI and the code for it already existed in Legacy, it was just unused.", Document.Element.Type.Text),
-                    new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pc_search.png", Document.Element.Type.Image),
-                    new Document.Element("<b>Create [MODDED]</b>\nApplies all data and copies all selected objects to a new Prefab.", Document.Element.Type.Text),
-                    new Document.Element("BepInEx/plugins/Assets/Documentation/doc_pc_create.png", Document.Element.Type.Image),
+                    new EditorDocument.Element("Prefabs are collections of objects grouped together for easy transfering from level to level.", EditorDocument.Element.Type.Text),
+                    new EditorDocument.Element("<b>Name [VANILLA]</b>\nThe name of the Prefab. External prefabs gets saved with this as its file name, but all lowercase and " +
+                        "spaces replaced with underscores.", EditorDocument.Element.Type.Text),
+                    new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_pc_name.png", EditorDocument.Element.Type.Image),
+                    new EditorDocument.Element("<b>Offset [VANILLA]</b>\nThe delay set to every Prefab Objects' spawned objects related to this Prefab.", EditorDocument.Element.Type.Text),
+                    new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_pc_offset.png", EditorDocument.Element.Type.Image),
+                    new EditorDocument.Element("<b>Type [PATCHED]</b>\nThe group name and color of the Prefab. Good for color coding what a Prefab does at a glance.", EditorDocument.Element.Type.Text),
+                    new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_pc_type.png", EditorDocument.Element.Type.Image),
+                    new EditorDocument.Element("<b>Description [MODDED]</b>\nA good way to tell you and others what the Prefab does or contains in great detail.", EditorDocument.Element.Type.Text),
+                    new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_pc_description.png", EditorDocument.Element.Type.Image),
+                    new EditorDocument.Element("<b>Seletion List [PATCHED]</b>\nShows every object, you can toggle the selection on any of them to add them to the prefab. All selected " +
+                        "objects will be copied into the Prefab. This is patched because the UI and the code for it already existed in Legacy, it was just unused.", EditorDocument.Element.Type.Text),
+                    new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_pc_search.png", EditorDocument.Element.Type.Image),
+                    new EditorDocument.Element("<b>Create [MODDED]</b>\nApplies all data and copies all selected objects to a new Prefab.", EditorDocument.Element.Type.Text),
+                    new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_pc_create.png", EditorDocument.Element.Type.Image),
 
             });
 
-            GenerateDocument("[PATCHED] Prefab Objects (OUTDATED)", "Individual instances of prefabs that spawn the packed objects at specified offsets.", new List<Document.Element>
+            GenerateDocument("[PATCHED] Prefab Objects (OUTDATED)", "Individual instances of prefabs that spawn the packed objects at specified offsets.", new List<EditorDocument.Element>
             {
-                new Document.Element("Prefab Objects are a copied version of the original prefab, placed into the level. They take all the objects stored in the original prefab " +
+                new EditorDocument.Element("Prefab Objects are a copied version of the original prefab, placed into the level. They take all the objects stored in the original prefab " +
                     "and add them to the level, meaning you can have multiple copies of the same group of objects. Editing the objects of the prefab by expanding it applies all changes to " +
-                    "the prefab, updating every Prefab Object (once collapsed back into a Prefab Object).", Document.Element.Type.Text),
-                new Document.Element("<b>Expand [VANILLA]</b>\nExpands all the objects contained within the original prefab into the level and deletes the Prefab Object.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_expand.png", Document.Element.Type.Image),
-                new Document.Element("<b>Layer [PATCHED]</b>\nWhat Editor Layer the Prefab Object displays on. Can go from 1 to 2147483646. In unmodded Legacy its 1 to 5.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_layer.png", Document.Element.Type.Image),
-                new Document.Element("<b>Time of Death [MODDED]</b>\nTime of Death allows every object spawned from the Prefab Object still alive at a certain point to despawn." +
+                    "the prefab, updating every Prefab Object (once collapsed back into a Prefab Object).", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>Expand [VANILLA]</b>\nExpands all the objects contained within the original prefab into the level and deletes the Prefab Object.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_expand.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Layer [PATCHED]</b>\nWhat Editor Layer the Prefab Object displays on. Can go from 1 to 2147483646. In unmodded Legacy its 1 to 5.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_layer.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Time of Death [MODDED]</b>\nTime of Death allows every object spawned from the Prefab Object still alive at a certain point to despawn." +
                     "\nRegular - Just how the game handles Prefab Objects kill time normally." +
                     "\nStart Offset - Kill time is offset plus the Prefab Object start time." +
-                    "\nSong Time - Kill time is song time, so no matter where you change the start time to the kill time remains the same.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_tod.png", Document.Element.Type.Image),
-                new Document.Element("<b>Locked [PATCHED]</b>\nIf on, prevents Prefab Objects' start time from being changed. It's patched because unmodded PA doesn't " +
-                    "have the toggle UI for this, however you can still use it in unmodded PA via hitting Ctrl + L.", Document.Element.Type.Text),
-                new Document.Element("<b>Collapse [PATCHED]</b>\nIf on, collapses the Prefab Objects' timeline object. This is patched because it literally doesn't " +
-                    "work in unmodded PA.", Document.Element.Type.Text),
-                new Document.Element("<b>Start Time [VANILLA]</b>\nWhere the objects spawned from the Prefab Object start.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_time.png", Document.Element.Type.Image),
-                new Document.Element("<b>Position Offset [PATCHED]</b>\nEvery objects' top-most-parent has its position set to this offset. Unmodded PA technically has this " +
-                    "feature, but it's not editable in the editor.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_pos_offset.png", Document.Element.Type.Image),
-                new Document.Element("<b>Scale Offset [PATCHED]</b>\nEvery objects' top-most-parent has its scale set to this offset. Unmodded PA technically has this " +
-                    "feature, but it's not editable in the editor.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_sca_offset.png", Document.Element.Type.Image),
-                new Document.Element("<b>Rotation Offset [PATCHED]</b>\nEvery objects' top-most-parent has its rotation set to this offset. Unmodded PA technically has this " +
-                    "feature, but it's not editable in the editor.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_rot_offset.png", Document.Element.Type.Image),
-                new Document.Element("<b>Repeat [MODDED]</b>\nWhen spawning the objects from the Prefab Object, every object gets repeated a set amount of times" +
+                    "\nSong Time - Kill time is song time, so no matter where you change the start time to the kill time remains the same.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_tod.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Locked [PATCHED]</b>\nIf on, prevents Prefab Objects' start time from being changed. It's patched because unmodded PA doesn't " +
+                    "have the toggle UI for this, however you can still use it in unmodded PA via hitting Ctrl + L.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>Collapse [PATCHED]</b>\nIf on, collapses the Prefab Objects' timeline object. This is patched because it literally doesn't " +
+                    "work in unmodded PA.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>Start Time [VANILLA]</b>\nWhere the objects spawned from the Prefab Object start.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_time.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Position Offset [PATCHED]</b>\nEvery objects' top-most-parent has its position set to this offset. Unmodded PA technically has this " +
+                    "feature, but it's not editable in the editor.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_pos_offset.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Scale Offset [PATCHED]</b>\nEvery objects' top-most-parent has its scale set to this offset. Unmodded PA technically has this " +
+                    "feature, but it's not editable in the editor.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_sca_offset.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Rotation Offset [PATCHED]</b>\nEvery objects' top-most-parent has its rotation set to this offset. Unmodded PA technically has this " +
+                    "feature, but it's not editable in the editor.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_rot_offset.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Repeat [MODDED]</b>\nWhen spawning the objects from the Prefab Object, every object gets repeated a set amount of times" +
                     "with their start offset added onto each time they repeat depending on the Repeat Offset Time set. The data for Repeat Count and Repeat Offset Time " +
-                    "already existed in unmodded PA, it just went completely unused.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_repeat.png", Document.Element.Type.Image),
-                new Document.Element("<b>Speed [MODDED]</b>\nHow fast each object spawned from the Prefab Object spawns and is animated.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_speed.png", Document.Element.Type.Image),
-                new Document.Element("<b>Lead Time / Offset [VANILLA]</b>\nEvery Prefab Object starts at an added offset from the Offset amount. I have no idea why " +
-                    "it's called Lead Time here even though its Offset everywhere else.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_lead.png", Document.Element.Type.Image),
-                new Document.Element("<b>Name [MODDED]</b>\nChanges the name of the original Prefab related to the Prefab Object. This is modded because you couldn't " +
-                    "change this in the Prefab Object editor.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_name.png", Document.Element.Type.Image),
-                new Document.Element("<b>Type [MODDED]</b>\nChanges the Type of the original Prefab related to the Prefab Object. This is modded because you couldn't " +
-                    "change this in the Prefab Object editor. (You can scroll-wheel over the input field to change the type easily)", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_type.png", Document.Element.Type.Image),
-                new Document.Element("<b>Save [MODDED]</b>\nSaves all changes made to the original Prefab to any External Prefab with a matching name.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_save.png", Document.Element.Type.Image),
-                new Document.Element("<b>Count [MODDED]</b>\nTells how many objects are in the original Prefab and how many Prefab Objects there are in the timeline " +
-                    "for the Prefab. The Prefab Object Count goes unused for now...?", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_counts.png", Document.Element.Type.Image),
+                    "already existed in unmodded PA, it just went completely unused.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_repeat.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Speed [MODDED]</b>\nHow fast each object spawned from the Prefab Object spawns and is animated.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_object_speed.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Lead Time / Offset [VANILLA]</b>\nEvery Prefab Object starts at an added offset from the Offset amount. I have no idea why " +
+                    "it's called Lead Time here even though its Offset everywhere else.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_lead.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Name [MODDED]</b>\nChanges the name of the original Prefab related to the Prefab Object. This is modded because you couldn't " +
+                    "change this in the Prefab Object editor.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_name.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Type [MODDED]</b>\nChanges the Type of the original Prefab related to the Prefab Object. This is modded because you couldn't " +
+                    "change this in the Prefab Object editor. (You can scroll-wheel over the input field to change the type easily)", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_type.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Save [MODDED]</b>\nSaves all changes made to the original Prefab to any External Prefab with a matching name.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_save.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Count [MODDED]</b>\nTells how many objects are in the original Prefab and how many Prefab Objects there are in the timeline " +
+                    "for the Prefab. The Prefab Object Count goes unused for now...?", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_prefab_counts.png", EditorDocument.Element.Type.Image),
             });
 
-            GenerateDocument("[LEGACY] Background Objects (WIP)", "The classic 3D style backgrounds.", new List<Document.Element>
+            GenerateDocument("[LEGACY] Background Objects (WIP)", "The classic 3D style backgrounds.", new List<EditorDocument.Element>
             {
-                new Document.Element("Background Object intro.", Document.Element.Type.Text),
+                new EditorDocument.Element("Background Object intro.", EditorDocument.Element.Type.Text),
             });
 
-            GenerateDocument("[PATCHED] Events", "Effects to make your level pretty or to animate properties of the level.", new List<Document.Element>
+            GenerateDocument("[PATCHED] Events", "Effects to make your level pretty or to animate properties of the level.", new List<EditorDocument.Element>
             {
-                new Document.Element("BetterLegacy has a total of 40 event types. Below is a list of them all and what they do:", Document.Element.Type.Text),
+                new EditorDocument.Element("BetterLegacy has a total of 40 event types. Below is a list of them all and what they do:", EditorDocument.Element.Type.Text),
 
-                new Document.Element("<b>[VANILLA]</b> Move - Moves the camera left, right, up and down.\n" +
+                new EditorDocument.Element("<b>[VANILLA]</b> Move - Moves the camera left, right, up and down.\n" +
                                     "<b>Values</b>:\n" +
                                     "<b>[VANILLA]</b> Position X\n" +
-                                    "<b>[VANILLA]</b> Position Y", Document.Element.Type.Text),
-                new Document.Element("<b>[VANILLA]</b> Zoom - Zooms the camera in and out.\n" +
+                                    "<b>[VANILLA]</b> Position Y", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>[VANILLA]</b> Zoom - Zooms the camera in and out.\n" +
                                     "<b>Values</b>:\n" +
-                                    "<b>[VANILLA]</b> Zoom", Document.Element.Type.Text),
-                new Document.Element("<b>[VANILLA]</b> Rotate - Rotates the camera around.\n" +
+                                    "<b>[VANILLA]</b> Zoom", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>[VANILLA]</b> Rotate - Rotates the camera around.\n" +
                                     "<b>Values</b>:\n" +
-                                    "<b>[VANILLA]</b> Rotation", Document.Element.Type.Text),
-                new Document.Element("<b>[PATCHED]</b> Shake - Shakes the camera.\n" +
+                                    "<b>[VANILLA]</b> Rotation", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>[PATCHED]</b> Shake - Shakes the camera.\n" +
                                     "<b>Values</b>:\n" +
                                     "<b>[VANILLA]</b> Shake Intensity\n" +
                                     "<b>[MODDED]</b> Direction X\n" +
                                     "<b>[MODDED]</b> Direction Y\n" +
                                     "<b>[MODDED]</b> Smoothness\n" +
-                                    "<b>[MODDED]</b> Speed", Document.Element.Type.Text),
-                new Document.Element("<b>[PATCHED]</b> Theme - The current set of colors to use for a level.\n" +
+                                    "<b>[MODDED]</b> Speed", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>[PATCHED]</b> Theme - The current set of colors to use for a level.\n" +
                                     "<b>Values</b>:\n" +
-                                    "<b>[VANILLA]</b> Theme selection", Document.Element.Type.Text),
-                new Document.Element("<b>[VANILLA]</b> Chroma - Stretches the colors from the border of the screen.\n" +
+                                    "<b>[VANILLA]</b> Theme selection", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>[VANILLA]</b> Chroma - Stretches the colors from the border of the screen.\n" +
                                     "<b>Values</b>:\n" +
-                                    "<b>[VANILLA]</b> Chromatic Aberation Amount", Document.Element.Type.Text),
-                new Document.Element("<b>[PATCHED]</b> Bloom - Applies a glowy effect on the screen.\n" +
+                                    "<b>[VANILLA]</b> Chromatic Aberation Amount", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>[PATCHED]</b> Bloom - Applies a glowy effect on the screen.\n" +
                                     "<b>Values</b>:\n" +
                                     "<b>[VANILLA]</b> Bloom Amount\n" +
                                     "<b>[ALPHA]</b> Diffusion\n" +
                                     "<b>[MODDED]</b> Threshold\n" +
                                     "<b>[MODDED]</b> Anamorphic Ratio\n" +
                                     "<b>[ALPHA]</b> Color\n" +
-                                    "<b>[MODDED]</b> HSV (Hue / Saturation / Value)", Document.Element.Type.Text),
-                new Document.Element("<b>[PATCHED]</b> Vignette - Applies a dark / light border around the screen.\n" +
+                                    "<b>[MODDED]</b> HSV (Hue / Saturation / Value)", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>[PATCHED]</b> Vignette - Applies a dark / light border around the screen.\n" +
                                     "<b>Values</b>:\n" +
                                     "<b>[VANILLA]</b> Intensity\n" +
                                     "<b>[VANILLA]</b> Smoothness\n" +
@@ -7951,21 +7951,21 @@ namespace BetterLegacy.Editor.Managers
                                     "<b>[VANILLA]</b> Roundness\n" +
                                     "<b>[VANILLA]</b> Center Position\n" +
                                     "<b>[ALPHA]</b> Color\n" +
-                                    "<b>[MODDED]</b> HSV (Hue / Saturation / Value)", Document.Element.Type.Text),
-                new Document.Element("<b>[PATCHED]</b> Lens - Pushes the center of the screen in and out.\n" +
+                                    "<b>[MODDED]</b> HSV (Hue / Saturation / Value)", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>[PATCHED]</b> Lens - Pushes the center of the screen in and out.\n" +
                                     "<b>Values</b>:\n" +
                                     "<b>[VANILLA]</b> Lens Distort Amount\n" +
                                     "<b>[ALPHA]</b> Center X\n" +
                                     "<b>[ALPHA]</b> Center Y\n" +
                                     "<b>[MODDED]</b> Intensity X\n" +
                                     "<b>[MODDED]</b> Intensity Y\n" +
-                                    "<b>[MODDED]</b> Scale", Document.Element.Type.Text),
-                new Document.Element("<b>[VANILLA]</b> Grain - Adds a static effect to the screen (or makes it flash in Legacy if Grain size is 0.\n" +
+                                    "<b>[MODDED]</b> Scale", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>[VANILLA]</b> Grain - Adds a static effect to the screen (or makes it flash in Legacy if Grain size is 0.\n" +
                                     "<b>Values</b>:\n" +
                                     "<b>[VANILLA]</b> Intensity Amount\n" +
                                     "<b>[VANILLA]</b> Size of Grains\n" +
-                                    "<b>[VANILLA]</b> Colored", Document.Element.Type.Text),
-                new Document.Element("<b>[MODDED]</b> ColorGrading - Affects the colors of the whole level, regardless of theme. If the level is converted to the VG format, this event will be turned into the Hue event and will only have the Hueshift value.\n" +
+                                    "<b>[VANILLA]</b> Colored", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>[MODDED]</b> ColorGrading - Affects the colors of the whole level, regardless of theme. If the level is converted to the VG format, this event will be turned into the Hue event and will only have the Hueshift value.\n" +
                                     "<b>Values</b>:\n" +
                                     "<b>[ALPHA]</b> Hueshift\n" +
                                     "<b>[MODDED]</b> Contrast\n" +
@@ -7975,8 +7975,8 @@ namespace BetterLegacy.Editor.Managers
                                     "<b>[MODDED]</b> Gamma X\n" +
                                     "<b>[MODDED]</b> Gamma Y\n" +
                                     "<b>[MODDED]</b> Gamma Z\n" +
-                                    "<b>[MODDED]</b> Gamma W", Document.Element.Type.Text),
-                new Document.Element("<b>[ALPHA]</b> Gradient - Applies a gradient over the screen. If the level is converted to the VG format, all values (except OHSV) will be carried over.\n" +
+                                    "<b>[MODDED]</b> Gamma W", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>[ALPHA]</b> Gradient - Applies a gradient over the screen. If the level is converted to the VG format, all values (except OHSV) will be carried over.\n" +
                                     "<b>Values</b>:\n" +
                                     "<b>[ALPHA]</b> Intensity\n" +
                                     "<b>[ALPHA]</b> Rotation\n" +
@@ -7984,26 +7984,26 @@ namespace BetterLegacy.Editor.Managers
                                     "<b>[MODDED]</b> OHSV Top (Opacity / Hue / Saturation / Value)\n" +
                                     "<b>[ALPHA]</b> Color Bottom\n" +
                                     "<b>[MODDED]</b> OHSV Bottom (Opacity / Hue / Saturation / Value)\n" +
-                                    "<b>[ALPHA]</b> Mode", Document.Element.Type.Text),
-                new Document.Element("<b>[ALPHA]</b> Player Force - Forces the player to constantly move in a direction. If the level is converted to the VG format, all values will be carried over to the Player event.\n" +
+                                    "<b>[ALPHA]</b> Mode", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>[ALPHA]</b> Player Force - Forces the player to constantly move in a direction. If the level is converted to the VG format, all values will be carried over to the Player event.\n" +
                                     "<b>Values</b>:\n" +
                                     "<b>[ALPHA]</b> Force X\n" +
-                                    "<b>[ALPHA]</b> Force Y", Document.Element.Type.Text),
+                                    "<b>[ALPHA]</b> Force Y", EditorDocument.Element.Type.Text),
                 // todo: add the rest
             });
 
-            GenerateDocument("[PATCHED] Text Objects", "Flavor your levels with text!", new List<Document.Element>
+            GenerateDocument("[PATCHED] Text Objects", "Flavor your levels with text!", new List<EditorDocument.Element>
             {
-                new Document.Element("Text Objects can be used in extensive ways, from conveying character dialogue to decoration. This document is for showcasing usable " +
-                    "fonts and formats Text Objects can use.", Document.Element.Type.Text),
-                new Document.Element("<b>- FORMATTING -</b>", Document.Element.Type.Text),
-                new Document.Element("<b>[VANILLA]</b> <noparse><b></noparse> - For making text <b>BOLD</b>. Use <noparse></b></noparse> to clear.", Document.Element.Type.Text),
-                new Document.Element("<b>[VANILLA]</b> <noparse><i></noparse> - For making text <i>italic</i>. Use <noparse></i></noparse> to clear.", Document.Element.Type.Text),
-                new Document.Element("<b>[VANILLA]</b> <noparse><u></noparse> - Gives text an <u>underline</u>. Use <noparse></u></noparse> to clear.", Document.Element.Type.Text),
-                new Document.Element("<b>[VANILLA]</b> <noparse><s></noparse> - Gives text a <s>strikethrough</s>. Use <noparse></s></noparse> to clear.", Document.Element.Type.Text),
-                new Document.Element("<b>[VANILLA]</b> <br <pos=136>> - Line break.", Document.Element.Type.Text),
-                new Document.Element("<b>[VANILLA]</b> <noparse><material=LiberationSans SDF - Outline></noparse> - Outline effect that only works on the <b><i>LiberationSans SDF</b></i> font.", Document.Element.Type.Text),
-                new Document.Element("<b>[VANILLA]</b> <noparse><line-height=25></noparse> - Type any number you want in place of the 25. Use <noparse></line-height></noparse> to clear.", Document.Element.Type.Text)
+                new EditorDocument.Element("Text Objects can be used in extensive ways, from conveying character dialogue to decoration. This document is for showcasing usable " +
+                    "fonts and formats Text Objects can use.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>- FORMATTING -</b>", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>[VANILLA]</b> <noparse><b></noparse> - For making text <b>BOLD</b>. Use <noparse></b></noparse> to clear.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>[VANILLA]</b> <noparse><i></noparse> - For making text <i>italic</i>. Use <noparse></i></noparse> to clear.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>[VANILLA]</b> <noparse><u></noparse> - Gives text an <u>underline</u>. Use <noparse></u></noparse> to clear.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>[VANILLA]</b> <noparse><s></noparse> - Gives text a <s>strikethrough</s>. Use <noparse></s></noparse> to clear.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>[VANILLA]</b> <br <pos=136>> - Line break.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>[VANILLA]</b> <noparse><material=LiberationSans SDF - Outline></noparse> - Outline effect that only works on the <b><i>LiberationSans SDF</b></i> font.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>[VANILLA]</b> <noparse><line-height=25></noparse> - Type any number you want in place of the 25. Use <noparse></line-height></noparse> to clear.", EditorDocument.Element.Type.Text)
                 {
                     Function = () =>
                     {
@@ -8012,124 +8012,124 @@ namespace BetterLegacy.Editor.Managers
                     }
                 },
 
-                new Document.Element("<b><size=36><align=center>- FONTS -</b>", Document.Element.Type.Text, 40f),
-                new Document.Element(RTFile.BepInExAssetsPath + "Documentation/doc_fonts.png", Document.Element.Type.Image)
+                new EditorDocument.Element("<b><size=36><align=center>- FONTS -</b>", EditorDocument.Element.Type.Text, 40f),
+                new EditorDocument.Element(RTFile.BepInExAssetsPath + "Documentation/doc_fonts.png", EditorDocument.Element.Type.Image)
                 { Function = () => { RTFile.OpenInFileBrowser.OpenFile(RTFile.ApplicationDirectory + RTFile.BepInExAssetsPath + "Documentation/doc_fonts.png"); }},
-                new Document.Element("To use a font, do <font=Font Name>. To clear, do <noparse></font></noparse>. Click on one of the fonts below to copy the <font=Font Name> to your clipboard. " +
-                    "Click on the image above to open the folder to the documentation assets folder where a higher resolution screenshot is located.", Document.Element.Type.Text),
+                new EditorDocument.Element("To use a font, do <font=Font Name>. To clear, do <noparse></font></noparse>. Click on one of the fonts below to copy the <font=Font Name> to your clipboard. " +
+                    "Click on the image above to open the folder to the documentation assets folder where a higher resolution screenshot is located.", EditorDocument.Element.Type.Text),
 
-                new Document.Element("<b><size=30><align=center>- PROJECT ARRHYTHMIA FONTS -</b>", Document.Element.Type.Text, 32f),
-                FontElement(Document.SupportType.MODDED, "Arrhythmia", "The font from the earliest builds of Project Arrhythmia."),
-                FontElement(Document.SupportType.MODDED, "Fredoka One", "The font used in the Vitamin Games website."),
-                FontElement(Document.SupportType.MODDED, "Inconsolata Variable", "The default PA font."),
-                FontElement(Document.SupportType.MODDED, "LiberationSans SDF", "An extra font Vanilla Legacy has."),
-                FontElement(Document.SupportType.MODDED, "File Deletion", "A font pretty similar to the modern PA title font."),
+                new EditorDocument.Element("<b><size=30><align=center>- PROJECT ARRHYTHMIA FONTS -</b>", EditorDocument.Element.Type.Text, 32f),
+                FontElement(EditorDocument.SupportType.MODDED, "Arrhythmia", "The font from the earliest builds of Project Arrhythmia."),
+                FontElement(EditorDocument.SupportType.MODDED, "Fredoka One", "The font used in the Vitamin Games website."),
+                FontElement(EditorDocument.SupportType.MODDED, "Inconsolata Variable", "The default PA font."),
+                FontElement(EditorDocument.SupportType.MODDED, "LiberationSans SDF", "An extra font Vanilla Legacy has."),
+                FontElement(EditorDocument.SupportType.MODDED, "File Deletion", "A font pretty similar to the modern PA title font."),
 
-                new Document.Element("<b><size=30><align=center>- GEOMETRY DASH FONTS -</b>", Document.Element.Type.Text, 32f),
-                FontElement(Document.SupportType.MODDED, "Oxygene", "The font used for the title of Geometry Dash."),
-                FontElement(Document.SupportType.MODDED, "Pusab", "The main font used in the hit game Geometry Dash. And yes, it is the right one."),
-                FontElement(Document.SupportType.MODDED, "Minecraftory", "Geometry Dash font mainly used in Geometry Dash SubZero."),
+                new EditorDocument.Element("<b><size=30><align=center>- GEOMETRY DASH FONTS -</b>", EditorDocument.Element.Type.Text, 32f),
+                FontElement(EditorDocument.SupportType.MODDED, "Oxygene", "The font used for the title of Geometry Dash."),
+                FontElement(EditorDocument.SupportType.MODDED, "Pusab", "The main font used in the hit game Geometry Dash. And yes, it is the right one."),
+                FontElement(EditorDocument.SupportType.MODDED, "Minecraftory", "Geometry Dash font mainly used in Geometry Dash SubZero."),
 
-                new Document.Element("<b><size=30><align=center>- COMIC FONTS -</b>", Document.Element.Type.Text, 32f),
-                FontElement(Document.SupportType.MODDED, "Adam Warren Pro Bold", "A comic style font."),
-                FontElement(Document.SupportType.MODDED, "Adam Warren Pro BoldItalic", "A comic style font."),
-                FontElement(Document.SupportType.MODDED, "Adam Warren Pro", "A comic style font."),
-                FontElement(Document.SupportType.MODDED, "BadaBoom BB", "A comic style font."),
-                FontElement(Document.SupportType.MODDED, "Komika Hand", "A comic style font."),
-                FontElement(Document.SupportType.MODDED, "Komika Hand Bold", "A comic style font."),
-                FontElement(Document.SupportType.MODDED, "Komika Slim", "A comic style font."),
-                FontElement(Document.SupportType.MODDED, "Komika Hand BoldItalic", "A comic style font."),
-                FontElement(Document.SupportType.MODDED, "Komika Hand Italic", "A comic style font."),
-                FontElement(Document.SupportType.MODDED, "Komika Jam", "A comic style font."),
-                FontElement(Document.SupportType.MODDED, "Komika Jam Italic", "A comic style font."),
-                FontElement(Document.SupportType.MODDED, "Komika Slick Italic", "A comic style font."),
-                FontElement(Document.SupportType.MODDED, "Komika Slim Italic", "A comic style font."),
+                new EditorDocument.Element("<b><size=30><align=center>- COMIC FONTS -</b>", EditorDocument.Element.Type.Text, 32f),
+                FontElement(EditorDocument.SupportType.MODDED, "Adam Warren Pro Bold", "A comic style font."),
+                FontElement(EditorDocument.SupportType.MODDED, "Adam Warren Pro BoldItalic", "A comic style font."),
+                FontElement(EditorDocument.SupportType.MODDED, "Adam Warren Pro", "A comic style font."),
+                FontElement(EditorDocument.SupportType.MODDED, "BadaBoom BB", "A comic style font."),
+                FontElement(EditorDocument.SupportType.MODDED, "Komika Hand", "A comic style font."),
+                FontElement(EditorDocument.SupportType.MODDED, "Komika Hand Bold", "A comic style font."),
+                FontElement(EditorDocument.SupportType.MODDED, "Komika Slim", "A comic style font."),
+                FontElement(EditorDocument.SupportType.MODDED, "Komika Hand BoldItalic", "A comic style font."),
+                FontElement(EditorDocument.SupportType.MODDED, "Komika Hand Italic", "A comic style font."),
+                FontElement(EditorDocument.SupportType.MODDED, "Komika Jam", "A comic style font."),
+                FontElement(EditorDocument.SupportType.MODDED, "Komika Jam Italic", "A comic style font."),
+                FontElement(EditorDocument.SupportType.MODDED, "Komika Slick Italic", "A comic style font."),
+                FontElement(EditorDocument.SupportType.MODDED, "Komika Slim Italic", "A comic style font."),
 
-                new Document.Element("<b><size=30><align=center>- BIONICLE FONTS -</b>", Document.Element.Type.Text, 32f),
-                FontElement(Document.SupportType.MODDED, "Matoran Language 1", "The language used by the Matoran in the BIONICLE series."),
-                FontElement(Document.SupportType.MODDED, "Matoran Language 2", "The language used by the Matoran in the BIONICLE series."),
-                FontElement(Document.SupportType.MODDED, "Piraka Theory", "The language used by the Piraka in the BIONICLE series."),
-                FontElement(Document.SupportType.MODDED, "Piraka", "The language used by the Piraka in the BIONICLE series."),
-                FontElement(Document.SupportType.MODDED, "Rahkshi", "The font used for promoting the Rahkshi sets in the BIONICLE series."),
+                new EditorDocument.Element("<b><size=30><align=center>- BIONICLE FONTS -</b>", EditorDocument.Element.Type.Text, 32f),
+                FontElement(EditorDocument.SupportType.MODDED, "Matoran Language 1", "The language used by the Matoran in the BIONICLE series."),
+                FontElement(EditorDocument.SupportType.MODDED, "Matoran Language 2", "The language used by the Matoran in the BIONICLE series."),
+                FontElement(EditorDocument.SupportType.MODDED, "Piraka Theory", "The language used by the Piraka in the BIONICLE series."),
+                FontElement(EditorDocument.SupportType.MODDED, "Piraka", "The language used by the Piraka in the BIONICLE series."),
+                FontElement(EditorDocument.SupportType.MODDED, "Rahkshi", "The font used for promoting the Rahkshi sets in the BIONICLE series."),
 
-                new Document.Element("<b><size=30><align=center>- UNDERTALE / DELTARUNE FONTS -</b>", Document.Element.Type.Text, 32f),
-                FontElement(Document.SupportType.MODDED, "Monster Friend Back", "A font based on UNDERTALE's title."),
-                FontElement(Document.SupportType.MODDED, "Monster Friend Fore", "A font based on UNDERTALE's title."),
-                FontElement(Document.SupportType.MODDED, "Determination Mono", "The font UNDERTALE/deltarune uses for its interfaces."),
-                FontElement(Document.SupportType.MODDED, "determination sans", "sans undertale."),
-                FontElement(Document.SupportType.MODDED, "Determination Wingdings", "Beware the man who speaks in hands."),
-                FontElement(Document.SupportType.MODDED, "Hachicro", "The font used by UNDERTALE's hit text."),
+                new EditorDocument.Element("<b><size=30><align=center>- UNDERTALE / DELTARUNE FONTS -</b>", EditorDocument.Element.Type.Text, 32f),
+                FontElement(EditorDocument.SupportType.MODDED, "Monster Friend Back", "A font based on UNDERTALE's title."),
+                FontElement(EditorDocument.SupportType.MODDED, "Monster Friend Fore", "A font based on UNDERTALE's title."),
+                FontElement(EditorDocument.SupportType.MODDED, "Determination Mono", "The font UNDERTALE/deltarune uses for its interfaces."),
+                FontElement(EditorDocument.SupportType.MODDED, "determination sans", "sans undertale."),
+                FontElement(EditorDocument.SupportType.MODDED, "Determination Wingdings", "Beware the man who speaks in hands."),
+                FontElement(EditorDocument.SupportType.MODDED, "Hachicro", "The font used by UNDERTALE's hit text."),
 
-                new Document.Element("<b><size=30><align=center>- TRANSFORMERS FONTS -</b>", Document.Element.Type.Text, 32f),
-                FontElement(Document.SupportType.MODDED, "Ancient Autobot", "The language used by ancient Autobots in the original Transformers cartoon."),
-                FontElement(Document.SupportType.MODDED, "Revue", "The font used early 2000s Transformers titles."),
-                FontElement(Document.SupportType.MODDED, "Revue 1", "The font used early 2000s Transformers titles."),
-                FontElement(Document.SupportType.MODDED, "Transdings", "A font that contains a ton of Transformer insignias / logos. Below is an image featuring each letter of the alphabet."),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_tf.png", Document.Element.Type.Image),
-                FontElement(Document.SupportType.MODDED, "Transformers Movie", "A font based on the Transformers movies title font."),
+                new EditorDocument.Element("<b><size=30><align=center>- TRANSFORMERS FONTS -</b>", EditorDocument.Element.Type.Text, 32f),
+                FontElement(EditorDocument.SupportType.MODDED, "Ancient Autobot", "The language used by ancient Autobots in the original Transformers cartoon."),
+                FontElement(EditorDocument.SupportType.MODDED, "Revue", "The font used early 2000s Transformers titles."),
+                FontElement(EditorDocument.SupportType.MODDED, "Revue 1", "The font used early 2000s Transformers titles."),
+                FontElement(EditorDocument.SupportType.MODDED, "Transdings", "A font that contains a ton of Transformer insignias / logos. Below is an image featuring each letter of the alphabet."),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_tf.png", EditorDocument.Element.Type.Image),
+                FontElement(EditorDocument.SupportType.MODDED, "Transformers Movie", "A font based on the Transformers movies title font."),
 
-                new Document.Element("<b><size=30><align=center>- LANGUAGE SUPPORT FONTS -</b>", Document.Element.Type.Text, 32f),
-                FontElement(Document.SupportType.MODDED, "Monomaniac One", "Japanese support font."),
-                FontElement(Document.SupportType.MODDED, "Roboto Mono Bold", "Russian support font."),
-                FontElement(Document.SupportType.MODDED, "Roboto Mono Italic", "Russian support font."),
-                FontElement(Document.SupportType.MODDED, "Roboto Mono Light 1", "Russian support font."),
-                FontElement(Document.SupportType.MODDED, "Roboto Mono Light Italic", "Russian support font."),
-                FontElement(Document.SupportType.MODDED, "Roboto Mono Light Italic 1", "Russian support font."),
-                FontElement(Document.SupportType.MODDED, "Roboto Mono Thin", "Russian support font."),
-                FontElement(Document.SupportType.MODDED, "Roboto Mono Thin 1", "Russian support font."),
-                FontElement(Document.SupportType.MODDED, "Roboto Mono Thin Italic", "Russian support font."),
-                FontElement(Document.SupportType.MODDED, "Roboto Mono Thin Italic 1", "Russian support font."),
-                FontElement(Document.SupportType.MODDED, "Pixellet", "A neat pixel font that supports Thai."),
-                FontElement(Document.SupportType.MODDED, "Angsana Bold", "A font suggested by KarasuTori. Supports non-English languages like Thai."),
-                FontElement(Document.SupportType.MODDED, "Angsana Italic", "A font suggested by KarasuTori. Supports non-English languages like Thai."),
-                FontElement(Document.SupportType.MODDED, "Angsana Bold Italic", "A font suggested by KarasuTori. Supports non-English languages like Thai."),
-                FontElement(Document.SupportType.MODDED, "VAG Rounded", "A font suggested by KarasuTori. Supports non-English languages like Russian."),
+                new EditorDocument.Element("<b><size=30><align=center>- LANGUAGE SUPPORT FONTS -</b>", EditorDocument.Element.Type.Text, 32f),
+                FontElement(EditorDocument.SupportType.MODDED, "Monomaniac One", "Japanese support font."),
+                FontElement(EditorDocument.SupportType.MODDED, "Roboto Mono Bold", "Russian support font."),
+                FontElement(EditorDocument.SupportType.MODDED, "Roboto Mono Italic", "Russian support font."),
+                FontElement(EditorDocument.SupportType.MODDED, "Roboto Mono Light 1", "Russian support font."),
+                FontElement(EditorDocument.SupportType.MODDED, "Roboto Mono Light Italic", "Russian support font."),
+                FontElement(EditorDocument.SupportType.MODDED, "Roboto Mono Light Italic 1", "Russian support font."),
+                FontElement(EditorDocument.SupportType.MODDED, "Roboto Mono Thin", "Russian support font."),
+                FontElement(EditorDocument.SupportType.MODDED, "Roboto Mono Thin 1", "Russian support font."),
+                FontElement(EditorDocument.SupportType.MODDED, "Roboto Mono Thin Italic", "Russian support font."),
+                FontElement(EditorDocument.SupportType.MODDED, "Roboto Mono Thin Italic 1", "Russian support font."),
+                FontElement(EditorDocument.SupportType.MODDED, "Pixellet", "A neat pixel font that supports Thai."),
+                FontElement(EditorDocument.SupportType.MODDED, "Angsana Bold", "A font suggested by KarasuTori. Supports non-English languages like Thai."),
+                FontElement(EditorDocument.SupportType.MODDED, "Angsana Italic", "A font suggested by KarasuTori. Supports non-English languages like Thai."),
+                FontElement(EditorDocument.SupportType.MODDED, "Angsana Bold Italic", "A font suggested by KarasuTori. Supports non-English languages like Thai."),
+                FontElement(EditorDocument.SupportType.MODDED, "VAG Rounded", "A font suggested by KarasuTori. Supports non-English languages like Russian."),
 
-                new Document.Element("<b><size=30><align=center>- OTHER FONTS -</b>", Document.Element.Type.Text, 32f),
-                FontElement(Document.SupportType.MODDED, "About Friend", "A font suggested by Ama."),
-                FontElement(Document.SupportType.MODDED, "Flow Circular", "A fun line font suggested by ManIsLiS."),
-                FontElement(Document.SupportType.MODDED, "Minecraft Text Bold", "The font used for the text UI in Minecraft."),
-                FontElement(Document.SupportType.MODDED, "Minecraft Text BoldItalic", "The font used for the text UI in Minecraft."),
-                FontElement(Document.SupportType.MODDED, "Minecraft Text", "The font used for the text UI in Minecraft."),
-                FontElement(Document.SupportType.MODDED, "Nexa Book", "A font suggested by CubeCube."),
-                FontElement(Document.SupportType.MODDED, "Nexa Bold", "A font suggested by CubeCube."),
-                FontElement(Document.SupportType.MODDED, "Comic Sans", "You know the font."),
-                FontElement(Document.SupportType.MODDED, "Comic Sans Bold", "You know the font."),
-                FontElement(Document.SupportType.MODDED, "Comic Sans Hairline", "You know the font."),
-                FontElement(Document.SupportType.MODDED, "Comic Sans Light", "You know the font."),
-                FontElement(Document.SupportType.MODDED, "Sans Sans", "Sans Sans."),
-                FontElement(Document.SupportType.MODDED, "Angsana Z", "Classical font."),
+                new EditorDocument.Element("<b><size=30><align=center>- OTHER FONTS -</b>", EditorDocument.Element.Type.Text, 32f),
+                FontElement(EditorDocument.SupportType.MODDED, "About Friend", "A font suggested by Ama."),
+                FontElement(EditorDocument.SupportType.MODDED, "Flow Circular", "A fun line font suggested by ManIsLiS."),
+                FontElement(EditorDocument.SupportType.MODDED, "Minecraft Text Bold", "The font used for the text UI in Minecraft."),
+                FontElement(EditorDocument.SupportType.MODDED, "Minecraft Text BoldItalic", "The font used for the text UI in Minecraft."),
+                FontElement(EditorDocument.SupportType.MODDED, "Minecraft Text", "The font used for the text UI in Minecraft."),
+                FontElement(EditorDocument.SupportType.MODDED, "Nexa Book", "A font suggested by CubeCube."),
+                FontElement(EditorDocument.SupportType.MODDED, "Nexa Bold", "A font suggested by CubeCube."),
+                FontElement(EditorDocument.SupportType.MODDED, "Comic Sans", "You know the font."),
+                FontElement(EditorDocument.SupportType.MODDED, "Comic Sans Bold", "You know the font."),
+                FontElement(EditorDocument.SupportType.MODDED, "Comic Sans Hairline", "You know the font."),
+                FontElement(EditorDocument.SupportType.MODDED, "Comic Sans Light", "You know the font."),
+                FontElement(EditorDocument.SupportType.MODDED, "Sans Sans", "Sans Sans."),
+                FontElement(EditorDocument.SupportType.MODDED, "Angsana Z", "Classical font."),
             });
 
-            GenerateDocument("Markers (OUTDATED)", "Organize and remember details about a level.", new List<Document.Element>
+            GenerateDocument("Markers (OUTDATED)", "Organize and remember details about a level.", new List<EditorDocument.Element>
             {
-                new Document.Element("Markers can organize certain parts of your level or help with aligning objects to a specific time.", Document.Element.Type.Text),
-                new Document.Element("In the image below is two types of markers. The blue marker is the Audio Marker and the marker with a circle on the top is just a Marker. " +
-                    "Left clicking on the Marker's circle knob moves the Audio Marker to the regular Marker. Right clicking the Marker's circle knob deletes it.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_marker_timeline.png", Document.Element.Type.Image),
-                new Document.Element("<b>Name [VANILLA]</b>\nThe name of the Marker. This renders next to the Marker's circle knob in the timeline.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_marker_name.png", Document.Element.Type.Image),
-                new Document.Element("<b>Time [VANILLA]</b>\nThe time the Marker renders at in the timeline.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_marker_time.png", Document.Element.Type.Image),
-                new Document.Element("<b>Description [PATCHED]</b>\nDescription helps you remember details about specific parts of a song or even stuff about the level you're " +
+                new EditorDocument.Element("Markers can organize certain parts of your level or help with aligning objects to a specific time.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("In the image below is two types of markers. The blue marker is the Audio Marker and the marker with a circle on the top is just a Marker. " +
+                    "Left clicking on the Marker's circle knob moves the Audio Marker to the regular Marker. Right clicking the Marker's circle knob deletes it.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_marker_timeline.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Name [VANILLA]</b>\nThe name of the Marker. This renders next to the Marker's circle knob in the timeline.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_marker_name.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Time [VANILLA]</b>\nThe time the Marker renders at in the timeline.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_marker_time.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Description [PATCHED]</b>\nDescription helps you remember details about specific parts of a song or even stuff about the level you're " +
                     "editing. Typing setLayer(1) will set the editor layer to 1 when the Marker is selected. You can also have it be setLayer(events), setLayer(objects), setLayer(toggle), which " +
                     "sets the layer type to those respective types (toggle switches between Events and Objects layer types). Fun fact, the title for description in the UI in unmodded Legacy " +
-                    "said \"Name\" lol.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_marker_description.png", Document.Element.Type.Image),
-                new Document.Element("<b>Colors [PATCHED]</b>\nWhat color the marker displays as. You can customize the colors in the Settings window.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_marker_colors.png", Document.Element.Type.Image),
-                new Document.Element("<b>Index [MODDED]</b>\nThe number of the Marker in the list.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_marker_index.png", Document.Element.Type.Image),
-                new Document.Element("On the right-hand-side of the Marker Editor window is a list of markers. At the top is a Search field and a Delete Markers button. " +
-                    "Delete Markers clears every marker in the level and closes the Marker Editor.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_marker_delete.png", Document.Element.Type.Image),
+                    "said \"Name\" lol.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_marker_description.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Colors [PATCHED]</b>\nWhat color the marker displays as. You can customize the colors in the Settings window.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_marker_colors.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Index [MODDED]</b>\nThe number of the Marker in the list.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_marker_index.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("On the right-hand-side of the Marker Editor window is a list of markers. At the top is a Search field and a Delete Markers button. " +
+                    "Delete Markers clears every marker in the level and closes the Marker Editor.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_marker_delete.png", EditorDocument.Element.Type.Image),
             });
 
-            GenerateDocument("Title Bar (OUTDATED)", "The thing at the top of the editor UI with dropdowns.", new List<Document.Element>
+            GenerateDocument("Title Bar (OUTDATED)", "The thing at the top of the editor UI with dropdowns.", new List<EditorDocument.Element>
             {
-                new Document.Element("Title Bar has the main functions for loading, saving and editing.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_td.png", Document.Element.Type.Image),
-                new Document.Element("<b>File [PATCHED]</b>" +
+                new EditorDocument.Element("Title Bar has the main functions for loading, saving and editing.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_td.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>File [PATCHED]</b>" +
                     "\nPowerful functions related to the application or files." +
                     "\n<b>[VANILLA]</b> New Level - Creates a new level." +
                     "\n<b>[VANILLA]</b> Open Level - Opens the level list popup, where you can search and select a level to load." +
@@ -8142,91 +8142,91 @@ namespace BetterLegacy.Editor.Managers
                     "\n<b>[MODDED]</b> Switch to Arcade Mode - Switches to the handling of level loading in Arcade." +
                     "\n<b>[MODDED]</b> Quit to Arcade - Opens the Input Select scene just before loading arcade levels." +
                     "\n<b>[VANILLA]</b> Quit to Main Menu - Exits to the main menu." +
-                    "\n<b>[VANILLA]</b> Quit Game - Quits the game.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_td_file.png", Document.Element.Type.Image),
-                new Document.Element("<b>Edit [PATCHED]</b>" +
+                    "\n<b>[VANILLA]</b> Quit Game - Quits the game.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_td_file.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Edit [PATCHED]</b>" +
                     "\nHow far can you edit in a modded editor?" +
                     "\n<b>[PATCHED]</b> Undo - Undoes the most recent action. Still heavily WIP. (sorry)" +
                     "\n<b>[PATCHED]</b> Redo - Same as above but goes back to the recent action when undone." +
                     "\n<b>[MODDED]</b> Search Objects - Search for specific objects by name or index. Hold Left Control to take yourself to the object in the timeline." +
                     "\n<b>[MODDED]</b> Preferences - Modify editor specific mod configs directly in the editor. Also known as Editor Properties." +
                     "\n<b>[MODDED]</b> Player Editor - Only shows if you have CreativePlayers installed. Opens the Player Editor." +
-                    "\n<b>[MODDED]</b> View Keybinds - Customize the keybinds of the editor in any way you want.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_td_edit.png", Document.Element.Type.Image),
-                new Document.Element("<b>View [PATCHED]</b>" +
+                    "\n<b>[MODDED]</b> View Keybinds - Customize the keybinds of the editor in any way you want.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_td_edit.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>View [PATCHED]</b>" +
                     "\nView specific things." +
                     "\n<b>[MODDED]</b> Get Example - Only shows if you have ExampleCompanion installed. It summons Example to the scene." +
-                    "\n<b>[VANILLA]</b> Show Help - Toggles the Info box.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_td_view.png", Document.Element.Type.Image),
-                new Document.Element("<b>Steam [VANILLA]</b>" +
+                    "\n<b>[VANILLA]</b> Show Help - Toggles the Info box.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_td_view.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Steam [VANILLA]</b>" +
                     "\nView Steam related things... even though modded PA doesn't use Steam anymore lol" +
                     "\n<b>[VANILLA]</b> Open Workshop - Opens a link to the Steam workshop." +
-                    "\n<b>[VANILLA]</b> Publish / Update Level - Opens the Metadata Editor / Level Uploader.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_td_steam.png", Document.Element.Type.Image),
-                new Document.Element("<b>Help [PATCHED]</b>" +
+                    "\n<b>[VANILLA]</b> Publish / Update Level - Opens the Metadata Editor / Level Uploader.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_td_steam.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Help [PATCHED]</b>" +
                     "\nGet some help." +
                     "\n<b>[MODDED]</b> Modder's Discord - Opens a link to the mod creator's Discord server." +
                     "\n<b>[MODDED]</b> Watch PA History - Since there are no <i>modded</i> guides yet, this just takes you to the System Error BTS PA History playlist." +
-                    "\n<b>[MODDED]</b> Wiki / Documentation - In-editor documentation of everything the game has to offer. You're reading it right now!", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_td_help.png", Document.Element.Type.Image),
+                    "\n<b>[MODDED]</b> Wiki / Documentation - In-editor documentation of everything the game has to offer. You're reading it right now!", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_td_help.png", EditorDocument.Element.Type.Image),
             });
 
-            GenerateDocument("Timeline Bar (OUTDATED)", "The main toolbar used for editing main editor things such as audio time, editor layers, etc.", new List<Document.Element>
+            GenerateDocument("Timeline Bar (OUTDATED)", "The main toolbar used for editing main editor things such as audio time, editor layers, etc.", new List<EditorDocument.Element>
             {
-                new Document.Element("The Timeline Bar is where you can see and edit general game and editor info.", Document.Element.Type.Text),
-                new Document.Element("<b>Audio Time (Precise) [MODDED]</b>\nText shows the precise audio time. This can be edited to set a specific time for the audio.", Document.Element.Type.Text),
-                new Document.Element("<b>Audio Time (Formatted) [VANILLA]</b>\nText shows the audio time formatted like \"minutes.seconds.milliseconds\". Clicking this sets the " +
-                    "audio time to 0.", Document.Element.Type.Text),
-                new Document.Element("<b>Pause / Play [VANILLA]</b>\nPressing this toggles if the song is playing or not.", Document.Element.Type.Text),
-                new Document.Element("<b>Pitch [PATCHED]</b>\nThe speed of the song. Clicking the buttons adjust the pitch by 0.1, depending on the direction the button is facing.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_tb_audio.png", Document.Element.Type.Image),
-                new Document.Element("<b>Editor Layer [PATCHED]</b>\nEditor Layer is what objects show in the timeline, depending on their own Editor Layer. " +
-                    "It can go as high as 2147483646. In unmodded PA its limited from layers 1 to 5, though in PA Editor Alpha another layer was introduced.", Document.Element.Type.Text),
-                new Document.Element("<b>Editor Layer Type [MODDED]</b>\nWhether the timeline shows objects or event keyframes / checkpoints.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_tb_layer.png", Document.Element.Type.Image),
-                new Document.Element("<b>Prefab [VANILLA]</b>\nOpens the Prefab list popups (Internal & External).", Document.Element.Type.Text),
-                new Document.Element("<b>Object [PATCHED]</b>\nOpens a popup featuring different object templates such as Decoration, Empty, etc. It's patched because " +
-                    "Persistent was replaced with No Autokill.", Document.Element.Type.Text),
-                new Document.Element("<b>Marker [VANILLA]</b>\nCreates a Marker.", Document.Element.Type.Text),
-                new Document.Element("<b>BG [VANILLA]</b>\nOpens a popup to open the BG editor or create a new BG.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_tb_create.png", Document.Element.Type.Image),
-                new Document.Element("<b>Preview Mode [VANILLA]</b>\nSwitches the game to Preview Mode.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_tb_preview_mode.png", Document.Element.Type.Image),
+                new EditorDocument.Element("The Timeline Bar is where you can see and edit general game and editor info.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>Audio Time (Precise) [MODDED]</b>\nText shows the precise audio time. This can be edited to set a specific time for the audio.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>Audio Time (Formatted) [VANILLA]</b>\nText shows the audio time formatted like \"minutes.seconds.milliseconds\". Clicking this sets the " +
+                    "audio time to 0.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>Pause / Play [VANILLA]</b>\nPressing this toggles if the song is playing or not.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>Pitch [PATCHED]</b>\nThe speed of the song. Clicking the buttons adjust the pitch by 0.1, depending on the direction the button is facing.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_tb_audio.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Editor Layer [PATCHED]</b>\nEditor Layer is what objects show in the timeline, depending on their own Editor Layer. " +
+                    "It can go as high as 2147483646. In unmodded PA its limited from layers 1 to 5, though in PA Editor Alpha another layer was introduced.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>Editor Layer Type [MODDED]</b>\nWhether the timeline shows objects or event keyframes / checkpoints.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_tb_layer.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Prefab [VANILLA]</b>\nOpens the Prefab list popups (Internal & External).", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>Object [PATCHED]</b>\nOpens a popup featuring different object templates such as Decoration, Empty, etc. It's patched because " +
+                    "Persistent was replaced with No Autokill.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>Marker [VANILLA]</b>\nCreates a Marker.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>BG [VANILLA]</b>\nOpens a popup to open the BG editor or create a new BG.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_tb_create.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Preview Mode [VANILLA]</b>\nSwitches the game to Preview Mode.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_tb_preview_mode.png", EditorDocument.Element.Type.Image),
             });
 
-            GenerateDocument("[MODDED] Keybinds (WIP)", "Perform specific actions when pressing set keys.", new List<Document.Element>
+            GenerateDocument("[MODDED] Keybinds (WIP)", "Perform specific actions when pressing set keys.", new List<EditorDocument.Element>
             {
-                new Document.Element("Keybinds intro.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_keybind_list.png", Document.Element.Type.Image),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_keybind_editor.png", Document.Element.Type.Image),
+                new EditorDocument.Element("Keybinds intro.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_keybind_list.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_keybind_editor.png", EditorDocument.Element.Type.Image),
             });
 
-            GenerateDocument("[MODDED] Object Modifiers", "Make your levels dynamic!", new List<Document.Element>
+            GenerateDocument("[MODDED] Object Modifiers", "Make your levels dynamic!", new List<EditorDocument.Element>
             {
-                new Document.Element("BetterLegacy adds a trigger / action based system to Beatmap Objects called \"Modifiers\". " +
+                new EditorDocument.Element("BetterLegacy adds a trigger / action based system to Beatmap Objects called \"Modifiers\". " +
                     "Modifiers have two types: Triggers check if something is happening and if it is, it activates any Action type modifiers. If there are no Triggers, then the Action modifiers " +
-                    "activates. This document is heavily WIP and will be added to over time.", Document.Element.Type.Text),
-                new Document.Element("<b>setPitch</b> - Modifies the speed of the game and the pitch of the audio. It sets a multiplied offset from the " +
-                    "audio keyframe's pitch value. However unlike the event keyframe, setPitch can go into the negatives allowing for reversed audio.", Document.Element.Type.Text),
-                new Document.Element("<b>addPitch</b> - Does the same as above, except adds to the pitch offset.", Document.Element.Type.Text),
-                new Document.Element("<b>setMusicTime</b> - Sets the Audio Time to go to any point in the song, allowing for skipping specific sections of a song.", Document.Element.Type.Text),
-                new Document.Element("<b>playSound</b> - Plays an external sound. The following details what each value in the modifier does." +
+                    "activates. This document is heavily WIP and will be added to over time.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>setPitch</b> - Modifies the speed of the game and the pitch of the audio. It sets a multiplied offset from the " +
+                    "audio keyframe's pitch value. However unlike the event keyframe, setPitch can go into the negatives allowing for reversed audio.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>addPitch</b> - Does the same as above, except adds to the pitch offset.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>setMusicTime</b> - Sets the Audio Time to go to any point in the song, allowing for skipping specific sections of a song.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>playSound</b> - Plays an external sound. The following details what each value in the modifier does." +
                     "\nPath - If global is on, path should be set to something within beatmaps/soundlibrary directory. If global is off, then the path should be set to something within the level " +
                     "folder that has level.lsb and metadata.lsb." +
                     "\nGlobal - Affects the above setting in the way described." +
                     "\nPitch - The speed of the sound played." +
                     "\nVolume - How loud the sound is." +
-                    "\nLoop - If the sound should loop while the Modifier is active.", Document.Element.Type.Text),
-                new Document.Element("<b>playSoundOnline</b> - Same as above except plays from a link. The global toggle does nothing here.", Document.Element.Type.Text),
-                new Document.Element("<b>loadLevel</b> - Loads a level from the current level folder path.", Document.Element.Type.Text),
-                new Document.Element("<b>loadLevelInternal</b> - Same as above, except it always loads from the current levels own path.", Document.Element.Type.Text),
+                    "\nLoop - If the sound should loop while the Modifier is active.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>playSoundOnline</b> - Same as above except plays from a link. The global toggle does nothing here.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>loadLevel</b> - Loads a level from the current level folder path.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>loadLevelInternal</b> - Same as above, except it always loads from the current levels own path.", EditorDocument.Element.Type.Text),
             });
 
-            GenerateDocument("[MODDED] Math Evaluation", "Some places you can write out a math equation and get a result from it.", new List<Document.Element>
+            GenerateDocument("[MODDED] Math Evaluation", "Some places you can write out a math equation and get a result from it.", new List<EditorDocument.Element>
             {
                 LinkElement("Math Evaluation is implemented from ILMath, created by Reimnop. If you want to know more, visit the link: https://github.com/Reimnop/ILMath", "https://github.com/Reimnop/ILMath"),
-                new Document.Element("Below is a list of variables that can be used with math evaluation.", Document.Element.Type.Text),
-                new Document.Element("<b>deathCount</b> - Amount of deaths in a level (Arcade only).\n" +
+                new EditorDocument.Element("Below is a list of variables that can be used with math evaluation.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>deathCount</b> - Amount of deaths in a level (Arcade only).\n" +
                                      "<b>hitCount</b> - Amount of hits in a level (Arcade only).\n" +
                                      "<b>actionMoveX</b> - WASD / joystick move.\n" +
                                      "<b>actionMoveY</b> - WASD / joystick move.\n" +
@@ -8244,12 +8244,12 @@ namespace BetterLegacy.Editor.Managers
                                      "<b>player0PosX</b> - Position X of a specific player. You can swap the 0 out with a different number to get a different players' position X. If that number is higher than or equal to the player count, the result will be 0.\n" +
                                      "<b>player0PosY</b> - Position Y of a specific player. You can do the same as the above variable.\n" +
                                      "<b>player0Health</b> - Health of a specific player. You can do the same as the above variable.\n" +
-                                     "<b>playerHealthTotal</b> - Health of all players in total.", Document.Element.Type.Text),
-                new Document.Element("If you have a few functions listed, follow this example:\n" +
+                                     "<b>playerHealthTotal</b> - Health of all players in total.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("If you have a few functions listed, follow this example:\n" +
                                     "clamp(random(), 0, 1) + clamp(random(034) * 0.1, 0, 1) * pitch"
-                                    , Document.Element.Type.Text),
-                new Document.Element("Below is a list of functions that can be used with math evaluation.", Document.Element.Type.Text),
-                new Document.Element(
+                                    , EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("Below is a list of functions that can be used with math evaluation.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element(
                                     "<b>sin(value)</b> - sin function.\n" +
                                     "<b>cos(value)</b> - cos function.\n" +
                                     "<b>atan(value)</b> - atan function.\n" +
@@ -8311,7 +8311,7 @@ namespace BetterLegacy.Editor.Managers
                                     "HH = 24 hour (e.g. 13)\n" +
                                     "hh = 12 hour (e.g. 1)\n" +
                                     "mm = minute (e.g. 59)\n" +
-                                    "ss = second (e.g. 12)", Document.Element.Type.Text),
+                                    "ss = second (e.g. 12)", EditorDocument.Element.Type.Text),
             });
 
             //DateTime.Now.ToString("ff"); // yes
@@ -8335,35 +8335,35 @@ namespace BetterLegacy.Editor.Managers
             //DateTime.Now.ToString("mm"); // yes = minute
             //DateTime.Now.ToString("ss"); // yes = second
 
-            GenerateDocument("Misc (OUTDATED)", "The stuff that didn't fit in a document of its own.", new List<Document.Element>
+            GenerateDocument("Misc (OUTDATED)", "The stuff that didn't fit in a document of its own.", new List<EditorDocument.Element>
             {
-                new Document.Element("<b>Editor Level Path [MODDED]</b>\nThe path within the Project Arrhythmia/beatmaps directory that is used for the editor level list.", Document.Element.Type.Text),
-                new Document.Element("<b>Refresh [MODDED]</b>\nRefreshes the editor level list.", Document.Element.Type.Text),
-                new Document.Element("<b>Descending [MODDED]</b>\nIf the editor level list should be descending or ascending.", Document.Element.Type.Text),
-                new Document.Element("<b>Order [MODDED]</b>\nHow the editor level list should be ordered." +
+                new EditorDocument.Element("<b>Editor Level Path [MODDED]</b>\nThe path within the Project Arrhythmia/beatmaps directory that is used for the editor level list.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>Refresh [MODDED]</b>\nRefreshes the editor level list.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>Descending [MODDED]</b>\nIf the editor level list should be descending or ascending.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>Order [MODDED]</b>\nHow the editor level list should be ordered." +
                     "\nCover - Order by if the level has a cover or not." +
                     "\nArtist - Order by Artist Name." +
                     "\nCreator - Order by Creator Name." +
                     "\nFolder - Order by Folder Name." +
                     "\nTitle - Order by Song Title." +
                     "\nDifficulty - Order by (Easy, Normal, Hard, Expert, Expert+, Master, Animation)" +
-                    "\nDate Edited - Order by last saved time, so recently edited levels appear at one side and older levels appear at the other.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_open_level_top.png", Document.Element.Type.Image),
-                new Document.Element("<b>Loading Autosaves [MODDED]</b>\nHolding shift when you click on a level in the level list will open an Autosave popup instead of " +
-                    "loading the level. This allows you to load any autosaved file so you don't need to go into the level folder and change one of the autosaves to the level.lsb.", Document.Element.Type.Text),
-                new Document.Element("BepInEx/plugins/Assets/Documentation/doc_autosaves.png", Document.Element.Type.Image),
+                    "\nDate Edited - Order by last saved time, so recently edited levels appear at one side and older levels appear at the other.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_open_level_top.png", EditorDocument.Element.Type.Image),
+                new EditorDocument.Element("<b>Loading Autosaves [MODDED]</b>\nHolding shift when you click on a level in the level list will open an Autosave popup instead of " +
+                    "loading the level. This allows you to load any autosaved file so you don't need to go into the level folder and change one of the autosaves to the level.lsb.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_autosaves.png", EditorDocument.Element.Type.Image),
             });
 
             if (CoreHelper.AprilFools)
             {
-                var elements = new List<Document.Element>();
+                var elements = new List<EditorDocument.Element>();
 
-                elements.Add(new Document.Element("oops, i spilled my images everywhere...", Document.Element.Type.Text));
+                elements.Add(new EditorDocument.Element("oops, i spilled my images everywhere...", EditorDocument.Element.Type.Text));
 
                 var dir = Directory.GetFiles(RTFile.ApplicationDirectory, "*.png", SearchOption.AllDirectories);
 
                 for (int i = 0; i < UnityEngine.Random.Range(0, Mathf.Clamp(dir.Length, 0, 20)); i++)
-                    elements.Add(new Document.Element(dir[UnityEngine.Random.Range(0, dir.Length)].Replace("\\", "/").Replace(RTFile.ApplicationDirectory, ""), Document.Element.Type.Image));
+                    elements.Add(new EditorDocument.Element(dir[UnityEngine.Random.Range(0, dir.Length)].Replace("\\", "/").Replace(RTFile.ApplicationDirectory, ""), EditorDocument.Element.Type.Image));
 
                 GenerateDocument("April Fools!", "fol.", elements);
             }
@@ -11062,11 +11062,11 @@ namespace BetterLegacy.Editor.Managers
 
         public void ShowDocumentation(string name)
         {
-            if (documentations.TryFind(x => x.Name == name, out Document document))
+            if (documentations.TryFind(x => x.Name == name, out EditorDocument document))
                 SelectDocumentation(document);
         }
 
-        public void SelectDocumentation(Document document)
+        public void SelectDocumentation(EditorDocument document)
         {
             documentationTitle.text = $"- {document.Name} -";
 
@@ -11080,7 +11080,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 switch (element.type)
                 {
-                    case Document.Element.Type.Text:
+                    case EditorDocument.Element.Type.Text:
                         {
                             if (string.IsNullOrEmpty(element.Data))
                                 break;
@@ -11177,7 +11177,7 @@ namespace BetterLegacy.Editor.Managers
 
                             break;
                         }
-                    case Document.Element.Type.Image:
+                    case EditorDocument.Element.Type.Image:
                         {
                             if (string.IsNullOrEmpty(element.Data))
                                 break;

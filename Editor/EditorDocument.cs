@@ -1,4 +1,8 @@
-﻿using System;
+﻿using BetterLegacy.Core;
+using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
+using SimpleJSON;
+using System;
 using System.Collections.Generic;
 
 using UnityEngine;
@@ -8,9 +12,9 @@ namespace BetterLegacy.Editor
     /// <summary>
     /// Class for feature documentation. This will be used to teach users how the editor works, including mod features.
     /// </summary>
-    public class Document
+    public class EditorDocument
     {
-        public Document(GameObject gameObject, string name, string description)
+        public EditorDocument(GameObject gameObject, string name, string description)
         {
             PopupButton = gameObject;
             Name = name;
@@ -30,6 +34,16 @@ namespace BetterLegacy.Editor
             MODDED,
             ALPHA,
             LEGACY
+        }
+
+        public static EditorDocument Parse(JSONNode jn)
+        {
+            var document = new EditorDocument(null, jn["name"], jn["desc"]);
+
+            for (int i = 0; i < jn["elements"].Count; i++)
+                document.elements.Add(Element.Parse(jn["elements"][i]));
+
+            return document;
         }
 
         /// <summary>
@@ -71,6 +85,38 @@ namespace BetterLegacy.Editor
             {
                 Text,
                 Image
+            }
+
+            public enum FunctionType
+            {
+                OpenLink,
+                OpenFile,
+                OpenFolder
+            }
+
+            public static Element Parse(JSONNode jn)
+            {
+                var element = new Element(jn["text"], (Type)jn["type"].AsInt);
+
+                if (jn["height"] != null)
+                {
+                    element.Height = jn["height"].AsFloat;
+                    element.Autosize = false;
+                }
+
+                if (jn["func_type"] != null)
+                {
+                    var data = jn["func_data"];
+                    element.Function = (FunctionType)jn["func_type"].AsInt switch
+                    {
+                        FunctionType.OpenLink => () => Application.OpenURL(data),
+                        FunctionType.OpenFile => () => RTFile.OpenInFileBrowser.OpenFile(FontManager.TextTranslater.ReplaceProperties(data)),
+                        FunctionType.OpenFolder => () => RTFile.OpenInFileBrowser.OpenFile(FontManager.TextTranslater.ReplaceProperties(data)),
+                        _ => () => CoreHelper.Log($"Func: {data}"),
+                    };
+                }
+
+                return element;
             }
         }
     }
