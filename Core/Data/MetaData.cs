@@ -42,6 +42,7 @@ namespace BetterLegacy.Core.Data
         public string collectionID;
         public int index;
         public string uploaderName;
+        public string uploaderID;
         public string serverID;
         public string arcadeID;
         public string prevID;
@@ -115,6 +116,7 @@ namespace BetterLegacy.Core.Data
             },
             serverID = orig.serverID,
             uploaderName = orig.uploaderName,
+            uploaderID = orig.uploaderID,
             index = orig.index,
             collectionID = orig.collectionID,
             isHubLevel = orig.isHubLevel,
@@ -409,6 +411,9 @@ namespace BetterLegacy.Core.Data
                 else
                     result.uploaderName = creator.steam_name;
 
+                if (!string.IsNullOrEmpty(jn["uploader_id"]))
+                    result.uploaderID = jn["uploader_id"];
+
                 if (!string.IsNullOrEmpty(jn["is_hub_level"]))
                     result.isHubLevel = jn["is_hub_level"].AsBool;
 
@@ -529,6 +534,9 @@ namespace BetterLegacy.Core.Data
 
             if (!string.IsNullOrEmpty(uploaderName))
                 jn["uploader_name"] = uploaderName;
+            
+            if (!string.IsNullOrEmpty(uploaderID))
+                jn["uploader_id"] = uploaderID;
 
             if (isHubLevel)
                 jn["is_hub_level"] = isHubLevel.ToString();

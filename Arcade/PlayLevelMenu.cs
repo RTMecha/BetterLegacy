@@ -16,6 +16,7 @@ using BetterLegacy.Core.Managers;
 using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
 using LSFunctions;
+using BetterLegacy.Core.Managers.Networking;
 
 namespace BetterLegacy.Arcade
 {
@@ -258,8 +259,18 @@ namespace BetterLegacy.Arcade
                 playBlipSound = true,
                 func = () =>
                 {
-                    if (CurrentLevel.metadata != null && !string.IsNullOrEmpty(CurrentLevel.metadata.creator.URL))
-                        Application.OpenURL(CurrentLevel.metadata.creator.URL);
+                    //if (CurrentLevel.metadata != null && !string.IsNullOrEmpty(CurrentLevel.metadata.creator.URL))
+                    //    Application.OpenURL(CurrentLevel.metadata.creator.URL);
+
+
+                    // todo: make user endpoint allow search queries
+                    //if (CurrentLevel.metadata != null && !string.IsNullOrEmpty(CurrentLevel.metadata.uploaderID))
+                    //{
+                    //    CoreHelper.StartCoroutine(AlephNetworkManager.DownloadJSONFile($"{AlephNetworkManager.ArcadeServerURL}api/Level/user/{CurrentLevel.metadata.uploaderID}", json =>
+                    //    {
+                    //        LevelListMenu.Init("");
+                    //    }));
+                    //}
                 },
             });
 

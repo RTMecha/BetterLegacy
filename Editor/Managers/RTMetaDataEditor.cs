@@ -979,6 +979,8 @@ namespace BetterLegacy.Editor.Managers
             {
                 MetaData.Current.beatmap.date_published = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
                 MetaData.Current.beatmap.version_number++;
+                if (authData != null && authData["id"] != null)
+                    MetaData.Current.uploaderID = authData["id"];
 
                 var jn = MetaData.Current.ToJSON();
                 RTFile.WriteToFile(GameManager.inst.basePath + "metadata.lsb", jn.ToString());
@@ -1036,6 +1038,7 @@ namespace BetterLegacy.Editor.Managers
                     // Only downgrade if server ID wasn't already assigned.
                     if (string.IsNullOrEmpty(MetaData.Current.serverID))
                     {
+                        MetaData.Current.uploaderID = null;
                         MetaData.Current.beatmap.date_published = "";
                         MetaData.Current.beatmap.version_number--;
                         var jn = MetaData.Current.ToJSON();
