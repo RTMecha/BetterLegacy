@@ -1121,6 +1121,17 @@ namespace BetterLegacy.Core.Data
             }
         }
 
+        public bool TryGetPrefabObject(out PrefabObject result)
+        {
+            if (GameData.Current.prefabObjects.TryFind(x => x.ID == prefabInstanceID, out PrefabObject prefabObject))
+            {
+                result = prefabObject;
+                return true;
+            }
+            result = null;
+            return false;
+        }
+
         #region Custom Interpolation
 
         public void SetTransform(int toType, Vector3 value)
