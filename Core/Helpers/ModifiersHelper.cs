@@ -30,6 +30,26 @@ namespace BetterLegacy.Core.Helpers
     /// </summary>
     public static class ModifiersHelper
     {
+        public static bool CheckTriggers<T>(List<Modifier<T>> triggers)
+        {
+            bool result = true;
+            Predicate<Modifier<T>> match = x => !x.active && (x.not ? !x.Trigger(x) : x.Trigger(x));
+            for (int i = 0; i < triggers.Count; i++)
+            {
+                var trigger = triggers[i];
+                if (!result && !trigger.elseIf)
+                    continue;
+
+                if (trigger.elseIf)
+                    result = true;
+
+                // if trigger was not triggered, then result should be false.
+                if (!match(trigger))
+                    result = false;
+            }
+            return result;
+        }
+
         public static bool Trigger(Modifier<BeatmapObject> modifier)
         {
             if (!modifier.verified)
@@ -5485,62 +5505,8 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     #endregion
-                    #region Misc
+                    #region Prefab
 
-                    case "quitToMenu":
-                        {
-                            if (CoreHelper.InEditor && !EditorManager.inst.isEditing && ModifiersConfig.Instance.EditorLoadLevel.Value)
-                            {
-                                string str = RTFile.BasePath;
-                                if (ModifiersConfig.Instance.EditorSavesBeforeLoad.Value)
-                                {
-                                    GameData.Current.SaveData(str + "level-modifier-backup.lsb", () =>
-                                    {
-                                        EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(str))}", 2f, EditorManager.NotificationType.Success);
-                                    });
-                                }
-
-                                EditorManager.inst.QuitToMenu();
-                            }
-
-                            if (!CoreHelper.InEditor)
-                            {
-                                DOTween.KillAll();
-                                DOTween.Clear(true);
-                                GameData.Current = null;
-                                GameData.Current = new GameData();
-                                DiscordController.inst.OnIconChange("");
-                                DiscordController.inst.OnStateChange("");
-                                CoreHelper.Log($"Quit to Main Menu");
-                                InputDataManager.inst.players.Clear();
-                                SceneManager.inst.LoadScene("Main Menu");
-                            }
-
-                            break;
-                        }
-                    case "quitToArcade":
-                        {
-                            if (CoreHelper.InEditor && !EditorManager.inst.isEditing && ModifiersConfig.Instance.EditorLoadLevel.Value)
-                            {
-                                string str = RTFile.BasePath;
-                                if (ModifiersConfig.Instance.EditorSavesBeforeLoad.Value)
-                                {
-                                    GameData.Current.SaveData(str + "level-modifier-backup.lsb", () =>
-                                    {
-                                        EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(str))}", 2f, EditorManager.NotificationType.Success);
-                                    });
-                                }
-
-                                GameManager.inst.QuitToArcade();
-
-                                break;
-                            }
-
-                            if (!CoreHelper.InEditor)
-                                GameManager.inst.QuitToArcade();
-
-                            break;
-                        }
                     case "spawnPrefab":
                         {
                             if (!modifier.constant && int.TryParse(modifier.value, out int num) && GameData.Current.prefabs.Count > num
@@ -5677,6 +5643,64 @@ namespace BetterLegacy.Core.Helpers
                                     otherModifier.Result = null;
                                 }
                             }
+
+                            break;
+                        }
+
+                    #endregion
+                    #region Misc
+
+                    case "quitToMenu":
+                        {
+                            if (CoreHelper.InEditor && !EditorManager.inst.isEditing && ModifiersConfig.Instance.EditorLoadLevel.Value)
+                            {
+                                string str = RTFile.BasePath;
+                                if (ModifiersConfig.Instance.EditorSavesBeforeLoad.Value)
+                                {
+                                    GameData.Current.SaveData(str + "level-modifier-backup.lsb", () =>
+                                    {
+                                        EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(str))}", 2f, EditorManager.NotificationType.Success);
+                                    });
+                                }
+
+                                EditorManager.inst.QuitToMenu();
+                            }
+
+                            if (!CoreHelper.InEditor)
+                            {
+                                DOTween.KillAll();
+                                DOTween.Clear(true);
+                                GameData.Current = null;
+                                GameData.Current = new GameData();
+                                DiscordController.inst.OnIconChange("");
+                                DiscordController.inst.OnStateChange("");
+                                CoreHelper.Log($"Quit to Main Menu");
+                                InputDataManager.inst.players.Clear();
+                                SceneManager.inst.LoadScene("Main Menu");
+                            }
+
+                            break;
+                        }
+                    case "quitToArcade":
+                        {
+                            if (CoreHelper.InEditor && !EditorManager.inst.isEditing && ModifiersConfig.Instance.EditorLoadLevel.Value)
+                            {
+                                string str = RTFile.BasePath;
+                                if (ModifiersConfig.Instance.EditorSavesBeforeLoad.Value)
+                                {
+                                    GameData.Current.SaveData(str + "level-modifier-backup.lsb", () =>
+                                    {
+                                        EditorManager.inst.DisplayNotification($"Saved backup to {System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(str))}", 2f, EditorManager.NotificationType.Success);
+                                    });
+                                }
+
+                                GameManager.inst.QuitToArcade();
+
+                                break;
+                            }
+
+                            if (!CoreHelper.InEditor)
+                                GameManager.inst.QuitToArcade();
 
                             break;
                         }

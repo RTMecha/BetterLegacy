@@ -27,6 +27,7 @@ namespace BetterLegacy.Core.Data
         public float ResultTimer { get; set; }
 
         public bool hasChanged;
+        public bool elseIf;
 
         #region Methods
 
