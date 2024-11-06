@@ -840,6 +840,7 @@ namespace BetterLegacy.Editor.Managers
                         {
                             if (cmd == "rigidbodyOther")
                             {
+                                PrefabGroupOnly(modifier, layout);
                                 var str = StringGenerator(modifier, layout, "Object Group", 0);
                                 EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                             }
@@ -1394,9 +1395,8 @@ namespace BetterLegacy.Editor.Managers
                     case "setColorHexOther":
                         {
                             if (cmd.Contains("Other"))
-                                PrefabGroupOnly(modifier, layout);
-                            if (cmd.Contains("Other"))
                             {
+                                PrefabGroupOnly(modifier, layout);
                                 var str = StringGenerator(modifier, layout, "Object Group", 1);
                                 EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                             }
@@ -1690,7 +1690,9 @@ namespace BetterLegacy.Editor.Managers
 
                     case "clearSpawnedPrefabs":
                         {
-                            StringGenerator(modifier, layout, "Object Group", 0);
+                            PrefabGroupOnly(modifier, layout);
+                            var str = StringGenerator(modifier, layout, "Object Group", 0);
+                            EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
                             break;
                         }
@@ -1972,7 +1974,11 @@ namespace BetterLegacy.Editor.Managers
                     case "gravityOther":
                         {
                             if (cmd == "gravityOther")
-                                StringGenerator(modifier, layout, "Object Group", 0);
+                            {
+                                PrefabGroupOnly(modifier, layout);
+                                var str = StringGenerator(modifier, layout, "Object Group", 0);
+                                EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+                            }
 
                             SingleGenerator(modifier, layout, "X", 1, -1f);
                             SingleGenerator(modifier, layout, "Y", 2, 0f);
@@ -2007,6 +2013,7 @@ namespace BetterLegacy.Editor.Managers
                     case "enableObjectTreeOther":
                     case "disableObjectTreeOther":
                         {
+                            PrefabGroupOnly(modifier, layout);
                             var str = StringGenerator(modifier, layout, "Object Group", 1);
                             EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                             BoolGenerator(modifier, layout, "Use Self", 0, true);
@@ -2017,6 +2024,7 @@ namespace BetterLegacy.Editor.Managers
                     case "enableObjectOther":
                     case "disableObjectOther":
                         {
+                            PrefabGroupOnly(modifier, layout);
                             var str = StringGenerator(modifier, layout, "Object Group", 0);
                             EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                             BoolGenerator(modifier, layout, "Reset", 1, true);
@@ -2112,6 +2120,15 @@ namespace BetterLegacy.Editor.Managers
 
                     #region Misc
 
+                    case "objectAlive":
+                        {
+                            PrefabGroupOnly(modifier, layout);
+                            var str = StringGenerator(modifier, layout, "Object Group", 0);
+                            EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+
+                            break;
+                        }
+
                     case "gameMode":
                         {
                             DropdownGenerator(modifier, layout, "Mode", 0, CoreHelper.StringToOptionData("Regular", "Platformer"));
@@ -2125,6 +2142,7 @@ namespace BetterLegacy.Editor.Managers
 
                             if (cmd == "setCollisionOther")
                             {
+                                PrefabGroupOnly(modifier, layout);
                                 var str = StringGenerator(modifier, layout, "Object Group", 1);
                                 EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                             }
