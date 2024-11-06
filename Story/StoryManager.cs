@@ -86,6 +86,8 @@ namespace BetterLegacy.Story
 
         public void Load()
         {
+            StoryMode = Story.Parse(JSON.Parse(RTFile.ReadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Story/story.json")));
+
             storySavesJSON = JSON.Parse(RTFile.FileExists(StorySavesPath) ? RTFile.ReadFromFile(StorySavesPath) : "{}");
             Chapter = GetChapter();
             Level = GetLevel();
@@ -471,6 +473,39 @@ namespace BetterLegacy.Story
             }));
 
             Loaded = true;
+        }
+
+        public Story StoryMode { get; set; }
+
+        public class Story
+        {
+            public string entryInterfacePath;
+            public List<Chapter> chapters = new List<Chapter>();
+
+            public static Story Parse(JSONNode jn)
+            {
+                var story = new Story()
+                {
+                    entryInterfacePath = FontManager.TextTranslater.ReplaceProperties(jn["entry_interface"]),
+                };
+
+                for (int i = 0; i < jn["chapters"].Count; i++)
+                    story.chapters.Add(Chapter.Parse(jn["chapters"][i]));
+
+                return story;
+            }
+
+            public class Chapter
+            {
+                public string name;
+                public string interfacePath;
+
+                public static Chapter Parse(JSONNode jn) => new Chapter
+                {
+                    name = jn["name"],
+                    interfacePath = FontManager.TextTranslater.ReplaceProperties(jn["interface"])
+                };
+            }
         }
     }
 }
