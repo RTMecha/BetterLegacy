@@ -327,6 +327,8 @@ namespace BetterLegacy.Core
                 action?.Invoke(ts[i], i);
         }
 
+        public static List<T> Order<T, TKey>(this List<T> ts, Func<T, TKey> selector, bool descending) => (descending ? ts.OrderByDescending(selector) : ts.OrderBy(selector)).ToList();
+
         /// <summary>
         /// Fills a list with an item.
         /// </summary>

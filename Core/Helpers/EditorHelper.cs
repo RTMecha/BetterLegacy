@@ -371,5 +371,67 @@ namespace BetterLegacy.Core.Helpers
                 }
             }
         }
+
+        public static void AddSelectedObjectIndexes(int amount)
+        {
+            var selected = ObjectEditor.inst.SelectedBeatmapObjects.Order(x => x.Index, amount > 0);
+
+            for (int i = 0; i < selected.Count; i++)
+            {
+                var timelineObject = selected[i];
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                var index = GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.id);
+                if (index < 0)
+                    continue;
+
+                GameData.Current.beatmapObjects.Move(index, Mathf.Clamp(index + amount, 0, GameData.Current.beatmapObjects.Count - 1));
+            }
+
+            selected = ObjectEditor.inst.SelectedPrefabObjects.Order(x => x.Index, amount > 0);
+
+            for (int i = 0; i < selected.Count; i++)
+            {
+                var timelineObject = selected[i];
+                var prefabObject = timelineObject.GetData<PrefabObject>();
+                var index = GameData.Current.prefabObjects.FindIndex(x => x.ID == prefabObject.ID);
+                if (index < 0)
+                    continue;
+
+                GameData.Current.prefabObjects.Move(index, Mathf.Clamp(index + amount, 0, GameData.Current.beatmapObjects.Count - 1));
+            }
+
+            ObjectEditor.inst.UpdateTransformIndex();
+        }
+
+        public static void SetSelectedObjectIndexes(int amount)
+        {
+            var selected = ObjectEditor.inst.SelectedBeatmapObjects.Order(x => x.Index, amount > 0);
+
+            for (int i = 0; i < selected.Count; i++)
+            {
+                var timelineObject = selected[i];
+                var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                var index = GameData.Current.beatmapObjects.FindIndex(x => x.id == beatmapObject.id);
+                if (index < 0)
+                    continue;
+
+                GameData.Current.beatmapObjects.Move(index, Mathf.Clamp(amount, 0, GameData.Current.beatmapObjects.Count - 1));
+            }
+
+            selected = ObjectEditor.inst.SelectedPrefabObjects.Order(x => x.Index, amount > 0);
+
+            for (int i = 0; i < selected.Count; i++)
+            {
+                var timelineObject = selected[i];
+                var prefabObject = timelineObject.GetData<PrefabObject>();
+                var index = GameData.Current.prefabObjects.FindIndex(x => x.ID == prefabObject.ID);
+                if (index < 0)
+                    continue;
+
+                GameData.Current.prefabObjects.Move(index, Mathf.Clamp(amount, 0, GameData.Current.prefabObjects.Count - 1));
+            }
+
+            ObjectEditor.inst.UpdateTransformIndex();
+        }
     }
 }

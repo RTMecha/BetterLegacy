@@ -1707,7 +1707,7 @@ namespace BetterLegacy.Editor.Managers
             if (timelineObject.GameObject)
                 Destroy(timelineObject.GameObject);
 
-            gameObject = ObjEditor.inst.timelineObjectPrefab.Duplicate(EditorManager.inst.timeline.transform, "timeline object");
+            gameObject = ObjEditor.inst.timelineObjectPrefab.Duplicate(RTEditor.inst.timelineObjectsParent, "timeline object");
             var storage = gameObject.GetComponent<TimelineObjectStorage>();
 
             timelineObject.Hover = storage.hoverUI;
@@ -1794,6 +1794,34 @@ namespace BetterLegacy.Editor.Managers
 
         public Image.Type GetObjectTypePattern(ObjectType objectType)
             => objectType == ObjectType.Helper || objectType == ObjectType.Decoration || objectType == ObjectType.Empty ? Image.Type.Tiled : Image.Type.Simple;
+
+        public void UpdateTransformIndex()
+        {
+            int siblingIndex = 0;
+            for (int i = 0; i < GameData.Current.beatmapObjects.Count; i++)
+            {
+                var beatmapObject = GameData.Current.beatmapObjects[i];
+                if (beatmapObject.fromPrefab)
+                    continue;
+                var timelineObject = GetTimelineObject(beatmapObject);
+                if (!timelineObject || !timelineObject.GameObject)
+                    continue;
+                timelineObject.GameObject.transform.SetSiblingIndex(siblingIndex);
+                siblingIndex++;
+            }
+
+            for (int i = 0; i < GameData.Current.prefabObjects.Count; i++)
+            {
+                var prefabObject = GameData.Current.prefabObjects[i];
+                if (prefabObject.fromModifier)
+                    continue;
+                var timelineObject = RTPrefabEditor.inst.GetTimelineObject(prefabObject);
+                if (!timelineObject || !timelineObject.GameObject)
+                    continue;
+                timelineObject.GameObject.transform.SetSiblingIndex(siblingIndex);
+                siblingIndex++;
+            }
+        }
 
         #endregion
 
@@ -3496,24 +3524,27 @@ namespace BetterLegacy.Editor.Managers
                 labelText.text = "Unity Explorer";
                 EditorThemeManager.AddLightText(labelText);
 
-                var inspect = EditorPrefabHolder.Instance.Function2Button.Duplicate(tfv);
+                var inspect = EditorPrefabHolder.Instance.Function2Button.Duplicate(tfv, "inspectbeatmapobject", index + 1);
                 inspect.SetActive(true);
-                inspect.transform.SetSiblingIndex(index + 1);
-                inspect.name = "inspectbeatmapobject";
 
                 var inspectText = inspect.transform.GetChild(0).GetComponent<Text>();
                 inspectText.text = "Inspect BeatmapObject";
 
-                var inspectGameObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(tfv);
+                var inspectGameObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(tfv, "inspect", index + 2);
                 inspectGameObject.SetActive(true);
-                inspectGameObject.transform.SetSiblingIndex(index + 2);
-                inspectGameObject.name = "inspect";
 
                 var inspectGameObjectText = inspectGameObject.transform.GetChild(0).GetComponent<Text>();
                 inspectGameObjectText.text = "Inspect LevelObject";
+                
+                var inspectTimelineObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(tfv.parent, "inspecttimelineobject", index + 3);
+                inspectTimelineObject.SetActive(true);
+
+                var inspectTimelineObjectText = inspectTimelineObject.transform.GetChild(0).GetComponent<Text>();
+                inspectTimelineObjectText.text = "Inspect TimelineObject";
 
                 var inspectButton = inspect.GetComponent<Button>();
                 var inspectGameObjectButton = inspectGameObject.GetComponent<Button>();
+                var inspectTimelineObjectButton = inspectTimelineObject.GetComponent<Button>();
 
                 Destroy(inspect.GetComponent<Animator>());
                 inspectButton.transition = Selectable.Transition.ColorTint;
@@ -3524,6 +3555,11 @@ namespace BetterLegacy.Editor.Managers
                 inspectGameObjectButton.transition = Selectable.Transition.ColorTint;
                 EditorThemeManager.AddSelectable(inspectGameObjectButton, ThemeGroup.Function_2);
                 EditorThemeManager.AddGraphic(inspectGameObjectText, ThemeGroup.Function_2_Text);
+
+                Destroy(inspectTimelineObject.GetComponent<Animator>());
+                inspectTimelineObjectButton.transition = Selectable.Transition.ColorTint;
+                EditorThemeManager.AddSelectable(inspectTimelineObjectButton, ThemeGroup.Function_2);
+                EditorThemeManager.AddGraphic(inspectTimelineObjectText, ThemeGroup.Function_2_Text);
             }
 
             if (tfv.TryFind("unity explorer label", out Transform unityExplorerLabel))
@@ -3546,6 +3582,15 @@ namespace BetterLegacy.Editor.Managers
                 inspectButton.onClick.ClearAll();
                 if (RTEditor.ShowModdedUI)
                     inspectButton.onClick.AddListener(() => { ModCompatibility.Inspect(beatmapObject); });
+            }
+
+            if (tfv.Find("inspecttimelineobject"))
+            {
+                var inspectButton = tfv.Find("inspecttimelineobject").GetComponent<Button>();
+                inspectButton.gameObject.SetActive(RTEditor.ShowModdedUI);
+                inspectButton.onClick.ClearAll();
+                if (RTEditor.ShowModdedUI)
+                    inspectButton.onClick.AddListener(() => { ModCompatibility.Inspect(GetTimelineObject(beatmapObject)); });
             }
         }
 

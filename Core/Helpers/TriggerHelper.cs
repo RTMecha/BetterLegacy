@@ -626,7 +626,144 @@ namespace BetterLegacy.Core.Helpers
                             ObjEditor.inst.CopyObject();
                             ObjectEditor.inst.PasteObject(offsetTime, false);
                         }),
-                        new RTEditor.ButtonFunction("Delete", () => { CoreHelper.StartCoroutine(ObjectEditor.inst.DeleteObjects()); })
+                        new RTEditor.ButtonFunction("Delete", () => { CoreHelper.StartCoroutine(ObjectEditor.inst.DeleteObjects()); }),
+                        new RTEditor.ButtonFunction(true),
+                        new RTEditor.ButtonFunction("Move Backwards", () =>
+                        {
+                            switch (timelineObject.ObjectType)
+                            {
+                                case TimelineObject.TimelineObjectType.BeatmapObject:
+                                    {
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                        var index = GameData.Current.beatmapObjects.FindIndex(x => x == beatmapObject);
+                                        if (index <= 0)
+                                        {
+                                            EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                            return;
+                                        }
+
+                                        GameData.Current.beatmapObjects.Move(index, index - 1);
+                                        ObjectEditor.inst.UpdateTransformIndex();
+                                        break;
+                                    }
+                                case TimelineObject.TimelineObjectType.PrefabObject:
+                                    {
+                                        var prefabObject = timelineObject.GetData<PrefabObject>();
+                                        var index = GameData.Current.prefabObjects.FindIndex(x => x == prefabObject);
+                                        if (index <= 0)
+                                        {
+                                            EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                            return;
+                                        }
+
+                                        GameData.Current.prefabObjects.Move(index, index - 1);
+                                        ObjectEditor.inst.UpdateTransformIndex();
+                                        break;
+                                    }
+                            }
+                        }),
+                        new RTEditor.ButtonFunction("Move Forwards", () =>
+                        {
+                            switch (timelineObject.ObjectType)
+                            {
+                                case TimelineObject.TimelineObjectType.BeatmapObject:
+                                    {
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                        var index = GameData.Current.beatmapObjects.FindIndex(x => x == beatmapObject);
+                                        if (index >= GameData.Current.beatmapObjects.Count - 1)
+                                        {
+                                            EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                            return;
+                                        }
+
+                                        GameData.Current.beatmapObjects.Move(index, index + 1);
+                                        ObjectEditor.inst.UpdateTransformIndex();
+                                        break;
+                                    }
+                                case TimelineObject.TimelineObjectType.PrefabObject:
+                                    {
+                                        var prefabObject = timelineObject.GetData<PrefabObject>();
+                                        var index = GameData.Current.prefabObjects.FindIndex(x => x == prefabObject);
+                                        if (index >= GameData.Current.prefabObjects.Count - 1)
+                                        {
+                                            EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                            return;
+                                        }
+
+                                        GameData.Current.prefabObjects.Move(index, index + 1);
+                                        ObjectEditor.inst.UpdateTransformIndex();
+                                        break;
+                                    }
+                            }
+                        }),
+                        new RTEditor.ButtonFunction("Move to Back", () =>
+                        {
+                            switch (timelineObject.ObjectType)
+                            {
+                                case TimelineObject.TimelineObjectType.BeatmapObject:
+                                    {
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                        var index = GameData.Current.beatmapObjects.FindIndex(x => x == beatmapObject);
+                                        if (index <= 0)
+                                        {
+                                            EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                            return;
+                                        }
+
+                                        GameData.Current.beatmapObjects.Move(index, 0);
+                                        ObjectEditor.inst.UpdateTransformIndex();
+                                        break;
+                                    }
+                                case TimelineObject.TimelineObjectType.PrefabObject:
+                                    {
+                                        var prefabObject = timelineObject.GetData<PrefabObject>();
+                                        var index = GameData.Current.prefabObjects.FindIndex(x => x == prefabObject);
+                                        if (index <= 0)
+                                        {
+                                            EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                            return;
+                                        }
+
+                                        GameData.Current.prefabObjects.Move(index, 0);
+                                        ObjectEditor.inst.UpdateTransformIndex();
+                                        break;
+                                    }
+                            }
+                        }),
+                        new RTEditor.ButtonFunction("Move to Front", () =>
+                        {
+                            switch (timelineObject.ObjectType)
+                            {
+                                case TimelineObject.TimelineObjectType.BeatmapObject:
+                                    {
+                                        var beatmapObject = timelineObject.GetData<BeatmapObject>();
+                                        var index = GameData.Current.beatmapObjects.FindIndex(x => x == beatmapObject);
+                                        if (index >= GameData.Current.beatmapObjects.Count - 1)
+                                        {
+                                            EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                            return;
+                                        }
+
+                                        GameData.Current.beatmapObjects.Move(index, GameData.Current.beatmapObjects.Count - 1);
+                                        ObjectEditor.inst.UpdateTransformIndex();
+                                        break;
+                                    }
+                                case TimelineObject.TimelineObjectType.PrefabObject:
+                                    {
+                                        var prefabObject = timelineObject.GetData<PrefabObject>();
+                                        var index = GameData.Current.prefabObjects.FindIndex(x => x == prefabObject);
+                                        if (index >= GameData.Current.prefabObjects.Count - 1)
+                                        {
+                                            EditorManager.inst.DisplayNotification("Could not move object back since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                            return;
+                                        }
+
+                                        GameData.Current.prefabObjects.Move(index, GameData.Current.beatmapObjects.Count - 1);
+                                        ObjectEditor.inst.UpdateTransformIndex();
+                                        break;
+                                    }
+                            }
+                        })
                         );
 
                     return;

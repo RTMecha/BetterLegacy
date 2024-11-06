@@ -285,6 +285,10 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.AddGraphic(mouseTooltipRT.Find("bg/Image").GetComponent<Image>(), ThemeGroup.Light_Text);
             EditorThemeManager.AddLightText(mouseTooltipRT.Find("bg/title").GetComponent<Text>());
 
+            var timelineParent = Creator.NewUIObject("Timeline Objects", EditorManager.inst.timeline.transform, 1);
+            timelineObjectsParent = timelineParent.transform.AsRT();
+            RectValues.FullAnchored.AssignToRectTransform(timelineObjectsParent);
+
             CreateContextMenu();
             CreateFolderCreator();
         }
@@ -639,6 +643,7 @@ namespace BetterLegacy.Editor.Managers
         public Image timelinePreviewRightCap;
         public List<Image> checkpointImages = new List<Image>();
 
+        public RectTransform timelineObjectsParent;
         public Transform timelinePreview;
         public RectTransform timelinePosition;
 
@@ -4815,6 +4820,34 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorHelper.SetComplexity(labels, Complexity.Advanced);
                 EditorHelper.SetComplexity(multiNameSet, Complexity.Advanced);
+            }
+
+            // Timeline Object Index
+            {
+                GenerateLabels(parent, 32f, "Set Group Index");
+
+                var inputFieldStorage = GenerateInputField(parent, "indexer", "1", "Enter index...", true, true, true);
+                inputFieldStorage.GetComponent<HorizontalLayoutGroup>().spacing = 0f;
+                inputFieldStorage.leftGreaterButton.onClick.NewListener(() => { EditorHelper.SetSelectedObjectIndexes(0); });
+                inputFieldStorage.leftButton.onClick.NewListener(() =>
+                {
+                    if (int.TryParse(inputFieldStorage.inputField.text, out int num))
+                        EditorHelper.AddSelectedObjectIndexes(-num);
+                });
+                inputFieldStorage.middleButton.onClick.NewListener(() =>
+                {
+                    if (int.TryParse(inputFieldStorage.inputField.text, out int num))
+                        EditorHelper.SetSelectedObjectIndexes(num);
+                });
+                inputFieldStorage.rightButton.onClick.NewListener(() =>
+                {
+                    if (int.TryParse(inputFieldStorage.inputField.text, out int num))
+                        EditorHelper.AddSelectedObjectIndexes(num);
+                });
+                inputFieldStorage.rightGreaterButton.onClick.NewListener(() => { EditorHelper.SetSelectedObjectIndexes(timelineObjects.Count); });
+                TriggerHelper.AddEventTriggers(inputFieldStorage.inputField.gameObject, TriggerHelper.ScrollDeltaInt(inputFieldStorage.inputField));
+
+                EditorHelper.SetComplexity(inputFieldStorage.leftGreaterButton.gameObject, Complexity.Advanced);
             }
 
             GeneratePad(parent);
