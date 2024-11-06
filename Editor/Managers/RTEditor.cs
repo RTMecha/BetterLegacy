@@ -8243,6 +8243,7 @@ namespace BetterLegacy.Editor.Managers
                                      "<b>camRot</b> - Rotation of the camera.\n" +
                                      "<b>player0PosX</b> - Position X of a specific player. You can swap the 0 out with a different number to get a different players' position X. If that number is higher than or equal to the player count, the result will be 0.\n" +
                                      "<b>player0PosY</b> - Position Y of a specific player. You can do the same as the above variable.\n" +
+                                     "<b>player0Rot</b> - Rotation of a specific player. You can do the same as the above variable.\n" +
                                      "<b>player0Health</b> - Health of a specific player. You can do the same as the above variable.\n" +
                                      "<b>playerHealthTotal</b> - Health of all players in total.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("If you have a few functions listed, follow this example:\n" +

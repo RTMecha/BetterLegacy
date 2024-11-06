@@ -101,8 +101,10 @@ namespace BetterLegacy.Core
                     var isNull = !player.Player || !player.Player.rb;
                     float posX = isNull ? 0f : player.Player.rb.position.x;
                     float posY = isNull ? 0f : player.Player.rb.position.y;
+                    float rot = isNull ? 0f : player.Player.rb.rotation;
                     context.RegisterVariable($"player{i}PosX", posX);
                     context.RegisterVariable($"player{i}PosY", posY);
+                    context.RegisterVariable($"player{i}Rot", rot);
                     context.RegisterVariable($"player{i}Health", player.Health);
                 }
 
