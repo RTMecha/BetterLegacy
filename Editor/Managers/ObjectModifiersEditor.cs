@@ -1395,15 +1395,14 @@ namespace BetterLegacy.Editor.Managers
                         {
                             if (cmd.Contains("Other"))
                                 PrefabGroupOnly(modifier, layout);
-                            StringGenerator(modifier, layout, "Hex Code", 0);
                             if (cmd.Contains("Other"))
                             {
                                 var str = StringGenerator(modifier, layout, "Object Group", 1);
                                 EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                             }
 
+                            StringGenerator(modifier, layout, "Hex Code", 0);
                             StringGenerator(modifier, layout, "Hex Gradient Color", cmd.Contains("Other") ? 2 : 1);
-
                             break;
                         }
 
