@@ -87,7 +87,8 @@ namespace BetterLegacy.Patchers
 
                     if (triggers.Count > 0)
                     {
-                        if (triggers.TrueForAll(x => !x.active && (x.Trigger(x) && !x.not || !x.Trigger(x) && x.not)))
+                        //if (triggers.TrueForAll(x => !x.active && (x.not ? !x.Trigger(x) : x.Trigger(x))))
+                        if (ModifiersHelper.CheckTriggers(triggers))
                         {
                             foreach (var act in actions)
                             {
@@ -97,6 +98,7 @@ namespace BetterLegacy.Patchers
                                 if (!act.constant)
                                     act.active = true;
 
+                                act.running = true;
                                 act.Action?.Invoke(act);
                             }
 
@@ -110,8 +112,21 @@ namespace BetterLegacy.Patchers
                         {
                             foreach (var act in actions)
                             {
+                                if (!act.active && !act.running)
+                                    continue;
+
                                 act.active = false;
+                                act.running = false;
                                 act.Inactive?.Invoke(act);
+                            }
+
+                            foreach (var trig in triggers)
+                            {
+                                if (!trig.active)
+                                    continue;
+
+                                trig.active = false;
+                                trig.Inactive?.Invoke(trig);
                             }
                         }
                     }

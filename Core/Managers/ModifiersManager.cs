@@ -94,10 +94,14 @@ namespace BetterLegacy.Core.Managers
                 {
                     if (triggers.Count > 0)
                     {
-                        if (triggers.TrueForAll(x => !x.active && (x.Trigger(x) && !x.not || !x.Trigger(x) && x.not)))
+                        //if (triggers.TrueForAll(x => !x.active && (x.not ? !x.Trigger(x) : x.Trigger(x))))
+                        if (ModifiersHelper.CheckTriggers(triggers))
                         {
-                            foreach (var act in actions.FindAll(x => !x.active))
+                            foreach (var act in actions)
                             {
+                                if (act.active)
+                                    continue;
+
                                 if (!act.constant)
                                     act.active = true;
 
@@ -105,23 +109,41 @@ namespace BetterLegacy.Core.Managers
                                 act.Action?.Invoke(act);
                             }
 
-                            foreach (var trig in triggers.FindAll(x => !x.constant))
-                                trig.active = true;
+                            foreach (var trig in triggers)
+                            {
+                                if (!trig.constant)
+                                    trig.active = true;
+                            }
                         }
                         else
                         {
-                            foreach (var act in actions.FindAll(x => x.active || x.running))
+                            foreach (var act in actions)
                             {
+                                if (!act.active && !act.running)
+                                    continue;
+
                                 act.active = false;
                                 act.running = false;
                                 act.Inactive?.Invoke(act);
+                            }
+
+                            foreach (var trig in triggers)
+                            {
+                                if (!trig.active)
+                                    continue;
+
+                                trig.active = false;
+                                trig.Inactive?.Invoke(trig);
                             }
                         }
                     }
                     else
                     {
-                        foreach (var act in actions.FindAll(x => !x.active))
+                        foreach (var act in actions)
                         {
+                            if (act.active)
+                                continue;
+
                             if (!act.constant)
                                 act.active = true;
 
