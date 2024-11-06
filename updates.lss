@@ -1,3 +1,9 @@
+snapshot-2024.11.7 > (pre-1.7.0) > [Nov 6, 2024]
+- Added objectAlive trigger modifier. This triggers whenever an object from a specific group is alive. Good for timing specific actions.
+- Fixed some cases where the Prefab Group Only toggle wasn't showing for modifiers that have object group fields.
+- Prefabs spawned from modifiers are no longer selectable in the preview area.
+- You can now view a level creator's levels by clicking the [ Creator ] button in the Play Level menu. Requires the level to have been uploaded after this the release of this snapshot, however.
+- Slowly working on a new story mode system so it'll be easier for me to work on.
 snapshot-2024.11.6 > (pre-1.7.0) > [Nov 6, 2024]
 - Fixed the inactive state of spawnPrefabOffset not occuring.
 - Modifiers now clear specific things when their parent object is deleted.
