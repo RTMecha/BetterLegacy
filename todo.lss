@@ -30,6 +30,7 @@
 - Collab sharing via server?
 - Editor online backups?
 - Multiplayer editor, possibly. (everyone has their own perspective of the hosts' editor but have limited functionality compared to the host)
+- Modifier trigger else toggle.
 - New modifiers
 > prizeObject
 > setParent
