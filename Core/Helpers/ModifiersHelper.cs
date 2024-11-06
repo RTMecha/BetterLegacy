@@ -37,14 +37,17 @@ namespace BetterLegacy.Core.Helpers
             for (int i = 0; i < triggers.Count; i++)
             {
                 var trigger = triggers[i];
-                if (!result && !trigger.elseIf)
-                    continue;
 
-                if (trigger.elseIf)
+                //// if trigger was not triggered, then result should be false.
+                //if (!match(trigger))
+                //    result = false;
+
+                var innerResult = match(trigger);
+
+                if (trigger.elseIf && !result && innerResult)
                     result = true;
 
-                // if trigger was not triggered, then result should be false.
-                if (!match(trigger))
+                if (!trigger.elseIf && !innerResult)
                     result = false;
             }
             return result;

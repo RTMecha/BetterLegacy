@@ -51,6 +51,7 @@ namespace BetterLegacy.Core.Data
             var modifier = new Modifier<T>();
             modifier.type = (Type)jn["type"].AsInt;
             modifier.not = jn["not"].AsBool;
+            modifier.elseIf = jn["else"].AsBool;
 
             modifier.commands.Clear();
             for (int i = 0; i < jn["commands"].Count; i++)
@@ -74,6 +75,9 @@ namespace BetterLegacy.Core.Data
 
             if (not)
                 jn["not"] = not.ToString();
+
+            if (elseIf)
+                jn["else"] = elseIf.ToString();
 
             for (int i = 0; i < commands.Count; i++)
                 jn["commands"][i] = commands[i];
