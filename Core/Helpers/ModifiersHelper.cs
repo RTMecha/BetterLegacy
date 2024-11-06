@@ -1293,6 +1293,17 @@ namespace BetterLegacy.Core.Helpers
                         return modifier.Result != null;
                 case "isFullscreen":
                         return Screen.fullScreen;
+                case "objectAlive":
+                    {
+                        var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
+                        for (int i = 0; i < list.Count; i++)
+                        {
+                            if (list[i].Alive)
+                                return true;
+                        }
+
+                        break;
+                    }
                     #endregion
             }
 
