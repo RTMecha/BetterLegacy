@@ -134,6 +134,9 @@ namespace BetterLegacy.Components.Editor
 
             startDragTime = Time.time;
 
+            if (beatmapObject && beatmapObject.fromPrefab && beatmapObject.TryGetPrefabObject(out PrefabObject result) && result.fromModifier)
+                return;
+
             if (RTEditor.inst.onSelectTimelineObject != null)
             {
                 var timelineObject = ObjectEditor.inst.GetTimelineObject(beatmapObject);
@@ -439,7 +442,7 @@ namespace BetterLegacy.Components.Editor
 
                 var prefabObject = GameData.Current.prefabObjects.Find(x => x.ID == beatmapObject.prefabInstanceID);
 
-                if (prefabObject == null || !(HighlightObjects && hovered || ShowObjectsOnlyOnLayer && prefabObject.editorData.layer != RTEditor.inst.Layer))
+                if (prefabObject == null || prefabObject.fromModifier || !(HighlightObjects && hovered || ShowObjectsOnlyOnLayer && prefabObject.editorData.layer != RTEditor.inst.Layer))
                     return;
 
                 var beatmapObjects = prefabObject.ExpandedObjects.FindAll(x => x.objectType != BeatmapObject.ObjectType.Empty)
