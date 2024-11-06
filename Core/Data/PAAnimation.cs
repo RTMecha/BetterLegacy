@@ -19,10 +19,10 @@ namespace BetterLegacy.Core.Data
         {
             id = LSText.randomNumString(16);
             objects = new List<AnimationObject>();
-            markers = new List<BaseMarker>();
+            markers = new List<Marker>();
         }
 
-        public PAAnimation(string name, string desc, float startTime, List<AnimationObject> objects, List<BaseMarker> markers)
+        public PAAnimation(string name, string desc, float startTime, List<AnimationObject> objects, List<Marker> markers)
         {
             id = LSText.randomNumString(16);
             this.name = name;
@@ -37,7 +37,7 @@ namespace BetterLegacy.Core.Data
         public string desc = "This is the default description!";
         float startTime;
         public float StartTime { get => Mathf.Clamp(startTime, 0f, float.MaxValue); set => startTime = Mathf.Clamp(value, 0f, float.MaxValue); }
-        public List<BaseMarker> markers;
+        public List<Marker> markers;
 
         public float GetLength(int current)
         {
@@ -54,7 +54,7 @@ namespace BetterLegacy.Core.Data
 
         public static PAAnimation Parse(JSONNode jn)
         {
-            var markers = new List<BaseMarker>();
+            var markers = new List<Marker>();
             for (int i = 0; i < jn["markers"].Count; i++)
                 markers.Add(Marker.Parse(jn["markers"][i]));
 
@@ -88,20 +88,7 @@ namespace BetterLegacy.Core.Data
             jn["name"] = name;
             jn["st"] = StartTime.ToString();
             for (int i = 0; i < markers.Count; i++)
-            {
-                var marker = markers[i];
-
-                if (!string.IsNullOrEmpty(marker.name))
-                    jn["markers"][i]["name"] = marker.name.ToString();
-
-                if (!string.IsNullOrEmpty(marker.desc) && marker.desc != "Description")
-                    jn["markers"][i]["desc"] = marker.desc.ToString();
-
-                if (marker.color != 0)
-                    jn["markers"][i]["col"] = marker.color.ToString();
-
-                jn["markers"][i]["t"] = marker.time.ToString();
-            }
+                jn["markers"][i] = markers[i].ToJSON();
 
             for (int i = 0; i < objects.Count; i++)
             {

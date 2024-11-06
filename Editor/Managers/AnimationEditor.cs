@@ -250,7 +250,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     }
                 },
-                new List<BaseMarker>
+                new List<Marker>
                 {
                     new Marker("Test marker", "Test description for a marker", 0, 2f)
                 });
