@@ -259,18 +259,12 @@ namespace BetterLegacy.Arcade
                 playBlipSound = true,
                 func = () =>
                 {
-                    //if (CurrentLevel.metadata != null && !string.IsNullOrEmpty(CurrentLevel.metadata.creator.URL))
-                    //    Application.OpenURL(CurrentLevel.metadata.creator.URL);
-
-
-                    // todo: make user endpoint allow search queries
-                    //if (CurrentLevel.metadata != null && !string.IsNullOrEmpty(CurrentLevel.metadata.uploaderID))
-                    //{
-                    //    CoreHelper.StartCoroutine(AlephNetworkManager.DownloadJSONFile($"{AlephNetworkManager.ArcadeServerURL}api/Level/user/{CurrentLevel.metadata.uploaderID}", json =>
-                    //    {
-                    //        LevelListMenu.Init("");
-                    //    }));
-                    //}
+                    var currentLevel = CurrentLevel;
+                    if (currentLevel.metadata != null && !string.IsNullOrEmpty(currentLevel.metadata.uploaderID))
+                    {
+                        LevelListMenu.Init($"{AlephNetworkManager.ArcadeServerURL}api/Level/user/{currentLevel.metadata.uploaderID}");
+                        LevelListMenu.close = () => Init(currentLevel);
+                    }
                 },
             });
 
