@@ -16,7 +16,6 @@
 - Add a fake Desktop thing like Rhythm Doctor for Window event keyframes. (The Desktop will look like a PA interface)
 - Color picker rework.
 - Somehow figure out mutli BG object editing.
-- Timeline object index order.
 - Figure out custom timeline bin system (Shows a custom amount of rows in the timeline and allows for the timeline to be navigated up and down).
 - Unclamped timeline (timeline can be navigated outside the regular range and objects can be placed before start time 0).
 - Custom end level function [end level screen, return to hub, return to previous, return to arcade, return to main menu].
