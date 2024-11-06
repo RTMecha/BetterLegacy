@@ -390,11 +390,49 @@ namespace BetterLegacy.Editor.Managers
                             StartCoroutine(RenderModifiers(beatmapObject));
                         }),
                         new RTEditor.ButtonFunction(true),
+                        new RTEditor.ButtonFunction("Sort Modifiers", () =>
+                        {
+                            beatmapObject.modifiers = beatmapObject.modifiers.OrderBy(x => x.type == ModifierBase.Type.Action).ToList();
+                            StartCoroutine(RenderModifiers(beatmapObject));
+                        }),
+                        new RTEditor.ButtonFunction("Move Up", () =>
+                        {
+                            if (index <= 0)
+                            {
+                                EditorManager.inst.DisplayNotification("Could not move modifier up since it's already at the start.", 3f, EditorManager.NotificationType.Error);
+                                return;
+                            }
+
+                            beatmapObject.modifiers.Move(index, index - 1);
+                            StartCoroutine(RenderModifiers(beatmapObject));
+                        }),
+                        new RTEditor.ButtonFunction("Move Down", () =>
+                        {
+                            if (index >= beatmapObject.modifiers.Count - 1)
+                            {
+                                EditorManager.inst.DisplayNotification("Could not move modifier up since it's already at the end.", 3f, EditorManager.NotificationType.Error);
+                                return;
+                            }
+
+                            beatmapObject.modifiers.Move(index, index + 1);
+                            StartCoroutine(RenderModifiers(beatmapObject));
+                        }),
+                        new RTEditor.ButtonFunction("Move to Start", () =>
+                        {
+                            beatmapObject.modifiers.Move(index, 0);
+                            StartCoroutine(RenderModifiers(beatmapObject));
+                        }),
+                        new RTEditor.ButtonFunction("Move to End", () =>
+                        {
+                            beatmapObject.modifiers.Move(index, beatmapObject.modifiers.Count - 1);
+                            StartCoroutine(RenderModifiers(beatmapObject));
+                        }),
+                        new RTEditor.ButtonFunction(true),
                         new RTEditor.ButtonFunction("Update Modifier", () =>
                         {
                             modifier.active = false;
-                            modifier.Result = null;
-                        }),
+                            modifier.Inactive?.Invoke(modifier);
+                        })
                     };
                     if (ModCompatibility.UnityExplorerInstalled)
                         buttonFunctions.Add(new RTEditor.ButtonFunction("Inspect", () => { ModCompatibility.Inspect(modifier); }));
