@@ -2159,6 +2159,7 @@ namespace BetterLegacy.Editor.Managers
                     #region Misc
 
                     case "objectAlive":
+                    case "objectSpawned":
                         {
                             PrefabGroupOnly(modifier, layout);
                             var str = StringGenerator(modifier, layout, "Object Group", 0);
