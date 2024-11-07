@@ -6020,6 +6020,34 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
 
+                    case "loadStoryLevelDEVONLY":
+                        {
+                            Story.StoryManager.inst.Play(modifier.GetInt(1, 0), modifier.GetInt(2, 0), modifier.GetBool(0, false));
+
+                            break;
+                        }
+
+                    case "storySaveIntVariableDEVONLY":
+                        {
+                            Story.StoryManager.inst.SaveInt(modifier.GetString(0, ""), modifier.reference.integerVariable);
+
+                            break;
+                        }
+                        
+                    case "storySaveIntDEVONLY":
+                        {
+                            Story.StoryManager.inst.SaveInt(modifier.GetString(0, ""), modifier.GetInt(1, 0));
+
+                            break;
+                        }
+                        
+                    case "storySaveBoolDEVONLY":
+                        {
+                            Story.StoryManager.inst.SaveBool(modifier.GetString(0, "null"), modifier.GetBool(1, false));
+
+                            break;
+                        }
+
                         #endregion
                 }
 

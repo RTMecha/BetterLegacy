@@ -1748,7 +1748,7 @@ namespace BetterLegacy.Editor.Managers
                                 var str = StringGenerator(modifier, layout, "Object Group", 0);
                                 EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
                             }
-                            
+
                             IntegerGenerator(modifier, layout, "Minimum", 1, 0);
                             IntegerGenerator(modifier, layout, "Maximum", 2, 0);
 
@@ -2278,14 +2278,6 @@ namespace BetterLegacy.Editor.Managers
                             SingleGenerator(modifier, layout, "Rotation Delay", 1, 1f);
                             break;
                         }
-                    case "loadSceneDEVONLY":
-                        {
-                            StringGenerator(modifier, layout, "Scene", 0);
-                            if (modifier.commands.Count > 1)
-                                BoolGenerator(modifier, layout, "Show Loading", 1, true);
-
-                            break;
-                        }
                     case "translateShape":
                         {
                             SingleGenerator(modifier, layout, "Pos X", 1, 0f);
@@ -2320,7 +2312,42 @@ namespace BetterLegacy.Editor.Managers
                             break;
                         }
 
-                        #endregion
+                    #endregion
+
+                    #region Dev Only
+
+                    case "loadSceneDEVONLY":
+                        {
+                            StringGenerator(modifier, layout, "Scene", 0);
+                            if (modifier.commands.Count > 1)
+                                BoolGenerator(modifier, layout, "Show Loading", 1, true);
+
+                            break;
+                        }
+                    case "loadStoryLevelDEVONLY":
+                        {
+                            IntegerGenerator(modifier, layout, "Chapter", 1, 0);
+                            IntegerGenerator(modifier, layout, "Level", 2, 0);
+                            BoolGenerator(modifier, layout, "Bonus", 0, false);
+
+                            break;
+                        }
+                    case "storySaveIntVariableDEVONLY":
+                    case "storySaveIntDEVONLY":
+                        {
+                            StringGenerator(modifier, layout, "Save", 0);
+                            if (cmd == "storySaveIntDEVONLY")
+                                IntegerGenerator(modifier, layout, "Value", 1, 0);
+                            break;
+                        }
+                    case "storySaveBoolDEVONLY":
+                        {
+                            StringGenerator(modifier, layout, "Save", 0);
+                            BoolGenerator(modifier, layout, "Value", 1, false);
+                            break;
+                        }
+
+                    #endregion
                 }
 
                 num++;
