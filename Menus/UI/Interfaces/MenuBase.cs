@@ -33,6 +33,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         #region Variables
 
+        public Dictionary<string, Sprite> spriteAssets = new Dictionary<string, Sprite>();
+
         /// <summary>
         /// Base canvas of the interface.
         /// </summary>

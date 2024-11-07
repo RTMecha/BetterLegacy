@@ -141,7 +141,14 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         public float val;
 
+        /// <summary>
+        /// If the current color should use <see cref="overrideColor"/> instead of a color slot based on <see cref="color"/>.
+        /// </summary>
         public bool useOverrideColor;
+
+        /// <summary>
+        /// Custom color to use.
+        /// </summary>
         public Color overrideColor;
 
         /// <summary>
@@ -205,6 +212,80 @@ namespace BetterLegacy.Menus.UI.Elements
         #region Methods
 
         /// <summary>
+        /// Provides a way to see the object in UnityExplorer.
+        /// </summary>
+        /// <returns>A string containing the objects' ID and name.</returns>
+        public override string ToString() => $"{id} - {name}";
+
+        /// <summary>
+        /// Creates a new MenuImage element with all the same values as <paramref name="orig"/>.
+        /// </summary>
+        /// <param name="orig">The element to copy.</param>
+        /// <param name="newID">If a new ID should be generated.</param>
+        /// <returns>Returns a copied MenuImage element.</returns>
+        public static MenuImage DeepCopy(MenuImage orig, bool newID = true) => new MenuImage
+        {
+            #region Base
+
+            id = newID ? LSText.randomNumString(16) : orig.id,
+            name = orig.name,
+            parentLayout = orig.parentLayout,
+            parent = orig.parent,
+            siblingIndex = orig.siblingIndex,
+
+            #endregion
+
+            #region Spawning
+
+            regenerate = orig.regenerate,
+            fromLoop = false, // if element has been spawned from the loop or if its the first / only of its kind.
+            loop = orig.loop,
+
+            #endregion
+
+            #region UI
+
+            icon = orig.icon,
+            rect = orig.rect,
+            rounded = orig.rounded, // roundness can be prevented by setting rounded to 0.
+            roundedSide = orig.roundedSide, // default side should be Whole.
+            mask = orig.mask,
+            reactiveSetting = orig.reactiveSetting,
+
+            #endregion
+
+            #region Color
+
+            color = orig.color,
+            opacity = orig.opacity,
+            hue = orig.hue,
+            sat = orig.sat,
+            val = orig.val,
+
+            overrideColor = orig.overrideColor,
+            useOverrideColor = orig.useOverrideColor,
+
+            #endregion
+
+            #region Anim
+
+            length = orig.length,
+            wait = orig.wait,
+
+            #endregion
+
+            #region Func
+
+            playBlipSound = orig.playBlipSound,
+            funcJSON = orig.funcJSON, // function to run when the element is clicked.
+            spawnFuncJSON = orig.spawnFuncJSON, // function to run when the element spawns.
+            func = orig.func,
+            spawnFunc = orig.spawnFunc,
+
+            #endregion
+        };
+
+        /// <summary>
         /// Runs when the elements' GameObject has been created.
         /// </summary>
         public virtual void Spawn()
@@ -235,6 +316,10 @@ namespace BetterLegacy.Menus.UI.Elements
 
         #region Functions
 
+        /// <summary>
+        /// Parses an entire func JSON. Supports both JSON Object and JSON Array.
+        /// </summary>
+        /// <param name="jn">JSON to parse.</param>
         public void ParseFunction(JSONNode jn)
         {
             if (jn.IsArray)
@@ -243,11 +328,16 @@ namespace BetterLegacy.Menus.UI.Elements
                     ParseFunctionSingle(jn[i]);
 
                 return;
-            }
+            } // Allow multiple functions to occur.
 
             ParseFunctionSingle(jn);
         }
 
+        /// <summary>
+        /// Parses an "if_func" JSON and returns the result. Supports both JSON Object and JSON Array.
+        /// </summary>
+        /// <param name="jn">JSON to parse.</param>
+        /// <returns>Returns true if the passed JSON functions is true, otherwise false.</returns>
         public bool ParseIfFunction(JSONNode jn)
         {
             if (jn == null)
@@ -274,6 +364,11 @@ namespace BetterLegacy.Menus.UI.Elements
             return canProceed;
         }
 
+        /// <summary>
+        /// Parses a singular "if_func" JSON.
+        /// </summary>
+        /// <param name="jn">JSON to parse.</param>
+        /// <returns>Returns true if the passed JSON function is true, otherwise false.</returns>
         public bool ParseIfFunctionSingle(JSONNode jn)
         {
             var parameters = jn["params"];
@@ -567,7 +662,7 @@ namespace BetterLegacy.Menus.UI.Elements
         }
 
         /// <summary>
-        /// Parses the "func" JSON and performs an action based on the name and parameters.
+        /// Parses a singular "func" JSON and performs an action based on the name and parameters.
         /// </summary>
         /// <param name="jn">The func JSON. Must have a name and a params array. If it has a "if_func", then it will parse and check if it's true.</param>
         public void ParseFunctionSingle(JSONNode jn, bool allowIfFunc = true)
@@ -971,11 +1066,17 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 #endregion
 
+                #region ClearInterfaces
+
+                // Clears all interfaces from the interfaces list.
+                // Function has no parameters.
                 case "ClearInterfaces":
                     {
                         InterfaceManager.inst.interfaces.Clear();
                         break;
                     }
+
+                #endregion
 
                 #region SetCurrentPath
 
@@ -2401,6 +2502,94 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 #endregion
 
+                #region RemoveElement
+
+                // Finds an element with a matching ID, destroys its object and removes it.
+                // Supports both JSON array and JSON object.
+                // 
+                // - JSON Array Structure -
+                // 0 = id
+                // Example:
+                // [
+                //   "522666" < ID to find
+                // ]
+                // 
+                // - JSON Object Structure -
+                // "id"
+                // Example:
+                // {
+                //   "id": "85298259"
+                // }
+                case "RemoveElement":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["id"] == null)
+                            break;
+
+                        var id = parameters.IsArray ? parameters[0] : parameters["id"];
+                        if (InterfaceManager.inst.CurrentMenu.elements.TryFind(x => x.id == id, out MenuImage element))
+                        {
+                            element.Clear();
+                            if (element.gameObject)
+                                CoreHelper.Destroy(element.gameObject);
+                            InterfaceManager.inst.CurrentMenu.elements.Remove(element);
+                        }
+
+                        break;
+                    }
+
+                #endregion
+
+                #region AddElement
+
+                // Adds a list of elements to the interface.
+                // Supports both JSON array and JSON object.
+                // 
+                // - JSON Array Structure -
+                // 0 = elements
+                // Example:
+                // [
+                //   {
+                //     "type": "Image",
+                //     "id": "5343663626",
+                //     "name": "BG",
+                //     "rect": {
+                //       "anc_pos": {
+                //         "x": "0",
+                //         "y": "0"
+                //       }
+                //     }
+                //   }
+                // ]
+                // 
+                // - JSON Object Structure -
+                // "elements"
+                // Example:
+                // {
+                //   "type": "Image",
+                //   "id": "5343663626",
+                //   "name": "BG",
+                //   "rect": {
+                //     "anc_pos": {
+                //       "x": "0",
+                //       "y": "0"
+                //     }
+                //   }
+                // }
+                case "AddElement":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["elements"] == null)
+                            break;
+
+                        var customMenu = InterfaceManager.inst.CurrentMenu;
+                        customMenu.elements.AddRange(CustomMenu.ParseElements(parameters.IsArray ? parameters[0] : parameters["elements"], customMenu.prefabs, customMenu.spriteAssets));
+
+                        CoreHelper.StartCoroutine(customMenu.GenerateUI());
+
+                        break;
+                    }
+
+                #endregion
+
                 #region Specific Functions
 
                 #region Profile
@@ -2552,6 +2741,12 @@ namespace BetterLegacy.Menus.UI.Elements
 
         #endregion
 
+        /// <summary>
+        /// Sets a transform value of the element, depending on type and axis specified.
+        /// </summary>
+        /// <param name="type">The type of transform to set. 0 = position, 1 = scale, 2 = rotation.</param>
+        /// <param name="axis">The axis to set. 0 = X, 1 = Y, 2 = Z.</param>
+        /// <param name="value">The value to set the type and axis to.</param>
         public void SetTransform(int type, int axis, float value)
         {
             if (!gameObject)
@@ -2565,6 +2760,12 @@ namespace BetterLegacy.Menus.UI.Elements
             }
         }
 
+        /// <summary>
+        /// Gets a transform value from the element, depending on the type and axis specified.
+        /// </summary>
+        /// <param name="type">The type of transform to set. 0 = position, 1 = scale, 2 = rotation.</param>
+        /// <param name="axis">The axis to set. 0 = X, 1 = Y, 2 = Z.</param>
+        /// <returns>Returns the transform value from the type and axis.</returns>
         public float GetTransform(int type, int axis)
         {
             if (!gameObject || axis < 0 || axis > 2)
@@ -2578,39 +2779,6 @@ namespace BetterLegacy.Menus.UI.Elements
                 _ => 0f
             };
         }
-
-        public static MenuImage DeepCopy(MenuImage orig, bool newID = true) => new MenuImage
-        {
-            id = newID ? LSText.randomNumString(16) : orig.id,
-            name = orig.name,
-            parentLayout = orig.parentLayout,
-            parent = orig.parent,
-            siblingIndex = orig.siblingIndex,
-            icon = orig.icon,
-            rect = orig.rect,
-            color = orig.color,
-            opacity = orig.opacity,
-            hue = orig.hue,
-            sat = orig.sat,
-            val = orig.val,
-            length = orig.length,
-            playBlipSound = orig.playBlipSound,
-            rounded = orig.rounded, // roundness can be prevented by setting rounded to 0.
-            roundedSide = orig.roundedSide, // default side should be Whole.
-            funcJSON = orig.funcJSON, // function to run when the element is clicked.
-            spawnFuncJSON = orig.spawnFuncJSON, // function to run when the element spawns.
-            reactiveSetting = orig.reactiveSetting,
-            fromLoop = false, // if element has been spawned from the loop or if its the first / only of its kind.
-            loop = orig.loop,
-            func = orig.func,
-            spawnFunc = orig.spawnFunc,
-        };
-
-        /// <summary>
-        /// Provides a way to see the object in UnityExplorer.
-        /// </summary>
-        /// <returns>A string containing the objects' ID and name.</returns>
-        public override string ToString() => $"{id} - {name}";
 
         #endregion
     }

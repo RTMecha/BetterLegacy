@@ -126,6 +126,108 @@ namespace BetterLegacy.Menus.UI.Elements
         #region Methods
 
         /// <summary>
+        /// Creates a new MenuButton element with all the same values as <paramref name="orig"/>.
+        /// </summary>
+        /// <param name="orig">The element to copy.</param>
+        /// <param name="newID">If a new ID should be generated.</param>
+        /// <returns>Returns a copied MenuButton element.</returns>
+        public static MenuButton DeepCopy(MenuButton orig, bool newID = true, bool newSelectionPosition = false, Vector2Int selectionPosition = default) => new MenuButton
+        {
+            #region Base
+
+            id = newID ? LSText.randomNumString(16) : orig.id,
+            name = orig.name,
+            parentLayout = orig.parentLayout,
+            parent = orig.parent,
+            siblingIndex = orig.siblingIndex,
+
+            #endregion
+
+            #region Spawning
+
+            regenerate = orig.regenerate,
+            fromLoop = false, // if element has been spawned from the loop or if its the first / only of its kind.
+            loop = orig.loop,
+
+            #endregion
+
+            #region UI
+
+            text = orig.text,
+            selectionPosition = newSelectionPosition ? selectionPosition : orig.selectionPosition,
+            autoAlignSelectionPosition = orig.autoAlignSelectionPosition,
+            icon = orig.icon,
+            rect = orig.rect,
+            textRect = orig.textRect,
+            iconRect = orig.iconRect,
+            rounded = orig.rounded, // roundness can be prevented by setting rounded to 0.
+            roundedSide = orig.roundedSide, // default side should be Whole.
+            mask = orig.mask,
+            reactiveSetting = orig.reactiveSetting,
+            alignment = orig.alignment,
+            enableWordWrapping = orig.enableWordWrapping,
+            overflowMode = orig.overflowMode,
+
+            #endregion
+
+            #region Color
+
+            hideBG = orig.hideBG,
+            color = orig.color,
+            opacity = orig.opacity,
+            hue = orig.hue,
+            sat = orig.sat,
+            val = orig.val,
+            textColor = orig.textColor,
+            textHue = orig.textHue,
+            textSat = orig.textSat,
+            textVal = orig.textVal,
+
+            selectedColor = orig.selectedColor,
+            selectedOpacity = orig.selectedOpacity,
+            selectedHue = orig.selectedHue,
+            selectedSat = orig.selectedSat,
+            selectedVal = orig.selectedVal,
+            selectedTextColor = orig.selectedTextColor,
+            selectedTextHue = orig.selectedTextHue,
+            selectedTextSat = orig.selectedTextSat,
+            selectedTextVal = orig.selectedTextVal,
+
+            overrideColor = orig.overrideColor,
+            overrideTextColor = orig.overrideTextColor,
+            overrideSelectedColor = orig.overrideSelectedColor,
+            overrideSelectedTextColor = orig.overrideSelectedTextColor,
+            useOverrideColor = orig.useOverrideColor,
+            useOverrideTextColor = orig.useOverrideTextColor,
+            useOverrideSelectedColor = orig.useOverrideSelectedColor,
+            useOverrideSelectedTextColor = orig.useOverrideSelectedTextColor,
+
+            #endregion
+
+            #region Anim
+
+            length = orig.length,
+            wait = orig.wait,
+
+            #endregion
+
+            #region Func
+
+            playBlipSound = orig.playBlipSound,
+            funcJSON = orig.funcJSON, // function to run when the element is clicked.
+            spawnFuncJSON = orig.spawnFuncJSON, // function to run when the element spawns.
+            func = orig.func,
+            spawnFunc = orig.spawnFunc,
+            enterFunc = orig.enterFunc,
+            exitFunc = orig.exitFunc,
+            enterFuncJSON = orig.enterFuncJSON,
+            exitFuncJSON = orig.exitFuncJSON,
+            allowOriginalHoverMethods = orig.allowOriginalHoverMethods,
+
+            #endregion
+        };
+
+        /// <summary>
         /// Plays the Enter animation when the element is selected.
         /// </summary>
         public void OnEnter()
@@ -213,60 +315,6 @@ namespace BetterLegacy.Menus.UI.Elements
             };
             exitAnimation.onComplete = () => { AnimationManager.inst.Remove(exitAnimation.id); };
             AnimationManager.inst.Play(exitAnimation);
-        }
-
-        public static MenuButton DeepCopy(MenuButton orig, bool newID = true, bool newSelectionPosition = false, Vector2Int selectionPosition = default)
-        {
-            return new MenuButton
-            {
-                id = newID ? LSText.randomNumString(16) : orig.id,
-                name = orig.name,
-                parentLayout = orig.parentLayout,
-                parent = orig.parent,
-                siblingIndex = orig.siblingIndex,
-                icon = orig.icon,
-                rect = orig.rect,
-                color = orig.color,
-                opacity = orig.opacity,
-                hue = orig.hue,
-                sat = orig.sat,
-                val = orig.val,
-                length = orig.length,
-                playBlipSound = orig.playBlipSound,
-                rounded = orig.rounded, // roundness can be prevented by setting rounded to 0.
-                roundedSide = orig.roundedSide, // default side should be Whole.
-                funcJSON = orig.funcJSON, // function to run when the element is clicked.
-                spawnFuncJSON = orig.spawnFuncJSON, // function to run when the element spawns.
-                reactiveSetting = orig.reactiveSetting,
-                fromLoop = false, // if element has been spawned from the loop or if its the first / only of its kind.
-                loop = orig.loop,
-                func = orig.func,
-                spawnFunc = orig.spawnFunc,
-                text = orig.text,
-                hideBG = orig.hideBG,
-                iconRect = orig.iconRect,
-                textRect = orig.textRect,
-                textColor = orig.textColor,
-                textHue = orig.textHue,
-                textSat = orig.textSat,
-                textVal = orig.textVal,
-
-                selectionPosition = newSelectionPosition ? selectionPosition : orig.selectionPosition,
-                autoAlignSelectionPosition = orig.autoAlignSelectionPosition,
-                enterFunc = orig.enterFunc,
-                exitFunc = orig.exitFunc,
-                enterFuncJSON = orig.enterFuncJSON,
-                exitFuncJSON = orig.exitFuncJSON,
-                selectedColor = orig.selectedColor,
-                selectedOpacity = orig.selectedOpacity,
-                selectedHue = orig.selectedHue,
-                selectedSat = orig.selectedSat,
-                selectedVal = orig.selectedVal,
-                selectedTextColor = orig.selectedTextColor,
-                selectedTextHue = orig.selectedTextHue,
-                selectedTextSat = orig.selectedTextSat,
-                selectedTextVal = orig.selectedTextVal
-            };
         }
 
         #endregion

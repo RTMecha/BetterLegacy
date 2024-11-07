@@ -25,6 +25,183 @@ namespace BetterLegacy.Menus.UI.Elements
     /// </summary>
     public class MenuText : MenuImage
     {
+        public const float TEXT_LENGTH_DIVISION = 126f;
+
+        #region Public Fields
+
+        /// <summary>
+        /// A sub-image that spawns if <see cref="MenuImage.icon"/> exists.
+        /// </summary>
+        public Image iconUI;
+
+        /// <summary>
+        /// If the background shouldn't display.
+        /// </summary>
+        public bool hideBG;
+
+        /// <summary>
+        /// RectTransform values for the icon..
+        /// </summary>
+        public RectValues iconRect = RectValues.Default;
+
+        /// <summary>
+        /// RectTransform values for the text.
+        /// </summary>
+        public RectValues textRect = RectValues.FullAnchored;
+
+        /// <summary>
+        /// The animation of the text typewriter effect.
+        /// </summary>
+        public RTAnimation textInterpolation;
+
+        /// <summary>
+        /// Theme color slot for the text to use.
+        /// </summary>
+        public int textColor;
+
+        /// <summary>
+        /// Hue color offset.
+        /// </summary>
+        public float textHue;
+
+        /// <summary>
+        /// Saturation color offset.
+        /// </summary>
+        public float textSat;
+
+        /// <summary>
+        /// Value color offset.
+        /// </summary>
+        public float textVal;
+
+        /// <summary>
+        /// If the current text color should use <see cref="overrideTextColor"/> instead of a color slot based on <see cref="textColor"/>.
+        /// </summary>
+        public bool useOverrideTextColor;
+
+        /// <summary>
+        /// Custom color to use.
+        /// </summary>
+        public Color overrideTextColor;
+
+        /// <summary>
+        /// The elements' text.
+        /// </summary>
+        public string text = "";
+
+        /// <summary>
+        /// If the text should wrap when it overflows the sides of the element.
+        /// </summary>
+        public bool enableWordWrapping = false;
+        
+        /// <summary>
+        /// The alignment of the text.
+        /// </summary>
+        public TextAlignmentOptions alignment = TextAlignmentOptions.Left;
+
+        /// <summary>
+        /// How text overflow should be handled.
+        /// </summary>
+        public TextOverflowModes overflowMode = TextOverflowModes.Masking;
+
+        /// <summary>
+        /// The text component of the element.
+        /// </summary>
+        public TextMeshProUGUI textUI;
+
+        #endregion
+
+        #region Private Fields
+
+        string textWithoutFormatting;
+
+        List<Tuple<float, Match, QuickElement>> cachedQuickElements;
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Creates a new MenuText element with all the same values as <paramref name="orig"/>.
+        /// </summary>
+        /// <param name="orig">The element to copy.</param>
+        /// <param name="newID">If a new ID should be generated.</param>
+        /// <returns>Returns a copied MenuText element.</returns>
+        public static MenuText DeepCopy(MenuText orig, bool newID = true) => new MenuText
+        {
+            #region Base
+
+            id = newID ? LSText.randomNumString(16) : orig.id,
+            name = orig.name,
+            parentLayout = orig.parentLayout,
+            parent = orig.parent,
+            siblingIndex = orig.siblingIndex,
+
+            #endregion
+
+            #region Spawning
+
+            regenerate = orig.regenerate,
+            fromLoop = false, // if element has been spawned from the loop or if its the first / only of its kind.
+            loop = orig.loop,
+
+            #endregion
+
+            #region UI
+
+            text = orig.text,
+            icon = orig.icon,
+            rect = orig.rect,
+            textRect = orig.textRect,
+            iconRect = orig.iconRect,
+            rounded = orig.rounded, // roundness can be prevented by setting rounded to 0.
+            roundedSide = orig.roundedSide, // default side should be Whole.
+            mask = orig.mask,
+            reactiveSetting = orig.reactiveSetting,
+            alignment = orig.alignment,
+            enableWordWrapping = orig.enableWordWrapping,
+            overflowMode = orig.overflowMode,
+
+            #endregion
+
+            #region Color
+
+            hideBG = orig.hideBG,
+            color = orig.color,
+            opacity = orig.opacity,
+            hue = orig.hue,
+            sat = orig.sat,
+            val = orig.val,
+            textColor = orig.textColor,
+            textHue = orig.textHue,
+            textSat = orig.textSat,
+            textVal = orig.textVal,
+
+            overrideColor = orig.overrideColor,
+            overrideTextColor = orig.overrideTextColor,
+            useOverrideColor = orig.useOverrideColor,
+            useOverrideTextColor = orig.useOverrideTextColor,
+
+            #endregion
+
+            #region Anim
+
+            length = orig.length,
+            wait = orig.wait,
+
+            #endregion
+
+            #region Func
+
+            playBlipSound = orig.playBlipSound,
+            funcJSON = orig.funcJSON, // function to run when the element is clicked.
+            spawnFuncJSON = orig.spawnFuncJSON, // function to run when the element spawns.
+            func = orig.func,
+            spawnFunc = orig.spawnFunc,
+
+            #endregion
+        };
+
         public override void Spawn()
         {
             timeOffset = Time.time;
@@ -75,12 +252,10 @@ namespace BetterLegacy.Menus.UI.Elements
             AnimationManager.inst.Play(textInterpolation);
         }
 
-        public static float textLengthDivision = 126f;
-
         public override void UpdateSpawnCondition()
         {
             // Speeds up the text interpolation if a Submit key is being held. MenuConfig.Instance.SpeedUpSpeedMultiplier.Value : MenuConfig.Instance.RegularSpeedMultiplier.Value
-            textInterpolation?.animationHandlers[0]?.SetKeyframeTime(1, InputDataManager.inst.menuActions.Submit.IsPressed ? length * (text.Length / textLengthDivision) * MenuConfig.Instance.SpeedUpSpeedMultiplier.Value : length * (text.Length / textLengthDivision) * MenuConfig.Instance.RegularSpeedMultiplier.Value);
+            textInterpolation?.animationHandlers[0]?.SetKeyframeTime(1, InputDataManager.inst.menuActions.Submit.IsPressed ? length * (text.Length / TEXT_LENGTH_DIVISION) * MenuConfig.Instance.SpeedUpSpeedMultiplier.Value : length * (text.Length / TEXT_LENGTH_DIVISION) * MenuConfig.Instance.RegularSpeedMultiplier.Value);
         }
 
         /// <summary>
@@ -134,101 +309,6 @@ namespace BetterLegacy.Menus.UI.Elements
 
             base.Clear();
         }
-
-        /// <summary>
-        /// A sub-image that spawns if <see cref="MenuImage.icon"/> exists.
-        /// </summary>
-        public Image iconUI;
-
-        /// <summary>
-        /// If the background shouldn't display.
-        /// </summary>
-        public bool hideBG;
-
-        /// <summary>
-        /// RectTransform values for the icon..
-        /// </summary>
-        public RectValues iconRect = RectValues.Default;
-
-        /// <summary>
-        /// RectTransform values for the text.
-        /// </summary>
-        public RectValues textRect = RectValues.FullAnchored;
-
-        /// <summary>
-        /// The animation of the text typewriter effect.
-        /// </summary>
-        public RTAnimation textInterpolation;
-
-        /// <summary>
-        /// Theme color slot for the text to use.
-        /// </summary>
-        public int textColor;
-
-        public float textHue;
-        public float textSat;
-        public float textVal;
-
-        public bool useOverrideTextColor;
-        public Color overrideTextColor;
-
-        /// <summary>
-        /// The elements' text.
-        /// </summary>
-        public string text = "";
-
-        public bool enableWordWrapping = false;
-        public TextAlignmentOptions alignment = TextAlignmentOptions.Left;
-        public TextOverflowModes overflowMode = TextOverflowModes.Masking;
-
-        /// <summary>
-        /// The text component of the element.
-        /// </summary>
-        public TextMeshProUGUI textUI;
-
-        public static MenuText DeepCopy(MenuText orig, bool newID = true)
-        {
-            return new MenuText
-            {
-                id = newID ? LSText.randomNumString(16) : orig.id,
-                name = orig.name,
-                parentLayout = orig.parentLayout,
-                parent = orig.parent,
-                siblingIndex = orig.siblingIndex,
-                icon = orig.icon,
-                rect = orig.rect,
-                color = orig.color,
-                opacity = orig.opacity,
-                hue = orig.hue,
-                sat = orig.sat,
-                val = orig.val,
-                length = orig.length,
-                playBlipSound = orig.playBlipSound,
-                rounded = orig.rounded, // roundness can be prevented by setting rounded to 0.
-                roundedSide = orig.roundedSide, // default side should be Whole.
-                funcJSON = orig.funcJSON, // function to run when the element is clicked.
-                spawnFuncJSON = orig.spawnFuncJSON, // function to run when the element spawns.
-                reactiveSetting = orig.reactiveSetting,
-                fromLoop = false, // if element has been spawned from the loop or if its the first / only of its kind.
-                loop = orig.loop,
-                func = orig.func,
-                spawnFunc = orig.spawnFunc,
-                text = orig.text,
-                hideBG = orig.hideBG,
-                iconRect = orig.iconRect,
-                textRect = orig.textRect,
-                textColor = orig.textColor,
-                textHue = orig.textHue,
-                textSat = orig.textSat,
-                textVal = orig.textVal,
-            };
-        }
-
-        #region Private Fields
-        
-        string textWithoutFormatting;
-
-        List<Tuple<float, Match, QuickElement>> cachedQuickElements;
 
         #endregion
     }
