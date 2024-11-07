@@ -1871,7 +1871,8 @@ namespace BetterLegacy.Editor.Managers
                     case "copyAxisMath":
                         {
                             PrefabGroupOnly(modifier, layout);
-                            StringGenerator(modifier, layout, "Object Group", 0);
+                            var str = StringGenerator(modifier, layout, "Object Group", 0);
+                            EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
 
                             DropdownGenerator(modifier, layout, "From Type", 1, CoreHelper.StringToOptionData("Position", "Scale", "Rotation", "Color"));
                             DropdownGenerator(modifier, layout, "From Axis", 2, CoreHelper.StringToOptionData("X", "Y", "Z"));
@@ -2000,6 +2001,36 @@ namespace BetterLegacy.Editor.Managers
                             BoolGenerator(modifier, layout, "Use Visual", 9, false);
 
                             SingleGenerator(modifier, layout, "Equals", 8, 1f);
+
+                            break;
+                        }
+                    case "applyAnimationFrom":
+                    case "applyAnimationTo":
+                    case "applyAnimation":
+                        {
+                            PrefabGroupOnly(modifier, layout);
+                            if (cmd != "applyAnimation")
+                            {
+                                var str = StringGenerator(modifier, layout, "Object Group", 0);
+                                EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+                            }
+                            else
+                            {
+                                var from = StringGenerator(modifier, layout, "From Group", 0);
+                                EditorHelper.AddInputFieldContextMenu(from.transform.Find("Input").GetComponent<InputField>());
+                                var to = StringGenerator(modifier, layout, "To Group", 10);
+                                EditorHelper.AddInputFieldContextMenu(to.transform.Find("Input").GetComponent<InputField>());
+                            }
+
+                            BoolGenerator(modifier, layout, "Animate Position", 1, true);
+                            BoolGenerator(modifier, layout, "Animate Scale", 2, true);
+                            BoolGenerator(modifier, layout, "Animate Rotation", 3, true);
+                            SingleGenerator(modifier, layout, "Delay Position", 4, 0f);
+                            SingleGenerator(modifier, layout, "Delay Scale", 5, 0f);
+                            SingleGenerator(modifier, layout, "Delay Rotation", 6, 0f);
+                            BoolGenerator(modifier, layout, "Use Visual", 7, false);
+                            SingleGenerator(modifier, layout, "Length", 8, 1f);
+                            SingleGenerator(modifier, layout, "Speed", 9, 1f);
 
                             break;
                         }
@@ -2330,6 +2361,7 @@ namespace BetterLegacy.Editor.Managers
                             IntegerGenerator(modifier, layout, "Chapter", 1, 0);
                             IntegerGenerator(modifier, layout, "Level", 2, 0);
                             BoolGenerator(modifier, layout, "Bonus", 0, false);
+                            BoolGenerator(modifier, layout, "Skip Cutscene", 3, false);
 
                             break;
                         }
