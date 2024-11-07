@@ -2607,6 +2607,12 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 #region BeginStoryMode
 
+                case "InitPAChat":
+                    {
+                        PAChatMenu.Init();
+                        break;
+                    }
+
                 // Begins the BetterLegacy story mode.
                 // Function has no parameters.
                 case "BeginStoryMode":

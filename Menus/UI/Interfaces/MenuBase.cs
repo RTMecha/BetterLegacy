@@ -214,7 +214,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// <param name="textColor"></param>
         /// <param name="textVal"></param>
         /// <returns>Returns a generated top bar.</returns>
-        public static IEnumerable<MenuImage> GenerateTopBar(string title, int textColor = 0, float textVal = 40f)
+        public static IEnumerable<MenuImage> GenerateTopBar(string title, int textColor = 0, float textVal = 40f, bool regenerate = true)
         {
             yield return new MenuText
             {
@@ -227,6 +227,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 textColor = textColor,
                 textVal = textVal,
                 length = 0.6f,
+                regenerate = regenerate
             };
 
             yield return new MenuText
@@ -240,6 +241,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 textColor = textColor,
                 textVal = textVal,
                 length = 0.6f,
+                regenerate = regenerate
             };
         }
 
@@ -249,7 +251,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// <param name="textColor"></param>
         /// <param name="textVal"></param>
         /// <returns>Returns a generated bottom bar.</returns>
-        public static IEnumerable<MenuImage> GenerateBottomBar(int textColor = 0, float textVal = 40f)
+        public static IEnumerable<MenuImage> GenerateBottomBar(int textColor = 0, float textVal = 40f, bool regenerate = true)
         {
             yield return new MenuText
             {
@@ -262,6 +264,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 textColor = textColor,
                 textVal = textVal,
                 length = 0.6f,
+                regenerate = regenerate
             };
 
             yield return new MenuText
@@ -275,6 +278,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 textColor = textColor,
                 textVal = textVal,
                 length = 0.6f,
+                regenerate = regenerate
             };
         }
 

@@ -146,7 +146,7 @@ namespace BetterLegacy.Story
             {
                 RTFile.WriteToFile(StorySavesPath, storySavesJSON.ToString());
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 CoreHelper.LogException(ex);
             }
@@ -196,6 +196,44 @@ namespace BetterLegacy.Story
         public float LoadFloat(string name, float defaultValue) => storySavesJSON["saves"][name] == null || storySavesJSON["saves"][name]["float"] == null ? defaultValue : storySavesJSON["saves"][name]["float"].AsFloat;
         public string LoadString(string name, string defaultValue) => storySavesJSON["saves"][name] == null || storySavesJSON["saves"][name]["string"] == null ? defaultValue : storySavesJSON["saves"][name]["string"].Value;
         public JSONNode LoadJSON(string name) => storySavesJSON["saves"][name] == null ? null : storySavesJSON["saves"][name]["array"] != null ? storySavesJSON["saves"][name]["array"] : storySavesJSON["saves"][name]["object"] != null ? storySavesJSON["saves"][name]["object"] : null;
+
+        #region PAChat
+
+        public void ClearChats()
+        {
+            storySavesJSON.Remove("chat");
+            Save();
+        }
+
+        public List<string> ReadChats()
+        {
+            var list = new List<string>();
+            if (storySavesJSON["chat"] != null)
+                for (int i = 0; i < storySavesJSON["chat"].Count; i++)
+                    list.Add(storySavesJSON["chat"][i]["text"]);
+
+            return list;
+        }
+
+        public string ReadChatTime(int index) => storySavesJSON["chat"][index]["time"];
+        public string ReadChatCharacter(int index) => storySavesJSON["chat"][index]["char"];
+        public string ReadChatText(int index) => storySavesJSON["chat"][index]["text"];
+
+        public void AddChat(string character, string chat, string time)
+        {
+            int index = storySavesJSON["chat"] == null ? 0 : storySavesJSON["chat"].Count;
+            SetChat(index, character, chat, time);
+        }
+
+        public void SetChat(int index, string character, string chat, string time)
+        {
+            storySavesJSON["chat"][index]["time"] = time;
+            storySavesJSON["chat"][index]["char"] = character;
+            storySavesJSON["chat"][index]["text"] = chat;
+            Save();
+        }
+
+        #endregion
 
         #endregion
 
