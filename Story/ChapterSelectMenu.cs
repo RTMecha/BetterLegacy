@@ -25,6 +25,14 @@ namespace BetterLegacy.Story
         {
             id = "2";
 
+            elements.Add(new MenuEvent
+            {
+                id = "09",
+                name = "Effects",
+                func = () => { MenuEffectsManager.inst.UpdateChroma(0.1f); },
+                length = 0f,
+            });
+
             layouts.Add("buttons", new MenuVerticalLayout
             {
                 name = "buttons",
@@ -35,16 +43,6 @@ namespace BetterLegacy.Story
             });
 
             elements.AddRange(GenerateTopBar("Chapter Select Menu", 6, 0f));
-
-            exitFunc = () => { InterfaceManager.inst.StartupStoryInterface(); };
-
-            elements.Add(new MenuEvent
-            {
-                id = "09",
-                name = "Effects",
-                func = () => { MenuEffectsManager.inst.UpdateChroma(0.1f); },
-                length = 0f,
-            });
 
             elements.Add(new MenuButton
             {
@@ -62,7 +60,7 @@ namespace BetterLegacy.Story
                 selectedOpacity = 1f,
                 length = 1f,
                 playBlipSound = true,
-                func = () => { InterfaceManager.inst.StartupStoryInterface(); },
+                func = InterfaceManager.inst.StartupStoryInterface,
             });
 
             for (int i = 1; i <= StoryMode.Instance.chapters.Count; i++)
@@ -94,6 +92,8 @@ namespace BetterLegacy.Story
                     });
                 }
             }
+
+            exitFunc = InterfaceManager.inst.StartupStoryInterface;
         }
 
         public override void UpdateTheme()
