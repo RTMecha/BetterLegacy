@@ -314,6 +314,15 @@ namespace BetterLegacy.Story
                     Updater.OnLevelEnd();
                     UpdateCurrentLevelProgress(); // allow players to get a better rank
 
+                    if (!ContinueStory)
+                    {
+                        CoreHelper.InStory = true;
+                        LevelManager.OnLevelEnd = null;
+                        ContinueStory = true;
+                        SceneManager.inst.LoadScene("Interface");
+                        return;
+                    }
+
                     int chapter = LoadInt("Chapter", 0);
                     int level = LoadInt($"DOC{(chapter + 1).ToString("00")}Progress", 0);
                     level++;
@@ -327,15 +336,6 @@ namespace BetterLegacy.Story
 
                     SaveInt("Chapter", chapter);
                     SaveInt($"DOC{(chapter + 1).ToString("00")}Progress", level);
-
-                    if (!ContinueStory)
-                    {
-                        CoreHelper.InStory = true;
-                        LevelManager.OnLevelEnd = null;
-                        ContinueStory = true;
-                        SceneManager.inst.LoadScene("Interface");
-                        return;
-                    }
 
                     CoreHelper.InStory = true;
                     LevelManager.OnLevelEnd = null;
@@ -417,6 +417,15 @@ namespace BetterLegacy.Story
                 Updater.UpdateObjects(false);
                 UpdateCurrentLevelProgress(); // allow players to get a better rank
 
+                if (!ContinueStory)
+                {
+                    CoreHelper.InStory = true;
+                    LevelManager.OnLevelEnd = null;
+                    ContinueStory = true;
+                    SceneManager.inst.LoadScene("Interface");
+                    return;
+                }
+
                 int chapterIndex = LoadInt("Chapter", 0);
                 int levelIndex = LoadInt($"DOC{(chapterIndex + 1).ToString("00")}Progress", 0);
 
@@ -451,15 +460,6 @@ namespace BetterLegacy.Story
 
                 SaveInt("Chapter", chapterIndex);
                 SaveInt($"DOC{(chapterIndex + 1).ToString("00")}Progress", levelIndex);
-
-                if (!ContinueStory)
-                {
-                    CoreHelper.InStory = true;
-                    LevelManager.OnLevelEnd = null;
-                    ContinueStory = true;
-                    SceneManager.inst.LoadScene("Interface");
-                    return;
-                }
 
                 CoreHelper.InStory = true;
                 LevelManager.OnLevelEnd = null;
