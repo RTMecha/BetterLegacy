@@ -1698,16 +1698,23 @@ namespace BetterLegacy.Editor.Managers
         {
             GameObject gameObject = null;
 
+            int index = 0;
             if (forceAdd || !dontAdd && !timelineObject.verified && !RTEditor.inst.timelineObjects.Has(x => x.ID == timelineObject.ID))
             {
                 timelineObject.verified = true;
-                RTEditor.inst.timelineObjects.Add(timelineObject);
+                if (timelineObject.IsPrefabObject || !RTEditor.inst.timelineObjects.TryFindIndex(x => x.IsPrefabObject, out index))
+                {
+                    index = RTEditor.inst.timelineObjects.Count;
+                    RTEditor.inst.timelineObjects.Add(timelineObject);
+                }
+                else
+                    RTEditor.inst.timelineObjects.Insert(index, timelineObject);
             }
 
             if (timelineObject.GameObject)
                 Destroy(timelineObject.GameObject);
 
-            gameObject = ObjEditor.inst.timelineObjectPrefab.Duplicate(RTEditor.inst.timelineObjectsParent, "timeline object");
+            gameObject = ObjEditor.inst.timelineObjectPrefab.Duplicate(RTEditor.inst.timelineObjectsParent, "timeline object", index);
             var storage = gameObject.GetComponent<TimelineObjectStorage>();
 
             timelineObject.Hover = storage.hoverUI;
