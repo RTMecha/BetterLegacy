@@ -1,7 +1,7 @@
 ﻿### Major feature
 - Level collections.
 - Custom Achievement system.
-- Story mode.
+- Story mode. (Have PA Chat store in story.json)
 - Example tutorials. (Either ask Example about something or right click an element to show the context menu with a "Tutorial" button)
 - Online multiplayer.
 
