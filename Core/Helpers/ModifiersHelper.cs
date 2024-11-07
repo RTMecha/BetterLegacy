@@ -1298,6 +1298,7 @@ namespace BetterLegacy.Core.Helpers
                     }
                 #endregion
                 #region Misc
+
                 case "inEditor":
                         return CoreHelper.InEditor;
                 case "configLDM":
@@ -1327,10 +1328,31 @@ namespace BetterLegacy.Core.Helpers
 
                         break;
                     }
+                case "objectSpawned":
+                    {
+                        if (modifier.Result == null)
+                            modifier.Result = new List<string>();
+
+                        var ids = modifier.GetResult<List<string>>();
+
+                        var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
+                        for (int i = 0; i < list.Count; i++)
+                        {
+                            if (!ids.Contains(list[i].id) && list[i].Alive)
+                            {
+                                ids.Add(list[i].id);
+                                modifier.Result = ids;
+                                return true;
+                            }
+                        }
+
+                        return false;
+                    }
+
                     #endregion
             }
 
-            modifier.Inactive?.Invoke(modifier); // ?
+            //modifier.Inactive?.Invoke(modifier); // ?
             return false;
         }
 
@@ -6375,6 +6397,7 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
                     case "copyAxis":
+                    case "objectSpawned":
                         {
                             modifier.Result = null;
                             break;
