@@ -40,6 +40,11 @@ namespace BetterLegacy.Core
         public static string ValidateDirectory(string name)
             => Regex.Replace(name, string.Format("([{0}]*\\.+$)|([{0}]+)", Regex.Escape(new string(Path.GetInvalidPathChars())) + "+?#!"), string.Empty);
 
+        public static string ParsePaths(string str) => string.IsNullOrEmpty(str) ? str : str
+            .Replace("{{AppDirectory}}", ApplicationDirectory)
+            .Replace("{{BepInExAssetsDirectory}}", BepInExAssetsPath)
+            .Replace("{{LevelPath}}", GameManager.inst ? BasePath : ApplicationDirectory);
+
         public static void WriteToFile(string path, string json)
         {
             using var streamWriter = new StreamWriter(path);
