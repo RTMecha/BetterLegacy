@@ -4646,11 +4646,12 @@ namespace BetterLegacy.Core.Helpers
                                 easing = DataManager.inst.AnimationList[e].Name;
 
                             var variables = modifier.reference.GetObjectVariables();
+                            var functions = modifier.reference.GetObjectFunctions();
 
-                            float time = (float)RTMath.Parse(modifier.value, variables);
-                            float x = (float)RTMath.Parse(modifier.commands[2], variables);
-                            float y = (float)RTMath.Parse(modifier.commands[3], variables);
-                            float z = (float)RTMath.Parse(modifier.commands[4], variables);
+                            float time = (float)RTMath.Parse(modifier.value, variables, functions);
+                            float x = (float)RTMath.Parse(modifier.commands[2], variables, functions);
+                            float y = (float)RTMath.Parse(modifier.commands[3], variables, functions);
+                            float z = (float)RTMath.Parse(modifier.commands[4], variables, functions);
 
                             Vector3 vector = type switch
                             {
@@ -4698,12 +4699,13 @@ namespace BetterLegacy.Core.Helpers
                                 easing = DataManager.inst.AnimationList[e].Name;
 
                             var variables = modifier.reference.GetObjectVariables();
+                            var functions = modifier.reference.GetObjectFunctions();
 
                             // for optimization sake, we evaluate this outside of the foreach loop. normally I'd place this inside and replace "otherVar" with bm.integerVariable.ToString(), however I feel that would result in a worse experience so the tradeoff is not worth it.
-                            float time = (float)RTMath.Parse(modifier.value, variables);
-                            float x = (float)RTMath.Parse(modifier.commands[2], variables);
-                            float y = (float)RTMath.Parse(modifier.commands[3], variables);
-                            float z = (float)RTMath.Parse(modifier.commands[4], variables);
+                            float time = (float)RTMath.Parse(modifier.value, variables, functions);
+                            float x = (float)RTMath.Parse(modifier.commands[2], variables, functions);
+                            float y = (float)RTMath.Parse(modifier.commands[3], variables, functions);
+                            float z = (float)RTMath.Parse(modifier.commands[4], variables, functions);
 
                             foreach (var bm in list)
                             {
@@ -4764,12 +4766,13 @@ namespace BetterLegacy.Core.Helpers
                                 easing = DataManager.inst.AnimationList[e].Name;
 
                             var variables = modifier.reference.GetObjectVariables();
+                            var functions = modifier.reference.GetObjectFunctions();
 
-                            float time = (float)RTMath.Parse(modifier.value, variables);
-                            float x = (float)RTMath.Parse(modifier.commands[2], variables);
-                            float y = (float)RTMath.Parse(modifier.commands[3], variables);
-                            float z = (float)RTMath.Parse(modifier.commands[4], variables);
-                            float signalTime = (float)RTMath.Parse(modifier.commands[8], variables);
+                            float time = (float)RTMath.Parse(modifier.value, variables, functions);
+                            float x = (float)RTMath.Parse(modifier.commands[2], variables, functions);
+                            float y = (float)RTMath.Parse(modifier.commands[3], variables, functions);
+                            float z = (float)RTMath.Parse(modifier.commands[4], variables, functions);
+                            float signalTime = (float)RTMath.Parse(modifier.commands[8], variables, functions);
 
                             Vector3 vector = type switch
                             {
@@ -4835,11 +4838,12 @@ namespace BetterLegacy.Core.Helpers
                                 easing = DataManager.inst.AnimationList[e].Name;
 
                             var variables = modifier.reference.GetObjectVariables();
+                            var functions = modifier.reference.GetObjectFunctions();
 
-                            float time = (float)RTMath.Parse(modifier.value, variables);
-                            float x = (float)RTMath.Parse(modifier.commands[2], variables);
-                            float y = (float)RTMath.Parse(modifier.commands[3], variables);
-                            float z = (float)RTMath.Parse(modifier.commands[4], variables);
+                            float time = (float)RTMath.Parse(modifier.value, variables, functions);
+                            float x = (float)RTMath.Parse(modifier.commands[2], variables, functions);
+                            float y = (float)RTMath.Parse(modifier.commands[3], variables, functions);
+                            float z = (float)RTMath.Parse(modifier.commands[4], variables, functions);
                             float signalTime = (float)RTMath.Parse(modifier.commands[8], variables);
 
                             foreach (var bm in list)
@@ -5511,8 +5515,174 @@ namespace BetterLegacy.Core.Helpers
                             break;
                         }
 
+                    case "applyAnimation":
+                        {
+                            if (CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject from))
+                            {
+                                var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[10]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[10]);
+
+                                if (modifier.Result == null)
+                                    modifier.Result = Updater.CurrentTime;
+                                var time = modifier.GetResult<float>();
+
+                                var animatePos = modifier.GetBool(1, true);
+                                var animateSca = modifier.GetBool(2, true);
+                                var animateRot = modifier.GetBool(3, true);
+                                var delayPos = modifier.GetFloat(4, 0f);
+                                var delaySca = modifier.GetFloat(5, 0f);
+                                var delayRot = modifier.GetFloat(6, 0f);
+                                var useVisual = modifier.GetBool(7, false);
+                                var length = modifier.GetFloat(8, 1f);
+                                var speed = modifier.GetFloat(9, 1f);
+
+                                if (!modifier.constant)
+                                    AnimationManager.inst.Remove("Apply Object Animation " + modifier.reference.id);
+
+                                for (int i = 0; i < list.Count; i++)
+                                {
+                                    var bm = list[i];
+
+                                    if (!modifier.constant)
+                                    {
+                                        var animation = new RTAnimation("Apply Object Animation " + modifier.reference.id);
+                                        animation.animationHandlers = new List<AnimationHandlerBase>
+                                        {
+                                            new AnimationHandler<float>(new List<IKeyframe<float>>
+                                            {
+                                                new FloatKeyframe(0f, 0f, Ease.Linear),
+                                                new FloatKeyframe(Mathf.Clamp(length / speed, 0f, 100f), length, Ease.Linear),
+                                            }, x =>
+                                            {
+                                                ApplyAnimationTo(bm, from, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+                                            })
+                                        };
+                                        animation.onComplete = () =>
+                                        {
+                                            ApplyAnimationTo(bm, from, useVisual, 0f, length, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+
+                                            AnimationManager.inst.Remove(animation.id);
+                                            animation = null;
+                                            modifier.Result = null;
+                                        };
+                                        AnimationManager.inst.Play(animation);
+                                        return;
+                                    }
+
+                                    ApplyAnimationTo(bm, from, useVisual, time, Updater.CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+                                }
+                            }
+
+                            break;
+                        }
+                    case "applyAnimationFrom":
+                        {
+                            if (CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
+                            {
+                                if (modifier.Result == null)
+                                    modifier.Result = Updater.CurrentTime;
+                                var time = modifier.GetResult<float>();
+
+                                var animatePos = modifier.GetBool(1, true);
+                                var animateSca = modifier.GetBool(2, true);
+                                var animateRot = modifier.GetBool(3, true);
+                                var delayPos = modifier.GetFloat(4, 0f);
+                                var delaySca = modifier.GetFloat(5, 0f);
+                                var delayRot = modifier.GetFloat(6, 0f);
+                                var useVisual = modifier.GetBool(7, false);
+                                var length = modifier.GetFloat(8, 1f);
+                                var speed = modifier.GetFloat(9, 1f);
+
+                                if (!modifier.constant)
+                                {
+                                    AnimationManager.inst.Remove("Apply Object Animation " + modifier.reference.id);
+
+                                    var animation = new RTAnimation("Apply Object Animation " + modifier.reference.id);
+                                    animation.animationHandlers = new List<AnimationHandlerBase>
+                                    {
+                                        new AnimationHandler<float>(new List<IKeyframe<float>>
+                                        {
+                                            new FloatKeyframe(0f, 0f, Ease.Linear),
+                                            new FloatKeyframe(Mathf.Clamp(length / speed, 0f, 100f), length, Ease.Linear),
+                                        }, x =>
+                                        {
+                                            ApplyAnimationTo(modifier.reference, bm, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+                                        })
+                                    };
+                                    animation.onComplete = () =>
+                                    {
+                                        ApplyAnimationTo(modifier.reference, bm, useVisual, 0f, length, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+                                        AnimationManager.inst.Remove(animation.id);
+                                        animation = null;
+                                        modifier.Result = null;
+                                    };
+                                    AnimationManager.inst.Play(animation);
+                                    return;
+                                }
+
+                                ApplyAnimationTo(modifier.reference, bm, useVisual, time, Updater.CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+                            }
+
+                            break;
+                        }
+                    case "applyAnimationTo":
+                        {
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
+
+                            if (modifier.Result == null)
+                                modifier.Result = Updater.CurrentTime;
+                            var time = modifier.GetResult<float>();
+
+                            var animatePos = modifier.GetBool(1, true);
+                            var animateSca = modifier.GetBool(2, true);
+                            var animateRot = modifier.GetBool(3, true);
+                            var delayPos = modifier.GetFloat(4, 0f);
+                            var delaySca = modifier.GetFloat(5, 0f);
+                            var delayRot = modifier.GetFloat(6, 0f);
+                            var useVisual = modifier.GetBool(7, false);
+                            var length = modifier.GetFloat(8, 1f);
+                            var speed = modifier.GetFloat(9, 1f);
+
+                            for (int i = 0; i < list.Count; i++)
+                            {
+                                var bm = list[i];
+
+                                if (!modifier.constant)
+                                {
+                                    AnimationManager.inst.Remove("Apply Object Animation " + modifier.reference.id);
+
+                                    var animation = new RTAnimation("Apply Object Animation " + modifier.reference.id);
+                                    animation.animationHandlers = new List<AnimationHandlerBase>
+                                    {
+                                        new AnimationHandler<float>(new List<IKeyframe<float>>
+                                        {
+                                            new FloatKeyframe(0f, 0f, Ease.Linear),
+                                            new FloatKeyframe(Mathf.Clamp(length / speed, 0f, 100f), length, Ease.Linear),
+                                        }, x =>
+                                        {
+                                            ApplyAnimationTo(bm, modifier.reference, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+                                        })
+                                    };
+                                    animation.onComplete = () =>
+                                    {
+                                        ApplyAnimationTo(bm, modifier.reference, useVisual, 0f, length, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+
+                                        AnimationManager.inst.Remove(animation.id);
+                                        animation = null;
+                                        modifier.Result = null;
+                                    };
+                                    AnimationManager.inst.Play(animation);
+                                    return;
+                                }
+
+                                ApplyAnimationTo(bm, modifier.reference, useVisual, time, Updater.CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+                            }
+
+                            break;
+                        }
+
                     #endregion
                     #region BG Object
+
                     case "setBGActive":
                         {
                             if (!bool.TryParse(modifier.value, out bool active))
@@ -5529,6 +5699,7 @@ namespace BetterLegacy.Core.Helpers
                         {
                             break;
                         }
+
                     #endregion
                     #region Prefab
 
@@ -6044,7 +6215,7 @@ namespace BetterLegacy.Core.Helpers
 
                     case "loadStoryLevelDEVONLY":
                         {
-                            Story.StoryManager.inst.Play(modifier.GetInt(1, 0), modifier.GetInt(2, 0), modifier.GetBool(0, false));
+                            Story.StoryManager.inst.Play(modifier.GetInt(1, 0), modifier.GetInt(2, 0), modifier.GetBool(0, false), modifier.GetBool(3, false));
 
                             break;
                         }
@@ -6400,6 +6571,15 @@ namespace BetterLegacy.Core.Helpers
                     case "objectSpawned":
                         {
                             modifier.Result = null;
+                            break;
+                        }
+                    case "applyAnimation":
+                    case "applyAnimationFrom":
+                    case "applyAnimationTo":
+                        {
+                            if (modifier.constant)
+                                modifier.Result = null;
+
                             break;
                         }
                 }
@@ -6868,6 +7048,69 @@ namespace BetterLegacy.Core.Helpers
 
                         break;
                     }
+            }
+        }
+
+        public static void ApplyAnimationTo(
+            BeatmapObject applyTo, BeatmapObject takeFrom,
+            bool useVisual, float time, float currentTime,
+            bool animatePos, bool animateSca, bool animateRot,
+            float delayPos, float delaySca, float delayRot)
+        {
+            if (!useVisual && Updater.levelProcessor.converter.cachedSequences.TryGetValue(takeFrom.id, out ObjectConverter.CachedSequences cachedSequences))
+            {
+                var positionSequence = cachedSequences.Position3DSequence.Interpolate(currentTime - time - delayPos);
+                var scaleSequence = cachedSequences.ScaleSequence.Interpolate(currentTime - time - delaySca);
+                var rotationSequence = cachedSequences.RotationSequence.Interpolate(currentTime - time - delayRot);
+
+                // Animate position
+                if (animatePos)
+                    applyTo.positionOffset = positionSequence;
+
+                // Animate scale
+                if (animateSca)
+                    applyTo.scaleOffset = new Vector3(scaleSequence.x - 1f, scaleSequence.y - 1f, 0f);
+
+                // Animate rotation
+                if (animateRot)
+                    applyTo.rotationOffset = new Vector3(0f, 0f, rotationSequence);
+            }
+            else if (useVisual && Updater.TryGetObject(takeFrom, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
+            {
+                var transform = levelObject.visualObject.GameObject.transform;
+                var position = transform.position;
+                var scale = transform.lossyScale;
+                var rotation = transform.rotation.eulerAngles;
+
+                // Animate position
+                if (animatePos)
+                    applyTo.positionOffset = position;
+
+                // Animate scale
+                if (animateSca)
+                    applyTo.scaleOffset = scale;
+
+                // Animate rotation
+                if (animateRot)
+                    applyTo.rotationOffset = rotation;
+            }
+            else if (useVisual)
+            {
+                var positionSequence = takeFrom.InterpolateChainPosition(currentTime - time - delayPos);
+                var scaleSequence = takeFrom.InterpolateChainScale(currentTime - time - delaySca);
+                var rotationSequence = takeFrom.InterpolateChainRotation(currentTime - time - delayRot);
+
+                // Animate position
+                if (animatePos)
+                    applyTo.positionOffset = positionSequence;
+
+                // Animate scale
+                if (animateSca)
+                    applyTo.scaleOffset = new Vector3(scaleSequence.x - 1f, scaleSequence.y - 1f, 0f);
+
+                // Animate rotation
+                if (animateRot)
+                    applyTo.rotationOffset = new Vector3(0f, 0f, rotationSequence);
             }
         }
     }
