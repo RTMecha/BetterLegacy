@@ -931,7 +931,7 @@ namespace BetterLegacy.Menus.UI.Elements
                 case "Parse":
                     {
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["file"] == null)
-                            return;
+                            break;
 
                         if (parameters.IsArray && parameters.Count > 2 || parameters.IsObject && parameters["path"] != null)
                             InterfaceManager.inst.MainDirectory = RTFile.ParsePaths(parameters.IsArray ? parameters[2] : parameters["path"]);
@@ -945,7 +945,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         {
                             CoreHelper.LogError($"Interface {(parameters.IsArray ? parameters[0] : parameters["file"])} does not exist!");
 
-                            return;
+                            break;
                         }
 
                         var interfaceJN = JSON.Parse(RTFile.ReadFromFile(path));
@@ -958,7 +958,7 @@ namespace BetterLegacy.Menus.UI.Elements
                             if (parameters.IsArray && (parameters.Count < 2 || Parser.TryParse(parameters[1], false)) || parameters.IsObject && Parser.TryParse(parameters["load"], true))
                                 InterfaceManager.inst.SetCurrentInterface(menu.id);
 
-                            return;
+                            break;
                         }    
 
                         InterfaceManager.inst.interfaces.Add(menu);
@@ -2356,11 +2356,46 @@ namespace BetterLegacy.Menus.UI.Elements
                 case "LoadLevel":
                     {
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["id"] == null)
-                            return;
+                            break;
 
                         if (LevelManager.Levels.TryFind(x => x.id == (parameters.IsArray ? parameters[0] : parameters["id"]), out Level level))
                             CoreHelper.StartCoroutine(LevelManager.Play(level));
 
+                        break;
+                    }
+
+                #endregion
+
+                #region InitLevelMenu
+
+                // Initializes the level list menu from a specific path.
+                // Supports both JSON array and JSON object.
+                // 
+                // - JSON Array Structure -
+                // 0 = directory
+                // Example:
+                // [
+                //   "{{AppDirectory}}beatmaps/editor" < must contain levels with ".lsb" format.
+                // ]
+                // 
+                // - JSON Object Structure -
+                // "directory"
+                // Example:
+                // {
+                //   "directory": "" < if left empty, will use the interfaces' directory.
+                // }
+                case "InitLevelMenu":
+                    {
+                        var directory = InterfaceManager.inst.MainDirectory;
+                        if (parameters != null && (parameters.IsArray && parameters.Count > 0 || parameters["directory"] != null))
+                            directory = parameters.IsArray ? parameters[1] : parameters["directory"];
+                        if (string.IsNullOrEmpty(directory))
+                            directory = InterfaceManager.inst.MainDirectory;
+
+                        var directories = Directory.GetDirectories(directory);
+                        var list = directories.Where(x => Level.Verify(x + "/")).Select(x => new Level(x.Replace("\\", "/") + "/")).ToList();
+
+                        Arcade.LevelListMenu.Init(list);
                         break;
                     }
 
@@ -2402,10 +2437,12 @@ namespace BetterLegacy.Menus.UI.Elements
                         var isArray = parameters.IsArray;
                         var chapter = isArray ? parameters[0].AsInt : parameters["chapter"].AsInt;
                         var level = isArray ? parameters[1].AsInt : parameters["level"].AsInt;
+                        var bonus = isArray && parameters.Count > 3 ? parameters[3].AsBool : parameters["bonus"] != null ? parameters["bonus"].AsBool : false;
+                        var skipCutscenes = isArray && parameters.Count > 4 ? parameters[4].AsBool : parameters["skip_cutscenes"] != null ? parameters["skip_cutscenes"].AsBool : true;
 
                         StoryManager.inst.ContinueStory = isArray && parameters.Count > 2 && parameters[2].AsBool || parameters.IsObject && parameters["continue"].AsBool;
 
-                        StoryManager.inst.Play(chapter, level);
+                        StoryManager.inst.Play(chapter, level, bonus, skipCutscenes);
 
                         break;
                     }
