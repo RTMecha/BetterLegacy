@@ -110,8 +110,8 @@ namespace BetterLegacy.Editor
                     element.Function = (FunctionType)jn["func_type"].AsInt switch
                     {
                         FunctionType.OpenLink => () => Application.OpenURL(data),
-                        FunctionType.OpenFile => () => RTFile.OpenInFileBrowser.OpenFile(FontManager.TextTranslater.ReplaceProperties(data)),
-                        FunctionType.OpenFolder => () => RTFile.OpenInFileBrowser.OpenFile(FontManager.TextTranslater.ReplaceProperties(data)),
+                        FunctionType.OpenFile => () => RTFile.OpenInFileBrowser.OpenFile(RTFile.ParsePaths(data)),
+                        FunctionType.OpenFolder => () => RTFile.OpenInFileBrowser.OpenFile(RTFile.ParsePaths(data)),
                         _ => () => CoreHelper.Log($"Func: {data}"),
                     };
                 }
