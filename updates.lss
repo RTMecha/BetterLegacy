@@ -1,3 +1,13 @@
+snapshot-2024.11.8 > (pre-1.7.0) > [Nov 7, 2024]
+- Modifiers can now be organized using the modifier context menu.
+- Looking into adding an "else" toggle for trigger modifiers.
+- Trigger modifiers now have their inactive state properly triggered if when the object respawns.
+- Added player0Rot variable to math evaluators.
+- Added mousePosX and mousePosY to math evaluators.
+- Added screenWidth and screenHeight to math evaluators.
+- You can now shift the index order of objects around. What this means is objects that appear above others can now be shifted to below others.
+- Finally reworked the story mode system to be data driven. Which means if you know how you can probably make your own story mode. This also means I can finally get some work done on the story!
+- Added applyAnimation, applyAnimationFrom and applyAnimationTo action modifiers.
 snapshot-2024.11.7 > (pre-1.7.0) > [Nov 6, 2024]
 - Added objectAlive trigger modifier. This triggers whenever an object from a specific group is alive. Good for timing specific actions.
 - Fixed some cases where the Prefab Group Only toggle wasn't showing for modifiers that have object group fields.
