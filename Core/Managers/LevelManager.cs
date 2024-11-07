@@ -177,12 +177,12 @@ namespace BetterLegacy.Core.Managers
         /// <returns></returns>
         public static IEnumerator Play(Level level)
         {
-            Debug.Log($"{className}Start playing level:\n{level}\nIs Story: {level is Story.StoryLevel}");
+            Debug.Log($"{className}Start playing level:\n{level}\nIs Story: {level is StoryLevel}");
 
             LoadingFromHere = true;
             LevelEnded = false;
 
-            if (level.playerData == null && Saves.TryFind(x => x.ID == level.id, out PlayerData playerData))
+            if (level.playerData == null && (level is StoryLevel ? StoryManager.inst.Saves : Saves).TryFind(x => x.ID == level.id, out PlayerData playerData))
                 level.playerData = playerData;
 
             PreviousLevel = CurrentLevel;
@@ -226,15 +226,13 @@ namespace BetterLegacy.Core.Managers
 
             GameManager.inst.gameState = GameManager.State.Parsing;
 
-            Story.StoryLevel storyLevel = null;
-            if (level is Story.StoryLevel a)
-                storyLevel = a;
+            StoryLevel storyLevel = null;
+            if (level is StoryLevel storyLevelResult)
+                storyLevel = storyLevelResult;
 
+            CoreHelper.InStory = level.isStory;
             if (level.isStory && storyLevel)
-            {
-                CoreHelper.InStory = true;
                 GameData.Current = GameData.Parse(JSON.Parse(UpdateBeatmap(storyLevel.json, level.metadata.beatmap.game_version)));
-            }
             else
             {
                 var levelMode = level.CurrentFile;

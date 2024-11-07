@@ -212,9 +212,82 @@ namespace BetterLegacy.Story
 
         public void Play(string path) => StartCoroutine(IPlay(path));
 
-        public void Play(int chapter, int level, bool bonus = false) => StartCoroutine(IPlay((bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters)[chapter].levels[level].filePath));
+        public void Play(int chapter, int level, bool bonus = false, bool skipCutscenes = false)
+        {
+            var storyLevel = (bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters)[chapter].levels[level];
 
-        // todo: add functionality for loading regular .lsb levels.
+            StartCoroutine(IPlay(storyLevel, skipCutscenes: skipCutscenes));
+        }
+
+        public IEnumerator IPlay(StoryMode.LevelSequence level, int cutsceneIndex = 0, bool skipCutscenes = false)
+        {
+            if (AssetBundlesLoaded)
+                Clear();
+
+            var path = level.filePath;
+            bool isCutscene = false;
+
+            int chapterIndex = LoadInt("Chapter", 0);
+            int levelIndex = LoadInt($"DOC{(chapterIndex + 1).ToString("00")}Progress", 0);
+            var completeString = $"DOC{(chapterIndex + 1).ToString("00")}_{(levelIndex + 1).ToString("00")}Complete";
+
+            if (!skipCutscenes && cutsceneIndex >= 0 && cutsceneIndex < level.Count && level.Count > 1 && !LoadBool(completeString, false))
+            {
+                isCutscene = true;
+                path = level[cutsceneIndex];
+            }
+
+            if (!RTFile.FileExists(path))
+            {
+                CoreHelper.LogError($"File \'{path}\' does not exist.");
+                SoundManager.inst.PlaySound(DefaultSounds.Block);
+                Loaded = false;
+                CoreHelper.InStory = false;
+                LevelManager.OnLevelEnd = null;
+                SceneManager.inst.LoadScene("Main Menu");
+                yield break;
+            }
+
+            CoreHelper.Log($"Loading story mode level... {path}");
+            if (path.EndsWith(".lsb"))
+            {
+                path = Path.GetDirectoryName(path).Replace("\\", "/") + "/";
+                SetLevelEnd(level, isCutscene, cutsceneIndex);
+
+                StartCoroutine(LevelManager.Play(new Level(path) { isStory = true }));
+                yield break;
+            }
+
+            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{path}", assetBundle =>
+            {
+                assets = assetBundle;
+            }));
+
+            Loaded = true;
+
+            CoreHelper.InStory = true;
+            StoryLevel storyLevel = LoadCurrentLevel();
+
+            if (storyLevel == null)
+            {
+                LevelManager.OnLevelEnd = null;
+                SceneManager.inst.LoadScene("Interface");
+                yield break;
+            }
+
+            SetLevelEnd(level, isCutscene, cutsceneIndex);
+
+            if (!storyLevel.music)
+            {
+                CoreHelper.LogError($"Music is null for some reason wtf");
+                yield break;
+            }
+
+            StartCoroutine(LevelManager.Play(storyLevel));
+
+            yield break;
+        }
+
         public IEnumerator IPlay(string path)
         {
             if (AssetBundlesLoaded)
@@ -232,6 +305,48 @@ namespace BetterLegacy.Story
             }
 
             CoreHelper.Log($"Loading story mode level... {path}");
+            if (path.EndsWith(".lsb"))
+            {
+                path = Path.GetDirectoryName(path).Replace("\\", "/") + "/";
+                LevelManager.OnLevelEnd = () =>
+                {
+                    LevelManager.Clear();
+                    Updater.OnLevelEnd();
+                    UpdateCurrentLevelProgress(); // allow players to get a better rank
+
+                    int chapter = LoadInt("Chapter", 0);
+                    int level = LoadInt($"DOC{(chapter + 1).ToString("00")}Progress", 0);
+                    level++;
+                    if (level >= StoryMode.Instance.chapters[chapter].levels.Count)
+                    {
+                        chapter++;
+                        level = 0;
+                    }
+
+                    chapter = Mathf.Clamp(chapter, 0, StoryMode.Instance.chapters.Count - 1);
+
+                    SaveInt("Chapter", chapter);
+                    SaveInt($"DOC{(chapter + 1).ToString("00")}Progress", level);
+
+                    if (!ContinueStory)
+                    {
+                        CoreHelper.InStory = true;
+                        LevelManager.OnLevelEnd = null;
+                        ContinueStory = true;
+                        SceneManager.inst.LoadScene("Interface");
+                        return;
+                    }
+
+                    CoreHelper.InStory = true;
+                    LevelManager.OnLevelEnd = null;
+                    SceneManager.inst.LoadScene("Interface");
+                };
+
+
+                StartCoroutine(LevelManager.Play(new Level(path) { isStory = true }));
+                yield break;
+            }
+
             yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{path}", assetBundle =>
             {
                 assets = assetBundle;
@@ -292,6 +407,64 @@ namespace BetterLegacy.Story
             StartCoroutine(LevelManager.Play(storyLevel));
 
             yield break;
+        }
+
+        void SetLevelEnd(StoryMode.LevelSequence level, bool isCutscene = false, int cutsceneIndex = 0)
+        {
+            LevelManager.OnLevelEnd = () =>
+            {
+                LevelManager.Clear();
+                Updater.UpdateObjects(false);
+                UpdateCurrentLevelProgress(); // allow players to get a better rank
+
+                int chapterIndex = LoadInt("Chapter", 0);
+                int levelIndex = LoadInt($"DOC{(chapterIndex + 1).ToString("00")}Progress", 0);
+
+                var completeString = $"DOC{(chapterIndex + 1).ToString("00")}_{(levelIndex + 1).ToString("00")}Complete";
+                if (!isCutscene)
+                    SaveBool(completeString, true);
+
+                cutsceneIndex++;
+                if (cutsceneIndex < level.Count)
+                {
+                    StartCoroutine(IPlay(level, cutsceneIndex));
+                    return;
+                }
+
+                levelIndex++;
+                if (levelIndex >= StoryMode.Instance.chapters[chapterIndex].levels.Count)
+                {
+                    chapterIndex++;
+                    levelIndex = 0;
+                }
+
+                if (chapterIndex >= StoryMode.Instance.chapters.Count)
+                {
+                    SoundManager.inst.PlaySound(DefaultSounds.loadsound);
+                    CoreHelper.InStory = false;
+                    LevelManager.OnLevelEnd = null;
+                    SceneManager.inst.LoadScene("Main Menu");
+                    return;
+                }
+
+                chapterIndex = Mathf.Clamp(chapterIndex, 0, StoryMode.Instance.chapters.Count - 1);
+
+                SaveInt("Chapter", chapterIndex);
+                SaveInt($"DOC{(chapterIndex + 1).ToString("00")}Progress", levelIndex);
+
+                if (!ContinueStory)
+                {
+                    CoreHelper.InStory = true;
+                    LevelManager.OnLevelEnd = null;
+                    ContinueStory = true;
+                    SceneManager.inst.LoadScene("Interface");
+                    return;
+                }
+
+                CoreHelper.InStory = true;
+                LevelManager.OnLevelEnd = null;
+                SceneManager.inst.LoadScene("Interface");
+            };
         }
 
         public StoryLevel LoadCurrentLevel()

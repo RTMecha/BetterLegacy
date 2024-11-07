@@ -76,14 +76,14 @@ namespace BetterLegacy.Story
             /// <summary>
             /// All story levels within the chapter.
             /// </summary>
-            public List<Level> levels = new List<Level>();
+            public List<LevelSequence> levels = new List<LevelSequence>();
 
             /// <summary>
             /// Amount of levels in a chapter.
             /// </summary>
             public int Count => levels.Count;
 
-            public Level this[int index]
+            public LevelSequence this[int index]
             {
                 get => levels[index];
                 set => levels[index] = value;
@@ -98,13 +98,13 @@ namespace BetterLegacy.Story
                 };
 
                 for (int i = 0; i < jn["levels"].Count; i++)
-                    chapter.levels.Add(Level.Parse(jn["levels"][i]));
+                    chapter.levels.Add(LevelSequence.Parse(jn["levels"][i]));
 
                 return chapter;
             }
         }
 
-        public class Level
+        public class LevelSequence
         {
             /// <summary>
             /// Identification number of the level.
@@ -131,14 +131,47 @@ namespace BetterLegacy.Story
             /// </summary>
             public bool bonus;
 
-            public static Level Parse(JSONNode jn) => new Level
+            public string this[int index]
             {
-                id = jn["id"],
-                songTitle = jn["song_title"],
-                name = jn["name"],
-                filePath = RTFile.ParsePaths(jn["file"]),
-                bonus = jn["bonus"].AsBool,
-            };
+                get
+                {
+                    if (index >= 0 && index < preCutscenes.Count)
+                        return preCutscenes[index];
+                    if (index > preCutscenes.Count && index - preCutscenes.Count - 1 < postCutscenes.Count)
+                        return postCutscenes[index - preCutscenes.Count - 1];
+                    return filePath;
+                }
+            }
+
+            /// <summary>
+            /// The amount of sub-levels (cutscenes + the level itself) in this level.
+            /// </summary>
+            public int Count => preCutscenes.Count + 1 + postCutscenes.Count;
+
+            public List<string> preCutscenes = new List<string>();
+            public List<string> postCutscenes = new List<string>();
+
+            public static LevelSequence Parse(JSONNode jn)
+            {
+                var level = new LevelSequence
+                {
+                    id = jn["id"],
+                    songTitle = jn["song_title"],
+                    name = jn["name"],
+                    filePath = RTFile.ParsePaths(jn["file"]),
+                    bonus = jn["bonus"].AsBool,
+                };
+
+                if (jn["pre_cutscenes"] != null)
+                    for (int i = 0; i < jn["pre_cutscenes"].Count; i++)
+                        level.preCutscenes.Add(RTFile.ParsePaths(jn["pre_cutscenes"][i]));
+                
+                if (jn["post_cutscenes"] != null)
+                    for (int i = 0; i < jn["post_cutscenes"].Count; i++)
+                        level.postCutscenes.Add(RTFile.ParsePaths(jn["post_cutscenes"][i]));
+
+                return level;
+            }
         }
     }
 }
