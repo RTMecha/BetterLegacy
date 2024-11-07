@@ -9,6 +9,7 @@ using BetterLegacy.Core.Helpers;
 using System.Text.RegularExpressions;
 using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Optimization;
+using ILMath;
 
 namespace BetterLegacy.Core
 {
@@ -63,12 +64,12 @@ namespace BetterLegacy.Core
 
         // RTMath.Parse("pitch + clamp(pitch, 0, 1) * pitch");
 
-        public static float Parse(string input, Dictionary<string, float> variables = null)
+        public static float Parse(string input, Dictionary<string, float> variables = null, Dictionary<string, MathFunction> functions = null)
         {
             try
             {
                 input = input.Replace(";", ""); // replaces ; due to really old math evaluator
-                var context = ILMath.EvaluationContext.CreateDefault();
+                var context = EvaluationContext.CreateDefault();
 
                 //context.RegisterFunction("myFunction", parameters => parameters[0] + parameters[1]);
 
@@ -93,6 +94,10 @@ namespace BetterLegacy.Core
                 context.RegisterVariable("camPosY", EventManager.inst.cam.transform.position.y);
                 context.RegisterVariable("camZoom", EventManager.inst.cam.orthographicSize);
                 context.RegisterVariable("camRot", EventManager.inst.cam.transform.localEulerAngles.z);
+                context.RegisterVariable("mousePosX", Input.mousePosition.x);
+                context.RegisterVariable("mousePosY", Input.mousePosition.y);
+                context.RegisterVariable("screenHeight", Screen.height);
+                context.RegisterVariable("screenWidth", Screen.width);
 
                 var players = PlayerManager.Players;
                 for (int i = 0; i < players.Count; i++)
@@ -152,73 +157,14 @@ namespace BetterLegacy.Core
                 context.RegisterFunction("lesser", parameters => parameters[0] < parameters[1] ? parameters[2] : parameters[3]);
                 context.RegisterFunction("greater", parameters => parameters[0] > parameters[1] ? parameters[2] : parameters[3]);
                 context.RegisterFunction("int", parameters => (int)parameters[0]);
+                context.RegisterFunction("sampleAudio", parameters => Updater.GetSample((int)parameters[0], (float)parameters[1]));
+                context.RegisterFunction("copyEvent", parameters => RTEventManager.inst.Interpolate((int)parameters[0], (int)parameters[1], (float)parameters[2]));
 
+                if (functions != null)
+                    foreach (var function in functions)
+                        context.RegisterFunction(function.Key, function.Value);
 
-                /*
-                    case "date":
-                        {
-                            CoreHelper.RegexMatch(fullMethod, new Regex(@"date\((.*?)\)"), match =>
-                            {
-                                try
-                                {
-                                    var calc = DateTime.Now.ToString(match.Groups[1].ToString().Trim());
-
-                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
-                                }
-                                catch
-                                {
-                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
-                                }
-                            });
-
-                            break;
-                        }
-                    case "sampleAudio":
-                        {
-                            CoreHelper.RegexMatch(fullMethod, new Regex(@"sampleAudio\((.*?),(.*?)\)"), match =>
-                            {
-                                try
-                                {
-                                    var sample = (int)ParseVariables(match.Groups[1].ToString().Trim(), variables);
-                                    var intensity = ParseVariables(match.Groups[2].ToString().Trim(), variables);
-                                    var calc = Updater.GetSample(sample, intensity).ToString();
-
-                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
-                                }
-                                catch
-                                {
-                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
-                                }
-                            });
-
-                            break;
-                        }
-                    case "copyEvent":
-                        {
-                            CoreHelper.RegexMatch(fullMethod, new Regex(@"copyEvent\((.*?),(.*?),(.*?)\)"), match =>
-                            {
-                                try
-                                {
-                                    var type = (int)ParseVariables(match.Groups[1].ToString().Trim(), variables);
-                                    var valueIndex = (int)ParseVariables(match.Groups[2].ToString().Trim(), variables);
-                                    var time = ParseVariables(match.Groups[3].ToString().Trim(), variables);
-                                    var calc = RTEventManager.inst.Interpolate(type, valueIndex, time).ToString();
-
-                                    input = UpdateInput(input, i, calc, fullMethod, startMethodIndex, startMethods, endMethods);
-                                }
-                                catch
-                                {
-                                    input = UpdateInput(input, i, "0", fullMethod, startMethodIndex, startMethods, endMethods);
-                                }
-                            });
-
-                            break;
-                        }
-                }
-                 
-                 */
-
-                var evaluator = ILMath.MathEvaluation.CompileExpression("ResultFunction", input);
+                var evaluator = MathEvaluation.CompileExpression("ResultFunction", input);
 
                 return (float)evaluator.Invoke(context);
             }
