@@ -220,42 +220,39 @@ namespace BetterLegacy.Core
 
         public IEnumerator LoadAudioClipRoutine(Action onComplete = null)
         {
-            if (music)
-                yield break;
-
-            if (RTFile.FileExists(GetFile(LEVEL_OGG)))
+            if (RTFile.FileExists(GetFile(LEVEL_OGG)) && !music)
             {
-                yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + GetFile(LEVEL_OGG), AudioType.OGGVORBIS, delegate (AudioClip audioClip)
+                yield return CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip("file://" + GetFile(LEVEL_OGG), AudioType.OGGVORBIS, audioClip =>
                 {
                     music = audioClip;
                 }));
             }
-            else if (RTFile.FileExists(GetFile(LEVEL_WAV)))
+            else if (RTFile.FileExists(GetFile(LEVEL_WAV)) && !music)
             {
-                yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + GetFile(LEVEL_WAV), AudioType.WAV, delegate (AudioClip audioClip)
+                yield return CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip("file://" + GetFile(LEVEL_WAV), AudioType.WAV, audioClip =>
                 {
                     music = audioClip;
                 }));
             }
-            else if (RTFile.FileExists(GetFile(LEVEL_MP3)))
+            else if (RTFile.FileExists(GetFile(LEVEL_MP3)) && !music)
             {
                 yield return music = LSFunctions.LSAudio.CreateAudioClipUsingMP3File(GetFile(LEVEL_MP3));
             }
-            else if (RTFile.FileExists(GetFile(AUDIO_OGG)))
+            else if (RTFile.FileExists(GetFile(AUDIO_OGG)) && !music)
             {
-                yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + GetFile(AUDIO_OGG), AudioType.OGGVORBIS, delegate (AudioClip audioClip)
+                yield return CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip("file://" + GetFile(AUDIO_OGG), AudioType.OGGVORBIS, audioClip =>
                 {
                     music = audioClip;
                 }));
             }
-            else if (RTFile.FileExists(GetFile(AUDIO_WAV)))
+            else if (RTFile.FileExists(GetFile(AUDIO_WAV)) && !music)
             {
-                yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + GetFile(AUDIO_WAV), AudioType.WAV, delegate (AudioClip audioClip)
+                yield return CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip("file://" + GetFile(AUDIO_WAV), AudioType.WAV, audioClip =>
                 {
                     music = audioClip;
                 }));
             }
-            else if (RTFile.FileExists(GetFile(AUDIO_MP3)))
+            else if (RTFile.FileExists(GetFile(AUDIO_MP3)) && !music)
             {
                 yield return music = LSFunctions.LSAudio.CreateAudioClipUsingMP3File(GetFile(AUDIO_MP3));
             }
