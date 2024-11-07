@@ -1,3 +1,6 @@
+snapshot-2024.11.9 > (pre-1.7.0) > [Nov 7, 2024]
+- Hotfix for level crash.
+- Fixed tutorial level being replaced by the second level.
 snapshot-2024.11.8 > (pre-1.7.0) > [Nov 7, 2024]
 - Modifiers can now be organized using the modifier context menu.
 - Looking into adding an "else" toggle for trigger modifiers.
