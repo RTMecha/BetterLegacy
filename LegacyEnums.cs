@@ -774,4 +774,24 @@
         Button19,
         Count
     }
+
+    public enum DefaultSounds
+    {
+        UpDown,
+        LeftRight,
+        Block,
+        Select,
+        Click,
+        KillPlayer,
+        SpawnPlayer,
+        HurtPlayer,
+        rewind,
+        glitch,
+        boost,
+        boost_recover,
+        checkpoint,
+        pirate_KillPlayer,
+        blip,
+        loadsound
+    }
 }
