@@ -22,15 +22,15 @@ namespace BetterLegacy.Core
         {
             this.path = path;
 
-            if (CoreConfig.Instance.PrioritizeVG.Value && RTFile.FileExists($"{path}metadata.vgm"))
-                metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile($"{path}metadata.vgm")));
-            else if (RTFile.FileExists($"{path}metadata.lsb"))
-                metadata = MetaData.Parse(JSON.Parse(RTFile.ReadFromFile($"{path}metadata.lsb")), false);
-            else if (RTFile.FileExists($"{path}metadata.vgm"))
-                metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile($"{path}metadata.vgm")));
+            if (CoreConfig.Instance.PrioritizeVG.Value && RTFile.FileExists(GetFile(METADATA_VGM)))
+                metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile(GetFile(METADATA_VGM))));
+            else if (RTFile.FileExists(GetFile(METADATA_LSB)))
+                metadata = MetaData.Parse(JSON.Parse(RTFile.ReadFromFile(GetFile(METADATA_LSB))), false);
+            else if (RTFile.FileExists(GetFile(METADATA_VGM)))
+                metadata = MetaData.ParseVG(JSON.Parse(RTFile.ReadFromFile(GetFile(METADATA_VGM))));
 
             if (loadIcon)
-                icon = RTFile.FileExists($"{path}level.jpg") ? SpriteHelper.LoadSprite($"{path}level.jpg") : RTFile.FileExists($"{path}cover.jpg") ? SpriteHelper.LoadSprite($"{path}cover.jpg") : SteamWorkshop.inst.defaultSteamImageSprite;
+                icon = RTFile.FileExists(GetFile("level.jpg")) ? SpriteHelper.LoadSprite(GetFile("level.jpg")) : RTFile.FileExists(GetFile("cover.jpg")) ? SpriteHelper.LoadSprite(GetFile("cover.jpg")) : SteamWorkshop.inst.defaultSteamImageSprite;
 
             UpdateDefaults();
         }
@@ -41,39 +41,12 @@ namespace BetterLegacy.Core
 
             this.metadata = metadata;
 
-            icon = RTFile.FileExists($"{path}level.jpg") ? SpriteHelper.LoadSprite($"{path}level.jpg") : RTFile.FileExists($"{path}cover.jpg") ? SpriteHelper.LoadSprite($"{path}cover.jpg") : SteamWorkshop.inst.defaultSteamImageSprite;
+            icon = RTFile.FileExists(GetFile("level.jpg")) ? SpriteHelper.LoadSprite(GetFile("level.jpg")) : RTFile.FileExists(GetFile("cover.jpg")) ? SpriteHelper.LoadSprite(GetFile("cover.jpg")) : SteamWorkshop.inst.defaultSteamImageSprite;
 
             UpdateDefaults();
         }
 
-        public void UpdateDefaults()
-        {
-            if (metadata)
-            {
-                if (!string.IsNullOrEmpty(metadata.arcadeID) && metadata.arcadeID != "-1")
-                    id = metadata.arcadeID;
-                else if (!string.IsNullOrEmpty(metadata.beatmap.beatmap_id) && metadata.beatmap.beatmap_id != "-1")
-                    id = metadata.beatmap.beatmap_id;
-                else
-                    id = "-1";
-            }
-
-            if (RTFile.FileExists($"{path}modes.lsms"))
-            {
-                var jn = JSON.Parse(RTFile.ReadFromFile($"{path}modes.lsms"));
-                LevelModes = new string[jn["paths"].Count + 1];
-                LevelModes[0] = CoreConfig.Instance.PrioritizeVG.Value && RTFile.FileExists($"{path}level.vgd") ? "level.vgd" : "level.lsb";
-                for (int i = 1; i < jn["paths"].Count + 1; i++)
-                {
-                    LevelModes[i] = jn["paths"][i - 1];
-                }
-            }
-            else
-                LevelModes = new string[1]
-                {
-                    CoreConfig.Instance.PrioritizeVG.Value && RTFile.FileExists($"{path}level.vgd") ? "level.vgd" : "level.lsb",
-                };
-        }
+        #region Fields
 
         public SteamworksFacepunch.Ugc.Item steamItem;
         public bool isSteamLevel;
@@ -90,105 +63,205 @@ namespace BetterLegacy.Core
         public MetaData metadata;
 
         public int currentMode = 0;
-        public string[] LevelModes { get; set; }
-        public string CurrentFile => LevelModes[Mathf.Clamp(LevelManager.CurrentLevelMode, 0, LevelModes.Length - 1)];
-
-        public bool Locked => metadata != null && metadata.requireUnlock && (playerData == null || !playerData.Unlocked);
-
-        public void LoadAudioClip()
-        {
-            if (RTFile.FileExists(path + "level.ogg") && !music)
-            {
-                CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + path + "level.ogg", AudioType.OGGVORBIS, delegate (AudioClip audioClip)
-                {
-                    music = audioClip;
-                }));
-            }
-            else if (RTFile.FileExists(path + "level.wav") && !music)
-            {
-                CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + path + "level.wav", AudioType.WAV, delegate (AudioClip audioClip)
-                {
-                    music = audioClip;
-                }));
-            }
-            else if (RTFile.FileExists(path + "level.mp3") && !music)
-            {
-                music = LSFunctions.LSAudio.CreateAudioClipUsingMP3File(path + "level.mp3");
-            }
-            else if (RTFile.FileExists(path + "audio.ogg") && !music)
-            {
-                CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + path + "audio.ogg", AudioType.OGGVORBIS, delegate (AudioClip audioClip)
-                {
-                    music = audioClip;
-                }));
-            }
-            else if (RTFile.FileExists(path + "audio.wav") && !music)
-            {
-                CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + path + "audio.wav", AudioType.WAV, delegate (AudioClip audioClip)
-                {
-                    music = audioClip;
-                }));
-            }
-            else if (RTFile.FileExists(path + "audio.mp3") && !music)
-            {
-                music = LSFunctions.LSAudio.CreateAudioClipUsingMP3File(path + "audio.mp3");
-            }
-        }
-
-        public IEnumerator LoadAudioClipRoutine(Action onComplete = null)
-        {
-            if (RTFile.FileExists(path + "level.ogg") && !music)
-            {
-                yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + path + "level.ogg", AudioType.OGGVORBIS, delegate (AudioClip audioClip)
-                {
-                    music = audioClip;
-                }));
-            }
-            else if (RTFile.FileExists(path + "level.wav") && !music)
-            {
-                yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + path + "level.wav", AudioType.WAV, delegate (AudioClip audioClip)
-                {
-                    music = audioClip;
-                }));
-            }
-            else if (RTFile.FileExists(path + "level.mp3") && !music)
-            {
-                yield return music = LSFunctions.LSAudio.CreateAudioClipUsingMP3File(path + "level.mp3");
-            }
-            else if (RTFile.FileExists(path + "audio.ogg") && !music)
-            {
-                yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + path + "audio.ogg", AudioType.OGGVORBIS, delegate (AudioClip audioClip)
-                {
-                    music = audioClip;
-                }));
-            }
-            else if (RTFile.FileExists(path + "audio.wav") && !music)
-            {
-                yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + path + "audio.wav", AudioType.WAV, delegate (AudioClip audioClip)
-                {
-                    music = audioClip;
-                }));
-            }
-            else if (RTFile.FileExists(path + "audio.mp3") && !music)
-            {
-                yield return music = LSFunctions.LSAudio.CreateAudioClipUsingMP3File(path + "audio.mp3");
-            }
-
-            onComplete?.Invoke();
-        }
-
         public LevelManager.PlayerData playerData;
 
         public bool fromCollection;
 
         public bool isStory;
 
+        #endregion
+
+        #region Properties
+
+        public bool Locked => metadata != null && metadata.requireUnlock && (playerData == null || !playerData.Unlocked);
+
+        public string[] LevelModes { get; set; }
+        public string CurrentFile => LevelModes[Mathf.Clamp(LevelManager.CurrentLevelMode, 0, LevelModes.Length - 1)];
+
         public bool IsVG => CurrentFile.Contains(".vgd");
-        public bool VGExists => RTFile.FileExists($"{path}level.vgd") && RTFile.FileExists($"{path}metadata.vgm");
+        public bool VGExists => RTFile.FileExists(GetFile(LEVEL_VGD)) && RTFile.FileExists(GetFile(METADATA_VGM));
 
         public bool InvalidID => string.IsNullOrEmpty(id) || id == "0" || id == "-1";
 
-        public override string ToString() => $"{System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(path))} - {id} - {(metadata == null || metadata.song == null ? "" : metadata.song.title)}";
+        #endregion
+
+        #region Constants
+
+        /// <summary>
+        /// The cover file in Legacy.
+        /// </summary>
+        public const string LEVEL_JPG = "level.jpg";
+        /// <summary>
+        /// The cover file in Alpha.
+        /// </summary>
+        public const string COVER_JPG = "cover.jpg";
+
+        /// <summary>
+        /// The metadata file in Legacy.
+        /// </summary>
+        public const string METADATA_LSB = "metadata.lsb";
+        /// <summary>
+        /// The metadata file in Alpha.
+        /// </summary>
+        public const string METADATA_VGM = "metadata.vgm";
+
+        /// <summary>
+        /// The level file in Legacy.
+        /// </summary>
+        public const string LEVEL_LSB = "level.lsb";
+        /// <summary>
+        /// The level file in Alpha.
+        /// </summary>
+        public const string LEVEL_VGD = "level.vgd";
+
+        /// <summary>
+        /// The OGG audio file in Alpha.
+        /// </summary>
+        public const string AUDIO_OGG = "audio.ogg";
+        /// <summary>
+        /// The WAV audio file in Alpha.
+        /// </summary>
+        public const string AUDIO_WAV = "audio.wav";
+        /// <summary>
+        /// The MP3 audio file in Alpha.
+        /// </summary>
+        public const string AUDIO_MP3 = "audio.mp3";
+
+        /// <summary>
+        /// The OGG audio file in Legacy.
+        /// </summary>
+        public const string LEVEL_OGG = "level.ogg";
+        /// <summary>
+        /// The WAV audio file in Legacy.
+        /// </summary>
+        public const string LEVEL_WAV = "level.wav";
+        /// <summary>
+        /// The MP3 audio file in Legacy.
+        /// </summary>
+        public const string LEVEL_MP3 = "level.mp3";
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Combines the file name with the levels' path.
+        /// </summary>
+        /// <param name="fileName">File to combine.</param>
+        /// <returns>Returns a combined path.</returns>
+        public string GetFile(string fileName) => RTFile.CombinePaths(path, fileName);
+
+        public void UpdateDefaults()
+        {
+            if (metadata)
+            {
+                if (!string.IsNullOrEmpty(metadata.arcadeID) && metadata.arcadeID != "-1")
+                    id = metadata.arcadeID;
+                else if (!string.IsNullOrEmpty(metadata.beatmap.beatmap_id) && metadata.beatmap.beatmap_id != "-1")
+                    id = metadata.beatmap.beatmap_id;
+                else
+                    id = "-1";
+            }
+
+            if (RTFile.FileExists(GetFile("modes.lsms")))
+            {
+                var jn = JSON.Parse(RTFile.ReadFromFile(GetFile("modes.lsms")));
+                LevelModes = new string[jn["paths"].Count + 1];
+                LevelModes[0] = CoreConfig.Instance.PrioritizeVG.Value && RTFile.FileExists(GetFile(LEVEL_VGD)) ? LEVEL_VGD : LEVEL_LSB;
+                for (int i = 1; i < jn["paths"].Count + 1; i++)
+                    LevelModes[i] = jn["paths"][i - 1];
+            }
+            else
+                LevelModes = new string[1] { CoreConfig.Instance.PrioritizeVG.Value && RTFile.FileExists(GetFile(LEVEL_VGD)) ? LEVEL_VGD : LEVEL_LSB, };
+        }
+
+        public void LoadAudioClip()
+        {
+            if (music)
+                return;
+
+            if (RTFile.FileExists(GetFile(LEVEL_OGG)))
+            {
+                CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + GetFile(LEVEL_OGG), AudioType.OGGVORBIS, delegate (AudioClip audioClip)
+                {
+                    music = audioClip;
+                }));
+            }
+            else if (RTFile.FileExists(GetFile(LEVEL_WAV)))
+            {
+                CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + GetFile(LEVEL_WAV), AudioType.WAV, delegate (AudioClip audioClip)
+                {
+                    music = audioClip;
+                }));
+            }
+            else if (RTFile.FileExists(GetFile(LEVEL_MP3)))
+            {
+                music = LSFunctions.LSAudio.CreateAudioClipUsingMP3File(GetFile(LEVEL_MP3));
+            }
+            else if (RTFile.FileExists(GetFile(AUDIO_OGG)))
+            {
+                CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + GetFile(AUDIO_OGG), AudioType.OGGVORBIS, delegate (AudioClip audioClip)
+                {
+                    music = audioClip;
+                }));
+            }
+            else if (RTFile.FileExists(GetFile(AUDIO_WAV)))
+            {
+                CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + GetFile(AUDIO_WAV), AudioType.WAV, delegate (AudioClip audioClip)
+                {
+                    music = audioClip;
+                }));
+            }
+            else if (RTFile.FileExists(GetFile(AUDIO_MP3)))
+            {
+                music = LSFunctions.LSAudio.CreateAudioClipUsingMP3File(GetFile(AUDIO_MP3));
+            }
+        }
+
+        public IEnumerator LoadAudioClipRoutine(Action onComplete = null)
+        {
+            if (music)
+                yield break;
+
+            if (RTFile.FileExists(GetFile(LEVEL_OGG)))
+            {
+                yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + GetFile(LEVEL_OGG), AudioType.OGGVORBIS, delegate (AudioClip audioClip)
+                {
+                    music = audioClip;
+                }));
+            }
+            else if (RTFile.FileExists(GetFile(LEVEL_WAV)))
+            {
+                yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + GetFile(LEVEL_WAV), AudioType.WAV, delegate (AudioClip audioClip)
+                {
+                    music = audioClip;
+                }));
+            }
+            else if (RTFile.FileExists(GetFile(LEVEL_MP3)))
+            {
+                yield return music = LSFunctions.LSAudio.CreateAudioClipUsingMP3File(GetFile(LEVEL_MP3));
+            }
+            else if (RTFile.FileExists(GetFile(AUDIO_OGG)))
+            {
+                yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + GetFile(AUDIO_OGG), AudioType.OGGVORBIS, delegate (AudioClip audioClip)
+                {
+                    music = audioClip;
+                }));
+            }
+            else if (RTFile.FileExists(GetFile(AUDIO_WAV)))
+            {
+                yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAudioClip("file://" + GetFile(AUDIO_WAV), AudioType.WAV, delegate (AudioClip audioClip)
+                {
+                    music = audioClip;
+                }));
+            }
+            else if (RTFile.FileExists(GetFile(AUDIO_MP3)))
+            {
+                yield return music = LSFunctions.LSAudio.CreateAudioClipUsingMP3File(GetFile(AUDIO_MP3));
+            }
+
+            onComplete?.Invoke();
+        }
 
         /// <summary>
         /// Checks if all files required to load a level exist. Includes LS / VG formats.
@@ -210,21 +283,25 @@ namespace BetterLegacy.Core
         /// <param name="folder">The folder to check. Must end with a /.</param>
         /// <returns>True if a song exists, otherwise false.</returns>
         public static bool VerifySong(string folder) =>
-            RTFile.FileExists(folder + "audio.ogg") || RTFile.FileExists(folder + "audio.wav") || RTFile.FileExists(folder + "audio.mp3") ||
-            RTFile.FileExists(folder + "level.ogg") || RTFile.FileExists(folder + "level.wav") || RTFile.FileExists(folder + "level.mp3");
+            RTFile.FileExists(RTFile.CombinePaths(folder, AUDIO_OGG)) || RTFile.FileExists(RTFile.CombinePaths(folder, AUDIO_WAV)) || RTFile.FileExists(RTFile.CombinePaths(folder, AUDIO_MP3)) ||
+            RTFile.FileExists(RTFile.CombinePaths(folder, LEVEL_OGG)) || RTFile.FileExists(RTFile.CombinePaths(folder, LEVEL_WAV)) || RTFile.FileExists(RTFile.CombinePaths(folder, LEVEL_MP3));
 
         /// <summary>
         /// Checks if the level has metadata. Includes LS and VG formats.
         /// </summary>
         /// <param name="folder">The folder to check. Must end with a /.</param>
         /// <returns>True if metadata exists, otherwise false.</returns>
-        public static bool VerifyMetadata(string folder) => RTFile.FileExists(folder + "metadata.vgm") || RTFile.FileExists(folder + "metadata.lsb");
+        public static bool VerifyMetadata(string folder) => RTFile.FileExists(RTFile.CombinePaths(folder, "metadata.vgm")) || RTFile.FileExists(RTFile.CombinePaths(folder, "metadata.lsb"));
 
         /// <summary>
         /// Checks if the level has level data. Includes LS and VG formats.
         /// </summary>
         /// <param name="folder">The folder to check. Must end with a /.</param>
         /// <returns>True if level data exists, otherwise false.</returns>
-        public static bool VerifyLevel(string folder) => RTFile.FileExists(folder + "level.vgd") || RTFile.FileExists(folder + "level.lsb");
+        public static bool VerifyLevel(string folder) => RTFile.FileExists(RTFile.CombinePaths(folder, "level.vgd")) || RTFile.FileExists(RTFile.CombinePaths(folder, "level.lsb"));
+
+        public override string ToString() => $"{Path.GetFileName(Path.GetDirectoryName(path))} - {id} - {(metadata == null || metadata.song == null ? "" : metadata.song.title)}";
+
+        #endregion
     }
 }
