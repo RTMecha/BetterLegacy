@@ -113,6 +113,7 @@ namespace BetterLegacy.Core.Managers
                             {
                                 if (!trig.constant)
                                     trig.active = true;
+                                trig.running = true;
                             }
                         }
                         else
@@ -133,6 +134,7 @@ namespace BetterLegacy.Core.Managers
                                     continue;
 
                                 trig.active = false;
+                                trig.running = false;
                                 trig.Inactive?.Invoke(trig);
                             }
                         }
