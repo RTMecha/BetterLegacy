@@ -1253,7 +1253,7 @@ namespace BetterLegacy.Core.Data
             if (prevKFIndex == nextKFIndex)
                 return next;
 
-            var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curveType.Name)(RTMath.InverseLerp(prevKF.eventTime, nextKF.eventTime, time)));
+            var x = RTMath.Lerp(prev, next, Ease.GetEaseFunction(nextKF.curveType.Name)(RTMath.InverseLerp(prevKF.eventTime, nextKF.eventTime, Mathf.Clamp(time, 0f, nextKF.eventTime))));
 
             if (prevKFIndex == nextKFIndex)
                 x = next;
