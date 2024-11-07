@@ -4,6 +4,7 @@ using BetterLegacy.Core.Animation;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Editor;
+using ILMath;
 using LSFunctions;
 using SimpleJSON;
 using System.Collections.Generic;
@@ -1472,6 +1473,13 @@ namespace BetterLegacy.Core.Data
             return variables;
         }
 
+        public Dictionary<string, MathFunction> GetObjectFunctions()
+        {
+            var functions = new Dictionary<string, MathFunction>();
+            SetObjectFunctions(functions);
+            return functions;
+        }
+
         public void SetOtherObjectVariables(Dictionary<string, float> variables)
         {
             variables["otherIntVariable"] = integerVariable;
@@ -1538,6 +1546,34 @@ namespace BetterLegacy.Core.Data
                 variables["visualRotY"] = transform.rotation.eulerAngles.y;
                 variables["visualRotZ"] = transform.rotation.eulerAngles.z;
             }
+        }
+
+        public void SetObjectFunctions(Dictionary<string, MathFunction> functions)
+        {
+            functions["interpolateChainPosX"] = parameters =>
+            {
+                return InterpolateChainPosition((float)parameters[0], parameters[1] == 1, parameters[2] == 1, parameters[3] == 1).x;
+            };
+            functions["interpolateChainPosY"] = parameters =>
+            {
+                return InterpolateChainPosition((float)parameters[0], parameters[1] == 1, parameters[2] == 1, parameters[3] == 1).y;
+            };
+            functions["interpolateChainPosZ"] = parameters =>
+            {
+                return InterpolateChainPosition((float)parameters[0], parameters[1] == 1, parameters[2] == 1, parameters[3] == 1).z;
+            };
+            functions["interpolateChainScaX"] = parameters =>
+            {
+                return InterpolateChainScale((float)parameters[0], parameters[1] == 1, parameters[2] == 1).x;
+            };
+            functions["interpolateChainScaY"] = parameters =>
+            {
+                return InterpolateChainScale((float)parameters[0], parameters[1] == 1, parameters[2] == 1).y;
+            };
+            functions["interpolateChainRot"] = parameters =>
+            {
+                return InterpolateChainRotation((float)parameters[0], parameters[1] == 1, parameters[2] == 1);
+            };
         }
 
         /// <summary>
