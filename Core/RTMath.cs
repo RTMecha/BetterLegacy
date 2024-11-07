@@ -159,6 +159,17 @@ namespace BetterLegacy.Core
                 context.RegisterFunction("int", parameters => (int)parameters[0]);
                 context.RegisterFunction("sampleAudio", parameters => Updater.GetSample((int)parameters[0], (float)parameters[1]));
                 context.RegisterFunction("copyEvent", parameters => RTEventManager.inst.Interpolate((int)parameters[0], (int)parameters[1], (float)parameters[2]));
+                context.RegisterFunction("vectorAngle", parameters => VectorAngle(new Vector3((float)parameters[0], (float)parameters[1], (float)parameters[2]), new Vector3((float)parameters[3], (float)parameters[4], (float)parameters[5])));
+                context.RegisterFunction("distance", parameters =>
+                {
+                    switch (parameters.Length)
+                    {
+                        case 2: return Distance((float)parameters[0], (float)parameters[1]);
+                        case 4: return Vector2.Distance(new Vector2((float)parameters[0], (float)parameters[1]), new Vector2((float)parameters[2], (float)parameters[3]));
+                        case 6: return Vector3.Distance(new Vector3((float)parameters[0], (float)parameters[1], (float)parameters[2]), new Vector3((float)parameters[3], (float)parameters[4], (float)parameters[5]));
+                        default: return 0;
+                    }
+                });
 
                 if (functions != null)
                     foreach (var function in functions)
@@ -1587,6 +1598,7 @@ namespace BetterLegacy.Core
             return 0f;
         }
 
+        public static double Lerp(double x, double y, double t) => x + (y - x) * t;
         public static float Lerp(float x, float y, float t) => x + (y - x) * t;
         public static Vector2 Lerp(Vector2 x, Vector2 y, float t) => x + (y - x) * t;
         public static Vector3 Lerp(Vector3 x, Vector3 y, float t) => x + (y - x) * t;
@@ -1693,6 +1705,7 @@ namespace BetterLegacy.Core
 
         public static float Distance(float x, float y) => x > y ? -(-x + y) : (-x + y);
 
+        public static double InverseLerp(double x, double y, double t) => (t - x) / (y - x);
         public static float InverseLerp(float x, float y, float t) => (t - x) / (y - x);
 
         public static float Percentage(float t, float length) => t / length * 100f;

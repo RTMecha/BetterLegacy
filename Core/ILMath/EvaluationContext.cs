@@ -64,8 +64,8 @@ namespace ILMath
             RegisterFunction("round", parameters => Math.Round(parameters[0]));
             RegisterFunction("sign", parameters => Math.Sign(parameters[0]));
             RegisterFunction("clamp", parameters => RTMath.Clamp(parameters[0], parameters[1], parameters[2]));
-            RegisterFunction("lerp", parameters => (parameters[2] - parameters[1]) * parameters[0] + parameters[1]);
-            RegisterFunction("inverseLerp", parameters => (parameters[0] - parameters[1]) / (parameters[2] - parameters[1]));
+            RegisterFunction("lerp", parameters => RTMath.Lerp(parameters[0], parameters[1], parameters[2]));
+            RegisterFunction("inverseLerp", parameters => RTMath.InverseLerp(parameters[0], parameters[1], parameters[2]));
         }
 
         /// <summary>
@@ -128,7 +128,7 @@ namespace ILMath
                             float value = 0f;
                             if (bm)
                             {
-                                var fromType = (int)parameters[1];
+                                var fromType = (int)parameters[0];
 
                                 if (fromType < 0 || fromType > 2)
                                 {
@@ -136,9 +136,9 @@ namespace ILMath
                                     return false;
                                 }
 
-                                var fromAxis = (int)parameters[2];
+                                var fromAxis = (int)parameters[1];
 
-                                var time =(float)parameters[3];
+                                var time =(float)parameters[2];
 
                                 if (!Updater.levelProcessor.converter.cachedSequences.TryGetValue(bm.id, out BetterLegacy.Core.Optimization.Objects.ObjectConverter.CachedSequences cachedSequence))
                                 {
@@ -163,6 +163,48 @@ namespace ILMath
                                     case 2:
                                         {
                                             value = cachedSequence.RotationSequence.Interpolate(time);
+                                            break;
+                                        }
+                                }
+
+                            }
+
+                            result = value;
+                            return true;
+                        }
+                    case "findOffset":
+                        {
+                            var tag = split[1];
+
+                            var bm = CoreHelper.FindObjectWithTag(tag);
+                            float value = 0f;
+                            if (bm)
+                            {
+                                var fromType = (int)parameters[0];
+
+                                if (fromType < 0 || fromType > 2)
+                                {
+                                    result = 0;
+                                    return false;
+                                }
+
+                                var fromAxis = (int)parameters[1];
+
+                                switch (fromType)
+                                {
+                                    case 0:
+                                        {
+                                            value = bm.positionOffset[fromAxis];
+                                            break;
+                                        }
+                                    case 1:
+                                        {
+                                            value = bm.scaleOffset[fromAxis];
+                                            break;
+                                        }
+                                    case 2:
+                                        {
+                                            value = bm.rotationOffset[fromAxis];
                                             break;
                                         }
                                 }
