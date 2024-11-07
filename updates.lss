@@ -1,3 +1,11 @@
+snapshot-2024.11.10 > (pre-1.7.0) > [Nov 8, 2024]
+- Updated Slime Boy Color and a few other story levels to their current versions.
+- Fixed cases where object interpolation would go higher than expected.
+- Fixed lerp and inverseLerp math functions being incorrect.
+- Fixed findAxis math function.
+- Added findOffset math function. Used similarly to findAxis.
+- Added vectorAngle and distance functions.
+- ACTUALLY hotfix for level crash.
 snapshot-2024.11.9 > (pre-1.7.0) > [Nov 7, 2024]
 - Hotfix for level crash.
 - Fixed tutorial level being replaced by the second level.
