@@ -2539,6 +2539,58 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 #endregion
 
+                #region RemoveMultipleElements
+
+                // Finds an element with a matching ID, destroys its object and removes it.
+                // Supports both JSON array and JSON object.
+                // 
+                // - JSON Array Structure -
+                // 0 = ids
+                // Example:
+                // [
+                //   [
+                //     "522666",
+                //     "2672",
+                //     "824788",
+                //   ]
+                // ]
+                // 
+                // - JSON Object Structure -
+                // "ids"
+                // Example:
+                // {
+                //   "ids": [
+                //     "522666",
+                //     "2672",
+                //     "824788",
+                //   ]
+                // }
+                case "RemoveMultipleElements":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["ids"] == null)
+                            break;
+
+                        var ids = parameters.IsArray ? parameters[0] : parameters["ids"];
+                        if (ids == null)
+                            break;
+
+                        for (int i = 0; i < ids.Count; i++)
+                        {
+                            var id = ids[i];
+                            if (InterfaceManager.inst.CurrentMenu.elements.TryFind(x => x.id == id, out MenuImage element))
+                            {
+                                element.Clear();
+                                if (element.gameObject)
+                                    CoreHelper.Destroy(element.gameObject);
+                                InterfaceManager.inst.CurrentMenu.elements.Remove(element);
+                            }
+                        }
+
+                        break;
+                    }
+
+                #endregion
+
                 #region AddElement
 
                 // Adds a list of elements to the interface.
