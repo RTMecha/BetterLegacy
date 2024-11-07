@@ -65,21 +65,16 @@ namespace BetterLegacy.Story
                 func = () => { InterfaceManager.inst.StartupStoryInterface(); },
             });
 
-            string[] chapterNames = new string[]
-            {
-                "Prologue",
-            };
-
-            for (int i = 1; i <= 12; i++)
+            for (int i = 1; i <= StoryMode.Instance.chapters.Count; i++)
             {
                 int index = i - 1;
-                if (RTFile.FileExists($"{StoryManager.StoryAssetsPath}doc{i.ToString("00")}_01.asset") && StoryManager.inst.GetChapter() >= index)
+                if (RTFile.FileExists($"{StoryManager.StoryAssetsPath}doc{i.ToString("00")}_01.asset") && StoryManager.inst.LoadInt("Chapter", 0) >= index)
                 {
                     elements.Add(new MenuButton
                     {
                         id = "4918487",
                         name = name,
-                        text = $"<b> [ DOC {(index + 1).ToString("00")} \"{(index < chapterNames.Length ? chapterNames[index] : "Null")}\" ]",
+                        text = $"<b> [ DOC {(index + 1).ToString("00")} \"{StoryMode.Instance.chapters[index].name}\" ]",
                         parentLayout = "buttons",
                         selectionPosition = new Vector2Int(0, index + 1),
                         rect = RectValues.Default.SizeDelta(200f, 64f),
@@ -93,7 +88,7 @@ namespace BetterLegacy.Story
                         playBlipSound = true,
                         func = () =>
                         {
-                            StoryManager.inst.Chapter = index;
+                            StoryManager.inst.SaveInt("Chapter", index);
                             InterfaceManager.inst.StartupStoryInterface();
                         },
                     });

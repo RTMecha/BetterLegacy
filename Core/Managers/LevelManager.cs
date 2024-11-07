@@ -3,6 +3,7 @@ using BetterLegacy.Configs;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Optimization;
+using BetterLegacy.Story;
 using LSFunctions;
 using SimpleJSON;
 using System;
@@ -260,7 +261,11 @@ namespace BetterLegacy.Core.Managers
             if (IsArcade)
                 CoreHelper.UpdateDiscordStatus($"Level: {level.metadata.beatmap.name}", "In Arcade", "arcade");
             else
-                CoreHelper.UpdateDiscordStatus($"DOC{(Story.StoryManager.inst.Chapter + 1).ToString("00")}-{(Story.StoryManager.inst.Level + 1).ToString("00")}: {level.metadata.beatmap.name}", "In Story", "arcade");
+            {
+                int chapter = StoryManager.inst.LoadInt("Chapter", 0);
+                int storyLevelIndex = StoryManager.inst.LoadInt($"DOC{(chapter + 1).ToString("00")}Progress", 0);
+                CoreHelper.UpdateDiscordStatus($"DOC{(chapter + 1).ToString("00")}-{(storyLevelIndex + 1).ToString("00")}: {level.metadata.beatmap.name}", "In Story", "arcade");
+            }
 
             while (!GameManager.inst.introTitle && !GameManager.inst.introArtist)
                 yield return null;

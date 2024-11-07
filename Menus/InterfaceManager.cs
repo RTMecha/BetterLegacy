@@ -323,7 +323,10 @@ namespace BetterLegacy.Menus
             interfaces.Clear();
             CoreHelper.InStory = true;
 
-            var path = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Story/Interfaces/doc{(Story.StoryManager.inst.Chapter + 1).ToString("00")}/base_interface.lsi";
+            //var path = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Story/Interfaces/doc{(Story.StoryManager.inst.Chapter + 1).ToString("00")}/base_interface.lsi";
+
+            var path = StoryManager.inst.LoadBool("StoryModeStarted", false) ? StoryMode.Instance.chapters[StoryManager.inst.LoadInt("Chapter", 0)].interfacePath : StoryMode.Instance.entryInterfacePath;
+            
             var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
             var menu = CustomMenu.Parse(jn);

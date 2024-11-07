@@ -14,6 +14,7 @@ using SimpleJSON;
 using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Data.Player;
 using UnityEngine.Video;
+using System;
 
 namespace BetterLegacy.Story
 {
@@ -22,7 +23,6 @@ namespace BetterLegacy.Story
         public static StoryManager inst;
 
         public static string StoryAssetsPath => $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Story/";
-        public static string StoryAssetsURL => $"{AlephNetworkManager.ArcadeServerURL}api/story/download";
 
         public AssetBundle assets;
 
@@ -30,38 +30,42 @@ namespace BetterLegacy.Story
 
         public bool AssetBundlesLoaded => assets != null;
 
-        public int Chapter { get; set; }
-        public int Level { get; set; }
         public bool ContinueStory { get; set; } = true;
 
-        public Dictionary<int, int> ChapterCounts => new Dictionary<int, int>
-        {
-            { 0, 6 },
-            { 1, 6 },
-            { 2, 6 },
-            { 3, 6 },
-            { 4, 6 },
-        };
+        /// <summary>
+        /// The default chapter rank requirement for "bonuses" to be unlocked. In this case, the player needs to get higher than an A rank (S / SS rank).
+        /// </summary>
+        public const int CHAPTER_RANK_REQUIREMENT = 1;
 
-        public int[] chaptersProgression;
-        public static int CHAPTER_RANK_REQUIREMENT = 1; // test
+        //public List<List<string>> levelIDs = new List<List<string>>
+        //{
+        //    new List<string>
+        //    {
+        //        "0603661088835365", // Granite
+        //        "7376679616786413", // Ahead of the Curve
+        //        "9784345755418661", // Super Gamer Girl 3D
+        //        "9454675971710439", // Slime Boy Color
+        //        "6698982684586290", // Node (Para)
+        //        "4462948827770399", // ???
+        //    },
+        //    new List<string>
+        //    {
+        //        "3434489214197233", // RPM
+        //    },
+        //};
 
-        public List<List<string>> levelIDs = new List<List<string>>
+        /// <summary>
+        /// Inits StoryManager.
+        /// </summary>
+        public static void Init() => new GameObject(nameof(StoryManager), typeof(StoryManager)).transform.SetParent(SystemManager.inst.transform);
+
+        void Awake()
         {
-            new List<string>
-            {
-                "0603661088835365", // Granite
-                "7376679616786413", // Ahead of the Curve
-                "9784345755418661", // Super Gamer Girl 3D
-                "9454675971710439", // Slime Boy Color
-                "6698982684586290", // Node (Para)
-                "4462948827770399", // ???
-            },
-            new List<string>
-            {
-                "3434489214197233", // RPM
-            },
-        };
+            inst = this;
+            Load();
+        }
+
+        #region Save File
 
         public string StorySavesPath => $"{RTFile.ApplicationDirectory}profile/story_saves_{(SaveSlot + 1).ToString("00")}.lss";
         public JSONNode storySavesJSON;
@@ -76,37 +80,17 @@ namespace BetterLegacy.Story
             }
         }
 
-        public static void Init() => new GameObject(nameof(StoryManager), typeof(StoryManager)).transform.SetParent(SystemManager.inst.transform);
-
-        void Awake()
-        {
-            inst = this;
-            Load();
-        }
+        public List<LevelManager.PlayerData> Saves { get; set; } = new List<LevelManager.PlayerData>();
 
         public void Load()
         {
-            StoryMode = Story.Parse(JSON.Parse(RTFile.ReadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Story/story.json")));
-
+            StoryMode.Init();
             storySavesJSON = JSON.Parse(RTFile.FileExists(StorySavesPath) ? RTFile.ReadFromFile(StorySavesPath) : "{}");
-            Chapter = GetChapter();
-            Level = GetLevel();
-
-            if (storySavesJSON["chapters"] != null)
-            {
-                chaptersProgression = new int[storySavesJSON["chapters"].Count];
-                for (int i = 0; i < storySavesJSON["chapters"].Count; i++)
-                    chaptersProgression[i] = storySavesJSON["chapters"][i].AsInt;
-            }
-            else
-                chaptersProgression = new int[ChapterCounts.Count];
 
             Saves.Clear();
             if (storySavesJSON["lvl"] != null)
                 for (int i = 0; i < storySavesJSON["lvl"].Count; i++)
-                {
                     Saves.Add(LevelManager.PlayerData.Parse(storySavesJSON["lvl"][i]));
-                }
         }
 
         public void UpdateCurrentLevelProgress()
@@ -156,13 +140,6 @@ namespace BetterLegacy.Story
             Save();
         }
 
-        public void SaveChapterProgress()
-        {
-            storySavesJSON["chapters"] = new JSONArray();
-            for (int i = 0; i < chaptersProgression.Length; i++)
-                storySavesJSON["chapters"][i] = chaptersProgression[i];
-        }
-
         public void Save()
         {
             try
@@ -173,34 +150,6 @@ namespace BetterLegacy.Story
             {
                 CoreHelper.LogException(ex);
             }
-        }
-
-        public bool IsBonus(string id) => id switch
-        {
-            "4462948827770399" => true,
-            _ => false,
-        };
-
-        public void SetChapter(int chapter)
-        {
-            CoreHelper.Log($"Updating chapter {Chapter} > {chapter}");
-            Chapter = chapter;
-            storySavesJSON["doc"] = chapter;
-            SaveChapterProgress();
-            Save();
-        }
-
-        public void SetLevel(int level)
-        {
-            CoreHelper.Log($"Updating level {Level} > {level}");
-            Level = Mathf.Clamp(level, 0, ChapterCounts[Chapter] - 1);
-
-            if (Chapter < chaptersProgression.Length && chaptersProgression[Chapter] < level)
-                chaptersProgression[Chapter] = level;
-
-            storySavesJSON["level"] = level;
-            SaveChapterProgress();
-            Save();
         }
 
         public void SaveBool(string name, bool value)
@@ -242,13 +191,15 @@ namespace BetterLegacy.Story
             Save();
         }
 
-        public int GetChapter() => storySavesJSON["doc"].AsInt;
-        public int GetLevel() => storySavesJSON["level"].AsInt;
         public bool LoadBool(string name, bool defaultValue) => storySavesJSON["saves"][name] == null || storySavesJSON["saves"][name]["bool"] == null ? defaultValue : storySavesJSON["saves"][name]["bool"].AsBool;
         public int LoadInt(string name, int defaultValue) => storySavesJSON["saves"][name] == null || storySavesJSON["saves"][name]["int"] == null ? defaultValue : storySavesJSON["saves"][name]["int"].AsInt;
         public float LoadFloat(string name, float defaultValue) => storySavesJSON["saves"][name] == null || storySavesJSON["saves"][name]["float"] == null ? defaultValue : storySavesJSON["saves"][name]["float"].AsFloat;
         public string LoadString(string name, string defaultValue) => storySavesJSON["saves"][name] == null || storySavesJSON["saves"][name]["string"] == null ? defaultValue : storySavesJSON["saves"][name]["string"].Value;
         public JSONNode LoadJSON(string name) => storySavesJSON["saves"][name] == null ? null : storySavesJSON["saves"][name]["array"] != null ? storySavesJSON["saves"][name]["array"] : storySavesJSON["saves"][name]["object"] != null ? storySavesJSON["saves"][name]["object"] : null;
+
+        #endregion
+
+        #region Play
 
         public void Clear(bool unloadAllLoadedObjects = true)
         {
@@ -259,55 +210,34 @@ namespace BetterLegacy.Story
             Loaded = false;
         }
 
-        public List<LevelManager.PlayerData> Saves { get; set; } = new List<LevelManager.PlayerData>();
+        public void Play(string path) => StartCoroutine(IPlay(path));
 
-        public IEnumerator Download(System.Action onComplete = null)
+        public void Play(int chapter, int level, bool bonus = false) => StartCoroutine(IPlay((bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters)[chapter].levels[level].filePath));
+
+        // todo: add functionality for loading regular .lsb levels.
+        public IEnumerator IPlay(string path)
         {
-            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadBytes(StoryAssetsURL, (float percentage) => { }, (byte[] bytes) =>
+            if (AssetBundlesLoaded)
+                Clear();
+
+            if (!RTFile.FileExists(path))
             {
-                var directory = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Story/test";
-                var zip = $"{directory}/story.zip";
-
-                if (!RTFile.DirectoryExists(directory))
-                    Directory.CreateDirectory(directory);
-
-                File.WriteAllBytes(zip, bytes);
-
-                ZipFile.ExtractToDirectory(zip, directory);
-
-                File.Delete(zip);
-            }, (string onError) => { }));
-
-            onComplete?.Invoke();
-
-            yield break;
-        }
-
-        public IEnumerator Demo(bool clearInputs)
-        {
-            if (clearInputs || InputDataManager.inst.players.Any(x => x is not CustomPlayer))
-            {
-                InputDataManager.inst.players.Clear();
-                InputDataManager.inst.players.Add(new CustomPlayer(true, 0, null));
-            }
-
-            Play();
-            yield break;
-        }
-
-        public void Play(int chapter, int level) => StartCoroutine(IPlay(chapter, level));
-
-        public IEnumerator IPlay(int chapter, int level)
-        {
-            yield return StartCoroutine(ILoad(chapter, level));
-
-            if (!Loaded)
-            {
+                CoreHelper.LogError($"File \'{path}\' does not exist.");
+                SoundManager.inst.PlaySound(DefaultSounds.Block);
+                Loaded = false;
                 CoreHelper.InStory = false;
                 LevelManager.OnLevelEnd = null;
                 SceneManager.inst.LoadScene("Main Menu");
                 yield break;
             }
+
+            CoreHelper.Log($"Loading story mode level... {path}");
+            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{path}", assetBundle =>
+            {
+                assets = assetBundle;
+            }));
+
+            Loaded = true;
 
             CoreHelper.InStory = true;
             StoryLevel storyLevel = LoadCurrentLevel();
@@ -325,62 +255,19 @@ namespace BetterLegacy.Story
                 Updater.OnLevelEnd();
                 UpdateCurrentLevelProgress(); // allow players to get a better rank
 
-                if (!ContinueStory)
+                int chapter = LoadInt("Chapter", 0);
+                int level = LoadInt($"DOC{(chapter + 1).ToString("00")}Progress", 0);
+                level++;
+                if (level >= StoryMode.Instance.chapters[chapter].levels.Count)
                 {
-                    CoreHelper.InStory = true;
-                    LevelManager.OnLevelEnd = null;
-                    ContinueStory = true;
-                    SceneManager.inst.LoadScene("Interface");
-                    return;
+                    chapter++;
+                    level = 0;
                 }
 
-                CoreHelper.InStory = true;
-                LevelManager.OnLevelEnd = null;
-                SceneManager.inst.LoadScene("Interface");
-            };
+                chapter = Mathf.Clamp(chapter, 0, StoryMode.Instance.chapters.Count - 1);
 
-            if (!storyLevel.music)
-            {
-                CoreHelper.LogError($"Music is null for some reason wtf");
-                yield break;
-            }
-
-            StartCoroutine(LevelManager.Play(storyLevel));
-
-            yield break;
-        }
-
-        public void Play() => StartCoroutine(IPlay());
-
-        public IEnumerator IPlay()
-        {
-            CoreHelper.Log($"Playing story: doc{(Chapter + 1).ToString("00")}_{(Level + 1).ToString("00")}");
-            yield return StartCoroutine(ILoad(Chapter, Level));
-
-            if (!Loaded)
-            {
-                CoreHelper.InStory = false;
-                LevelManager.OnLevelEnd = null;
-                SceneManager.inst.LoadScene("Main Menu");
-                yield break;
-            }
-
-            CoreHelper.InStory = true;
-            StoryLevel storyLevel = LoadCurrentLevel();
-
-            if (storyLevel == null)
-            {
-                CoreHelper.InStory = true;
-                LevelManager.OnLevelEnd = null;
-                SceneManager.inst.LoadScene("Interface");
-                yield break;
-            }
-
-            LevelManager.OnLevelEnd = () =>
-            {
-                LevelManager.Clear();
-                Updater.OnLevelEnd();
-                UpdateCurrentLevelProgress(); // allow players to get a better rank
+                SaveInt("Chapter", chapter);
+                SaveInt($"DOC{(chapter + 1).ToString("00")}Progress", level);
 
                 if (!ContinueStory)
                 {
@@ -389,21 +276,6 @@ namespace BetterLegacy.Story
                     ContinueStory = true;
                     SceneManager.inst.LoadScene("Interface");
                     return;
-                }
-
-                var chapter = GetChapter();
-                if (Level != 5 && ChapterCounts.TryGetValue(chapter, out int maxLevel) && Level + 1 >= maxLevel)
-                {
-                    SetChapter(chapter + 1);
-                    SetLevel(0);
-                }
-                else if (!ChapterCounts.ContainsKey(chapter))
-                {
-                    CoreHelper.Log("You reached the end.");
-                }
-                else
-                {
-                    SetLevel(Level + 1);
                 }
 
                 CoreHelper.InStory = true;
@@ -424,7 +296,6 @@ namespace BetterLegacy.Story
 
         public StoryLevel LoadCurrentLevel()
         {
-            //var name = $"doc{(chapter + 1).ToString("00")}_{(levelIndex + 1).ToString("00")}";
             var icon = assets.LoadAsset<Sprite>($"cover.jpg");
             var song = assets.LoadAsset<AudioClip>($"song.ogg");
             var levelJSON = assets.LoadAsset<TextAsset>($"level.json");
@@ -475,37 +346,6 @@ namespace BetterLegacy.Story
             Loaded = true;
         }
 
-        public Story StoryMode { get; set; }
-
-        public class Story
-        {
-            public string entryInterfacePath;
-            public List<Chapter> chapters = new List<Chapter>();
-
-            public static Story Parse(JSONNode jn)
-            {
-                var story = new Story()
-                {
-                    entryInterfacePath = FontManager.TextTranslater.ReplaceProperties(jn["entry_interface"]),
-                };
-
-                for (int i = 0; i < jn["chapters"].Count; i++)
-                    story.chapters.Add(Chapter.Parse(jn["chapters"][i]));
-
-                return story;
-            }
-
-            public class Chapter
-            {
-                public string name;
-                public string interfacePath;
-
-                public static Chapter Parse(JSONNode jn) => new Chapter
-                {
-                    name = jn["name"],
-                    interfacePath = FontManager.TextTranslater.ReplaceProperties(jn["interface"])
-                };
-            }
-        }
+        #endregion
     }
 }

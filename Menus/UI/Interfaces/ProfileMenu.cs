@@ -12,6 +12,7 @@ using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI;
 using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Layouts;
+using BetterLegacy.Story;
 using LSFunctions;
 using UnityEngine;
 
@@ -48,8 +49,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 allowOriginalHoverMethods = true,
                 func = () =>
                 {
-                    Story.StoryManager.inst.SetChapter(0);
-                    Story.StoryManager.inst.SetLevel(0);
+                    StoryManager.inst.SaveInt("Chapter", 0);
+                    for (int i = 0; i < StoryMode.Instance.chapters.Count; i++)
+                        StoryManager.inst.SaveInt($"DOC{(i + 1).ToString("00")}Progress", 0);
+
                 }
             };
             elementA.enterFunc = () => { MenuEffectsManager.inst.MoveCameraY(elementA.gameObject.transform.position.y); };
