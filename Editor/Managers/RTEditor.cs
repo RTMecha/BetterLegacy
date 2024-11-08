@@ -8134,7 +8134,12 @@ namespace BetterLegacy.Editor.Managers
                 FontElement(EditorDocument.SupportType.MODDED, "Angsana Z", "Classical font."),
             });
 
-            GenerateDocument("Markers (OUTDATED)", "Organize and remember details about a level.", new List<EditorDocument.Element>
+            GenerateDocument("[MODDED] Player Editor (WIP)", "Time to get creative with creative players!", new List<EditorDocument.Element>
+            {
+                new EditorDocument.Element("In BetterLegacy, you can create a fully customized Player Model.", EditorDocument.Element.Type.Text),
+            });
+
+            GenerateDocument("[PATCHED] Markers (OUTDATED)", "Organize and remember details about a level.", new List<EditorDocument.Element>
             {
                 new EditorDocument.Element("Markers can organize certain parts of your level or help with aligning objects to a specific time.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("In the image below is two types of markers. The blue marker is the Audio Marker and the marker with a circle on the top is just a Marker. " +
@@ -8158,7 +8163,7 @@ namespace BetterLegacy.Editor.Managers
                 new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_marker_delete.png", EditorDocument.Element.Type.Image),
             });
 
-            GenerateDocument("Title Bar (OUTDATED)", "The thing at the top of the editor UI with dropdowns.", new List<EditorDocument.Element>
+            GenerateDocument("[PATCHED] Title Bar (OUTDATED)", "The thing at the top of the editor UI with dropdowns.", new List<EditorDocument.Element>
             {
                 new EditorDocument.Element("Title Bar has the main functions for loading, saving and editing.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_td.png", EditorDocument.Element.Type.Image),
@@ -8204,7 +8209,7 @@ namespace BetterLegacy.Editor.Managers
                 new EditorDocument.Element("BepInEx/plugins/Assets/Documentation/doc_td_help.png", EditorDocument.Element.Type.Image),
             });
 
-            GenerateDocument("Timeline Bar (OUTDATED)", "The main toolbar used for editing main editor things such as audio time, editor layers, etc.", new List<EditorDocument.Element>
+            GenerateDocument("[PATCHED] Timeline Bar (OUTDATED)", "The main toolbar used for editing main editor things such as audio time, editor layers, etc.", new List<EditorDocument.Element>
             {
                 new EditorDocument.Element("The Timeline Bar is where you can see and edit general game and editor info.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<b>Audio Time (Precise) [MODDED]</b>\nText shows the precise audio time. This can be edited to set a specific time for the audio.", EditorDocument.Element.Type.Text),
@@ -8236,23 +8241,166 @@ namespace BetterLegacy.Editor.Managers
 
             GenerateDocument("[MODDED] Object Modifiers", "Make your levels dynamic!", new List<EditorDocument.Element>
             {
-                new EditorDocument.Element("BetterLegacy adds a trigger / action based system to Beatmap Objects called \"Modifiers\". " +
-                    "Modifiers have two types: Triggers check if something is happening and if it is, it activates any Action type modifiers. If there are no Triggers, then the Action modifiers " +
-                    "activates. This document is heavily WIP and will be added to over time.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("<b>setPitch</b> - Modifies the speed of the game and the pitch of the audio. It sets a multiplied offset from the " +
-                    "audio keyframe's pitch value. However unlike the event keyframe, setPitch can go into the negatives allowing for reversed audio.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("<b>addPitch</b> - Does the same as above, except adds to the pitch offset.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("<b>setMusicTime</b> - Sets the Audio Time to go to any point in the song, allowing for skipping specific sections of a song.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("<b>playSound</b> - Plays an external sound. The following details what each value in the modifier does." +
-                    "\nPath - If global is on, path should be set to something within beatmaps/soundlibrary directory. If global is off, then the path should be set to something within the level " +
-                    "folder that has level.lsb and metadata.lsb." +
-                    "\nGlobal - Affects the above setting in the way described." +
-                    "\nPitch - The speed of the sound played." +
-                    "\nVolume - How loud the sound is." +
-                    "\nLoop - If the sound should loop while the Modifier is active.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("<b>playSoundOnline</b> - Same as above except plays from a link. The global toggle does nothing here.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("<b>loadLevel</b> - Loads a level from the current level folder path.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("<b>loadLevelInternal</b> - Same as above, except it always loads from the current levels own path.", EditorDocument.Element.Type.Text),
+                //new EditorDocument.Element("BetterLegacy adds a trigger / action based system to Beatmap Objects called \"Modifiers\". " +
+                //    "Modifiers have two types: Triggers check if something is happening and if it is, it activates any Action type modifiers. If there are no Triggers, then the Action modifiers " +
+                //    "activates. This document is heavily WIP and will be added to over time.", EditorDocument.Element.Type.Text),
+                //new EditorDocument.Element("<b>setPitch</b> - Modifies the speed of the game and the pitch of the audio. It sets a multiplied offset from the " +
+                //    "audio keyframe's pitch value. However unlike the event keyframe, setPitch can go into the negatives allowing for reversed audio.", EditorDocument.Element.Type.Text),
+                //new EditorDocument.Element("<b>addPitch</b> - Does the same as above, except adds to the pitch offset.", EditorDocument.Element.Type.Text),
+                //new EditorDocument.Element("<b>setMusicTime</b> - Sets the Audio Time to go to any point in the song, allowing for skipping specific sections of a song.", EditorDocument.Element.Type.Text),
+                //new EditorDocument.Element("<b>playSound</b> - Plays an external sound. The following details what each value in the modifier does." +
+                //    "\nPath - If global is on, path should be set to something within beatmaps/soundlibrary directory. If global is off, then the path should be set to something within the level " +
+                //    "folder that has level.lsb and metadata.lsb." +
+                //    "\nGlobal - Affects the above setting in the way described." +
+                //    "\nPitch - The speed of the sound played." +
+                //    "\nVolume - How loud the sound is." +
+                //    "\nLoop - If the sound should loop while the Modifier is active.", EditorDocument.Element.Type.Text),
+                //new EditorDocument.Element("<b>playSoundOnline</b> - Same as above except plays from a link. The global toggle does nothing here.", EditorDocument.Element.Type.Text),
+                //new EditorDocument.Element("<b>loadLevel</b> - Loads a level from the current level folder path.", EditorDocument.Element.Type.Text),
+                //new EditorDocument.Element("<b>loadLevelInternal</b> - Same as above, except it always loads from the current levels own path.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("Some objects in BetterLegacy have a list of \"modifiers\" that can be used to affect that object in a lot of different ways.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>TRIGGERS</b>\n" +
+                                        "These types of modifiers will check if something is happening and if it is, will allow other modifiers in the list to run.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>ACTIONS</b>\n" +
+                                        "Action modifiers modify the level or object if it runs.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("Modifiers can be told to only run once whenever it runs by turning \"Constant\" off. Some modifiers have specific behavior with it on / off.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("Triggers can be turned into a \"Not Gate\" by turning \"Not\" on. This will require the triggers' check to be the opposite of what it would normally be.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("Some modifiers support affecting a group of Beatmap Objects if they're being used for such. You can customize if the group should only be within the Prefab the object spawned from by turning \"Prefab Group Only\" on.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("Below is a list of a few modifier groups and what they generally do. Does not include every modifier as there's far too many to count (300+).", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("<b>AUDIO MODIFIERS</b>\n" +
+                                        "These all have some relevance to the current audio, or its own audio.\n" +
+                                        "- setPitch (Action)\n" +
+                                        "- addPitch (Action)\n" +
+                                        "- setMusicTime (Action)\n" +
+                                        "- playSound (Action)\n" +
+                                        "- audioSource (Action)\n" +
+                                        "- pitchEquals (Trigger)\n" +
+                                        "- musicTimeGreater (Trigger)\n" +
+                                        "- musicTimeLesser (Trigger)\n" +
+                                        "- musicPlaying (Trigger)\n"
+                                        , EditorDocument.Element.Type.Text),
+
+                new EditorDocument.Element("<b>LEVEL MODIFIERS</b>\n" +
+                                        "Not to be confused with the Level Modifiers that can be converted to Alpha level triggers. These modifiers have a connection with the level or multiple in some way.\n" +
+                                        "- loadLevelID (Action)\n" +
+                                        "- endLevel (Action)\n" +
+                                        "- inZenMode (Trigger)\n" +
+                                        "- inNormal (Trigger)\n" +
+                                        "- levelRankEquals (Trigger)\n" +
+                                        "- levelCompleted (Trigger)\n"
+                                        , EditorDocument.Element.Type.Text),
+
+                new EditorDocument.Element("<b>COMPONENT MODIFIERS</b>\n" +
+                                        "These act as a component that directly modifies how the object looks / works.\n" +
+                                        "- blur (Action)\n" +
+                                        "- blurColored (Action)\n" +
+                                        "- particleSystem (Action)\n" +
+                                        "- trailRenderer (Action)\n" +
+                                        "- rigidbody (Action) < Required for objectCollide triggers to work.\n" +
+                                        "- gravity (Action)\n" +
+                                        "- objectCollide (Trigger)\n"
+                                        , EditorDocument.Element.Type.Text),
+
+                new EditorDocument.Element("<b>PREFAB MODIFIERS</b>\n" +
+                                        "These can spawn / despawn Prefabs directly into a level.\n" +
+                                        "- spawnPrefab (Action)\n" +
+                                        "- spawnPrefabOffset (Action)\n" +
+                                        "- spawnMultiPrefab (Action)\n" +
+                                        "- spawnMultiPrefabOffset (Action)\n" +
+                                        "- clearSpawnedPrefabs (Action)\n"
+                                        , EditorDocument.Element.Type.Text),
+
+                new EditorDocument.Element("<b>PLAYER MODIFIERS</b>\n" +
+                                        "Again, not to be confused with the Player Modifiers that Player Models use. These affect the Players.\n" +
+                                        "- playerHeal (Action)\n" +
+                                        "- playerHit (Action)\n" +
+                                        "- playerKill (Action)\n" +
+                                        "- playerBoost (Action)\n" +
+                                        "- gameMode (Action)\n" +
+                                        "- setPlayerModel (Action)\n" +
+                                        "- blackHole (Action)\n" +
+                                        "- playerCollide (Trigger)\n" +
+                                        "- playerHealthEquals (Trigger)\n" +
+                                        "- playerDeathsEquals (Trigger)\n" +
+                                        "- playerBoosting (Trigger)\n"
+                                        , EditorDocument.Element.Type.Text),
+
+                new EditorDocument.Element("<b>VARIABLE MODIFIERS</b>\n" +
+                                        "Stores and compares variables for use across the level.\n" +
+                                        "- addVariable (Action)\n" +
+                                        "- setVariable (Action)\n" +
+                                        "- variableEquals (Trigger)\n"
+                                        , EditorDocument.Element.Type.Text),
+
+                new EditorDocument.Element("<b>ENABLE / DISABLE MODIFIERS</b>\n" +
+                                        "Hides / unhides an object.\n" +
+                                        "- enableObject (Action)\n" +
+                                        "- enableObjectTree (Action)\n" +
+                                        "- disableObject (Action)\n" +
+                                        "- disableObjectTree (Action)\n"
+                                        , EditorDocument.Element.Type.Text),
+
+                new EditorDocument.Element("<b>REACTIVE MODIFIERS</b>\n" +
+                                        "Makes an object react to the audio, like the Background Objects do already.\n" +
+                                        "- reactivePosChain (Action)\n" +
+                                        "- reactiveScaChain (Action)\n" +
+                                        "- reactiveRotChain (Action)\n" +
+                                        "- reactiveCol (Action)\n"
+                                        , EditorDocument.Element.Type.Text),
+
+                new EditorDocument.Element("<b>EVENT MODIFIERS</b>\n" +
+                                        "Offsets Event Keyframes.\n" +
+                                        "- eventOffset (Action)\n" +
+                                        "- eventOffsetAnimate (Action)\n" +
+                                        "- vignetteTracksPlayer (Action)\n"
+                                        , EditorDocument.Element.Type.Text),
+
+                new EditorDocument.Element("<b>COLOR MODIFIERS</b>\n" +
+                                        "The color of the object.\n" +
+                                        "- lerpColor (Action)\n" +
+                                        "- setAlpha (Action)\n" +
+                                        "- copyColor (Action)\n" +
+                                        "- setColorHex (Action)\n"
+                                        , EditorDocument.Element.Type.Text),
+
+                new EditorDocument.Element("<b>TEXT MODIFIERS</b>\n" +
+                                        "The text of a text object can be changed with these.\n" +
+                                        "- setText (Action)\n" +
+                                        "- formatText (Action)\n" +
+                                        "- textSequence (Action)\n"
+                                        , EditorDocument.Element.Type.Text),
+
+                new EditorDocument.Element("<b>ANIMATION MODIFIERS</b>\n" +
+                                        "Dynamically (or statically) animate objects in various ways.\n" +
+                                        "- animateObject (Action)\n" +
+                                        "- applyAnimation (Action)\n" +
+                                        "- copyAxis (Action)\n" +
+                                        "- legacyTail (Action)\n" +
+                                        "- axisEquals (Trigger)\n"
+                                        , EditorDocument.Element.Type.Text),
+
+                new EditorDocument.Element("<b>SHAPE MODIFIERS</b>\n" +
+                                        "Affects the shape of the object.\n" +
+                                        "- translateShape (Action)\n" +
+                                        "- backgroundShape (Action)\n" +
+                                        "- sphereShape (Action)\n"
+                                        , EditorDocument.Element.Type.Text),
+
+                new EditorDocument.Element("<b>INPUT MODIFIERS</b>\n" +
+                                        "Set of triggers related to keyboards, controllers and the mouse cursor.\n" +
+                                        "- keyPressDown (Trigger)\n" +
+                                        "- controlPressDown (Trigger)\n" +
+                                        "- mouseButtonDown (Trigger)\n" +
+                                        "- mouseOver (Trigger)\n"
+                                        , EditorDocument.Element.Type.Text),
+
+                new EditorDocument.Element("<b>MISC MODIFIERS</b>\n" +
+                                        "These don't really fit into a category but are interesting enough to let you know they exist.\n" +
+                                        "- setWindowTitle (Action)\n" +
+                                        "- setDiscordStatus (Action)\n" +
+                                        "- loadInterface (Action)\n" +
+                                        "- disableModifier (Trigger)\n"
+                                        , EditorDocument.Element.Type.Text),
             });
 
             GenerateDocument("[MODDED] Math Evaluation", "Some places you can write out a math equation and get a result from it.", new List<EditorDocument.Element>
@@ -8278,7 +8426,11 @@ namespace BetterLegacy.Editor.Managers
                                      "<b>player0PosY</b> - Position Y of a specific player. You can do the same as the above variable.\n" +
                                      "<b>player0Rot</b> - Rotation of a specific player. You can do the same as the above variable.\n" +
                                      "<b>player0Health</b> - Health of a specific player. You can do the same as the above variable.\n" +
-                                     "<b>playerHealthTotal</b> - Health of all players in total.", EditorDocument.Element.Type.Text),
+                                     "<b>playerHealthTotal</b> - Health of all players in total.\n" +
+                                     "<b>mousePosX</b> - Position X of the mouse cursor.\n" +
+                                     "<b>mousePosY</b> - Position Y of the mouse cursor.\n" +
+                                     "<b>screenWidth</b> - Width of the Application Window.\n" +
+                                     "<b>screenHeight</b> - Height of the Application Window.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("If you have a few functions listed, follow this example:\n" +
                                     "clamp(random(), 0, 1) + clamp(random(034) * 0.1, 0, 1) * pitch"
                                     , EditorDocument.Element.Type.Text),
@@ -8333,9 +8485,21 @@ namespace BetterLegacy.Editor.Managers
                                     "<b>greaterEquals(a, b, trueResult, falseResult)</b> - If a and b are greater or equal, then the function returns the trueResult, otherwise returns the falseResult.\n" +
                                     "<b>lesser(a, b, trueResult, falseResult)</b> - If a and b are lesser, then the function returns the trueResult, otherwise returns the falseResult.\n" +
                                     "<b>greater(a, b, trueResult, falseResult)</b> - If a and b are greater, then the function returns the trueResult, otherwise returns the falseResult.\n" +
-                                    "<b>findAxis#object_group(fromType, fromAxis, time)</b> - Finds an object with the matching tag, takes an axis from fromType and fromAxis and interpolates it via time.\n" +
+                                    "<b>findAxis#object_group(int fromType, int fromAxis, float time)</b> - Finds an object with the matching tag, takes an axis from fromType and fromAxis and interpolates it via time.\n" +
+                                    "<b>findOffset#object_group(int fromType, int fromAxis)</b> - Finds an object with the matching tag and takes an axis from fromType and fromAxis.\n" +
+                                    "<b>findObject#object_group#Property()</b> - Finds an object with the matching tag and a property of the object.\n" +
+                                    "Acceptible properties:\n" +
+                                    "StartTime\n" +
+                                    "Depth\n" +
+                                    "IntVariable\n" +
+                                    "<b>findInterpolateChain#object_group(float time, int type int axis, int includeDepth [0 = false 1 = true], int includeOffsets [0 = false 1 = true], int includeSelf [0 = false 1 = true]) - Finds an object with the matching tag and interpolates its full animation value. If type is not position aka type = 0, then don't have includeDepth in the parameters.\n" +
                                     "<b>easing#curveType(t)</b> - Calculates an easing from the easing list. \"curveType\" is easings such as \"Linear\", \"Instant\", etc.\n" +
                                     "<b>int(value)</b> - Casts floating point numbers (non-whole numbers) into integers (whole numbers).\n" +
+                                    "<b>sampleAudio(int sample, float intensity)</b> - Takes a sample of the currently playing audio.\n" +
+                                    "<b>vectorAngle(float firstX, float firstY, float firstZ, float secondX, float secondY, float secondZ)</b> - Calculates rotation where first would be looking at second.\n" +
+                                    "<b>distance(float first, float second)</b> - Calculates the distance between first and second.\n" +
+                                    "<b>distance(float firstX, float firstY, float secondX, float secondY)</b> - Calculates the distance between first and second.\n" +
+                                    "<b>distance(float firstX, float firstY, float firstZ, float secondX, float secondY, float secondZ)</b> - Calculates the distance between first and second.\n" +
                                     "<b>date#format()</b> - Takes a specific part of the current date and uses it.\n" +
                                     "Acceptable formats:\n" +
                                     "yyyy = full year (e.g. 2019)\n" +
