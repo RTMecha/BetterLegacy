@@ -127,6 +127,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool LoadLevelPrefix()
         {
+            InputDataManager.inst.playersCanJoin = false;
+
             LevelManager.OnInputsSelected?.Invoke();
 
             if (LevelManager.OnInputsSelected != null) // if we want to run a custom function instead of doing the normal methods.
