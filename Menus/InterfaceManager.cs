@@ -323,9 +323,21 @@ namespace BetterLegacy.Menus
             interfaces.Clear();
             CoreHelper.InStory = true;
 
-            //var path = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Story/Interfaces/doc{(Story.StoryManager.inst.Chapter + 1).ToString("00")}/base_interface.lsi";
+            var storyStarted = StoryManager.inst.LoadBool("StoryModeStarted", false);
+            var chapterIndex = StoryManager.inst.currentPlayingChapterIndex;
+            var levelIndex = StoryManager.inst.currentPlayingLevelSequenceIndex;
+            var chapter = StoryMode.Instance.chapters[chapterIndex];
+            if (storyStarted &&
+                StoryManager.inst.LoadBool($"DOC{(chapterIndex + 1).ToString("00")}_{(levelIndex + 1).ToString("00")}Complete", false) &&
+                !StoryManager.inst.LoadBool($"DOC{(chapterIndex + 1).ToString("00")}_{(levelIndex + 1).ToString("00")}SeenPAChat", false) &&
+                chapter[levelIndex].chats.Count > 0)
+            {
+                StoryManager.inst.SetPAChat(0);
+                PlayMusic();
+                return;
+            }
 
-            var path = StoryManager.inst.LoadBool("StoryModeStarted", false) ? StoryMode.Instance.chapters[StoryManager.inst.LoadInt("Chapter", 0)].interfacePath : StoryMode.Instance.entryInterfacePath;
+            var path = storyStarted ? chapter.interfacePath : StoryMode.Instance.entryInterfacePath;
             
             var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
