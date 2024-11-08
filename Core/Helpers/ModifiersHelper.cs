@@ -5745,6 +5745,29 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+                    case "spawnPrefabOffsetOther":
+                        {
+                            if (!modifier.constant && int.TryParse(modifier.value, out int num) && GameData.Current.prefabs.Count > num
+                                && float.TryParse(modifier.commands[1], out float posX) && float.TryParse(modifier.commands[2], out float posY)
+                                && float.TryParse(modifier.commands[3], out float scaX) && float.TryParse(modifier.commands[4], out float scaY) && float.TryParse(modifier.commands[5], out float rot)
+                                && int.TryParse(modifier.commands[6], out int repeatCount) && float.TryParse(modifier.commands[7], out float repeatOffsetTime) && float.TryParse(modifier.commands[8], out float speed)
+                                && CoreHelper.TryFindObjectWithTag(modifier, modifier.commands[10], out BeatmapObject beatmapObject))
+                            {
+                                var animationResult = beatmapObject.InterpolateChain();
+
+                                modifier.Result = ModifiersManager.AddPrefabObjectToLevel(GameData.Current.prefabs[num],
+                                    AudioManager.inst.CurrentAudioSource.time,
+                                    new Vector2(posX, posY) + (Vector2)animationResult.position,
+                                    new Vector2(scaX, scaY) * animationResult.scale,
+                                    rot + animationResult.rotation, repeatCount, repeatOffsetTime, speed);
+
+                                GameData.Current.prefabObjects.Add((PrefabObject)modifier.Result);
+
+                                Updater.AddPrefabToLevel((PrefabObject)modifier.Result);
+                            }
+
+                            break;
+                        }
                     case "spawnMultiPrefab":
                         {
                             if (!modifier.constant && int.TryParse(modifier.value, out int num) && GameData.Current.prefabs.Count > num
@@ -5780,6 +5803,36 @@ namespace BetterLegacy.Core.Helpers
                                 && int.TryParse(modifier.commands[6], out int repeatCount) && float.TryParse(modifier.commands[7], out float repeatOffsetTime) && float.TryParse(modifier.commands[8], out float speed))
                             {
                                 var animationResult = modifier.reference.InterpolateChain();
+
+                                if (modifier.Result == null)
+                                    modifier.Result = new List<PrefabObject>();
+
+                                var list = modifier.GetResult<List<PrefabObject>>();
+                                var prefabObject = ModifiersManager.AddPrefabObjectToLevel(GameData.Current.prefabs[num],
+                                    AudioManager.inst.CurrentAudioSource.time,
+                                    new Vector2(posX, posY) + (Vector2)animationResult.position,
+                                    new Vector2(scaX, scaY) * animationResult.scale,
+                                    rot + animationResult.rotation, repeatCount, repeatOffsetTime, speed);
+
+                                list.Add(prefabObject);
+                                modifier.Result = list;
+
+                                GameData.Current.prefabObjects.Add(prefabObject);
+
+                                Updater.AddPrefabToLevel(prefabObject);
+                            }
+
+                            break;
+                        }
+                    case "spawnMultiPrefabOffsetOther":
+                        {
+                            if (!modifier.constant && int.TryParse(modifier.value, out int num) && GameData.Current.prefabs.Count > num
+                                && float.TryParse(modifier.commands[1], out float posX) && float.TryParse(modifier.commands[2], out float posY)
+                                && float.TryParse(modifier.commands[3], out float scaX) && float.TryParse(modifier.commands[4], out float scaY) && float.TryParse(modifier.commands[5], out float rot)
+                                && int.TryParse(modifier.commands[6], out int repeatCount) && float.TryParse(modifier.commands[7], out float repeatOffsetTime) && float.TryParse(modifier.commands[8], out float speed)
+                                && CoreHelper.TryFindObjectWithTag(modifier, modifier.commands[9], out BeatmapObject beatmapObject))
+                            {
+                                var animationResult = beatmapObject.InterpolateChain();
 
                                 if (modifier.Result == null)
                                     modifier.Result = new List<PrefabObject>();
@@ -6310,6 +6363,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "spawnPrefab":
                     case "spawnPrefabOffset":
+                    case "spawnPrefabOffsetOther":
                         {
                             // value 9 is permanent
 
