@@ -46,7 +46,7 @@ namespace BetterLegacy.Story
                 childControlWidth = true,
                 childForceExpandWidth = true,
                 spacing = 4f,
-                rect = RectValues.Default.AnchoredPosition(0f, 120f).SizeDelta(1700f, 200f),
+                rect = RectValues.Default.AnchoredPosition(0f, 140f).SizeDelta(1700f, 200f),
                 regenerate = false,
             });
 
@@ -56,7 +56,7 @@ namespace BetterLegacy.Story
                 childControlWidth = true,
                 childForceExpandWidth = true,
                 spacing = 4f,
-                rect = RectValues.Default.AnchoredPosition(-500f, 200f).SizeDelta(800f, 200f),
+                rect = RectValues.Default.AnchoredPosition(-500f, 220f).SizeDelta(800f, 200f),
                 regenerate = false,
             });
             
@@ -142,7 +142,7 @@ namespace BetterLegacy.Story
             InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
         }
 
-        public void AddChat(string character, string chat)
+        public void AddChat(string character, string chat, Action onSeen = null)
         {
             var isHal = character.Equals("hal", StringComparison.OrdinalIgnoreCase);
 
@@ -174,8 +174,42 @@ namespace BetterLegacy.Story
                 regenerate = false,
                 rect = RectValues.Default.SizeDelta(1700f, 64f),
                 textRect = RectValues.FullAnchored.SizeDelta(-32f, 0f),
+                onWaitEndFunc = onSeen,
             });
             StoryManager.inst.AddChat(character, chat, time);
+            InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
+        }
+
+        public void RemoveNextButton()
+        {
+            for (int i = 0; i < elements.Count; i++)
+                if (elements[i].id == "148581" && elements[i].gameObject)
+                    CoreHelper.Destroy(elements[i].gameObject);
+            elements.RemoveAll(x => x.id == "148581");
+        }
+
+        public void AddNextButton(Action onClick)
+        {
+            var element = new MenuButton
+            {
+                id = "148581",
+                name = "Next",
+                text = "[ NEXT ]",
+                selectionPosition = new Vector2Int(0, 1),
+                rect = RectValues.Default.AnchoredPosition(0f, -340f).SizeDelta(300f, 64f),
+                alignment = TMPro.TextAlignmentOptions.Center,
+                func = onClick,
+                color = 6,
+                opacity = 0.1f,
+                textColor = 6,
+                selectedColor = 6,
+                selectedTextColor = 7,
+                selectedOpacity = 1f,
+                length = 1f,
+                playBlipSound = true,
+                regenerate = false,
+            };
+            elements.Add(element);
             InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
         }
 

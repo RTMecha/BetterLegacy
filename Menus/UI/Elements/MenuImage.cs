@@ -102,6 +102,16 @@ namespace BetterLegacy.Menus.UI.Elements
         public Action spawnFunc;
 
         /// <summary>
+        /// Function JSON called when waiting on the element ends.
+        /// </summary>
+        public JSONNode onWaitEndFuncJSON;
+
+        /// <summary>
+        /// Function called when waiting on the element ends.
+        /// </summary>
+        public Action onWaitEndFunc;
+
+        /// <summary>
         /// Interaction component.
         /// </summary>
         public Clickable clickable;

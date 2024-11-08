@@ -32,6 +32,8 @@ namespace BetterLegacy.Story
 
         public bool ContinueStory { get; set; } = true;
 
+        public static StoryMode StoryModeDebugRef => StoryMode.Instance;
+
         /// <summary>
         /// The default chapter rank requirement for "bonuses" to be unlocked. In this case, the player needs to get higher than an A rank (S / SS rank).
         /// </summary>
@@ -66,6 +68,14 @@ namespace BetterLegacy.Story
         }
 
         #region Save File
+
+        public int currentPlayingChapterIndex;
+        public int currentPlayingLevelSequenceIndex;
+        public StoryMode.Chapter CurrentChapter => StoryMode.Instance.chapters[currentPlayingChapterIndex];
+        public StoryMode.LevelSequence CurrentLevelSequence => CurrentChapter[currentPlayingLevelSequenceIndex];
+
+        public int ChapterIndex => LoadInt("Chapter", 0);
+        public int LevelSequenceIndex => LoadInt($"DOC{(ChapterIndex + 1).ToString("00")}Progress", 0);
 
         public string StorySavesPath => $"{RTFile.ApplicationDirectory}profile/story_saves_{(SaveSlot + 1).ToString("00")}.lss";
         public JSONNode storySavesJSON;
@@ -197,6 +207,8 @@ namespace BetterLegacy.Story
         public string LoadString(string name, string defaultValue) => storySavesJSON["saves"][name] == null || storySavesJSON["saves"][name]["string"] == null ? defaultValue : storySavesJSON["saves"][name]["string"].Value;
         public JSONNode LoadJSON(string name) => storySavesJSON["saves"][name] == null ? null : storySavesJSON["saves"][name]["array"] != null ? storySavesJSON["saves"][name]["array"] : storySavesJSON["saves"][name]["object"] != null ? storySavesJSON["saves"][name]["object"] : null;
 
+        public bool HasSave(string name) => storySavesJSON["saves"][name] != null;
+
         #region PAChat
 
         public void ClearChats()
@@ -253,6 +265,9 @@ namespace BetterLegacy.Story
         public void Play(int chapter, int level, bool bonus = false, bool skipCutscenes = false)
         {
             var storyLevel = (bonus ? StoryMode.Instance.bonusChapters : StoryMode.Instance.chapters)[chapter].levels[level];
+
+            currentPlayingChapterIndex = chapter;
+            currentPlayingLevelSequenceIndex = level;
 
             StartCoroutine(IPlay(storyLevel, skipCutscenes: skipCutscenes));
         }
@@ -455,6 +470,14 @@ namespace BetterLegacy.Story
                 Updater.UpdateObjects(false);
                 UpdateCurrentLevelProgress(); // allow players to get a better rank
 
+                int chapterIndex = currentPlayingChapterIndex;
+                int levelIndex = currentPlayingLevelSequenceIndex;
+
+                var completeString = $"DOC{(chapterIndex + 1).ToString("00")}_{(levelIndex + 1).ToString("00")}Complete";
+
+                if (!isCutscene)
+                    SaveBool(completeString, true);
+
                 if (!ContinueStory)
                 {
                     CoreHelper.InStory = true;
@@ -463,13 +486,6 @@ namespace BetterLegacy.Story
                     SceneManager.inst.LoadScene("Interface");
                     return;
                 }
-
-                int chapterIndex = LoadInt("Chapter", 0);
-                int levelIndex = LoadInt($"DOC{(chapterIndex + 1).ToString("00")}Progress", 0);
-
-                var completeString = $"DOC{(chapterIndex + 1).ToString("00")}_{(levelIndex + 1).ToString("00")}Complete";
-                if (!isCutscene)
-                    SaveBool(completeString, true);
 
                 cutsceneIndex++;
                 if (cutsceneIndex < level.Count)
@@ -555,6 +571,44 @@ namespace BetterLegacy.Story
             }));
 
             Loaded = true;
+        }
+
+        public void SetPAChat(int chatIndex)
+        {
+            PAChatMenu.Init();
+            PAChatMenu.Current.onGenerateUIFinish = () =>
+            {
+                PAChatMenu.Current.onGenerateUIFinish = null;
+                UpdatePAChatText(chatIndex);
+            };
+        }
+
+        public void UpdatePAChatText(int chatIndex)
+        {
+            if (chatIndex >= CurrentLevelSequence.chats.Count)
+            {
+                PAChatMenu.Current.RemoveNextButton();
+                SaveBool($"DOC{(currentPlayingChapterIndex + 1).ToString("00")}_{(currentPlayingLevelSequenceIndex + 1).ToString("00")}SeenPAChat", true);
+                return;
+            }
+
+            var chat = CurrentLevelSequence.chats[chatIndex];
+            int nextIndex = chatIndex + 1;
+            PAChatMenu.Current.AddChat(chat.character, chat.textChats[UnityEngine.Random.Range(0, chat.textChats.Length)].text, () =>
+            {
+                if (chatIndex >= CurrentLevelSequence.chats.Count)
+                {
+                    PAChatMenu.Current.RemoveNextButton();
+                    SaveBool($"DOC{(currentPlayingChapterIndex + 1).ToString("00")}_{(currentPlayingLevelSequenceIndex + 1).ToString("00")}SeenPAChat", true);
+                    return;
+                }
+
+                PAChatMenu.Current.AddNextButton(() =>
+                {
+                    PAChatMenu.Current.RemoveNextButton();
+                    UpdatePAChatText(nextIndex);
+                });
+            });
         }
 
         #endregion

@@ -102,6 +102,8 @@ namespace BetterLegacy.Story
 
                 return chapter;
             }
+
+            public override string ToString() => $"{name} - {Count}";
         }
 
         public class LevelSequence
@@ -151,6 +153,8 @@ namespace BetterLegacy.Story
             public List<string> preCutscenes = new List<string>();
             public List<string> postCutscenes = new List<string>();
 
+            public List<Chat> chats = new List<Chat>();
+
             public static LevelSequence Parse(JSONNode jn)
             {
                 var level = new LevelSequence
@@ -165,13 +169,55 @@ namespace BetterLegacy.Story
                 if (jn["pre_cutscenes"] != null)
                     for (int i = 0; i < jn["pre_cutscenes"].Count; i++)
                         level.preCutscenes.Add(RTFile.ParsePaths(jn["pre_cutscenes"][i]));
-                
+
                 if (jn["post_cutscenes"] != null)
                     for (int i = 0; i < jn["post_cutscenes"].Count; i++)
                         level.postCutscenes.Add(RTFile.ParsePaths(jn["post_cutscenes"][i]));
 
+                if (jn["pa_chat"] != null)
+                    for (int i = 0; i < jn["pa_chat"].Count; i++)
+                        level.chats.Add(Chat.Parse(jn["pa_chat"][i]));
+
                 return level;
             }
+
+            public override string ToString() => $"{name} | {songTitle} - {Count}";
+        }
+
+        public class Chat
+        {
+            public string character;
+            public TextChat[] textChats;
+
+            public static Chat Parse(JSONNode jn)
+            {
+                var chat = new Chat
+                {
+                    character = jn["character"],
+                };
+                chat.textChats = new TextChat[jn["chat"].Count];
+                for (int i = 0; i < jn["chat"].Count; i++)
+                    chat.textChats[i] = TextChat.Parse(jn["chat"][i]);
+                return chat;
+            }
+
+            public override string ToString() => character;
+        }
+
+        public class TextChat
+        {
+            public string text;
+
+            public static TextChat Parse(JSONNode jn)
+            {
+                var textChat = new TextChat
+                {
+                    text = jn["text"],
+                };
+                return textChat;
+            }
+
+            public override string ToString() => text;
         }
     }
 }

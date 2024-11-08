@@ -130,6 +130,11 @@ namespace BetterLegacy.Menus.UI.Interfaces
         public JSONNode exitFuncJSON;
 
         /// <summary>
+        /// Function to run when <see cref="GenerateUI"/> is complete.
+        /// </summary>
+        public Action onGenerateUIFinish;
+
+        /// <summary>
         /// If <see cref="MenuEffectsManager"/> should be added to the interface.
         /// </summary>
         public bool allowEffects = true;
@@ -470,6 +475,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         while (menuEvent.isSpawning)
                             yield return null;
 
+                    if (menuEvent.onWaitEndFuncJSON != null)
+                        menuEvent.ParseFunction(menuEvent.onWaitEndFuncJSON);
+                    menuEvent.onWaitEndFunc?.Invoke();
+
                     continue;
                 }
 
@@ -498,6 +507,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         while (menuButton.isSpawning)
                             yield return null;
 
+                    if (menuButton.onWaitEndFuncJSON != null)
+                        menuButton.ParseFunction(menuButton.onWaitEndFuncJSON);
+                    menuButton.onWaitEndFunc?.Invoke();
+
                     menuButton.clickable.onClick = p =>
                     {
                         if (menuButton.playBlipSound)
@@ -521,6 +534,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         while (menuInputField.isSpawning)
                             yield return null;
 
+                    if (menuInputField.onWaitEndFuncJSON != null)
+                        menuInputField.ParseFunction(menuInputField.onWaitEndFuncJSON);
+                    menuInputField.onWaitEndFunc?.Invoke();
+
                     continue;
                 }
 
@@ -532,6 +549,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     if (menuText.wait)
                         while (menuText.isSpawning)
                             yield return null;
+
+                    if (menuText.onWaitEndFuncJSON != null)
+                        menuText.ParseFunction(menuText.onWaitEndFuncJSON);
+                    menuText.onWaitEndFunc?.Invoke();
                 }
                 else
                 {
@@ -541,6 +562,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     if (element.wait)
                         while (element.isSpawning)
                             yield return null;
+
+                    if (element.onWaitEndFuncJSON != null)
+                        element.ParseFunction(element.onWaitEndFuncJSON);
+                    element.onWaitEndFunc?.Invoke();
                 }
 
                 if (element.clickable != null)
@@ -553,6 +578,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         element.func?.Invoke();
                     };
             }
+
+            onGenerateUIFinish?.Invoke();
 
             isOpen = true;
 
@@ -909,7 +936,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         {
             var actions = InputDataManager.inst.menuActions;
 
-            if (!isOpen)
+            if (!isOpen || generating)
             {
                 for (int i = 0; i < elements.Count; i++)
                 {
