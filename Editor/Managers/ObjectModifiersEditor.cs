@@ -1670,9 +1670,19 @@ namespace BetterLegacy.Editor.Managers
 
                     case "spawnPrefab":
                     case "spawnPrefabOffset":
+                    case "spawnPrefabOffsetOther":
                     case "spawnMultiPrefab":
                     case "spawnMultiPrefabOffset":
+                    case "spawnMultiPrefabOffsetOther":
                         {
+                            var isMulti = cmd.Contains("Multi");
+                            if (cmd.Contains("Other"))
+                            {
+                                PrefabGroupOnly(modifier, layout);
+                                var str = StringGenerator(modifier, layout, "Object Group", isMulti ? 9 : 10);
+                                EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+                            }
+
                             var prefabIndex = numberInput.Duplicate(layout, "Index");
                             var prefabIndexLabel = prefabIndex.transform.Find("Text").GetComponent<Text>();
                             prefabIndexLabel.text = "Prefab Index";
@@ -1720,7 +1730,7 @@ namespace BetterLegacy.Editor.Managers
                             SingleGenerator(modifier, layout, "Repeat Offset Time", 7, 0f);
                             SingleGenerator(modifier, layout, "Speed", 8, 1f);
 
-                            if (!cmd.Contains("Multi"))
+                            if (!isMulti)
                                 BoolGenerator(modifier, layout, "Permanent", 9, false);
 
                             break;
