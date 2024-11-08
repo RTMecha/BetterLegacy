@@ -588,7 +588,7 @@ namespace BetterLegacy.Core.Helpers
 
             CoreHelper.Log($"Selecting [ {timelineObject.ID} ]");
 
-            if (!RTEditor.inst.parentPickerEnabled && !RTEditor.inst.prefabPickerEnabled)
+            if (!RTEditor.inst.parentPickerEnabled && !RTEditor.inst.prefabPickerEnabled && RTEditor.inst.onSelectTimelineObject == null)
             {
                 if (pointerEventData.button == PointerEventData.InputButton.Right)
                 {
