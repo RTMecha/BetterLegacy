@@ -226,6 +226,52 @@ namespace ILMath
                             result = float.Parse(format);
                             return true;
                         }
+                    case "findObject":
+                        {
+                            var tag = split[1];
+
+                            var bm = CoreHelper.FindObjectWithTag(tag);
+                            if (!bm || split.Length < 2)
+                            {
+                                result = 0;
+                                return false;
+                            }
+
+                            float value = split[2] switch
+                            {
+                                "StartTime" => bm.StartTime,
+                                "Depth" => bm.Depth,
+                                "IntVariable" => bm.integerVariable,
+
+                                _ => 0,
+                            };
+
+                            result = value;
+                            return true;
+                        }
+                    case "findInterpolateChain":
+                        {
+                            var tag = split[1];
+
+                            var bm = CoreHelper.FindObjectWithTag(tag);
+                            if (!bm)
+                            {
+                                result = 0;
+                                return false;
+                            }
+
+                            var type = parameters[0];
+                            var axis = parameters[1];
+
+                            result = type switch
+                            {
+                                0 => bm.InterpolateChainPosition(parameters[2] == 1, parameters[3] == 1, parameters[4] == 1)[(int)axis],
+                                1 => bm.InterpolateChainScale(parameters[2] == 1, parameters[3] == 1)[(int)axis],
+                                2 => bm.InterpolateChainRotation(parameters[2] == 1, parameters[3] == 1),
+                                _ => 0,
+                            };
+                            return true;
+                        }
                 }
             }
 
