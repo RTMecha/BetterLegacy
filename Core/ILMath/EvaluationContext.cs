@@ -262,12 +262,13 @@ namespace ILMath
 
                             var type = parameters[0];
                             var axis = parameters[1];
+                            var time = parameters[2];
 
                             result = type switch
                             {
-                                0 => bm.InterpolateChainPosition(parameters[2] == 1, parameters[3] == 1, parameters[4] == 1)[(int)axis],
-                                1 => bm.InterpolateChainScale(parameters[2] == 1, parameters[3] == 1)[(int)axis],
-                                2 => bm.InterpolateChainRotation(parameters[2] == 1, parameters[3] == 1),
+                                0 => bm.InterpolateChainPosition((float)time, parameters[3] == 1, parameters[4] == 1, parameters[5] == 1)[(int)axis],
+                                1 => bm.InterpolateChainScale((float)time, parameters[3] == 1, parameters[4] == 1)[(int)axis],
+                                2 => bm.InterpolateChainRotation((float)time, parameters[3] == 1, parameters[4] == 1),
                                 _ => 0,
                             };
                             return true;
