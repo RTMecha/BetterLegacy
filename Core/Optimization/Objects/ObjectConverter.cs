@@ -261,11 +261,11 @@ namespace BetterLegacy.Core.Optimization.Objects
                 var rot = Quaternion.Euler(0f, 0f, hasRot ? prefabObject.events[2].eventValues[0] : 0f);
 
                 if (prefabObject.events[0].random != 0)
-                    pos = ObjectManager.inst.RandomVector2Parser(prefabObject.events[0]);
+                    pos = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe((EventKeyframe)prefabObject.events[0]);
                 if (prefabObject.events[1].random != 0)
-                    sca = ObjectManager.inst.RandomVector2Parser(prefabObject.events[1]);
+                    sca = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe((EventKeyframe)prefabObject.events[1]);
                 if (prefabObject.events[2].random != 0)
-                    rot = Quaternion.Euler(0f, 0f, ObjectManager.inst.RandomFloatParser(prefabObject.events[2]));
+                    rot = Quaternion.Euler(0f, 0f, RandomHelper.KeyframeRandomizer.RandomizeFloatKeyframe((EventKeyframe)prefabObject.events[2]));
 
                 prefabOffsetPosition = pos;
                 prefabOffsetScale = (sca.x > 0f || sca.x < 0f) && (sca.y > 0f || sca.y < 0f) ? sca : Vector3.one;
@@ -460,14 +460,13 @@ namespace BetterLegacy.Core.Optimization.Objects
             int num = 0;
             foreach (var eventKeyframe in eventKeyframes)
             {
-                if (!(eventKeyframe is EventKeyframe))
+                if (eventKeyframe is not EventKeyframe kf)
                     continue;
 
-                var kf = (EventKeyframe)eventKeyframe;
                 var value = new Vector3(eventKeyframe.eventValues[0], eventKeyframe.eventValues[1], eventKeyframe.eventValues.Length > 2 ? eventKeyframe.eventValues[2] : 0f);
                 if (eventKeyframe.random != 0 && eventKeyframe.random != 5 && eventKeyframe.random != 6)
                 {
-                    var random = ObjectManager.inst.RandomVector2Parser(eventKeyframe);
+                    var random = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe(kf);
                     value.x = random.x;
                     value.y = random.y;
                 }
@@ -515,14 +514,13 @@ namespace BetterLegacy.Core.Optimization.Objects
             var currentValue = Vector2.zero;
             foreach (var eventKeyframe in eventKeyframes)
             {
-                if (!(eventKeyframe is EventKeyframe))
+                if (eventKeyframe is not EventKeyframe kf)
                     continue;
 
-                var kf = (EventKeyframe)eventKeyframe;
                 var value = new Vector2(eventKeyframe.eventValues[0], eventKeyframe.eventValues[1]);
                 if (eventKeyframe.random != 0 && eventKeyframe.random != 6)
                 {
-                    var random = ObjectManager.inst.RandomVector2Parser(eventKeyframe);
+                    var random = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe(kf);
                     value.x = random.x;
                     value.y = random.y;
                 }
@@ -550,11 +548,10 @@ namespace BetterLegacy.Core.Optimization.Objects
             int num = 0;
             foreach (var eventKeyframe in eventKeyframes)
             {
-                if (!(eventKeyframe is EventKeyframe))
+                if (eventKeyframe is not EventKeyframe kf)
                     continue;
 
-                var kf = (EventKeyframe)eventKeyframe;
-                var value = eventKeyframe.random != 0 ? RandomFloatParser(eventKeyframe, index) : eventKeyframe.eventValues[index];
+                var value = eventKeyframe.random != 0 ? RandomHelper.KeyframeRandomizer.RandomizeFloatKeyframe(kf, index) : eventKeyframe.eventValues[index];
 
                 currentValue = kf.relative && eventKeyframe.random != 6 && !color ? currentValue + value : value;
 
@@ -618,31 +615,6 @@ namespace BetterLegacy.Core.Optimization.Objects
             }
 
             return new Sequence<Color>(keyframes);
-        }
-
-        public float RandomFloatParser(BaseEventKeyframe _floatEvent, int index)
-        {
-            float result = 0f;
-            switch (_floatEvent.random)
-            {
-                case 1:
-                    result = _floatEvent.eventRandomValues.Length > 2 && _floatEvent.eventRandomValues[2] != 0f ?
-                        RTMath.RoundToNearestNumber(UnityEngine.Random.Range(_floatEvent.eventValues[index], _floatEvent.eventRandomValues[0]), _floatEvent.eventRandomValues[2]) :
-                        UnityEngine.Random.Range(_floatEvent.eventValues[index], _floatEvent.eventRandomValues[0]);
-                    break;
-                case 2:
-                    result = Mathf.Round(UnityEngine.Random.Range(_floatEvent.eventValues[index], _floatEvent.eventRandomValues[0]));
-                    break;
-                case 3:
-                    result = (UnityEngine.Random.value > 0.5f) ? _floatEvent.eventValues[index] : _floatEvent.eventRandomValues[0];
-                    break;
-                case 4:
-                    result = _floatEvent.eventValues[index] * _floatEvent.eventRandomValues.Length > 2 && _floatEvent.eventRandomValues[2] != 0f ?
-                            RTMath.RoundToNearestNumber(UnityEngine.Random.Range(_floatEvent.eventRandomValues[0], _floatEvent.eventRandomValues[1]), _floatEvent.eventRandomValues[2]) :
-                            UnityEngine.Random.Range(_floatEvent.eventRandomValues[0], _floatEvent.eventRandomValues[1]);
-                    break;
-            }
-            return result;
         }
     }
 }

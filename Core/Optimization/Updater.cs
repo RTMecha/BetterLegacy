@@ -582,11 +582,11 @@ namespace BetterLegacy.Core.Optimization
                                 try
                                 {
                                     if (prefabObject.events[0].random != 0)
-                                        pos = ObjectManager.inst.RandomVector2Parser(prefabObject.events[0]);
+                                        pos = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe((EventKeyframe)prefabObject.events[0]);
                                     if (prefabObject.events[1].random != 0)
-                                        sca = ObjectManager.inst.RandomVector2Parser(prefabObject.events[1]);
+                                        sca = RandomHelper.KeyframeRandomizer.RandomizeVector2Keyframe((EventKeyframe)prefabObject.events[1]);
                                     if (prefabObject.events[2].random != 0)
-                                        rot = Quaternion.Euler(0f, 0f, ObjectManager.inst.RandomFloatParser(prefabObject.events[2]));
+                                        rot = Quaternion.Euler(0f, 0f, RandomHelper.KeyframeRandomizer.RandomizeFloatKeyframe((EventKeyframe)prefabObject.events[2]));
                                 }
                                 catch (System.Exception ex)
                                 {
