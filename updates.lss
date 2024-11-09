@@ -1,4 +1,13 @@
-snapshot-2024.11.10 > (pre-1.7.0) > [Nov 8, 2024]
+snapshot-2024.11.11 - (pre-1.7.0) > [Nov 10, 2024]
+- Added spawnPrefabOffsetOther modifiers.
+- Fixed picker not working in some cases.
+- Fixed players being able to join outside of the input select screen.
+- Added findObject#object_group#StartTime() math function. StartTime can be replaced with other object properties such as "Depth" and "IntVariable".
+- Added findInterpolateChain#object_group math function. This will find an object and interpolate it.
+- Updated Editor Documentation.
+- Added applyAnimationMath modifiers.
+- Started working on seed-based randomization, this probably won't be in this update but will be in a future one.
+snapshot-2024.11.10 - (pre-1.7.0) > [Nov 8, 2024]
 - Updated Slime Boy Color and a few other story levels to their current versions.
 - Fixed cases where object interpolation would go higher than expected.
 - Fixed lerp and inverseLerp math functions being incorrect.
@@ -6,10 +15,10 @@ snapshot-2024.11.10 > (pre-1.7.0) > [Nov 8, 2024]
 - Added findOffset math function. Used similarly to findAxis.
 - Added vectorAngle and distance functions.
 - ACTUALLY hotfix for level crash.
-snapshot-2024.11.9 > (pre-1.7.0) > [Nov 7, 2024]
+snapshot-2024.11.9 - (pre-1.7.0) > [Nov 7, 2024]
 - Hotfix for level crash.
 - Fixed tutorial level being replaced by the second level.
-snapshot-2024.11.8 > (pre-1.7.0) > [Nov 7, 2024]
+snapshot-2024.11.8 - (pre-1.7.0) > [Nov 7, 2024]
 - Modifiers can now be organized using the modifier context menu.
 - Looking into adding an "else" toggle for trigger modifiers.
 - Trigger modifiers now have their inactive state properly triggered if when the object respawns.
@@ -19,25 +28,25 @@ snapshot-2024.11.8 > (pre-1.7.0) > [Nov 7, 2024]
 - You can now shift the index order of objects around. What this means is objects that appear above others can now be shifted to below others.
 - Finally reworked the story mode system to be data driven. Which means if you know how you can probably make your own story mode. This also means I can finally get some work done on the story!
 - Added applyAnimation, applyAnimationFrom and applyAnimationTo action modifiers.
-snapshot-2024.11.7 > (pre-1.7.0) > [Nov 6, 2024]
+snapshot-2024.11.7 - (pre-1.7.0) > [Nov 6, 2024]
 - Added objectAlive trigger modifier. This triggers whenever an object from a specific group is alive. Good for timing specific actions.
 - Fixed some cases where the Prefab Group Only toggle wasn't showing for modifiers that have object group fields.
 - Prefabs spawned from modifiers are no longer selectable in the preview area.
 - You can now view a level creator's levels by clicking the [ Creator ] button in the Play Level menu. Requires the level to have been uploaded after this the release of this snapshot, however.
 - Slowly working on a new story mode system so it'll be easier for me to work on.
-snapshot-2024.11.6 > (pre-1.7.0) > [Nov 6, 2024]
+snapshot-2024.11.6 - (pre-1.7.0) > [Nov 6, 2024]
 - Fixed the inactive state of spawnPrefabOffset not occuring.
 - Modifiers now clear specific things when their parent object is deleted.
 - Fixed the editor for spawnPrefab modifiers being broken.
 - If you want a Prefab spawned from a modifier to not despawn when the main objects' lifespan is done, then you can turn Permanent on.
 - Added a way to remove any unwanted spawned modifier Prefabs from the level via Edit > Clear Modifier Prefabs.
 - And finishing off the spawnPrefab theme with this snapshot, added a few new prefab spawning related modifiers.
-snapshot-2024.11.5 > (pre-1.7.0) > [Nov 5, 2024]
+snapshot-2024.11.5 - (pre-1.7.0) > [Nov 5, 2024]
 - Completely replaced the math evaluator system with a better one written by Reimnop. Some functions will need to be changed to work, such as findAxis(object_tag, ...) now being findAxis#object_tag(...). Learn more in the editor documentation.
-snapshot-2024.11.4 > (pre-1.7.0) > [Nov 5, 2024]
+snapshot-2024.11.4 - (pre-1.7.0) > [Nov 5, 2024]
 - Fixed an edge case with math evaluators where multiple brackets weren't recognized. For example, "((1 + 1) * 2) * 15".
 - Added spawnPrefabOffset modifier. This will spawn a prefab at the objects' exact position / scale / rotation, regardless of if the object is an empty or not.
-snapshot-2024.11.3 > (pre-1.7.0) > [Nov 4, 2024]
+snapshot-2024.11.3 - (pre-1.7.0) > [Nov 4, 2024]
 - Added a preset setting to Editor > Editor GUI > User Preference.
 - Render depth now uses the limited range if your Editor Complexity is not set to advanced.
 - 1.7.0 is still the story mode update, so currently doing some rework so I can finally finish the chapter 1 demo for the full release of the update.
