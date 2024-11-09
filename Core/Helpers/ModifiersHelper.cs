@@ -5536,7 +5536,7 @@ namespace BetterLegacy.Core.Helpers
                                 var speed = modifier.GetFloat(9, 1f);
 
                                 if (!modifier.constant)
-                                    AnimationManager.inst.Remove("Apply Object Animation " + modifier.reference.id);
+                                    AnimationManager.inst.RemoveName("Apply Object Animation " + modifier.reference.id);
 
                                 for (int i = 0; i < list.Count; i++)
                                 {
@@ -5594,7 +5594,7 @@ namespace BetterLegacy.Core.Helpers
 
                                 if (!modifier.constant)
                                 {
-                                    AnimationManager.inst.Remove("Apply Object Animation " + modifier.reference.id);
+                                    AnimationManager.inst.RemoveName("Apply Object Animation " + modifier.reference.id);
 
                                     var animation = new RTAnimation("Apply Object Animation " + modifier.reference.id);
                                     animation.animationHandlers = new List<AnimationHandlerBase>
@@ -5642,14 +5642,15 @@ namespace BetterLegacy.Core.Helpers
                             var length = modifier.GetFloat(8, 1f);
                             var speed = modifier.GetFloat(9, 1f);
 
+                            if (!modifier.constant)
+                                AnimationManager.inst.RemoveName("Apply Object Animation " + modifier.reference.id);
+
                             for (int i = 0; i < list.Count; i++)
                             {
                                 var bm = list[i];
 
                                 if (!modifier.constant)
                                 {
-                                    AnimationManager.inst.Remove("Apply Object Animation " + modifier.reference.id);
-
                                     var animation = new RTAnimation("Apply Object Animation " + modifier.reference.id);
                                     animation.animationHandlers = new List<AnimationHandlerBase>
                                     {
@@ -5675,6 +5676,175 @@ namespace BetterLegacy.Core.Helpers
                                 }
 
                                 ApplyAnimationTo(bm, modifier.reference, useVisual, time, Updater.CurrentTime, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+                            }
+
+                            break;
+                        }
+
+                    case "applyAnimationMath":
+                        {
+                            if (CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject from))
+                            {
+                                var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.commands[10]) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.commands[10]);
+
+                                if (modifier.Result == null)
+                                    modifier.Result = Updater.CurrentTime;
+                                var time = modifier.GetResult<float>();
+
+                                var variables = modifier.reference.GetObjectVariables();
+                                var functions = modifier.reference.GetObjectFunctions();
+
+                                var animatePos = modifier.GetBool(1, true);
+                                var animateSca = modifier.GetBool(2, true);
+                                var animateRot = modifier.GetBool(3, true);
+                                var delayPos = RTMath.Parse(modifier.commands[4], variables, functions);
+                                var delaySca = RTMath.Parse(modifier.commands[5], variables, functions);
+                                var delayRot = RTMath.Parse(modifier.commands[6], variables, functions);
+                                var useVisual = modifier.GetBool(7, false);
+                                var length = RTMath.Parse(modifier.commands[8], variables, functions);
+                                var speed = RTMath.Parse(modifier.commands[9], variables, functions);
+                                var timeOffset = RTMath.Parse(modifier.commands[11], variables, functions);
+
+                                if (!modifier.constant)
+                                    AnimationManager.inst.RemoveName("Apply Object Animation " + modifier.reference.id);
+
+                                for (int i = 0; i < list.Count; i++)
+                                {
+                                    var bm = list[i];
+
+                                    if (!modifier.constant)
+                                    {
+                                        var animation = new RTAnimation("Apply Object Animation " + modifier.reference.id);
+                                        animation.animationHandlers = new List<AnimationHandlerBase>
+                                        {
+                                            new AnimationHandler<float>(new List<IKeyframe<float>>
+                                            {
+                                                new FloatKeyframe(0f, 0f, Ease.Linear),
+                                                new FloatKeyframe(Mathf.Clamp(length / speed, 0f, 100f), length, Ease.Linear),
+                                            }, x => ApplyAnimationTo(bm, from, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot))
+                                        };
+                                        animation.onComplete = () =>
+                                        {
+                                            ApplyAnimationTo(bm, from, useVisual, 0f, length, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+
+                                            AnimationManager.inst.Remove(animation.id);
+                                            animation = null;
+                                            modifier.Result = null;
+                                        };
+                                        AnimationManager.inst.Play(animation);
+                                        return;
+                                    }
+
+                                    ApplyAnimationTo(bm, from, useVisual, time, timeOffset, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+                                }
+                            }
+
+                            break;
+                        }
+                    case "applyAnimationFromMath":
+                        {
+                            if (CoreHelper.TryFindObjectWithTag(modifier, modifier.value, out BeatmapObject bm))
+                            {
+                                if (modifier.Result == null)
+                                    modifier.Result = Updater.CurrentTime;
+                                var time = modifier.GetResult<float>();
+
+                                var variables = modifier.reference.GetObjectVariables();
+                                var functions = modifier.reference.GetObjectFunctions();
+
+                                var animatePos = modifier.GetBool(1, true);
+                                var animateSca = modifier.GetBool(2, true);
+                                var animateRot = modifier.GetBool(3, true);
+                                var delayPos = RTMath.Parse(modifier.commands[4], variables, functions);
+                                var delaySca = RTMath.Parse(modifier.commands[5], variables, functions);
+                                var delayRot = RTMath.Parse(modifier.commands[6], variables, functions);
+                                var useVisual = modifier.GetBool(7, false);
+                                var length = RTMath.Parse(modifier.commands[8], variables, functions);
+                                var speed = RTMath.Parse(modifier.commands[9], variables, functions);
+                                var timeOffset = RTMath.Parse(modifier.commands[10], variables, functions);
+
+                                if (!modifier.constant)
+                                {
+                                    AnimationManager.inst.RemoveName("Apply Object Animation " + modifier.reference.id);
+
+                                    var animation = new RTAnimation("Apply Object Animation " + modifier.reference.id);
+                                    animation.animationHandlers = new List<AnimationHandlerBase>
+                                    {
+                                        new AnimationHandler<float>(new List<IKeyframe<float>>
+                                        {
+                                            new FloatKeyframe(0f, 0f, Ease.Linear),
+                                            new FloatKeyframe(Mathf.Clamp(length / speed, 0f, 100f), length, Ease.Linear),
+                                        }, x => ApplyAnimationTo(modifier.reference, bm, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot))
+                                    };
+                                    animation.onComplete = () =>
+                                    {
+                                        ApplyAnimationTo(modifier.reference, bm, useVisual, 0f, length, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+                                        AnimationManager.inst.Remove(animation.id);
+                                        animation = null;
+                                        modifier.Result = null;
+                                    };
+                                    AnimationManager.inst.Play(animation);
+                                    return;
+                                }
+
+                                ApplyAnimationTo(modifier.reference, bm, useVisual, time, timeOffset, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+                            }
+
+                            break;
+                        }
+                    case "applyAnimationToMath":
+                        {
+                            var list = !modifier.prefabInstanceOnly ? CoreHelper.FindObjectsWithTag(modifier.value) : CoreHelper.FindObjectsWithTag(modifier.reference, modifier.value);
+
+                            if (modifier.Result == null)
+                                modifier.Result = Updater.CurrentTime;
+                            var time = modifier.GetResult<float>();
+
+                            var variables = modifier.reference.GetObjectVariables();
+                            var functions = modifier.reference.GetObjectFunctions();
+
+                            var animatePos = modifier.GetBool(1, true);
+                            var animateSca = modifier.GetBool(2, true);
+                            var animateRot = modifier.GetBool(3, true);
+                            var delayPos = RTMath.Parse(modifier.commands[4], variables, functions);
+                            var delaySca = RTMath.Parse(modifier.commands[5], variables, functions);
+                            var delayRot = RTMath.Parse(modifier.commands[6], variables, functions);
+                            var useVisual = modifier.GetBool(7, false);
+                            var length = RTMath.Parse(modifier.commands[8], variables, functions);
+                            var speed = RTMath.Parse(modifier.commands[9], variables, functions);
+                            var timeOffset = RTMath.Parse(modifier.commands[10], variables, functions);
+
+                            if (!modifier.constant)
+                                AnimationManager.inst.RemoveName("Apply Object Animation " + modifier.reference.id);
+
+                            for (int i = 0; i < list.Count; i++)
+                            {
+                                var bm = list[i];
+
+                                if (!modifier.constant)
+                                {
+                                    var animation = new RTAnimation("Apply Object Animation " + modifier.reference.id);
+                                    animation.animationHandlers = new List<AnimationHandlerBase>
+                                    {
+                                        new AnimationHandler<float>(new List<IKeyframe<float>>
+                                        {
+                                            new FloatKeyframe(0f, 0f, Ease.Linear),
+                                            new FloatKeyframe(Mathf.Clamp(length / speed, 0f, 100f), length, Ease.Linear),
+                                        }, x => ApplyAnimationTo(bm, modifier.reference, useVisual, 0f, x, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot))
+                                    };
+                                    animation.onComplete = () =>
+                                    {
+                                        ApplyAnimationTo(bm, modifier.reference, useVisual, 0f, length, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
+
+                                        AnimationManager.inst.Remove(animation.id);
+                                        animation = null;
+                                        modifier.Result = null;
+                                    };
+                                    AnimationManager.inst.Play(animation);
+                                    return;
+                                }
+
+                                ApplyAnimationTo(bm, modifier.reference, useVisual, time, timeOffset, animatePos, animateSca, animateRot, delayPos, delaySca, delayRot);
                             }
 
                             break;

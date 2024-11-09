@@ -2044,6 +2044,37 @@ namespace BetterLegacy.Editor.Managers
 
                             break;
                         }
+                    case "applyAnimationFromMath":
+                    case "applyAnimationToMath":
+                    case "applyAnimationMath":
+                        {
+                            PrefabGroupOnly(modifier, layout);
+                            if (cmd != "applyAnimationMath")
+                            {
+                                var str = StringGenerator(modifier, layout, "Object Group", 0);
+                                EditorHelper.AddInputFieldContextMenu(str.transform.Find("Input").GetComponent<InputField>());
+                            }
+                            else
+                            {
+                                var from = StringGenerator(modifier, layout, "From Group", 0);
+                                EditorHelper.AddInputFieldContextMenu(from.transform.Find("Input").GetComponent<InputField>());
+                                var to = StringGenerator(modifier, layout, "To Group", 10);
+                                EditorHelper.AddInputFieldContextMenu(to.transform.Find("Input").GetComponent<InputField>());
+                            }
+
+                            BoolGenerator(modifier, layout, "Animate Position", 1, true);
+                            BoolGenerator(modifier, layout, "Animate Scale", 2, true);
+                            BoolGenerator(modifier, layout, "Animate Rotation", 3, true);
+                            StringGenerator(modifier, layout, "Delay Position", 4);
+                            StringGenerator(modifier, layout, "Delay Scale", 5);
+                            StringGenerator(modifier, layout, "Delay Rotation", 6);
+                            BoolGenerator(modifier, layout, "Use Visual", 7, false);
+                            StringGenerator(modifier, layout, "Length", 8);
+                            StringGenerator(modifier, layout, "Speed", 9);
+                            StringGenerator(modifier, layout, "Time", cmd != "applyAnimationMath" ? 10 : 11);
+
+                            break;
+                        }
 
                     #endregion
 
