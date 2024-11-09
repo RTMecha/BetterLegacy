@@ -59,58 +59,6 @@ namespace BetterLegacy.Core.Optimization.Objects
                 CacheSequence(beatmapObjects[i]);
         }
 
-        public IEnumerator ICacheSequence(BeatmapObject beatmapObject)
-        {
-            var collection = new CachedSequences()
-            {
-                Position3DSequence = GetVector3Sequence(beatmapObject.events[0], new Vector3Keyframe(0.0f, Vector3.zero, Ease.Linear, null)),
-                ScaleSequence = GetVector2Sequence(beatmapObject.events[1], new Vector2Keyframe(0.0f, Vector2.one, Ease.Linear)),
-            };
-            collection.RotationSequence = GetFloatSequence(beatmapObject.events[2], 0, new FloatKeyframe(0.0f, 0.0f, Ease.Linear, null), collection.Position3DSequence, false);
-
-            // Empty objects don't need a color sequence, so it is not cached
-            if (ShowEmpties || beatmapObject.objectType != ObjectType.Empty)
-            {
-                collection.ColorSequence = GetColorSequence(beatmapObject.events[3],
-                    new ThemeKeyframe(0.0f, 0, 0.0f, 0.0f, 0.0f, 0.0f, Ease.Linear));
-
-                if (beatmapObject.gradientType != 0)
-                {
-                    collection.SecondaryColorSequence = GetColorSequence(beatmapObject.events[3],
-                        new ThemeKeyframe(0.0f, 0, 0.0f, 0.0f, 0.0f, 0.0f, Ease.Linear), true);
-                }
-            }
-
-            cachedSequences[beatmapObject.id] = collection;
-
-            yield break;
-        }
-
-        public void CacheSequence(BeatmapObject beatmapObject)
-        {
-            var collection = new CachedSequences()
-            {
-                Position3DSequence = GetVector3Sequence(beatmapObject.events[0], new Vector3Keyframe(0.0f, Vector3.zero, Ease.Linear, null)),
-                ScaleSequence = GetVector2Sequence(beatmapObject.events[1], new Vector2Keyframe(0.0f, Vector2.one, Ease.Linear)),
-            };
-            collection.RotationSequence = GetFloatSequence(beatmapObject.events[2], 0, new FloatKeyframe(0.0f, 0.0f, Ease.Linear, null), collection.Position3DSequence, false);
-
-            // Empty objects don't need a color sequence, so it is not cached
-            if (ShowEmpties || beatmapObject.objectType != ObjectType.Empty)
-            {
-                collection.ColorSequence = GetColorSequence(beatmapObject.events[3],
-                    new ThemeKeyframe(0.0f, 0, 0.0f, 0.0f, 0.0f, 0.0f, Ease.Linear));
-
-                if (beatmapObject.gradientType != 0)
-                {
-                    collection.SecondaryColorSequence = GetColorSequence(beatmapObject.events[3],
-                        new ThemeKeyframe(0.0f, 0, 0.0f, 0.0f, 0.0f, 0.0f, Ease.Linear), true);
-                }
-            }
-
-            cachedSequences[beatmapObject.id] = collection;
-        }
-
         public IEnumerable<ILevelObject> ToLevelObjects()
         {
             foreach (var beatmapObject in gameData.beatmapObjects)
@@ -268,7 +216,7 @@ namespace BetterLegacy.Core.Optimization.Objects
                     rot = Quaternion.Euler(0f, 0f, RandomHelper.KeyframeRandomizer.RandomizeFloatKeyframe((EventKeyframe)prefabObject.events[2]));
 
                 prefabOffsetPosition = pos;
-                prefabOffsetScale = (sca.x > 0f || sca.x < 0f) && (sca.y > 0f || sca.y < 0f) ? sca : Vector3.one;
+                prefabOffsetScale = sca.x != 0f && sca.y != 0f ? sca : Vector3.one;
                 prefabOffsetRotation = rot.eulerAngles;
             }
 
@@ -451,6 +399,65 @@ namespace BetterLegacy.Core.Optimization.Objects
             return levelParentObject;
         }
 
+        #region Sequences
+
+        public IEnumerator ICacheSequence(BeatmapObject beatmapObject)
+        {
+            var collection = new CachedSequences()
+            {
+                Position3DSequence = GetVector3Sequence(beatmapObject.events[0], new Vector3Keyframe(0.0f, Vector3.zero, Ease.Linear, null)),
+                ScaleSequence = GetVector2Sequence(beatmapObject.events[1], new Vector2Keyframe(0.0f, Vector2.one, Ease.Linear)),
+            };
+            collection.RotationSequence = GetFloatSequence(beatmapObject.events[2], 0, new FloatKeyframe(0.0f, 0.0f, Ease.Linear, null), collection.Position3DSequence, false);
+
+            // Empty objects don't need a color sequence, so it is not cached
+            if (ShowEmpties || beatmapObject.objectType != ObjectType.Empty)
+            {
+                collection.ColorSequence = GetColorSequence(beatmapObject.events[3],
+                    new ThemeKeyframe(0.0f, 0, 0.0f, 0.0f, 0.0f, 0.0f, Ease.Linear));
+
+                if (beatmapObject.gradientType != 0)
+                {
+                    collection.SecondaryColorSequence = GetColorSequence(beatmapObject.events[3],
+                        new ThemeKeyframe(0.0f, 0, 0.0f, 0.0f, 0.0f, 0.0f, Ease.Linear), true);
+                }
+            }
+
+            cachedSequences[beatmapObject.id] = collection;
+
+            yield break;
+        }
+
+        public void CacheSequence(BeatmapObject beatmapObject) => cachedSequences[beatmapObject.id] = CreateSequence(beatmapObject);
+
+        public CachedSequences CreateSequence(BeatmapObject beatmapObject)
+        {
+            var collection = new CachedSequences();
+            UpdateCachedSequence(beatmapObject, collection);
+            return collection;
+        }
+
+        public void UpdateCachedSequence(BeatmapObject beatmapObject, CachedSequences collection)
+        {
+            collection.Position3DSequence = GetVector3Sequence(beatmapObject.events[0], new Vector3Keyframe(0.0f, Vector3.zero, Ease.Linear, null));
+            collection.ScaleSequence = GetVector2Sequence(beatmapObject.events[1], new Vector2Keyframe(0.0f, Vector2.one, Ease.Linear));
+            collection.RotationSequence = GetFloatSequence(beatmapObject.events[2], 0, new FloatKeyframe(0.0f, 0.0f, Ease.Linear, null), collection.Position3DSequence, false);
+
+            // Empty objects don't need a color sequence, so it is not cached
+            if (ShowEmpties || beatmapObject.objectType != ObjectType.Empty)
+            {
+                collection.ColorSequence = GetColorSequence(beatmapObject.events[3],
+                    new ThemeKeyframe(0.0f, 0, 0.0f, 0.0f, 0.0f, 0.0f, Ease.Linear));
+
+                if (beatmapObject.gradientType != 0)
+                {
+                    collection.SecondaryColorSequence = GetColorSequence(beatmapObject.events[3],
+                        new ThemeKeyframe(0.0f, 0, 0.0f, 0.0f, 0.0f, 0.0f, Ease.Linear), true);
+                }
+            }
+
+        }
+
         public Sequence<Vector3> GetVector3Sequence(List<BaseEventKeyframe> eventKeyframes, Vector3Keyframe defaultKeyframe)
         {
             var keyframes = new List<IKeyframe<Vector3>>(eventKeyframes.Count);
@@ -594,7 +601,7 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             int num = 0;
             int index = getSecondary ? 5 : 0;
-            
+
             foreach (BaseEventKeyframe eventKeyframe in eventKeyframes)
             {
                 if (keyframes.Has(x => x.Time == eventKeyframe.eventTime))
@@ -616,5 +623,7 @@ namespace BetterLegacy.Core.Optimization.Objects
 
             return new Sequence<Color>(keyframes);
         }
+
+        #endregion
     }
 }

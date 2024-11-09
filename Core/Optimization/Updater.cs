@@ -67,6 +67,9 @@ namespace BetterLegacy.Core.Optimization
             previousAudioTime = 0.0f;
             audioTimeVelocity = 0.0f;
 
+            // Sets a new seed or uses the current one.
+            RandomHelper.UpdateSeed();
+
             // Removing and reinserting prefabs.
             GameData.Current.beatmapObjects.RemoveAll(x => x.fromPrefab);
             for (int i = 0; i < GameData.Current.prefabObjects.Count; i++)
@@ -897,7 +900,7 @@ namespace BetterLegacy.Core.Optimization
             }
 
             // Delete all the "GameObjects" children.
-            LSFunctions.LSHelpers.DeleteChildren(GameObject.Find("GameObjects").transform);
+            LSHelpers.DeleteChildren(GameObject.Find("GameObjects").transform);
 
             // End and restart.
             OnLevelEnd();
@@ -1005,6 +1008,22 @@ namespace BetterLegacy.Core.Optimization
                 for (int i = 0; i < cachedSequence.ColorSequence.keyframes.Length; i++)
                     cachedSequence.ColorSequence.keyframes[i].Stop();
             }
+        }
+
+        public static void UpdateCachedSequences()
+        {
+            var beatmapObjects = GameData.Current.beatmapObjects;
+            foreach (var cachedSequences in levelProcessor.converter.cachedSequences)
+            {
+                if (beatmapObjects.TryFind(x => x.id == cachedSequences.Key, out BeatmapObject beatmapObject))
+                    levelProcessor.converter.UpdateCachedSequence(beatmapObject, cachedSequences.Value);
+            }
+        }
+
+        public static void UpdateCachedSequence(BeatmapObject beatmapObject)
+        {
+            if (levelProcessor.converter.cachedSequences.TryGetValue(beatmapObject.id, out ObjectConverter.CachedSequences collection))
+                levelProcessor.converter.UpdateCachedSequence(beatmapObject, collection);
         }
 
         #endregion
