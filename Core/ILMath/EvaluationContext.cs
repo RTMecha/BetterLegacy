@@ -125,51 +125,37 @@ namespace ILMath
                             var tag = split[1];
 
                             var bm = CoreHelper.FindObjectWithTag(tag);
-                            float value = 0f;
-                            if (bm)
+                            if (!bm)
                             {
-                                var fromType = (int)parameters[0];
-
-                                if (fromType < 0 || fromType > 2)
-                                {
-                                    result = 0;
-                                    return false;
-                                }
-
-                                var fromAxis = (int)parameters[1];
-
-                                var time =(float)parameters[2];
-
-                                if (!Updater.levelProcessor.converter.cachedSequences.TryGetValue(bm.id, out BetterLegacy.Core.Optimization.Objects.ObjectConverter.CachedSequences cachedSequence))
-                                {
-                                    result = 0;
-                                    return false;
-                                }
-
-                                switch (fromType)
-                                {
-                                    case 0:
-                                        {
-                                            var sequence = cachedSequence.Position3DSequence.Interpolate(time);
-                                            value = fromAxis == 0 ? sequence.x : fromAxis == 1 ? sequence.y : sequence.z;
-                                            break;
-                                        }
-                                    case 1:
-                                        {
-                                            var sequence = cachedSequence.ScaleSequence.Interpolate(time);
-                                            value = fromAxis == 0 ? sequence.x : sequence.y;
-                                            break;
-                                        }
-                                    case 2:
-                                        {
-                                            value = cachedSequence.RotationSequence.Interpolate(time);
-                                            break;
-                                        }
-                                }
-
+                                result = 0;
+                                return false;
                             }
 
-                            result = value;
+                            var fromType = (int)parameters[0];
+
+                            if (fromType < 0 || fromType > 2)
+                            {
+                                result = 0;
+                                return false;
+                            }
+
+                            var fromAxis = (int)parameters[1];
+
+                            var time = parameters.Length < 3 ? Updater.CurrentTime - bm.StartTime : (float)parameters[2];
+
+                            if (!Updater.levelProcessor.converter.cachedSequences.TryGetValue(bm.id, out BetterLegacy.Core.Optimization.Objects.ObjectConverter.CachedSequences cachedSequence))
+                            {
+                                result = 0;
+                                return false;
+                            }
+
+                            result = fromType switch
+                            {
+                                0 => cachedSequence.Position3DSequence.Interpolate(time)[fromAxis],
+                                1 => cachedSequence.ScaleSequence.Interpolate(time)[fromAxis],
+                                2 => cachedSequence.RotationSequence.Interpolate(time),
+                                _ => 0,
+                            };
                             return true;
                         }
                     case "findOffset":
@@ -177,53 +163,29 @@ namespace ILMath
                             var tag = split[1];
 
                             var bm = CoreHelper.FindObjectWithTag(tag);
-                            float value = 0f;
-                            if (bm)
+                            if (!bm)
                             {
-                                var fromType = (int)parameters[0];
-
-                                if (fromType < 0 || fromType > 2)
-                                {
-                                    result = 0;
-                                    return false;
-                                }
-
-                                var fromAxis = (int)parameters[1];
-
-                                switch (fromType)
-                                {
-                                    case 0:
-                                        {
-                                            value = bm.positionOffset[fromAxis];
-                                            break;
-                                        }
-                                    case 1:
-                                        {
-                                            value = bm.scaleOffset[fromAxis];
-                                            break;
-                                        }
-                                    case 2:
-                                        {
-                                            value = bm.rotationOffset[fromAxis];
-                                            break;
-                                        }
-                                }
-
+                                result = 0;
+                                return false;
                             }
 
-                            result = value;
-                            return true;
-                        }
-                    case "easing":
-                        {
-                            var easing = Ease.GetEaseFunction(split[1]);
-                            result = easing((float)parameters[0]);
-                            return true;
-                        }
-                    case "date":
-                        {
-                            var format = DateTime.Now.ToString(split[1]);
-                            result = float.Parse(format);
+                            var fromType = (int)parameters[0];
+
+                            if (fromType < 0 || fromType > 2)
+                            {
+                                result = 0;
+                                return false;
+                            }
+
+                            var fromAxis = (int)parameters[1];
+
+                            result = fromType switch
+                            {
+                                0 => bm.positionOffset[fromAxis],
+                                1 => bm.scaleOffset[fromAxis],
+                                2 => bm.rotationOffset[fromAxis],
+                                _ => 0,
+                            };
                             return true;
                         }
                     case "findObject":
@@ -237,16 +199,15 @@ namespace ILMath
                                 return false;
                             }
 
-                            float value = split[2] switch
+                            result = split[2] switch
                             {
                                 "StartTime" => bm.StartTime,
                                 "Depth" => bm.Depth,
                                 "IntVariable" => bm.integerVariable,
-
+                                "OriginX" => bm.origin.x,
+                                "OriginY" => bm.origin.y,
                                 _ => 0,
                             };
-
-                            result = value;
                             return true;
                         }
                     case "findInterpolateChain":
@@ -262,7 +223,7 @@ namespace ILMath
 
                             var type = parameters[0];
                             var axis = parameters[1];
-                            var time = parameters[2];
+                            var time = parameters.Length < 3 ? Updater.CurrentTime - bm.StartTime : (float)parameters[2];
 
                             result = type switch
                             {
@@ -271,6 +232,16 @@ namespace ILMath
                                 2 => bm.InterpolateChainRotation((float)time, parameters[3] == 1, parameters[4] == 1),
                                 _ => 0,
                             };
+                            return true;
+                        }
+                    case "easing":
+                        {
+                            result = Ease.GetEaseFunction(split[1])((float)parameters[0]);
+                            return true;
+                        }
+                    case "date":
+                        {
+                            result = float.Parse(DateTime.Now.ToString(split[1]));
                             return true;
                         }
                 }
