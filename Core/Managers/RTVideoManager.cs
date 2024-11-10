@@ -87,12 +87,15 @@ namespace BetterLegacy.Core.Managers
             if (!videoPlayer || !videoPlayer.enabled)
                 return;
 
-            if (isPlaying && !videoPlayer.isPlaying)
+            if (isPlaying)
                 videoPlayer.Play();
-            else if (videoPlayer.isPaused)
+            else
                 videoPlayer.Pause();
-            videoPlayer.playbackSpeed = pitch;
-            videoPlayer.time = time;
+
+            if (videoPlayer.playbackSpeed != pitch)
+                videoPlayer.playbackSpeed = pitch;
+            if (RTMath.Distance(videoPlayer.time, time) > 0.2)
+                videoPlayer.time = time;
         }
 
         public string currentURL;

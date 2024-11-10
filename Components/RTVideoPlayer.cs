@@ -1,4 +1,5 @@
 ﻿using BetterLegacy.Configs;
+using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 using System;
 using System.Collections;
@@ -15,16 +16,6 @@ namespace BetterLegacy.Components
         public GameObject videoTexture;
 
         public event Action<bool, float, float> UpdatedAudioPos;
-
-        bool prevPlaying;
-        float prevTime;
-        float prevPitch;
-
-        bool seekDone;
-
-        bool canUpdate = true;
-
-        bool oldStyle = true;
 
         public float timeOffset;
 
@@ -43,31 +34,45 @@ namespace BetterLegacy.Components
             UpdatedAudioPos += UpdateTime;
         }
 
-        void Update()
+        public static YieldType yieldType = YieldType.FixedUpdate;
+
+        public bool stopped = false;
+
+        IEnumerator IUpdateVideo()
         {
-            if (canUpdate &&
-                (prevTime != AudioManager.inst.CurrentAudioSource.time - timeOffset || prevPlaying != AudioManager.inst.CurrentAudioSource.isPlaying) &&
-                videoPlayer != null && videoPlayer.enabled && videoPlayer.isPrepared)
+            float delay = 0f;
+            while (true)
+            {
+                if (stopped)
+                {
+                    stopped = false;
+                    yield break;
+                }
+
                 UpdatedAudioPos?.Invoke(AudioManager.inst.CurrentAudioSource.isPlaying, AudioManager.inst.CurrentAudioSource.time - timeOffset, AudioManager.inst.CurrentAudioSource.pitch);
 
-            prevPlaying = AudioManager.inst.CurrentAudioSource.isPlaying;
-            prevTime = AudioManager.inst.CurrentAudioSource.time - timeOffset;
-            prevPitch = AudioManager.inst.CurrentAudioSource.pitch;
+                if (yieldType != YieldType.None)
+                    yield return CoreHelper.GetYieldInstruction(yieldType, ref delay);
+                else
+                    yield return null; // not having it yield return will freeze the game indefinitely.
+            }
         }
 
         void UpdateTime(bool isPlaying, float time, float pitch)
         {
-            if (!isPlaying)
-            {
-                videoPlayer.Pause();
+            if (!videoPlayer || !videoPlayer.enabled)
                 return;
-            }
 
-            if (!videoPlayer.isPlaying)
+            if (isPlaying)
                 videoPlayer.Play();
-            videoPlayer.Pause();
+            else
+                videoPlayer.Pause();
 
-            videoPlayer.time = time;
+            if (videoPlayer.playbackSpeed != pitch)
+                videoPlayer.playbackSpeed = pitch;
+            time = Mathf.Clamp(time, 0f, (float)videoPlayer.length);
+            if (RTMath.Distance(videoPlayer.time, time) > 0.2)
+                videoPlayer.time = time;
         }
 
         public string currentURL;
@@ -105,6 +110,8 @@ namespace BetterLegacy.Components
             videoPlayer.url = url;
             videoPlayer.Prepare();
             didntPlay = false;
+
+            CoreHelper.StartCoroutine(IUpdateVideo());
         }
 
         public void Stop()
@@ -117,6 +124,7 @@ namespace BetterLegacy.Components
                 CoreHelper.LogError($"VideoPlayer does not exist so it wasn't disabled. Continuing...");
 
             videoTexture?.SetActive(false);
+            stopped = true;
         }
     }
 }

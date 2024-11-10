@@ -288,7 +288,8 @@ namespace BetterLegacy.Core
             return Mathf.Round(value * num) / num;
         }
 
-        public static float Distance(float x, float y) => x > y ? -(-x + y) : (-x + y);
+        public static double Distance(double a, double b) => a > b ? -(-a + b) : (-a + b);
+        public static float Distance(float a, float b) => a > b ? -(-a + b) : (-a + b);
 
         public static double InverseLerp(double x, double y, double t) => (t - x) / (y - x);
         public static float InverseLerp(float x, float y, float t) => (t - x) / (y - x);
