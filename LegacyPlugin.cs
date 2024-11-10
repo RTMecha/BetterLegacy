@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using BetterLegacy.Components;
 using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Data;
@@ -44,6 +45,8 @@ namespace BetterLegacy
 
         public static JSONObject authData;
         public static string SplashText { get; set; } = "";
+
+        public static FPSCounter FPSCounter { get; set; }
 
         public static Material blur;
         public static Material GetBlur()
@@ -263,6 +266,17 @@ namespace BetterLegacy
 
             try
             {
+                var info = new GameObject("FPS Counter");
+                DontDestroyOnLoad(info);
+                FPSCounter = info.AddComponent<FPSCounter>();
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Failed to create FPS Counter. {ex}");
+            }
+
+            try
+            {
                 Application.quitting += () =>
                 {
                     if (CoreHelper.InEditor && EditorManager.inst.hasLoadedLevel && !EditorManager.inst.loading && GameData.IsValid)
@@ -301,6 +315,11 @@ namespace BetterLegacy
             Application.runInBackground = CoreConfig.Instance.RunInBackground.Value; // If the game should continue playing in the background while you don't have the app focused.
 
             DebugInfo.Update();
+
+            if (CoreConfig.Instance.PhysicsUpdateMatchFramerate.Value)
+                Time.fixedDeltaTime = Time.deltaTime;
+            else
+                Time.fixedDeltaTime = 0.02f; // default
 
             try
             {

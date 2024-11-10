@@ -10,8 +10,9 @@
     public class FPSCounter : MonoBehaviour
     {
         public string Text { get; set; }
+        public int FPS { get; set; }
 
-        Dictionary<int, string> cachedNumberStrings = new Dictionary<int, string>();
+        List<string> cachedNumberStrings = new List<string>();
         int[] frameRateSamples;
         int cacheNumbersAmount = 300;
         int averageFromAmount = 30;
@@ -23,9 +24,7 @@
             // Cache strings and create array
             {
                 for (int i = 0; i < cacheNumbersAmount; i++)
-                {
-                    cachedNumberStrings[i] = i.ToString();
-                }
+                    cachedNumberStrings.Add(i.ToString());
                 frameRateSamples = new int[averageFromAmount];
             }
         }
@@ -42,9 +41,7 @@
                 var average = 0f;
 
                 foreach (var frameRate in frameRateSamples)
-                {
                     average += frameRate;
-                }
 
                 currentAveraged = (int)Math.Round(average / averageFromAmount);
                 averageCounter = (averageCounter + 1) % averageFromAmount;
@@ -59,6 +56,8 @@
                     var x when x < 0 => "< 0",
                     _ => "?"
                 };
+
+                FPS = Mathf.Clamp(currentAveraged, 0, cacheNumbersAmount);
             }
         }
     }

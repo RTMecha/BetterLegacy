@@ -52,8 +52,6 @@ namespace BetterLegacy.Core.Managers
             Debug.Log(str);
         }
 
-        public static FPSCounter FPS { get; set; }
-
         public static TextMeshProUGUI Info { get; set; }
 
         public static SelectGUI InfoSelection { get; set; }
@@ -78,8 +76,6 @@ namespace BetterLegacy.Core.Managers
             Info = info.AddComponent<TextMeshProUGUI>();
             Info.font = FontManager.inst.allFontAssets["Inconsolata Variable"];
             Info.fontSize = 32;
-
-            FPS = info.AddComponent<FPSCounter>();
 
             UIManager.SetRectTransform(Info.rectTransform, CoreConfig.Instance.DebugPosition.Value, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 1f), new Vector2(800f, 200f));
 
@@ -106,7 +102,7 @@ namespace BetterLegacy.Core.Managers
 
             if (CoreHelper.InGame && !CoreConfig.Instance.DebugShowOnlyFPS.Value)
             {
-                Info.text = $"<b>FPS:</b> {FPS.Text}<br>" +
+                Info.text = $"<b>FPS:</b> {LegacyPlugin.FPSCounter.Text}<br>" +
                             $"<b>Beatmap Objects Alive:</b> {BeatmapObjectAliveCount()} / {(!GameData.IsValid ? 0 : GameData.Current.beatmapObjects.Count)}<br>" +
                             $"<b>Main Camera Position: {Camera.main.transform.position}<br>" +
                             $"<b>Main Camera Zoom: {Camera.main.orthographicSize}<br>" +
@@ -115,7 +111,7 @@ namespace BetterLegacy.Core.Managers
                             $"<b>BG Camera Rotation: {EventManager.inst.camPer.transform.rotation.eulerAngles}<br>";
             }
             else
-                Info.text = $"<b>FPS:</b> {FPS.Text}";
+                Info.text = $"<b>FPS:</b> {LegacyPlugin.FPSCounter.Text}";
 
             if (canvas != null)
                 canvas.Canvas.scaleFactor = CoreHelper.ScreenScale;
