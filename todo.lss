@@ -6,6 +6,7 @@
 - Online multiplayer.
 
 ### Minor feature
+- Seed-based random.
 - Animation editor (for player animations).
 - Player modifiers.
 - Level modifiers (supports VG triggers).
@@ -62,6 +63,7 @@
 - Clean up UIManager.
 - Clean up PlayerManager.
 - Summary and note as much as I can (or need to).
+- Move all string related stuff to a StringHelper class.
 
 ### Bugs
 - Fix window event keyframe not resetting when player pauses or when the user exits preview mode.
