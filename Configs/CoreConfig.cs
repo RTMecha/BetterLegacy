@@ -208,6 +208,11 @@ namespace BetterLegacy.Configs
         #region Game
 
         /// <summary>
+        /// Forces all physics related things to match your FPS.
+        /// </summary>
+        public Setting<bool> PhysicsUpdateMatchFramerate { get; set; }
+
+        /// <summary>
         /// The player will not move while an InputField is being used with this off.
         /// </summary>
         public Setting<bool> AllowControlsInputField { get; set; }
@@ -397,6 +402,7 @@ namespace BetterLegacy.Configs
 
             #region Game
 
+            PhysicsUpdateMatchFramerate = Bind(this, "Game", "Physics Update Match Framerate", false, "Forces all physics related things to match your FPS.");
             AllowControlsInputField = Bind(this, "Game", "Allow Controls While Using InputField", true, "The player will not move while an InputField is being used with this off.");
             AntiAliasing = Bind(this, "Game", "Anti-Aliasing", true, "If anti-aliasing is on or not.");
             RunInBackground = Bind(this, "Game", "Run In Background", true, "If you want the game to continue playing when minimized.");
