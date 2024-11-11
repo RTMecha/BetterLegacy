@@ -1,7 +1,9 @@
-﻿using BetterLegacy.Configs;
+﻿using BetterLegacy.Components;
+using BetterLegacy.Configs;
 using BetterLegacy.Core.Helpers;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Video;
 
@@ -27,6 +29,8 @@ namespace BetterLegacy.Core.Managers
 
         public event Action<bool, float, float> UpdatedAudioPos;
 
+        public List<RTVideoPlayer> videoPlayers = new List<RTVideoPlayer>();
+
         public static void Init() => Creator.NewGameObject(nameof(VideoManager), SystemManager.inst.transform).AddComponent<RTVideoManager>();
 
         void Awake()
@@ -41,8 +45,19 @@ namespace BetterLegacy.Core.Managers
             videoPlayer.isLooping = false;
             videoPlayer.playOnAwake = true;
             videoPlayer.waitForFirstFrame = false;
+            videoPlayer.seekCompleted += SeekCompleted;
 
             UpdatedAudioPos += UpdateTime;
+        }
+
+        bool seeking = false;
+
+        void SeekCompleted(VideoPlayer source) => seeking = false;
+
+        void Update()
+        {
+            if (videoPlayer && videoPlayer.enabled && videoPlayer.isPlaying != AudioManager.inst.CurrentAudioSource.isPlaying)
+                UpdateVideo();
         }
 
         public void SetType(RenderType renderType)
@@ -58,28 +73,35 @@ namespace BetterLegacy.Core.Managers
             Play(currentURL, currentAlpha);
         }
 
-        public static YieldType yieldType = YieldType.FixedUpdate;
+        //public static YieldType yieldType = YieldType.FixedUpdate;
 
-        public bool stopped = false;
+        //public bool stopped = false;
 
-        IEnumerator IUpdateVideo()
+        //IEnumerator IUpdateVideo()
+        //{
+        //    float delay = 0f;
+        //    while (true)
+        //    {
+        //        if (stopped)
+        //        {
+        //            stopped = false;
+        //            yield break;
+        //        }
+
+        //        UpdatedAudioPos?.Invoke(AudioManager.inst.CurrentAudioSource.isPlaying, AudioManager.inst.CurrentAudioSource.time, AudioManager.inst.CurrentAudioSource.pitch);
+
+        //        if (yieldType != YieldType.None)
+        //            yield return CoreHelper.GetYieldInstruction(yieldType, ref delay);
+        //        else
+        //            yield return null; // not having it yield return will freeze the game indefinitely.
+        //    }
+        //}
+
+        public void UpdateVideo()
         {
-            float delay = 0f;
-            while (true)
-            {
-                if (stopped)
-                {
-                    stopped = false;
-                    yield break;
-                }
-
-                UpdatedAudioPos?.Invoke(AudioManager.inst.CurrentAudioSource.isPlaying, AudioManager.inst.CurrentAudioSource.time, AudioManager.inst.CurrentAudioSource.pitch);
-
-                if (yieldType != YieldType.None)
-                    yield return CoreHelper.GetYieldInstruction(yieldType, ref delay);
-                else
-                    yield return null; // not having it yield return will freeze the game indefinitely.
-            }
+            UpdatedAudioPos?.Invoke(AudioManager.inst.CurrentAudioSource.isPlaying, AudioManager.inst.CurrentAudioSource.time, AudioManager.inst.CurrentAudioSource.pitch);
+            for (int i = 0; i < videoPlayers.Count; i++)
+                videoPlayers[i].UpdateVideo();
         }
 
         void UpdateTime(bool isPlaying, float time, float pitch)
@@ -87,15 +109,16 @@ namespace BetterLegacy.Core.Managers
             if (!videoPlayer || !videoPlayer.enabled)
                 return;
 
-            if (isPlaying)
-                videoPlayer.Play();
-            else
-                videoPlayer.Pause();
+            if (videoPlayer.isPlaying != isPlaying)
+                (isPlaying ? (Action)videoPlayer.Play : videoPlayer.Pause).Invoke();
 
             if (videoPlayer.playbackSpeed != pitch)
                 videoPlayer.playbackSpeed = pitch;
-            if (RTMath.Distance(videoPlayer.time, time) > 0.2)
+            if (RTMath.Distance(videoPlayer.time, time) > 0.1 && !seeking)
+            {
+                seeking = true;
                 videoPlayer.time = time;
+            }
         }
 
         public string currentURL;
@@ -159,7 +182,7 @@ namespace BetterLegacy.Core.Managers
             videoPlayer.Prepare();
             didntPlay = false;
 
-            CoreHelper.StartCoroutine(IUpdateVideo());
+            //CoreHelper.StartCoroutine(IUpdateVideo());
         }
 
         public void Play(string url, float alpha)
@@ -196,7 +219,7 @@ namespace BetterLegacy.Core.Managers
             videoPlayer.Prepare();
             didntPlay = false;
 
-            CoreHelper.StartCoroutine(IUpdateVideo());
+            //CoreHelper.StartCoroutine(IUpdateVideo());
         }
 
         public void Stop()
@@ -210,7 +233,7 @@ namespace BetterLegacy.Core.Managers
 
             videoTexture?.SetActive(false);
 
-            stopped = true;
+            //stopped = true;
         }
     }
 }

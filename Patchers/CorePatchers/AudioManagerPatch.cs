@@ -32,6 +32,15 @@ namespace BetterLegacy.Patchers
             else
                 __instance.pitch = __0;
 
+            try
+            {
+                if (RTVideoManager.inst.videoPlayer.enabled)
+                    RTVideoManager.inst?.UpdateVideo();
+            }
+            catch
+            {
+
+            }
             return false;
         }
 
@@ -43,6 +52,16 @@ namespace BetterLegacy.Patchers
                 return false;
             
             __instance.CurrentAudioSource.time = Mathf.Clamp(__0, 0f, __instance.CurrentAudioSource.clip.length);
+
+            try
+            {
+                if (RTVideoManager.inst.videoPlayer.enabled)
+                    RTVideoManager.inst?.UpdateVideo();
+            }
+            catch
+            {
+                
+            }
             return false;
         }
     }
