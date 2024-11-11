@@ -1296,6 +1296,14 @@ namespace BetterLegacy.Core.Helpers
                     {
                         return CoreHelper.InEditor || LevelManager.Levels.TryFind(x => x.id == modifier.value, out Level level) && level.playerData != null && level.playerData.Completed;
                     }
+                case "levelExists":
+                    {
+                        return LevelManager.Levels.Has(x => x.id == modifier.value);
+                    }
+                case "levelPathExists":
+                    {
+                        return RTFile.FileExists($"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{modifier.value}/level.lsb") || RTFile.FileExists($"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{modifier.value}/level.vgd");
+                    }
                 #endregion
                 #region Misc
 
