@@ -1,3 +1,8 @@
+snapshot-2024.11.12 - (pre-1.7.0) > [Nov 12, 2024]
+- Added a new setting "Physics Update Match Framerate" to Config Manager > Core > Game. This setting forces physics to match your framerate, this includes player movement and collision.
+- Fixed Video BGs freezing issues.
+- Added levelExists and levelPathExists trigger modifiers.
+- Fixed some issues with audio not properly loading in some cases.
 snapshot-2024.11.11 - (pre-1.7.0) > [Nov 10, 2024]
 - Added spawnPrefabOffsetOther modifiers.
 - Fixed picker not working in some cases.
