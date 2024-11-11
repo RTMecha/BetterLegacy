@@ -1553,8 +1553,11 @@ namespace BetterLegacy.Core.Helpers
 
                             if (RTFile.FileExists($"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{modifier.value}/level.lsb"))
                                 LevelManager.Load($"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{modifier.value}/level.lsb");
-                            if (RTFile.FileExists($"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{modifier.value}/level.vgd"))
+                            else if (RTFile.FileExists($"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{modifier.value}/level.vgd"))
                                 LevelManager.Load($"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{modifier.value}/level.vgd");
+                            else
+                                SoundManager.inst.PlaySound(DefaultSounds.Block);
+
                             break;
                         }
                     case "loadLevelID":
@@ -1583,15 +1586,19 @@ namespace BetterLegacy.Core.Helpers
                                     EditorManager.inst.StartCoroutine(EditorManager.inst.LoadLevel(path));
                                 }, RTEditor.inst.HideWarningPopup);
                             }
+                            else if (CoreHelper.IsEditing)
+                                SoundManager.inst.PlaySound(DefaultSounds.Block);
 
                             if (!CoreHelper.InEditor && LevelManager.Levels.TryFind(x => x.id == modifier.value, out Level level))
                                 CoreHelper.StartCoroutine(LevelManager.Play(level));
+                            else if (!CoreHelper.InEditor)
+                                SoundManager.inst.PlaySound(DefaultSounds.Block);
 
                             break;
                         }
                     case "loadLevelInternal":
                         {
-                            if (CoreHelper.InEditor && RTFile.FileExists($"{RTFile.BasePath}{EditorManager.inst.currentLoadedLevel}/{modifier.value}/level.lsb"))
+                            if (CoreHelper.IsEditing && RTFile.FileExists($"{RTFile.BasePath}{EditorManager.inst.currentLoadedLevel}/{modifier.value}/level.lsb"))
                             {
                                 if (!ModifiersConfig.Instance.EditorLoadLevel.Value)
                                     break;
@@ -1613,6 +1620,9 @@ namespace BetterLegacy.Core.Helpers
 
                             if (!CoreHelper.InEditor && RTFile.FileExists($"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{System.IO.Path.GetFileName(GameManager.inst.basePath.Substring(0, GameManager.inst.basePath.Length - 1))}/{modifier.value}/level.lsb"))
                                 LevelManager.Load($"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{System.IO.Path.GetFileName(GameManager.inst.basePath.Substring(0, GameManager.inst.basePath.Length - 1))}/{modifier.value}/level.lsb");
+                            else if (!CoreHelper.InEditor)
+                                SoundManager.inst.PlaySound(DefaultSounds.Block);
+
                             break;
                         }
                     case "loadLevelPrevious":
