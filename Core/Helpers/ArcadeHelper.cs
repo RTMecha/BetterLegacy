@@ -22,7 +22,6 @@ namespace BetterLegacy.Core.Helpers
 {
     public static class ArcadeHelper
     {
-        public static GameObject buttonPrefab;
         public static bool endedLevel;
 
         public static void LoadInputSelect()
