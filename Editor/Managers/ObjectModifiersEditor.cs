@@ -703,6 +703,7 @@ namespace BetterLegacy.Editor.Managers
                         }
                     case "loadLevel":
                     case "loadLevelInternal":
+                    case "levelPathExists":
                     case "setText":
                     case "addText":
                     case "setImage":
@@ -734,6 +735,7 @@ namespace BetterLegacy.Editor.Managers
                     case "levelUnlocked":
                     case "loadLevelID":
                     case "levelCompletedOther":
+                    case "levelExists":
                         {
                             StringGenerator(modifier, layout, "ID", 0);
 
