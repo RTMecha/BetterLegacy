@@ -16,7 +16,7 @@ The mod is made up of 8 sections, all originating from their own mods.
    - Summary: Makes event keyframes auto update and has their easings line up with the object easings. Plus, adds a ton of new events (40 total events).
 - **Players**
    - Original mod: [CreativePlayers](https://github.com/RTMecha/CreativePlayers)
-   - Summary: Allows for custom player models and for up to 8 players in multiplayer.
+   - Summary: Allows for custom player models, gameplay types and for up to 8 players in multiplayer.
 - **Modifiers**
    - Original mod: [ObjectModifiers](https://github.com/RTMecha/ObjectModifiers)
    - Summary: Adds a new modifier system to both regular objects and background objects. Modifiers are made up of two types, triggers and actions. Triggers check if something is happening and if it is (or there are no triggers) it'll allow the actions to do their thing.'
@@ -25,7 +25,7 @@ The mod is made up of 8 sections, all originating from their own mods.
    - Summary: Improves the Legacy arcade UI by adding mouse navigation, level searching, locally installed levels, an upcoming online server and even Steam workshop browsing.
 - **Menus**
    - Original mod: [PageCreator](https://github.com/RTMecha/PageCreator)
-   - Summary: Can use custom menu music and custom lilscript functions.
+   - Summary: A fully custom interface system with a ton of capabilties.
 - **Companion**
    - Original mod: [ExampleCompanion](https://github.com/RTMecha/ExampleCompanion)
    - Summary: Adds a little companion to accompany you on your Project Arrhythmia journey.
