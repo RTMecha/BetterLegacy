@@ -1,16 +1,17 @@
 ﻿### Major feature
-- Level collections.
-- Custom Achievement system.
-- Story mode. (Have PA Chat store in story.json)
-- Example tutorials. (Either ask Example about something or right click an element to show the context menu with a "Tutorial" button)
-- Online multiplayer.
+- Level collections. > 1.8.0
+- Custom Achievement system. > 1.8.0
+- Story mode. > 1.7.0
+- Example tutorials. (Either ask Example about something or right click an element to show the context menu with a "Tutorial" button) > 1.11.0
+- Online multiplayer. > 1.10.0
 
 ### Minor feature
-- Seed-based random.
-- Animation editor (for player animations).
-- Player modifiers.
-- Level modifiers (supports VG triggers).
-- Global Player toggle for if the players should have their movement speed multiplied by the pitch or not.
+- Seed-based random. > 1.8.0
+- Interface editor. > 1.8.0
+- Animation editor (for player animations). > 1.8.0
+- Player modifiers. > 1.8.0
+- Level modifiers (supports VG triggers). > 1.8.0
+- Global Player toggle for if the players should have their movement speed multiplied by the pitch or not. > 1.8.0
 - 2D option for BG objects (VG parallax support?)
 - Camera Jiggle event keyframe? (instead of a single thing that doesn't change throughout the entire level)
 - Add feedback (KinoFeedback) effect to event keyframes.
@@ -21,7 +22,6 @@
 - Unclamped timeline (timeline can be navigated outside the regular range and objects can be placed before start time 0).
 - Custom end level function [end level screen, return to hub, return to previous, return to arcade, return to main menu].
 - loadLevel modifiers custom end function (same as above).
-- Add a value for spawning a prefab at the object's position.
 - Add Set Data to image shape for Custom Player objects.
 - More player model limits (move speed, boost speed, etc).
 - Controller Preferences metadata.
@@ -30,23 +30,23 @@
 - Collab sharing via server?
 - Editor online backups?
 - Multiplayer editor, possibly. (everyone has their own perspective of the hosts' editor but have limited functionality compared to the host)
-- Modifier trigger else toggle.
+- Modifier trigger else toggle. > 1.8.0
 - New modifiers
 > prizeObject
 > setParent
 > playerAction trigger (allows for multiple different keybinds and buttons)
-> trailRendererGradient
-> trailRendererColored
-> particleSystemColored
+> trailRendererGradient > 1.8.0
+> trailRendererColored > 1.8.0
+> particleSystemColored > 1.8.0
 
 ### Misc
+- Undo / redo everything. > 1.13.0
 - A way to detect duplicate object IDs.
-- Some way to replace the song in-editor. (Have the current song update if the song that's being replaced is the same level)
+- Some way to replace the song in-editor. (Have the current song update if the song that's being replaced is the same level) > 1.8.0
 - Possibly update input select scene to use new interface system.
 - Glow object that acts like bloom.
 - Ignore start time object spawn?
 - Optimize timeline objects by replacing TextMeshPro with UnityEngine.UI.Text. See if it could be optional?
-- Fix spawnPrefab modifier potential issues by not adding to the prefabObjects list, assigning a custom Prefab Object property to Beatmap Object and have ObjectConverter read from that.
 - MetaData settings that can be adjusted in the Play Level (Settings) menu and can be read using modifiers probably.
 - Figure out how player shooting fits in-game.
 - Update dev+ player to have current properties.
@@ -58,18 +58,19 @@
 - Possible multi object editor rework???
 
 ### Internal
-- Make Editor Documentation read from a json file.
-- Rework shapes to read from a singular json file.
-- Add support for VG text object origin offset.
-- Move all string related stuff to a StringHelper class.
+- Make Editor Documentation read from a json file. > 1.8.0
+- Rework shapes to read from a singular json file. > 1.8.0
+- Add support for VG text object origin offset. > 1.7.0+
+- Move all string related stuff to a StringHelper class. > 1.8.0
 - Make Example's animations read from a file.
+- Change how modifiers are saved for better consistency.
 - Clean up UIManager.
 - Clean up PlayerManager.
 - Summary and note as much as I can (or need to).
 
 ### Bugs
 - Fix window event keyframe not resetting when player pauses or when the user exits preview mode.
-- Fix up menu themes.
+- Fix up menu themes. > 1.8.0
 - Fix homing keyframe behaviour. (Going from homing to a normal relative keyframe should prevent the keyframe from moving)
 - Fix parent desync not working for specific parent chains.
 - Fix some issues with Player Models and extra tail parts.
