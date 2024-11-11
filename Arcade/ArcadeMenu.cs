@@ -1022,7 +1022,8 @@ namespace BetterLegacy.Arcade
 
             exitFunc = () => SceneManager.inst.LoadScene("Input Select");
             if (CurrentTab != Tab.Steam || !ViewOnline)
-                CoreHelper.StartCoroutine(GenerateUI());
+                InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
+            InterfaceManager.inst.PlayMusic();
         }
 
         #region Local

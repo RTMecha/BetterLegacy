@@ -805,8 +805,6 @@ namespace BetterLegacy.Arcade
 
         public static void Close()
         {
-            if (MenuManager.inst)
-                AudioManager.inst.PlayMusic(MenuManager.inst.currentMenuMusicName, MenuManager.inst.currentMenuMusic);
             Levels = null;
             InterfaceManager.inst.CloseMenus();
 

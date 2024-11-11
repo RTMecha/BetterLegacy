@@ -200,7 +200,7 @@ namespace BetterLegacy.Core.Managers
             Debug.Log($"{className}Loading music...\nMusic is null: {!level.music}");
 
             if (!level.music)
-                level.LoadAudioClip();
+                yield return CoreHelper.StartCoroutine(level.LoadAudioClipRoutine());
 
             Debug.Log($"{className}Waiting...\n" +
                 $"In Editor: {CoreHelper.InEditor}\n" +

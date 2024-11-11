@@ -83,7 +83,7 @@ namespace BetterLegacy.Menus
 
             if (!CoreHelper.InGame)
             {
-                AudioManager.inst.PlayMusic(null, music);
+                AudioManager.inst.PlayMusic(music.name, music);
                 return;
             }
 
@@ -194,16 +194,22 @@ namespace BetterLegacy.Menus
                 return;
             }
 
-            if (CurrentAudioSource.clip && CurrentAudioSource.clip.name == Path.GetFileName(songFileCurrent) || AudioManager.inst.CurrentAudioSource.clip && AudioManager.inst.CurrentAudioSource.clip.name == Path.GetFileName(songFileCurrent))
-                return;
-
+            var name = Path.GetFileName(songFileCurrent);
             var audioType = RTFile.GetAudioType(songFileCurrent);
+
+            if (CoreHelper.InGame ? (CurrentAudioSource.clip && name == CurrentAudioSource.clip.name) : (AudioManager.inst.CurrentAudioSource.clip && name == AudioManager.inst.CurrentAudioSource.clip.name))
+            {
+                CoreHelper.LogWarning($"Audio \"{name}\" is the same as the current.");
+                return;
+            }
+
             if (audioType == AudioType.MPEG)
             {
                 CoreHelper.Log($"Attempting to play music: {songFileCurrent}");
                 var audioClip = LSAudio.CreateAudioClipUsingMP3File(songFileCurrent);
-                CurrentMenu.music = audioClip;
-                CurrentMenu.music.name = Path.GetFileName(songFileCurrent);
+                audioClip.name = name;
+                if (CurrentMenu != null)
+                    CurrentMenu.music = audioClip;
                 PlayMusic(audioClip);
                 return;
             }
@@ -214,8 +220,9 @@ namespace BetterLegacy.Menus
                     return;
 
                 CoreHelper.Log($"Attempting to play music: {songFileCurrent}");
-                CurrentMenu.music = audioClip;
-                CurrentMenu.music.name = Path.GetFileName(songFileCurrent);
+                audioClip.name = name;
+                if (CurrentMenu != null)
+                    CurrentMenu.music = audioClip;
                 PlayMusic(audioClip);
             }));
         }

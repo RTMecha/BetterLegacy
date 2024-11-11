@@ -156,10 +156,8 @@ namespace BetterLegacy.Configs
 
         void MusicChanged()
         {
-            if (!CoreHelper.InGame && MenuManager.inst.ic)
-                MenuManager.inst.PlayMusic();
-            else if (!CoreHelper.InGame && InterfaceManager.inst.CurrentMenu != null)
-                InterfaceManager.inst.CurrentMenu.PlayDefaultMusic();
+            if (!CoreHelper.InGame)
+                InterfaceManager.inst.PlayMusic();
         }
 
         #endregion

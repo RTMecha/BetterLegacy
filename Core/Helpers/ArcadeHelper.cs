@@ -202,8 +202,6 @@ namespace BetterLegacy.Core.Helpers
             if (fromLevel)
             {
                 DeleteComponents();
-                if (MenuManager.inst)
-                    AudioManager.inst.PlayMusic(MenuManager.inst.currentMenuMusicName, MenuManager.inst.currentMenuMusic);
                 if (LevelManager.CurrentLevelCollection)
                 {
                     var currentCollection = LevelManager.CurrentLevelCollection;

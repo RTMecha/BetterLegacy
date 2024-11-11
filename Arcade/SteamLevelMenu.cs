@@ -310,8 +310,7 @@ namespace BetterLegacy.Arcade
             CoreHelper.LogSeparator();
             var item = CurrentSteamItem;
             CoreHelper.Log($"Beginning {(!item.IsSubscribed ? "subscribing" : "unsubscribing")} of {item.Id}\nTitle: {item.Title}");
-            if (MenuManager.inst)
-                AudioManager.inst.PlayMusic(MenuManager.inst.currentMenuMusicName, MenuManager.inst.currentMenuMusic);
+            InterfaceManager.inst.PlayMusic();
             InterfaceManager.inst.CloseMenus();
 
             ProgressMenu.Init($"Updating Steam item: {item.Id} - {item.Title}<br>Please wait...");
@@ -468,8 +467,6 @@ namespace BetterLegacy.Arcade
 
         public static void Close()
         {
-            if (MenuManager.inst)
-                AudioManager.inst.PlayMusic(MenuManager.inst.currentMenuMusicName, MenuManager.inst.currentMenuMusic);
             CurrentSteamItem = default;
             InterfaceManager.inst.CloseMenus();
 

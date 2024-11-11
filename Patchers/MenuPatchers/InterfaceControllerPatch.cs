@@ -132,8 +132,8 @@ namespace BetterLegacy.Patchers
                 LoadInterface(null);
             }
 
-            if (!GameManager.inst)
-                MenuManager.inst.PlayMusic();
+            if (!CoreHelper.InGame)
+                InterfaceManager.inst.PlayMusic();
 
             return false;
         }

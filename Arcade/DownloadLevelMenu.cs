@@ -376,8 +376,6 @@ namespace BetterLegacy.Arcade
 
         public static void Close()
         {
-            if (MenuManager.inst)
-                AudioManager.inst.PlayMusic(MenuManager.inst.currentMenuMusicName, MenuManager.inst.currentMenuMusic);
             CurrentOnlineLevel = null;
             InterfaceManager.inst.CloseMenus();
 
