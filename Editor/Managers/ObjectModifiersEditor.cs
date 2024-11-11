@@ -2373,6 +2373,14 @@ namespace BetterLegacy.Editor.Managers
 
                             break;
                         }
+                    case "videoPlayer":
+                        {
+                            StringGenerator(modifier, layout, "Path", 0);
+                            SingleGenerator(modifier, layout, "Time Offset", 1, 0f);
+                            DropdownGenerator(modifier, layout, "Audio Type", 2, CoreHelper.StringToOptionData("None", "AudioSource", "Direct"));
+
+                            break;
+                        }
                     case "languageEquals":
                         {
                             var options = new List<Dropdown.OptionData>();

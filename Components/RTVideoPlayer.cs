@@ -1,6 +1,7 @@
 ﻿using BetterLegacy.Configs;
 using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using System;
 using System.Collections;
 
@@ -15,7 +16,9 @@ namespace BetterLegacy.Components
 
         public GameObject videoTexture;
 
-        public event Action<bool, float, float> UpdatedAudioPos;
+        //public event Action<bool, float, float> UpdatedAudioPos;
+
+        public int index;
 
         public float timeOffset;
 
@@ -23,6 +26,7 @@ namespace BetterLegacy.Components
         {
             videoPlayer = gameObject.AddComponent<VideoPlayer>();
             videoPlayer.targetCamera = Camera.main;
+            videoPlayer.aspectRatio = VideoAspectRatio.Stretch;
             videoPlayer.renderMode = VideoRenderMode.MaterialOverride;
             videoPlayer.source = VideoSource.VideoClip;
             videoPlayer.targetCameraAlpha = 1f;
@@ -30,49 +34,43 @@ namespace BetterLegacy.Components
             videoPlayer.audioOutputMode = VideoAudioOutputMode.None;
             videoPlayer.isLooping = false;
             videoPlayer.waitForFirstFrame = false;
+            videoPlayer.seekCompleted += SeekCompleted;
 
-            UpdatedAudioPos += UpdateTime;
+            //UpdatedAudioPos += UpdateTime;
+
+            index = RTVideoManager.inst.videoPlayers.Count;
+            RTVideoManager.inst.videoPlayers.Add(this);
         }
 
-        public static YieldType yieldType = YieldType.FixedUpdate;
+        void OnDestroy() => RTVideoManager.inst.videoPlayers.RemoveAt(index);
 
-        public bool stopped = false;
+        bool seeking = false;
 
-        IEnumerator IUpdateVideo()
+        void SeekCompleted(VideoPlayer source) => seeking = false;
+
+        void Update()
         {
-            float delay = 0f;
-            while (true)
-            {
-                if (stopped)
-                {
-                    stopped = false;
-                    yield break;
-                }
-
-                UpdatedAudioPos?.Invoke(AudioManager.inst.CurrentAudioSource.isPlaying, AudioManager.inst.CurrentAudioSource.time - timeOffset, AudioManager.inst.CurrentAudioSource.pitch);
-
-                if (yieldType != YieldType.None)
-                    yield return CoreHelper.GetYieldInstruction(yieldType, ref delay);
-                else
-                    yield return null; // not having it yield return will freeze the game indefinitely.
-            }
+            if (videoPlayer && videoPlayer.enabled && videoPlayer.isPlaying != AudioManager.inst.CurrentAudioSource.isPlaying)
+                UpdateVideo();
         }
+
+        public void UpdateVideo() => UpdateTime(AudioManager.inst.CurrentAudioSource.isPlaying, AudioManager.inst.CurrentAudioSource.time - timeOffset, AudioManager.inst.CurrentAudioSource.pitch);
 
         void UpdateTime(bool isPlaying, float time, float pitch)
         {
             if (!videoPlayer || !videoPlayer.enabled)
                 return;
 
-            if (isPlaying)
-                videoPlayer.Play();
-            else
-                videoPlayer.Pause();
+            if (videoPlayer.isPlaying != isPlaying)
+                (isPlaying ? (Action)videoPlayer.Play : videoPlayer.Pause).Invoke();
 
             if (videoPlayer.playbackSpeed != pitch)
                 videoPlayer.playbackSpeed = pitch;
-            time = Mathf.Clamp(time, 0f, (float)videoPlayer.length);
-            if (RTMath.Distance(videoPlayer.time, time) > 0.2)
+            if (RTMath.Distance(videoPlayer.time, time) > 0.1 && !seeking)
+            {
+                seeking = true;
                 videoPlayer.time = time;
+            }
         }
 
         public string currentURL;
@@ -110,8 +108,6 @@ namespace BetterLegacy.Components
             videoPlayer.url = url;
             videoPlayer.Prepare();
             didntPlay = false;
-
-            CoreHelper.StartCoroutine(IUpdateVideo());
         }
 
         public void Stop()
@@ -124,7 +120,6 @@ namespace BetterLegacy.Components
                 CoreHelper.LogError($"VideoPlayer does not exist so it wasn't disabled. Continuing...");
 
             videoTexture?.SetActive(false);
-            stopped = true;
         }
     }
 }

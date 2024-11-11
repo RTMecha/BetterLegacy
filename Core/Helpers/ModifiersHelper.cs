@@ -6332,21 +6332,18 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "videoPlayer":
                         {
-                            if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject != null && levelObject.visualObject.GameObject)
+                            if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject is SolidObject solidObject && solidObject.GameObject)
                             {
-                                //if (!RTFile.FileExists(RTFile.BasePath + modifier.value))
-                                //{
-                                //    break;
-                                //}
+                                var filePath = RTFile.CombinePaths(RTFile.BasePath, modifier.value);
+                                if (!RTFile.FileExists(filePath))
+                                    break;
 
                                 if (modifier.Result == null || modifier.Result is RTVideoPlayer nullVideo && !nullVideo)
                                 {
                                     var gameObject = levelObject.visualObject.GameObject;
-                                    //var videoPlayer = gameObject.GetComponent<RTVideoPlayer>() ?? gameObject.AddComponent<RTVideoPlayer>();
+                                    var videoPlayer = gameObject.GetComponent<RTVideoPlayer>() ?? gameObject.AddComponent<RTVideoPlayer>();
 
-                                    var videoPlayer = gameObject.GetComponent<RTVideoPlayer>();
-                                    if (!videoPlayer)
-                                        videoPlayer = gameObject.AddComponent<RTVideoPlayer>();
+                                    solidObject.Renderer.material = GameObject.Find("ExtraBG").transform.GetChild(0).GetComponent<Renderer>().material;
 
                                     modifier.Result = videoPlayer;
                                 }
@@ -6358,7 +6355,7 @@ namespace BetterLegacy.Core.Helpers
                                     videeoPlayer.timeOffset = modifier.reference.StartTime + timeOffset;
 
                                     if (videeoPlayer.didntPlay)
-                                        videeoPlayer.Play(videeoPlayer.gameObject, /*RTFile.BasePath +*/ modifier.value, (UnityEngine.Video.VideoAudioOutputMode)audioOutputType);
+                                        videeoPlayer.Play(videeoPlayer.gameObject, filePath, (UnityEngine.Video.VideoAudioOutputMode)audioOutputType);
                                 }
                             }
 
