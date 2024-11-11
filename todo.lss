@@ -54,16 +54,18 @@
 - Example customization.
 - Somehow figure out how to convert parallax in alpha to BG objects in BetterLegacy.
 - PrefabOnObject implementation?
+- Think about maybe replacing the Editor Popup Animation system with a fully customizable one where animations can be more in-depth.
 - Possible multi object editor rework???
 
 ### Internal
 - Make Editor Documentation read from a json file.
 - Rework shapes to read from a singular json file.
 - Add support for VG text object origin offset.
+- Move all string related stuff to a StringHelper class.
+- Make Example's animations read from a file.
 - Clean up UIManager.
 - Clean up PlayerManager.
 - Summary and note as much as I can (or need to).
-- Move all string related stuff to a StringHelper class.
 
 ### Bugs
 - Fix window event keyframe not resetting when player pauses or when the user exits preview mode.
