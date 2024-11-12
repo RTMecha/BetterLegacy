@@ -63,7 +63,7 @@ namespace BetterLegacy.Story
 
             elements.AddRange(GenerateTopBar("Story Menu", 6, 0f));
 
-            exitFunc = () => { InterfaceManager.inst.SetCurrentInterface("0"); };
+            exitFunc = () => { InterfaceManager.inst.SetCurrentInterface(InterfaceManager.MAIN_MENU_ID); };
 
             elements.Add(new MenuButton
             {
@@ -81,7 +81,7 @@ namespace BetterLegacy.Story
                 selectedOpacity = 1f,
                 length = 1f,
                 playBlipSound = true,
-                func = () => { InterfaceManager.inst.SetCurrentInterface("0"); },
+                func = () => { InterfaceManager.inst.SetCurrentInterface(InterfaceManager.MAIN_MENU_ID); },
             });
 
             if (!StoryManager.inst || !RTFile.DirectoryExists(StoryManager.StoryAssetsPath))
@@ -151,8 +151,8 @@ namespace BetterLegacy.Story
                             File.Delete(StoryManager.inst.StorySavesPath);
                             StoryManager.inst.SaveSlot = 0;
                             SetupUI();
-                            InterfaceManager.inst.SetCurrentInterface("1");
-                        }, () => { InterfaceManager.inst.SetCurrentInterface("1"); });
+                            InterfaceManager.inst.SetCurrentInterface(InterfaceManager.STORY_SAVES_MENU_ID);
+                        }, () => { InterfaceManager.inst.SetCurrentInterface(InterfaceManager.STORY_SAVES_MENU_ID); });
                     },
                 });
             }
