@@ -596,6 +596,8 @@ namespace BetterLegacy.Core.Helpers
 
         public static bool SearchString(string searchTerm, string a) => string.IsNullOrEmpty(searchTerm) || a.ToLower().Contains(searchTerm.ToLower());
 
+        public static string FormatLevelRank(DataManager.LevelRank levelRank) => $"<color=#{LSColors.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>";
+
         #endregion
 
         #region Links
