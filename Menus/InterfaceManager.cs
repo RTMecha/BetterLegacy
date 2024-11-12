@@ -355,7 +355,7 @@ namespace BetterLegacy.Menus
             var menu = CustomMenu.Parse(jn);
             menu.filePath = path;
             interfaces.Add(menu);
-            interfaces.Add(new ChapterSelectMenu());
+            //interfaces.Add(new ChapterSelectMenu());
 
             SetCurrentInterface(menu.id);
             PlayMusic();
