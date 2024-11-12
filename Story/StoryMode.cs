@@ -174,9 +174,12 @@ namespace BetterLegacy.Story
                     for (int i = 0; i < jn["post_cutscenes"].Count; i++)
                         level.postCutscenes.Add(RTFile.ParsePaths(jn["post_cutscenes"][i]));
 
-                if (jn["pa_chat"] != null)
-                    for (int i = 0; i < jn["pa_chat"].Count; i++)
-                        level.chats.Add(Chat.Parse(jn["pa_chat"][i]));
+                if (jn["pa_chat_file"] != null && RTFile.FileExists(RTFile.ParsePaths(jn["pa_chat_file"])))
+                {
+                    var chatJN = JSON.Parse(RTFile.ReadFromFile(RTFile.ParsePaths(jn["pa_chat_file"])));
+                    for (int i = 0; i < chatJN["pa_chat"].Count; i++)
+                        level.chats.Add(Chat.Parse(chatJN["pa_chat"][i]));
+                }
 
                 return level;
             }
