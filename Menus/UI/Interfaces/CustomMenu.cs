@@ -66,7 +66,12 @@ namespace BetterLegacy.Menus.UI.Interfaces
             customMenu.musicName = string.IsNullOrEmpty(jn["music_name"]) ? InterfaceManager.RANDOM_MUSIC_NAME : jn["music_name"];
             customMenu.allowCustomMusic = jn["allow_custom_music"] != null ? jn["allow_custom_music"].AsBool : true;
             customMenu.defaultSelection = Parser.TryParse(jn["default_select"], Vector2Int.zero);
-            customMenu.layer = jn["layer"] != null ? jn["layer"].AsInt : 900;
+            if (jn["layer"] != null)
+                customMenu.layer = jn["layer"].AsInt;
+            if (jn["pause_game"] != null)
+                customMenu.pauseGame = jn["pause_game"].AsBool;
+            else
+                customMenu.pauseGame = true;
 
             if (jn["sprites"] != null)
             {

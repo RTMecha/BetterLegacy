@@ -144,6 +144,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// </summary>
         public int layer = 900;
 
+        public bool pauseGame = false;
+
         #endregion
 
         #region Methods
@@ -376,6 +378,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     MenuEffectsManager.inst.ZoomCamera(5f);
                     MenuEffectsManager.inst.RotateCamera(0f);
                 }
+
+                if (CoreHelper.InGame && pauseGame)
+                    AudioManager.inst.CurrentAudioSource.Pause();
             }
 
             if (!CoreHelper.InGame)
