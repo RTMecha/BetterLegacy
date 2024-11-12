@@ -200,9 +200,48 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 if (prefabs == null || jnElement["id"] == null || !prefabs.TryFind(x => x.id == jnElement["id"], out MenuPrefab prefab))
                                     break;
 
+                                if (jnElement["from"] != null)
+                                {
+                                    var from = jnElement["from"];
+                                    switch (from["type"].Value)
+                                    {
+                                        case "json":
+                                            {
+                                                if (from["array"] == null)
+                                                    break;
+
+                                                for (int k = 0; k < from["array"].Count; k++)
+                                                {
+                                                    var prefabObject = new MenuPrefabObject
+                                                    {
+                                                        prefabID = jnElement["pid"],
+                                                        prefab = prefab,
+                                                        id = jnElement["id"] == null ? LSText.randomNumString(16) : jnElement["id"],
+                                                        name = jnElement["name"],
+                                                        length = jnElement["anim_length"].AsFloat,
+                                                        fromLoop = j > 0,
+                                                        loop = loop,
+                                                    };
+
+                                                    if (jnElement["spawn_if_func"] == null || prefabObject.ParseIfFunction(jnElement["spawn_if_func"]))
+                                                    {
+                                                        foreach (var array in from["array"][k]["elements"])
+                                                            prefabObject.elementSettings[array.Key] = array.Value;
+
+                                                        yield return prefabObject;
+                                                    }
+                                                }
+
+                                                break;
+                                            }
+                                    }
+
+                                    break;
+                                }
+
                                 var element = new MenuPrefabObject
                                 {
-                                    prefabID = jnElement["id"],
+                                    prefabID = jnElement["pid"],
                                     prefab = prefab,
                                     id = jnElement["id"] == null ? LSText.randomNumString(16) : jnElement["id"],
                                     name = jnElement["name"],
@@ -256,64 +295,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             }
                         case "image":
                             {
-                                var element = new MenuImage
-                                {
-                                    #region Base
-
-                                    id = jnElement["id"] == null ? LSText.randomNumString(16) : jnElement["id"],
-                                    name = jnElement["name"],
-                                    parentLayout = jnElement["parent_layout"],
-                                    parent = jnElement["parent"],
-                                    siblingIndex = jnElement["sibling_index"] == null ? -1 : jnElement["sibling_index"].AsInt,
-
-                                    #endregion
-
-                                    #region Spawning
-
-                                    regenerate = jnElement["regen"] == null ? true : jnElement["regen"].AsBool,
-                                    fromLoop = j > 0, // if element has been spawned from the loop or if its the first / only of its kind.
-                                    loop = loop,
-
-                                    #endregion
-
-                                    #region UI
-
-                                    icon = jnElement["icon"] != null ? spriteAssets.TryGetValue(jnElement["icon"], out Sprite sprite) ? sprite : SpriteHelper.StringToSprite(jnElement["icon"]) : null,
-                                    rect = RectValues.TryParse(jnElement["rect"], RectValues.Default),
-                                    rounded = jnElement["rounded"] == null ? 1 : jnElement["rounded"].AsInt, // roundness can be prevented by setting rounded to 0.
-                                    roundedSide = jnElement["rounded_side"] == null ? SpriteHelper.RoundedSide.W : (SpriteHelper.RoundedSide)jnElement["rounded_side"].AsInt, // default side should be Whole.
-                                    mask = jnElement["mask"].AsBool,
-                                    reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j),
-
-                                    #endregion
-
-                                    #region Color
-
-                                    color = jnElement["col"].AsInt,
-                                    opacity = jnElement["opacity"] == null ? 1f : jnElement["opacity"].AsFloat,
-                                    hue = jnElement["hue"].AsFloat,
-                                    sat = jnElement["sat"].AsFloat,
-                                    val = jnElement["val"].AsFloat,
-                                    overrideColor = jnElement["override_col"] == null ? Color.white : LSColors.HexToColorAlpha(jnElement["override_col"]),
-                                    useOverrideColor = jnElement["override_col"] != null,
-
-                                    #endregion
-
-                                    #region Anim
-
-                                    wait = jnElement["wait"] == null ? true : jnElement["wait"].AsBool,
-                                    length = jnElement["anim_length"].AsFloat,
-
-                                    #endregion
-
-                                    #region Func
-
-                                    playBlipSound = jnElement["play_blip_sound"].AsBool,
-                                    funcJSON = jnElement["func"], // function to run when the element is clicked.
-                                    spawnFuncJSON = jnElement["spawn_func"], // function to run when the element spawns.
-
-                                    #endregion
-                                };
+                                var element = MenuImage.Parse(jnElement, j, loop, spriteAssets);
 
                                 if (jnElement["spawn_if_func"] == null || element.ParseIfFunction(jnElement["spawn_if_func"]))
                                     yield return element;
@@ -322,78 +304,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             }
                         case "text":
                             {
-                                var element = new MenuText
-                                {
-                                    #region Base
-
-                                    id = jnElement["id"] == null ? LSText.randomNumString(16) : jnElement["id"],
-                                    name = jnElement["name"],
-                                    parentLayout = jnElement["parent_layout"],
-                                    parent = jnElement["parent"],
-                                    siblingIndex = jnElement["sibling_index"] == null ? -1 : jnElement["sibling_index"].AsInt,
-
-                                    #endregion
-
-                                    #region Spawning
-
-                                    regenerate = jnElement["regen"] == null ? true : jnElement["regen"].AsBool,
-                                    fromLoop = j > 0, // if element has been spawned from the loop or if its the first / only of its kind.
-                                    loop = loop,
-
-                                    #endregion
-
-                                    #region UI
-
-                                    text = FontManager.TextTranslater.ReplaceProperties(jnElement["text"]),
-                                    icon = jnElement["icon"] != null ? spriteAssets.TryGetValue(jnElement["icon"], out Sprite sprite) ? sprite : SpriteHelper.StringToSprite(jnElement["icon"]) : null,
-                                    rect = RectValues.TryParse(jnElement["rect"], RectValues.Default),
-                                    textRect = RectValues.TryParse(jnElement["text_rect"], RectValues.FullAnchored),
-                                    iconRect = RectValues.TryParse(jnElement["icon_rect"], RectValues.Default),
-                                    rounded = jnElement["rounded"] == null ? 1 : jnElement["rounded"].AsInt, // roundness can be prevented by setting rounded to 0.
-                                    roundedSide = jnElement["rounded_side"] == null ? SpriteHelper.RoundedSide.W : (SpriteHelper.RoundedSide)jnElement["rounded_side"].AsInt, // default side should be Whole.
-                                    mask = jnElement["mask"].AsBool,
-                                    reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j),
-                                    alignment = Parser.TryParse(jnElement["alignment"], TMPro.TextAlignmentOptions.Left),
-                                    enableWordWrapping = jnElement["word_wrap"].AsBool,
-                                    overflowMode = Parser.TryParse(jnElement["overflow_mode"], TMPro.TextOverflowModes.Masking),
-
-                                    #endregion
-
-                                    #region Color
-
-                                    hideBG = jnElement["hide_bg"].AsBool,
-                                    color = jnElement["col"].AsInt,
-                                    opacity = jnElement["opacity"] == null ? 1f : jnElement["opacity"].AsFloat,
-                                    hue = jnElement["hue"].AsFloat,
-                                    sat = jnElement["sat"].AsFloat,
-                                    val = jnElement["val"].AsFloat,
-                                    textColor = jnElement["text_col"].AsInt,
-                                    textHue = jnElement["text_hue"].AsFloat,
-                                    textSat = jnElement["text_sat"].AsFloat,
-                                    textVal = jnElement["text_val"].AsFloat,
-                                    overrideColor = jnElement["override_col"] == null ? Color.white : LSColors.HexToColorAlpha(jnElement["override_col"]),
-                                    overrideTextColor = jnElement["override_text_col"] == null ? Color.white : LSColors.HexToColorAlpha(jnElement["override_text_col"]),
-                                    useOverrideColor = jnElement["override_col"] != null,
-                                    useOverrideTextColor = jnElement["override_text_col"] != null,
-
-                                    #endregion
-
-                                    #region Anim
-
-                                    length = jnElement["anim_length"].AsFloat,
-                                    wait = jnElement["wait"] == null ? true : jnElement["wait"].AsBool,
-
-                                    #endregion
-
-                                    #region Func
-
-                                    playBlipSound = jnElement["play_blip_sound"].AsBool,
-                                    funcJSON = jnElement["func"], // function to run when the element is clicked.
-                                    spawnFuncJSON = jnElement["spawn_func"], // function to run when the element spawns.
-
-                                    #endregion
-                                };
-
+                                var element = MenuText.Parse(jnElement, j, loop, spriteAssets);
                                 if (jnElement["spawn_if_func"] == null || element.ParseIfFunction(jnElement["spawn_if_func"]))
                                     yield return element;
 
@@ -401,97 +312,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             }
                         case "button":
                             {
-                                var element = new MenuButton
-                                {
-                                    #region Base
-
-                                    id = jnElement["id"] == null ? LSText.randomNumString(16) : jnElement["id"],
-                                    name = jnElement["name"],
-                                    parentLayout = jnElement["parent_layout"],
-                                    parent = jnElement["parent"],
-                                    siblingIndex = jnElement["sibling_index"] == null ? -1 : jnElement["sibling_index"].AsInt,
-
-                                    #endregion
-
-                                    #region Spawning
-
-                                    regenerate = jnElement["regen"] == null ? true : jnElement["regen"].AsBool,
-                                    fromLoop = j > 0, // if element has been spawned from the loop or if its the first / only of its kind.
-                                    loop = loop,
-
-                                    #endregion
-
-                                    #region UI
-
-                                    text = FontManager.TextTranslater.ReplaceProperties(jnElement["text"]),
-                                    selectionPosition = new Vector2Int(jnElement["select"]["x"].AsInt, jnElement["select"]["y"].AsInt),
-                                    autoAlignSelectionPosition = jnElement["align_select"].AsBool,
-                                    icon = jnElement["icon"] != null ? spriteAssets.TryGetValue(jnElement["icon"], out Sprite sprite) ? sprite : SpriteHelper.StringToSprite(jnElement["icon"]) : null,
-                                    rect = RectValues.TryParse(jnElement["rect"], RectValues.Default),
-                                    textRect = RectValues.TryParse(jnElement["text_rect"], RectValues.FullAnchored),
-                                    iconRect = RectValues.TryParse(jnElement["icon_rect"], RectValues.Default),
-                                    rounded = jnElement["rounded"] == null ? 1 : jnElement["rounded"].AsInt, // roundness can be prevented by setting rounded to 0.
-                                    roundedSide = jnElement["rounded_side"] == null ? SpriteHelper.RoundedSide.W : (SpriteHelper.RoundedSide)jnElement["rounded_side"].AsInt, // default side should be Whole.
-                                    mask = jnElement["mask"].AsBool,
-                                    reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j),
-                                    alignment = Parser.TryParse(jnElement["alignment"], TMPro.TextAlignmentOptions.Left),
-                                    enableWordWrapping = jnElement["word_wrap"].AsBool,
-                                    overflowMode = Parser.TryParse(jnElement["overflow_mode"], TMPro.TextOverflowModes.Masking),
-
-                                    #endregion
-
-                                    #region Color
-
-                                    hideBG = jnElement["hide_bg"].AsBool,
-                                    color = jnElement["col"].AsInt,
-                                    opacity = jnElement["opacity"] == null ? 1f : jnElement["opacity"].AsFloat,
-                                    hue = jnElement["hue"].AsFloat,
-                                    sat = jnElement["sat"].AsFloat,
-                                    val = jnElement["val"].AsFloat,
-                                    textColor = jnElement["text_col"].AsInt,
-                                    textHue = jnElement["text_hue"].AsFloat,
-                                    textSat = jnElement["text_sat"].AsFloat,
-                                    textVal = jnElement["text_val"].AsFloat,
-
-                                    selectedColor = jnElement["sel_col"].AsInt,
-                                    selectedOpacity = jnElement["sel_opacity"] == null ? 1f : jnElement["sel_opacity"].AsFloat,
-                                    selectedHue = jnElement["sel_hue"].AsFloat,
-                                    selectedSat = jnElement["sel_sat"].AsFloat,
-                                    selectedVal = jnElement["sel_val"].AsFloat,
-                                    selectedTextColor = jnElement["sel_text_col"].AsInt,
-                                    selectedTextHue = jnElement["sel_text_hue"].AsFloat,
-                                    selectedTextSat = jnElement["sel_text_sat"].AsFloat,
-                                    selectedTextVal = jnElement["sel_text_val"].AsFloat,
-
-                                    overrideColor = jnElement["override_col"] == null ? Color.white : LSColors.HexToColorAlpha(jnElement["override_col"]),
-                                    overrideTextColor = jnElement["override_text_col"] == null ? Color.white : LSColors.HexToColorAlpha(jnElement["override_text_col"]),
-                                    overrideSelectedColor = jnElement["override_sel_col"] == null ? Color.white : LSColors.HexToColorAlpha(jnElement["override_sel_col"]),
-                                    overrideSelectedTextColor = jnElement["override_sel_text_col"] == null ? Color.white : LSColors.HexToColorAlpha(jnElement["override_sel_text_col"]),
-                                    useOverrideColor = jnElement["override_col"] != null,
-                                    useOverrideTextColor = jnElement["override_text_col"] != null,
-                                    useOverrideSelectedColor = jnElement["override_sel_col"] != null,
-                                    useOverrideSelectedTextColor = jnElement["override_sel_text_col"] != null,
-
-                                    #endregion
-
-                                    #region Anim
-
-                                    length = jnElement["anim_length"].AsFloat,
-                                    wait = jnElement["wait"] == null ? true : jnElement["wait"].AsBool,
-
-                                    #endregion
-
-                                    #region Func
-
-                                    playBlipSound = jnElement["play_blip_sound"].AsBool,
-                                    funcJSON = jnElement["func"], // function to run when the element is clicked.
-                                    spawnFuncJSON = jnElement["spawn_func"], // function to run when the element spawns.
-                                    enterFuncJSON = jnElement["enter_func"], // function to run when the element is hovered over.
-                                    exitFuncJSON = jnElement["exit_func"], // function to run when the element is hovered over.
-                                    allowOriginalHoverMethods = jnElement["allow_original_hover_func"].AsBool,
-
-                                    #endregion
-                                };
+                                var element = MenuButton.Parse(jnElement, j, loop, spriteAssets);
 
                                 if (jnElement["spawn_if_func"] == null || element.ParseIfFunction(jnElement["spawn_if_func"]))
                                     yield return element;
