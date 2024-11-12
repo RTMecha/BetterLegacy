@@ -21,9 +21,11 @@ namespace BetterLegacy.Story
 {
     public class StoryMenu : MenuBase
     {
+        public const int MAX_SAVE_SLOTS = 9;
+
         public StoryMenu() : base()
         {
-            id = "1";
+            id = InterfaceManager.STORY_SAVES_MENU_ID;
 
             layouts.Add("buttons", new MenuVerticalLayout
             {
@@ -88,7 +90,7 @@ namespace BetterLegacy.Story
                 return;
             }
 
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < MAX_SAVE_SLOTS; i++)
             {
                 int index = i;
                 elements.Add(new MenuButton
@@ -117,7 +119,7 @@ namespace BetterLegacy.Story
                 });
             }
 
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < MAX_SAVE_SLOTS; i++)
             {
                 int index = i;
 
