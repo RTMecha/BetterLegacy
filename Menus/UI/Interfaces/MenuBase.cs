@@ -447,6 +447,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                     for (int j = 0; j < list.Count; j++)
                     {
                         elements.Insert(num, list[j]);
+                        count = elements.Count;
                         num++;
                     }
 
