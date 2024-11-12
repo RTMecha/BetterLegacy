@@ -29,6 +29,14 @@ namespace BetterLegacy.Arcade
         {
             InterfaceManager.inst.CurrentMenu = this;
 
+            elements.Add(new MenuEvent
+            {
+                id = "09",
+                name = "Effects",
+                func = () => { MenuEffectsManager.inst.UpdateChroma(0.1f); },
+                length = 0f,
+            });
+
             elements.Add(new MenuImage
             {
                 id = "35255236785",
@@ -603,7 +611,6 @@ namespace BetterLegacy.Arcade
 
             exitFunc = Close;
 
-            allowEffects = false;
             layer = 10000;
             defaultSelection = new Vector2Int(0, 4);
             InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());

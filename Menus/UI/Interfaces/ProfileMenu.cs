@@ -26,6 +26,14 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             musicName = InterfaceManager.RANDOM_MUSIC_NAME;
 
+            elements.Add(new MenuEvent
+            {
+                id = "09",
+                name = "Effects",
+                func = () => { MenuEffectsManager.inst.UpdateChroma(0.1f); },
+                length = 0f,
+            });
+
             layouts.Add("buttons", new MenuVerticalLayout
             {
                 name = "buttons",

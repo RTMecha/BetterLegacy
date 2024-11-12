@@ -75,6 +75,15 @@ namespace BetterLegacy.Arcade
 
             regenerate = false;
 
+            elements.Add(new MenuEvent
+            {
+                id = "09",
+                name = "Effects",
+                func = () => { MenuEffectsManager.inst.UpdateChroma(0.1f); },
+                length = 0f,
+                regenerate = false,
+            });
+
             layouts.Add("tabs", new MenuHorizontalLayout
             {
                 name = "tabs",

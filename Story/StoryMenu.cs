@@ -53,10 +53,6 @@ namespace BetterLegacy.Story
             Clear();
             elements.Clear();
 
-            elements.AddRange(GenerateTopBar("Story Menu", 6, 0f));
-
-            exitFunc = () => { InterfaceManager.inst.SetCurrentInterface("0"); };
-
             elements.Add(new MenuEvent
             {
                 id = "09",
@@ -64,6 +60,10 @@ namespace BetterLegacy.Story
                 func = () => { MenuEffectsManager.inst.UpdateChroma(0.1f); },
                 length = 0f,
             });
+
+            elements.AddRange(GenerateTopBar("Story Menu", 6, 0f));
+
+            exitFunc = () => { InterfaceManager.inst.SetCurrentInterface("0"); };
 
             elements.Add(new MenuButton
             {

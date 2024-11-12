@@ -21,6 +21,15 @@ namespace BetterLegacy.Menus.UI.Interfaces
             InterfaceManager.inst.CloseMenus();
             InterfaceManager.inst.CurrentMenu = this;
 
+            if (!CoreHelper.InGame)
+                elements.Add(new MenuEvent
+                {
+                    id = "09",
+                    name = "Effects",
+                    func = () => { MenuEffectsManager.inst.UpdateChroma(0.1f); },
+                    length = 0f,
+                });
+
             elements.Add(new MenuText
             {
                 id = "0",

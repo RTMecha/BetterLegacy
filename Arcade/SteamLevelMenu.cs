@@ -36,6 +36,14 @@ namespace BetterLegacy.Arcade
         {
             InterfaceManager.inst.CurrentMenu = this;
 
+            elements.Add(new MenuEvent
+            {
+                id = "09",
+                name = "Effects",
+                func = () => { MenuEffectsManager.inst.UpdateChroma(0.1f); },
+                length = 0f,
+            });
+
             elements.Add(new MenuImage
             {
                 id = "35255236785",

@@ -2661,6 +2661,16 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 #region Specific Functions
 
+                case "SetDefaultEvents":
+                    {
+                        if (CoreHelper.InGame)
+                            break;
+
+                        MenuEffectsManager.inst.UpdateChroma(0.1f);
+
+                        break;
+                    }
+
                 #region Profile
 
                 case "Profile":
