@@ -9,6 +9,7 @@ using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Prefabs;
 using BetterLegacy.Editor.Managers;
 using BetterLegacy.Example;
+using BetterLegacy.Menus;
 using CielaSpike;
 using Crosstales.FB;
 using HarmonyLib;
@@ -995,6 +996,9 @@ namespace BetterLegacy.Patchers
         {
             if (Instance.hasLoadedLevel && RTEventManager.windowPositionResolutionChanged)
                 WindowController.ResetResolution();
+
+            if (InterfaceManager.inst && InterfaceManager.inst.CurrentMenu != null)
+                InterfaceManager.inst.CloseMenus();
 
             EventManager.inst.cam.rect = new Rect(0f, 0.3708f, 0.601f, 0.601f);
             EventManager.inst.camPer.rect = new Rect(0f, 0.3708f, 0.602f, 0.601f);
