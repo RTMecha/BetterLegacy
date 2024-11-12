@@ -288,10 +288,16 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
                                             for (int k = 0; k < jnElement["to"].Count; k++)
                                             {
-                                                foreach (var element in elements)
+                                                foreach (var toElement in jnElement["to"][k])
                                                 {
-                                                    element.Read(jnElement["to"][k], j, loop, spriteAssets);
-                                                    yield return element;
+                                                    foreach (var element in elements)
+                                                    {
+                                                        if (element.id != toElement.Key)
+                                                            continue;
+
+                                                        element.Read(toElement.Value, j, loop, spriteAssets);
+                                                        yield return element;
+                                                    }
                                                 }
                                             }
 
