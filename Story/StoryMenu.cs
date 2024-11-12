@@ -84,7 +84,7 @@ namespace BetterLegacy.Story
                 func = () => { InterfaceManager.inst.SetCurrentInterface("0"); },
             });
 
-            if (!StoryManager.inst || !RTFile.DirectoryExists(StoryManager.StoryAssetsPath) || !RTFile.FileExists($"{StoryManager.StoryAssetsPath}doc01_01.asset"))
+            if (!StoryManager.inst || !RTFile.DirectoryExists(StoryManager.StoryAssetsPath))
             {
                 elements.AddRange(GenerateBottomBar(6, 0f));
                 return;
