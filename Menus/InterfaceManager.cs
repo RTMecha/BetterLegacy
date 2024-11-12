@@ -36,6 +36,10 @@ namespace BetterLegacy.Menus
         public float[] samples = new float[256];
 
         public const string RANDOM_MUSIC_NAME = "menu";
+        public const string MAIN_MENU_ID = "0";
+        public const string STORY_SAVES_MENU_ID = "1";
+        public const string CHAPTER_SELECT_MENU_ID = "2";
+        public const string PROFILE_MENU_ID = "3";
 
         public MenuBase CurrentMenu { get; set; }
         public Coroutine CurrentGenerateUICoroutine { get; set; }
@@ -390,7 +394,7 @@ namespace BetterLegacy.Menus
 
             if (!MenuConfig.Instance.ShowChangelog.Value || ChangeLogMenu.Seen)
             {
-                SetCurrentInterface("0");
+                SetCurrentInterface(MAIN_MENU_ID);
                 PlayMusic();
                 return;
             }
@@ -482,7 +486,7 @@ namespace BetterLegacy.Menus
             }, onError =>
             {
                 CoreHelper.LogError($"Couldn't reach updates file, continuing...\nError: {onError}");
-                SetCurrentInterface("0");
+                SetCurrentInterface(MAIN_MENU_ID);
                 PlayMusic();
             }));
             yield break;
@@ -494,7 +498,7 @@ namespace BetterLegacy.Menus
         public ChangeLogMenu() : base()
         {
             musicName = InterfaceManager.RANDOM_MUSIC_NAME;
-            exitFunc = () => { InterfaceManager.inst.SetCurrentInterface("0"); };
+            exitFunc = () => { InterfaceManager.inst.SetCurrentInterface(InterfaceManager.MAIN_MENU_ID); };
         }
 
         public static bool Seen { get; set; }

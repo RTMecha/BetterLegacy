@@ -23,7 +23,7 @@ namespace BetterLegacy.Story
     {
         public ChapterSelectMenu() : base()
         {
-            id = "2";
+            id = InterfaceManager.CHAPTER_SELECT_MENU_ID;
 
             elements.Add(new MenuEvent
             {
