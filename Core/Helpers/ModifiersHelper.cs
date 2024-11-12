@@ -6363,7 +6363,7 @@ namespace BetterLegacy.Core.Helpers
                         }
                     case "loadInterface":
                         {
-                            if (CoreHelper.InEditor) // don't want interfaces to load in editor
+                            if (CoreHelper.IsEditing) // don't want interfaces to load in editor
                             {
                                 EditorManager.inst.DisplayNotification($"Cannot load interface in the editor!", 1f, EditorManager.NotificationType.Warning);
                                 return;
