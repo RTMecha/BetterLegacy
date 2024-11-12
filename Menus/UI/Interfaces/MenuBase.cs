@@ -703,6 +703,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             if (menuImage.icon)
                 menuImage.image.sprite = menuImage.icon;
+            else if (RTFile.FileExists(menuImage.iconPath))
+                menuImage.image.sprite = SpriteHelper.LoadSprite(menuImage.iconPath);
             else if (MenuConfig.Instance.RoundedUI.Value)
                 SpriteHelper.SetRoundedSprite(menuImage.image, menuImage.rounded, menuImage.roundedSide);
 
@@ -764,6 +766,14 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 icon.layer = 5;
                 menuText.iconUI = icon.AddComponent<Image>();
                 menuText.iconUI.sprite = menuText.icon;
+                menuText.iconRect.AssignToRectTransform(menuText.iconUI.rectTransform);
+            }
+            else if (RTFile.FileExists(menuText.iconPath))
+            {
+                var icon = Creator.NewUIObject("Icon", menuText.gameObject.transform);
+                icon.layer = 5;
+                menuText.iconUI = icon.AddComponent<Image>();
+                menuText.iconUI.sprite = SpriteHelper.LoadSprite(menuText.iconPath);
                 menuText.iconRect.AssignToRectTransform(menuText.iconUI.rectTransform);
             }
 
@@ -835,6 +845,14 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 menuButton.iconUI.sprite = menuButton.icon;
                 menuButton.iconRect.AssignToRectTransform(menuButton.iconUI.rectTransform);
             }
+            else if (RTFile.FileExists(menuButton.iconPath))
+            {
+                var icon = Creator.NewUIObject("Icon", menuButton.gameObject.transform);
+                icon.layer = 5;
+                menuButton.iconUI = icon.AddComponent<Image>();
+                menuButton.iconUI.sprite = SpriteHelper.LoadSprite(menuButton.iconPath);
+                menuButton.iconRect.AssignToRectTransform(menuButton.iconUI.rectTransform);
+            }
 
             if (menuButton.reactiveSetting.init)
             {
@@ -873,6 +891,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             if (menuInputField.icon)
                 menuInputField.image.sprite = menuInputField.icon;
+            else if (RTFile.FileExists(menuInputField.iconPath))
+                menuInputField.image.sprite = SpriteHelper.LoadSprite(menuInputField.iconPath);
             else if (MenuConfig.Instance.RoundedUI.Value)
                 SpriteHelper.SetRoundedSprite(menuInputField.image, menuInputField.rounded, menuInputField.roundedSide);
 
