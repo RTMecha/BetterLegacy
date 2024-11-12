@@ -160,21 +160,18 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         #region Autos / Prefabs
 
-        public void ApplyPrefab(MenuPrefab prefab)
-        {
-            elements.AddRange(ApplyPrefabElements(prefab));
-        }
-
         /// <summary>
         /// Iterates through a <see cref="MenuPrefab"/>s' elements and returns elements to be applied to the interface.
         /// </summary>
         /// <param name="prefab">Prefab to apply.</param>
         /// <returns>Returns iterated copies of the prefabs' elements.</returns>
-        public IEnumerable<MenuImage> ApplyPrefabElements(MenuPrefab prefab)
+        public IEnumerable<MenuImage> ApplyPrefabElements(MenuPrefabObject prefabObject)
         {
-            for (int i = 0; i < prefab.elements.Count; i++)
+            for (int i = 0; i < prefabObject.prefab.elements.Count; i++)
             {
-                var element = prefab.elements[i];
+                var element = prefabObject.prefab.elements[i];
+                prefabObject.ApplyElementSetting(element);
+
                 if (element is MenuEvent menuEvent)
                 {
                     yield return MenuEvent.DeepCopy(menuEvent, false);
@@ -442,7 +439,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         continue;
                     }
 
-                    var list = ApplyPrefabElements(prefabObject.prefab).ToList();
+                    var list = ApplyPrefabElements(prefabObject).ToList();
 
                     for (int j = 0; j < list.Count; j++)
                     {
