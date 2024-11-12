@@ -83,7 +83,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
             ParseLayouts(customMenu.layouts, jn["layouts"]);
             customMenu.elements.AddRange(ParseElements(jn["elements"], customMenu.prefabs, customMenu.spriteAssets));
 
-            customMenu.loadedTheme = BeatmapTheme.Parse(jn["theme"]);
+            if (jn["theme"] != null)
+                customMenu.loadedTheme = BeatmapTheme.Parse(jn["theme"]);
             customMenu.useGameTheme = jn["game_theme"].AsBool;
 
             if (CoreHelper.InGame)
