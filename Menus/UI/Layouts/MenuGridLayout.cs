@@ -22,8 +22,8 @@ namespace BetterLegacy.Menus.UI.Layouts
             var gridLayout = new MenuGridLayout
             {
                 name = jn["name"],
-                cellSize = jn["cell_size"].AsVector2(),
-                spacing = jn["spacing"].AsVector2(),
+                cellSize = Parser.TryParse(jn["cell_size"], new Vector2(100f, 100f)),
+                spacing = Parser.TryParse(jn["spacing"], Vector2.zero),
 
                 constraintCount = jn["constraint_count"].AsInt,
                 constraint = (GridLayoutGroup.Constraint)jn["constraint"].AsInt,
