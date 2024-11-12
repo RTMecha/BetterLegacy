@@ -91,18 +91,26 @@ namespace BetterLegacy.Patchers
                 new DataManager.LinkType("Newgrounds", "https://{0}.newgrounds.com/")
             };
 
-
-            __instance.levelRanks = new List<DataManager.LevelRank>
+            try
             {
-                new DataManager.LevelRank("-", LSColors.GetThemeColor("none"), -1, -1, new string[] { "Maybe don't play in practice mode next time Hal?", "Nice practice! Let's go for real next time!", "Sometimes it's nice to just sit back and watch the pretty colors.", "Sometimes the patterns made by the virus seem too well orchestrated... almost like they're designed by a higher being?" }),
-                new DataManager.LevelRank("SS", LSColors.GetThemeColor("easy"), 0, 0, new string[] { "That was incredible! Where did you learn all that? Oh right me {{QuickElement=smug}}", "WOW!! {{QuickElement=party}} Amazing job Hal!", "You're killin' it Hal! That virus is going down! {{QuickElement=surprise}}", "Didn't know you had moves like that programmed into you! {{QuickElement=surprise}}" }),
-                new DataManager.LevelRank("S", LSColors.GetThemeColor("normal"), 1, 1, new string[] { "WOW!! {{QuickElement=party}} Amazing job Hal!", "You're killin' it Hal! That virus is going down! {{QuickElement=surprise}}", "Didn't know you had moves like that programmed into you! {{QuickElement=surprise}}" }),
-                new DataManager.LevelRank("A", LSColors.GetThemeColor("normal"), 2, 3, new string[] { "Good job Hal! We might really be able to figure out that cure soon. {{QuickElement=happy}}", "Good job Hal! This new batch of nanobots is really something! {{QuickElement=happy}}", "Good! Now on to the next one! {{QuickElement=happy}}" }),
-                new DataManager.LevelRank("B", LSColors.GetThemeColor("hard"), 4, 6, new string[] { "Hal you got to do better! Let's try to fail in less generations so we can move quicker towards that cure! {{QuickElement=nervous}}", "What do you think Hal? Should we move forward with iteration 23,647,647?" }),
-                new DataManager.LevelRank("C", LSColors.GetThemeColor("hard"), 7, 9, new string[] { "Hal you got to do better! Let's try to fail in less generations so we can move quicker towards that cure! {{QuickElement=nervous}}", "What do you think Hal? Should we move forward with iteration 23,647,647?" }),
-                new DataManager.LevelRank("D", LSColors.GetThemeColor("expert"), 10, 15, new string[] { "The next nanobot iteration will be better! Let's make sure of it! {{QuickElement=happy}}", "Maybe we should give those cyan nanobots another chance? {{QuickElement=nervous}}" }),
-                new DataManager.LevelRank("F", LSColors.GetThemeColor("expert"), 16, int.MaxValue, new string[] { "The next nanobot iteration will be better! Let's make sure of it! {{QuickElement=happy}}", "Maybe we should give those cyan nanobots another chance? {{QuickElement=nervous}}" })
-            };
+                var sayings = JSON.Parse(RTFile.ReadFromFile(RTFile.FileExists($"{RTFile.ApplicationDirectory}profile/sayings.json") ? $"{RTFile.ApplicationDirectory}profile/sayings.json" : $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}sayings.json"))["sayings"];
+
+                __instance.levelRanks = new List<DataManager.LevelRank>
+                {
+                    new DataManager.LevelRank("-", LSColors.GetThemeColor("none"), -1, -1, sayings[0].Children.Select(x => x.Value).ToArray()),
+                    new DataManager.LevelRank("SS", LSColors.GetThemeColor("easy"), 0, 0, sayings[1].Children.Select(x => x.Value).ToArray()),
+                    new DataManager.LevelRank("S", LSColors.GetThemeColor("normal"), 1, 1, sayings[2].Children.Select(x => x.Value).ToArray()),
+                    new DataManager.LevelRank("A", LSColors.GetThemeColor("normal"), 2, 3, sayings[3].Children.Select(x => x.Value).ToArray()),
+                    new DataManager.LevelRank("B", LSColors.GetThemeColor("hard"), 4, 6, sayings[4].Children.Select(x => x.Value).ToArray()),
+                    new DataManager.LevelRank("C", LSColors.GetThemeColor("hard"), 7, 9, sayings[5].Children.Select(x => x.Value).ToArray()),
+                    new DataManager.LevelRank("D", LSColors.GetThemeColor("expert"), 10, 15, sayings[6].Children.Select(x => x.Value).ToArray()),
+                    new DataManager.LevelRank("F", LSColors.GetThemeColor("expert"), 16, int.MaxValue, sayings[7].Children.Select(x => x.Value).ToArray())
+                };
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Failed to set LevelRank sayings.\nException: {ex}");
+            }
 
             //Themes
             __instance.BeatmapThemes[0].name = "PA Machine";
@@ -196,16 +204,7 @@ namespace BetterLegacy.Patchers
             {
                 string rawProfileJSON = FileManager.inst.LoadJSONFile("settings/menu.lss");
 
-                JSONNode jn = JSON.Parse(rawProfileJSON);
-                string note = "JSON code based on what exists in the files";
-                if (note.Contains("note"))
-                {
-                }
-
-                jn["TransRights"][0]["name"] = "<sprite name=trans_pa_logo> Yes";
-                jn["TransRights"][0]["values"] = "<sprite name=trans_pa_logo>";
-                jn["TransRights"][1]["name"] = "<sprite name=pa_logo> No";
-                jn["TransRights"][1]["values"] = "<sprite name=pa_logo>";
+                var jn = JSON.Parse(rawProfileJSON);
 
                 jn["MenuMusic"][0]["name"] = "shuffle";
                 jn["MenuMusic"][0]["values"] = "menu";
@@ -227,7 +226,6 @@ namespace BetterLegacy.Patchers
                 jn["MenuMusic"][4]["values"] = "distance";
                 jn["MenuMusic"][4]["function_call"] = "apply_menu_music";
 
-
                 jn["ArcadeDifficulty"][0]["name"] = "zen (invincible)";
                 jn["ArcadeDifficulty"][0]["values"] = "zen";
 
@@ -239,7 +237,6 @@ namespace BetterLegacy.Patchers
 
                 jn["ArcadeDifficulty"][3]["name"] = "1 hit";
                 jn["ArcadeDifficulty"][3]["values"] = "1_hit";
-
 
                 jn["ArcadeGameSpeed"][0]["name"] = "x0.5";
                 jn["ArcadeGameSpeed"][0]["values"] = "0.5";
@@ -256,13 +253,11 @@ namespace BetterLegacy.Patchers
                 jn["ArcadeGameSpeed"][4]["name"] = "x1.5";
                 jn["ArcadeGameSpeed"][4]["values"] = "1.5";
 
-
                 jn["QualityLevel"][0]["name"] = "Low";
                 jn["QualityLevel"][0]["values"] = "low";
 
                 jn["QualityLevel"][1]["name"] = "Normal";
                 jn["QualityLevel"][1]["values"] = "normal";
-
 
                 jn["AntiAliasing"][0]["name"] = "None";
                 jn["AntiAliasing"][0]["values"] = "0";
@@ -270,30 +265,25 @@ namespace BetterLegacy.Patchers
                 jn["AntiAliasing"][1]["name"] = "x2";
                 jn["AntiAliasing"][1]["values"] = "2";
 
-
                 jn["SortingHuman"][0]["values"]["desc"] = "NEW";
                 jn["SortingHuman"][0]["values"]["asc"] = "OLD";
 
                 jn["SortingHuman"][0]["name"] = "date_downloaded";
-
 
                 jn["SortingHuman"][1]["values"]["desc"] = "Z-A";
                 jn["SortingHuman"][1]["values"]["asc"] = "A-Z";
 
                 jn["SortingHuman"][1]["name"] = "song_name";
 
-
                 jn["SortingHuman"][2]["values"]["desc"] = "Z-A";
                 jn["SortingHuman"][2]["values"]["asc"] = "A-Z";
 
                 jn["SortingHuman"][2]["name"] = "artist_name";
 
-
                 jn["SortingHuman"][3]["values"]["desc"] = "Z-A";
                 jn["SortingHuman"][3]["values"]["asc"] = "A-Z";
 
                 jn["SortingHuman"][3]["name"] = "creator_name";
-
 
                 jn["SortingHuman"][4]["values"]["desc"] = "HARD";
                 jn["SortingHuman"][4]["values"]["asc"] = "EASY";
