@@ -203,7 +203,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                 if (jnElement["from"] != null)
                                 {
                                     var from = jnElement["from"];
-                                    switch (from["type"].Value)
+                                    switch (from["type"].Value.ToLower())
                                     {
                                         case "json":
                                             {
@@ -274,6 +274,30 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
                                 //    yield return MenuImage.DeepCopy(element, false);
                                 //}
+
+                                break;
+                            }
+                        case "for":
+                            {
+                                string from = jnElement["from"];
+                                switch (from.ToLower().Replace(" ", "").Replace("_", ""))
+                                {
+                                    case "json":
+                                        {
+                                            var elements = ParseElements(jnElement["element_prefabs"], prefabs, spriteAssets);
+
+                                            for (int k = 0; k < jnElement["to"].Count; k++)
+                                            {
+                                                foreach (var element in elements)
+                                                {
+                                                    element.Read(jnElement["to"][k], j, loop, spriteAssets);
+                                                    yield return element;
+                                                }
+                                            }
+
+                                            break;
+                                        }
+                                }
 
                                 break;
                             }
