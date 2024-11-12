@@ -19,9 +19,25 @@ namespace BetterLegacy.Patchers
             if (!__instance.isFading)
                 __instance.CurrentAudioSource.volume = __instance.musicVol;
             __instance.CurrentAudioSource.pitch = __instance.pitch;
+            if (__instance.pitch != prevPitch)
+            {
+                prevPitch = __instance.pitch;
+
+                try
+                {
+                    if (RTVideoManager.inst.videoPlayer.enabled)
+                        RTVideoManager.inst?.UpdateVideo();
+                }
+                catch
+                {
+
+                }
+            }
 
             return false;
         }
+
+        static float prevPitch = 1f;
 
         [HarmonyPatch(nameof(AudioManager.SetPitch))]
         [HarmonyPrefix]
@@ -32,15 +48,6 @@ namespace BetterLegacy.Patchers
             else
                 __instance.pitch = __0;
 
-            try
-            {
-                if (RTVideoManager.inst.videoPlayer.enabled)
-                    RTVideoManager.inst?.UpdateVideo();
-            }
-            catch
-            {
-
-            }
             return false;
         }
 
