@@ -272,8 +272,8 @@ namespace BetterLegacy.Menus.UI.Elements
 
             if (!string.IsNullOrEmpty(jnElement["text"]))
                 text = ParseText(FontManager.TextTranslater.ReplaceProperties(jnElement["text"]));
-            if (jnElement["select"] != null && jnElement["select"]["x"] != null && jnElement["select"]["y"] != null)
-                selectionPosition = new Vector2Int(jnElement["select"]["x"].AsInt, jnElement["select"]["y"].AsInt);
+            if (jnElement["select"] != null)
+                selectionPosition = Parser.TryParse(jnElement["select"], Vector2Int.zero);
             if (jnElement["align_select"] != null)
                 autoAlignSelectionPosition = jnElement["align_select"].AsBool;
             if (!string.IsNullOrEmpty(jnElement["icon"]))
