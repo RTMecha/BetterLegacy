@@ -627,7 +627,7 @@ namespace BetterLegacy.Core.Managers
                             LevelManager.GetLevelRank(LevelManager.CurrentLevel) : CoreHelper.InEditor ? LevelManager.EditorRank :
                             DataManager.inst.levelRanks[0];
 
-                    str = str.Replace("<levelRank>", $"<color=#{LSColors.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>");
+                    str = str.Replace("<levelRank>", CoreHelper.FormatLevelRank(levelRank));
                 }
 
                 if (str.Contains("<levelRankName>"))
@@ -654,7 +654,7 @@ namespace BetterLegacy.Core.Managers
                 {
                     var levelRank = !CoreHelper.InEditor ? LevelManager.GetLevelRank(GameManager.inst.hits) : LevelManager.EditorRank;
 
-                    str = str.Replace("<levelRankCurrent>", $"<color=#{LSColors.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>");
+                    str = str.Replace("<levelRankCurrent>", CoreHelper.FormatLevelRank(levelRank));
                 }
 
                 if (str.Contains("<levelRankCurrentName>"))
@@ -686,7 +686,7 @@ namespace BetterLegacy.Core.Managers
                                 levelRank = CoreHelper.InEditor ? LevelManager.EditorRank : DataManager.inst.levelRanks[0];
                             }
 
-                            str = str.Replace(match.Groups[0].ToString(), $"<color=#{LSColors.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>");
+                            str = str.Replace(match.Groups[0].ToString(), CoreHelper.FormatLevelRank(levelRank));
                         });
 
                     if (str.Contains("levelRankOtherName"))
@@ -767,6 +767,7 @@ namespace BetterLegacy.Core.Managers
                 return str
                     .Replace("{{GameVersion}}", ProjectArrhythmia.GameVersion.ToString())
                     .Replace("{{ModVersion}}", LegacyPlugin.ModVersion.ToString())
+                    .Replace("{{DisplayName}}", CoreConfig.Instance.DisplayName.Value)
                     .Replace("{{SplashText}}", LegacyPlugin.SplashText);
             }
 
