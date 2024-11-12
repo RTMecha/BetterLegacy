@@ -2672,6 +2672,26 @@ namespace BetterLegacy.Menus.UI.Elements
                         break;
                     }
 
+                case "PauseMusic":
+                    {
+                        if (parameters != null && (parameters.IsArray && !parameters[0].AsBool || parameters.IsObject && !parameters["game_audio"].AsBool))
+                            InterfaceManager.inst.CurrentAudioSource.Pause();
+                        else
+                            AudioManager.inst.CurrentAudioSource.Pause();
+
+                        break;
+                    }
+                    
+                case "ResumeMusic":
+                    {
+                        if (parameters != null && (parameters.IsArray && !parameters[0].AsBool || parameters.IsObject && !parameters["game_audio"].AsBool))
+                            InterfaceManager.inst.CurrentAudioSource.UnPause();
+                        else
+                            AudioManager.inst.CurrentAudioSource.UnPause();
+
+                        break;
+                    }
+
                 #endregion
 
                 #region Specific Functions
