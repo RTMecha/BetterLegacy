@@ -2659,6 +2659,21 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 #endregion
 
+                #region OpenLink
+
+                case "OpenLink":
+                    {
+                        var linkType = Parser.TryParse(parameters.IsArray ? parameters[0] : parameters["link_type"], CoreHelper.LinkType.Artist);
+
+                        var url = CoreHelper.GetURL(linkType, parameters.IsArray ? parameters[1].AsInt : parameters["site"], parameters.IsArray ? parameters[2] : parameters["link"]);
+
+                        Application.OpenURL(url);
+
+                        break;
+                    }
+
+                #endregion
+
                 #region Specific Functions
 
                 case "SetDefaultEvents":
