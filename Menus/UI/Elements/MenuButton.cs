@@ -13,6 +13,9 @@ using BetterLegacy.Menus.UI.Interfaces;
 using TMPro;
 using SimpleJSON;
 using LSFunctions;
+using BetterLegacy.Core.Managers;
+using BetterLegacy.Core.Data;
+using BetterLegacy.Core;
 
 namespace BetterLegacy.Menus.UI.Elements
 {
@@ -227,10 +230,113 @@ namespace BetterLegacy.Menus.UI.Elements
             #endregion
         };
 
-        /// <summary>
-        /// Plays the Enter animation when the element is selected.
-        /// </summary>
-        public void OnEnter()
+        #region JSON
+
+        public static new MenuButton Parse(JSONNode jnElement, int j, int loop, Dictionary<string, Sprite> spriteAssets)
+        {
+            var element = new MenuButton();
+            element.Read(jnElement, j, loop, spriteAssets);
+            return element;
+        }
+
+        public override void Read(JSONNode jnElement, int j, int loop, Dictionary<string, Sprite> spriteAssets)
+        {
+            #region Base
+
+            id = jnElement["id"] == null ? LSText.randomNumString(16) : jnElement["id"];
+            name = jnElement["name"];
+            parentLayout = jnElement["parent_layout"];
+            parent = jnElement["parent"];
+            siblingIndex = jnElement["sibling_index"] == null ? -1 : jnElement["sibling_index"].AsInt;
+
+            #endregion
+
+            #region Spawning
+
+            regenerate = jnElement["regen"] == null ? true : jnElement["regen"].AsBool;
+            fromLoop = j > 0; // if element has been spawned from the loop or if its the first / only of its kind.
+            this.loop = loop;
+
+            #endregion
+
+            #region UI
+
+            text = FontManager.TextTranslater.ReplaceProperties(jnElement["text"]);
+            selectionPosition = new Vector2Int(jnElement["select"]["x"].AsInt, jnElement["select"]["y"].AsInt);
+            autoAlignSelectionPosition = jnElement["align_select"].AsBool;
+            icon = jnElement["icon"] != null ? spriteAssets != null && spriteAssets.TryGetValue(jnElement["icon"], out Sprite sprite) ? sprite : SpriteHelper.StringToSprite(jnElement["icon"]) : null;
+            rect = RectValues.TryParse(jnElement["rect"], RectValues.Default);
+            textRect = RectValues.TryParse(jnElement["text_rect"], RectValues.FullAnchored);
+            iconRect = RectValues.TryParse(jnElement["icon_rect"], RectValues.Default);
+            rounded = jnElement["rounded"] == null ? 1 : jnElement["rounded"].AsInt; // roundness can be prevented by setting rounded to 0.
+            roundedSide = jnElement["rounded_side"] == null ? SpriteHelper.RoundedSide.W : (SpriteHelper.RoundedSide)jnElement["rounded_side"].AsInt; // default side should be Whole.
+            mask = jnElement["mask"].AsBool;
+            reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j);
+            alignment = Parser.TryParse(jnElement["alignment"], TMPro.TextAlignmentOptions.Left);
+            enableWordWrapping = jnElement["word_wrap"].AsBool;
+            overflowMode = Parser.TryParse(jnElement["overflow_mode"], TMPro.TextOverflowModes.Masking);
+
+            #endregion
+
+            #region Color
+
+            hideBG = jnElement["hide_bg"].AsBool;
+            color = jnElement["col"].AsInt;
+            opacity = jnElement["opacity"] == null ? 1f : jnElement["opacity"].AsFloat;
+            hue = jnElement["hue"].AsFloat;
+            sat = jnElement["sat"].AsFloat;
+            val = jnElement["val"].AsFloat;
+            textColor = jnElement["text_col"].AsInt;
+            textHue = jnElement["text_hue"].AsFloat;
+            textSat = jnElement["text_sat"].AsFloat;
+            textVal = jnElement["text_val"].AsFloat;
+
+            selectedColor = jnElement["sel_col"].AsInt;
+            selectedOpacity = jnElement["sel_opacity"] == null ? 1f : jnElement["sel_opacity"].AsFloat;
+            selectedHue = jnElement["sel_hue"].AsFloat;
+            selectedSat = jnElement["sel_sat"].AsFloat;
+            selectedVal = jnElement["sel_val"].AsFloat;
+            selectedTextColor = jnElement["sel_text_col"].AsInt;
+            selectedTextHue = jnElement["sel_text_hue"].AsFloat;
+            selectedTextSat = jnElement["sel_text_sat"].AsFloat;
+            selectedTextVal = jnElement["sel_text_val"].AsFloat;
+
+            overrideColor = jnElement["override_col"] == null ? Color.white : LSColors.HexToColorAlpha(jnElement["override_col"]);
+            overrideTextColor = jnElement["override_text_col"] == null ? Color.white : LSColors.HexToColorAlpha(jnElement["override_text_col"]);
+            overrideSelectedColor = jnElement["override_sel_col"] == null ? Color.white : LSColors.HexToColorAlpha(jnElement["override_sel_col"]);
+            overrideSelectedTextColor = jnElement["override_sel_text_col"] == null ? Color.white : LSColors.HexToColorAlpha(jnElement["override_sel_text_col"]);
+            useOverrideColor = jnElement["override_col"] != null;
+            useOverrideTextColor = jnElement["override_text_col"] != null;
+            useOverrideSelectedColor = jnElement["override_sel_col"] != null;
+            useOverrideSelectedTextColor = jnElement["override_sel_text_col"] != null;
+
+            #endregion
+
+            #region Anim
+
+            length = jnElement["anim_length"].AsFloat;
+            wait = jnElement["wait"] == null ? true : jnElement["wait"].AsBool;
+
+            #endregion
+
+            #region Func
+
+            playBlipSound = jnElement["play_blip_sound"].AsBool;
+            funcJSON = jnElement["func"]; // function to run when the element is clicked.
+            spawnFuncJSON = jnElement["spawn_func"]; // function to run when the element spawns.
+            enterFuncJSON = jnElement["enter_func"]; // function to run when the element is hovered over.
+            exitFuncJSON = jnElement["exit_func"]; // function to run when the element is hovered over.
+            allowOriginalHoverMethods = jnElement["allow_original_hover_func"].AsBool;
+
+            #endregion
+        }
+
+    #endregion
+
+    /// <summary>
+    /// Plays the Enter animation when the element is selected.
+    /// </summary>
+    public void OnEnter()
         {
             if (enterFuncJSON != null)
             {
