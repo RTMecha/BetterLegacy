@@ -127,9 +127,14 @@ namespace BetterLegacy.Menus.UI.Elements
         public Sprite icon;
 
         /// <summary>
+        /// Icon's path to load if we must.
+        /// </summary>
+        public string iconPath;
+
+        /// <summary>
         /// Opacity of the image.
         /// </summary>
-        public float opacity;
+        public float opacity = 1f;
 
         /// <summary>
         /// Theme color slot for the image to use.
@@ -210,6 +215,8 @@ namespace BetterLegacy.Menus.UI.Elements
         /// Contains all reactive settings.
         /// </summary>
         public ReactiveSetting reactiveSetting;
+
+        public bool parsed = false;
 
         #endregion
 
@@ -2815,6 +2822,7 @@ namespace BetterLegacy.Menus.UI.Elements
         {
             var element = new MenuImage();
             element.Read(jnElement, j, loop, spriteAssets);
+            element.parsed = true;
             return element;
         }
 
@@ -2822,17 +2830,25 @@ namespace BetterLegacy.Menus.UI.Elements
         {
             #region Base
 
-            id = jnElement["id"] == null ? LSText.randomNumString(16) : jnElement["id"];
-            name = jnElement["name"];
-            parentLayout = jnElement["parent_layout"];
-            parent = jnElement["parent"];
-            siblingIndex = jnElement["sibling_index"] == null ? -1 : jnElement["sibling_index"].AsInt;
+            if (!string.IsNullOrEmpty(jnElement["id"]))
+                id = jnElement["id"];
+            if (string.IsNullOrEmpty(id))
+                id = LSText.randomNumString(16);
+            if (!string.IsNullOrEmpty(jnElement["name"]))
+                name = jnElement["name"];
+            if (!string.IsNullOrEmpty(jnElement["parent_layout"]))
+                parentLayout = jnElement["parent_layout"];
+            if (!string.IsNullOrEmpty(jnElement["parent"]))
+                parent = jnElement["parent"];
+            if (jnElement["sibling_index"] != null)
+                siblingIndex = jnElement["sibling_index"].AsInt;
 
             #endregion
 
             #region Spawning
 
-            regenerate = jnElement["regen"] == null ? true : jnElement["regen"].AsBool;
+            if (jnElement["regen"] != null)
+                regenerate = jnElement["regen"].AsBool;
             fromLoop = j > 0; // if element has been spawned from the loop or if its the first / only of its kind.
             this.loop = loop;
 
@@ -2840,39 +2856,60 @@ namespace BetterLegacy.Menus.UI.Elements
 
             #region UI
 
-            icon = jnElement["icon"] != null ? spriteAssets != null && spriteAssets.TryGetValue(jnElement["icon"], out Sprite sprite) ? sprite : SpriteHelper.StringToSprite(jnElement["icon"]) : null;
-            rect = RectValues.TryParse(jnElement["rect"], RectValues.Default);
-            rounded = jnElement["rounded"] == null ? 1 : jnElement["rounded"].AsInt; // roundness can be prevented by setting rounded to 0.
-            roundedSide = jnElement["rounded_side"] == null ? SpriteHelper.RoundedSide.W : (SpriteHelper.RoundedSide)jnElement["rounded_side"].AsInt; // default side should be Whole.
-            mask = jnElement["mask"].AsBool;
-            reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j);
+            if (!string.IsNullOrEmpty(jnElement["icon"]))
+                icon = jnElement["icon"] != null ? spriteAssets != null && spriteAssets.TryGetValue(jnElement["icon"], out Sprite sprite) ? sprite : SpriteHelper.StringToSprite(jnElement["icon"]) : null;
+            if (!string.IsNullOrEmpty(jnElement["icon_path"]))
+                iconPath = RTFile.ParsePaths(jnElement["icon_path"]);
+            if (jnElement["rect"] != null)
+                rect = RectValues.TryParse(jnElement["rect"], RectValues.Default);
+            if (jnElement["rounded"] != null)
+                rounded = jnElement["rounded"].AsInt; // roundness can be prevented by setting rounded to 0.
+            if (jnElement["rounded_side"] != null)
+                roundedSide = (SpriteHelper.RoundedSide)jnElement["rounded_side"].AsInt; // default side should be Whole.
+            if (jnElement["mask"] != null)
+                mask = jnElement["mask"].AsBool;
+            if (jnElement["reactive"] != null)
+                reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j);
 
             #endregion
 
             #region Color
 
-            color = jnElement["col"].AsInt;
-            opacity = jnElement["opacity"] == null ? 1f : jnElement["opacity"].AsFloat;
-            hue = jnElement["hue"].AsFloat;
-            sat = jnElement["sat"].AsFloat;
-            val = jnElement["val"].AsFloat;
-            overrideColor = jnElement["override_col"] == null ? Color.white : LSColors.HexToColorAlpha(jnElement["override_col"]);
+            if (jnElement["col"] != null)
+                color = jnElement["col"].AsInt;
+            if (jnElement["opacity"] != null)
+                opacity = jnElement["opacity"].AsFloat;
+            if (jnElement["hue"] != null)
+                hue = jnElement["hue"].AsFloat;
+            if (jnElement["sat"] != null)
+                sat = jnElement["sat"].AsFloat;
+            if (jnElement["val"] != null)
+                val = jnElement["val"].AsFloat;
+            if (jnElement["override_col"] != null)
+                overrideColor = LSColors.HexToColorAlpha(jnElement["override_col"]);
             useOverrideColor = jnElement["override_col"] != null;
 
             #endregion
 
             #region Anim
 
-            wait = jnElement["wait"] == null ? true : jnElement["wait"].AsBool;
-            length = jnElement["anim_length"].AsFloat;
+            if (jnElement["wait"] != null)
+                wait = jnElement["wait"].AsBool;
+            if (jnElement["anim_length"] != null)
+                length = jnElement["anim_length"].AsFloat;
+            else if (!parsed)
+                length = 0f;
 
             #endregion
 
             #region Func
 
-            playBlipSound = jnElement["play_blip_sound"].AsBool;
-            funcJSON = jnElement["func"]; // function to run when the element is clicked.
-            spawnFuncJSON = jnElement["spawn_func"]; // function to run when the element spawns.
+            if (jnElement["play_blip_sound"] != null)
+                playBlipSound = jnElement["play_blip_sound"].AsBool;
+            if (jnElement["func"] != null)
+                funcJSON = jnElement["func"]; // function to run when the element is clicked.
+            if (jnElement["spawn_func"] != null)
+                spawnFuncJSON = jnElement["spawn_func"]; // function to run when the element spawns.
 
             #endregion
         }

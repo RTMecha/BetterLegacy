@@ -208,6 +208,7 @@ namespace BetterLegacy.Menus.UI.Elements
         {
             var element = new MenuText();
             element.Read(jnElement, j, loop, spriteAssets);
+            element.parsed = true;
             return element;
         }
 
@@ -215,17 +216,25 @@ namespace BetterLegacy.Menus.UI.Elements
         {
             #region Base
 
-            id = jnElement["id"] == null ? LSText.randomNumString(16) : jnElement["id"];
-            name = jnElement["name"];
-            parentLayout = jnElement["parent_layout"];
-            parent = jnElement["parent"];
-            siblingIndex = jnElement["sibling_index"] == null ? -1 : jnElement["sibling_index"].AsInt;
+            if (!string.IsNullOrEmpty(jnElement["id"]))
+                id = jnElement["id"];
+            if (string.IsNullOrEmpty(id))
+                id = LSText.randomNumString(16);
+            if (!string.IsNullOrEmpty(jnElement["name"]))
+                name = jnElement["name"];
+            if (!string.IsNullOrEmpty(jnElement["parent_layout"]))
+                parentLayout = jnElement["parent_layout"];
+            if (!string.IsNullOrEmpty(jnElement["parent"]))
+                parent = jnElement["parent"];
+            if (jnElement["sibling_index"] != null)
+                siblingIndex = jnElement["sibling_index"].AsInt;
 
             #endregion
 
             #region Spawning
 
-            regenerate = jnElement["regen"] == null ? true : jnElement["regen"].AsBool;
+            if (jnElement["regen"] != null)
+                regenerate = jnElement["regen"].AsBool;
             fromLoop = j > 0; // if element has been spawned from the loop or if its the first / only of its kind.
             this.loop = loop;
 
@@ -233,35 +242,61 @@ namespace BetterLegacy.Menus.UI.Elements
 
             #region UI
 
-            text = FontManager.TextTranslater.ReplaceProperties(jnElement["text"]);
-            icon = jnElement["icon"] != null ? spriteAssets != null && spriteAssets.TryGetValue(jnElement["icon"], out Sprite sprite) ? sprite : SpriteHelper.StringToSprite(jnElement["icon"]) : null;
+            if (!string.IsNullOrEmpty(jnElement["text"]))
+                text = ParseText(FontManager.TextTranslater.ReplaceProperties(jnElement["text"]));
+            if (!string.IsNullOrEmpty(jnElement["icon"]))
+                icon = jnElement["icon"] != null ? spriteAssets != null && spriteAssets.TryGetValue(jnElement["icon"], out Sprite sprite) ? sprite : SpriteHelper.StringToSprite(jnElement["icon"]) : null;
+            if (!string.IsNullOrEmpty(jnElement["icon_path"]))
+                iconPath = RTFile.ParsePaths(jnElement["icon_path"]);
+            if (jnElement["rect"] != null)
             rect = RectValues.TryParse(jnElement["rect"], RectValues.Default);
-            textRect = RectValues.TryParse(jnElement["text_rect"], RectValues.FullAnchored);
-            iconRect = RectValues.TryParse(jnElement["icon_rect"], RectValues.Default);
-            rounded = jnElement["rounded"] == null ? 1 : jnElement["rounded"].AsInt; // roundness can be prevented by setting rounded to 0.
-            roundedSide = jnElement["rounded_side"] == null ? SpriteHelper.RoundedSide.W : (SpriteHelper.RoundedSide)jnElement["rounded_side"].AsInt; // default side should be Whole.
-            mask = jnElement["mask"].AsBool;
-            reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j);
-            alignment = Parser.TryParse(jnElement["alignment"], TextAlignmentOptions.Left);
-            enableWordWrapping = jnElement["word_wrap"].AsBool;
-            overflowMode = Parser.TryParse(jnElement["overflow_mode"], TextOverflowModes.Masking);
+            if (jnElement["text_rect"] != null)
+                textRect = RectValues.TryParse(jnElement["text_rect"], RectValues.FullAnchored);
+            if (jnElement["icon_rect"] != null)
+                iconRect = RectValues.TryParse(jnElement["icon_rect"], RectValues.Default);
+            if (jnElement["rounded"] != null)
+                rounded = jnElement["rounded"].AsInt; // roundness can be prevented by setting rounded to 0.
+            if (jnElement["rounded_side"] != null)
+                roundedSide = (SpriteHelper.RoundedSide)jnElement["rounded_side"].AsInt; // default side should be Whole.
+            if (jnElement["mask"] != null)
+                mask = jnElement["mask"].AsBool;
+            if (jnElement["reactive"] != null)
+                reactiveSetting = ReactiveSetting.Parse(jnElement["reactive"], j);
+            if (jnElement["alignment"] != null)
+                alignment = Parser.TryParse(jnElement["alignment"], TextAlignmentOptions.Left);
+            if (jnElement["word_wrap"] != null)
+                enableWordWrapping = jnElement["word_wrap"].AsBool;
+            if (jnElement["overflow_mode"] != null)
+                overflowMode = Parser.TryParse(jnElement["overflow_mode"], TextOverflowModes.Masking);
 
             #endregion
 
             #region Color
 
-            hideBG = jnElement["hide_bg"].AsBool;
-            color = jnElement["col"].AsInt;
-            opacity = jnElement["opacity"] == null ? 1f : jnElement["opacity"].AsFloat;
-            hue = jnElement["hue"].AsFloat;
-            sat = jnElement["sat"].AsFloat;
-            val = jnElement["val"].AsFloat;
-            textColor = jnElement["text_col"].AsInt;
-            textHue = jnElement["text_hue"].AsFloat;
-            textSat = jnElement["text_sat"].AsFloat;
-            textVal = jnElement["text_val"].AsFloat;
-            overrideColor = jnElement["override_col"] == null ? Color.white : LSColors.HexToColorAlpha(jnElement["override_col"]);
-            overrideTextColor = jnElement["override_text_col"] == null ? Color.white : LSColors.HexToColorAlpha(jnElement["override_text_col"]);
+            if (jnElement["hide_bg"] != null)
+                hideBG = jnElement["hide_bg"].AsBool;
+            if (jnElement["col"] != null)
+                color = jnElement["col"].AsInt;
+            if (jnElement["opacity"] != null)
+                opacity = jnElement["opacity"].AsFloat;
+            if (jnElement["hue"] != null)
+                hue = jnElement["hue"].AsFloat;
+            if (jnElement["sat"] != null)
+                sat = jnElement["sat"].AsFloat;
+            if (jnElement["val"] != null)
+                val = jnElement["val"].AsFloat;
+            if (jnElement["text_col"] != null)
+                textColor = jnElement["text_col"].AsInt;
+            if (jnElement["text_hue"] != null)
+                textHue = jnElement["text_hue"].AsFloat;
+            if (jnElement["text_sat"] != null)
+                textSat = jnElement["text_sat"].AsFloat;
+            if (jnElement["text_val"] != null)
+                textVal = jnElement["text_val"].AsFloat;
+            if (jnElement["override_col"] != null)
+                overrideColor = LSColors.HexToColorAlpha(jnElement["override_col"]);
+            if (jnElement["override_text_col"] != null)
+                overrideTextColor = LSColors.HexToColorAlpha(jnElement["override_text_col"]);
             useOverrideColor = jnElement["override_col"] != null;
             useOverrideTextColor = jnElement["override_text_col"] != null;
 
@@ -269,18 +304,57 @@ namespace BetterLegacy.Menus.UI.Elements
 
             #region Anim
 
-            length = jnElement["anim_length"].AsFloat;
-            wait = jnElement["wait"] == null ? true : jnElement["wait"].AsBool;
+            if (jnElement["wait"] != null)
+                wait = jnElement["wait"].AsBool;
+            if (jnElement["anim_length"] != null)
+                length = jnElement["anim_length"].AsFloat;
+            else if (!parsed)
+                length = 0f;
 
             #endregion
 
             #region Func
 
-            playBlipSound = jnElement["play_blip_sound"].AsBool;
-            funcJSON = jnElement["func"]; // function to run when the element is clicked.
-            spawnFuncJSON = jnElement["spawn_func"]; // function to run when the element spawns.
+            if (jnElement["play_blip_sound"] != null)
+                playBlipSound = jnElement["play_blip_sound"].AsBool;
+            if (jnElement["func"] != null)
+                funcJSON = jnElement["func"]; // function to run when the element is clicked.
+            if (jnElement["spawn_func"] != null)
+                spawnFuncJSON = jnElement["spawn_func"]; // function to run when the element spawns.
 
             #endregion
+        }
+
+        public string ParseText(string input)
+        {
+            CoreHelper.RegexMatches(input, new Regex(@"{{LevelRank=([0-9]+)}}"), match =>
+            {
+                DataManager.LevelRank levelRank =
+                    LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level) ? LevelManager.GetLevelRank(level) :
+                    CoreHelper.InEditor ?
+                        LevelManager.EditorRank :
+                        DataManager.inst.levelRanks[0];
+
+                input = input.Replace(match.Groups[0].ToString(), CoreHelper.FormatLevelRank(levelRank));
+            });
+
+            CoreHelper.RegexMatches(input, new Regex(@"{{StoryLevelRank=([0-9]+)}}"), match =>
+            {
+                DataManager.LevelRank levelRank =
+                    Story.StoryManager.inst.Saves.TryFind(x => x.ID == match.Groups[1].ToString(), out LevelManager.PlayerData playerData) ? LevelManager.GetLevelRank(playerData) :
+                    CoreHelper.InEditor ?
+                        LevelManager.EditorRank :
+                        DataManager.inst.levelRanks[0];
+
+                input = input.Replace(match.Groups[0].ToString(), CoreHelper.FormatLevelRank(levelRank));
+            });
+
+            CoreHelper.RegexMatches(input, new Regex(@"{{LoadStoryString=(.*?),(.*?)}}"), match =>
+            {
+                input = input.Replace(match.Groups[0].ToString(), Story.StoryManager.inst.LoadString(match.Groups[1].ToString(), match.Groups[2].ToString()));
+            });
+
+            return input;
         }
 
         #endregion

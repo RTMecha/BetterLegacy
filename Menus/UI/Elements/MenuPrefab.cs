@@ -22,8 +22,10 @@ namespace BetterLegacy.Menus.UI.Elements
             menuPrefab.id = jn["id"];
             menuPrefab.name = jn["name"];
 
-            CustomMenu.ParseLayouts(menuPrefab.layouts, jn["layouts"]);
-            menuPrefab.elements.AddRange(CustomMenu.ParseElements(jn["elements"]));
+            if (jn["layouts"] != null)
+                CustomMenu.ParseLayouts(menuPrefab.layouts, jn["layouts"]);
+            if (jn["elements"] != null)
+                menuPrefab.elements.AddRange(CustomMenu.ParseElements(jn["elements"]));
 
             return menuPrefab;
         }
