@@ -2741,6 +2741,13 @@ namespace BetterLegacy.Menus.UI.Elements
                         break;
                     }
 
+                case "LoadStoryInterface":
+                    {
+                        InterfaceManager.inst.StartupStoryInterface(parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt, parameters.IsArray ? parameters[1].AsInt : parameters["level"].AsInt);
+
+                        break;
+                    }
+
                 case "StorySaveBool":
                     {
                         if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["name"] == null || parameters["value"] == null))

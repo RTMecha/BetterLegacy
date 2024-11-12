@@ -312,7 +312,7 @@ namespace BetterLegacy.Menus
             }
         }
 
-        public void StartupStoryInterface()
+        public void StartupStoryInterface(int chapterIndex, int levelIndex)
         {
             if (CurrentMenu != null)
             {
@@ -335,8 +335,6 @@ namespace BetterLegacy.Menus
             CoreHelper.InStory = true;
 
             var storyStarted = StoryManager.inst.LoadBool("StoryModeStarted", false);
-            var chapterIndex = StoryManager.inst.currentPlayingChapterIndex;
-            var levelIndex = StoryManager.inst.currentPlayingLevelSequenceIndex;
             var chapter = StoryMode.Instance.chapters[chapterIndex];
             if (storyStarted &&
                 StoryManager.inst.LoadBool($"DOC{(chapterIndex + 1).ToString("00")}_{(levelIndex + 1).ToString("00")}Complete", false) &&
@@ -349,7 +347,7 @@ namespace BetterLegacy.Menus
             }
 
             var path = storyStarted ? chapter.interfacePath : StoryMode.Instance.entryInterfacePath;
-            
+
             var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
             var menu = CustomMenu.Parse(jn);
@@ -360,6 +358,8 @@ namespace BetterLegacy.Menus
             SetCurrentInterface(menu.id);
             PlayMusic();
         }
+
+        public void StartupStoryInterface() => StartupStoryInterface(StoryManager.inst.currentPlayingChapterIndex, StoryManager.inst.currentPlayingLevelSequenceIndex);
 
         public void StartupInterface()
         {
