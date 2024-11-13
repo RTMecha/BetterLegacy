@@ -117,19 +117,27 @@ namespace BetterLegacy.Story
                         LevelManager.OnInputsSelected = () => { SceneManager.inst.LoadScene("Interface"); };
                     },
                 });
-            }
-
-            for (int i = 0; i < MAX_SAVE_SLOTS; i++)
-            {
-                int index = i;
 
                 if (!RTFile.FileExists($"{RTFile.ApplicationDirectory}profile/story_saves_{(index + 1).ToString("00")}.lss"))
+                {
+                    elements.Add(new MenuImage
+                    {
+                        id = "636662526",
+                        name = "Spacer",
+                        parentLayout = "delete",
+                        rect = RectValues.Default.SizeDelta(200f, 64f),
+                        opacity = 0f,
+                        length = 0f,
+                        wait = false,
+                        playBlipSound = false,
+                    });
                     continue;
+                }
 
                 elements.Add(new MenuButton
                 {
                     id = "4918487",
-                    name = name,
+                    name = "delete button",
                     text = $"<align=center><b>[ DELETE ]   ",
                     parentLayout = "delete",
                     selectionPosition = new Vector2Int(1, index + 1),
