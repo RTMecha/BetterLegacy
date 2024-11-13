@@ -33,16 +33,11 @@ namespace BetterLegacy.Core.Helpers
         public static bool CheckTriggers<T>(List<Modifier<T>> triggers)
         {
             bool result = true;
-            Predicate<Modifier<T>> match = x => !x.active && (x.not ? !x.Trigger(x) : x.Trigger(x));
             for (int i = 0; i < triggers.Count; i++)
             {
                 var trigger = triggers[i];
 
-                //// if trigger was not triggered, then result should be false.
-                //if (!match(trigger))
-                //    result = false;
-
-                var innerResult = match(trigger);
+                var innerResult = !trigger.active && (trigger.not ? !trigger.Trigger(trigger) : trigger.Trigger(trigger));
 
                 if (trigger.elseIf && !result && innerResult)
                     result = true;
