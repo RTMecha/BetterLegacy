@@ -69,6 +69,7 @@
 - Move all string related stuff to a StringHelper class. > 1.8.0
 - Make Example's animations read from a file.
 - Change how modifiers are saved for better consistency.
+- Make CursorManager a main manager that can properly manage cursor states.
 - Clean up UIManager.
 - Clean up PlayerManager.
 - Summary and note as much as I can (or need to).
