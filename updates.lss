@@ -1,3 +1,5 @@
+snapshot-2024.11.14 - (pre-1.7.0) > [Nov 14, 2024]
+- Hotfix for New Simulation button not showing.
 snapshot-2024.11.13 - (pre-1.7.0) > [Nov 14, 2024]
 - Made rank sayings data driven so they can be customized per user. If you copy the sayings.json file in the plugins/Assets folder to the profile folder, you can keep a custom version of the rank sayings!
 - Added more save slots (up to 9 now).
