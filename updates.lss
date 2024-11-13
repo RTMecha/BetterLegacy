@@ -1,3 +1,9 @@
+snapshot-2024.11.13 - (pre-1.7.0) > [Nov 14, 2024]
+- Made rank sayings data driven so they can be customized per user. If you copy the sayings.json file in the plugins/Assets folder to the profile folder, you can keep a custom version of the rank sayings!
+- Added more save slots (up to 9 now).
+- Getting close to the finalization stage of the story mode chapter 1 demo.
+- Interface themes are a little better to use.
+- Fixed some more issues with Video BGs, such as it not applying the Audio keyframe pitch.
 snapshot-2024.11.12 - (pre-1.7.0) > [Nov 12, 2024]
 - Added a new setting "Physics Update Match Framerate" to Config Manager > Core > Game. This setting forces physics to match your framerate, this includes player movement and collision.
 - Fixed Video BGs freezing issues.
