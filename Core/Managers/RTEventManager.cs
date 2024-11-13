@@ -1294,7 +1294,7 @@ namespace BetterLegacy.Core.Managers
         {
             var active = (int)x == 0;
 
-            var zen = PlayerManager.IsZenMode || CoreHelper.InEditor;
+            var zen = !CoreHelper.InStory && (PlayerManager.IsZenMode || CoreHelper.InEditor);
 
             var a = active && !zen || active && EventsConfig.Instance.ShowGUI.Value;
 
