@@ -674,7 +674,7 @@ namespace BetterLegacy.Core.Managers
             if (CoreHelper.InEditor)
                 return EditorRank;
 
-            if (PlayerManager.IsZenMode || PlayerManager.IsPractice)
+            if (!CoreHelper.InStory && (PlayerManager.IsZenMode || PlayerManager.IsPractice))
                 return DataManager.inst.levelRanks[0];
 
             int dataPointMax = 24;
