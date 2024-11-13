@@ -260,8 +260,8 @@ namespace BetterLegacy.Core.Managers
                 CoreHelper.UpdateDiscordStatus($"Level: {level.metadata.beatmap.name}", "In Arcade", "arcade");
             else
             {
-                int chapter = StoryManager.inst.LoadInt("Chapter", 0);
-                int storyLevelIndex = StoryManager.inst.LoadInt($"DOC{(chapter + 1).ToString("00")}Progress", 0);
+                int chapter = StoryManager.inst.currentPlayingChapterIndex;
+                int storyLevelIndex = StoryManager.inst.currentPlayingLevelSequenceIndex;
                 CoreHelper.UpdateDiscordStatus($"DOC{(chapter + 1).ToString("00")}-{(storyLevelIndex + 1).ToString("00")}: {level.metadata.beatmap.name}", "In Story", "arcade");
             }
 
