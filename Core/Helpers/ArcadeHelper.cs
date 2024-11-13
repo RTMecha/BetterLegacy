@@ -118,17 +118,16 @@ namespace BetterLegacy.Core.Helpers
 
         public static void RestartLevel(Action action)
         {
-            if (CoreHelper.InEditor)
+            if (CoreHelper.InEditor || !CoreHelper.InGame)
                 return;
 
-            var levelHasEnded = endedLevel;
-
-            if (levelHasEnded)
+            if (endedLevel)
                 LevelManager.LevelEnded = false;
 
-            AudioManager.inst.SetMusicTime(0f);
             GameManager.inst.hits.Clear();
             GameManager.inst.deaths.Clear();
+            PlayerManager.RespawnPlayers();
+            AudioManager.inst.SetMusicTime(0f);
             action?.Invoke();
             endedLevel = false;
         }
