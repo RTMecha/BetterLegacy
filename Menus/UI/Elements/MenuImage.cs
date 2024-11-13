@@ -597,7 +597,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         var chapter = Parser.TryParse(isArray ? parameters[0] : parameters["chapter"], 0);
                         var minRank = (isArray ? parameters.Count < 2 : parameters["min_rank"] == null) ? StoryManager.CHAPTER_RANK_REQUIREMENT :
                                     Parser.TryParse(isArray ? parameters[1] : parameters["min_rank"], 0);
-                        var maxRank = (isArray ? parameters.Count < 3 : parameters["max_rank"] == null) ? 0 :
+                        var maxRank = (isArray ? parameters.Count < 3 : parameters["max_rank"] == null) ? 1 :
                                     Parser.TryParse(isArray ? parameters[2] : parameters["max_rank"], 0);
                         var bonus = (isArray ? parameters.Count < 4 : parameters["bonus"] == null) ? false :
                                     Parser.TryParse(isArray ? parameters[3] : parameters["bonus"], false);
@@ -608,7 +608,7 @@ namespace BetterLegacy.Menus.UI.Elements
                             chapter < levelIDs.Count &&
                             levelIDs[chapter].levels.All(x => x.bonus ||
                                             StoryManager.inst.Saves.TryFind(y => y.ID == x.id, out LevelManager.PlayerData playerData) &&
-                                            LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] > maxRank &&
+                                            LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] >= maxRank &&
                                             LevelManager.levelRankIndexes[LevelManager.GetLevelRank(playerData).name] <= minRank);
 
                         return !not ? value : !value;

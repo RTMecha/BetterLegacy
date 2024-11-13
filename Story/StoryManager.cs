@@ -37,7 +37,7 @@ namespace BetterLegacy.Story
         /// <summary>
         /// The default chapter rank requirement for "bonuses" to be unlocked. In this case, the player needs to get higher than an A rank (S / SS rank).
         /// </summary>
-        public const int CHAPTER_RANK_REQUIREMENT = 1;
+        public const int CHAPTER_RANK_REQUIREMENT = 3;
 
         //public List<List<string>> levelIDs = new List<List<string>>
         //{
@@ -105,8 +105,10 @@ namespace BetterLegacy.Story
 
         public void UpdateCurrentLevelProgress()
         {
-            if (LevelManager.CurrentLevel is not StoryLevel storyLevel)
+            if (LevelManager.CurrentLevel == null)
                 return;
+
+            var level = LevelManager.CurrentLevel;
 
             CoreHelper.Log($"Setting Player Data");
 
@@ -119,22 +121,22 @@ namespace BetterLegacy.Story
             //if (PlayerManager.IsZenMode || PlayerManager.IsPractice)
             //    return;
 
-            var makeNewPlayerData = storyLevel.playerData == null;
+            var makeNewPlayerData = level.playerData == null;
             if (makeNewPlayerData)
-                storyLevel.playerData = new LevelManager.PlayerData { ID = storyLevel.id, LevelName = storyLevel.metadata?.beatmap?.name, };
+                level.playerData = new LevelManager.PlayerData { ID = level.id, LevelName = level.metadata?.beatmap?.name, };
 
             CoreHelper.Log($"Updating save data\n" +
                 $"New Player Data = {makeNewPlayerData}\n" +
-                $"Deaths [OLD = {storyLevel.playerData.Deaths} > NEW = {GameManager.inst.deaths.Count}]\n" +
-                $"Hits: [OLD = {storyLevel.playerData.Hits} > NEW = {GameManager.inst.hits.Count}]\n" +
-                $"Boosts: [OLD = {storyLevel.playerData.Boosts} > NEW = {LevelManager.BoostCount}]");
+                $"Deaths [OLD = {level.playerData.Deaths} > NEW = {GameManager.inst.deaths.Count}]\n" +
+                $"Hits: [OLD = {level.playerData.Hits} > NEW = {GameManager.inst.hits.Count}]\n" +
+                $"Boosts: [OLD = {level.playerData.Boosts} > NEW = {LevelManager.BoostCount}]");
 
-            storyLevel.playerData.Update(GameManager.inst.deaths.Count, GameManager.inst.hits.Count, LevelManager.BoostCount, true);
+            level.playerData.Update(GameManager.inst.deaths.Count, GameManager.inst.hits.Count, LevelManager.BoostCount, true);
 
-            if (Saves.TryFindIndex(x => x.ID == storyLevel.id, out int saveIndex))
-                Saves[saveIndex] = storyLevel.playerData;
+            if (Saves.TryFindIndex(x => x.ID == level.id, out int saveIndex))
+                Saves[saveIndex] = level.playerData;
             else
-                Saves.Add(storyLevel.playerData);
+                Saves.Add(level.playerData);
 
             SaveProgress();
         }
@@ -468,7 +470,8 @@ namespace BetterLegacy.Story
             {
                 LevelManager.Clear();
                 Updater.UpdateObjects(false);
-                UpdateCurrentLevelProgress(); // allow players to get a better rank
+                if (!isCutscene)
+                    UpdateCurrentLevelProgress(); // allow players to get a better rank
 
                 int chapterIndex = currentPlayingChapterIndex;
                 int levelIndex = currentPlayingLevelSequenceIndex;
@@ -495,6 +498,7 @@ namespace BetterLegacy.Story
                 }
 
                 levelIndex++;
+                SaveInt($"DOC{(chapterIndex + 1).ToString("00")}Progress", levelIndex);
                 if (levelIndex >= StoryMode.Instance.chapters[chapterIndex].levels.Count)
                 {
                     chapterIndex++;
