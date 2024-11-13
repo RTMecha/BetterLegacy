@@ -15,6 +15,7 @@ using BetterLegacy.Core.Optimization;
 using BetterLegacy.Core.Data.Player;
 using UnityEngine.Video;
 using System;
+using BetterLegacy.Menus;
 
 namespace BetterLegacy.Story
 {
@@ -521,6 +522,10 @@ namespace BetterLegacy.Story
 
                 CoreHelper.InStory = true;
                 LevelManager.OnLevelEnd = null;
+                InterfaceManager.inst.onReturnToStoryInterface = () =>
+                {
+                    InterfaceManager.inst.Parse(level.returnInterface);
+                };
                 SceneManager.inst.LoadScene("Interface");
             };
         }
@@ -575,44 +580,6 @@ namespace BetterLegacy.Story
             }));
 
             Loaded = true;
-        }
-
-        public void SetPAChat(int chatIndex)
-        {
-            PAChatMenu.Init();
-            PAChatMenu.Current.onGenerateUIFinish = () =>
-            {
-                PAChatMenu.Current.onGenerateUIFinish = null;
-                UpdatePAChatText(chatIndex);
-            };
-        }
-
-        public void UpdatePAChatText(int chatIndex)
-        {
-            if (chatIndex >= CurrentLevelSequence.chats.Count)
-            {
-                PAChatMenu.Current.RemoveNextButton();
-                SaveBool($"DOC{(currentPlayingChapterIndex + 1).ToString("00")}_{(currentPlayingLevelSequenceIndex + 1).ToString("00")}SeenPAChat", true);
-                return;
-            }
-
-            var chat = CurrentLevelSequence.chats[chatIndex];
-            int nextIndex = chatIndex + 1;
-            PAChatMenu.Current.AddChat(chat.character, chat.textChats[UnityEngine.Random.Range(0, chat.textChats.Length)].text, () =>
-            {
-                if (chatIndex >= CurrentLevelSequence.chats.Count)
-                {
-                    PAChatMenu.Current.RemoveNextButton();
-                    SaveBool($"DOC{(currentPlayingChapterIndex + 1).ToString("00")}_{(currentPlayingLevelSequenceIndex + 1).ToString("00")}SeenPAChat", true);
-                    return;
-                }
-
-                PAChatMenu.Current.AddNextButton(() =>
-                {
-                    PAChatMenu.Current.RemoveNextButton();
-                    UpdatePAChatText(nextIndex);
-                });
-            });
         }
 
         #endregion
