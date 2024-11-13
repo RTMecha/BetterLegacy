@@ -260,7 +260,7 @@ namespace BetterLegacy.Menus
             StopGenerating();
         }
 
-        public void Clear()
+        public void Clear(bool clearThemes = true, bool stopGenerating = true)
         {
             if (CurrentMenu != null)
             {
@@ -280,9 +280,12 @@ namespace BetterLegacy.Menus
                 }
             }
             interfaces.Clear();
-            themes.Clear();
 
-            StopGenerating();
+            if (clearThemes)
+                themes.Clear();
+
+            if (stopGenerating)
+                StopGenerating();
         }
 
         public void StopGenerating()
@@ -314,81 +317,46 @@ namespace BetterLegacy.Menus
 
         public void StartupStoryInterface(int chapterIndex, int levelIndex)
         {
-            if (CurrentMenu != null)
-            {
-                CurrentMenu.Clear();
-                CurrentMenu = null;
-            }
-
-            for (int i = 0; i < interfaces.Count; i++)
-            {
-                try
-                {
-                    interfaces[i].Clear();
-                }
-                catch
-                {
-
-                }
-            }
-            interfaces.Clear();
+            Clear(false, false);
             CoreHelper.InStory = true;
 
             var storyStarted = StoryManager.inst.LoadBool("StoryModeStarted", false);
             var chapter = StoryMode.Instance.chapters[chapterIndex];
-            if (storyStarted &&
-                StoryManager.inst.LoadBool($"DOC{(chapterIndex + 1).ToString("00")}_{(levelIndex + 1).ToString("00")}Complete", false) &&
-                !StoryManager.inst.LoadBool($"DOC{(chapterIndex + 1).ToString("00")}_{(levelIndex + 1).ToString("00")}SeenPAChat", false) &&
-                chapter[levelIndex].chats.Count > 0)
+
+            if (onReturnToStoryInterface != null)
             {
-                StoryManager.inst.SetPAChat(0);
-                PlayMusic();
+                onReturnToStoryInterface();
+                onReturnToStoryInterface = null;
                 return;
             }
 
             var path = storyStarted ? chapter.interfacePath : StoryMode.Instance.entryInterfacePath;
 
+            Parse(path);
+        }
+
+        public void Parse(string path)
+        {
             var jn = JSON.Parse(RTFile.ReadFromFile(path));
 
             var menu = CustomMenu.Parse(jn);
             menu.filePath = path;
             interfaces.Add(menu);
-            //interfaces.Add(new ChapterSelectMenu());
 
             SetCurrentInterface(menu.id);
             PlayMusic();
         }
 
+        public Action onReturnToStoryInterface;
+
         public void StartupStoryInterface() => StartupStoryInterface(StoryManager.inst.currentPlayingChapterIndex, StoryManager.inst.currentPlayingLevelSequenceIndex);
 
         public void StartupInterface()
         {
-            if (CurrentMenu != null)
-            {
-                CurrentMenu.Clear();
-                CurrentMenu = null;
-            }
-
-            for (int i = 0; i < interfaces.Count; i++)
-            {
-                try
-                {
-                    interfaces[i].Clear();
-                }
-                catch
-                {
-
-                }
-            }
-            interfaces.Clear();
+            Clear(false, false);
             CoreHelper.InStory = false;
 
-            var path = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Interfaces/main_menu.lsi";
-            var jn = JSON.Parse(RTFile.ReadFromFile(path));
-
-            var menu = CustomMenu.Parse(jn);
-            menu.filePath = path;
-            interfaces.Add(menu);
+            Parse($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Interfaces/main_menu.lsi");
 
             interfaces.Add(new StoryMenu());
 
