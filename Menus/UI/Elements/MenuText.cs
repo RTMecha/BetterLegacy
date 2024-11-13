@@ -325,38 +325,6 @@ namespace BetterLegacy.Menus.UI.Elements
             #endregion
         }
 
-        public string ParseText(string input)
-        {
-            CoreHelper.RegexMatches(input, new Regex(@"{{LevelRank=([0-9]+)}}"), match =>
-            {
-                DataManager.LevelRank levelRank =
-                    LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level) ? LevelManager.GetLevelRank(level) :
-                    CoreHelper.InEditor ?
-                        LevelManager.EditorRank :
-                        DataManager.inst.levelRanks[0];
-
-                input = input.Replace(match.Groups[0].ToString(), CoreHelper.FormatLevelRank(levelRank));
-            });
-
-            CoreHelper.RegexMatches(input, new Regex(@"{{StoryLevelRank=([0-9]+)}}"), match =>
-            {
-                DataManager.LevelRank levelRank =
-                    Story.StoryManager.inst.Saves.TryFind(x => x.ID == match.Groups[1].ToString(), out LevelManager.PlayerData playerData) ? LevelManager.GetLevelRank(playerData) :
-                    CoreHelper.InEditor ?
-                        LevelManager.EditorRank :
-                        DataManager.inst.levelRanks[0];
-
-                input = input.Replace(match.Groups[0].ToString(), CoreHelper.FormatLevelRank(levelRank));
-            });
-
-            CoreHelper.RegexMatches(input, new Regex(@"{{LoadStoryString=(.*?),(.*?)}}"), match =>
-            {
-                input = input.Replace(match.Groups[0].ToString(), Story.StoryManager.inst.LoadString(match.Groups[1].ToString(), match.Groups[2].ToString()));
-            });
-
-            return input;
-        }
-
         #endregion
 
         public override void Spawn()

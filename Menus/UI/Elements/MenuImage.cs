@@ -331,6 +331,42 @@ namespace BetterLegacy.Menus.UI.Elements
             animations.Clear();
         }
 
+        public string ParseText(string input)
+        {
+            CoreHelper.RegexMatches(input, new Regex(@"{{LevelRank=([0-9]+)}}"), match =>
+            {
+                DataManager.LevelRank levelRank =
+                    LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level) ? LevelManager.GetLevelRank(level) :
+                    CoreHelper.InEditor ?
+                        LevelManager.EditorRank :
+                        DataManager.inst.levelRanks[0];
+
+                input = input.Replace(match.Groups[0].ToString(), CoreHelper.FormatLevelRank(levelRank));
+            });
+
+            CoreHelper.RegexMatches(input, new Regex(@"{{StoryLevelRank=([0-9]+)}}"), match =>
+            {
+                DataManager.LevelRank levelRank =
+                    StoryManager.inst.Saves.TryFind(x => x.ID == match.Groups[1].ToString(), out LevelManager.PlayerData playerData) ? LevelManager.GetLevelRank(playerData) :
+                    CoreHelper.InEditor ?
+                        LevelManager.EditorRank :
+                        DataManager.inst.levelRanks[0];
+
+                input = input.Replace(match.Groups[0].ToString(), CoreHelper.FormatLevelRank(levelRank));
+            });
+
+            CoreHelper.RegexMatches(input, new Regex(@"{{LoadStoryString=(.*?),(.*?)}}"), match =>
+            {
+                input = input.Replace(match.Groups[0].ToString(), StoryManager.inst.LoadString(match.Groups[1].ToString(), match.Groups[2].ToString()));
+            });
+
+            input = input
+                .Replace("{{CurrentPlayingChapterNumber}}", (StoryManager.inst.currentPlayingChapterIndex + 1).ToString("00"))
+                .Replace("{{CurrentPlayingLevelNumber}}", (StoryManager.inst.currentPlayingLevelSequenceIndex + 1).ToString("00"));
+
+            return input;
+        }
+
         #region Functions
 
         /// <summary>
@@ -1046,7 +1082,7 @@ namespace BetterLegacy.Menus.UI.Elements
                             break;
 
                         if (parameters.IsArray && parameters.Count > 2 || parameters.IsObject && parameters["path"] != null)
-                            InterfaceManager.inst.MainDirectory = RTFile.ParsePaths(parameters.IsArray ? parameters[2] : parameters["path"]);
+                            InterfaceManager.inst.MainDirectory = ParseText(RTFile.ParsePaths(parameters.IsArray ? parameters[2] : parameters["path"]));
 
                         if (!InterfaceManager.inst.MainDirectory.Contains(RTFile.ApplicationDirectory))
                             InterfaceManager.inst.MainDirectory = RTFile.CombinePaths(RTFile.ApplicationDirectory, InterfaceManager.inst.MainDirectory);
