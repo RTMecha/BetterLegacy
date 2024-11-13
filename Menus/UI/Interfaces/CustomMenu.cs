@@ -301,6 +301,9 @@ namespace BetterLegacy.Menus.UI.Interfaces
                                                         if (element.id != toElement.Key)
                                                             continue;
 
+                                                        if (toElement.Value["spawn_if_func"] != null && !element.ParseIfFunction(toElement.Value["spawn_if_func"]))
+                                                            continue;
+
                                                         element.Read(toElement.Value, j, loop, spriteAssets);
                                                         yield return element;
                                                     }
