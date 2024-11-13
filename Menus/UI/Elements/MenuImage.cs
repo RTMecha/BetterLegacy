@@ -406,11 +406,14 @@ namespace BetterLegacy.Menus.UI.Elements
                 for (int i = 0; i < jn.Count; i++)
                 {
                     var value = ParseIfFunctionSingle(jn[i]);
-                    if (!value)
+                    if (!jn[i]["otherwise"].AsBool && !value)
                         canProceed = false;
 
                     if (jn[i]["otherwise"].AsBool && value)
                         canProceed = true;
+
+                    //if (jn[i]["and"].AsBool && !value)
+                    //    canProceed = false;
                 }
             }
 
