@@ -5763,6 +5763,7 @@ namespace BetterLegacy.Editor.Managers
 
                 oldNameIF.onValueChanged.ClearAll();
 
+                EditorHelper.AddInputFieldContextMenu(oldNameIF);
                 var oldNameSwapper = oldName.AddComponent<InputFieldSwapper>();
                 oldNameSwapper.Init(oldNameIF, InputFieldSwapper.Type.String);
 
@@ -5783,6 +5784,7 @@ namespace BetterLegacy.Editor.Managers
 
                 newNameIF.onValueChanged.ClearAll();
 
+                EditorHelper.AddInputFieldContextMenu(newNameIF);
                 var newNameSwapper = newName.AddComponent<InputFieldSwapper>();
                 newNameSwapper.Init(newNameIF, InputFieldSwapper.Type.String);
 
@@ -5841,6 +5843,7 @@ namespace BetterLegacy.Editor.Managers
 
                 oldNameIF.onValueChanged.ClearAll();
 
+                EditorHelper.AddInputFieldContextMenu(oldNameIF);
                 var oldNameSwapper = oldName.AddComponent<InputFieldSwapper>();
                 oldNameSwapper.Init(oldNameIF, InputFieldSwapper.Type.String);
 
@@ -5861,6 +5864,7 @@ namespace BetterLegacy.Editor.Managers
 
                 newNameIF.onValueChanged.ClearAll();
 
+                EditorHelper.AddInputFieldContextMenu(newNameIF);
                 var newNameSwapper = newName.AddComponent<InputFieldSwapper>();
                 newNameSwapper.Init(newNameIF, InputFieldSwapper.Type.String);
 
@@ -5921,6 +5925,7 @@ namespace BetterLegacy.Editor.Managers
 
                 oldNameIF.onValueChanged.ClearAll();
 
+                EditorHelper.AddInputFieldContextMenu(oldNameIF);
                 var oldNameSwapper = oldName.AddComponent<InputFieldSwapper>();
                 oldNameSwapper.Init(oldNameIF, InputFieldSwapper.Type.String);
 
@@ -5941,6 +5946,7 @@ namespace BetterLegacy.Editor.Managers
 
                 newNameIF.onValueChanged.ClearAll();
 
+                EditorHelper.AddInputFieldContextMenu(newNameIF);
                 var newNameSwapper = newName.AddComponent<InputFieldSwapper>();
                 newNameSwapper.Init(newNameIF, InputFieldSwapper.Type.String);
 
@@ -5999,6 +6005,7 @@ namespace BetterLegacy.Editor.Managers
 
                 oldNameIF.onValueChanged.ClearAll();
 
+                EditorHelper.AddInputFieldContextMenu(oldNameIF);
                 var oldNameSwapper = oldName.AddComponent<InputFieldSwapper>();
                 oldNameSwapper.Init(oldNameIF, InputFieldSwapper.Type.String);
 
@@ -6019,6 +6026,7 @@ namespace BetterLegacy.Editor.Managers
 
                 newNameIF.onValueChanged.ClearAll();
 
+                EditorHelper.AddInputFieldContextMenu(newNameIF);
                 var newNameSwapper = newName.AddComponent<InputFieldSwapper>();
                 newNameSwapper.Init(newNameIF, InputFieldSwapper.Type.String);
 
@@ -6703,8 +6711,8 @@ namespace BetterLegacy.Editor.Managers
 
             if (!multiShapes)
             {
-                var shapes = ObjEditor.inst.ObjectView.transform.Find("shape").gameObject.Duplicate(multiObjectContent, "shape", 39);
-                var shapeOption = ObjEditor.inst.ObjectView.transform.Find("shapesettings").gameObject.Duplicate(multiObjectContent, "shapesettings", 40);
+                var shapes = ObjEditor.inst.ObjectView.transform.Find("shape").gameObject.Duplicate(multiObjectContent, "shape", 42);
+                var shapeOption = ObjEditor.inst.ObjectView.transform.Find("shapesettings").gameObject.Duplicate(multiObjectContent, "shapesettings", 43);
                 multiShapes = shapes.transform;
                 multiShapeSettings = shapeOption.transform;
 
