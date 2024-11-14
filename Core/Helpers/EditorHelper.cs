@@ -123,7 +123,10 @@ namespace BetterLegacy.Core.Helpers
                                 num--;
                                 name.text = name.text.Replace(match.Groups[1].ToString(), num.ToString());
                             });
-                        })
+                        }),
+                        new RTEditor.ButtonFunction(true),
+                        new RTEditor.ButtonFunction("To Lower", () => name.text = name.text.ToLower()),
+                        new RTEditor.ButtonFunction("To Upper", () => name.text = name.text.ToUpper())
                         );
                 };
             }
