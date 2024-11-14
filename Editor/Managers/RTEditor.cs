@@ -5114,6 +5114,21 @@ namespace BetterLegacy.Editor.Managers
 
                         ObjectEditor.inst.RenderTimelineObjectPosition(timelineObject);
                     }
+                }), new ButtonFunction("Snap Offset", () =>
+                {
+                    var time = ObjectEditor.inst.SelectedObjects.Min(x => x.Time);
+                    var snappedTime = SnapToBPM(time);
+                    var distance = -time + snappedTime;
+                    foreach (var timelineObject in ObjectEditor.inst.SelectedObjects)
+                    {
+                        timelineObject.Time += distance;
+                        if (timelineObject.IsBeatmapObject)
+                            Updater.UpdateObject(timelineObject.GetData<BeatmapObject>(), "Start Time");
+                        if (timelineObject.IsPrefabObject)
+                            Updater.UpdatePrefab(timelineObject.GetData<PrefabObject>(), "Start Time");
+
+                        ObjectEditor.inst.RenderTimelineObjectPosition(timelineObject);
+                    }
                 }));
 
                 EditorHelper.SetComplexity(labels, Complexity.Normal);
@@ -5329,6 +5344,7 @@ namespace BetterLegacy.Editor.Managers
             // Shape
             {
                 GenerateLabels(parent, 32f, "Shape");
+                //shapeSiblingIndex = parent.childCount;
                 RenderMultiShape();
             }
 
@@ -6687,6 +6703,7 @@ namespace BetterLegacy.Editor.Managers
             multiObjectEditorDialog.Find("data/left").AsRT().sizeDelta = new Vector2(355f, 730f);
         }
 
+        int shapeSiblingIndex = 42;
         bool updatedShapes;
         bool updatedText;
         public List<Toggle> shapeToggles = new List<Toggle>();
@@ -6711,8 +6728,8 @@ namespace BetterLegacy.Editor.Managers
 
             if (!multiShapes)
             {
-                var shapes = ObjEditor.inst.ObjectView.transform.Find("shape").gameObject.Duplicate(multiObjectContent, "shape", 42);
-                var shapeOption = ObjEditor.inst.ObjectView.transform.Find("shapesettings").gameObject.Duplicate(multiObjectContent, "shapesettings", 43);
+                var shapes = ObjEditor.inst.ObjectView.transform.Find("shape").gameObject.Duplicate(multiObjectContent, "shape", shapeSiblingIndex);
+                var shapeOption = ObjEditor.inst.ObjectView.transform.Find("shapesettings").gameObject.Duplicate(multiObjectContent, "shapesettings", shapeSiblingIndex + 1);
                 multiShapes = shapes.transform;
                 multiShapeSettings = shapeOption.transform;
 
@@ -12009,7 +12026,9 @@ namespace BetterLegacy.Editor.Managers
             Directory.Move(RTFile.ApplicationDirectory + editorListSlash + level, RTFile.ApplicationDirectory + "recycling/" + level);
         }
 
-        public static float SnapToBPM(float time) => Mathf.RoundToInt((time + inst.bpmOffset) / (SettingEditor.inst.BPMMulti / EditorConfig.Instance.BPMSnapDivisions.Value)) * (SettingEditor.inst.BPMMulti / EditorConfig.Instance.BPMSnapDivisions.Value);
+        public static float SnapToBPM(float time) => Mathf.RoundToInt((time + inst.bpmOffset) / (SettingEditor.inst.BPMMulti / EditorConfig.Instance.BPMSnapDivisions.Value)) * (SettingEditor.inst.BPMMulti / EditorConfig.Instance.BPMSnapDivisions.Value) - inst.bpmOffset;
+
+        public static float SnapToBPM(float time, float offset, float divisions, float bpm) => Mathf.RoundToInt((time + offset) / (60f / bpm / divisions)) * (60f / bpm / divisions) - offset;
 
         public static void SetActive(GameObject gameObject, bool active)
         {
