@@ -80,14 +80,14 @@ namespace BetterLegacy.Menus
             CurrentMenu.UpdateTheme();
         }
 
-        public void PlayMusic(AudioClip music, bool allowSame = false)
+        public void PlayMusic(AudioClip music, bool allowSame = false, float fadeDuration = 1f, bool loop = true)
         {
             if (CoreHelper.InEditor)
                 return;
 
             if (!CoreHelper.InGame)
             {
-                AudioManager.inst.PlayMusic(music.name, music);
+                AudioManager.inst.PlayMusic(music.name, music, allowSame, fadeDuration, loop);
                 return;
             }
 
@@ -100,6 +100,7 @@ namespace BetterLegacy.Menus
             CoreHelper.Log("Playing music");
             CurrentAudioSource.UnPause();
             CurrentAudioSource.time = 0f;
+            CurrentAudioSource.loop = loop;
             CurrentAudioSource.Play();
         }
 
