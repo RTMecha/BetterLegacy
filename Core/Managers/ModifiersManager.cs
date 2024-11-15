@@ -345,7 +345,7 @@ namespace BetterLegacy.Core.Managers
                     commands = new List<string>
                     {
                         "storyLoadBoolDEVONLY",
-                        "0", // Default
+                        "False", // Default
                     },
                     value = "BoolVariable"
                 });
