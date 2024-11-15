@@ -110,10 +110,29 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         public TextMeshProUGUI textUI;
 
+        /// <summary>
+        /// Sound path / name to to play when text interpolates.
+        /// </summary>
         public string textSound;
+
+        /// <summary>
+        /// Text interpolation sound volume.
+        /// </summary>
         public float textSoundVolume = 1f;
+
+        /// <summary>
+        /// Text interpolation sound pitch.
+        /// </summary>
         public float textSoundPitch = 1f;
+
+        /// <summary>
+        /// How varied the text interpolation sound's pitch is.
+        /// </summary>
         public float textSoundPitchVary = 0.1f;
+
+        /// <summary>
+        /// Cached text interpolation sound when an external sound is loaded.
+        /// </summary>
         AudioClip cachedTextSound;
 
         #endregion
