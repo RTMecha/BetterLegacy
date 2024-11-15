@@ -2719,6 +2719,8 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 #endregion
 
+                #region Levels
+
                 #region LoadLevel
 
                 // Finds a level by its' ID and loads it. On,y work if the user has already loaded levels.
@@ -2782,6 +2784,8 @@ namespace BetterLegacy.Menus.UI.Elements
                         Arcade.LevelListMenu.Init(list);
                         break;
                     }
+
+                #endregion
 
                 #endregion
 
@@ -2871,13 +2875,17 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 #endregion
 
-                #region BeginStoryMode
+                #region InitPAChat
 
                 case "InitPAChat":
                     {
                         PAChatMenu.Init();
                         break;
                     }
+
+                #endregion
+
+                #region BeginStoryMode
 
                 // Begins the BetterLegacy story mode.
                 // Function has no parameters.
@@ -2889,6 +2897,10 @@ namespace BetterLegacy.Menus.UI.Elements
 
                         break;
                     }
+
+                #endregion
+
+                #region LoadStoryLevel
 
                 case "LoadStoryLevel":
                     {
@@ -2907,7 +2919,11 @@ namespace BetterLegacy.Menus.UI.Elements
 
                         break;
                     }
-                    
+
+                #endregion
+
+                #region LoadNextStoryLevel
+
                 case "LoadNextStoryLevel":
                     {
                         var isArray = parameters.IsArray;
@@ -2920,7 +2936,11 @@ namespace BetterLegacy.Menus.UI.Elements
 
                         break;
                     }
-                    
+
+                #endregion
+
+                #region LoadCurrentStoryInterface
+
                 case "LoadCurrentStoryInterface":
                     {
                         InterfaceManager.inst.StartupStoryInterface();
@@ -2928,12 +2948,20 @@ namespace BetterLegacy.Menus.UI.Elements
                         break;
                     }
 
+                #endregion
+
+                #region LoadStoryInterface
+
                 case "LoadStoryInterface":
                     {
                         InterfaceManager.inst.StartupStoryInterface(parameters.IsArray ? parameters[0].AsInt : parameters["chapter"].AsInt, parameters.IsArray ? parameters[1].AsInt : parameters["level"].AsInt);
 
                         break;
                     }
+
+                #endregion
+
+                #region StorySaveBool
 
                 case "StorySaveBool":
                     {
@@ -2950,7 +2978,11 @@ namespace BetterLegacy.Menus.UI.Elements
 
                         break;
                     }
-                    
+
+                #endregion
+
+                #region StorySaveInt
+
                 case "StorySaveInt":
                     {
                         if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["name"] == null || parameters["value"] == null))
@@ -2966,7 +2998,11 @@ namespace BetterLegacy.Menus.UI.Elements
 
                         break;
                     }
-                    
+
+                #endregion
+
+                #region StorySaveFloat
+
                 case "StorySaveFloat":
                     {
                         if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["name"] == null || parameters["value"] == null))
@@ -2982,7 +3018,11 @@ namespace BetterLegacy.Menus.UI.Elements
 
                         break;
                     }
-                    
+
+                #endregion
+
+                #region StorySaveString
+
                 case "StorySaveString":
                     {
                         if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["name"] == null || parameters["value"] == null))
@@ -3007,7 +3047,7 @@ namespace BetterLegacy.Menus.UI.Elements
                 // Function has no parameters.
                 case "ModderDiscord":
                     {
-                        Application.OpenURL("https://discord.gg/nB27X2JZcY");
+                        Application.OpenURL(CoreHelper.MOD_DISCORD_LINK);
 
                         break;
                     }
