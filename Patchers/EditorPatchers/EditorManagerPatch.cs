@@ -441,7 +441,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool OpenDiscordPrefix()
         {
-            Application.OpenURL("https://discord.gg/nB27X2JZcY");
+            Application.OpenURL(CoreHelper.MOD_DISCORD_LINK);
             Instance.DisplayNotification("Modders' Discord will open in your browser!", 2f, EditorManager.NotificationType.Success);
             return false;
         }

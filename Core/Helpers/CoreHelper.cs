@@ -607,6 +607,8 @@ namespace BetterLegacy.Core.Helpers
 
         #region Links
 
+        public const string MOD_DISCORD_LINK = "https://discord.gg/nB27X2JZcY";
+
         public enum LinkType
         {
             Song,
