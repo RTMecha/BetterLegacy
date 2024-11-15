@@ -212,6 +212,144 @@ namespace BetterLegacy.Core.Managers
 
             for (int i = 0; i < jn["modifiers"].Count; i++)
                 defaultBeatmapObjectModifiers.Add(Modifier<BeatmapObject>.Parse(jn["modifiers"][i]));
+
+            if (ModifiersHelper.development)
+            {
+                defaultBeatmapObjectModifiers.Add(new Modifier<BeatmapObject>
+                {
+                    type = ModifierBase.Type.Action,
+                    constant = false,
+                    commands = new List<string> { "loadSceneDEVONLY", "False" },
+                    value = "Interface"
+                });
+                defaultBeatmapObjectModifiers.Add(new Modifier<BeatmapObject>
+                {
+                    type = ModifierBase.Type.Action,
+                    constant = false,
+                    commands = new List<string>
+                    {
+                        "loadStoryLevelDEVONLY",
+                        "0", // chaoter
+                        "0", // level
+                        "False", // skip cutscenes
+                    },
+                    value = "False" // bonus chapter
+                });
+                defaultBeatmapObjectModifiers.Add(new Modifier<BeatmapObject>
+                {
+                    type = ModifierBase.Type.Action,
+                    constant = false,
+                    commands = new List<string>
+                    {
+                        "storySaveIntVariableDEVONLY",
+                    },
+                    value = "IntVariable"
+                });
+                defaultBeatmapObjectModifiers.Add(new Modifier<BeatmapObject>
+                {
+                    type = ModifierBase.Type.Action,
+                    constant = false,
+                    commands = new List<string>
+                    {
+                        "storySaveIntDEVONLY",
+                        "0",
+                    },
+                    value = "IntVariable"
+                });
+                defaultBeatmapObjectModifiers.Add(new Modifier<BeatmapObject>
+                {
+                    type = ModifierBase.Type.Action,
+                    constant = false,
+                    commands = new List<string>
+                    {
+                        "storySaveBoolDEVONLY",
+                        "True",
+                    },
+                    value = "BoolVariable"
+                });
+                defaultBeatmapObjectModifiers.Add(new Modifier<BeatmapObject>
+                {
+                    type = ModifierBase.Type.Action,
+                    constant = false,
+                    commands = new List<string>
+                    {
+                        "storySaveBoolDEVONLY",
+                        "True",
+                    },
+                    value = "BoolVariable"
+                });
+                defaultBeatmapObjectModifiers.Add(new Modifier<BeatmapObject>
+                {
+                    type = ModifierBase.Type.Trigger,
+                    constant = false,
+                    commands = new List<string>
+                    {
+                        "storyLoadIntEqualsDEVONLY",
+                        "0", // Default
+                        "0", // Equals
+                    },
+                    value = "IntVariable"
+                });
+                defaultBeatmapObjectModifiers.Add(new Modifier<BeatmapObject>
+                {
+                    type = ModifierBase.Type.Trigger,
+                    constant = false,
+                    commands = new List<string>
+                    {
+                        "storyLoadIntLesserEqualsDEVONLY",
+                        "0", // Default
+                        "0", // Equals
+                    },
+                    value = "IntVariable"
+                });
+                defaultBeatmapObjectModifiers.Add(new Modifier<BeatmapObject>
+                {
+                    type = ModifierBase.Type.Trigger,
+                    constant = false,
+                    commands = new List<string>
+                    {
+                        "storyLoadIntGreaterEqualsDEVONLY",
+                        "0", // Default
+                        "0", // Equals
+                    },
+                    value = "IntVariable"
+                });
+                defaultBeatmapObjectModifiers.Add(new Modifier<BeatmapObject>
+                {
+                    type = ModifierBase.Type.Trigger,
+                    constant = false,
+                    commands = new List<string>
+                    {
+                        "storyLoadIntLesserDEVONLY",
+                        "0", // Default
+                        "0", // Equals
+                    },
+                    value = "IntVariable"
+                });
+                defaultBeatmapObjectModifiers.Add(new Modifier<BeatmapObject>
+                {
+                    type = ModifierBase.Type.Trigger,
+                    constant = false,
+                    commands = new List<string>
+                    {
+                        "storyLoadIntGreaterDEVONLY",
+                        "0", // Default
+                        "0", // Equals
+                    },
+                    value = "IntVariable"
+                });
+                defaultBeatmapObjectModifiers.Add(new Modifier<BeatmapObject>
+                {
+                    type = ModifierBase.Type.Trigger,
+                    constant = false,
+                    commands = new List<string>
+                    {
+                        "storyLoadBoolDEVONLY",
+                        "0", // Default
+                    },
+                    value = "BoolVariable"
+                });
+            }
         }
 
         public static void DeleteKey(string id, AudioSource audioSource)

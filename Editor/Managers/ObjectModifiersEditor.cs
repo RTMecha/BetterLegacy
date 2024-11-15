@@ -2430,6 +2430,25 @@ namespace BetterLegacy.Editor.Managers
                             BoolGenerator(modifier, layout, "Value", 1, false);
                             break;
                         }
+                    case "storyLoadIntEqualsDEVONLY":
+                    case "storyLoadIntLesserEqualsDEVONLY":
+                    case "storyLoadIntGreaterEqualsDEVONLY":
+                    case "storyLoadIntLesserDEVONLY":
+                    case "storyLoadIntGreaterDEVONLY":
+                        {
+                            StringGenerator(modifier, layout, "Load", 0);
+                            IntegerGenerator(modifier, layout, "Default", 1, 0);
+                            IntegerGenerator(modifier, layout, "Equals", 2, 0);
+
+                            break;
+                        }
+                    case "storyLoadBoolDEVONLY":
+                        {
+                            StringGenerator(modifier, layout, "Load", 0);
+                            BoolGenerator(modifier, layout, "Default", 1, false);
+
+                            break;
+                        }
 
                     #endregion
                 }
@@ -2879,10 +2898,10 @@ namespace BetterLegacy.Editor.Managers
                     int tmpIndex = i;
 
                     var name = defaultModifiers[i].commands[0] + " (" + defaultModifiers[i].type.ToString() + ")";
-                    if (name.Contains("DEVONLY"))
-                    {
-                        continue;
-                    }
+                    //if (name.Contains("DEVONLY"))
+                    //{
+                    //    continue;
+                    //}
 
                     var gameObject = EditorManager.inst.folderButtonPrefab.Duplicate(contentM, name);
 

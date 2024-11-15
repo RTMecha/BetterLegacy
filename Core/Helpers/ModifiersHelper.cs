@@ -30,6 +30,11 @@ namespace BetterLegacy.Core.Helpers
     /// </summary>
     public static class ModifiersHelper
     {
+        /// <summary>
+        /// If development only modifiers should be loaded.
+        /// </summary>
+        public static bool development = false;
+
         public static bool CheckTriggers<T>(List<Modifier<T>> triggers)
         {
             bool result = true;
@@ -1351,6 +1356,23 @@ namespace BetterLegacy.Core.Helpers
 
                         return false;
                     }
+
+                #endregion
+
+                #region Dev Only
+
+                case "storyLoadIntEqualsDEVONLY":
+                        return Story.StoryManager.inst.LoadInt(modifier.GetString(0, ""), modifier.GetInt(1, 0)) == modifier.GetInt(2, 0);
+                case "storyLoadIntLesserEqualsDEVONLY":
+                        return Story.StoryManager.inst.LoadInt(modifier.GetString(0, ""), modifier.GetInt(1, 0)) <= modifier.GetInt(2, 0);
+                case "storyLoadIntGreaterEqualsDEVONLY":
+                        return Story.StoryManager.inst.LoadInt(modifier.GetString(0, ""), modifier.GetInt(1, 0)) >= modifier.GetInt(2, 0);
+                case "storyLoadIntLesserDEVONLY":
+                        return Story.StoryManager.inst.LoadInt(modifier.GetString(0, ""), modifier.GetInt(1, 0)) < modifier.GetInt(2, 0);
+                case "storyLoadIntGreaterDEVONLY":
+                        return Story.StoryManager.inst.LoadInt(modifier.GetString(0, ""), modifier.GetInt(1, 0)) > modifier.GetInt(2, 0);
+                case "storyLoadBoolDEVONLY":
+                    return Story.StoryManager.inst.LoadBool(modifier.GetString(0, ""), modifier.GetBool(1, false));
 
                     #endregion
             }
@@ -6441,13 +6463,19 @@ namespace BetterLegacy.Core.Helpers
                     // dev only (story mode)
                     case "loadSceneDEVONLY":
                         {
-                            SceneManager.inst.LoadScene(modifier.value, modifier.commands.Count > 1 ? Parser.TryParse(modifier.commands[1], true) : false);
+                            if (!CoreHelper.InStory)
+                                return;
+
+                            SceneManager.inst.LoadScene(modifier.value, modifier.commands.Count > 1 && Parser.TryParse(modifier.commands[1], true));
 
                             break;
                         }
 
                     case "loadStoryLevelDEVONLY":
                         {
+                            if (!CoreHelper.InStory)
+                                return;
+
                             Story.StoryManager.inst.Play(modifier.GetInt(1, 0), modifier.GetInt(2, 0), modifier.GetBool(0, false), modifier.GetBool(3, false));
 
                             break;
@@ -6455,6 +6483,9 @@ namespace BetterLegacy.Core.Helpers
 
                     case "storySaveIntVariableDEVONLY":
                         {
+                            if (!CoreHelper.InStory)
+                                return;
+
                             Story.StoryManager.inst.SaveInt(modifier.GetString(0, ""), modifier.reference.integerVariable);
 
                             break;
@@ -6462,6 +6493,9 @@ namespace BetterLegacy.Core.Helpers
                         
                     case "storySaveIntDEVONLY":
                         {
+                            if (!CoreHelper.InStory)
+                                return;
+
                             Story.StoryManager.inst.SaveInt(modifier.GetString(0, ""), modifier.GetInt(1, 0));
 
                             break;
@@ -6469,6 +6503,9 @@ namespace BetterLegacy.Core.Helpers
                         
                     case "storySaveBoolDEVONLY":
                         {
+                            if (!CoreHelper.InStory)
+                                return;
+
                             Story.StoryManager.inst.SaveBool(modifier.GetString(0, "null"), modifier.GetBool(1, false));
 
                             break;
