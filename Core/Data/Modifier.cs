@@ -49,20 +49,38 @@ namespace BetterLegacy.Core.Data
         public static Modifier<T> Parse(JSONNode jn, T reference = default)
         {
             var modifier = new Modifier<T>();
+            modifier.reference = reference;
+
             modifier.type = (Type)jn["type"].AsInt;
-            modifier.not = jn["not"].AsBool;
-            modifier.elseIf = jn["else"].AsBool;
+
+            if (modifier.type == Type.Trigger)
+            {
+                modifier.not = jn["not"].AsBool;
+                modifier.elseIf = jn["else"].AsBool;
+            }
+
+            modifier.constant = jn["const"].AsBool;
+            modifier.prefabInstanceOnly = jn["po"].AsBool;
 
             modifier.commands.Clear();
+            if (jn["name"] != null)
+            {
+                modifier.commands.Add(jn["name"]);
+
+                if (jn["values"] != null)
+                {
+                    modifier.value = jn["values"][0];
+                    for (int i = 1; i < jn["values"].Count; i++)
+                        modifier.commands.Add(jn["values"][i]);
+                }
+
+                return modifier;
+            }
+
             for (int i = 0; i < jn["commands"].Count; i++)
                 modifier.commands.Add(((string)jn["commands"][i]).Replace("{{colon}}", ":"));
 
-            modifier.constant = jn["const"].AsBool;
             modifier.value = string.IsNullOrEmpty(jn["value"]) ? "" : jn["value"];
-
-            modifier.prefabInstanceOnly = jn["po"].AsBool;
-
-            modifier.reference = reference;
 
             return modifier;
         }
