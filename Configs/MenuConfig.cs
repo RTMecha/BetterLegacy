@@ -1,5 +1,6 @@
 ﻿using BepInEx.Configuration;
 using BetterLegacy.Core.Helpers;
+using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus;
 using System;
 using UnityEngine;
@@ -93,6 +94,8 @@ namespace BetterLegacy.Configs
         /// </summary>
         public Setting<string> MusicGlobalPath { get; set; }
 
+        public Setting<bool> PlayInputSelectMusic { get; set; }
+
         #endregion
 
         #endregion
@@ -119,6 +122,7 @@ namespace BetterLegacy.Configs
             MusicLoadMode = BindEnum(this, "Music", "Load Directory", MenuMusicLoadMode.Settings, "Where the music loads from. Settings path: Project Arrhythmia/settings/menus.");
             MusicIndex = Bind(this, "Music", "File Index", -1, "If number is less than 0 or higher than the song file count, it will play a random song. Otherwise it will use the specified index.");
             MusicGlobalPath = Bind(this, "Music", "Global Path", "C:/", "Set this path to whatever path you want if you're using Global Load Directory.");
+            PlayInputSelectMusic = Bind(this, "Music", "Play Input Select Music", true, "If the Input Select theme music should play.");
 
             Save();
         }
@@ -132,6 +136,7 @@ namespace BetterLegacy.Configs
             MusicLoadMode.SettingChanged += MusicChanged;
             MusicIndex.SettingChanged += MusicChanged;
             MusicGlobalPath.SettingChanged += MusicChanged;
+            PlayInputSelectMusic.SettingChanged += InputSelectMusicChanged;
         }
 
         void ThemeChanged()
@@ -158,6 +163,18 @@ namespace BetterLegacy.Configs
         {
             if (!CoreHelper.InGame)
                 InterfaceManager.inst.PlayMusic();
+        }
+
+        void InputSelectMusicChanged()
+        {
+            if (CoreHelper.CurrentScene != "Input Select")
+                return;
+
+
+            if (!CoreHelper.InGame && !PlayInputSelectMusic.Value)
+                InterfaceManager.inst.PlayMusic();
+            else if (PlayInputSelectMusic.Value)
+                SoundManager.inst.PlayMusic(DefaultMusic.loading);
         }
 
         #endregion

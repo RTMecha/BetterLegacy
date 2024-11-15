@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Core.Helpers;
+﻿using BetterLegacy.Configs;
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using BetterLegacy.Menus;
 using HarmonyLib;
@@ -132,7 +133,7 @@ namespace BetterLegacy.Patchers
                 LoadInterface(null);
             }
 
-            if (!CoreHelper.InGame)
+            if (!CoreHelper.InGame && (__instance.gameObject.scene.name != "Input Select" || !MenuConfig.Instance.PlayInputSelectMusic.Value))
                 InterfaceManager.inst.PlayMusic();
 
             return false;

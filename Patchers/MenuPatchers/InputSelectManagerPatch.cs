@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Core.Helpers;
+﻿using BetterLegacy.Configs;
+using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using HarmonyLib;
 using LSFunctions;
@@ -20,6 +21,9 @@ namespace BetterLegacy.Patchers
             InputDataManager.inst.ClearInputs();
             LSHelpers.HideCursor();
             ArcadeHelper.fromLevel = false;
+
+            if (MenuConfig.Instance.PlayInputSelectMusic.Value)
+                SoundManager.inst.PlayMusic(DefaultMusic.loading);
         }
 
         [HarmonyPatch(nameof(InputSelectManager.Update))]
