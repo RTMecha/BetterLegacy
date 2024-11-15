@@ -514,15 +514,16 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         menuButton.ParseFunction(menuButton.onWaitEndFuncJSON);
                     menuButton.onWaitEndFunc?.Invoke();
 
-                    menuButton.clickable.onClick = p =>
-                    {
-                        if (menuButton.playBlipSound)
-                            AudioManager.inst.PlaySound("blip");
+                    if (menuButton.clickable)
+                        menuButton.clickable.onClick = p =>
+                        {
+                            if (menuButton.playBlipSound)
+                                AudioManager.inst.PlaySound("blip");
 
-                        if (menuButton.funcJSON != null)
-                            menuButton.ParseFunction(menuButton.funcJSON);
-                        menuButton.func?.Invoke();
-                    };
+                            if (menuButton.funcJSON != null)
+                                menuButton.ParseFunction(menuButton.funcJSON);
+                            menuButton.func?.Invoke();
+                        };
 
                     num++;
                     continue;
@@ -704,7 +705,8 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             menuImage.rect.AssignToRectTransform(menuImage.image.rectTransform);
 
-            menuImage.clickable = menuImage.gameObject.AddComponent<Clickable>();
+            if (menuImage.funcJSON != null || menuImage.func != null)
+                menuImage.clickable = menuImage.gameObject.AddComponent<Clickable>();
 
             if (menuImage.icon)
                 menuImage.image.sprite = menuImage.icon;
@@ -750,13 +752,15 @@ namespace BetterLegacy.Menus.UI.Interfaces
             if (!menuText.hideBG && MenuConfig.Instance.RoundedUI.Value)
                 SpriteHelper.SetRoundedSprite(menuText.image, menuText.rounded, menuText.roundedSide);
 
-            menuText.clickable = menuText.gameObject.AddComponent<Clickable>();
+            if (menuText.funcJSON != null || menuText.func != null)
+                menuText.clickable = menuText.gameObject.AddComponent<Clickable>();
 
             var t = UIManager.GenerateUITextMeshPro("Text", menuText.gameObject.transform);
             ((RectTransform)t["RectTransform"]).anchoredPosition = Vector2.zero;
             ((RectTransform)t["RectTransform"]).localRotation = Quaternion.identity;
             menuText.textUI = (TextMeshProUGUI)t["Text"];
             menuText.textUI.gameObject.layer = 5;
+            menuText.text = ParseText(menuText.text);
             menuText.textUI.text = menuText.text;
             menuText.textUI.maxVisibleCharacters = 0;
             menuText.textUI.enableWordWrapping = menuText.enableWordWrapping;
@@ -834,6 +838,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             ((RectTransform)t["RectTransform"]).localRotation = Quaternion.identity;
             menuButton.textUI = (TextMeshProUGUI)t["Text"];
             menuButton.textUI.gameObject.layer = 5;
+            menuButton.text = ParseText(menuButton.text);
             menuButton.textUI.text = menuButton.text;
             menuButton.textUI.maxVisibleCharacters = 0;
             menuButton.textUI.enableWordWrapping = menuButton.enableWordWrapping;
@@ -930,6 +935,15 @@ namespace BetterLegacy.Menus.UI.Interfaces
             menuInputField.spawnFunc?.Invoke();
 
             menuInputField.Spawn();
+        }
+
+        public static string ParseText(string input)
+        {
+            CoreHelper.RegexMatches(input, new System.Text.RegularExpressions.Regex(@"{{Date=(.*?)}}"), match =>
+            {
+                input = input.Replace(match.Groups[0].ToString(), DateTime.Now.ToString(match.Groups[1].ToString()));
+            });
+            return input;
         }
 
         #endregion
