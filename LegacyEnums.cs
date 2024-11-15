@@ -775,6 +775,21 @@
         Count
     }
 
+    public enum DefaultMusic
+    {
+        loading,
+        menu,
+        barrels,
+        nostalgia,
+        arcade_dream,
+        distance,
+        truepianoskg,
+        dread,
+        in_the_distance,
+        io,
+        jukio_distance
+    }
+
     public enum DefaultSounds
     {
         UpDown,
