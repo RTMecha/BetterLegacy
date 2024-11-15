@@ -17,6 +17,7 @@ using BetterLegacy.Core;
 using BetterLegacy.Configs;
 using LSFunctions;
 using BetterLegacy.Core.Data;
+using BetterLegacy.Core.Managers.Networking;
 
 namespace BetterLegacy.Menus.UI.Elements
 {
@@ -108,6 +109,12 @@ namespace BetterLegacy.Menus.UI.Elements
         /// The text component of the element.
         /// </summary>
         public TextMeshProUGUI textUI;
+
+        public string textSound;
+        public float textSoundVolume = 1f;
+        public float textSoundPitch = 1f;
+        public float textSoundPitchVary = 0.1f;
+        AudioClip cachedTextSound;
 
         #endregion
 
@@ -268,6 +275,12 @@ namespace BetterLegacy.Menus.UI.Elements
                 enableWordWrapping = jnElement["word_wrap"].AsBool;
             if (jnElement["overflow_mode"] != null)
                 overflowMode = Parser.TryParse(jnElement["overflow_mode"], TextOverflowModes.Masking);
+            if (jnElement["text_sound"] != null)
+                textSound = jnElement["text_sound"];
+            if (jnElement["text_sound_volume"] != null)
+                textSoundVolume = jnElement["text_sound_volume"].AsFloat;
+            if (jnElement["text_sound_pitch"] != null)
+                textSoundPitch = jnElement["text_sound_pitch"].AsFloat;
 
             #endregion
 
@@ -392,7 +405,26 @@ namespace BetterLegacy.Menus.UI.Elements
             var val = (int)x;
 
             if (textUI.maxVisibleCharacters != val)
-                AudioManager.inst.PlaySound("Click"); // TODO: Maybe look into custom sound fonts?
+            {
+                var pitch = textSoundPitch + UnityEngine.Random.Range(-textSoundPitchVary, textSoundPitchVary);
+                if (!string.IsNullOrEmpty(textSound))
+                {
+                    if (SoundManager.inst.TryGetSound(textSound, out AudioClip audioClip))
+                        SoundManager.inst.PlaySound(audioClip, textSoundVolume, pitch);
+                    else if (cachedTextSound == null && RTFile.FileExists(textSound))
+                    {
+                        CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{textSound}", RTFile.GetAudioType(textSound), audioClip =>
+                        {
+                            cachedTextSound = audioClip;
+                            SoundManager.inst.PlaySound(audioClip, textSoundVolume, pitch);
+                        }));
+                    }
+                    else if (cachedTextSound != null)
+                        SoundManager.inst.PlaySound(cachedTextSound, textSoundVolume, pitch);
+                }
+                else
+                    SoundManager.inst.PlaySound(DefaultSounds.Click);
+            }
 
             textUI.maxVisibleCharacters = val;
         }
