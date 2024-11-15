@@ -131,6 +131,11 @@ namespace BetterLegacy.Menus.UI.Elements
         public float textSoundPitchVary = 0.1f;
 
         /// <summary>
+        /// How often the text interpolation sound should play. If it's 0, it'll loop.
+        /// </summary>
+        public int textSoundRepeat = 0;
+
+        /// <summary>
         /// Cached text interpolation sound when an external sound is loaded.
         /// </summary>
         AudioClip cachedTextSound;
@@ -300,6 +305,10 @@ namespace BetterLegacy.Menus.UI.Elements
                 textSoundVolume = jnElement["text_sound_volume"].AsFloat;
             if (jnElement["text_sound_pitch"] != null)
                 textSoundPitch = jnElement["text_sound_pitch"].AsFloat;
+            if (jnElement["text_sound_pitch_vary"] != null)
+                textSoundPitchVary = jnElement["text_sound_pitch_vary"].AsFloat;
+            if (jnElement["text_sound_repeat"] != null)
+                textSoundRepeat = jnElement["text_sound_repeat"].AsInt;
 
             #endregion
 
@@ -423,7 +432,7 @@ namespace BetterLegacy.Menus.UI.Elements
         {
             var val = (int)x;
 
-            if (textUI.maxVisibleCharacters != val)
+            if (textUI.maxVisibleCharacters != val && (textSoundRepeat == 0 || val % textSoundRepeat == textSoundRepeat - 1) && textWithoutFormatting[Mathf.Clamp(val, 0, textWithoutFormatting.Length - 1)] != ' ')
             {
                 var pitch = textSoundPitch + UnityEngine.Random.Range(-textSoundPitchVary, textSoundPitchVary);
                 if (!string.IsNullOrEmpty(textSound))
