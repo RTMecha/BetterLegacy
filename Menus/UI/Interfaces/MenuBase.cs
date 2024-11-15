@@ -306,16 +306,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 return;
             }
 
-            if (AudioManager.inst.library.musicClips.ContainsKey(musicName))
+            if (SoundManager.inst.TryGetMusic(musicName, out AudioClip audioClip))
             {
                 CoreHelper.Log($"Playing from music clip groups {musicName}");
-                var group = AudioManager.inst.library.musicClips[musicName];
-
-                int index = UnityEngine.Random.Range(0, group.Length);
-                if (AudioManager.inst.library.musicClipsRandomIndex.TryGetValue(musicName, out int randomIndex) && randomIndex < group.Length)
-                    index = randomIndex;
-
-                InterfaceManager.inst.PlayMusic(group[index]);
+                InterfaceManager.inst.PlayMusic(audioClip);
             }
             else if (RTFile.FileExists($"{Path.GetDirectoryName(filePath)}/{musicName}.ogg"))
             {
@@ -328,9 +322,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 }));
             }
             else
-            {
-                CoreHelper.Log($"No audio found with name {musicName}");
-            }
+                CoreHelper.LogError($"No audio found with name {musicName}");
         }
 
         #region Generate UI

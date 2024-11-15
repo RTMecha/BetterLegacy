@@ -119,6 +119,9 @@ namespace BetterLegacy.Menus
         public int randomIndex = -1;
         public void PlayMusic()
         {
+            if (CoreHelper.InEditor)
+                return;
+
             var directory = RTFile.ApplicationDirectory + "settings/menus/";
 
             if (!MenuConfig.Instance.PlayCustomMusic.Value)
@@ -210,12 +213,7 @@ namespace BetterLegacy.Menus
 
             if (audioType == AudioType.MPEG)
             {
-                CoreHelper.Log($"Attempting to play music: {songFileCurrent}");
-                var audioClip = LSAudio.CreateAudioClipUsingMP3File(songFileCurrent);
-                audioClip.name = name;
-                if (CurrentMenu != null)
-                    CurrentMenu.music = audioClip;
-                PlayMusic(audioClip);
+                SetMusic(LSAudio.CreateAudioClipUsingMP3File(songFileCurrent), name);
                 return;
             }
 
@@ -224,12 +222,17 @@ namespace BetterLegacy.Menus
                 if (CoreHelper.InEditor)
                     return;
 
-                CoreHelper.Log($"Attempting to play music: {songFileCurrent}");
-                audioClip.name = name;
-                if (CurrentMenu != null)
-                    CurrentMenu.music = audioClip;
-                PlayMusic(audioClip);
+                SetMusic(audioClip, name);
             }));
+        }
+
+        void SetMusic(AudioClip audioClip, string name)
+        {
+            CoreHelper.Log($"Attempting to play music: {name}");
+            audioClip.name = name;
+            if (CurrentMenu != null)
+                CurrentMenu.music = audioClip;
+            PlayMusic(audioClip);
         }
 
         public void SetCurrentInterface(string id)
