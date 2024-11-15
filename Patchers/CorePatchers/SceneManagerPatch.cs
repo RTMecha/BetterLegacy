@@ -88,7 +88,7 @@ namespace BetterLegacy.Patchers
         {
             ExampleManager.onSceneLoad?.Invoke(__0);
 
-            CoreHelper.CurrentSceneType = __0 == "Editor" ? SceneType.Editor : __0 == "Game" ? SceneType.Game : SceneType.Interface;
+            CoreHelper.CurrentScene = __0;
             CoreHelper.Log($"Set Scene\nType: {CoreHelper.CurrentSceneType}\nName: {__0}");
 
             try

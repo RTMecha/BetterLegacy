@@ -29,7 +29,12 @@ namespace BetterLegacy.Core.Helpers
         /// <summary>
         /// The current scene PA is in.
         /// </summary>
-        public static SceneType CurrentSceneType { get; set; }
+        public static string CurrentScene { get; set; }
+
+        /// <summary>
+        /// The current type of scene PA is in.
+        /// </summary>
+        public static SceneType CurrentSceneType => CurrentScene == "Editor" ? SceneType.Editor : CurrentScene == "Game" ? SceneType.Game : SceneType.Interface;
 
         /// <summary>
         /// The multiplied screen scale, multiplied by a base resolution of 1920. To be used for fixing UI scale issues.
