@@ -31,6 +31,11 @@ namespace BetterLegacy.Menus.UI.Elements
         #region Public Fields
 
         /// <summary>
+        /// Dynamic changing speed.
+        /// </summary>
+        public List<Speed> textSpeeds;
+
+        /// <summary>
         /// A sub-image that spawns if <see cref="MenuImage.icon"/> exists.
         /// </summary>
         public Image iconUI;
@@ -136,6 +141,11 @@ namespace BetterLegacy.Menus.UI.Elements
         public int textSoundRepeat = 0;
 
         /// <summary>
+        /// Where the text interpolation should play the text interpolation sound.
+        /// </summary>
+        public List<Vector2Int> textSoundRanges;
+
+        /// <summary>
         /// Cached text interpolation sound when an external sound is loaded.
         /// </summary>
         AudioClip cachedTextSound;
@@ -143,6 +153,8 @@ namespace BetterLegacy.Menus.UI.Elements
         #endregion
 
         #region Private Fields
+
+        float currentSpeed = 1f;
 
         string textWithoutFormatting;
 
@@ -273,6 +285,13 @@ namespace BetterLegacy.Menus.UI.Elements
 
             #region UI
 
+            if (jnElement["speeds"] != null)
+            {
+                textSpeeds = new List<Speed>();
+                for (int i = 0; i < jnElement["speeds"].Count; i++)
+                    textSpeeds.Add(new Speed(jnElement["speeds"][i]["position"].AsInt, jnElement["speeds"][i]["speed"].AsFloat));
+            }
+
             if (!string.IsNullOrEmpty(jnElement["text"]))
                 text = ParseText(FontManager.TextTranslater.ReplaceProperties(jnElement["text"]));
             if (!string.IsNullOrEmpty(jnElement["icon"]))
@@ -309,6 +328,12 @@ namespace BetterLegacy.Menus.UI.Elements
                 textSoundPitchVary = jnElement["text_sound_pitch_vary"].AsFloat;
             if (jnElement["text_sound_repeat"] != null)
                 textSoundRepeat = jnElement["text_sound_repeat"].AsInt;
+            if (jnElement["text_sound_ranges"] != null)
+            {
+                textSoundRanges = new List<Vector2Int>();
+                for (int i = 0; i < jnElement["text_sound_ranges"].Count; i++)
+                    textSoundRanges.Add(Parser.TryParse(jnElement["text_sound_ranges"][i], Vector2Int.zero));
+            }
 
             #endregion
 
@@ -403,7 +428,7 @@ namespace BetterLegacy.Menus.UI.Elements
                 new AnimationHandler<float>(new List<IKeyframe<float>>
                 {
                     new FloatKeyframe(0f, 0f, Ease.Linear),
-                    new FloatKeyframe(length * (text.Length / 64f), textWithoutFormatting.Length, Ease.Linear),
+                    new FloatKeyframe(length * (text.Length / TEXT_LENGTH_DIVISION), textWithoutFormatting.Length, Ease.Linear),
                                              // ^ Regular spawn length is sometimes too slow for text interpolation so it's sped up relative to the text length. 
                                              // For example, if the text is 32 characters long, it'd be fine. But if it were just 3 letters, it'd be really slow looking.
                 }, Interpolate),
@@ -420,8 +445,16 @@ namespace BetterLegacy.Menus.UI.Elements
 
         public override void UpdateSpawnCondition()
         {
-            // Speeds up the text interpolation if a Submit key is being held. MenuConfig.Instance.SpeedUpSpeedMultiplier.Value : MenuConfig.Instance.RegularSpeedMultiplier.Value
-            textInterpolation?.animationHandlers[0]?.SetKeyframeTime(1, InputDataManager.inst.menuActions.Submit.IsPressed ? length * (text.Length / TEXT_LENGTH_DIVISION) * MenuConfig.Instance.SpeedUpSpeedMultiplier.Value : length * (text.Length / TEXT_LENGTH_DIVISION) * MenuConfig.Instance.RegularSpeedMultiplier.Value);
+            if (textSpeeds != null && textSpeeds.TryFindLast(x => x.position <= ((int)(length * TEXT_LENGTH_DIVISION) == 0 ? 0 : (int)(textInterpolation.Time / length * TEXT_LENGTH_DIVISION)), out Speed speed))
+            {
+                if (currentSpeed != speed.speed)
+                    CoreHelper.Log($"Set {nameof(currentSpeed)} to {speed.speed}");
+
+                currentSpeed = speed.speed;
+            }
+
+            // Speeds up the text interpolation if a Submit key is being held.
+            textInterpolation?.animationHandlers[0]?.SetKeyframeTime(1, length * (text.Length / TEXT_LENGTH_DIVISION) * ((InputDataManager.inst.menuActions.Submit.IsPressed ? MenuConfig.Instance.SpeedUpSpeedMultiplier.Value : MenuConfig.Instance.RegularSpeedMultiplier.Value)) * currentSpeed);
         }
 
         // todo: acceptable text ranges for speaking sounds?
@@ -435,6 +468,14 @@ namespace BetterLegacy.Menus.UI.Elements
 
             if (textUI.maxVisibleCharacters != val && (textSoundRepeat == 0 || val % textSoundRepeat == textSoundRepeat - 1) && textWithoutFormatting[Mathf.Clamp(val, 0, textWithoutFormatting.Length - 1)] != ' ')
             {
+                // x is min
+                // y is max
+                if (textSoundRanges != null && textSoundRanges.Count > 0 && !textSoundRanges.Has(x => x.y >= val && x.x <= val))
+                {
+                    textUI.maxVisibleCharacters = val;
+                    return;
+                }
+
                 var pitch = textSoundPitch + UnityEngine.Random.Range(-textSoundPitchVary, textSoundPitchVary);
                 if (!string.IsNullOrEmpty(textSound))
                 {
@@ -463,8 +504,8 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         public void UpdateText()
         {
-            time = (Time.time - timeOffset) * (InputDataManager.inst.menuActions.Submit.IsPressed ? length * MenuConfig.Instance.SpeedUpSpeedMultiplier.Value : length * MenuConfig.Instance.RegularSpeedMultiplier.Value);
-
+            time = (Time.time - timeOffset) * length * ((InputDataManager.inst.menuActions.Submit.IsPressed ? MenuConfig.Instance.SpeedUpSpeedMultiplier.Value : MenuConfig.Instance.RegularSpeedMultiplier.Value) * currentSpeed);
+            
             if (cachedQuickElements == null)
                 return;
 
@@ -497,5 +538,17 @@ namespace BetterLegacy.Menus.UI.Elements
         }
 
         #endregion
+
+        public class Speed
+        {
+            public Speed(int position, float speed)
+            {
+                this.position = position;
+                this.speed = speed;
+            }
+
+            public int position;
+            public float speed = 1f;
+        }
     }
 }
