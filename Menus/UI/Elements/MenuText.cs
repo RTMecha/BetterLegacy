@@ -424,6 +424,7 @@ namespace BetterLegacy.Menus.UI.Elements
             textInterpolation?.animationHandlers[0]?.SetKeyframeTime(1, InputDataManager.inst.menuActions.Submit.IsPressed ? length * (text.Length / TEXT_LENGTH_DIVISION) * MenuConfig.Instance.SpeedUpSpeedMultiplier.Value : length * (text.Length / TEXT_LENGTH_DIVISION) * MenuConfig.Instance.RegularSpeedMultiplier.Value);
         }
 
+        // todo: acceptable text ranges for speaking sounds?
         /// <summary>
         /// Sets <see cref="TMP_Text.maxVisibleCharacters"/> so we can have a typewriter effect. Also plays a sound every time a character is placed.
         /// </summary>
