@@ -185,12 +185,28 @@ namespace BetterLegacy.Core.Data
         };
 
         /// <summary>
+        /// Parses a "rect" JSON.
+        /// </summary>
+        /// <param name="jn">JSON to parse.</param>
+        /// <param name="defaultValue">Default value to set if a value is null.</param>
+        /// <returns>Returns a parsed RectValue.</returns>
+        public static RectValues Parse(JSONNode jn, RectValues defaultValue) => new RectValues
+        {
+            anchoredPosition = Parser.TryParse(jn["anc_pos"], defaultValue.anchoredPosition),
+            anchorMax = Parser.TryParse(jn["anc_max"], defaultValue.anchorMax),
+            anchorMin = Parser.TryParse(jn["anc_min"], defaultValue.anchorMin),
+            pivot = Parser.TryParse(jn["pivot"], defaultValue.pivot),
+            sizeDelta = Parser.TryParse(jn["size"], defaultValue.sizeDelta),
+            rotation = jn["rot"] != null ? jn["rot"].AsFloat : defaultValue.rotation,
+        };
+
+        /// <summary>
         /// Tries to parse a "rect" JSON.
         /// </summary>
         /// <param name="jn">JSON to parse.</param>
         /// <param name="defaultValue">Default value to set if <paramref name="jn"/> is null.</param>
         /// <returns>If <paramref name="jn"/> is not null, return a parsed RectValue, otherwise return <paramref name="defaultValue"/>.</returns>
-        public static RectValues TryParse(JSONNode jn, RectValues defaultValue) => jn == null ? defaultValue : Parse(jn);
+        public static RectValues TryParse(JSONNode jn, RectValues defaultValue) => jn == null ? defaultValue : Parse(jn, defaultValue);
 
         /// <summary>
         /// Converts the current RectValue to JSON.
