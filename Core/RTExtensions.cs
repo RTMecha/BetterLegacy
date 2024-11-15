@@ -237,24 +237,60 @@ namespace BetterLegacy.Core
 
         public static T GetDefault<T>(this List<T> list, int index, T defaultValue) => index >= 0 && index < list.Count - 1 ? list[index] : defaultValue;
 
-        public static bool TryFind<T>(this List<T> ts, Predicate<T> match, out T item)
+        public static bool TryFind<T>(this List<T> ts, Predicate<T> match, out T result)
         {
-            var t = ts.Find(match);
-            item = t;
-            return t != null;
+            for (int i = 0; i < ts.Count; i++)
+            {
+                if (match(ts[i]))
+                {
+                    result = ts[i];
+                    return true;
+                }
+            }
+            result = default;
+            return false;
+        }
+
+        public static bool TryFindLast<T>(this List<T> ts, Predicate<T> match, out T result)
+        {
+            for (int i = ts.Count - 1; i >= 0; i--)
+            {
+                if (match(ts[i]))
+                {
+                    result = ts[i];
+                    return true;
+                }
+            }
+            result = default;
+            return false;
         }
 
         public static bool TryFindIndex<T>(this List<T> ts, Predicate<T> match, out int index)
         {
-            var i = ts.FindIndex(match);
-            index = i;
+            index = ts.FindIndex(match);
+            return index >= 0 && index < ts.Count;
+        }
+
+        public static bool TryFindLastIndex<T>(this List<T> ts, Predicate<T> match, out int index)
+        {
+            index = ts.FindLastIndex(match);
             return index >= 0 && index < ts.Count;
         }
 
         public static bool TryFindAll<T>(this List<T> ts, Predicate<T> match, out List<T> findAll)
         {
-            findAll = ts.FindAll(match);
-            return findAll.Count > 0;
+            bool found = false;
+            var list = new List<T>();
+            for (int i = 0; i < ts.Count; i++)
+            {
+                if (match(ts[i]))
+                {
+                    list.Add(ts[i]);
+                    found = true;
+                }
+            }
+            findAll = list;
+            return found;
         }
 
         /// <summary>
@@ -313,7 +349,15 @@ namespace BetterLegacy.Core
         /// <typeparam name="T">The type of the list.</typeparam>
         /// <param name="predicate">Predicate to find an item.</param>
         /// <returns>Returns true if an item is found, otherwise returns false.</returns>
-        public static bool Has<T>(this List<T> ts, Predicate<T> predicate) => ts.Find(predicate) != null;
+        public static bool Has<T>(this List<T> ts, Predicate<T> match)
+        {
+            for (int i = 0; i < ts.Count; i++)
+            {
+                if (match(ts[i]))
+                    return true;
+            }
+            return false;
+        }
 
         public static void For<T>(this T[] ts, Action<T, int> action)
         {
