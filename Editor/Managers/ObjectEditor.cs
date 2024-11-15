@@ -3543,7 +3543,7 @@ namespace BetterLegacy.Editor.Managers
                 var inspectGameObjectText = inspectGameObject.transform.GetChild(0).GetComponent<Text>();
                 inspectGameObjectText.text = "Inspect LevelObject";
                 
-                var inspectTimelineObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(tfv.parent, "inspecttimelineobject", index + 3);
+                var inspectTimelineObject = EditorPrefabHolder.Instance.Function2Button.Duplicate(tfv, "inspecttimelineobject", index + 3);
                 inspectTimelineObject.SetActive(true);
 
                 var inspectTimelineObjectText = inspectTimelineObject.transform.GetChild(0).GetComponent<Text>();
