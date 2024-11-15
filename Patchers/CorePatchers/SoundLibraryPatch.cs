@@ -12,6 +12,8 @@ namespace BetterLegacy.Patchers
     {
         public static SoundLibrary Instance => AudioManager.inst.library;
 
+        public static string SFXPath => $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}SFX/";
+
         static bool ran = false;
 
         [HarmonyPatch(nameof(SoundLibrary.Awake))]
@@ -52,13 +54,9 @@ namespace BetterLegacy.Patchers
                 foreach (var audioClip in quickSounds)
                     __instance.soundClips["qe_" + audioClip.name] = new AudioClip[] { audioClip };
 
-            if (RTFile.FileExists(Example.ExampleManager.SpeakPath))
-                CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{Example.ExampleManager.SpeakPath}", RTFile.GetAudioType(Example.ExampleManager.SpeakPath), audioClip =>
-                {
-                    var soundGroup = new SoundLibrary.SoundGroup { group = new AudioClip[] { audioClip }, soundID = "example_speak" };
-                    __instance.soundGroups = __instance.soundGroups.AddItem(soundGroup).ToArray();
-                    __instance.soundClips[soundGroup.soundID] = soundGroup.group;
-                }));
+            AddSound(Example.ExampleManager.SpeakPath, "example_speak");
+            AddSound($"{SFXPath}anna speak.ogg", "anna_speak");
+            AddSound($"{SFXPath}hal speak.ogg", "hal_speak");
 
             foreach (var musicGroup in __instance.musicGroups)
             {
@@ -67,17 +65,31 @@ namespace BetterLegacy.Patchers
                 __instance.musicClips[musicGroup.musicID] = musicGroup.music;
             }
 
-            __instance.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}click cut.ogg", AudioType.OGGVORBIS, delegate (AudioClip audioClip)
+            __instance.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{SFXPath}click cut.ogg", AudioType.OGGVORBIS, audioClip =>
             {
                 __instance.soundClips["UpDown"][0] = audioClip;
                 __instance.soundClips["LeftRight"][0] = audioClip;
             }));
-            __instance.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}optionexit.ogg", AudioType.OGGVORBIS, delegate (AudioClip audioClip)
+            __instance.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{SFXPath}optionexit.ogg", AudioType.OGGVORBIS, audioClip =>
             {
                 __instance.soundClips["Block"][0] = audioClip;
             }));
 
             return false;
+        }
+
+        static void AddSound(string path, string id)
+        {
+            CoreHelper.Log($"Adding sound: {id} {path}");
+            if (RTFile.FileExists(path))
+                CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{path}", RTFile.GetAudioType(path), audioClip =>
+                {
+                    audioClip.name = id;
+                    var soundGroup = new SoundLibrary.SoundGroup { group = new AudioClip[] { audioClip }, soundID = id };
+                    Instance.soundGroups = Instance.soundGroups.AddItem(soundGroup).ToArray();
+                    Instance.soundClips[soundGroup.soundID] = soundGroup.group;
+                }));
+
         }
 
         [HarmonyPatch(nameof(SoundLibrary.GetClipFromName))]
