@@ -40,11 +40,7 @@ namespace BetterLegacy.Patchers
 
                 music.name = name;
 
-                __instance.musicGroups = __instance.musicGroups.AddItem(new SoundLibrary.MusicGroup
-                {
-                    musicID = groupName,
-                    music = new AudioClip[] { music }
-                }).ToArray();
+                __instance.musicClips[groupName] = new AudioClip[] { music };
             }
             ost.Unload(false);
 
@@ -55,6 +51,14 @@ namespace BetterLegacy.Patchers
             if (quickSounds != null)
                 foreach (var audioClip in quickSounds)
                     __instance.soundClips["qe_" + audioClip.name] = new AudioClip[] { audioClip };
+
+            if (RTFile.FileExists(Example.ExampleManager.SpeakPath))
+                CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{Example.ExampleManager.SpeakPath}", RTFile.GetAudioType(Example.ExampleManager.SpeakPath), audioClip =>
+                {
+                    var soundGroup = new SoundLibrary.SoundGroup { group = new AudioClip[] { audioClip }, soundID = "example_speak" };
+                    __instance.soundGroups = __instance.soundGroups.AddItem(soundGroup).ToArray();
+                    __instance.soundClips[soundGroup.soundID] = soundGroup.group;
+                }));
 
             foreach (var musicGroup in __instance.musicGroups)
             {

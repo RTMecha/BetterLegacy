@@ -40,20 +40,20 @@ namespace BetterLegacy.Example
 
         #region Sprites
 
-        public string ExamplePartsPath = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Example Parts/";
-        public string SpeakPath => $"{ExamplePartsPath}example speak.ogg";
-        public string TailPath => $"{ExamplePartsPath}example tail.png";
-        public string EarBottomPath => $"{ExamplePartsPath}example ear bottom.png";
-        public string HeadPath => $"{ExamplePartsPath}example head.png";
-        public string EyesPath => $"{ExamplePartsPath}example eyes.png";
-        public string PupilsPath => $"{ExamplePartsPath}example pupils.png";
-        public string BlinkPath => $"{ExamplePartsPath}example blink.png";
-        public string SnoutPath => $"{ExamplePartsPath}example snout.png";
-        public string MouthPath => $"{ExamplePartsPath}example mouth.png";
-        public string LipsPath => $"{ExamplePartsPath}example lips.png";
-        public string NosePath => $"{ExamplePartsPath}example nose.png";
-        public string BrowsPath => $"{ExamplePartsPath}example brow.png";
-        public string EarTopPath => $"{ExamplePartsPath}example ear top.png";
+        public static string ExamplePartsPath = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Example Parts/";
+        public static string SpeakPath => $"{ExamplePartsPath}example speak.ogg";
+        public static string TailPath => $"{ExamplePartsPath}example tail.png";
+        public static string EarBottomPath => $"{ExamplePartsPath}example ear bottom.png";
+        public static string HeadPath => $"{ExamplePartsPath}example head.png";
+        public static string EyesPath => $"{ExamplePartsPath}example eyes.png";
+        public static string PupilsPath => $"{ExamplePartsPath}example pupils.png";
+        public static string BlinkPath => $"{ExamplePartsPath}example blink.png";
+        public static string SnoutPath => $"{ExamplePartsPath}example snout.png";
+        public static string MouthPath => $"{ExamplePartsPath}example mouth.png";
+        public static string LipsPath => $"{ExamplePartsPath}example lips.png";
+        public static string NosePath => $"{ExamplePartsPath}example nose.png";
+        public static string BrowsPath => $"{ExamplePartsPath}example brow.png";
+        public static string EarTopPath => $"{ExamplePartsPath}example ear top.png";
 
         public string HandsPath => $"{ExamplePartsPath}example hand.png";
 

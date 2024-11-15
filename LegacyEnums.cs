@@ -807,6 +807,7 @@
         checkpoint,
         pirate_KillPlayer,
         blip,
-        loadsound
+        loadsound,
+        example_speak
     }
 }
