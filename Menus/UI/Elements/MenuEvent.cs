@@ -22,7 +22,6 @@ namespace BetterLegacy.Menus.UI.Elements
             Spawn();
         }
 
-
         public static MenuEvent DeepCopy(MenuEvent orig, bool newID = true) => (MenuEvent)MenuImage.DeepCopy(orig, newID);
     }
 }

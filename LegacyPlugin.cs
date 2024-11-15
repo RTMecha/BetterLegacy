@@ -82,7 +82,6 @@ namespace BetterLegacy
 
         public static void GetGradients()
         {
-
             var assetBundle = AssetBundle.LoadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}gradients.asset"); // Get AssetBundle from assets folder.
             gradientMaterial = assetBundle.LoadAsset<Material>("assets/gradientmaterial.mat"); // Load asset
             radialGradientMaterial = assetBundle.LoadAsset<Material>("assets/radialgradientmaterial.mat"); // Load asset
