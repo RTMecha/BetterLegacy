@@ -3,7 +3,7 @@ snapshot-2024.11.15 - (pre-1.7.0) > [Nov 15, 2024]
 - Fixed New Simulation button showing in cases it shouldn't be.
 - Added To Lower and To Upper to default text Input Field context menus.
 - Fixed BPM Offset causing objects start time to go further than it should.
-- Added Snap Offset to Mutli Object Editor. This snaps selected objects relative to the earliest object in the timeline.
+- Added Snap Offset to Multi Object Editor. This snaps selected objects relative to the earliest object in the timeline.
 - Interfaces can now change music dynamically. Additionally, the story mode now has custom music.
 - Input Select screen now has a custom song. If you don't want it to play, then you can turn it off by going to Config Manager > Menus > Music > Play Input Select Music.
 snapshot-2024.11.14 - (pre-1.7.0) > [Nov 14, 2024]
