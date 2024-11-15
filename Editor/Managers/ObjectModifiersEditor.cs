@@ -1678,7 +1678,8 @@ namespace BetterLegacy.Editor.Managers
                     case "spawnMultiPrefabOffsetOther":
                         {
                             var isMulti = cmd.Contains("Multi");
-                            if (cmd.Contains("Other"))
+                            var isOther = cmd.Contains("Other");
+                            if (isOther)
                             {
                                 PrefabGroupOnly(modifier, layout);
                                 var str = StringGenerator(modifier, layout, "Object Group", isMulti ? 9 : 10);
@@ -1734,6 +1735,15 @@ namespace BetterLegacy.Editor.Managers
 
                             if (!isMulti)
                                 BoolGenerator(modifier, layout, "Permanent", 9, false);
+
+                            int valueIndex = 10;
+                            if (isOther)
+                                valueIndex++;
+                            if (isMulti)
+                                valueIndex--;
+
+                            SingleGenerator(modifier, layout, "Time Offset", valueIndex, 0f);
+                            BoolGenerator(modifier, layout, "Time Relative", valueIndex + 1, true);
 
                             break;
                         }
