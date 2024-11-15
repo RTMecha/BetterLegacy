@@ -21,6 +21,8 @@ using BetterLegacy.Menus.UI.Elements;
 using BetterLegacy.Menus.UI.Layouts;
 using SimpleJSON;
 using BetterLegacy.Core.Animation;
+using BetterLegacy.Story;
+using System.Text.RegularExpressions;
 
 namespace BetterLegacy.Menus.UI.Interfaces
 {
@@ -931,11 +933,53 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         public static string ParseText(string input)
         {
-            CoreHelper.RegexMatches(input, new System.Text.RegularExpressions.Regex(@"{{Date=(.*?)}}"), match =>
+            CoreHelper.RegexMatches(input, new Regex(@"{{Date=(.*?)}}"), match =>
             {
                 input = input.Replace(match.Groups[0].ToString(), DateTime.Now.ToString(match.Groups[1].ToString()));
             });
-            return input;
+
+            CoreHelper.RegexMatches(input, new Regex(@"{{LevelRank=([0-9]+)}}"), match =>
+            {
+                DataManager.LevelRank levelRank =
+                    LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level) ? LevelManager.GetLevelRank(level) :
+                    CoreHelper.InEditor ?
+                        LevelManager.EditorRank :
+                        DataManager.inst.levelRanks[0];
+
+                input = input.Replace(match.Groups[0].ToString(), CoreHelper.FormatLevelRank(levelRank));
+            });
+
+            CoreHelper.RegexMatches(input, new Regex(@"{{StoryLevelRank=([0-9]+)}}"), match =>
+            {
+                DataManager.LevelRank levelRank =
+                    StoryManager.inst.Saves.TryFind(x => x.ID == match.Groups[1].ToString(), out LevelManager.PlayerData playerData) ? LevelManager.GetLevelRank(playerData) :
+                    CoreHelper.InEditor ?
+                        LevelManager.EditorRank :
+                        DataManager.inst.levelRanks[0];
+
+                input = input.Replace(match.Groups[0].ToString(), CoreHelper.FormatLevelRank(levelRank));
+            });
+
+            CoreHelper.RegexMatches(input, new Regex(@"{{LoadStoryString=(.*?),(.*?)}}"), match =>
+            {
+                input = input.Replace(match.Groups[0].ToString(), StoryManager.inst.LoadString(match.Groups[1].ToString(), match.Groups[2].ToString()));
+            });
+
+            CoreHelper.RegexMatches(input, new Regex(@"{{RandomNumber=([0-9]+)}}"), match =>
+            {
+                input = input.Replace(match.Groups[0].ToString(), LSText.randomNumString(Parser.TryParse(match.Groups[1].ToString(), 0)));
+            });
+
+            CoreHelper.RegexMatches(input, new Regex(@"{{RandomText=([0-9]+)}}"), match =>
+            {
+                input = input.Replace(match.Groups[0].ToString(), LSText.randomString(Parser.TryParse(match.Groups[1].ToString(), 0)));
+            });
+
+            return input
+                .Replace("{{CurrentPlayingChapterNumber}}", (StoryManager.inst.currentPlayingChapterIndex + 1).ToString("00"))
+                .Replace("{{CurrentPlayingLevelNumber}}", (StoryManager.inst.currentPlayingLevelSequenceIndex + 1).ToString("00"))
+                .Replace("{{SaveSlotNumber}}", (StoryManager.inst.SaveSlot + 1).ToString("00"))
+                ;
         }
 
         #endregion
