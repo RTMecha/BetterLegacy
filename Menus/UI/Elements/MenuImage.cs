@@ -316,7 +316,8 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         public virtual void UpdateSpawnCondition()
         {
-            time = (Time.time - timeOffset) * (InputDataManager.inst.menuActions.Submit.IsPressed ? MenuConfig.Instance.SpeedUpSpeedMultiplier.Value : MenuConfig.Instance.RegularSpeedMultiplier.Value);
+            time = (Time.time - timeOffset) / (InputDataManager.inst.menuActions.Submit.IsPressed ? length * MenuConfig.Instance.SpeedUpSpeedMultiplier.Value : length * MenuConfig.Instance.RegularSpeedMultiplier.Value);
+
             if (time > length)
                 isSpawning = false;
         }
@@ -734,6 +735,8 @@ namespace BetterLegacy.Menus.UI.Elements
 
             switch (name)
             {
+                #region Main Functions
+
                 #region LoadScene
 
                 // Loads a Unity scene.
@@ -957,28 +960,6 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 #endregion
 
-                #region Close
-
-                // Closes the interface and returns to the game (if user is in the Game scene).
-                // Function has no parameters.
-                case "Close":
-                    {
-                        string id = InterfaceManager.inst.CurrentMenu?.id;
-                        InterfaceManager.inst.CloseMenus();
-                        InterfaceManager.inst.StopMusic();
-
-                        if (CoreHelper.InGame)
-                        {
-                            AudioManager.inst.CurrentAudioSource.UnPause();
-                            GameManager.inst.gameState = GameManager.State.Playing;
-                            InterfaceManager.inst.interfaces.RemoveAll(x => x.id == id);
-                        }
-
-                        break;
-                    }
-
-                #endregion
-
                 #region ExitGame
 
                 // Exits the game.
@@ -998,6 +979,32 @@ namespace BetterLegacy.Menus.UI.Elements
                 case "Config":
                     {
                         ConfigManager.inst.Show();
+                        break;
+                    }
+
+                #endregion
+
+                #endregion
+
+                #region Interface
+
+                #region Close
+
+                // Closes the interface and returns to the game (if user is in the Game scene).
+                // Function has no parameters.
+                case "Close":
+                    {
+                        string id = InterfaceManager.inst.CurrentMenu?.id;
+                        InterfaceManager.inst.CloseMenus();
+                        InterfaceManager.inst.StopMusic();
+
+                        if (CoreHelper.InGame)
+                        {
+                            AudioManager.inst.CurrentAudioSource.UnPause();
+                            GameManager.inst.gameState = GameManager.State.Playing;
+                            InterfaceManager.inst.interfaces.RemoveAll(x => x.id == id);
+                        }
+
                         break;
                     }
 
@@ -1110,7 +1117,7 @@ namespace BetterLegacy.Menus.UI.Elements
                                 InterfaceManager.inst.SetCurrentInterface(menu.id);
 
                             break;
-                        }    
+                        }
 
                         InterfaceManager.inst.interfaces.Add(menu);
 
@@ -1167,6 +1174,10 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 #endregion
 
+                #endregion
+
+                #region Audio
+
                 #region PlaySound
 
                 // Plays a sound. Can either be a default one already loaded in the SoundLibrary or a custom one from the menu's folder.
@@ -1188,17 +1199,20 @@ namespace BetterLegacy.Menus.UI.Elements
                 case "PlaySound":
                     {
                         if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["sound"] == null || InterfaceManager.inst.CurrentMenu == null)
-                            return;
+                            break;
 
                         string sound = parameters.IsArray ? parameters[0] : parameters["sound"];
 
                         if (AudioManager.inst.library.soundClips.ContainsKey(sound))
                         {
                             AudioManager.inst.PlaySound(sound);
-                            return;
+                            break;
                         }
 
                         var filePath = $"{Path.GetDirectoryName(InterfaceManager.inst.CurrentMenu.filePath)}{sound}";
+                        if (!RTFile.FileExists(filePath))
+                            return;
+
                         var audioType = RTFile.GetAudioType(filePath);
                         if (audioType == AudioType.MPEG)
                             AudioManager.inst.PlaySound(LSAudio.CreateAudioClipUsingMP3File(filePath));
@@ -1209,6 +1223,111 @@ namespace BetterLegacy.Menus.UI.Elements
                     }
 
                 #endregion
+
+                #region PlayMusic
+
+                // Plays a music. Can either be a default internal song or one located in the menu path.
+                // Supports both JSON array and JSON object.
+                //
+                // - JSON Array Structure -
+                // 0 = song
+                // 1 = fade duration
+                // 2 = loop
+                // Example:
+                // [
+                //   "distance" < plays the distance song.
+                //   "2" < sets fade duration to 2.
+                //   "False" < doesn't loop
+                // ]
+                //
+                // - JSON Object Structure -
+                // "sound"
+                // Example:
+                // {
+                //   "sound": "some kind of song.ogg" < since this song does not exist in the SoundLibrary, search for a file with the name. If it exists, play the song.
+                // }
+                case "PlayMusic":
+                    {
+                        if (parameters == null || parameters.IsArray && (parameters.Count < 1 || parameters[0].Value.ToLower() == "default") || parameters.IsObject && (parameters["name"] == null || parameters["name"].Value.ToLower() == "default"))
+                        {
+                            InterfaceManager.inst.PlayMusic();
+                            break;
+                        }
+
+                        var isArray = parameters.IsArray;
+                        var isObject = parameters.IsObject;
+                        string music = isArray ? parameters[0] : parameters["name"];
+                        var fadeDuration = 0.5f;
+                        if (isArray && parameters.Count > 1 || isObject && parameters["fade_duration"] != null)
+                            fadeDuration = isArray ? parameters[1].AsFloat : parameters["fade_duration"].AsFloat;
+
+                        var loop = true;
+                        if (isArray && parameters.Count > 2 || isObject && parameters["loop"] != null)
+                            loop = isArray ? parameters[2].AsBool : parameters["loop"].AsBool;
+
+                        var filePath = $"{Path.GetDirectoryName(InterfaceManager.inst.CurrentMenu.filePath)}{music}";
+                        if (!RTFile.FileExists(filePath))
+                        {
+                            InterfaceManager.inst.PlayMusic(AudioManager.inst.GetMusic(music), fadeDuration: fadeDuration, loop: loop);
+                            return;
+                        }
+
+                        var audioType = RTFile.GetAudioType(filePath);
+                        if (audioType == AudioType.MPEG)
+                            InterfaceManager.inst.PlayMusic(LSAudio.CreateAudioClipUsingMP3File(filePath), fadeDuration: fadeDuration, loop: loop);
+                        else
+                            CoreHelper.StartCoroutine(AlephNetworkManager.DownloadAudioClip($"file://{filePath}", audioType, audioClip => InterfaceManager.inst.PlayMusic(audioClip, fadeDuration: fadeDuration, loop: loop)));
+
+                        break;
+                    }
+
+                #endregion
+
+                #region StopMusic
+
+                // Stops the currently playing music. Can be good for moments where we want silence.
+                // Function has no parameters.
+                case "StopMusic":
+                    {
+                        InterfaceManager.inst.StopMusic();
+                        break;
+                    }
+
+                #endregion
+
+                #region PauseMusic
+
+                // Pauses the current music if it's currently playing.
+                case "PauseMusic":
+                    {
+                        if (CoreHelper.InGame && parameters != null && (parameters.IsArray && !parameters[0].AsBool || parameters.IsObject && !parameters["game_audio"].AsBool))
+                            InterfaceManager.inst.CurrentAudioSource.Pause();
+                        else
+                            AudioManager.inst.CurrentAudioSource.Pause();
+
+                        break;
+                    }
+
+                #endregion
+
+                #region ResumeMusic
+
+                // Resumes the current music if it was paused.
+                case "ResumeMusic":
+                    {
+                        if (CoreHelper.InGame && parameters != null && (parameters.IsArray && !parameters[0].AsBool || parameters.IsObject && !parameters["game_audio"].AsBool))
+                            InterfaceManager.inst.CurrentAudioSource.UnPause();
+                        else
+                            AudioManager.inst.CurrentAudioSource.UnPause();
+
+                        break;
+                    }
+
+                #endregion
+
+                #endregion
+
+                #region Elements
 
                 #region SetElementActive
 
@@ -1280,58 +1399,6 @@ namespace BetterLegacy.Menus.UI.Elements
                         {
                             layout.gameObject.SetActive(active);
                         }
-
-                        break;
-                    }
-
-                #endregion
-
-                #region SetDiscordStatus
-
-                // Sets the users' Discord status.
-                // Supports both JSON array and JSON object.
-                //
-                // - JSON Array Structure -
-                // 0 = state
-                // 1 = details
-                // 2 = icon
-                // 3 = art
-                // Example:
-                // [
-                //   "Navigating Main Menu",
-                //   "In Menus",
-                //   "menu", < accepts values: arcade, editor, play, menu
-                //   "pa_logo_white" < accepts values: pa_logo_white, pa_logo_black
-                // ]
-                //
-                // - JSON Object Structure -
-                // "state"
-                // "details"
-                // "icon"
-                // "art"
-                // Example:
-                // {
-                //   "state": "Interfacing or soemthing Idk",
-                //   "details": "In the Interface",
-                //   "icon": "play"
-                //   // if art is null, then the default art will be pa_logo_white.
-                // }
-                case "SetDiscordStatus":
-                    {
-                        if (parameters == null)
-                            return;
-
-                        if (parameters.IsObject)
-                        {
-                            CoreHelper.UpdateDiscordStatus(parameters["state"], parameters["details"], parameters["icon"], parameters["art"] != null ? parameters["art"] : "pa_logo_white");
-
-                            return;
-                        }
-
-                        if (parameters.IsArray && parameters.Count < 1)
-                            return;
-
-                        CoreHelper.UpdateDiscordStatus(parameters[0], parameters[1], parameters[2], parameters.Count > 3 ? parameters[3] : "pa_logo_white");
 
                         break;
                     }
@@ -1701,6 +1768,237 @@ namespace BetterLegacy.Menus.UI.Elements
                             animation.Stop();
                             AnimationManager.inst.Remove(animation.id);
                         }
+
+                        break;
+                    }
+
+                #endregion
+
+                #region SetColor
+
+                // Sets the elements' color slot.
+                // Supports both JSON array and JSON object.
+                //
+                // - JSON Array Structure -
+                // 0 = color
+                // Example:
+                // [
+                //   "2"
+                // ]
+                //
+                // - JSON Object Structure -
+                // "col"
+                // Example:
+                // {
+                //   "col": "17" < uses Beatmap Theme object color slots, so max should be 17 (including 0).
+                // }
+                case "SetColor":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["col"] == null)
+                            return;
+
+                        color = parameters.IsArray ? parameters[0].AsInt : parameters["col"].AsInt;
+
+                        break;
+                    }
+
+                #endregion
+
+                #region SetText
+
+                // Sets an objects' text.
+                // Supports both JSON array and JSON object.
+                // 
+                // - JSON Array Structure -
+                // 0 = id
+                // 0 = text
+                // Example:
+                // [
+                //   "100",
+                //   "This is a text example!"
+                // ]
+                // 
+                // - JSON Object Structure -
+                // "id"
+                // "text"
+                // Example:
+                // {
+                //   "id": "100",
+                //   "text": "This is a text example!"
+                // }
+                case "SetText":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["id"] == null || parameters["text"] == null) || InterfaceManager.inst.CurrentMenu == null)
+                            return;
+
+                        var isArray = parameters.IsArray;
+                        string array = isArray ? parameters[0] : parameters["id"];
+                        string text = isArray ? parameters[1] : parameters["text"];
+
+                        if (InterfaceManager.inst.CurrentMenu.elements.TryFind(x => x.id == array, out MenuImage menuImage) && menuImage is MenuText menuText)
+                        {
+                            menuText.text = text;
+                            menuText.textUI.maxVisibleCharacters = text.Length;
+                            menuText.textUI.text = text;
+                        }
+
+                        break;
+                    }
+
+                #endregion
+
+                #region RemoveElement
+
+                // Finds an element with a matching ID, destroys its object and removes it.
+                // Supports both JSON array and JSON object.
+                // 
+                // - JSON Array Structure -
+                // 0 = id
+                // Example:
+                // [
+                //   "522666" < ID to find
+                // ]
+                // 
+                // - JSON Object Structure -
+                // "id"
+                // Example:
+                // {
+                //   "id": "85298259"
+                // }
+                case "RemoveElement":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["id"] == null)
+                            break;
+
+                        var id = parameters.IsArray ? parameters[0] : parameters["id"];
+                        if (InterfaceManager.inst.CurrentMenu.elements.TryFind(x => x.id == id, out MenuImage element))
+                        {
+                            element.Clear();
+                            if (element.gameObject)
+                                CoreHelper.Destroy(element.gameObject);
+                            InterfaceManager.inst.CurrentMenu.elements.Remove(element);
+                        }
+
+                        break;
+                    }
+
+                #endregion
+
+                #region RemoveMultipleElements
+
+                // Finds an element with a matching ID, destroys its object and removes it.
+                // Supports both JSON array and JSON object.
+                // 
+                // - JSON Array Structure -
+                // 0 = ids
+                // Example:
+                // [
+                //   [
+                //     "522666",
+                //     "2672",
+                //     "824788",
+                //   ]
+                // ]
+                // 
+                // - JSON Object Structure -
+                // "ids"
+                // Example:
+                // {
+                //   "ids": [
+                //     "522666",
+                //     "2672",
+                //     "824788",
+                //   ]
+                // }
+                case "RemoveMultipleElements":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["ids"] == null)
+                            break;
+
+                        var ids = parameters.IsArray ? parameters[0] : parameters["ids"];
+                        if (ids == null)
+                            break;
+
+                        for (int i = 0; i < ids.Count; i++)
+                        {
+                            var id = ids[i];
+                            if (InterfaceManager.inst.CurrentMenu.elements.TryFind(x => x.id == id, out MenuImage element))
+                            {
+                                element.Clear();
+                                if (element.gameObject)
+                                    CoreHelper.Destroy(element.gameObject);
+                                InterfaceManager.inst.CurrentMenu.elements.Remove(element);
+                            }
+                        }
+
+                        break;
+                    }
+
+                #endregion
+
+                #region AddElement
+
+                // Adds a list of elements to the interface.
+                // Supports both JSON array and JSON object.
+                // 
+                // - JSON Array Structure -
+                // 0 = elements
+                // Example:
+                // [
+                //   {
+                //     "type": "Image",
+                //     "id": "5343663626",
+                //     "name": "BG",
+                //     "rect": {
+                //       "anc_pos": {
+                //         "x": "0",
+                //         "y": "0"
+                //       }
+                //     }
+                //   }
+                // ]
+                // 
+                // - JSON Object Structure -
+                // "elements"
+                // Example:
+                // {
+                //   "type": "Image",
+                //   "id": "5343663626",
+                //   "name": "BG",
+                //   "rect": {
+                //     "anc_pos": {
+                //       "x": "0",
+                //       "y": "0"
+                //     }
+                //   }
+                // }
+                case "AddElement":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["elements"] == null)
+                            break;
+
+                        var customMenu = InterfaceManager.inst.CurrentMenu;
+                        customMenu.elements.AddRange(CustomMenu.ParseElements(parameters.IsArray ? parameters[0] : parameters["elements"], customMenu.prefabs, customMenu.spriteAssets));
+
+                        CoreHelper.StartCoroutine(customMenu.GenerateUI());
+
+                        break;
+                    }
+
+                #endregion
+
+                #endregion
+
+                #region Effects
+
+                #region SetDefaultEvents
+
+                case "SetDefaultEvents":
+                    {
+                        if (CoreHelper.InGame || !MenuEffectsManager.inst)
+                            break;
+
+                        MenuEffectsManager.inst.UpdateChroma(0.1f);
 
                         break;
                     }
@@ -2419,77 +2717,6 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 #endregion
 
-                #region SetColor
-
-                // Sets the elements' color slot.
-                // Supports both JSON array and JSON object.
-                //
-                // - JSON Array Structure -
-                // 0 = color
-                // Example:
-                // [
-                //   "2"
-                // ]
-                //
-                // - JSON Object Structure -
-                // "col"
-                // Example:
-                // {
-                //   "col": "17" < uses Beatmap Theme object color slots, so max should be 17 (including 0).
-                // }
-                case "SetColor":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["col"] == null)
-                            return;
-
-                        color = parameters.IsArray ? parameters[0].AsInt : parameters["col"].AsInt;
-
-                        break;
-                    }
-
-                #endregion
-
-                #region SetText
-
-                // Sets an objects' text.
-                // Supports both JSON array and JSON object.
-                // 
-                // - JSON Array Structure -
-                // 0 = id
-                // 0 = text
-                // Example:
-                // [
-                //   "100",
-                //   "This is a text example!"
-                // ]
-                // 
-                // - JSON Object Structure -
-                // "id"
-                // "text"
-                // Example:
-                // {
-                //   "id": "100",
-                //   "text": "This is a text example!"
-                // }
-                case "SetText":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["id"] == null || parameters["text"] == null) || InterfaceManager.inst.CurrentMenu == null)
-                            return;
-
-                        var isArray = parameters.IsArray;
-                        string array = isArray ? parameters[0] : parameters["id"];
-                        string text = isArray ? parameters[1] : parameters["text"];
-
-                        if (InterfaceManager.inst.CurrentMenu.elements.TryFind(x => x.id == array, out MenuImage menuImage) && menuImage is MenuText menuText)
-                        {
-                            menuText.text = text;
-                            menuText.textUI.maxVisibleCharacters = text.Length;
-                            menuText.textUI.text = text;
-                        }
-
-                        break;
-                    }
-
                 #endregion
 
                 #region LoadLevel
@@ -2558,140 +2785,54 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 #endregion
 
-                #region RemoveElement
+                #region Online
 
-                // Finds an element with a matching ID, destroys its object and removes it.
+                #region SetDiscordStatus
+
+                // Sets the users' Discord status.
                 // Supports both JSON array and JSON object.
-                // 
+                //
                 // - JSON Array Structure -
-                // 0 = id
+                // 0 = state
+                // 1 = details
+                // 2 = icon
+                // 3 = art
                 // Example:
                 // [
-                //   "522666" < ID to find
+                //   "Navigating Main Menu",
+                //   "In Menus",
+                //   "menu", < accepts values: arcade, editor, play, menu
+                //   "pa_logo_white" < accepts values: pa_logo_white, pa_logo_black
                 // ]
-                // 
+                //
                 // - JSON Object Structure -
-                // "id"
+                // "state"
+                // "details"
+                // "icon"
+                // "art"
                 // Example:
                 // {
-                //   "id": "85298259"
+                //   "state": "Interfacing or soemthing Idk",
+                //   "details": "In the Interface",
+                //   "icon": "play"
+                //   // if art is null, then the default art will be pa_logo_white.
                 // }
-                case "RemoveElement":
+                case "SetDiscordStatus":
                     {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["id"] == null)
-                            break;
+                        if (parameters == null)
+                            return;
 
-                        var id = parameters.IsArray ? parameters[0] : parameters["id"];
-                        if (InterfaceManager.inst.CurrentMenu.elements.TryFind(x => x.id == id, out MenuImage element))
+                        if (parameters.IsObject)
                         {
-                            element.Clear();
-                            if (element.gameObject)
-                                CoreHelper.Destroy(element.gameObject);
-                            InterfaceManager.inst.CurrentMenu.elements.Remove(element);
+                            CoreHelper.UpdateDiscordStatus(parameters["state"], parameters["details"], parameters["icon"], parameters["art"] != null ? parameters["art"] : "pa_logo_white");
+
+                            return;
                         }
 
-                        break;
-                    }
+                        if (parameters.IsArray && parameters.Count < 1)
+                            return;
 
-                #endregion
-
-                #region RemoveMultipleElements
-
-                // Finds an element with a matching ID, destroys its object and removes it.
-                // Supports both JSON array and JSON object.
-                // 
-                // - JSON Array Structure -
-                // 0 = ids
-                // Example:
-                // [
-                //   [
-                //     "522666",
-                //     "2672",
-                //     "824788",
-                //   ]
-                // ]
-                // 
-                // - JSON Object Structure -
-                // "ids"
-                // Example:
-                // {
-                //   "ids": [
-                //     "522666",
-                //     "2672",
-                //     "824788",
-                //   ]
-                // }
-                case "RemoveMultipleElements":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["ids"] == null)
-                            break;
-
-                        var ids = parameters.IsArray ? parameters[0] : parameters["ids"];
-                        if (ids == null)
-                            break;
-
-                        for (int i = 0; i < ids.Count; i++)
-                        {
-                            var id = ids[i];
-                            if (InterfaceManager.inst.CurrentMenu.elements.TryFind(x => x.id == id, out MenuImage element))
-                            {
-                                element.Clear();
-                                if (element.gameObject)
-                                    CoreHelper.Destroy(element.gameObject);
-                                InterfaceManager.inst.CurrentMenu.elements.Remove(element);
-                            }
-                        }
-
-                        break;
-                    }
-
-                #endregion
-
-                #region AddElement
-
-                // Adds a list of elements to the interface.
-                // Supports both JSON array and JSON object.
-                // 
-                // - JSON Array Structure -
-                // 0 = elements
-                // Example:
-                // [
-                //   {
-                //     "type": "Image",
-                //     "id": "5343663626",
-                //     "name": "BG",
-                //     "rect": {
-                //       "anc_pos": {
-                //         "x": "0",
-                //         "y": "0"
-                //       }
-                //     }
-                //   }
-                // ]
-                // 
-                // - JSON Object Structure -
-                // "elements"
-                // Example:
-                // {
-                //   "type": "Image",
-                //   "id": "5343663626",
-                //   "name": "BG",
-                //   "rect": {
-                //     "anc_pos": {
-                //       "x": "0",
-                //       "y": "0"
-                //     }
-                //   }
-                // }
-                case "AddElement":
-                    {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["elements"] == null)
-                            break;
-
-                        var customMenu = InterfaceManager.inst.CurrentMenu;
-                        customMenu.elements.AddRange(CustomMenu.ParseElements(parameters.IsArray ? parameters[0] : parameters["elements"], customMenu.prefabs, customMenu.spriteAssets));
-
-                        CoreHelper.StartCoroutine(customMenu.GenerateUI());
+                        CoreHelper.UpdateDiscordStatus(parameters[0], parameters[1], parameters[2], parameters.Count > 3 ? parameters[3] : "pa_logo_white");
 
                         break;
                     }
@@ -2711,39 +2852,11 @@ namespace BetterLegacy.Menus.UI.Elements
                         break;
                     }
 
-                case "PauseMusic":
-                    {
-                        if (parameters != null && (parameters.IsArray && !parameters[0].AsBool || parameters.IsObject && !parameters["game_audio"].AsBool))
-                            InterfaceManager.inst.CurrentAudioSource.Pause();
-                        else
-                            AudioManager.inst.CurrentAudioSource.Pause();
-
-                        break;
-                    }
-                    
-                case "ResumeMusic":
-                    {
-                        if (parameters != null && (parameters.IsArray && !parameters[0].AsBool || parameters.IsObject && !parameters["game_audio"].AsBool))
-                            InterfaceManager.inst.CurrentAudioSource.UnPause();
-                        else
-                            AudioManager.inst.CurrentAudioSource.UnPause();
-
-                        break;
-                    }
+                #endregion
 
                 #endregion
 
                 #region Specific Functions
-
-                case "SetDefaultEvents":
-                    {
-                        if (CoreHelper.InGame)
-                            break;
-
-                        MenuEffectsManager.inst.UpdateChroma(0.1f);
-
-                        break;
-                    }
 
                 #region Profile
 
