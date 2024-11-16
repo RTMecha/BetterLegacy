@@ -45,6 +45,7 @@
 - A way to detect duplicate object IDs.
 - Some way to replace the song in-editor. (Have the current song update if the song that's being replaced is the same level) > 1.8.0
 - Possibly update input select scene to use new interface system.
+- Add difficulty and artist name to the level creator popup.
 - Improve profile menu. > 1.8.0
 - Improve changelog menu.
 - A bind system for interfaces where an element prefab can be spawned based on a JSON file or file list.
