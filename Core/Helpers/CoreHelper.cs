@@ -27,16 +27,6 @@ namespace BetterLegacy.Core.Helpers
         #region Properties
 
         /// <summary>
-        /// The current scene PA is in.
-        /// </summary>
-        public static string CurrentScene { get; set; }
-
-        /// <summary>
-        /// The current type of scene PA is in.
-        /// </summary>
-        public static SceneType CurrentSceneType => CurrentScene == "Editor" ? SceneType.Editor : CurrentScene == "Game" ? SceneType.Game : SceneType.Interface;
-
-        /// <summary>
         /// The multiplied screen scale, multiplied by a base resolution of 1920. To be used for fixing UI scale issues.
         /// </summary>
         public static float ScreenScale => Screen.width / 1920f;
@@ -307,18 +297,6 @@ namespace BetterLegacy.Core.Helpers
 
         #endregion
 
-        #region Scene
-
-        public static void LoadEditorWithProgress() => SceneManager.inst.LoadScene("Editor", true);
-        public static void LoadGameWithProgress() => SceneManager.inst.LoadScene("Game", true);
-        
-        public static void LoadEditor() => SceneManager.inst.LoadScene("Editor", false);
-        public static void LoadGame() => SceneManager.inst.LoadScene("Game", false);
-
-        public static Action<string> OnSceneLoad { get; set; }
-
-        #endregion
-
         #endregion
 
         #region Logging
@@ -459,149 +437,9 @@ namespace BetterLegacy.Core.Helpers
             return Color.white - invertedColorSum / colors.Count;
         }
 
-        #endregion
-
-        #region Strings
-
-        public static string ReplaceFormatting(string str)
-        {
-            // Here we replace every instance of <formatting> in the text. Examples include <b>, <i>, <color=#FFFFFF>.
-            var matches = Regex.Matches(str, "<(.*?)>");
-            foreach (var obj in matches)
-            {
-                var match = (Match)obj;
-                str = str.Replace(match.Groups[0].ToString(), "");
-            }
-            return str;
-        }
-
-        public static string ReplaceInsert(string str, string insert, int startIndex, int endIndex)
-        {
-            startIndex = Mathf.Clamp(startIndex, 0, str.Length - 1);
-            endIndex = Mathf.Clamp(endIndex, 0, str.Length - 1);
-
-            //if (endIndex <= startIndex)
-            //    return str;
-
-            while (startIndex <= endIndex)
-            {
-                var list = str.ToCharArray().ToList();
-                list.RemoveAt(startIndex);
-
-                str = new string(list.ToArray());
-                endIndex--;
-            }
-
-            return str.Insert(startIndex, insert);
-        }
-
-        public static string SectionString(string str, int startIndex, int endIndex) => str.Substring(startIndex, endIndex - startIndex + 1);
-
-        public static string[] GetLines(string str) => str.Split(new string[] { "\n", "\r\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
-
-        public static string InterpolateString(string str, float t) => str.Substring(0, Mathf.Clamp((int)RTMath.Lerp(0, str.Length, t), 0, str.Length));
-
-        public static KeyValuePair<string, string> ReplaceMatching(KeyValuePair<string, string> keyValuePair, string sequenceText, string pattern)
-        {
-            var text = keyValuePair.Key;
-            var replace = keyValuePair.Value;
-            var matches1 = Regex.Matches(text, pattern);
-            for (int i = 0; i < matches1.Count; i++)
-            {
-                var m = matches1[i];
-                if (!sequenceText.Contains(m.Groups[0].ToString()))
-                    text = text.Replace(m.Groups[0].ToString(), "");
-                replace = replace.Replace(m.Groups[0].ToString(), "");
-            }
-            return new KeyValuePair<string, string>(text, replace);
-        }
-
-        public static bool RegexMatch(string str, Regex regex, out Match match)
-        {
-            if (regex != null)
-            {
-                match = regex.Match(str);
-                return match.Success;
-            }
-
-            match = null;
-            return false;
-        }
-
-        public static void RegexMatch(string str, Regex regex, Action<Match> matchAction)
-        {
-            if (RegexMatch(str, regex, out Match match))
-                matchAction?.Invoke(match);
-        }
-
-        public static void RegexMatches(string str, Regex regex, Action<Match> matchAction)
-        {
-            var matchCollection = regex.Matches(str);
-            foreach (Match match in matchCollection)
-                matchAction?.Invoke(match);
-        }
-
-        public static string FlipLeftRight(string str)
-        {
-            string s;
-            s = str.Replace("Left", "LSLeft87344874")
-                .Replace("Right", "LSRight87344874")
-                .Replace("left", "LSleft87344874")
-                .Replace("right", "LSright87344874")
-                .Replace("LEFT", "LSLEFT87344874")
-                .Replace("RIGHT", "LSRIGHT87344874");
-
-            return s.Replace("LSLeft87344874", "Right")
-                .Replace("LSRight87344874", "Left")
-                .Replace("LSleft87344874", "right")
-                .Replace("LSright87344874", "left")
-                .Replace("LSLEFT87344874", "RIGHT")
-                .Replace("LSRIGHT87344874", "LEFT");
-        }
-        
-        public static string FlipUpDown(string str)
-        {
-            string s;
-            s = str.Replace("Up", "LSUp87344874")
-                .Replace("Down", "LSDown87344874")
-                .Replace("up", "LSup87344874")
-                .Replace("down", "LSdown87344874")
-                .Replace("UP", "LSUP87344874")
-                .Replace("DOWN", "LSDOWN87344874");
-
-            return s.Replace("LSUp87344874", "Down")
-                .Replace("LSDown87344874", "Up")
-                .Replace("LSup87344874", "down")
-                .Replace("LSdown87344874", "up")
-                .Replace("LSUP87344874", "DOWN")
-                .Replace("LSDOWN87344874", "UP");
-        }
-        
-        public static string FlipUpperLower(string str)
-        {
-            string s;
-            s = str.Replace("Upper", "LSUpper87344874")
-                .Replace("Lower", "LSLower87344874")
-                .Replace("upper", "LSupper87344874")
-                .Replace("lower", "LSlower87344874")
-                .Replace("UPPER", "LSUPPER87344874")
-                .Replace("LOWER", "LSLOWER87344874");
-
-            return s.Replace("LSUpper87344874", "Lower")
-                .Replace("LSLower87344874", "Upper")
-                .Replace("LSupper87344874", "lower")
-                .Replace("LSlower87344874", "upper")
-                .Replace("LSUPPER87344874", "LOWER")
-                .Replace("LSLOWER87344874", "UPPER");
-        }
-
         public static bool ColorMatch(Color a, Color b, float range, bool alpha = false)
             => alpha ? a.r < b.r + range && a.r > b.r - range && a.g < b.g + range && a.g > b.g - range && a.b < b.b + range && a.b > b.b - range && a.a < b.a + range && a.a > b.a - range :
                 a.r < b.r + range && a.r > b.r - range && a.g < b.g + range && a.g > b.g - range && a.b < b.b + range && a.b > b.b - range;
-
-        public static bool SearchString(string searchTerm, string a) => string.IsNullOrEmpty(searchTerm) || a.ToLower().Contains(searchTerm.ToLower());
-
-        public static string FormatLevelRank(DataManager.LevelRank levelRank) => $"<color=#{LSColors.ColorToHex(levelRank.color)}><b>{levelRank.name}</b></color>";
 
         #endregion
 
@@ -1257,7 +1095,7 @@ namespace BetterLegacy.Core.Helpers
         /// </summary>
         public static void SetCameraRenderDistance()
         {
-            if (GameManager.inst == null)
+            if (!InGame)
                 return;
 
             var camera = Camera.main;
@@ -1300,27 +1138,26 @@ namespace BetterLegacy.Core.Helpers
         {
             var allLayers = new List<int>();
 
-            allLayers.AddRange(GameData.Current.beatmapObjects.Where(x => !allLayers.Contains(x.editorData.layer)).Select(x => x.editorData.layer));
-            allLayers.AddRange(GameData.Current.prefabObjects.Where(x => !allLayers.Contains(x.editorData.layer)).Select(x => x.editorData.layer));
-
-            allLayers = (from x in allLayers
-                         orderby x ascending
-                         select x).ToList();
-
-            string lister = "";
-
-            for (int i = 0; i < allLayers.Count; i++)
+            var beatmapObjects = GameData.Current.beatmapObjects;
+            for (int i = 0; i < beatmapObjects.Count; i++)
             {
-                int num = allLayers[i] + 1;
-                if (!lister.Contains(num.ToString()))
-                {
-                    lister += num.ToString();
-                    if (i != allLayers.Count - 1)
-                        lister += ", ";
-                }
+                var beatmapObject = beatmapObjects[i];
+                // we add 1 to the objects' layer since people using the editor only see the non-zero version of the layer system.
+                if (!allLayers.Contains(beatmapObject.editorData.layer + 1))
+                    allLayers.Add(beatmapObject.editorData.layer + 1);
+            }
+            
+            var prefabObjects = GameData.Current.prefabObjects;
+            for (int i = 0; i < prefabObjects.Count; i++)
+            {
+                var prefabObject = prefabObjects[i];
+                if (!allLayers.Contains(prefabObject.editorData.layer + 1))
+                    allLayers.Add(prefabObject.editorData.layer + 1);
             }
 
-            EditorManager.inst.DisplayNotification($"Objects on Layers:<br>[ {lister} ]", 2f, EditorManager.NotificationType.Info);
+            allLayers.Sort();
+
+            EditorManager.inst.DisplayNotification($"Objects on Layers:<br>{RTString.ArrayToString(allLayers)}", 3f, EditorManager.NotificationType.Info);
         }
 
         public static string GetShape(int _shape, int _shapeOption)
