@@ -45,7 +45,7 @@
         Editor,
         Interface,
         post_level,
-        Arcade_Level
+        Arcade_Select
     }
 
     public enum LoadingDisplayType
