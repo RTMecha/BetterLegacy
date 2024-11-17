@@ -143,7 +143,7 @@ namespace BetterLegacy.Patchers
 
             if (LevelManager.IsArcade)
             {
-                SceneManager.inst.LoadScene("Arcade Select", false);
+                SceneHelper.LoadScene(SceneName.Arcade_Select, false);
                 return false;
             }
             SaveManager.inst.LoadCurrentStoryLevel();

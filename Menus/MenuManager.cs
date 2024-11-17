@@ -45,7 +45,7 @@ namespace BetterLegacy.Menus
 
             // For loading the Interface scene when you make a change to the menus.
             if (Input.GetKeyDown(MenuConfig.Instance.ReloadMainMenu.Value) && ic && ic.gameObject.scene.name == "Main Menu")
-                SceneManager.inst.LoadScene("Main Menu");
+                SceneHelper.LoadScene(SceneName.Main_Menu);
 
             // For resetting menu selection, due to UnityExplorer removing the menu selection.
             if (Input.GetKeyDown(MenuConfig.Instance.SelectFirstButton.Value) && ic && ic.buttons != null && ic.buttons.Count > 0)

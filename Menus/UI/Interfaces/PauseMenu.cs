@@ -109,7 +109,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
             {
                 UnPause, // 0
                 () => ArcadeHelper.RestartLevel(UnPause), // 1
-                () => { SceneManager.inst.LoadScene("Editor", true); }, // 2
+                SceneHelper.LoadEditorWithProgress, // 2
                 ConfigManager.inst.Show, // 3
                 ArcadeHelper.QuitToArcade, // 4
                 Application.Quit, // 5
@@ -199,7 +199,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         selectedTextVal = -40f,
                         length = 1f,
                         playBlipSound = true,
-                        func = () => { SceneManager.inst.LoadScene("Interface", true); },
+                        func = SceneHelper.LoadInterfaceScene,
                     });
                     num++;
                 }

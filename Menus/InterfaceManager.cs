@@ -383,7 +383,7 @@ namespace BetterLegacy.Menus
 
         IEnumerator IStartupInterface()
         {
-            CoreHelper.Log($"Is loading scene: {SceneManagerPatch.loading}");
+            CoreHelper.Log($"Is loading scene: {SceneHelper.Loading}");
 
             yield return StartCoroutine(AlephNetworkManager.DownloadJSONFile("https://raw.githubusercontent.com/RTMecha/BetterLegacy/master/updates.lss", x =>
             {
@@ -410,7 +410,7 @@ namespace BetterLegacy.Menus
                     textColor = 6
                 });
 
-                var lines = CoreHelper.GetLines(x);
+                var lines = RTString.GetLines(x);
 
                 for (int i = 0; i < lines.Length; i++)
                 {
@@ -449,10 +449,8 @@ namespace BetterLegacy.Menus
                 CurrentGenerateUICoroutine = StartCoroutine(changeLogMenu.GenerateUI());
                 PlayMusic();
 
-                if (CoreHelper.InEditor || SceneManagerPatch.loading)
-                {
+                if (CoreHelper.InEditor || SceneHelper.Loading)
                     CloseMenus();
-                }
 
                 ChangeLogMenu.Seen = true;
             }, onError =>

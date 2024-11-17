@@ -39,7 +39,7 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static void AwakePrefix(GameManager __instance)
         {
-            CoreHelper.Log($"Current scene type: {CoreHelper.CurrentSceneType}\nCurrent scene name: {__instance.gameObject.scene.name}");
+            CoreHelper.Log($"Current scene type: {SceneHelper.CurrentSceneType}\nCurrent scene name: {__instance.gameObject.scene.name}");
             CoreHelper.LogInit(__instance.className);
 
             if (!GameObject.Find("Game Systems/EffectsManager").GetComponent<RTEffectsManager>())
@@ -219,7 +219,7 @@ namespace BetterLegacy.Patchers
             __instance.gameState = GameManager.State.Playing;
 
             AudioManager.inst.CurrentAudioSource.Play();
-            AudioManager.inst.SetPitch(__instance.getPitch());
+            AudioManager.inst.SetPitch(CoreHelper.Pitch);
 
             __instance.UpdateEventSequenceTime();
             __instance.isReversing = false;

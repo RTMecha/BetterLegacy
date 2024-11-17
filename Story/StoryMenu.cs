@@ -113,8 +113,7 @@ namespace BetterLegacy.Story
                     {
                         StoryManager.inst.SaveSlot = index;
                         LevelManager.IsArcade = false;
-                        SceneManager.inst.LoadScene("Input Select");
-                        LevelManager.OnInputsSelected = () => { SceneManager.inst.LoadScene("Interface"); };
+                        SceneHelper.LoadInputSelect(SceneHelper.LoadInterfaceScene);
                     },
                 });
 

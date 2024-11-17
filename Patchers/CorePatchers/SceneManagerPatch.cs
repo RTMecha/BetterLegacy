@@ -17,28 +17,22 @@ namespace BetterLegacy.Patchers
     {
         public static SceneManager Instance => SceneManager.inst;
 
-        public static bool loading;
-        public static Text loadingText;
-        public static string previousScene;
-        public static Image loadingImage;
-        public static float startLoadTime;
-
         [HarmonyPatch(nameof(SceneManager.Awake))]
         [HarmonyPostfix]
         static void AwakePostfix(SceneManager __instance)
         {
-            loadingText = __instance.icon.GetComponent<Text>();
+            SceneHelper.loadingText = __instance.icon.GetComponent<Text>();
 
-            if (!loadingImage && !__instance.canvas.transform.Find("loading sprite"))
+            if (!SceneHelper.loadingImage && !__instance.canvas.transform.Find("loading sprite"))
             {
-                loadingImage = Creator.NewUIObject("loading sprite", __instance.canvas.transform).AddComponent<Image>();
-                UIManager.SetRectTransform(loadingImage.rectTransform, new Vector2(-172f, 80f), Vector2.right, Vector2.right, new Vector2(0.5f, 0.5f), new Vector2(100f, 100f));
-                loadingImage?.gameObject?.SetActive(false);
+                SceneHelper.loadingImage = Creator.NewUIObject("loading sprite", __instance.canvas.transform).AddComponent<Image>();
+                UIManager.SetRectTransform(SceneHelper.loadingImage.rectTransform, new Vector2(-172f, 80f), Vector2.right, Vector2.right, new Vector2(0.5f, 0.5f), new Vector2(100f, 100f));
+                SceneHelper.loadingImage?.gameObject?.SetActive(false);
             }
             else if (__instance.canvas.transform.Find("loading sprite"))
             {
-                loadingImage = __instance.canvas.transform.Find("loading sprite").GetComponent<Image>();
-                loadingImage?.gameObject?.SetActive(false);
+                SceneHelper.loadingImage = __instance.canvas.transform.Find("loading sprite").GetComponent<Image>();
+                SceneHelper.loadingImage?.gameObject?.SetActive(false);
             }
         }
 
@@ -49,11 +43,11 @@ namespace BetterLegacy.Patchers
             try
             {
                 var loadingDisplayType = CoreConfig.Instance.LoadingDisplayType.Value;
-                if (loading && (loadingDisplayType == LoadingDisplayType.Waveform || loadingDisplayType == LoadingDisplayType.Doggo) && loadingImage.isActiveAndEnabled)
+                if (SceneHelper.Loading && (loadingDisplayType == LoadingDisplayType.Waveform || loadingDisplayType == LoadingDisplayType.Doggo) && SceneHelper.loadingImage.isActiveAndEnabled)
                 {
-                    var time = Time.time - startLoadTime;
+                    var time = Time.time - SceneHelper.startLoadTime;
                     var t = time % Instance.loadingTextures.Length;
-                    loadingImage.sprite = Instance.loadingTextures[(int)t];
+                    SceneHelper.loadingImage.sprite = Instance.loadingTextures[(int)t];
                 }
             }
             catch
@@ -68,11 +62,11 @@ namespace BetterLegacy.Patchers
         {
             try
             {
-                if (loadingText == null && Instance.icon)
-                    loadingText = Instance.icon.GetComponent<Text>();
+                if (SceneHelper.loadingText == null && Instance.icon)
+                    SceneHelper.loadingText = Instance.icon.GetComponent<Text>();
 
-                if (loadingText.isActiveAndEnabled)
-                    loadingText.text = $"<b>Loading : {_value}%</b>";
+                if (SceneHelper.loadingText.isActiveAndEnabled)
+                    SceneHelper.loadingText.text = $"<b>Loading : {_value}%</b>";
             }
             catch
             {
@@ -86,160 +80,8 @@ namespace BetterLegacy.Patchers
         [HarmonyPrefix]
         static bool DisplayLoadingScreenPrefix(ref IEnumerator __result, string __0, bool __1 = true)
         {
-            ExampleManager.onSceneLoad?.Invoke(__0);
-
-            CoreHelper.CurrentScene = __0;
-            CoreHelper.Log($"Set Scene\nType: {CoreHelper.CurrentSceneType}\nName: {__0}");
-
-            try
-            {
-                previousScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-            }
-            catch (System.Exception ex)
-            {
-                CoreHelper.LogError($"Error: {ex}");
-            }
-
-            __result = DisplayLoadingScreen(__0, __1);
+            __result = SceneHelper.ILoadScene(__0, __1);
             return false;
-        }
-
-        public static void SetActive(bool active)
-        {
-            Instance.background.SetActive(active);
-            Instance.icon.SetActive(active);
-
-            if (!active)
-                loadingImage?.gameObject.SetActive(false);
-        }
-
-        public static bool displayLoadingText = true;
-
-        public static void UpdateProgress(float progress)
-        {
-            try
-            {
-                if (!loadingText && Instance.icon)
-                    loadingText = Instance.icon.GetComponent<Text>();
-
-                if (!loadingImage && !Instance.canvas.transform.Find("loading sprite"))
-                    loadingImage = Creator.NewUIObject("loading sprite", Instance.canvas.transform).AddComponent<Image>();
-                else if (Instance.canvas.transform.Find("loading sprite"))
-                    loadingImage = Instance.canvas.transform.Find("loading sprite").GetComponent<Image>();
-
-                var loadingDisplayType = CoreConfig.Instance.LoadingDisplayType.Value;
-                switch (loadingDisplayType)
-                {
-                    case LoadingDisplayType.Bar:
-                        {
-                            loadingImage?.gameObject?.SetActive(false);
-                            if (loadingText.isActiveAndEnabled)
-                                loadingText.text = $"<b>{(displayLoadingText ? "Loading : " : "")}[ {FontManager.TextTranslater.ConvertBar("▓", progress)} ]</b>";
-                            break;
-                        }
-                    case LoadingDisplayType.EqualsBar:
-                        {
-                            loadingImage?.gameObject?.SetActive(false);
-                            if (loadingText.isActiveAndEnabled)
-                                loadingText.text = $"<b>{(displayLoadingText ? "Loading : " : "")}[ {FontManager.TextTranslater.ConvertBar("=", progress)} ]</b>";
-                            break;
-                        }
-                    case LoadingDisplayType.Percentage:
-                        {
-                            loadingImage?.gameObject?.SetActive(false);
-                            if (loadingText.isActiveAndEnabled)
-                                loadingText.text = $"<b>{(displayLoadingText ? "Loading : " : "")}{progress.ToString("F0")}%</b>";
-                            break;
-                        }
-                    case LoadingDisplayType.Waveform:
-                        {
-                            loadingImage?.gameObject?.SetActive(true);
-                            if (loadingText.isActiveAndEnabled)
-                                loadingText.text = "";
-
-                            break;
-                        }
-                    case LoadingDisplayType.Doggo:
-                        {
-                            loadingImage?.gameObject?.SetActive(true);
-                            if (loadingText.isActiveAndEnabled)
-                                loadingText.text = "";
-
-                            break;
-                        }
-                }
-            }
-            catch
-            {
-
-            }
-
-        }
-
-        static IEnumerator DisplayLoadingScreen(string level, bool showLoading = true)
-        {
-            startLoadTime = Time.time;
-            AudioManager.inst.SetPitch(1f);
-            loading = true;
-            SetActive(showLoading);
-
-            if (showLoading)
-                try
-                {
-                    Instance.background.GetComponent<Image>().color = LSColors.HexToColor(DataManager.inst.GetSettingEnumValues("UITheme", 0)["bg"]);
-                }
-                catch (System.Exception ex)
-                {
-                    CoreHelper.LogException(ex);
-                }
-
-            var async = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(level);
-            async.allowSceneActivation = false;
-            if (showLoading)
-                UpdateProgress(0f);
-
-            while (!async.isDone)
-            {
-                if (showLoading)
-                    UpdateProgress(async.progress * 100f);
-
-                if (async.progress >= 0.9f)
-                {
-                    yield return new WaitForSecondsRealtime(0.1f);
-                    async.allowSceneActivation = true;
-                }
-
-                yield return null;
-            }
-
-            if (!GameManager.inst)
-            {
-                SetActive(false);
-                loading = false;
-                InvokeSceneLoad(level);
-                yield break;
-            }
-
-            yield return new WaitForSecondsRealtime(0.1f);
-            while (CoreHelper.InEditor && EditorManager.inst.loading || CoreHelper.Loading || CoreHelper.Parsing)
-            {
-                SetActive(true);
-                yield return new WaitForEndOfFrame();
-            }
-            SetActive(false);
-
-            loading = false;
-
-            InvokeSceneLoad(level);
-
-            yield break;
-        }
-
-        static void InvokeSceneLoad(string level)
-        {
-
-            CoreHelper.OnSceneLoad?.Invoke(level);
-            CoreHelper.OnSceneLoad = null;
         }
     }
 }

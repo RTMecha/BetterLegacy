@@ -936,7 +936,7 @@ namespace BetterLegacy.Patchers
                 DiscordController.inst.OnStateChange("");
                 Debug.Log($"{Instance.className}Quit to Main Menu");
                 InputDataManager.inst.players.Clear();
-                SceneManager.inst.LoadScene("Main Menu");
+                SceneHelper.LoadScene(SceneName.Main_Menu);
             }, RTEditor.inst.HideWarningPopup);
 
             return false;

@@ -101,11 +101,7 @@ namespace BetterLegacy.Arcade
                 parentLayout = "tabs",
                 selectionPosition = Vector2Int.zero,
                 text = "<align=center><b>[ RETURN ]",
-                func = () =>
-                {
-                    InterfaceManager.inst.CloseMenus();
-                    SceneManager.inst.LoadScene("Input Select");
-                },
+                func = Exit,
                 color = 6,
                 opacity = 0.1f,
                 textColor = 6,
@@ -1029,7 +1025,7 @@ namespace BetterLegacy.Arcade
                     }
             }
 
-            exitFunc = () => SceneManager.inst.LoadScene("Input Select");
+            exitFunc = Exit;
             if (CurrentTab != Tab.Steam || !ViewOnline)
                 InterfaceManager.inst.CurrentGenerateUICoroutine = CoreHelper.StartCoroutine(GenerateUI());
             InterfaceManager.inst.PlayMusic();
@@ -2338,6 +2334,15 @@ namespace BetterLegacy.Arcade
         public void SelectOnlineSteamLevel(Item item) => SteamLevelMenu.Init(item);
 
         #endregion
+
+        /// <summary>
+        /// Runs when the player wants to return to the Input Select screen.
+        /// </summary>
+        public void Exit()
+        {
+            InterfaceManager.inst.CloseMenus();
+            SceneHelper.LoadInputSelect();
+        }
 
         public override void UpdateControls()
         {

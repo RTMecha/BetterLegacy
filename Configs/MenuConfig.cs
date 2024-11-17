@@ -167,9 +167,8 @@ namespace BetterLegacy.Configs
 
         void InputSelectMusicChanged()
         {
-            if (CoreHelper.CurrentScene != "Input Select")
+            if (SceneHelper.CurrentScene != "Input Select")
                 return;
-
 
             if (!CoreHelper.InGame && !PlayInputSelectMusic.Value)
                 InterfaceManager.inst.PlayMusic();

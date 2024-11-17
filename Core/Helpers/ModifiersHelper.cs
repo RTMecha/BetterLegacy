@@ -6141,7 +6141,7 @@ namespace BetterLegacy.Core.Helpers
                                 DiscordController.inst.OnStateChange("");
                                 CoreHelper.Log($"Quit to Main Menu");
                                 InputDataManager.inst.players.Clear();
-                                SceneManager.inst.LoadScene("Main Menu");
+                                SceneHelper.LoadScene(SceneName.Main_Menu);
                             }
 
                             break;

@@ -300,7 +300,7 @@ namespace BetterLegacy.Story
                 Loaded = false;
                 CoreHelper.InStory = false;
                 LevelManager.OnLevelEnd = null;
-                SceneManager.inst.LoadScene("Main Menu");
+                SceneHelper.LoadScene(SceneName.Main_Menu);
                 yield break;
             }
 
@@ -327,7 +327,7 @@ namespace BetterLegacy.Story
             if (storyLevel == null)
             {
                 LevelManager.OnLevelEnd = null;
-                SceneManager.inst.LoadScene("Interface");
+                SceneHelper.LoadInterfaceScene();
                 yield break;
             }
 
@@ -356,7 +356,7 @@ namespace BetterLegacy.Story
                 Loaded = false;
                 CoreHelper.InStory = false;
                 LevelManager.OnLevelEnd = null;
-                SceneManager.inst.LoadScene("Main Menu");
+                SceneHelper.LoadScene(SceneName.Main_Menu);
                 yield break;
             }
 
@@ -375,7 +375,7 @@ namespace BetterLegacy.Story
                         CoreHelper.InStory = true;
                         LevelManager.OnLevelEnd = null;
                         ContinueStory = true;
-                        SceneManager.inst.LoadScene("Interface");
+                        SceneHelper.LoadInterfaceScene();
                         return;
                     }
 
@@ -395,7 +395,7 @@ namespace BetterLegacy.Story
 
                     CoreHelper.InStory = true;
                     LevelManager.OnLevelEnd = null;
-                    SceneManager.inst.LoadScene("Interface");
+                    SceneHelper.LoadInterfaceScene();
                 };
 
 
@@ -416,7 +416,7 @@ namespace BetterLegacy.Story
             if (storyLevel == null)
             {
                 LevelManager.OnLevelEnd = null;
-                SceneManager.inst.LoadScene("Interface");
+                SceneHelper.LoadInterfaceScene();
                 yield break;
             }
 
@@ -445,13 +445,134 @@ namespace BetterLegacy.Story
                     CoreHelper.InStory = true;
                     LevelManager.OnLevelEnd = null;
                     ContinueStory = true;
-                    SceneManager.inst.LoadScene("Interface");
+                    SceneHelper.LoadInterfaceScene();
                     return;
                 }
 
                 CoreHelper.InStory = true;
                 LevelManager.OnLevelEnd = null;
-                SceneManager.inst.LoadScene("Interface");
+                SceneHelper.LoadInterfaceScene();
+            };
+
+            if (!storyLevel.music)
+            {
+                CoreHelper.LogError($"Music is null for some reason wtf");
+                yield break;
+            }
+
+            StartCoroutine(LevelManager.Play(storyLevel));
+
+            yield break;
+        }
+
+        public IEnumerator IPlayOnce(string path)
+        {
+            if (AssetBundlesLoaded)
+                Clear();
+
+            if (!RTFile.FileExists(path))
+            {
+                CoreHelper.LogError($"File \'{path}\' does not exist.");
+                SoundManager.inst.PlaySound(DefaultSounds.Block);
+                Loaded = false;
+                CoreHelper.InStory = false;
+                LevelManager.OnLevelEnd = null;
+                SceneHelper.LoadScene(SceneName.Main_Menu);
+                yield break;
+            }
+
+            CoreHelper.Log($"Loading story mode level... {path}");
+            if (path.EndsWith(".lsb"))
+            {
+                path = Path.GetDirectoryName(path).Replace("\\", "/") + "/";
+                LevelManager.OnLevelEnd = () =>
+                {
+                    LevelManager.Clear();
+                    Updater.OnLevelEnd();
+                    UpdateCurrentLevelProgress(); // allow players to get a better rank
+
+                    if (!ContinueStory)
+                    {
+                        CoreHelper.InStory = true;
+                        LevelManager.OnLevelEnd = null;
+                        ContinueStory = true;
+                        SceneHelper.LoadInterfaceScene();
+                        return;
+                    }
+
+                    int chapter = LoadInt("Chapter", 0);
+                    int level = LoadInt($"DOC{(chapter + 1).ToString("00")}Progress", 0);
+                    level++;
+                    if (level >= StoryMode.Instance.chapters[chapter].levels.Count)
+                    {
+                        chapter++;
+                        level = 0;
+                    }
+
+                    chapter = Mathf.Clamp(chapter, 0, StoryMode.Instance.chapters.Count - 1);
+
+                    SaveInt("Chapter", chapter);
+                    SaveInt($"DOC{(chapter + 1).ToString("00")}Progress", level);
+
+                    CoreHelper.InStory = true;
+                    LevelManager.OnLevelEnd = null;
+                    SceneHelper.LoadInterfaceScene();
+                };
+
+
+                StartCoroutine(LevelManager.Play(new Level(path) { isStory = true }));
+                yield break;
+            }
+
+            yield return CoreHelper.StartCoroutineAsync(AlephNetworkManager.DownloadAssetBundle($"file://{path}", assetBundle =>
+            {
+                assets = assetBundle;
+            }));
+
+            Loaded = true;
+
+            CoreHelper.InStory = true;
+            StoryLevel storyLevel = LoadCurrentLevel();
+
+            if (storyLevel == null)
+            {
+                LevelManager.OnLevelEnd = null;
+                SceneHelper.LoadInterfaceScene();
+                yield break;
+            }
+
+            LevelManager.OnLevelEnd = () =>
+            {
+                LevelManager.Clear();
+                Updater.OnLevelEnd();
+                UpdateCurrentLevelProgress(); // allow players to get a better rank
+
+                int chapter = LoadInt("Chapter", 0);
+                int level = LoadInt($"DOC{(chapter + 1).ToString("00")}Progress", 0);
+                level++;
+                if (level >= StoryMode.Instance.chapters[chapter].levels.Count)
+                {
+                    chapter++;
+                    level = 0;
+                }
+
+                chapter = Mathf.Clamp(chapter, 0, StoryMode.Instance.chapters.Count - 1);
+
+                SaveInt("Chapter", chapter);
+                SaveInt($"DOC{(chapter + 1).ToString("00")}Progress", level);
+
+                if (!ContinueStory)
+                {
+                    CoreHelper.InStory = true;
+                    LevelManager.OnLevelEnd = null;
+                    ContinueStory = true;
+                    SceneHelper.LoadInterfaceScene();
+                    return;
+                }
+
+                CoreHelper.InStory = true;
+                LevelManager.OnLevelEnd = null;
+                SceneHelper.LoadInterfaceScene();
             };
 
             if (!storyLevel.music)
@@ -487,7 +608,7 @@ namespace BetterLegacy.Story
                     CoreHelper.InStory = true;
                     LevelManager.OnLevelEnd = null;
                     ContinueStory = true;
-                    SceneManager.inst.LoadScene("Interface");
+                    SceneHelper.LoadInterfaceScene();
                     return;
                 }
 
@@ -511,7 +632,7 @@ namespace BetterLegacy.Story
                     SoundManager.inst.PlaySound(DefaultSounds.loadsound);
                     CoreHelper.InStory = false;
                     LevelManager.OnLevelEnd = null;
-                    SceneManager.inst.LoadScene("Main Menu");
+                    SceneHelper.LoadScene(SceneName.Main_Menu);
                     return;
                 }
 
@@ -522,11 +643,8 @@ namespace BetterLegacy.Story
 
                 CoreHelper.InStory = true;
                 LevelManager.OnLevelEnd = null;
-                InterfaceManager.inst.onReturnToStoryInterface = () =>
-                {
-                    InterfaceManager.inst.Parse(level.returnInterface);
-                };
-                SceneManager.inst.LoadScene("Interface");
+                InterfaceManager.inst.onReturnToStoryInterface = () => InterfaceManager.inst.Parse(level.returnInterface);
+                SceneHelper.LoadInterfaceScene();
             };
         }
 

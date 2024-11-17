@@ -28,7 +28,7 @@ namespace BetterLegacy.Core.Helpers
         {
             LevelManager.Levels.Clear();
             InterfaceManager.inst.CloseMenus();
-            SceneManager.inst.LoadScene("Input Select");
+            SceneHelper.LoadInputSelect();
         }
 
         public static void ReturnToHub()
@@ -41,7 +41,7 @@ namespace BetterLegacy.Core.Helpers
 
             InterfaceManager.inst.CloseMenus();
 
-            SceneManager.inst.LoadScene("Game");
+            SceneHelper.LoadGame();
         }
 
         public static void FirstLevel()
@@ -57,7 +57,7 @@ namespace BetterLegacy.Core.Helpers
 
                 InterfaceManager.inst.CloseMenus();
 
-                SceneManager.inst.LoadScene("Game");
+                SceneHelper.LoadGame();
 
                 return;
             }
@@ -75,7 +75,7 @@ namespace BetterLegacy.Core.Helpers
 
             InterfaceManager.inst.CloseMenus();
 
-            SceneManager.inst.LoadScene("Game");
+            SceneHelper.LoadGame();
         }
 
         public static void NextLevel()
@@ -95,7 +95,7 @@ namespace BetterLegacy.Core.Helpers
 
                 InterfaceManager.inst.CloseMenus();
 
-                SceneManager.inst.LoadScene("Game");
+                SceneHelper.LoadGame();
 
                 return;
             }
@@ -113,7 +113,7 @@ namespace BetterLegacy.Core.Helpers
 
             InterfaceManager.inst.CloseMenus();
 
-            SceneManager.inst.LoadScene("Game");
+            SceneHelper.LoadGame();
         }
 
         public static void RestartLevel(Action action)
@@ -158,16 +158,16 @@ namespace BetterLegacy.Core.Helpers
                 ArcadeManager.inst.skippedLoad = false;
                 ArcadeManager.inst.forcedSkip = false;
                 LevelManager.IsArcade = true;
-                SceneManager.inst.LoadScene("Input Select");
+                SceneHelper.LoadInputSelect();
                 return;
             }
 
             if (!LevelManager.IsArcade)
             {
-                SceneManager.inst.LoadScene("Main Menu");
+                SceneHelper.LoadScene(SceneName.Main_Menu);
                 return;
             }
-            SceneManager.inst.LoadScene("Arcade Select");
+            SceneHelper.LoadScene(SceneName.Arcade_Select);
         }
 
         public static void EndOfLevel()
@@ -257,7 +257,7 @@ namespace BetterLegacy.Core.Helpers
 
                 if (LoadLevelsManager.inst && LoadLevelsManager.inst.cancelled)
                 {
-                    SceneManager.inst.LoadScene("Input Select");
+                    SceneHelper.LoadInputSelect();
                     currentlyLoading = false;
                     yield break;
                 }

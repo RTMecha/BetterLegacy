@@ -195,7 +195,7 @@ namespace BetterLegacy.Core.Managers
 
             bool inGame = CoreHelper.InGame;
             if (!inGame || CoreHelper.InEditor)
-                SceneManager.inst.LoadScene("Game");
+                SceneHelper.LoadGameWithProgress();
 
             Debug.Log($"{className}Loading music...\nMusic is null: {!level.music}");
 
@@ -365,7 +365,7 @@ namespace BetterLegacy.Core.Managers
                 {
                     Clear();
                     Updater.OnLevelEnd();
-                    SceneManager.inst.LoadScene("Main Menu");
+                    SceneHelper.LoadScene(SceneName.Main_Menu);
                 };
 
             var level = new Level(path.Replace("level.lsb", "").Replace("level.vgd", ""));
