@@ -57,6 +57,7 @@ namespace BetterLegacy.Patchers
             AddSound(Example.ExampleManager.SpeakPath, "example_speak");
             AddSound($"{SFXPath}anna speak.ogg", "anna_speak");
             AddSound($"{SFXPath}hal speak.ogg", "hal_speak");
+            AddSound($"{SFXPath}para speak.ogg", "para_speak");
 
             foreach (var musicGroup in __instance.musicGroups)
             {
