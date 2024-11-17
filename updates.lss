@@ -1,3 +1,12 @@
+snapshot-2024.11.16 - (pre-1.7.0) > [Nov 17, 2024]
+- Added example_speak to default sounds.
+- You now immediately boot into the story tutorial level when you're playing a new save slot.
+- Implemented collectibles you can find in random spots across the levels.
+- Some levels now end with a PA Chat.
+- spawnPrefab modifiers now have values for setting the spawned prefabs' start time.
+- Added Inspect Timeline Object if Unity Explorer is installed.
+- Added a "doubleSided" modifier. This acts like the blur modifiers, except it changes the material of the object to be double sided, allowing it to be seen from the back.
+- Did some internal work on strings and scenes. If there's any issues with either of those two that you find, please let me know!
 snapshot-2024.11.15 - (pre-1.7.0) > [Nov 15, 2024]
 - Story saves delete buttons now properly align to existing save slots.
 - Fixed New Simulation button showing in cases it shouldn't be.
