@@ -1157,7 +1157,7 @@ namespace BetterLegacy.Core.Helpers
 
             allLayers.Sort();
 
-            EditorManager.inst.DisplayNotification($"Objects on Layers:<br>{RTString.ArrayToString(allLayers)}", 3f, EditorManager.NotificationType.Info);
+            EditorManager.inst.DisplayNotification($"Objects on Layers:<br>{RTString.ListToString(allLayers)}", 3f, EditorManager.NotificationType.Info);
         }
 
         public static string GetShape(int _shape, int _shapeOption)

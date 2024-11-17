@@ -9,6 +9,9 @@ using UnityEngine;
 
 namespace BetterLegacy.Core
 {
+    /// <summary>
+    /// String helper class.
+    /// </summary>
     public static class RTString
     {
         public static string ReplaceFormatting(string str)
@@ -23,83 +26,101 @@ namespace BetterLegacy.Core
             return str;
         }
 
-        public static string ReplaceInsert(string str, string insert, int startIndex, int endIndex)
+        public static string ReplaceInsert(string input, string insert, int startIndex, int endIndex)
         {
-            startIndex = Mathf.Clamp(startIndex, 0, str.Length - 1);
-            endIndex = Mathf.Clamp(endIndex, 0, str.Length - 1);
-
-            //if (endIndex <= startIndex)
-            //    return str;
+            startIndex = Mathf.Clamp(startIndex, 0, input.Length - 1);
+            endIndex = Mathf.Clamp(endIndex, 0, input.Length - 1);
 
             while (startIndex <= endIndex)
             {
-                var list = str.ToCharArray().ToList();
+                var list = input.ToCharArray().ToList();
                 list.RemoveAt(startIndex);
 
-                str = new string(list.ToArray());
+                input = new string(list.ToArray());
                 endIndex--;
             }
 
-            return str.Insert(startIndex, insert);
+            return input.Insert(startIndex, insert);
         }
 
-        public static string SectionString(string str, int startIndex, int endIndex) => str.Substring(startIndex, endIndex - startIndex + 1);
+        public static string SectionString(string input, int startIndex, int endIndex) => input.Substring(startIndex, endIndex - startIndex + 1);
 
-        public static string[] GetLines(string str) => str.Split(new string[] { "\n", "\r\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
+        /// <summary>
+        /// Splits the string based on a set of strings.
+        /// </summary>
+        /// <param name="input">String input.</param>
+        /// <param name="array">Array to split.</param>
+        /// <returns>Returns a string array split by the array.</returns>
+        public static string[] GetLines(string input, params string[] array) => input.Split(array, StringSplitOptions.RemoveEmptyEntries);
 
-        public static string InterpolateString(string str, float t) => str.Substring(0, Mathf.Clamp((int)RTMath.Lerp(0, str.Length, t), 0, str.Length));
+        /// <summary>
+        /// Splits the lines of the input string into an array.
+        /// </summary>
+        /// <param name="input">String input.</param>
+        /// <returns>Returns a string array representing the lines of the input string.</returns>
+        public static string[] GetLines(string input) => input.Split(new string[] { "\n", "\r\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
 
-        public static KeyValuePair<string, string> ReplaceMatching(KeyValuePair<string, string> keyValuePair, string sequenceText, string pattern)
+        /// <summary>
+        /// Interpolates through a string, typewriter style.
+        /// </summary>
+        /// <param name="input">String input.</param>
+        /// <param name="t">Time scale.</param>
+        /// <returns>Returns an interpolated string.</returns>
+        public static string InterpolateString(string input, float t) => input.Substring(0, Mathf.Clamp((int)RTMath.Lerp(0, input.Length, t), 0, input.Length));
+
+        /// <summary>
+        /// Tries to find a match in the input string and outputs the match.
+        /// </summary>
+        /// <param name="input">String input.</param>
+        /// <param name="regex">Regex to find.</param>
+        /// <param name="match">Match output.</param>
+        /// <returns>Returns true if a match was found, otherwise false.</returns>
+        public static bool RegexMatch(string input, Regex regex, out Match match)
         {
-            var text = keyValuePair.Key;
-            var replace = keyValuePair.Value;
-            var matches1 = Regex.Matches(text, pattern);
-            for (int i = 0; i < matches1.Count; i++)
-            {
-                var m = matches1[i];
-                if (!sequenceText.Contains(m.Groups[0].ToString()))
-                    text = text.Replace(m.Groups[0].ToString(), "");
-                replace = replace.Replace(m.Groups[0].ToString(), "");
-            }
-            return new KeyValuePair<string, string>(text, replace);
+            match = regex?.Match(input);
+            return match != null && match.Success;
         }
 
-        public static bool RegexMatch(string str, Regex regex, out Match match)
+        /// <summary>
+        /// Invokes an action if a match was found in the input string.
+        /// </summary>
+        /// <param name="input">String input.</param>
+        /// <param name="regex">Regex to find.</param>
+        /// <param name="matchAction">Function to run for the match.</param>
+        public static void RegexMatch(string input, Regex regex, Action<Match> matchAction)
         {
-            if (regex != null)
-            {
-                match = regex.Match(str);
-                return match.Success;
-            }
-
-            match = null;
-            return false;
-        }
-
-        public static void RegexMatch(string str, Regex regex, Action<Match> matchAction)
-        {
-            if (RegexMatch(str, regex, out Match match))
+            if (RegexMatch(input, regex, out Match match))
                 matchAction?.Invoke(match);
         }
 
-        public static void RegexMatches(string str, Regex regex, Action<Match> matchAction)
+        /// <summary>
+        /// Invokes an action for each Regex match in an input string.
+        /// </summary>
+        /// <param name="input">String input.</param>
+        /// <param name="regex">Regex to find.</param>
+        /// <param name="matchAction">Function to run for each match.</param>
+        public static void RegexMatches(string input, Regex regex, Action<Match> matchAction)
         {
-            var matchCollection = regex.Matches(str);
+            var matchCollection = regex.Matches(input);
             foreach (Match match in matchCollection)
                 matchAction?.Invoke(match);
         }
 
-        public static string FlipLeftRight(string str)
+        /// <summary>
+        /// Flips all references to "left" and "right" in a string.
+        /// </summary>
+        /// <param name="input">String input.</param>
+        /// <returns>Returns a string with flipped left / right.</returns>
+        public static string FlipLeftRight(string input)
         {
-            string s;
-            s = str.Replace("Left", "LSLeft87344874")
+            input = input.Replace("Left", "LSLeft87344874")
                 .Replace("Right", "LSRight87344874")
                 .Replace("left", "LSleft87344874")
                 .Replace("right", "LSright87344874")
                 .Replace("LEFT", "LSLEFT87344874")
                 .Replace("RIGHT", "LSRIGHT87344874");
 
-            return s.Replace("LSLeft87344874", "Right")
+            return input.Replace("LSLeft87344874", "Right")
                 .Replace("LSRight87344874", "Left")
                 .Replace("LSleft87344874", "right")
                 .Replace("LSright87344874", "left")
@@ -107,17 +128,21 @@ namespace BetterLegacy.Core
                 .Replace("LSRIGHT87344874", "LEFT");
         }
 
-        public static string FlipUpDown(string str)
+        /// <summary>
+        /// Flips all references to "up" and "down" in a string.
+        /// </summary>
+        /// <param name="input">String input.</param>
+        /// <returns>Returns a string with flipped up / down.</returns>
+        public static string FlipUpDown(string input)
         {
-            string s;
-            s = str.Replace("Up", "LSUp87344874")
+            input = input.Replace("Up", "LSUp87344874")
                 .Replace("Down", "LSDown87344874")
                 .Replace("up", "LSup87344874")
                 .Replace("down", "LSdown87344874")
                 .Replace("UP", "LSUP87344874")
                 .Replace("DOWN", "LSDOWN87344874");
 
-            return s.Replace("LSUp87344874", "Down")
+            return input.Replace("LSUp87344874", "Down")
                 .Replace("LSDown87344874", "Up")
                 .Replace("LSup87344874", "down")
                 .Replace("LSdown87344874", "up")
@@ -125,17 +150,21 @@ namespace BetterLegacy.Core
                 .Replace("LSDOWN87344874", "UP");
         }
 
-        public static string FlipUpperLower(string str)
+        /// <summary>
+        /// Flips all references to "upper" and "lower" in a string.
+        /// </summary>
+        /// <param name="input">String input.</param>
+        /// <returns>Returns a string with flipped upper / lower.</returns>
+        public static string FlipUpperLower(string input)
         {
-            string s;
-            s = str.Replace("Upper", "LSUpper87344874")
+            input = input.Replace("Upper", "LSUpper87344874")
                 .Replace("Lower", "LSLower87344874")
                 .Replace("upper", "LSupper87344874")
                 .Replace("lower", "LSlower87344874")
                 .Replace("UPPER", "LSUPPER87344874")
                 .Replace("LOWER", "LSLOWER87344874");
 
-            return s.Replace("LSUpper87344874", "Lower")
+            return input.Replace("LSUpper87344874", "Lower")
                 .Replace("LSLower87344874", "Upper")
                 .Replace("LSupper87344874", "lower")
                 .Replace("LSlower87344874", "upper")
@@ -143,12 +172,20 @@ namespace BetterLegacy.Core
                 .Replace("LSLOWER87344874", "UPPER");
         }
 
-        public static bool ColorMatch(Color a, Color b, float range, bool alpha = false)
-            => alpha ? a.r < b.r + range && a.r > b.r - range && a.g < b.g + range && a.g > b.g - range && a.b < b.b + range && a.b > b.b - range && a.a < b.a + range && a.a > b.a - range :
-                a.r < b.r + range && a.r > b.r - range && a.g < b.g + range && a.g > b.g - range && a.b < b.b + range && a.b > b.b - range;
+        /// <summary>
+        /// Method used for search fields. Checks if the search term is empty or the item contains the search term.
+        /// </summary>
+        /// <param name="searchTerm">Search field input.</param>
+        /// <param name="item">Item to compare.</param>
+        /// <returns>Return true if search is found, otherwise returns false.</returns>
+        public static bool SearchString(string searchTerm, string item) => string.IsNullOrEmpty(searchTerm) || item.ToLower().Contains(searchTerm.ToLower());
 
-        public static bool SearchString(string searchTerm, string a) => string.IsNullOrEmpty(searchTerm) || a.ToLower().Contains(searchTerm.ToLower());
-
+        /// <summary>
+        /// Method used for search fields. Checks if the search term is empty or any of the items contain the search term.
+        /// </summary>
+        /// <param name="searchTerm">Search field input.</param>
+        /// <param name="items">Items to compare.</param>
+        /// <returns>Return true if search is found, otherwise returns false.</returns>
         public static bool SearchString(string searchTerm, params string[] items)
         {
             if (string.IsNullOrEmpty(searchTerm))
@@ -161,40 +198,58 @@ namespace BetterLegacy.Core
             return false;
         }
 
-        public static string ArrayToString<T>(List<T> vs)
+        /// <summary>
+        /// Converts a list to a string, for example: 0, 1, 2, 3.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
+        /// <param name="list">List to get a string from.</param>
+        /// <returns>Returns a string representing the list.</returns>
+        public static string ListToString<T>(List<T> list)
         {
             string s = "";
-            if (vs.Count > 0)
-                for (int i = 0; i < vs.Count; i++)
+            if (list.Count > 0)
+                for (int i = 0; i < list.Count; i++)
                 {
-                    s += vs[i].ToString();
-                    if (i != vs.Count - 1)
+                    s += list[i].ToString();
+                    if (i != list.Count - 1)
                         s += ", ";
                 }
             return s;
         }
-        
-        public static string ArrayToString<T>(T[] vs)
+
+        /// <summary>
+        /// Converts an array to a string, for example: 0, 1, 2, 3.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
+        /// <param name="array">Array to get a string from.</param>
+        /// <returns>Returns a string representing the array.</returns>
+        public static string ArrayToString<T>(T[] array)
         {
             string s = "";
-            if (vs.Length > 0)
-                for (int i = 0; i < vs.Length; i++)
+            if (array.Length > 0)
+                for (int i = 0; i < array.Length; i++)
                 {
-                    s += vs[i].ToString();
-                    if (i != vs.Length - 1)
+                    s += array[i].ToString();
+                    if (i != array.Length - 1)
                         s += ", ";
                 }
             return s;
         }
-        
-        public static string ArrayToString(params object[] vs)
+
+        /// <summary>
+        /// Converts an array to a string, for example: 0, 1, 2, 3.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
+        /// <param name="p">Array to get a string from.</param>
+        /// <returns>Returns a string representing the array.</returns>
+        public static string ArrayToString(params object[] p)
         {
             string s = "";
-            if (vs.Length > 0)
-                for (int i = 0; i < vs.Length; i++)
+            if (p.Length > 0)
+                for (int i = 0; i < p.Length; i++)
                 {
-                    s += vs[i].ToString();
-                    if (i != vs.Length - 1)
+                    s += p[i].ToString();
+                    if (i != p.Length - 1)
                         s += ", ";
                 }
             return s;
