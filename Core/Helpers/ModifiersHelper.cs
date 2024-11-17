@@ -1854,6 +1854,16 @@ namespace BetterLegacy.Core.Helpers
 
                             break;
                         }
+                    case "doubleSided":
+                        {
+                            if (Updater.TryGetObject(modifier.reference, out LevelObject levelObject) && levelObject.visualObject is SolidObject solidObject && solidObject.GameObject)
+                            {
+                                solidObject.Renderer.material = ObjectManager.inst.norm;
+                                solidObject.material = solidObject.Renderer.material;
+                            }
+
+                            break;
+                        }
                     case "particleSystem":
                         {
                             if (!modifier.reference || !Updater.TryGetObject(modifier.reference, out LevelObject levelObject) || levelObject.visualObject == null || !levelObject.visualObject.GameObject)
