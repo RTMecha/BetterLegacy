@@ -1013,7 +1013,7 @@ namespace BetterLegacy.Menus.UI.Elements
                         var splashTextPath = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}splashes.txt";
                         if (RTFile.FileExists(splashTextPath))
                         {
-                            var splashes = CoreHelper.GetLines(RTFile.ReadFromFile(splashTextPath));
+                            var splashes = RTString.GetLines(RTFile.ReadFromFile(splashTextPath));
                             var splashIndex = UnityEngine.Random.Range(0, splashes.Length);
                             LegacyPlugin.SplashText = splashes[splashIndex];
                         }
@@ -2858,8 +2858,7 @@ namespace BetterLegacy.Menus.UI.Elements
                 case "BeginStoryMode":
                     {
                         LevelManager.IsArcade = false;
-                        SceneManager.inst.LoadScene("Input Select");
-                        LevelManager.OnInputsSelected = () => { SceneManager.inst.LoadScene("Interface"); };
+                        SceneHelper.LoadInputSelect(SceneHelper.LoadInterfaceScene);
 
                         break;
                     }

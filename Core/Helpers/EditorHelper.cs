@@ -93,13 +93,13 @@ namespace BetterLegacy.Core.Helpers
                         return;
 
                     RTEditor.inst.ShowContextMenu(300f,
-                        new RTEditor.ButtonFunction("Flip Left/Right", () => { name.text = CoreHelper.FlipLeftRight(name.text); }),
-                        new RTEditor.ButtonFunction("Flip Up/Down", () => { name.text = CoreHelper.FlipUpDown(name.text); }),
-                        new RTEditor.ButtonFunction("Flip Upper/Lower", () => { name.text = CoreHelper.FlipUpperLower(name.text); }),
+                        new RTEditor.ButtonFunction("Flip Left/Right", () => { name.text = RTString.FlipLeftRight(name.text); }),
+                        new RTEditor.ButtonFunction("Flip Up/Down", () => { name.text = RTString.FlipUpDown(name.text); }),
+                        new RTEditor.ButtonFunction("Flip Upper/Lower", () => { name.text = RTString.FlipUpperLower(name.text); }),
                         new RTEditor.ButtonFunction(true),
                         new RTEditor.ButtonFunction("Flip Number", () =>
                         {
-                            CoreHelper.RegexMatches(name.text, new Regex(@"([-0-9]+)"), match =>
+                            RTString.RegexMatches(name.text, new Regex(@"([-0-9]+)"), match =>
                             {
                                 int num = Parser.TryParse(match.Groups[1].ToString(), 0);
                                 num = -num;
@@ -108,7 +108,7 @@ namespace BetterLegacy.Core.Helpers
                         }),
                         new RTEditor.ButtonFunction("Increase Number", () =>
                         {
-                            CoreHelper.RegexMatches(name.text, new Regex(@"([-0-9]+)"), match =>
+                            RTString.RegexMatches(name.text, new Regex(@"([-0-9]+)"), match =>
                             {
                                 int num = Parser.TryParse(match.Groups[1].ToString(), 0);
                                 num++;
@@ -117,7 +117,7 @@ namespace BetterLegacy.Core.Helpers
                         }),
                         new RTEditor.ButtonFunction("Decrease Number", () =>
                         {
-                            CoreHelper.RegexMatches(name.text, new Regex(@"([-0-9]+)"), match =>
+                            RTString.RegexMatches(name.text, new Regex(@"([-0-9]+)"), match =>
                             {
                                 int num = Parser.TryParse(match.Groups[1].ToString(), 0);
                                 num--;
@@ -147,11 +147,17 @@ namespace BetterLegacy.Core.Helpers
         public static void LogIsNull<T>(string message, object obj) => Debug.Log($"{message}{typeof(T)} is null: {obj == null}");
 
         //EditorHelper.LoadLevel("C:/Users/Mecha/Desktop/Project Launcher/instances/Mod Testing/beatmaps/editor/RhythmTech/Apocrypha but Platformer")
-        public static void LoadLevel(string fullPath, float delay = 2f) => CoreHelper.StartCoroutine(ILoadLevel(fullPath, delay));
+        public static void LoadLevel(string fullPath)
+        {
+            SceneHelper.LoadScene(SceneName.Editor, scene =>
+            {
+                CoreHelper.StartCoroutine(RTEditor.inst.LoadLevel(fullPath));
+            });
+        }
 
         static IEnumerator ILoadLevel(string fullPath, float delay = 2f)
         {
-            SceneManager.inst.LoadScene("Editor");
+            SceneHelper.LoadEditor();
             while (!CoreHelper.InEditor || !RTEditor.inst || EditorManager.inst.loading)
                 yield return null;
 

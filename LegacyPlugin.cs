@@ -242,7 +242,7 @@ namespace BetterLegacy
                 var splashTextPath = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}splashes.txt";
                 if (RTFile.FileExists(splashTextPath))
                 {
-                    var splashes = CoreHelper.GetLines(RTFile.ReadFromFile(splashTextPath));
+                    var splashes = RTString.GetLines(RTFile.ReadFromFile(splashTextPath));
                     var splashIndex = UnityEngine.Random.Range(0, splashes.Length);
                     SplashText = splashes[splashIndex];
                 }
@@ -293,6 +293,16 @@ namespace BetterLegacy
             {
                 CoreHelper.LogError($"On Exit methods failed to set.{ex}");
             } // Quit saves backup
+
+            try
+            {
+                if (AccessTools.TypeByName("EditorOnStartup.Plugin") != null)
+                    SceneHelper.CurrentScene = "Editor";
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogError($"Failed to update Current Scene. {ex}");
+            }
 
             Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_NAME} is loaded!");
         }
