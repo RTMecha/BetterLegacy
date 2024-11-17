@@ -1369,7 +1369,7 @@ namespace BetterLegacy.Core.Managers
         #region Audio - 25
 
         // 25 - 0
-        public static void updateAudioPitch(float x) => AudioManager.inst.pitch = Mathf.Clamp(x, 0.001f, 10f) * GameManager.inst.getPitch() * inst.pitchOffset;
+        public static void updateAudioPitch(float x) => AudioManager.inst.pitch = Mathf.Clamp(x, 0.001f, 10f) * CoreHelper.Pitch * inst.pitchOffset;
 
         // 25 - 1
         public static void updateAudioVolume(float x) => inst.audioVolume = Mathf.Clamp(x, 0f, 1f);
