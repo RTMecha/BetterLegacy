@@ -319,12 +319,14 @@ namespace BetterLegacy.Editor.Managers
 
                 editorWrapper.CombinerSetActive((RTFile.FileExists(folder + "/level.ogg") ||
                     RTFile.FileExists(folder + "/level.wav") ||
-                    RTFile.FileExists(folder + "/level.mp3")) && CoreHelper.SearchString(searchTerm, Path.GetFileName(folder)) ||
-                        CoreHelper.SearchString(searchTerm, metadata.song.title) ||
-                        CoreHelper.SearchString(searchTerm, metadata.artist.Name) ||
-                        CoreHelper.SearchString(searchTerm, metadata.creator.steam_name) ||
-                        CoreHelper.SearchString(searchTerm, metadata.song.description) ||
-                        CoreHelper.SearchString(searchTerm, difficultyName));
+                    RTFile.FileExists(folder + "/level.mp3")) &&
+                    RTString.SearchString(searchTerm,
+                        Path.GetFileName(folder),
+                        metadata.song.title,
+                        metadata.artist.Name,
+                        metadata.creator.steam_name,
+                        metadata.song.description,
+                        difficultyName));
 
                 editorWrapper.CombinerGameObject.transform.SetSiblingIndex(num);
 

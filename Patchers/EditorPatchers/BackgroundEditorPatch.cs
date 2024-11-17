@@ -77,7 +77,7 @@ namespace BetterLegacy.Patchers
             int num = 0;
             foreach (var backgroundObject in GameData.Current.backgroundObjects)
             {
-                if (!CoreHelper.SearchString(Instance.sortedName, backgroundObject.name))
+                if (!RTString.SearchString(Instance.sortedName, backgroundObject.name))
                 {
                     num++;
                     continue;

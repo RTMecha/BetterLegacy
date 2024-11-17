@@ -97,7 +97,7 @@ namespace BetterLegacy.Core
 
         public static bool TryParse(string ver, out Version result)
         {
-            if (CoreHelper.RegexMatch(ver, new Regex(@"([0-9]+).([0-9]+).([0-9]+)([a-z]+)"), out Match match))
+            if (RTString.RegexMatch(ver, new Regex(@"([0-9]+).([0-9]+).([0-9]+)([a-z]+)"), out Match match))
             {
                 var major = int.Parse(match.Groups[1].ToString());
                 var minor = int.Parse(match.Groups[2].ToString());
@@ -109,7 +109,7 @@ namespace BetterLegacy.Core
                 return true;
             }
 
-            if (CoreHelper.RegexMatch(ver, new Regex(@"([0-9]+).([0-9]+).([0-9]+)"), out Match match2))
+            if (RTString.RegexMatch(ver, new Regex(@"([0-9]+).([0-9]+).([0-9]+)"), out Match match2))
             {
                 var major = int.Parse(match2.Groups[1].ToString());
                 var minor = int.Parse(match2.Groups[2].ToString());

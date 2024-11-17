@@ -137,7 +137,7 @@ namespace BetterLegacy.Arcade
                 length = 0.1f,
             });
 
-            var name = CoreHelper.ReplaceFormatting(CurrentCollection.name);
+            var name = RTString.ReplaceFormatting(CurrentCollection.name);
             int size = 110;
             if (name.Length > 13)
                 size = (int)(size * ((float)13f / name.Length));

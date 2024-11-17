@@ -468,7 +468,7 @@ namespace BetterLegacy.Configs
             {
                 var setting = settings.ElementAt(i);
 
-                if (!CoreHelper.SearchString(searchTerm, setting.Key) && !CoreHelper.SearchString(searchTerm, setting.Section))
+                if (!RTString.SearchString(searchTerm, setting.Key, setting.Section))
                     continue;
 
                 if (num >= max - MAX_SETTINGS_PER_PAGE && num < max)

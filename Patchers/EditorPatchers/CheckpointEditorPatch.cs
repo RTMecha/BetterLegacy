@@ -390,7 +390,7 @@ namespace BetterLegacy.Patchers
             int num = 0;
             foreach (var checkpoint in GameData.Current.beatmapData.checkpoints)
             {
-                if (!CoreHelper.SearchString(__0, checkpoint.name))
+                if (!RTString.SearchString(__0, checkpoint.name))
                 {
                     num++;
                     continue;

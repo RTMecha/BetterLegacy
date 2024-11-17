@@ -138,7 +138,7 @@ namespace BetterLegacy.Arcade
                 length = 0.1f,
             });
 
-            var name = CoreHelper.ReplaceFormatting(CurrentLevel.metadata.beatmap.name);
+            var name = RTString.ReplaceFormatting(CurrentLevel.metadata.beatmap.name);
             int size = 110;
             if (name.Length > 13 && name.Length <= 40)
                 size = (int)(size * ((float)13f / name.Length));
@@ -165,7 +165,7 @@ namespace BetterLegacy.Arcade
                 textColor = 6,
             });
 
-            var title = CoreHelper.ReplaceFormatting(CurrentLevel.metadata.song.title);
+            var title = RTString.ReplaceFormatting(CurrentLevel.metadata.song.title);
             size = 32;
             if (title.Length > 24 && title.Length <= 40)
                 size = (int)(size * ((float)24f / title.Length));
@@ -204,7 +204,7 @@ namespace BetterLegacy.Arcade
                 textColor = 6,
             });
 
-            var artist = CoreHelper.ReplaceFormatting(CurrentLevel.metadata.artist.Name);
+            var artist = RTString.ReplaceFormatting(CurrentLevel.metadata.artist.Name);
             size = 32;
             if (artist.Length > 24 && artist.Length <= 40)
                 size = (int)(size * ((float)24f / artist.Length));
@@ -243,7 +243,7 @@ namespace BetterLegacy.Arcade
                 textColor = 6,
             });
 
-            var creator = CoreHelper.ReplaceFormatting(CurrentLevel.metadata.creator.steam_name);
+            var creator = RTString.ReplaceFormatting(CurrentLevel.metadata.creator.steam_name);
             size = 32;
             if (creator.Length > 24 && creator.Length <= 40)
                 size = (int)(size * ((float)24f / creator.Length));

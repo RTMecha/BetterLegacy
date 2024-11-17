@@ -315,7 +315,7 @@ namespace BetterLegacy.Editor.Managers
         {
             var name = jn["name"].Value;
             EditorManager.inst.DisplayNotification($"Downloading {name}, please wait...", 3f, EditorManager.NotificationType.Success);
-            name = CoreHelper.ReplaceFormatting(name); // for cases where a user has used symbols not allowed.
+            name = RTString.ReplaceFormatting(name); // for cases where a user has used symbols not allowed.
             name = RTFile.ValidateDirectory(name);
             var directory = $"{RTFile.ApplicationDirectory}{RTEditor.editorListSlash}{name} [{jn["id"].Value}]";
 

@@ -1187,7 +1187,7 @@ namespace BetterLegacy.Editor.Managers
             for (int i = 0; i < editorUIs.Count; i++)
             {
                 var ui = editorUIs[i];
-                var active = (!isDefault || ui.Name == "Base ID" || ui.Tab == CurrentTab && CurrentTab == Tab.Global) && CoreHelper.SearchString(searchTerm, ui.Name) && ui.Tab == CurrentTab;
+                var active = (!isDefault || ui.Name == "Base ID" || ui.Tab == CurrentTab && CurrentTab == Tab.Global) && RTString.SearchString(searchTerm, ui.Name) && ui.Tab == CurrentTab;
                 ui.GameObject?.SetActive(active);
                 if (!active)
                     continue;
@@ -1931,7 +1931,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 int index = num;
                 var name = playerModel.Value.basePart.name;
-                if (!CoreHelper.SearchString(modelSearchTerm, name))
+                if (!RTString.SearchString(modelSearchTerm, name))
                 {
                     num++;
                     continue;

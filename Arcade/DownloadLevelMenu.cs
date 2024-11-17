@@ -112,7 +112,7 @@ namespace BetterLegacy.Arcade
                 length = 0.1f,
             });
 
-            var name = CoreHelper.ReplaceFormatting(jn["name"]);
+            var name = RTString.ReplaceFormatting(jn["name"]);
             int size = 110;
             if (name.Length > 13)
                 size = (int)(size * ((float)13f / name.Length));
@@ -314,7 +314,7 @@ namespace BetterLegacy.Arcade
             Close();
 
             var name = jn["name"].Value;
-            name = CoreHelper.ReplaceFormatting(name); // for cases where a user has used symbols not allowed.
+            name = RTString.ReplaceFormatting(name); // for cases where a user has used symbols not allowed.
             name = RTFile.ValidateDirectory(name);
             var directory = $"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{name} [{jn["id"].Value}]";
 

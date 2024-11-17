@@ -112,7 +112,7 @@ namespace BetterLegacy.Arcade
                 length = 0.1f,
             });
 
-            var name = CoreHelper.ReplaceFormatting(CurrentSteamItem.Title);
+            var name = RTString.ReplaceFormatting(CurrentSteamItem.Title);
             int size = 110;
             if (name.Length > 13)
                 size = (int)(size * ((float)13f / name.Length));
@@ -128,7 +128,7 @@ namespace BetterLegacy.Arcade
             });
 
             Match match = null;
-            if (CoreHelper.RegexMatch(CurrentSteamItem.Description, new Regex(@"Song Title: (.*?)Song Artist: (.*?)Level Creator: (.*?)Level Difficulty: (.*?)Level Description: (.*?)"), out match))
+            if (RTString.RegexMatch(CurrentSteamItem.Description, new Regex(@"Song Title: (.*?)Song Artist: (.*?)Level Creator: (.*?)Level Difficulty: (.*?)Level Description: (.*?)"), out match))
             {
                 elements.Add(new MenuText
                 {
@@ -146,7 +146,7 @@ namespace BetterLegacy.Arcade
                     textColor = 6,
                 });
             }
-            else if (CoreHelper.RegexMatch(CurrentSteamItem.Description, new Regex(@"(.*?) By (.*?) Level By: (.*?) Difficulty: (.*?) Description ([0-9a-zA-Z|| /.,!?]+)"), out match))
+            else if (RTString.RegexMatch(CurrentSteamItem.Description, new Regex(@"(.*?) By (.*?) Level By: (.*?) Difficulty: (.*?) Description ([0-9a-zA-Z|| /.,!?]+)"), out match))
             {
                 elements.Add(new MenuText
                 {

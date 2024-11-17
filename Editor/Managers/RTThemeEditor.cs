@@ -772,7 +772,7 @@ namespace BetterLegacy.Editor.Managers
         public int CurrentEventThemePage => eventThemePage + 1;
         public int MinEventTheme => MaxEventTheme - eventThemesPerPage;
         public int MaxEventTheme => CurrentEventThemePage * eventThemesPerPage;
-        public int ThemesCount => ThemePanels.FindAll(x => CoreHelper.SearchString(searchTerm, x.isFolder ? Path.GetFileName(x.FilePath) : x.Theme.name)).Count;
+        public int ThemesCount => ThemePanels.FindAll(x => RTString.SearchString(searchTerm, x.isFolder ? Path.GetFileName(x.FilePath) : x.Theme.name)).Count;
         public IEnumerator RenderThemeList(string search)
         {
             if (!loadingThemes && !EventEditor.inst.eventDrag)
@@ -785,7 +785,7 @@ namespace BetterLegacy.Editor.Managers
                 for (int i = 0; i < ThemePanels.Count; i++)
                 {
                     var themePanel = ThemePanels[i];
-                    var searchBool = CoreHelper.SearchString(search, themePanel.isFolder ? Path.GetFileName(themePanel.FilePath) : themePanel.Theme.name);
+                    var searchBool = RTString.SearchString(search, themePanel.isFolder ? Path.GetFileName(themePanel.FilePath) : themePanel.Theme.name);
                     if (searchBool)
                         num++;
 

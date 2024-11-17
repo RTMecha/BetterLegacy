@@ -92,7 +92,7 @@ namespace BetterLegacy.Core
 
         public static bool TryParseTimeCode(string str, out float result)
         {
-            if (CoreHelper.RegexMatch(str, new Regex(@"([0-9]+):([0-9]+):([0-9.]+)"), out Match match1))
+            if (RTString.RegexMatch(str, new Regex(@"([0-9]+):([0-9]+):([0-9.]+)"), out Match match1))
             {
                 var hours = float.Parse(match1.Groups[1].ToString()) * 3600f;
                 var minutes = float.Parse(match1.Groups[2].ToString()) * 60f;
@@ -101,7 +101,7 @@ namespace BetterLegacy.Core
                 result = hours + minutes + seconds;
                 return true;
             }
-            else if (CoreHelper.RegexMatch(str, new Regex(@"([0-9]+):([0-9.]+)"), out Match match2))
+            else if (RTString.RegexMatch(str, new Regex(@"([0-9]+):([0-9.]+)"), out Match match2))
             {
                 var minutes = float.Parse(match2.Groups[1].ToString()) * 60f;
                 var seconds = float.Parse(match2.Groups[2].ToString());
@@ -116,7 +116,7 @@ namespace BetterLegacy.Core
 
         public static float ParseTimeCode(string str)
         {
-            if (CoreHelper.RegexMatch(str, new Regex(@"([0-9]+):([0-9]+):([0-9.]+)"), out Match match1))
+            if (RTString.RegexMatch(str, new Regex(@"([0-9]+):([0-9]+):([0-9.]+)"), out Match match1))
             {
                 var hours = float.Parse(match1.Groups[1].ToString()) * 3600f;
                 var minutes = float.Parse(match1.Groups[2].ToString()) * 60f;
@@ -124,7 +124,7 @@ namespace BetterLegacy.Core
 
                 return hours + minutes + seconds;
             }
-            else if (CoreHelper.RegexMatch(str, new Regex(@"([0-9]+):([0-9.]+)"), out Match match2))
+            else if (RTString.RegexMatch(str, new Regex(@"([0-9]+):([0-9.]+)"), out Match match2))
             {
                 var minutes = float.Parse(match2.Groups[1].ToString()) * 60f;
                 var seconds = float.Parse(match2.Groups[2].ToString());

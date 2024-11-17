@@ -1856,7 +1856,7 @@ namespace BetterLegacy.Example
                 
                 try
                 {
-                    autocompleteContent.GetChild(num).gameObject.SetActive(CoreHelper.SearchString(searchTerm, commands[i].name));
+                    autocompleteContent.GetChild(num).gameObject.SetActive(RTString.SearchString(searchTerm, commands[i].name));
                 }
                 catch
                 {

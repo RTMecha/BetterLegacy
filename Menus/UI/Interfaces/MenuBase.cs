@@ -933,12 +933,12 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
         public static string ParseText(string input)
         {
-            CoreHelper.RegexMatches(input, new Regex(@"{{Date=(.*?)}}"), match =>
+            RTString.RegexMatches(input, new Regex(@"{{Date=(.*?)}}"), match =>
             {
                 input = input.Replace(match.Groups[0].ToString(), DateTime.Now.ToString(match.Groups[1].ToString()));
             });
 
-            CoreHelper.RegexMatches(input, new Regex(@"{{LevelRank=([0-9]+)}}"), match =>
+            RTString.RegexMatches(input, new Regex(@"{{LevelRank=([0-9]+)}}"), match =>
             {
                 DataManager.LevelRank levelRank =
                     LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level) ? LevelManager.GetLevelRank(level) :
@@ -946,10 +946,10 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         LevelManager.EditorRank :
                         DataManager.inst.levelRanks[0];
 
-                input = input.Replace(match.Groups[0].ToString(), CoreHelper.FormatLevelRank(levelRank));
+                input = input.Replace(match.Groups[0].ToString(), RTString.FormatLevelRank(levelRank));
             });
 
-            CoreHelper.RegexMatches(input, new Regex(@"{{StoryLevelRank=([0-9]+)}}"), match =>
+            RTString.RegexMatches(input, new Regex(@"{{StoryLevelRank=([0-9]+)}}"), match =>
             {
                 DataManager.LevelRank levelRank =
                     StoryManager.inst.Saves.TryFind(x => x.ID == match.Groups[1].ToString(), out LevelManager.PlayerData playerData) ? LevelManager.GetLevelRank(playerData) :
@@ -957,20 +957,20 @@ namespace BetterLegacy.Menus.UI.Interfaces
                         LevelManager.EditorRank :
                         DataManager.inst.levelRanks[0];
 
-                input = input.Replace(match.Groups[0].ToString(), CoreHelper.FormatLevelRank(levelRank));
+                input = input.Replace(match.Groups[0].ToString(), RTString.FormatLevelRank(levelRank));
             });
 
-            CoreHelper.RegexMatches(input, new Regex(@"{{LoadStoryString=(.*?),(.*?)}}"), match =>
+            RTString.RegexMatches(input, new Regex(@"{{LoadStoryString=(.*?),(.*?)}}"), match =>
             {
                 input = input.Replace(match.Groups[0].ToString(), StoryManager.inst.LoadString(match.Groups[1].ToString(), match.Groups[2].ToString()));
             });
 
-            CoreHelper.RegexMatches(input, new Regex(@"{{RandomNumber=([0-9]+)}}"), match =>
+            RTString.RegexMatches(input, new Regex(@"{{RandomNumber=([0-9]+)}}"), match =>
             {
                 input = input.Replace(match.Groups[0].ToString(), LSText.randomNumString(Parser.TryParse(match.Groups[1].ToString(), 0)));
             });
 
-            CoreHelper.RegexMatches(input, new Regex(@"{{RandomText=([0-9]+)}}"), match =>
+            RTString.RegexMatches(input, new Regex(@"{{RandomText=([0-9]+)}}"), match =>
             {
                 input = input.Replace(match.Groups[0].ToString(), LSText.randomString(Parser.TryParse(match.Groups[1].ToString(), 0)));
             });

@@ -668,7 +668,7 @@ namespace BetterLegacy.Editor.Managers
 
                 var name = keybind.Name;
 
-                if (!CoreHelper.SearchString(searchTerm, name))
+                if (!RTString.SearchString(searchTerm, name))
                 {
                     num++;
                     continue;

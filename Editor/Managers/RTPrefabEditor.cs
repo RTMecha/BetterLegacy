@@ -2358,7 +2358,7 @@ namespace BetterLegacy.Editor.Managers
             int num = 0;
             foreach (var beatmapObject in GameData.Current.beatmapObjects.FindAll(x => !x.fromPrefab))
             {
-                if (CoreHelper.SearchString(PrefabEditor.inst.gridSearch.text, beatmapObject.name))
+                if (RTString.SearchString(PrefabEditor.inst.gridSearch.text, beatmapObject.name))
                 {
                     var selection = PrefabEditor.inst.selectionPrefab.Duplicate(PrefabEditor.inst.gridContent, "grid");
                     var text = selection.transform.Find("text").GetComponent<Text>();
@@ -2595,7 +2595,7 @@ namespace BetterLegacy.Editor.Managers
             {
                 prefabPanel.SetActive(
                     prefabPanel.isFolder ?
-                        CoreHelper.SearchString(PrefabEditor.inst.externalSearchStr, Path.GetFileName(prefabPanel.FilePath)) :
+                        RTString.SearchString(PrefabEditor.inst.externalSearchStr, Path.GetFileName(prefabPanel.FilePath)) :
                         ContainsName(prefabPanel.Prefab, PrefabDialog.External));
             }
 

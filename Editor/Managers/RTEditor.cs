@@ -2868,7 +2868,7 @@ namespace BetterLegacy.Editor.Managers
             LSHelpers.DeleteChildren(objectTemplatePopup.Content);
             
             for (int i = 0; i < objectOptions.Count; i++)
-                if (CoreHelper.SearchString(search, objectOptions[i].name))
+                if (RTString.SearchString(search, objectOptions[i].name))
                     GenerateObjectTemplate(objectOptions[i].name, objectOptions[i].hint, objectOptions[i].Create);
         }
 
@@ -3047,7 +3047,7 @@ namespace BetterLegacy.Editor.Managers
                 ShowWarningPopup("Are you sure you want to copy the level to the arcade folder?", () =>
                 {
                     var name = MetaData.Current.beatmap.name;
-                    name = CoreHelper.ReplaceFormatting(name); // for cases where a user has used symbols not allowed.
+                    name = RTString.ReplaceFormatting(name); // for cases where a user has used symbols not allowed.
                     name = RTFile.ValidateDirectory(name);
                     var directory = $"{RTFile.ApplicationDirectory}{LevelManager.ListSlash}{name} [{MetaData.Current.arcadeID}]";
 
@@ -3088,7 +3088,7 @@ namespace BetterLegacy.Editor.Managers
                 GameData.Current = null;
                 GameData.Current = new GameData();
                 TooltipHelper.InitTooltips();
-                SceneManager.inst.LoadScene("Editor");
+                SceneHelper.LoadEditorWithProgress();
             }, 7);
 
             EditorHelper.AddEditorDropdown("Open Level Browser", "", "File", titleBar.Find("File/File Dropdown/Open/Image").GetComponent<Image>().sprite, () =>
@@ -11079,14 +11079,14 @@ namespace BetterLegacy.Editor.Managers
                     "Unknown difficulty",
                 };
 
-                editorWrapper.SetActive(editorWrapper.isFolder && CoreHelper.SearchString(EditorManager.inst.openFileSearch, Path.GetFileName(folder)) ||
-                    !editorWrapper.isFolder && (CoreHelper.SearchString(EditorManager.inst.openFileSearch, Path.GetFileName(folder)) ||
+                editorWrapper.SetActive(editorWrapper.isFolder && RTString.SearchString(EditorManager.inst.openFileSearch, Path.GetFileName(folder)) ||
+                    !editorWrapper.isFolder && (RTString.SearchString(EditorManager.inst.openFileSearch, Path.GetFileName(folder)) ||
                         metadata == null || metadata != null &&
-                        (CoreHelper.SearchString(EditorManager.inst.openFileSearch, metadata.song.title) ||
-                        CoreHelper.SearchString(EditorManager.inst.openFileSearch, metadata.artist.Name) ||
-                        CoreHelper.SearchString(EditorManager.inst.openFileSearch, metadata.creator.steam_name) ||
-                        CoreHelper.SearchString(EditorManager.inst.openFileSearch, metadata.song.description) ||
-                        CoreHelper.SearchString(EditorManager.inst.openFileSearch, difficultyNames[Mathf.Clamp(metadata.song.difficulty, 0, difficultyNames.Length - 1)]))));
+                        (RTString.SearchString(EditorManager.inst.openFileSearch, metadata.song.title) ||
+                        RTString.SearchString(EditorManager.inst.openFileSearch, metadata.artist.Name) ||
+                        RTString.SearchString(EditorManager.inst.openFileSearch, metadata.creator.steam_name) ||
+                        RTString.SearchString(EditorManager.inst.openFileSearch, metadata.song.description) ||
+                        RTString.SearchString(EditorManager.inst.openFileSearch, difficultyNames[Mathf.Clamp(metadata.song.difficulty, 0, difficultyNames.Length - 1)]))));
 
                 editorWrapper.GameObject.transform.SetSiblingIndex(num);
                 num++;
@@ -11145,7 +11145,7 @@ namespace BetterLegacy.Editor.Managers
             EditorThemeManager.ApplySelectable(noParentButton, ThemeGroup.List_Button_1);
             EditorThemeManager.ApplyLightText(noParentText);
 
-            if (CoreHelper.SearchString(__instance.parentSearch, "camera"))
+            if (RTString.SearchString(__instance.parentSearch, "camera"))
             {
                 var cam = __instance.folderButtonPrefab.Duplicate(transform, "Camera");
                 var camText = cam.transform.GetChild(0).GetComponent<Text>();
@@ -11515,7 +11515,7 @@ namespace BetterLegacy.Editor.Managers
         public void RefreshDebugger()
         {
             for (int i = 0; i < debugs.Count; i++)
-                debuggerPopup.Content.GetChild(i).gameObject.SetActive(CoreHelper.SearchString(debugSearch, debugs[i]));
+                debuggerPopup.Content.GetChild(i).gameObject.SetActive(RTString.SearchString(debugSearch, debugs[i]));
         }
 
         public void RefreshAutosaveList(EditorWrapper editorWrapper)

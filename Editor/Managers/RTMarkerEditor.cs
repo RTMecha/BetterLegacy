@@ -433,7 +433,7 @@ namespace BetterLegacy.Editor.Managers
             int num = 0;
             foreach (var marker in GameData.Current.beatmapData.markers)
             {
-                if (!CoreHelper.SearchString(MarkerEditor.inst.sortedName, marker.name) && !CoreHelper.SearchString(MarkerEditor.inst.sortedName, marker.desc))
+                if (!RTString.SearchString(MarkerEditor.inst.sortedName, marker.name) && !RTString.SearchString(MarkerEditor.inst.sortedName, marker.desc))
                 {
                     num++;
                     continue;
