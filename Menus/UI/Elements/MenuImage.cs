@@ -316,7 +316,7 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         public virtual void UpdateSpawnCondition()
         {
-            time = (Time.time - timeOffset) / (InputDataManager.inst.menuActions.Submit.IsPressed ? length * MenuConfig.Instance.SpeedUpSpeedMultiplier.Value : length * MenuConfig.Instance.RegularSpeedMultiplier.Value);
+            time = (Time.time - timeOffset) * length * InterfaceManager.InterfaceSpeed;
 
             if (time > length)
                 isSpawning = false;
@@ -553,7 +553,7 @@ namespace BetterLegacy.Menus.UI.Elements
                     }
                 case "StoryLoadBool":
                     {
-                        if (parameters == null || parameters.IsArray && parameters.Count < 3 || parameters.IsObject && parameters["load"] == null)
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["load"] == null)
                             break;
 
                         var value = StoryManager.inst.LoadBool(parameters.IsArray ? parameters[0] : parameters["load"], Parser.TryParse(parameters.IsArray ? parameters[1] : parameters["default"], false));

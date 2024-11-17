@@ -454,7 +454,7 @@ namespace BetterLegacy.Menus.UI.Elements
             }
 
             // Speeds up the text interpolation if a Submit key is being held.
-            textInterpolation?.animationHandlers[0]?.SetKeyframeTime(1, length * (text.Length / TEXT_LENGTH_DIVISION) * ((InputDataManager.inst.menuActions.Submit.IsPressed ? MenuConfig.Instance.SpeedUpSpeedMultiplier.Value : MenuConfig.Instance.RegularSpeedMultiplier.Value)) * currentSpeed);
+            textInterpolation?.animationHandlers[0]?.SetKeyframeTime(1, length * (text.Length / TEXT_LENGTH_DIVISION) * InterfaceManager.InterfaceSpeed * currentSpeed);
         }
 
         // todo: acceptable text ranges for speaking sounds?
@@ -504,7 +504,7 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         public void UpdateText()
         {
-            time = (Time.time - timeOffset) * length * ((InputDataManager.inst.menuActions.Submit.IsPressed ? MenuConfig.Instance.SpeedUpSpeedMultiplier.Value : MenuConfig.Instance.RegularSpeedMultiplier.Value) * currentSpeed);
+            time = (Time.time - timeOffset) * length * (text.Length / TEXT_LENGTH_DIVISION) * InterfaceManager.InterfaceSpeed * currentSpeed;
             
             if (cachedQuickElements == null)
                 return;
