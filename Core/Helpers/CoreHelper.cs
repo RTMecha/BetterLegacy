@@ -931,13 +931,10 @@ namespace BetterLegacy.Core.Helpers
         /// <param name="prev">The previous value.</param>
         /// <param name="current">The current value.</param>
         /// <param name="action">The method to invoke if the parameters are not the same.</param>
-        /// <returns>Returns true if previous value is not equal to current value, otherwise returns false.</returns>
-        public static bool UpdateValue<T>(T prev, T current, Action<T> action)
+        public static void UpdateValue<T>(T prev, T current, Action<T> action)
         {
-            bool value = !prev.Equals(current);
-            if (value)
+            if (!prev.Equals(current))
                 action?.Invoke(current);
-            return value;
         }
 
         public static void SetConfigPreset(UserPreferenceType preset)
