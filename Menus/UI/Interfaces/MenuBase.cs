@@ -592,7 +592,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
         /// <param name="element">The element to parent.</param>
         /// <param name="defaultLayout">The default GameObject to parent to if no parent is found.</param>
         /// <returns></returns>
-        public Transform GetElementParent(MenuImage element, GameObject defaultLayout) => !string.IsNullOrEmpty(element.parentLayout) && layouts.TryGetValue(element.parentLayout, out MenuLayoutBase menuLayoutParent) ? menuLayoutParent.gameObject.transform : !string.IsNullOrEmpty(element.parent) && elements.TryFind(x => x.id == element.parent, out MenuImage menuParent) && menuParent.gameObject ? menuParent.gameObject.transform : defaultLayout.transform;
+        public Transform GetElementParent(MenuImage element, GameObject defaultLayout) => !string.IsNullOrEmpty(element.parentLayout) && layouts.TryGetValue(element.parentLayout, out MenuLayoutBase menuLayoutParent) ? menuLayoutParent.content : !string.IsNullOrEmpty(element.parent) && elements.TryFind(x => x.id == element.parent, out MenuImage menuParent) && menuParent.gameObject ? menuParent.gameObject.transform : defaultLayout.transform;
 
         /// <summary>
         /// Initializes a <see cref="MenuGridLayout"/>s' UI.
@@ -605,7 +605,23 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 UnityEngine.Object.Destroy(layout.gameObject);
 
             layout.gameObject = Creator.NewUIObject(layout.name, parent);
-            layout.gridLayout = layout.gameObject.AddComponent<GridLayoutGroup>();
+
+            layout.rect.AssignToRectTransform(layout.gameObject.transform.AsRT());
+
+            if (layout.scrollable)
+            {
+                var content = Creator.NewUIObject("Content", layout.gameObject.transform);
+                layout.content = content.transform.AsRT();
+                layout.contentRect.AssignToRectTransform(layout.content);
+
+                layout.gridLayout = content.AddComponent<GridLayoutGroup>();
+            }
+            else
+            {
+                layout.content = layout.gameObject.transform.AsRT();
+                layout.gridLayout = layout.gameObject.AddComponent<GridLayoutGroup>();
+            }
+
             layout.gridLayout.cellSize = layout.cellSize;
             layout.gridLayout.spacing = layout.spacing;
             layout.gridLayout.constraintCount = layout.constraintCount;
@@ -613,8 +629,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
             layout.gridLayout.childAlignment = layout.childAlignment;
             layout.gridLayout.startAxis = layout.startAxis;
             layout.gridLayout.startCorner = layout.startCorner;
-
-            layout.rect.AssignToRectTransform(layout.gameObject.transform.AsRT());
 
             if (layout.mask)
             {
@@ -634,7 +648,23 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 UnityEngine.Object.Destroy(layout.gameObject);
 
             layout.gameObject = Creator.NewUIObject(layout.name, parent);
-            layout.horizontalLayout = layout.gameObject.AddComponent<HorizontalLayoutGroup>();
+
+            layout.rect.AssignToRectTransform(layout.gameObject.transform.AsRT());
+
+            if (layout.scrollable)
+            {
+                var content = Creator.NewUIObject("Content", layout.gameObject.transform);
+                layout.content = content.transform.AsRT();
+                layout.contentRect.AssignToRectTransform(layout.content);
+
+                layout.horizontalLayout = content.AddComponent<HorizontalLayoutGroup>();
+            }
+            else
+            {
+                layout.content = layout.gameObject.transform.AsRT();
+                layout.horizontalLayout = layout.gameObject.AddComponent<HorizontalLayoutGroup>();
+            }
+
             layout.horizontalLayout.childControlHeight = layout.childControlHeight;
             layout.horizontalLayout.childControlWidth = layout.childControlWidth;
             layout.horizontalLayout.childForceExpandHeight = layout.childForceExpandHeight;
@@ -643,8 +673,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
             layout.horizontalLayout.childScaleWidth = layout.childScaleWidth;
             layout.horizontalLayout.spacing = layout.spacing;
             layout.horizontalLayout.childAlignment = layout.childAlignment;
-
-            layout.rect.AssignToRectTransform(layout.gameObject.transform.AsRT());
 
             if (layout.mask)
             {
@@ -664,7 +692,23 @@ namespace BetterLegacy.Menus.UI.Interfaces
                 UnityEngine.Object.Destroy(layout.gameObject);
 
             layout.gameObject = Creator.NewUIObject(layout.name, parent);
-            layout.verticalLayout = layout.gameObject.AddComponent<VerticalLayoutGroup>();
+
+            layout.rect.AssignToRectTransform(layout.gameObject.transform.AsRT());
+
+            if (layout.scrollable)
+            {
+                var content = Creator.NewUIObject("Content", layout.gameObject.transform);
+                layout.content = content.transform.AsRT();
+                layout.contentRect.AssignToRectTransform(layout.content);
+
+                layout.verticalLayout = content.AddComponent<VerticalLayoutGroup>();
+            }
+            else
+            {
+                layout.content = layout.gameObject.transform.AsRT();
+                layout.verticalLayout = layout.gameObject.AddComponent<VerticalLayoutGroup>();
+            }
+
             layout.verticalLayout.childControlHeight = layout.childControlHeight;
             layout.verticalLayout.childControlWidth = layout.childControlWidth;
             layout.verticalLayout.childForceExpandHeight = layout.childForceExpandHeight;
@@ -673,8 +717,6 @@ namespace BetterLegacy.Menus.UI.Interfaces
             layout.verticalLayout.childScaleWidth = layout.childScaleWidth;
             layout.verticalLayout.spacing = layout.spacing;
             layout.verticalLayout.childAlignment = layout.childAlignment;
-
-            layout.rect.AssignToRectTransform(layout.gameObject.transform.AsRT());
 
             if (layout.mask)
             {

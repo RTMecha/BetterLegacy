@@ -16,5 +16,8 @@ namespace BetterLegacy.Menus.UI.Layouts
         public bool childScaleWidth;
 
         public float spacing;
+
+        public float minScroll = -100f;
+        public float maxScroll = 100f;
     }
 }

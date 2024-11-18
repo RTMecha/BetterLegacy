@@ -14,6 +14,8 @@ namespace BetterLegacy.Menus.UI.Layouts
     {
         public GameObject gameObject;
 
+        public RectTransform content;
+
         public string name;
 
         public TextAnchor childAlignment;
@@ -23,5 +25,9 @@ namespace BetterLegacy.Menus.UI.Layouts
         public bool regenerate = true;
 
         public bool mask;
+
+        public bool scrollable;
+
+        public RectValues contentRect = RectValues.FullAnchored;
     }
 }
