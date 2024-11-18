@@ -22,7 +22,6 @@ namespace BetterLegacy.Patchers
             }
 
             string text;
-            string fileName = "";
             if (string.IsNullOrEmpty(__instance.file))
             {
                 text = SaveManager.inst.CurrentStoryLevel.BeatmapJson.text;
