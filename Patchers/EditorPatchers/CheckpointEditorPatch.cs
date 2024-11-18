@@ -64,7 +64,7 @@ namespace BetterLegacy.Patchers
             {
                 if (Instance.checkpointsDrag[j])
                 {
-                    DataManager.inst.gameData.beatmapData.checkpoints[j].time = Mathf.Clamp(EditorManager.inst.GetTimelineTime(0f), 0f, AudioManager.inst.CurrentAudioSource.clip.length);
+                    GameData.Current.beatmapData.checkpoints[j].time = Mathf.Clamp(EditorManager.inst.GetTimelineTime(), 0f, AudioManager.inst.CurrentAudioSource.clip.length);
                     Instance.left.Find("time/time").GetComponent<InputField>().text = GameData.Current.beatmapData.checkpoints[j].time.ToString("f3");
                     Instance.RenderCheckpoint(j);
                 }
@@ -101,17 +101,17 @@ namespace BetterLegacy.Patchers
             search.onValueChanged.AddListener(_val => { Instance.RenderCheckpointList(_val, index); });
             Instance.RenderCheckpointList(search.text, index);
 
-            var first = Instance.left.transform.Find("edit/<<").GetComponent<Button>();
-            var prev = Instance.left.transform.Find("edit/<").GetComponent<Button>();
-            var next = Instance.left.transform.Find("edit/>").GetComponent<Button>();
-            var last = Instance.left.transform.Find("edit/>>").GetComponent<Button>();
+            var first = Instance.left.Find("edit/<<").GetComponent<Button>();
+            var prev = Instance.left.Find("edit/<").GetComponent<Button>();
+            var next = Instance.left.Find("edit/>").GetComponent<Button>();
+            var last = Instance.left.Find("edit/>>").GetComponent<Button>();
 
             var isFirst = __0 == 0;
             var isLast = __0 == GameData.Current.beatmapData.checkpoints.Count - 1;
 
             var text = isFirst ? "S" : isLast ? "E" : index.ToString();
 
-            var delete = Instance.left.transform.Find("edit/del").GetComponent<Button>();
+            var delete = Instance.left.Find("edit/del").GetComponent<Button>();
 
             var name = Instance.left.Find("name").GetComponent<InputField>();
 
