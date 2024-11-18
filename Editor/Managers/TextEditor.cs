@@ -56,7 +56,7 @@ namespace BetterLegacy.Editor.Managers
                 editor = textEditorPopup.Find("level-name").GetComponent<InputField>();
                 editor.image.rectTransform.sizeDelta = new Vector2(492f, 344f);
                 editor.textComponent.alignment = TextAnchor.UpperLeft;
-                editor.PlaceholderText().alignment = TextAnchor.UpperLeft;
+                editor.GetPlaceholderText().alignment = TextAnchor.UpperLeft;
                 editor.lineType = InputField.LineType.MultiLineNewline;
                 editor.onValueChanged.ClearAll();
                 editor.text = "";

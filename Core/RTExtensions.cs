@@ -14,24 +14,29 @@ using Object = UnityEngine.Object;
 
 namespace BetterLegacy.Core
 {
+    /// <summary>
+    /// BetterLegacy extension class.
+    /// </summary>
     public static class RTExtensions
     {
         #region Scene
 
-        public static bool TryFind(string find, out GameObject result)
-        {
-            var e = GameObject.Find(find);
-            result = e;
-            return e;
-        }
-
+        /// <summary>
+        /// Tries to find a child from a parent.
+        /// </summary>
+        /// <param name="find">Child to find. To search through the chain, do "object 1/object 2/object 3"</param>
+        /// <param name="result">Output child.</param>
+        /// <returns>Returns true if a child was found, otherwise returns false.</returns>
         public static bool TryFind(this Transform tf, string find, out Transform result)
         {
-            var e = tf.Find(find);
-            result = e;
-            return e;
+            result = tf.Find(find);
+            return result;
         }
 
+        /// <summary>
+        /// Gets the children of a <see cref="Transform"/>.
+        /// </summary>
+        /// <returns>Returns a <see cref="List{T}"/> of the <see cref="Transform"/>s children.</returns>
         public static List<Transform> ChildList(this Transform transform)
         {
             var list = new List<Transform>();
@@ -40,8 +45,27 @@ namespace BetterLegacy.Core
             return list;
         }
 
+        /// <summary>
+        /// Gets the children of a <see cref="Transform"/>.
+        /// </summary>
+        /// <returns>Returns an <see cref="IEnumerable{T}"/> of the <see cref="Transform"/>s children.</returns>
+        public static IEnumerable<Transform> GetChildren(this Transform transform)
+        {
+            foreach (Transform child in transform)
+                yield return child;
+        }
+
+        /// <summary>
+        /// Destroys all the children of the <see cref="GameObject"/>.
+        /// </summary>
+        /// <param name="instant">True if it should be instant, otherwise put onto the Unity scheduler.</param>
         public static void DeleteChildren(this Transform tf, bool instant = false) => LSHelpers.DeleteChildren(tf, instant);
 
+        /// <summary>
+        /// Duplicates a <see cref="GameObject"/>, sets a parent and ensures the same local position and scale. Wraps the <see cref="Object.Instantiate(Object)"/> method.
+        /// </summary>
+        /// <param name="parent">Parent to set.</param>
+        /// <returns>Returns a duplicated <see cref="GameObject"/>.</returns>
         public static GameObject Duplicate(this GameObject gameObject, Transform parent)
         {
             var copy = Object.Instantiate(gameObject);
@@ -52,6 +76,12 @@ namespace BetterLegacy.Core
             return copy;
         }
 
+        /// <summary>
+        /// Duplicates a <see cref="GameObject"/>, sets a parent, name and ensures the same local position and scale. Wraps the <see cref="Object.Instantiate(Object)"/> method.
+        /// </summary>
+        /// <param name="parent">Parent to set.</param>
+        /// <param name="name">Name of the <see cref="GameObject"/>.</param>
+        /// <returns>Returns a duplicated <see cref="GameObject"/>.</returns>
         public static GameObject Duplicate(this GameObject gameObject, Transform parent, string name)
         {
             var copy = gameObject.Duplicate(parent);
@@ -59,6 +89,13 @@ namespace BetterLegacy.Core
             return copy;
         }
 
+        /// <summary>
+        /// Duplicates a <see cref="GameObject"/>, sets a parent & sibling index, name and ensures the same local position and scale. Wraps the <see cref="Object.Instantiate(Object)"/> method.
+        /// </summary>
+        /// <param name="parent">Parent to set.</param>
+        /// <param name="name">Name of the <see cref="GameObject"/>.</param>
+        /// <param name="index">Sets the sibling index of the <see cref="GameObject"/>.</param>
+        /// <returns>Returns a duplicated <see cref="GameObject"/>.</returns>
         public static GameObject Duplicate(this GameObject gameObject, Transform parent, string name, int index)
         {
             var copy = gameObject.Duplicate(parent, name);
@@ -66,6 +103,11 @@ namespace BetterLegacy.Core
             return copy;
         }
 
+        /// <summary>
+        /// Casts a <see cref="Transform"/> into a <see cref="RectTransform"/>. For ease of access with Unity UI.
+        /// </summary>
+        /// <param name="transform">Transform to cast.</param>
+        /// <returns>Returns a casted <see cref="Transform"/>.</returns>
         public static RectTransform AsRT(this Transform transform) => (RectTransform)transform;
 
         public static void SetPosition(this Transform transform, int axis, float value)
@@ -192,22 +234,51 @@ namespace BetterLegacy.Core
             transform.localRotation = Quaternion.Euler(rot);
         }
 
+        /// <summary>
+        /// Gets a <see cref="RectValues"/> from a <see cref="RectTransform"/>.
+        /// </summary>
+        /// <param name="rectTransform"><see cref="RectTransform"/> to get.</param>
+        /// <returns>Returns <see cref="RectValues"/> based on the <see cref="RectTransform"/>.</returns>
         public static RectValues GetRectValues(this RectTransform rectTransform) => RectValues.FromRectTransform(rectTransform);
 
+        /// <summary>
+        /// Tries to get a component from a <see cref="GameObject"/> and outputs it.
+        /// </summary>
+        /// <typeparam name="T">Type of the component.</typeparam>
+        /// <param name="gameObject">GameObject to get a component from.</param>
+        /// <param name="result">Output component.</param>
+        /// <returns>Returns true if a component was found, otherwise returns false.</returns>
         public static bool TryGetComponent<T>(this GameObject gameObject, out T result) where T : Component
         {
-            var t = gameObject.GetComponent<T>();
-            result = t;
-            return t;
+            result = gameObject.GetComponent<T>();
+            return result;
         }
 
         #endregion
 
         #region Coroutines
 
+        /// <summary>
+        /// Starts an <see cref="IEnumerator"/> as a <see cref="Coroutine"/> without returning the coroutine.
+        /// </summary>
+        /// <param name="routine">Routine to start.</param>
         public static void Start(this IEnumerator routine) => CoreHelper.StartCoroutine(routine);
+        /// <summary>
+        /// Starts an <see cref="IEnumerator"/> as a <see cref="Coroutine"/>.
+        /// </summary>
+        /// <param name="routine">Routine to start.</param>
+        /// <returns>Returns a generated coroutine.</returns>
         public static Coroutine StartCoroutine(this IEnumerator routine) => CoreHelper.StartCoroutine(routine);
+        /// <summary>
+        /// Starts an <see cref="IEnumerator"/> asynchronously as a <see cref="Coroutine"/> without returning the coroutine.
+        /// </summary>
+        /// <param name="routine">Routine to start.</param>
         public static void StartAsync(this IEnumerator routine) => CoreHelper.StartCoroutineAsync(routine);
+        /// <summary>
+        /// Starts an <see cref="IEnumerator"/> asynchronously as a <see cref="Coroutine"/>.
+        /// </summary>
+        /// <param name="routine">Routine to start.</param>
+        /// <returns>Returns a generated coroutine.</returns>
         public static Coroutine StartCoroutineAsync(this IEnumerator routine) => CoreHelper.StartCoroutineAsync(routine);
 
         #endregion
@@ -217,8 +288,7 @@ namespace BetterLegacy.Core
         /// <summary>
         /// Creates a new list with all the same element instances as the parent list.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="list"></param>
+        /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
         /// <returns>Returns cloned list.</returns>
         public static List<T> Clone<T>(this List<T> list)
         {
@@ -227,23 +297,33 @@ namespace BetterLegacy.Core
             return array.ToList();
         }
 
-        public static T[] Copy<T>(this T[] ts)
+        /// <summary>
+        /// Copies the items from an array to a new array.
+        /// </summary>
+        /// <typeparam name="T">Type of the array.</typeparam>
+        /// <returns>Returns a copied array.</returns>
+        public static T[] Copy<T>(this T[] array)
         {
-            var array = new T[ts.Length];
-            for (int i = 0; i < ts.Length; i++)
-                array[i] = ts[i];
-            return array;
+            var newArray = new T[array.Length];
+            for (int i = 0; i < array.Length; i++)
+                newArray[i] = array[i];
+            return newArray;
         }
 
-        public static T GetDefault<T>(this List<T> list, int index, T defaultValue) => index >= 0 && index < list.Count - 1 ? list[index] : defaultValue;
-
-        public static bool TryFind<T>(this List<T> ts, Predicate<T> match, out T result)
+        /// <summary>
+        /// Tries to find a match in the list and outputs the first occurance of the match.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
+        /// <param name="match">Match to find.</param>
+        /// <param name="result">The item found.</param>
+        /// <returns>Returns true if any matches were found, otherwise returns false.</returns>
+        public static bool TryFind<T>(this List<T> list, Predicate<T> match, out T result)
         {
-            for (int i = 0; i < ts.Count; i++)
+            for (int i = 0; i < list.Count; i++)
             {
-                if (match(ts[i]))
+                if (match(list[i]))
                 {
-                    result = ts[i];
+                    result = list[i];
                     return true;
                 }
             }
@@ -251,13 +331,20 @@ namespace BetterLegacy.Core
             return false;
         }
 
-        public static bool TryFindLast<T>(this List<T> ts, Predicate<T> match, out T result)
+        /// <summary>
+        /// Tries to find a match in the list and outputs the last occurance of the match.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
+        /// <param name="match">Match to find.</param>
+        /// <param name="result">The item found.</param>
+        /// <returns>Returns true if any matches were found, otherwise returns false.</returns>
+        public static bool TryFindLast<T>(this List<T> list, Predicate<T> match, out T result)
         {
-            for (int i = ts.Count - 1; i >= 0; i--)
+            for (int i = list.Count - 1; i >= 0; i--)
             {
-                if (match(ts[i]))
+                if (match(list[i]))
                 {
-                    result = ts[i];
+                    result = list[i];
                     return true;
                 }
             }
@@ -265,31 +352,52 @@ namespace BetterLegacy.Core
             return false;
         }
 
-        public static bool TryFindIndex<T>(this List<T> ts, Predicate<T> match, out int index)
+        /// <summary>
+        /// Tries to find a match in the list and outputs an index of the first occurance of the match.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
+        /// <param name="match">Match to find.</param>
+        /// <param name="index">Index of the match.</param>
+        /// <returns>Returns true if any matches were found, otherwise returns false.</returns>
+        public static bool TryFindIndex<T>(this List<T> list, Predicate<T> match, out int index)
         {
-            index = ts.FindIndex(match);
-            return index >= 0 && index < ts.Count;
+            index = list.FindIndex(match);
+            return index >= 0 && index < list.Count;
         }
 
-        public static bool TryFindLastIndex<T>(this List<T> ts, Predicate<T> match, out int index)
+        /// <summary>
+        /// Tries to find a match in the list and outputs an index of the last occurance of the match.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
+        /// <param name="match">Match to find.</param>
+        /// <param name="index">Index of the match.</param>
+        /// <returns>Returns true if any matches were found, otherwise returns false.</returns>
+        public static bool TryFindLastIndex<T>(this List<T> list, Predicate<T> match, out int index)
         {
-            index = ts.FindLastIndex(match);
-            return index >= 0 && index < ts.Count;
+            index = list.FindLastIndex(match);
+            return index >= 0 && index < list.Count;
         }
 
-        public static bool TryFindAll<T>(this List<T> ts, Predicate<T> match, out List<T> findAll)
+        /// <summary>
+        /// Tries to find a match in the list and outputs a list containing all matches.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="List{T}"/>.</typeparam>
+        /// <param name="match">Match to find.</param>
+        /// <param name="findAll">List of matches.</param>
+        /// <returns>Returns true if any matches were found, otherwise returns false.</returns>
+        public static bool TryFindAll<T>(this List<T> list, Predicate<T> match, out List<T> findAll)
         {
             bool found = false;
-            var list = new List<T>();
-            for (int i = 0; i < ts.Count; i++)
+            var newList = new List<T>();
+            for (int i = 0; i < list.Count; i++)
             {
-                if (match(ts[i]))
+                if (match(list[i]))
                 {
-                    list.Add(ts[i]);
+                    newList.Add(list[i]);
                     found = true;
                 }
             }
-            findAll = list;
+            findAll = newList;
             return found;
         }
 
@@ -299,15 +407,15 @@ namespace BetterLegacy.Core
         /// <typeparam name="T">The type of the List</typeparam>
         /// <param name="t">Object reference.</param>
         /// <param name="moveTo">Index to move the item to.</param>
-        public static void Move<T>(this List<T> ts, T t, int moveTo)
+        public static void Move<T>(this List<T> list, T t, int moveTo)
         {
-            var index = ts.IndexOf(t);
+            var index = list.IndexOf(t);
             if (index < 0 || index == moveTo)
                 return;
 
-            var result = ts[index];
-            ts.RemoveAt(index);
-            ts.Insert(Mathf.Clamp(moveTo, 0, ts.Count), result);
+            var result = list[index];
+            list.RemoveAt(index);
+            list.Insert(Mathf.Clamp(moveTo, 0, list.Count), result);
         }
 
         /// <summary>
@@ -316,15 +424,15 @@ namespace BetterLegacy.Core
         /// <typeparam name="T">The type of the List.</typeparam>
         /// <param name="match">Object predicate.</param>
         /// <param name="moveTo">Index to move the item to.</param>
-        public static void Move<T>(this List<T> ts, Predicate<T> match, int moveTo)
+        public static void Move<T>(this List<T> list, Predicate<T> match, int moveTo)
         {
-            var index = ts.FindIndex(match);
+            var index = list.FindIndex(match);
             if (index < 0 || index == moveTo)
                 return;
 
-            var result = ts[index];
-            ts.RemoveAt(index);
-            ts.Insert(Mathf.Clamp(moveTo, 0, ts.Count), result);
+            var result = list[index];
+            list.RemoveAt(index);
+            list.Insert(Mathf.Clamp(moveTo, 0, list.Count), result);
         }
 
         /// <summary>
@@ -333,45 +441,79 @@ namespace BetterLegacy.Core
         /// <typeparam name="T">The type of the List.</typeparam>
         /// <param name="index">Index of an object.</param>
         /// <param name="moveTo">Index to move the item to.</param>
-        public static void Move<T>(this List<T> ts, int index, int moveTo)
+        public static void Move<T>(this List<T> list, int index, int moveTo)
         {
             if (index < 0 || index == moveTo)
                 return;
 
-            var result = ts[index];
-            ts.RemoveAt(index);
-            ts.Insert(Mathf.Clamp(moveTo, 0, ts.Count), result);
+            var result = list[index];
+            list.RemoveAt(index);
+            list.Insert(Mathf.Clamp(moveTo, 0, list.Count), result);
+        }
+
+        /// <summary>
+        /// Checks if an array has a specific item.
+        /// </summary>
+        /// <typeparam name="T">The type of the list.</typeparam>
+        /// <param name="match">Predicate to find an item.</param>
+        /// <returns>Returns true if an item is found, otherwise returns false.</returns>
+        public static bool Has<T>(this T[] array, Predicate<T> match)
+        {
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (match(array[i]))
+                    return true;
+            }
+            return false;
         }
 
         /// <summary>
         /// Checks if a list has a specific item.
         /// </summary>
         /// <typeparam name="T">The type of the list.</typeparam>
-        /// <param name="predicate">Predicate to find an item.</param>
+        /// <param name="match">Predicate to find an item.</param>
         /// <returns>Returns true if an item is found, otherwise returns false.</returns>
-        public static bool Has<T>(this List<T> ts, Predicate<T> match)
+        public static bool Has<T>(this List<T> list, Predicate<T> match)
         {
-            for (int i = 0; i < ts.Count; i++)
+            for (int i = 0; i < list.Count; i++)
             {
-                if (match(ts[i]))
+                if (match(list[i]))
                     return true;
             }
             return false;
         }
 
-        public static void For<T>(this T[] ts, Action<T, int> action)
+        /// <summary>
+        /// Performs a for loop to the array. Action passes the item and its index.
+        /// </summary>
+        /// <typeparam name="T">Type of the array.</typeparam>
+        /// <param name="action">Action to perform for each element.</param>
+        public static void For<T>(this T[] array, Action<T, int> action)
         {
-            for (int i = 0; i < ts.Length; i++)
-                action?.Invoke(ts[i], i);
+            for (int i = 0; i < array.Length; i++)
+                action?.Invoke(array[i], i);
         }
 
-        public static void For<T>(this List<T> ts, Action<T, int> action)
+        /// <summary>
+        /// Performs a for loop to the list. Action passes the item and its index.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="List{T}"/></typeparam>
+        /// <param name="action">Action to perform for each element.</param>
+        public static void For<T>(this List<T> list, Action<T, int> action)
         {
-            for (int i = 0; i < ts.Count; i++)
-                action?.Invoke(ts[i], i);
+            for (int i = 0; i < list.Count; i++)
+                action?.Invoke(list[i], i);
         }
 
-        public static List<T> Order<T, TKey>(this List<T> ts, Func<T, TKey> selector, bool descending) => (descending ? ts.OrderByDescending(selector) : ts.OrderBy(selector)).ToList();
+        /// <summary>
+        /// Sorts a list with a custom selector and descending.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="List{T}"/></typeparam>
+        /// <typeparam name="TKey">Type to compare.</typeparam>
+        /// <param name="selector">Comparer.</param>
+        /// <param name="descending">If the list should sort by descending or not.</param>
+        /// <returns>Returns a sorted list.</returns>
+        public static List<T> Order<T, TKey>(this List<T> list, Func<T, TKey> selector, bool descending) => (descending ? list.OrderByDescending(selector) : list.OrderBy(selector)).ToList();
 
         /// <summary>
         /// Fills a list with an item.
@@ -379,19 +521,66 @@ namespace BetterLegacy.Core
         /// <typeparam name="T">The type of the list and item.</typeparam>
         /// <param name="count">The amount to fill.</param>
         /// <param name="obj">The item to fill the list with.</param>
-        public static void Fill<T>(this List<T> ts, int count, T obj)
+        public static void Fill<T>(this List<T> list, int count, T obj)
         {
             for (int i = 0; i < count; i++)
-                ts.Add(obj);
+                list.Add(obj);
         }
         
-        public static string[] GetLines(this string str) => str.Split(new string[] { "\n", "\n\r", "\r" }, StringSplitOptions.RemoveEmptyEntries);
-
-        public static string Remove(this string str, string remove) => str.Replace(remove, "");
+        /// <summary>
+        /// Removes a specified string from the input string.
+        /// </summary>
+        /// <param name="remove">String to remove.</param>
+        /// <returns>Returns a string with the specified string removed.</returns>
+        public static string Remove(this string input, string remove) => input.Replace(remove, "");
 
         #endregion
 
         #region JSON
+
+        public static JSONNode ToJSONArray(this Vector2Int vector2)
+        {
+            var jn = JSON.Parse("{}");
+            jn[0] = vector2.x;
+            jn[1] = vector2.y;
+            return jn;
+        }
+        
+        public static JSONNode ToJSONArray(this Vector2 vector2)
+        {
+            var jn = JSON.Parse("{}");
+            jn[0] = vector2.x;
+            jn[1] = vector2.y;
+            return jn;
+        }
+        
+        public static JSONNode ToJSONArray(this Vector3Int vector3)
+        {
+            var jn = JSON.Parse("{}");
+            jn[0] = vector3.x;
+            jn[1] = vector3.y;
+            jn[2] = vector3.z;
+            return jn;
+        }
+        
+        public static JSONNode ToJSONArray(this Vector3 vector3)
+        {
+            var jn = JSON.Parse("{}");
+            jn[0] = vector3.x;
+            jn[1] = vector3.y;
+            jn[2] = vector3.z;
+            return jn;
+        }
+        
+        public static JSONNode ToJSONArray(this Vector4 vector4)
+        {
+            var jn = JSON.Parse("{}");
+            jn[0] = vector4.x;
+            jn[1] = vector4.y;
+            jn[2] = vector4.z;
+            jn[3] = vector4.w;
+            return jn;
+        }
 
         public static JSONNode ToJSON(this Vector2Int vector2)
         {
@@ -447,7 +636,7 @@ namespace BetterLegacy.Core
             return jn;
         }
 
-        public static Vector2 AsVector2(this JSONNode jn) => new Vector2(jn["x"].AsFloat, jn["y"].AsFloat);
+        public static Vector2 AsVector2(this JSONNode jn) => Parser.TryParse(jn, Vector2.zero);
 
         public static Vector3 AsVector3(this JSONNode jn) => new Vector3(jn["x"].AsFloat, jn["y"].AsFloat, jn["z"].AsFloat);
 
@@ -457,8 +646,33 @@ namespace BetterLegacy.Core
 
         #region UI
 
+        /// <summary>
+        /// Assigns a <see cref="Texture2D"/> to an <see cref="Image"/>.
+        /// </summary>
+        /// <param name="texture2D"><see cref="Texture2D"/> to assign.</param>
         public static void AssignTexture(this Image image, Texture2D texture2D) => image.sprite = SpriteHelper.CreateSprite(texture2D);
 
+        /// <summary>
+        /// Sets the colors of <see cref="Selectable.colors"/>.
+        /// </summary>
+        /// <param name="normal">The normal color.</param>
+        /// <param name="highlighted">The highlighted color.</param>
+        /// <param name="pressed">The pressed color.</param>
+        /// <param name="selected">The selected color.</param>
+        /// <param name="disabled">The disabled color.</param>
+        /// <param name="fade">The fade duration between each color.</param>
+        public static void SetColorBlock(this Selectable selectable, Color normal, Color highlighted, Color pressed, Color selected, Color disabled, float fade = 0.2f) => selectable.colors = selectable.colors.SetColorBlock(normal, highlighted, pressed, selected, disabled, fade);
+
+        /// <summary>
+        /// Sets the colors of a <see cref="ColorBlock"/>.
+        /// </summary>
+        /// <param name="normal">The normal color.</param>
+        /// <param name="highlighted">The highlighted color.</param>
+        /// <param name="pressed">The pressed color.</param>
+        /// <param name="selected">The selected color.</param>
+        /// <param name="disabled">The disabled color.</param>
+        /// <param name="fade">The fade duration between each color.</param>
+        /// <returns>Returns the <see cref="ColorBlock"/>.</returns>
         public static ColorBlock SetColorBlock(this ColorBlock cb, Color normal, Color highlighted, Color pressed, Color selected, Color disabled, float fade = 0.2f)
         {
             cb.normalColor = normal;
@@ -470,22 +684,57 @@ namespace BetterLegacy.Core
             return cb;
         }
 
+        /// <summary>
+        /// Sets the color of a <see cref="Material"/>.
+        /// </summary>
+        /// <param name="color">Color to set.</param>
         public static void SetColor(this Material material, Color color) => material.color = color;
 
-        public static void SetText(this Text text, string str) => text.text = str;
+        /// <summary>
+        /// Sets the text of a <see cref="Text"/> component.
+        /// </summary>
+        /// <param name="input">The text to set.</param>
+        public static void SetText(this Text text, string input) => text.text = input;
 
+        /// <summary>
+        /// Sets the color of an <see cref="Image"/> component.
+        /// </summary>
+        /// <param name="color">Color to set.</param>
         public static void SetColor(this Image image, Color color) => image.color = color;
 
-        public static void SetText(this InputField inputField, string str) => inputField.text = str;
+        /// <summary>
+        /// Sets the text of an <see cref="InputField"/> component.
+        /// </summary>
+        /// <param name="input">The text to set.</param>
+        public static void SetText(this InputField inputField, string input) => inputField.text = input;
 
+        /// <summary>
+        /// Sets a <see cref="Toggle"/> on / off.
+        /// </summary>
+        /// <param name="on">The <see cref="Toggle.isOn"/> value.</param>
         public static void SetIsOn(this Toggle toggle, bool on) => toggle.isOn = on;
 
+        /// <summary>
+        /// Sets the value of a <see cref="Dropdown"/>.
+        /// </summary>
+        /// <param name="value">The value to set.</param>
         public static void SetValue(this Dropdown dropdown, int value) => dropdown.value = value;
 
+        /// <summary>
+        /// Sets the value of a <see cref="Slider"/>.
+        /// </summary>
+        /// <param name="value">The value to set.</param>
         public static void SetSlider(this Slider slider, float value) => slider.value = value;
 
-        public static Text PlaceholderText(this InputField inputField) => (Text)inputField.placeholder;
+        /// <summary>
+        /// Gets the Placeholder of an <see cref="InputField"/> and casts it to a <see cref="Text"/>, since it's always a <see cref="Text"/> component in Project Arrhythmia.
+        /// </summary>
+        /// <returns>Returns a casted <see cref="InputField.placeholder"/>.</returns>
+        public static Text GetPlaceholderText(this InputField inputField) => (Text)inputField.placeholder;
 
+        /// <summary>
+        /// Clears all functions from a <see cref="Button"/>, including persistent. This is specifically for weird cases where functions aren't removed with <see cref="UnityEventBase.RemoveAllListeners"/>.
+        /// </summary>
         public static void ClearAll(this Button.ButtonClickedEvent uiEvent)
         {
             uiEvent.m_Calls.m_ExecutingCalls.Clear();
@@ -496,6 +745,9 @@ namespace BetterLegacy.Core
             uiEvent.RemoveAllListeners();
         }
 
+        /// <summary>
+        /// Clears all functions from an <see cref="InputField"/>, including persistent. This is specifically for weird cases where functions aren't removed with <see cref="UnityEventBase.RemoveAllListeners"/>.
+        /// </summary>
         public static void ClearAll(this InputField.OnChangeEvent uiEvent)
         {
             uiEvent.m_Calls.m_ExecutingCalls.Clear();
@@ -506,6 +758,9 @@ namespace BetterLegacy.Core
             uiEvent.RemoveAllListeners();
         }
 
+        /// <summary>
+        /// Clears all functions from an <see cref="InputField"/>, including persistent. This is specifically for weird cases where functions aren't removed with <see cref="UnityEventBase.RemoveAllListeners"/>.
+        /// </summary>
         public static void ClearAll(this InputField.SubmitEvent uiEvent)
         {
             uiEvent.m_Calls.m_ExecutingCalls.Clear();
@@ -516,6 +771,9 @@ namespace BetterLegacy.Core
             uiEvent.RemoveAllListeners();
         }
 
+        /// <summary>
+        /// Clears all functions from a <see cref="Toggle"/>, including persistent. This is specifically for weird cases where functions aren't removed with <see cref="UnityEventBase.RemoveAllListeners"/>.
+        /// </summary>
         public static void ClearAll(this Toggle.ToggleEvent uiEvent)
         {
             uiEvent.m_Calls.m_ExecutingCalls.Clear();
@@ -526,6 +784,9 @@ namespace BetterLegacy.Core
             uiEvent.RemoveAllListeners();
         }
 
+        /// <summary>
+        /// Clears all functions from a <see cref="Dropdown"/>, including persistent. This is specifically for weird cases where functions aren't removed with <see cref="UnityEventBase.RemoveAllListeners"/>.
+        /// </summary>
         public static void ClearAll(this Dropdown.DropdownEvent uiEvent)
         {
             uiEvent.m_Calls.m_ExecutingCalls.Clear();
@@ -536,6 +797,9 @@ namespace BetterLegacy.Core
             uiEvent.RemoveAllListeners();
         }
 
+        /// <summary>
+        /// Clears all functions from a <see cref="Slider"/>, including persistent. This is specifically for weird cases where functions aren't removed with <see cref="UnityEventBase.RemoveAllListeners"/>.
+        /// </summary>
         public static void ClearAll(this Slider.SliderEvent uiEvent)
         {
             uiEvent.m_Calls.m_ExecutingCalls.Clear();
@@ -546,6 +810,9 @@ namespace BetterLegacy.Core
             uiEvent.RemoveAllListeners();
         }
 
+        /// <summary>
+        /// Clears all functions from a <see cref="Scrollbar"/>, including persistent. This is specifically for weird cases where functions aren't removed with <see cref="UnityEventBase.RemoveAllListeners"/>.
+        /// </summary>
         public static void ClearAll(this Scrollbar.ScrollEvent uiEvent)
         {
             uiEvent.m_Calls.m_ExecutingCalls.Clear();
@@ -556,6 +823,10 @@ namespace BetterLegacy.Core
             uiEvent.RemoveAllListeners();
         }
 
+        /// <summary>
+        /// Clears <see cref="Button"/> functions and adds a new one.
+        /// </summary>
+        /// <param name="unityAction">Action to set.</param>
         public static void NewOnClickListener(this Button b, UnityAction unityAction)
         {
             b.onClick.ClearAll();

@@ -174,6 +174,18 @@ namespace BetterLegacy.Core.Helpers
             => AssetBundle.LoadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}{file}");
 
         /// <summary>
+        /// Tries to find a <see cref="GameObject"/>.
+        /// </summary>
+        /// <param name="find"><see cref="GameObject"/> to find. To search through a chain, do "object 1/object 2/object 3"</param>
+        /// <param name="result">Output <see cref="GameObject"/>.</param>
+        /// <returns>Returns true if a <see cref="GameObject"/> was found, otherwise returns false.</returns>
+        public static bool TryFind(string find, out GameObject result)
+        {
+            result = GameObject.Find(find);
+            return result;
+        }
+
+        /// <summary>
         /// Destroys a Unity Object from anywhere, includes instant and delay time.
         /// </summary>
         /// <param name="obj">Unity Object to destroy.</param>

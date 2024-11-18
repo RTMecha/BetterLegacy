@@ -2016,8 +2016,8 @@ namespace BetterLegacy.Editor.Managers
 
             externalNameField = name.GetComponent<InputField>();
             externalNameField.lineType = InputField.LineType.MultiLineNewline;
-            externalNameField.PlaceholderText().text = "Set name...";
-            externalNameField.PlaceholderText().color = new Color(0.1961f, 0.1961f, 0.1961f, 0.5f);
+            externalNameField.GetPlaceholderText().text = "Set name...";
+            externalNameField.GetPlaceholderText().color = new Color(0.1961f, 0.1961f, 0.1961f, 0.5f);
 
             EditorThemeManager.AddInputField(externalNameField);
 
@@ -2044,8 +2044,8 @@ namespace BetterLegacy.Editor.Managers
 
             externalDescriptionField = description.GetComponent<InputField>();
             externalDescriptionField.lineType = InputField.LineType.MultiLineNewline;
-            externalDescriptionField.PlaceholderText().text = "Set description...";
-            externalDescriptionField.PlaceholderText().color = new Color(0.1961f, 0.1961f, 0.1961f, 0.5f);
+            externalDescriptionField.GetPlaceholderText().text = "Set description...";
+            externalDescriptionField.GetPlaceholderText().color = new Color(0.1961f, 0.1961f, 0.1961f, 0.5f);
 
             EditorThemeManager.AddInputField(externalDescriptionField);
 

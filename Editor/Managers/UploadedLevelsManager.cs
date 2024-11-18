@@ -62,7 +62,7 @@ namespace BetterLegacy.Editor.Managers
             var searchField = search.GetComponent<InputField>();
             searchField.onValueChanged.ClearAll();
             searchField.text = "";
-            searchField.PlaceholderText().text = "Search levels...";
+            searchField.GetPlaceholderText().text = "Search levels...";
             searchField.onValueChanged.AddListener(_val => { this.search = _val; });
 
             var page = EditorPrefabHolder.Instance.NumberInputField.Duplicate(editorDialogObject.transform.Find("spacer"), "page");

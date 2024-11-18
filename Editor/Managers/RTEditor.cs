@@ -2345,7 +2345,7 @@ namespace BetterLegacy.Editor.Managers
             popupInstance.SearchField = popup.transform.Find("search-box/search").GetComponent<InputField>();
             popupInstance.SearchField.onValueChanged.ClearAll();
             popupInstance.SearchField.onValueChanged.AddListener(_val => refreshSearch?.Invoke(_val));
-            popupInstance.SearchField.PlaceholderText().text = placeholderText;
+            popupInstance.SearchField.GetPlaceholderText().text = placeholderText;
             popupInstance.Content = popup.transform.Find("mask/content");
 
             EditorHelper.AddEditorPopup(name, popup);
@@ -2386,10 +2386,10 @@ namespace BetterLegacy.Editor.Managers
             TooltipHelper.AssignTooltip(timeObj, timeObj.name, 3f);
 
             timeObj.SetActive(true);
-            timeField.PlaceholderText().text = "Set time...";
-            timeField.PlaceholderText().alignment = TextAnchor.MiddleCenter;
-            timeField.PlaceholderText().fontSize = 16;
-            timeField.PlaceholderText().horizontalOverflow = HorizontalWrapMode.Overflow;
+            timeField.GetPlaceholderText().text = "Set time...";
+            timeField.GetPlaceholderText().alignment = TextAnchor.MiddleCenter;
+            timeField.GetPlaceholderText().fontSize = 16;
+            timeField.GetPlaceholderText().horizontalOverflow = HorizontalWrapMode.Overflow;
             timeField.characterValidation = InputField.CharacterValidation.Decimal;
 
             timeField.onValueChanged.AddListener(_val =>
@@ -2419,10 +2419,10 @@ namespace BetterLegacy.Editor.Managers
 
             editorLayerField.characterValidation = InputField.CharacterValidation.None;
             editorLayerField.contentType = InputField.ContentType.Standard;
-            editorLayerField.PlaceholderText().text = "Set layer...";
-            editorLayerField.PlaceholderText().alignment = TextAnchor.MiddleCenter;
-            editorLayerField.PlaceholderText().fontSize = 16;
-            editorLayerField.PlaceholderText().horizontalOverflow = HorizontalWrapMode.Overflow;
+            editorLayerField.GetPlaceholderText().text = "Set layer...";
+            editorLayerField.GetPlaceholderText().alignment = TextAnchor.MiddleCenter;
+            editorLayerField.GetPlaceholderText().fontSize = 16;
+            editorLayerField.GetPlaceholderText().horizontalOverflow = HorizontalWrapMode.Overflow;
             editorLayerField.onValueChanged.RemoveAllListeners();
             editorLayerField.onValueChanged.AddListener(_val =>
             {
@@ -2445,10 +2445,10 @@ namespace BetterLegacy.Editor.Managers
             TooltipHelper.AssignTooltip(pitchObj, "Pitch", 3f);
 
             pitchField = pitchObj.GetComponent<InputField>();
-            pitchField.PlaceholderText().text = "Pitch";
-            pitchField.PlaceholderText().alignment = TextAnchor.MiddleCenter;
-            pitchField.PlaceholderText().fontSize = 16;
-            pitchField.PlaceholderText().horizontalOverflow = HorizontalWrapMode.Overflow;
+            pitchField.GetPlaceholderText().text = "Pitch";
+            pitchField.GetPlaceholderText().alignment = TextAnchor.MiddleCenter;
+            pitchField.GetPlaceholderText().fontSize = 16;
+            pitchField.GetPlaceholderText().horizontalOverflow = HorizontalWrapMode.Overflow;
             pitchField.onValueChanged.ClearAll();
             pitchField.onValueChanged.AddListener(_val =>
             {
@@ -4787,7 +4787,7 @@ namespace BetterLegacy.Editor.Managers
                 inputFieldStorage.inputField.characterLimit = 0;
                 inputFieldStorage.inputField.text = "object group";
                 inputFieldStorage.inputField.transform.AsRT().sizeDelta = new Vector2(300f, 32f);
-                inputFieldStorage.inputField.PlaceholderText().text = "Enter a tag...";
+                inputFieldStorage.inputField.GetPlaceholderText().text = "Enter a tag...";
 
                 EditorThemeManager.AddInputField(inputFieldStorage.inputField);
 
@@ -5772,10 +5772,10 @@ namespace BetterLegacy.Editor.Managers
                 oldNameIF.textComponent.alignment = TextAnchor.MiddleLeft;
                 oldNameIF.textComponent.fontSize = 16;
                 oldNameIF.text = "Old Name";
-                oldNameIF.PlaceholderText().text = "Enter old name...";
-                oldNameIF.PlaceholderText().alignment = TextAnchor.MiddleLeft;
-                oldNameIF.PlaceholderText().fontSize = 16;
-                oldNameIF.PlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
+                oldNameIF.GetPlaceholderText().text = "Enter old name...";
+                oldNameIF.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
+                oldNameIF.GetPlaceholderText().fontSize = 16;
+                oldNameIF.GetPlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
 
                 oldNameIF.onValueChanged.ClearAll();
 
@@ -5793,10 +5793,10 @@ namespace BetterLegacy.Editor.Managers
                 newNameIF.textComponent.alignment = TextAnchor.MiddleLeft;
                 newNameIF.textComponent.fontSize = 16;
                 newNameIF.text = "New Name";
-                newNameIF.PlaceholderText().text = "Enter new name...";
-                newNameIF.PlaceholderText().alignment = TextAnchor.MiddleLeft;
-                newNameIF.PlaceholderText().fontSize = 16;
-                newNameIF.PlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
+                newNameIF.GetPlaceholderText().text = "Enter new name...";
+                newNameIF.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
+                newNameIF.GetPlaceholderText().fontSize = 16;
+                newNameIF.GetPlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
 
                 newNameIF.onValueChanged.ClearAll();
 
@@ -5852,10 +5852,10 @@ namespace BetterLegacy.Editor.Managers
                 oldNameIF.textComponent.alignment = TextAnchor.MiddleLeft;
                 oldNameIF.textComponent.fontSize = 16;
                 oldNameIF.text = "Old Tag";
-                oldNameIF.PlaceholderText().text = "Enter old tag...";
-                oldNameIF.PlaceholderText().alignment = TextAnchor.MiddleLeft;
-                oldNameIF.PlaceholderText().fontSize = 16;
-                oldNameIF.PlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
+                oldNameIF.GetPlaceholderText().text = "Enter old tag...";
+                oldNameIF.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
+                oldNameIF.GetPlaceholderText().fontSize = 16;
+                oldNameIF.GetPlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
 
                 oldNameIF.onValueChanged.ClearAll();
 
@@ -5873,10 +5873,10 @@ namespace BetterLegacy.Editor.Managers
                 newNameIF.textComponent.alignment = TextAnchor.MiddleLeft;
                 newNameIF.textComponent.fontSize = 16;
                 newNameIF.text = "New Tag";
-                newNameIF.PlaceholderText().text = "Enter new tag...";
-                newNameIF.PlaceholderText().alignment = TextAnchor.MiddleLeft;
-                newNameIF.PlaceholderText().fontSize = 16;
-                newNameIF.PlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
+                newNameIF.GetPlaceholderText().text = "Enter new tag...";
+                newNameIF.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
+                newNameIF.GetPlaceholderText().fontSize = 16;
+                newNameIF.GetPlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
 
                 newNameIF.onValueChanged.ClearAll();
 
@@ -5934,10 +5934,10 @@ namespace BetterLegacy.Editor.Managers
                 oldNameIF.textComponent.alignment = TextAnchor.MiddleLeft;
                 oldNameIF.textComponent.fontSize = 16;
                 oldNameIF.text = "Old Text";
-                oldNameIF.PlaceholderText().text = "Enter old text...";
-                oldNameIF.PlaceholderText().alignment = TextAnchor.MiddleLeft;
-                oldNameIF.PlaceholderText().fontSize = 16;
-                oldNameIF.PlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
+                oldNameIF.GetPlaceholderText().text = "Enter old text...";
+                oldNameIF.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
+                oldNameIF.GetPlaceholderText().fontSize = 16;
+                oldNameIF.GetPlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
 
                 oldNameIF.onValueChanged.ClearAll();
 
@@ -5955,10 +5955,10 @@ namespace BetterLegacy.Editor.Managers
                 newNameIF.textComponent.alignment = TextAnchor.MiddleLeft;
                 newNameIF.textComponent.fontSize = 16;
                 newNameIF.text = "New Text";
-                newNameIF.PlaceholderText().text = "Enter new text...";
-                newNameIF.PlaceholderText().alignment = TextAnchor.MiddleLeft;
-                newNameIF.PlaceholderText().fontSize = 16;
-                newNameIF.PlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
+                newNameIF.GetPlaceholderText().text = "Enter new text...";
+                newNameIF.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
+                newNameIF.GetPlaceholderText().fontSize = 16;
+                newNameIF.GetPlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
 
                 newNameIF.onValueChanged.ClearAll();
 
@@ -6014,10 +6014,10 @@ namespace BetterLegacy.Editor.Managers
                 oldNameIF.textComponent.alignment = TextAnchor.MiddleLeft;
                 oldNameIF.textComponent.fontSize = 16;
                 oldNameIF.text = "Old Modifier";
-                oldNameIF.PlaceholderText().text = "Enter old modifier...";
-                oldNameIF.PlaceholderText().alignment = TextAnchor.MiddleLeft;
-                oldNameIF.PlaceholderText().fontSize = 16;
-                oldNameIF.PlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
+                oldNameIF.GetPlaceholderText().text = "Enter old modifier...";
+                oldNameIF.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
+                oldNameIF.GetPlaceholderText().fontSize = 16;
+                oldNameIF.GetPlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
 
                 oldNameIF.onValueChanged.ClearAll();
 
@@ -6035,10 +6035,10 @@ namespace BetterLegacy.Editor.Managers
                 newNameIF.textComponent.alignment = TextAnchor.MiddleLeft;
                 newNameIF.textComponent.fontSize = 16;
                 newNameIF.text = "New Modifier";
-                newNameIF.PlaceholderText().text = "Enter new modifier...";
-                newNameIF.PlaceholderText().alignment = TextAnchor.MiddleLeft;
-                newNameIF.PlaceholderText().fontSize = 16;
-                newNameIF.PlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
+                newNameIF.GetPlaceholderText().text = "Enter new modifier...";
+                newNameIF.GetPlaceholderText().alignment = TextAnchor.MiddleLeft;
+                newNameIF.GetPlaceholderText().fontSize = 16;
+                newNameIF.GetPlaceholderText().color = new Color(0f, 0f, 0f, 0.3f);
 
                 newNameIF.onValueChanged.ClearAll();
 
@@ -7476,7 +7476,7 @@ namespace BetterLegacy.Editor.Managers
             var gameObject = EditorPrefabHolder.Instance.NumberInputField.Duplicate(parent, name);
             gameObject.transform.localScale = Vector3.one;
             var inputFieldStorage = gameObject.GetComponent<InputFieldStorage>();
-            inputFieldStorage.inputField.PlaceholderText().text = placeholder;
+            inputFieldStorage.inputField.GetPlaceholderText().text = placeholder;
 
             gameObject.transform.AsRT().sizeDelta = new Vector2(428f, 32f);
 
@@ -7558,7 +7558,7 @@ namespace BetterLegacy.Editor.Managers
             var inputFieldStorage = gameObject.GetComponent<InputFieldStorage>();
 
             inputFieldStorage.inputField.image.rectTransform.sizeDelta = new Vector2(length, 32f);
-            inputFieldStorage.inputField.PlaceholderText().text = placeholder;
+            inputFieldStorage.inputField.GetPlaceholderText().text = placeholder;
 
             gameObject.transform.AsRT().sizeDelta = new Vector2(428f, 32f);
 

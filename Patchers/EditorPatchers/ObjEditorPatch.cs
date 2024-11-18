@@ -649,7 +649,7 @@ namespace BetterLegacy.Patchers
                 var parentPickerIcon = parentPicker.transform.GetChild(0).GetComponent<Image>();
 
                 if (parentPicker.transform.childCount >= 0
-                    && RTExtensions.TryFind("Editor Systems/Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/left/theme/theme/viewport/content/player0/preview/dropper",
+                    && CoreHelper.TryFind("Editor Systems/Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/left/theme/theme/viewport/content/player0/preview/dropper",
                     out GameObject dropper)
                     && dropper.TryGetComponent(out Image dropperImage))
                     parentPickerIcon.sprite = dropperImage.sprite;

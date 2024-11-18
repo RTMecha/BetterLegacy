@@ -951,12 +951,12 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
             menuInputField.inputField.onValueChanged.ClearAll();
             menuInputField.inputField.onEndEdit.ClearAll();
-            menuInputField.inputField.PlaceholderText().text = menuInputField.placeholder;
+            menuInputField.inputField.GetPlaceholderText().text = menuInputField.placeholder;
             menuInputField.inputField.text = menuInputField.text;
             menuInputField.inputField.textComponent.alignment = menuInputField.textAnchor;
-            menuInputField.inputField.PlaceholderText().alignment = menuInputField.placeholderAnchor;
+            menuInputField.inputField.GetPlaceholderText().alignment = menuInputField.placeholderAnchor;
             menuInputField.inputField.textComponent.fontSize = menuInputField.textFontSize;
-            menuInputField.inputField.PlaceholderText().fontSize = menuInputField.placeholderFontSize;
+            menuInputField.inputField.GetPlaceholderText().fontSize = menuInputField.placeholderFontSize;
             menuInputField.inputField.onValueChanged.AddListener(menuInputField.Write);
             menuInputField.inputField.onEndEdit.AddListener(menuInputField.Finish);
 
@@ -1236,7 +1236,7 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             inputField.textHue,
                             inputField.textSat,
                             inputField.textVal);
-                    inputField.inputField.PlaceholderText().color =
+                    inputField.inputField.GetPlaceholderText().color =
                         LSColors.fadeColor(CoreHelper.ChangeColorHSV(
                             inputField.useOverridePlaceholderColor ? inputField.overridePlaceholderColor : Theme.GetObjColor(inputField.placeholderColor),
                             inputField.placeholderHue,
