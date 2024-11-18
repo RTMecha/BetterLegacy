@@ -21,6 +21,7 @@ using System.IO;
 using BetterLegacy.Menus.UI.Interfaces;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Story;
+using BetterLegacy.Menus.UI.Layouts;
 
 namespace BetterLegacy.Menus.UI.Elements
 {
@@ -318,7 +319,7 @@ namespace BetterLegacy.Menus.UI.Elements
         {
             time = (Time.time - timeOffset) * length * InterfaceManager.InterfaceSpeed;
 
-            if (time > length)
+            if (time > length * InterfaceManager.InterfaceSpeed)
                 isSpawning = false;
         }
 
@@ -559,6 +560,161 @@ namespace BetterLegacy.Menus.UI.Elements
                         var value = StoryManager.inst.LoadBool(parameters.IsArray ? parameters[0] : parameters["load"], Parser.TryParse(parameters.IsArray ? parameters[1] : parameters["default"], false));
                         return !not ? value : !value;
                     }
+
+
+                case "LayoutChildCountEquals":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                            break;
+
+                        var isArray = parameters.IsArray;
+
+                        var value = menuLayout.content.childCount == (isArray ? parameters[0].AsInt : parameters["count"].AsInt);
+                        return !not ? value : !value;
+                    }
+                case "LayoutChildCountLesserEquals":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                            break;
+
+                        var isArray = parameters.IsArray;
+
+                        var value = menuLayout.content.childCount <= (isArray ? parameters[0].AsInt : parameters["count"].AsInt);
+                        return !not ? value : !value;
+                    }
+                case "LayoutChildCountGreaterEquals":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                            break;
+
+                        var isArray = parameters.IsArray;
+
+                        var value = menuLayout.content.childCount >= (isArray ? parameters[0].AsInt : parameters["count"].AsInt);
+                        return !not ? value : !value;
+                    }
+                case "LayoutChildCountLesser":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                            break;
+
+                        var isArray = parameters.IsArray;
+
+                        var value = menuLayout.content.childCount < (isArray ? parameters[0].AsInt : parameters["count"].AsInt);
+                        return !not ? value : !value;
+                    }
+                case "LayoutChildCountGreater":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                            break;
+
+                        var isArray = parameters.IsArray;
+
+                        var value = menuLayout.content.childCount > (isArray ? parameters[0].AsInt : parameters["count"].AsInt);
+                        return !not ? value : !value;
+                    }
+
+                case "LayoutScrollXEquals":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                            break;
+
+                        var isArray = parameters.IsArray;
+
+                        var value = menuLayout.content.anchoredPosition.x == (isArray ? parameters[0].AsFloat : parameters["count"].AsFloat);
+                        return !not ? value : !value;
+                    }
+                case "LayoutScrollXLesserEquals":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                            break;
+
+                        var isArray = parameters.IsArray;
+
+                        var value = menuLayout.content.anchoredPosition.x <= (isArray ? parameters[0].AsFloat : parameters["count"].AsFloat);
+                        return !not ? value : !value;
+                    }
+                case "LayoutScrollXGreaterEquals":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                            break;
+
+                        var isArray = parameters.IsArray;
+
+                        var value = menuLayout.content.anchoredPosition.x >= (isArray ? parameters[0].AsFloat : parameters["count"].AsFloat);
+                        return !not ? value : !value;
+                    }
+                case "LayoutScrollXLesser":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                            break;
+
+                        var isArray = parameters.IsArray;
+
+                        var value = menuLayout.content.anchoredPosition.x < (isArray ? parameters[0].AsFloat : parameters["count"].AsFloat);
+                        return !not ? value : !value;
+                    }
+                case "LayoutScrollXGreater":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                            break;
+
+                        var isArray = parameters.IsArray;
+
+                        var value = menuLayout.content.anchoredPosition.x > (isArray ? parameters[0].AsFloat : parameters["count"].AsFloat);
+                        return !not ? value : !value;
+                    }
+                    
+                case "LayoutScrollYEquals":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                            break;
+
+                        var isArray = parameters.IsArray;
+
+                        var value = menuLayout.content.anchoredPosition.y == (isArray ? parameters[0].AsFloat : parameters["count"].AsFloat);
+                        return !not ? value : !value;
+                    }
+                case "LayoutScrollYLesserEquals":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                            break;
+
+                        var isArray = parameters.IsArray;
+
+                        var value = menuLayout.content.anchoredPosition.y <= (isArray ? parameters[0].AsFloat : parameters["count"].AsFloat);
+                        return !not ? value : !value;
+                    }
+                case "LayoutScrollYGreaterEquals":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                            break;
+
+                        var isArray = parameters.IsArray;
+
+                        var value = menuLayout.content.anchoredPosition.y >= (isArray ? parameters[0].AsFloat : parameters["count"].AsFloat);
+                        return !not ? value : !value;
+                    }
+                case "LayoutScrollYLesser":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                            break;
+
+                        var isArray = parameters.IsArray;
+
+                        var value = menuLayout.content.anchoredPosition.y < (isArray ? parameters[0].AsFloat : parameters["count"].AsFloat);
+                        return !not ? value : !value;
+                    }
+                case "LayoutScrollYGreater":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                            break;
+
+                        var isArray = parameters.IsArray;
+
+                        var value = menuLayout.content.anchoredPosition.y > (isArray ? parameters[0].AsFloat : parameters["count"].AsFloat);
+                        return !not ? value : !value;
+                    }
+
                 #region LevelRanks
 
                 case "ChapterFullyRanked":
@@ -1947,6 +2103,29 @@ namespace BetterLegacy.Menus.UI.Elements
                         customMenu.elements.AddRange(CustomMenu.ParseElements(parameters.IsArray ? parameters[0] : parameters["elements"], customMenu.prefabs, customMenu.spriteAssets));
 
                         CoreHelper.StartCoroutine(customMenu.GenerateUI());
+
+                        break;
+                    }
+
+                #endregion
+
+                #region ScrollLayout
+
+                case "ScrollLayout":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 1 || parameters.IsObject && parameters["layout"] == null || !InterfaceManager.inst.CurrentMenu.layouts.TryGetValue(parameters.IsArray ? parameters[0] : parameters["layout"], out MenuLayoutBase menuLayout) || !menuLayout.scrollable)
+                            break;
+
+                        var isArray = parameters.IsArray;
+
+                        if (menuLayout is MenuGridLayout menuGridLayout)
+                            menuGridLayout.Scroll(isArray ? parameters[1].AsFloat : parameters["x"].AsFloat, isArray ? parameters[2].AsFloat : parameters["y"], isArray ? parameters[3].AsBool : parameters["x_additive"].AsBool, isArray ? parameters[4].AsBool : parameters["y_additive"].AsBool);
+
+                        if (menuLayout is MenuHorizontalLayout menuHorizontalLayout)
+                            menuHorizontalLayout.Scroll(isArray ? parameters[1].AsFloat : parameters["value"].AsFloat, isArray ? parameters[2].AsBool : parameters["additive"].AsBool);
+                        
+                        if (menuLayout is MenuVerticalLayout menuVerticalLayout)
+                            menuVerticalLayout.Scroll(isArray ? parameters[1].AsFloat : parameters["value"].AsFloat, isArray ? parameters[2].AsBool : parameters["additive"].AsBool);
 
                         break;
                     }
