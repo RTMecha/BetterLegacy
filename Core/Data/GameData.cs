@@ -1999,11 +1999,6 @@ namespace BetterLegacy.Core.Data
 
         public new List<Data.BackgroundObject> backgroundObjects = new List<Data.BackgroundObject>();
 
-        static void test()
-        {
-            DataManager.inst.gameData.beatmapObjects = new List<BaseBeatmapObject>();
-        }
-
         [NonSerialized]
         public new List<GameObject> backgroundGameObjects = new List<GameObject>();
 
