@@ -428,7 +428,7 @@ namespace BetterLegacy.Menus.UI.Elements
                 new AnimationHandler<float>(new List<IKeyframe<float>>
                 {
                     new FloatKeyframe(0f, 0f, Ease.Linear),
-                    new FloatKeyframe(length * (text.Length / TEXT_LENGTH_DIVISION), textWithoutFormatting.Length, Ease.Linear),
+                    new FloatKeyframe(length * (textWithoutFormatting.Length / TEXT_LENGTH_DIVISION), textWithoutFormatting.Length, Ease.Linear),
                                              // ^ Regular spawn length is sometimes too slow for text interpolation so it's sped up relative to the text length. 
                                              // For example, if the text is 32 characters long, it'd be fine. But if it were just 3 letters, it'd be really slow looking.
                 }, Interpolate),
@@ -454,7 +454,7 @@ namespace BetterLegacy.Menus.UI.Elements
             }
 
             // Speeds up the text interpolation if a Submit key is being held.
-            textInterpolation?.animationHandlers[0]?.SetKeyframeTime(1, length * (text.Length / TEXT_LENGTH_DIVISION) * InterfaceManager.InterfaceSpeed * currentSpeed);
+            textInterpolation?.animationHandlers[0]?.SetKeyframeTime(1, length * (textWithoutFormatting.Length / TEXT_LENGTH_DIVISION) * InterfaceManager.InterfaceSpeed * currentSpeed);
         }
 
         // todo: acceptable text ranges for speaking sounds?
