@@ -13,6 +13,7 @@ using BetterLegacy.Core.Optimization.Objects.Visual;
 using BetterLegacy.Editor.Managers;
 using BetterLegacy.Menus;
 using BetterLegacy.Menus.UI.Interfaces;
+using BetterLegacy.Patchers;
 using DG.Tweening;
 using LSFunctions;
 using SimpleJSON;
@@ -35,6 +36,12 @@ namespace BetterLegacy.Core.Helpers
         /// </summary>
         public static bool development = false;
 
+        /// <summary>
+        /// Checks if triggers return true.
+        /// </summary>
+        /// <typeparam name="T">The type of <see cref="Modifier{T}"/>.</typeparam>
+        /// <param name="triggers">Triggers to check.</param>
+        /// <returns>Returns true if all modifiers are active or if some have else if on, otherwise returns false.</returns>
         public static bool CheckTriggers<T>(List<Modifier<T>> triggers)
         {
             bool result = true;
@@ -53,81 +60,135 @@ namespace BetterLegacy.Core.Helpers
             return result;
         }
 
-        public static void RunModifiers<T>(List<Modifier<T>> modifiers, bool active)
+        /// <summary>
+        /// Assigns the associated modifier functions to the modifier.
+        /// </summary>
+        /// <typeparam name="T">The type of <see cref="Modifier{T}"/>.</typeparam>
+        /// <param name="modifier">The modifier to assign to.</param>
+        public static void AssignModifierActions<T>(Modifier<T> modifier)
         {
+            if (modifier is Modifier<BeatmapObject> objectModifier)
+                AssignModifierAction(objectModifier, ObjectAction, ObjectTrigger, ObjectInactive);
+            if (modifier is Modifier<BackgroundObject> backgroundModifier)
+                AssignModifierAction(backgroundModifier, BGAction, BGTrigger, BGInactive);
+            if (modifier is Modifier<CustomPlayer> playerModifier)
+                AssignModifierAction(playerModifier, PlayerAction, PlayerTrigger, PlayerInactive);
+        }
+
+        /// <summary>
+        /// Assigns actions to a modifier.
+        /// </summary>
+        /// <typeparam name="T">The type of <see cref="Modifier{T}"/>.</typeparam>
+        /// <param name="modifier">The modifier to assign to.</param>
+        /// <param name="action">Action function to set if <see cref="ModifierBase.type"/> is <see cref="ModifierBase.Type.Action"/>.</param>
+        /// <param name="trigger">Trigger function to set if <see cref="ModifierBase.type"/> is <see cref="ModifierBase.Type.Trigger"/>.</param>
+        /// <param name="inactive">Inactive function to set.</param>
+        public static void AssignModifierAction<T>(Modifier<T> modifier, Action<Modifier<T>> action, Predicate<Modifier<T>> trigger, Action<Modifier<T>> inactive)
+        {
+            // Only assign methods depending on modifier type.
+            if (modifier.type == ModifierBase.Type.Action)
+                modifier.Action = action;
+            if (modifier.type == ModifierBase.Type.Trigger)
+                modifier.Trigger = trigger;
+
+            // Both action and trigger modifier types can be inactive.
+            modifier.Inactive = inactive;
+        }
+
+        /// <summary>
+        /// The original way modifiers run.
+        /// </summary>
+        /// <typeparam name="T">The type of <see cref="Modifier{T}"/>.</typeparam>
+        /// <param name="modifiers">The list of modifiers to run.</param>
+        /// <param name="active">If the object is active.</param>
+        public static void RunModifiersAll<T>(List<Modifier<T>> modifiers, bool active)
+        {
+            var actions = new List<Modifier<T>>();
+            var triggers = new List<Modifier<T>>();
+            for (int j = 0; j < modifiers.Count; j++)
+            {
+                var modifier = modifiers[j];
+                switch (modifier.type)
+                {
+                    case ModifierBase.Type.Action:
+                        {
+                            if (modifier.Action == null || modifier.Inactive == null)
+                                AssignModifierActions(modifier);
+
+                            actions.Add(modifier);
+                            break;
+                        }
+                    case ModifierBase.Type.Trigger:
+                        {
+                            if (modifier.Trigger == null || modifier.Inactive == null)
+                                AssignModifierActions(modifier);
+
+                            triggers.Add(modifier);
+                            break;
+                        }
+                }
+            }
+
             if (active)
             {
-                bool result = true;
-                for (int i = 0; i < modifiers.Count; i++)
+                if (triggers.Count > 0)
                 {
-                    var modifier = modifiers[i];
-
-                    if (!result || modifier.active)
+                    if (CheckTriggers(triggers))
                     {
-                        modifier.active = false;
-                        modifier.running = false;
-                        modifier.Inactive?.Invoke(modifier);
-                        continue;
+                        foreach (var act in actions)
+                        {
+                            if (act.active)
+                                continue;
+
+                            if (!act.constant)
+                                act.active = true;
+
+                            act.running = true;
+                            act.Action?.Invoke(act);
+                        }
+
+                        foreach (var trig in triggers)
+                        {
+                            if (!trig.constant)
+                                trig.active = true;
+                            trig.running = true;
+                        }
                     }
-
-                    if (!modifier.constant)
-                        modifier.active = true;
-
-                    modifier.running = true;
-
-                    switch (modifier.type)
+                    else
                     {
-                        case ModifierBase.Type.Action:
-                            {
-                                if (modifier.Action == null || modifier.Inactive == null)
-                                {
-                                    if (modifier is Modifier<BeatmapObject> objectModifier)
-                                        ModifiersManager.AssignModifierActions(objectModifier);
-                                    if (modifier is Modifier<BackgroundObject> bgModifier)
-                                    {
-                                        bgModifier.Action = BGAction;
-                                        bgModifier.Inactive = BGInactive;
-                                    }
-                                    if (modifier is Modifier<CustomPlayer> playerModifier)
-                                    {
-                                        playerModifier.Action = PlayerAction;
-                                        playerModifier.Inactive = PlayerInactive;
-                                    }
-                                }
+                        foreach (var act in actions)
+                        {
+                            if (!act.active && !act.running)
+                                continue;
 
-                                if (result)
-                                    modifier.Action?.Invoke(modifier);
+                            act.active = false;
+                            act.running = false;
+                            act.Inactive?.Invoke(act);
+                        }
 
-                                break;
-                            }
-                        case ModifierBase.Type.Trigger:
-                            {
-                                if (modifier.Trigger == null || modifier.Inactive == null)
-                                {
-                                    if (modifier is Modifier<BeatmapObject> objectModifier)
-                                        ModifiersManager.AssignModifierActions(objectModifier);
-                                    if (modifier is Modifier<BackgroundObject> bgModifier)
-                                    {
-                                        bgModifier.Trigger = BGTrigger;
-                                        bgModifier.Inactive = BGInactive;
-                                    }
-                                    if (modifier is Modifier<CustomPlayer> playerModifier)
-                                    {
-                                        playerModifier.Trigger = PlayerTrigger;
-                                        playerModifier.Inactive = PlayerInactive;
-                                    }
-                                }
+                        foreach (var trig in triggers)
+                        {
+                            if (!trig.active)
+                                continue;
 
-                                var innerResult = !modifier.active && (modifier.not ? !modifier.Trigger(modifier) : modifier.Trigger(modifier));
+                            trig.active = false;
+                            trig.running = false;
+                            trig.Inactive?.Invoke(trig);
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var act in actions)
+                    {
+                        if (act.active)
+                            continue;
 
-                                if (modifier.elseIf && !result && innerResult)
-                                    result = true;
+                        if (!act.constant)
+                            act.active = true;
 
-                                if (!modifier.elseIf && !innerResult)
-                                    result = false;
-
-                                break;
-                            }
+                        act.running = true;
+                        act.Action?.Invoke(act);
                     }
                 }
             }
@@ -142,7 +203,91 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static bool Trigger(Modifier<BeatmapObject> modifier)
+        /// <summary>
+        /// The advanced way modifiers run.
+        /// </summary>
+        /// <typeparam name="T">The type of <see cref="Modifier{T}"/>.</typeparam>
+        /// <param name="modifiers">The list of modifiers to run.</param>
+        /// <param name="active">If the object is active.</param>
+        public static void RunModifiersLoop<T>(List<Modifier<T>> modifiers, bool active)
+        {
+            if (active)
+            {
+                bool result = true;
+                ModifierBase.Type previousType = ModifierBase.Type.Action;
+                for (int i = 0; i < modifiers.Count; i++)
+                {
+                    var modifier = modifiers[i];
+
+                    var isAction = modifier.type == ModifierBase.Type.Action;
+                    var isTrigger = modifier.type == ModifierBase.Type.Trigger;
+
+                    if (isAction && modifier.Action == null || isTrigger && modifier.Trigger == null || modifier.Inactive == null)
+                        AssignModifierActions(modifier);
+
+                    if (isTrigger)
+                    {
+                        if (previousType == ModifierBase.Type.Action)
+                            result = true;
+
+                        var innerResult = !modifier.active && (modifier.not ? !modifier.Trigger(modifier) : modifier.Trigger(modifier));
+
+                        if (modifier.elseIf && !result && innerResult)
+                            result = true;
+
+                        if (!modifier.elseIf && !innerResult)
+                            result = false;
+
+                        previousType = modifier.type;
+                    }
+
+                    if (!result && !(!modifier.active && !modifier.running))
+                    {
+                        modifier.active = false;
+                        modifier.running = false;
+                        modifier.Inactive?.Invoke(modifier);
+
+                        previousType = modifier.type;
+                        continue;
+                    }
+
+                    if (modifier.active || !result)
+                    {
+                        previousType = modifier.type;
+                        continue;
+                    }
+
+                    if (!modifier.constant)
+                        modifier.active = true;
+
+                    modifier.running = true;
+
+                    if (isAction)
+                    {
+                        if (result)
+                            modifier.Action?.Invoke(modifier);
+
+                        previousType = modifier.type;
+                    }
+                }
+            }
+            else if (modifiers.TryFindAll(x => x.active || x.running, out List<Modifier<T>> findAll))
+            {
+                foreach (var act in findAll)
+                {
+                    act.active = false;
+                    act.running = false;
+                    act.Inactive?.Invoke(act);
+                }
+            }
+        }
+
+        /// <summary>
+        /// The function to run when a <see cref="ModifierBase.Type.Trigger"/> modifier is running and has a reference of <see cref="BeatmapObject"/>.
+        /// </summary>
+        /// <param name="modifier">Modifier to run.</param>
+        /// <returns>Returns true if the modifier was triggered, otherwise returns false.</returns>
+        public static bool ObjectTrigger(Modifier<BeatmapObject> modifier)
         {
             if (!modifier.verified)
             {
@@ -1471,9 +1616,11 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
 
-        //static float timeTaken;
-
-        public static void Action(Modifier<BeatmapObject> modifier)
+        /// <summary>
+        /// The function to run when a <see cref="ModifierBase.Type.Action"/> modifier is running and has a reference of <see cref="BeatmapObject"/>.
+        /// </summary>
+        /// <param name="modifier">Modifier to run.</param>
+        public static void ObjectAction(Modifier<BeatmapObject> modifier)
         {
             modifier.hasChanged = false;
 
@@ -6637,7 +6784,11 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
-        public static void Inactive(Modifier<BeatmapObject> modifier)
+        /// <summary>
+        /// The function to run when a modifier is inactive and has a reference of <see cref="BeatmapObject"/>.
+        /// </summary>
+        /// <param name="modifier">Modifier to run the inactive function of.</param>
+        public static void ObjectInactive(Modifier<BeatmapObject> modifier)
         {
             if (!modifier.verified)
             {
@@ -6971,6 +7122,11 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
+        /// <summary>
+        /// The function to run when a <see cref="ModifierBase.Type.Trigger"/> modifier is running and has a reference of <see cref="BackgroundObject"/>.
+        /// </summary>
+        /// <param name="modifier">Modifier to run.</param>
+        /// <returns>Returns true if the modifier was triggered, otherwise returns false.</returns>
         public static bool BGTrigger(Modifier<BackgroundObject> modifier)
         {
             if (!modifier.verified)
@@ -7005,6 +7161,10 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
 
+        /// <summary>
+        /// The function to run when a <see cref="ModifierBase.Type.Action"/> modifier is running and has a reference of <see cref="BackgroundObject"/>.
+        /// </summary>
+        /// <param name="modifier">Modifier to run.</param>
         public static void BGAction(Modifier<BackgroundObject> modifier)
         {
             if (!modifier.verified)
@@ -7194,6 +7354,10 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
+        /// <summary>
+        /// The function to run when a modifier is inactive and has a reference of <see cref="BackgroundObject"/>.
+        /// </summary>
+        /// <param name="modifier">Modifier to run the inactive function of.</param>
         public static void BGInactive(Modifier<BackgroundObject> modifier)
         {
             if (!modifier.verified)
@@ -7206,6 +7370,11 @@ namespace BetterLegacy.Core.Helpers
                 return;
         }
 
+        /// <summary>
+        /// The function to run when a <see cref="ModifierBase.Type.Trigger"/> modifier is running and has a reference of <see cref="CustomPlayer"/>.
+        /// </summary>
+        /// <param name="modifier">Modifier to run.</param>
+        /// <returns>Returns true if the modifier was triggered, otherwise returns false.</returns>
         public static bool PlayerTrigger(Modifier<CustomPlayer> modifier)
         {
             if (!modifier.verified)
@@ -7356,6 +7525,10 @@ namespace BetterLegacy.Core.Helpers
             return false;
         }
 
+        /// <summary>
+        /// The function to run when a <see cref="ModifierBase.Type.Action"/> modifier is running and has a reference of <see cref="CustomPlayer"/>.
+        /// </summary>
+        /// <param name="modifier">Modifier to run.</param>
         public static void PlayerAction(Modifier<CustomPlayer> modifier)
         {
             if (!modifier.verified)
@@ -7405,6 +7578,10 @@ namespace BetterLegacy.Core.Helpers
             }
         }
 
+        /// <summary>
+        /// The function to run when a modifier is inactive and has a reference of <see cref="CustomPlayer"/>.
+        /// </summary>
+        /// <param name="modifier">Modifier to run the inactive function of.</param>
         public static void PlayerInactive(Modifier<CustomPlayer> modifier)
         {
             if (!modifier.verified)

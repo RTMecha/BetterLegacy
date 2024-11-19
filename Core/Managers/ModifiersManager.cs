@@ -22,22 +22,6 @@ namespace BetterLegacy.Core.Managers
         static System.Diagnostics.Stopwatch sw;
 
         /// <summary>
-        /// Assigns delegates to the modifier's actions. Can be patched with a custom method.
-        /// </summary>
-        /// <param name="modifier">Modifier to assign to.</param>
-        public static void AssignModifierActions(Modifier<BeatmapObject> modifier)
-        {
-            // Only assign methods depending on modifier type.
-            if (modifier.type == ModifierBase.Type.Action)
-                modifier.Action = ModifiersHelper.Action;
-            if (modifier.type == ModifierBase.Type.Trigger)
-                modifier.Trigger = ModifiersHelper.Trigger;
-
-            // Both action and trigger modifier types can be inactive.
-            modifier.Inactive = ModifiersHelper.Inactive;
-        }
-
-        /// <summary>
         /// Updates modifiers on level tick.
         /// </summary>
         public static void OnLevelTick()
@@ -58,117 +42,13 @@ namespace BetterLegacy.Core.Managers
                 if (beatmapObject.modifiers.Count <= 0 || ldm && beatmapObject.LDM)
                     continue;
 
-                if (beatmapObject.newModifiersMethod)
+                if (beatmapObject.orderModifiers)
                 {
-                    ModifiersHelper.RunModifiers(beatmapObject.modifiers, beatmapObject.ignoreLifespan || beatmapObject.Alive);
+                    ModifiersHelper.RunModifiersLoop(beatmapObject.modifiers, beatmapObject.ignoreLifespan || beatmapObject.Alive);
                     continue;
                 }
 
-                //if (beatmapObject.modifiers.TryFindAll(x => x.Action == null && x.type == ModifierBase.Type.Action || x.Trigger == null && x.type == ModifierBase.Type.Trigger || x.Inactive == null, out List<Modifier<BeatmapObject>> nullActionModifiers))
-                //    nullActionModifiers.ForEach(AssignModifierActions);
-
-                var actions = new List<Modifier<BeatmapObject>>();
-                var triggers = new List<Modifier<BeatmapObject>>();
-                for (int j = 0; j < beatmapObject.modifiers.Count; j++)
-                {
-                    var modifier = beatmapObject.modifiers[j];
-                    switch (modifier.type)
-                    {
-                        case ModifierBase.Type.Action:
-                            {
-                                if (modifier.Action == null || modifier.Inactive == null)
-                                    AssignModifierActions(modifier);
-
-                                actions.Add(modifier);
-                                break;
-                            }
-                        case ModifierBase.Type.Trigger:
-                            {
-                                if (modifier.Trigger == null || modifier.Inactive == null)
-                                    AssignModifierActions(modifier);
-
-                                triggers.Add(modifier);
-                                break;
-                            }
-                    }
-                }
-
-                //var actions = beatmapObject.modifiers.FindAll(x => x.type == ModifierBase.Type.Action);
-                //var triggers = beatmapObject.modifiers.FindAll(x => x.type == ModifierBase.Type.Trigger);
-
-                if (beatmapObject.ignoreLifespan || beatmapObject.Alive)
-                {
-                    if (triggers.Count > 0)
-                    {
-                        //if (triggers.TrueForAll(x => !x.active && (x.not ? !x.Trigger(x) : x.Trigger(x))))
-                        if (ModifiersHelper.CheckTriggers(triggers))
-                        {
-                            foreach (var act in actions)
-                            {
-                                if (act.active)
-                                    continue;
-
-                                if (!act.constant)
-                                    act.active = true;
-
-                                act.running = true;
-                                act.Action?.Invoke(act);
-                            }
-
-                            foreach (var trig in triggers)
-                            {
-                                if (!trig.constant)
-                                    trig.active = true;
-                                trig.running = true;
-                            }
-                        }
-                        else
-                        {
-                            foreach (var act in actions)
-                            {
-                                if (!act.active && !act.running)
-                                    continue;
-
-                                act.active = false;
-                                act.running = false;
-                                act.Inactive?.Invoke(act);
-                            }
-
-                            foreach (var trig in triggers)
-                            {
-                                if (!trig.active)
-                                    continue;
-
-                                trig.active = false;
-                                trig.running = false;
-                                trig.Inactive?.Invoke(trig);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        foreach (var act in actions)
-                        {
-                            if (act.active)
-                                continue;
-
-                            if (!act.constant)
-                                act.active = true;
-
-                            act.running = true;
-                            act.Action?.Invoke(act);
-                        }
-                    }
-                }
-                else if (beatmapObject.modifiers.TryFindAll(x => x.active || x.running, out List<Modifier<BeatmapObject>> findAll))
-                {
-                    foreach (var act in findAll)
-                    {
-                        act.active = false;
-                        act.running = false;
-                        act.Inactive?.Invoke(act);
-                    }
-                }
+                ModifiersHelper.RunModifiersAll(beatmapObject.modifiers, beatmapObject.ignoreLifespan || beatmapObject.Alive);
             }
 
             foreach (var audioSource in audioSources)

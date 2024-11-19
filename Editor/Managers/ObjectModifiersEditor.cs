@@ -70,21 +70,39 @@ namespace BetterLegacy.Editor.Managers
             }
         }
 
+        public Text modifiersLabel;
+
         public Text intVariable;
 
+        public Toggle activeToggle;
+
         public Toggle ignoreToggle;
+
+        public Toggle orderToggle;
 
         public bool renderingModifiers;
 
         public void CreateModifiersOnAwake()
         {
-            var bmb = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View");
+            var labelPrefab = ObjEditor.inst.ObjectView.transform.ChildList().First(x => x.name == "label").gameObject;
 
+            // Label
+            {
+                var label = labelPrefab.Duplicate(ObjEditor.inst.ObjectView.transform, "label");
+
+                if (label.transform.childCount > 1)
+                    Destroy(label.transform.GetChild(1).gameObject);
+                modifiersLabel = label.transform.GetChild(0).GetComponent<Text>();
+                modifiersLabel.text = "Modifiers";
+                EditorThemeManager.AddLightText(modifiersLabel);
+            }
+            
             // Integer variable
             {
-                var label = ObjEditor.inst.ObjectView.transform.ChildList().First(x => x.name == "label").gameObject.Duplicate(ObjEditor.inst.ObjectView.transform, "int_variable");
+                var label = labelPrefab.Duplicate(ObjEditor.inst.ObjectView.transform, "int_variable");
 
-                Destroy(label.transform.GetChild(1).gameObject);
+                if (label.transform.childCount > 1)
+                    Destroy(label.transform.GetChild(1).gameObject);
                 intVariable = label.transform.GetChild(0).GetComponent<Text>();
                 intVariable.text = "Integer Variable: [ null ]";
                 intVariable.fontSize = 18;
@@ -94,7 +112,7 @@ namespace BetterLegacy.Editor.Managers
             // Ignored Lifespan
             {
                 var ignoreGameObject = Instantiate(GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/right/grain/colored"));
-                ignoreGameObject.transform.SetParent(bmb.transform.Find("Viewport/Content"));
+                ignoreGameObject.transform.SetParent(ObjEditor.inst.ObjectView.transform);
                 ignoreGameObject.transform.localScale = Vector3.one;
                 ignoreGameObject.name = "ignore life";
                 var ignoreLifeText = ignoreGameObject.transform.Find("Text").GetComponent<Text>();
@@ -104,18 +122,32 @@ namespace BetterLegacy.Editor.Managers
 
                 EditorThemeManager.AddToggle(ignoreToggle, graphic: ignoreLifeText);
             }
+            
+            // Order Modifiers
+            {
+                var orderGameObject = Instantiate(GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/right/grain/colored"));
+                orderGameObject.transform.SetParent(ObjEditor.inst.ObjectView.transform);
+                orderGameObject.transform.localScale = Vector3.one;
+                orderGameObject.name = "order modifiers";
+                var orderText = orderGameObject.transform.Find("Text").GetComponent<Text>();
+                orderText.text = "Order Matters";
+
+                orderToggle = orderGameObject.GetComponent<Toggle>();
+
+                EditorThemeManager.AddToggle(orderToggle, graphic: orderText);
+            }
 
             var act = Instantiate(GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/EventObjectDialog/data/right/grain/colored"));
-            act.transform.SetParent(bmb.transform.Find("Viewport/Content"));
+            act.transform.SetParent(ObjEditor.inst.ObjectView.transform);
             act.transform.localScale = Vector3.one;
             act.name = "active";
             var activeText = act.transform.Find("Text").GetComponent<Text>();
             activeText.text = "Show Modifiers";
 
-            var toggle = act.GetComponent<Toggle>();
-            toggle.onValueChanged.ClearAll();
-            toggle.isOn = showModifiers;
-            toggle.onValueChanged.AddListener(_val =>
+            activeToggle = act.GetComponent<Toggle>();
+            activeToggle.onValueChanged.ClearAll();
+            activeToggle.isOn = showModifiers;
+            activeToggle.onValueChanged.AddListener(_val =>
             {
                 showModifiers = _val;
                 scrollView.gameObject.SetActive(showModifiers);
@@ -123,13 +155,14 @@ namespace BetterLegacy.Editor.Managers
                     RTEditor.inst.StartCoroutine(ObjectEditor.RefreshObjectGUI(ObjectEditor.inst.CurrentSelection.GetData<BeatmapObject>()));
             });
 
-            EditorThemeManager.AddToggle(toggle, graphic: activeText);
+            EditorThemeManager.AddToggle(activeToggle, graphic: activeText);
 
+            var bmb = GameObject.Find("Editor Systems/Editor GUI/sizer/main/EditorDialogs/GameObjectDialog/data/left/Scroll View");
             var e = Instantiate(bmb);
 
             scrollView = e.transform;
 
-            scrollView.SetParent(bmb.transform.Find("Viewport/Content"));
+            scrollView.SetParent(ObjEditor.inst.ObjectView.transform);
             scrollView.localScale = Vector3.one;
             scrollView.name = "Modifiers Scroll View";
 
@@ -244,7 +277,11 @@ namespace BetterLegacy.Editor.Managers
         {
             ignoreToggle.onValueChanged.ClearAll();
             ignoreToggle.isOn = beatmapObject.ignoreLifespan;
-            ignoreToggle.onValueChanged.AddListener(_val => { beatmapObject.ignoreLifespan = _val; });
+            ignoreToggle.onValueChanged.AddListener(_val => beatmapObject.ignoreLifespan = _val);
+
+            orderToggle.onValueChanged.ClearAll();
+            orderToggle.isOn = beatmapObject.orderModifiers;
+            orderToggle.onValueChanged.AddListener(_val => beatmapObject.orderModifiers = _val);
 
             if (!showModifiers)
                 yield break;
@@ -336,6 +373,23 @@ namespace BetterLegacy.Editor.Managers
 
                     EditorThemeManager.ApplyLightText(notText);
                     EditorThemeManager.ApplyToggle(notToggle);
+
+                    var elseIf = booleanBar.Duplicate(layout, "Not");
+                    elseIf.transform.localScale = Vector3.one;
+                    var elseIfText = elseIf.transform.Find("Text").GetComponent<Text>();
+                    elseIfText.text = "Else If";
+
+                    var elseIfToggle = elseIf.transform.Find("Toggle").GetComponent<Toggle>();
+                    elseIfToggle.onValueChanged.ClearAll();
+                    elseIfToggle.isOn = modifier.elseIf;
+                    elseIfToggle.onValueChanged.AddListener(_val =>
+                    {
+                        modifier.elseIf = _val;
+                        modifier.active = false;
+                    });
+
+                    EditorThemeManager.ApplyLightText(elseIfText);
+                    EditorThemeManager.ApplyToggle(elseIfToggle);
                 }
 
                 if (!modifier.verified)

@@ -45,103 +45,13 @@ namespace BetterLegacy.Patchers
                 {
                     var modifiers = backgroundObject.modifiers[j];
 
-                    //if (modifiers.TryFindAll(x => x.Action == null && x.type == ModifierBase.Type.Action || x.Trigger == null && x.type == ModifierBase.Type.Trigger || x.Inactive == null, out List<Modifier<BackgroundObject>> findAll))
-                    //    findAll.ForEach(modifier =>
-                    //    {
-                    //        modifier.Action = ModifiersHelper.BGAction;
-                    //        modifier.Trigger = ModifiersHelper.BGTrigger;
-                    //        modifier.Inactive = ModifiersHelper.BGInactive;
-                    //    });
-
-                    var actions = new List<Modifier<BackgroundObject>>();
-                    var triggers = new List<Modifier<BackgroundObject>>();
-                    for (int k = 0; k < modifiers.Count; k++)
+                    if (backgroundObject.orderModifiers)
                     {
-                        var modifier = modifiers[k];
-                        switch (modifier.type)
-                        {
-                            case ModifierBase.Type.Action:
-                                {
-                                    if (modifier.Action == null || modifier.Inactive == null)
-                                        modifier.Action = ModifiersHelper.BGAction;
-
-                                    actions.Add(modifier);
-                                    break;
-                                }
-                            case ModifierBase.Type.Trigger:
-                                {
-                                    if (modifier.Trigger == null || modifier.Inactive == null)
-                                        modifier.Trigger = ModifiersHelper.BGTrigger;
-
-                                    triggers.Add(modifier);
-                                    break;
-                                }
-                        }
-
-                        if (modifier.Inactive == null)
-                            modifier.Inactive = ModifiersHelper.BGInactive;
+                        ModifiersHelper.RunModifiersLoop(modifiers, true);
+                        continue;
                     }
 
-                    //var actions = modifiers.FindAll(x => x.type == ModifierBase.Type.Action);
-                    //var triggers = modifiers.FindAll(x => x.type == ModifierBase.Type.Trigger);
-
-                    if (triggers.Count > 0)
-                    {
-                        //if (triggers.TrueForAll(x => !x.active && (x.not ? !x.Trigger(x) : x.Trigger(x))))
-                        if (ModifiersHelper.CheckTriggers(triggers))
-                        {
-                            foreach (var act in actions)
-                            {
-                                if (act.active)
-                                    continue;
-
-                                if (!act.constant)
-                                    act.active = true;
-
-                                act.running = true;
-                                act.Action?.Invoke(act);
-                            }
-
-                            foreach (var trig in triggers)
-                            {
-                                if (!trig.constant)
-                                    trig.active = true;
-                            }
-                        }
-                        else
-                        {
-                            foreach (var act in actions)
-                            {
-                                if (!act.active && !act.running)
-                                    continue;
-
-                                act.active = false;
-                                act.running = false;
-                                act.Inactive?.Invoke(act);
-                            }
-
-                            foreach (var trig in triggers)
-                            {
-                                if (!trig.active)
-                                    continue;
-
-                                trig.active = false;
-                                trig.Inactive?.Invoke(trig);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        foreach (var act in actions)
-                        {
-                            if (act.active)
-                                continue;
-
-                            if (!act.constant)
-                                act.active = true;
-                            act.Action?.Invoke(act);
-                        }
-                    }
+                    ModifiersHelper.RunModifiersAll(modifiers, true);
                 }
             }
 

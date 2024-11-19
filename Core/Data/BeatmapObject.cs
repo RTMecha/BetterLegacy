@@ -114,9 +114,9 @@ namespace BetterLegacy.Core.Data
         public bool ignoreLifespan = false;
 
         /// <summary>
-        /// If the new modifiers method should be used instead of the original.
+        /// If the order of triggers and actions matter.
         /// </summary>
-        public bool newModifiersMethod = false;
+        public bool orderModifiers = false;
 
         /// <summary>
         /// If the object should stop following the parent chain after spawn.
@@ -311,6 +311,7 @@ namespace BetterLegacy.Core.Data
                 tags = orig.tags.Count > 0 ? orig.tags.Clone() : new List<string>(),
                 background = orig.background,
                 ignoreLifespan = orig.ignoreLifespan,
+                orderModifiers = orig.orderModifiers,
                 opacityCollision = orig.opacityCollision,
                 desync = orig.desync
             };
@@ -765,6 +766,9 @@ namespace BetterLegacy.Core.Data
 
             if (jn["iglif"] != null)
                 beatmapObject.ignoreLifespan = jn["iglif"].AsBool;
+            
+            if (jn["ordmod"] != null)
+                beatmapObject.orderModifiers = jn["ordmod"].AsBool;
 
             if (jn["desync"] != null && !string.IsNullOrEmpty(beatmapObject.parent))
                 beatmapObject.desync = jn["desync"].AsBool;
@@ -1016,6 +1020,8 @@ namespace BetterLegacy.Core.Data
                 jn["opcol"] = opacityCollision.ToString();
             if (ignoreLifespan)
                 jn["iglif"] = ignoreLifespan.ToString();
+            if (orderModifiers)
+                jn["ordmod"] = orderModifiers.ToString();
             if (desync && !string.IsNullOrEmpty(parent))
                 jn["desync"] = desync.ToString();
 

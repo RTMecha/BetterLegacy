@@ -11,7 +11,7 @@ namespace BetterLegacy.Core.Data
         public T reference;
 
         public Action<Modifier<T>> Action { get; set; }
-        public Patchers.PrefixMethod<Modifier<T>> Trigger { get; set; }
+        public Predicate<Modifier<T>> Trigger { get; set; }
 
         public Action<Modifier<T>> Inactive { get; set; }
 

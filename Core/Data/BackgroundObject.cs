@@ -100,6 +100,11 @@ namespace BetterLegacy.Core.Data
         public Vector3 scaleOffset;
         public Vector3 rotationOffset;
 
+        /// <summary>
+        /// If the order of triggers and actions matter.
+        /// </summary>
+        public bool orderModifiers = false;
+
         public List<List<Modifier<BackgroundObject>>> modifiers = new List<List<Modifier<BackgroundObject>>>();
 
         public bool Enabled { get; set; } = true;
@@ -150,6 +155,7 @@ namespace BetterLegacy.Core.Data
                 reactiveZSample = bg.reactiveZSample,
 
                 tags = bg.tags.Clone(),
+                orderModifiers = bg.orderModifiers,
             };
 
             for (int i = 0; i < bg.modifiers.Count; i++)
@@ -361,6 +367,9 @@ namespace BetterLegacy.Core.Data
                 for (int i = 0; i < jn["tags"].Count; i++)
                     bg.tags.Add(jn["tags"][i]);
 
+            if (jn["ordmod"] != null)
+                bg.orderModifiers = jn["ordmod"].AsBool;
+
             for (int i = 0; i < jn["modifiers"].Count; i++)
             {
                 bg.modifiers.Add(new List<Modifier<BackgroundObject>>());
@@ -481,6 +490,9 @@ namespace BetterLegacy.Core.Data
                 jn["r_set"]["type"] = reactiveType.ToString();
                 jn["r_set"]["scale"] = reactiveScale.ToString();
             }
+
+            if (orderModifiers)
+                jn["ordmod"] = orderModifiers.ToString();
 
             for (int i = 0; i < modifiers.Count; i++)
                 for (int j = 0; j < modifiers[i].Count; j++)

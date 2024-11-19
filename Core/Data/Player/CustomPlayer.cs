@@ -82,62 +82,12 @@ namespace BetterLegacy.Core.Data.Player
                 Player.Actions = myGameActions;
         }
 
-        // TODO: CHANGE TO MODIFIER BLOCKS
         public void UpdateModifiers()
         {
             if (CoreHelper.Paused || PlayerModel == null || PlayerModel.modifiers == null || PlayerModel.modifiers.Count <= 0)
                 return;
 
-            Predicate<Modifier<CustomPlayer>> modifierPredicate = x => x.Action == null && x.type == ModifierBase.Type.Action || x.Trigger == null && x.type == ModifierBase.Type.Trigger || x.Inactive == null;
-
-            if (PlayerModel.modifiers.TryFindAll(modifierPredicate, out List<Modifier<CustomPlayer>> findAll))
-                findAll.ForEach(modifier =>
-                {
-                    modifier.Action = ModifiersHelper.PlayerAction;
-                    modifier.Trigger = ModifiersHelper.PlayerTrigger;
-                    modifier.Inactive = ModifiersHelper.PlayerInactive;
-                });
-
-            var actions = PlayerModel.modifiers.FindAll(x => x.type == ModifierBase.Type.Action);
-            var triggers = PlayerModel.modifiers.FindAll(x => x.type == ModifierBase.Type.Trigger);
-
-            if (triggers.Count > 0)
-            {
-                if (triggers.TrueForAll(x => !x.active && (x.Trigger(x) && !x.not || !x.Trigger(x) && x.not)))
-                {
-                    foreach (var act in actions.FindAll(x => !x.active))
-                    {
-                        if (!act.constant)
-                            act.active = true;
-
-                        act.running = true;
-                        act.Action?.Invoke(act);
-                    }
-
-                    foreach (var trig in triggers.FindAll(x => !x.constant))
-                        trig.active = true;
-                }
-                else
-                {
-                    foreach (var act in actions.FindAll(x => x.active || x.running))
-                    {
-                        act.active = false;
-                        act.running = false;
-                        act.Inactive?.Invoke(act);
-                    }
-                }
-            }
-            else
-            {
-                foreach (var act in actions.FindAll(x => !x.active))
-                {
-                    if (!act.constant)
-                        act.active = true;
-
-                    act.running = true;
-                    act.Action?.Invoke(act);
-                }
-            }
+            ModifiersHelper.RunModifiersLoop(PlayerModel.modifiers, true);
         }
 
         public static int MaxHealth { get; set; } = 3;
