@@ -1457,6 +1457,32 @@ namespace BetterLegacy.Menus.UI.Elements
 
                 #region Elements
 
+                #region Move
+
+                case "Move":
+                    {
+                        if (!gameObject || parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["x"] == null || parameters["y"] == null))
+                            break;
+
+                        JSONNode jnX = parameters.IsArray ? parameters[0] : parameters["x"];
+                        JSONNode jnY = parameters.IsArray ? parameters[1] : parameters["y"];
+
+                        var variables = new Dictionary<string, float>
+                        {
+                            { "elementPosX", gameObject.transform.localPosition.x },
+                            { "elementPosY", gameObject.transform.localPosition.y },
+                        };
+
+                        var x = string.IsNullOrEmpty(jnX) ? gameObject.transform.localPosition.x : RTMath.Parse(jnX, variables);
+                        var y = string.IsNullOrEmpty(jnY) ? gameObject.transform.localPosition.y : RTMath.Parse(jnX, variables);
+
+                        gameObject.transform.localPosition = new Vector3(x, y, gameObject.transform.localPosition.z);
+
+                        break;
+                    }
+
+                #endregion
+
                 #region SetElementActive
 
                 // Sets an element active or inactive.
