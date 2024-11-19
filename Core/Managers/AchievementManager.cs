@@ -149,13 +149,27 @@ namespace BetterLegacy.Core.Managers
             var name = Creator.NewUIObject("Name", popup.transform);
             UIManager.SetRectTransform(name.transform.AsRT(), new Vector2(-100f, -16f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 0.5f), new Vector2(290f, 100f));
             var achievementName = name.AddComponent<Text>();
-            achievementName.font = FontManager.inst.allFonts["Arrhythmia"];
+            try
+            {
+                achievementName.font = FontManager.inst.allFonts["Arrhythmia"];
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
             achievementName.text = "test name";
 
             var description = Creator.NewUIObject("Description", popup.transform);
             UIManager.SetRectTransform(description.transform.AsRT(), new Vector2(-100f, -50f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 0.5f), new Vector2(290f, 100f));
             var achievementDescription = description.AddComponent<Text>();
-            achievementDescription.font = FontManager.inst.allFonts["Fredoka One"];
+            try
+            {
+                achievementDescription.font = FontManager.inst.allFonts["Fredoka One"];
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
             achievementDescription.text = "test description";
 
             var bar = Creator.NewUIObject("Difficulty", popup.transform);

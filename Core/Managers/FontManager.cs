@@ -117,21 +117,21 @@ namespace BetterLegacy.Core.Managers
             var assetBundle = GetAssetBundle(RTFile.ApplicationDirectory + "BepInEx/plugins/Assets", "customfonts.asset");
             foreach (var asset in assetBundle.GetAllAssetNames())
             {
-                string str = asset.Replace("assets/font/", "");
-                var font = assetBundle.LoadAsset<Font>(str);
+                string fontName = asset.Replace("assets/fonts/", "").Replace("assets/font/", "");
+                var font = assetBundle.LoadAsset<Font>(fontName);
 
                 if (font == null)
                 {
-                    Debug.LogError($"{className}The font ({str}) does not exist in the asset bundle for some reason.");
+                    Debug.LogError($"{className}The font ({fontName}) does not exist in the asset bundle for some reason.");
                     continue;
                 }
 
                 var fontCopy = Instantiate(font);
-                fontCopy.name = ChangeName(str);
+                fontCopy.name = ChangeName(fontName);
 
                 if (allFonts.ContainsKey(fontCopy.name))
                 {
-                    Debug.LogError($"{className}The font ({str}) was already in the font dictionary.");
+                    Debug.LogError($"{className}The font ({fontName}) was already in the font dictionary.");
                     continue;
                 }
 

@@ -74,7 +74,14 @@ namespace BetterLegacy.Core.Managers
             var infoRT = info.AddComponent<RectTransform>();
 
             Info = info.AddComponent<TextMeshProUGUI>();
-            Info.font = FontManager.inst.allFontAssets["Inconsolata Variable"];
+            try
+            {
+                Info.font = FontManager.inst.allFontAssets["Inconsolata Variable"];
+            }
+            catch (Exception ex)
+            {
+                CoreHelper.LogException(ex);
+            }
             Info.fontSize = 32;
 
             UIManager.SetRectTransform(Info.rectTransform, CoreConfig.Instance.DebugPosition.Value, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 1f), new Vector2(800f, 200f));
