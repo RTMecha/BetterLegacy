@@ -41,6 +41,10 @@ namespace BetterLegacy.Core.Animation
         public static EaseFunction GetEaseFunction(string name) => EaseLookup[name];
         public static bool HasEaseFunction(string name) => EaseLookup.ContainsKey(name);
 
+        public static bool TryGetEaseFunction(string name, out EaseFunction easeFunction) => EaseLookup.TryGetValue(name, out easeFunction);
+
+        public static EaseFunction GetEaseFunction(string name, EaseFunction defaultEase) => TryGetEaseFunction(name, out EaseFunction easeFunction) ? easeFunction : defaultEase;
+
         const float PI = 3.14159265359f;
         const float PI2 = PI / 2;
         const float B1 = 1 / 2.75f;
