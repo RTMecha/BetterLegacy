@@ -27,7 +27,7 @@ using Ease = BetterLegacy.Core.Animation.Ease;
 namespace BetterLegacy.Core.Helpers
 {
     /// <summary>
-    /// Helper class for modifier actions.
+    /// Helper class for modifier functions.
     /// </summary>
     public static class ModifiersHelper
     {
@@ -133,11 +133,12 @@ namespace BetterLegacy.Core.Helpers
             {
                 if (triggers.Count > 0)
                 {
+                    // If all triggers are active
                     if (CheckTriggers(triggers))
                     {
                         foreach (var act in actions)
                         {
-                            if (act.active)
+                            if (act.active) // Continue if modifier is not constant and was already activated
                                 continue;
 
                             if (!act.constant)
@@ -156,24 +157,15 @@ namespace BetterLegacy.Core.Helpers
                     }
                     else
                     {
-                        foreach (var act in actions)
+                        // Deactivate both action and trigger modifiers
+                        foreach (var modifier in modifiers)
                         {
-                            if (!act.active && !act.running)
+                            if (!modifier.active && (modifier.type == ModifierBase.Type.Trigger || !modifier.running))
                                 continue;
 
-                            act.active = false;
-                            act.running = false;
-                            act.Inactive?.Invoke(act);
-                        }
-
-                        foreach (var trig in triggers)
-                        {
-                            if (!trig.active)
-                                continue;
-
-                            trig.active = false;
-                            trig.running = false;
-                            trig.Inactive?.Invoke(trig);
+                            modifier.active = false;
+                            modifier.running = false;
+                            modifier.Inactive?.Invoke(modifier);
                         }
                     }
                 }
@@ -213,7 +205,7 @@ namespace BetterLegacy.Core.Helpers
         {
             if (active)
             {
-                bool result = true;
+                bool result = true; // Action modifiers at the start with no triggers before it should always run, so result is true.
                 ModifierBase.Type previousType = ModifierBase.Type.Action;
                 for (int i = 0; i < modifiers.Count; i++)
                 {
@@ -227,11 +219,12 @@ namespace BetterLegacy.Core.Helpers
 
                     if (isTrigger)
                     {
-                        if (previousType == ModifierBase.Type.Action)
+                        if (previousType == ModifierBase.Type.Action) // If previous modifier was an action modifier, result should be considered true as we just started another modifier-block
                             result = true;
 
                         var innerResult = !modifier.active && (modifier.not ? !modifier.Trigger(modifier) : modifier.Trigger(modifier));
 
+                        // Allow trigger to turn result to true again if "elseIf" is on
                         if (modifier.elseIf && !result && innerResult)
                             result = true;
 
@@ -241,6 +234,7 @@ namespace BetterLegacy.Core.Helpers
                         previousType = modifier.type;
                     }
 
+                    // Set modifier inactive state
                     if (!result && !(!modifier.active && !modifier.running))
                     {
                         modifier.active = false;
@@ -251,24 +245,23 @@ namespace BetterLegacy.Core.Helpers
                         continue;
                     }
 
+                    // Continue if modifier was already active with constant on
                     if (modifier.active || !result)
                     {
                         previousType = modifier.type;
                         continue;
                     }
 
+                    // Only occur once
                     if (!modifier.constant)
                         modifier.active = true;
 
                     modifier.running = true;
 
-                    if (isAction)
-                    {
-                        if (result)
+                    if (isAction && result) // Only run modifier if result is true
                             modifier.Action?.Invoke(modifier);
 
-                        previousType = modifier.type;
-                    }
+                    previousType = modifier.type;
                 }
             }
             else if (modifiers.TryFindAll(x => x.active || x.running, out List<Modifier<T>> findAll))
