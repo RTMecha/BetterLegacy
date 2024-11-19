@@ -2051,15 +2051,17 @@ namespace BetterLegacy.Editor.Managers
 
             ((Transform)ObjectUIElements["ID Base"]).Find("ldm").gameObject.SetActive(RTEditor.ShowModdedUI);
 
-            ObjEditor.inst.ObjectView.transform.Find("int_variable").gameObject.SetActive(RTEditor.ShowModdedUI);
-            ObjEditor.inst.ObjectView.transform.Find("ignore life").gameObject.SetActive(RTEditor.ShowModdedUI);
+            ObjectModifiersEditor.inst.modifiersLabel.gameObject.SetActive(RTEditor.ShowModdedUI);
+            ObjectModifiersEditor.inst.intVariable.gameObject.SetActive(RTEditor.ShowModdedUI);
+            ObjectModifiersEditor.inst.ignoreToggle.gameObject.SetActive(RTEditor.ShowModdedUI);
+            ObjectModifiersEditor.inst.orderToggle.gameObject.SetActive(RTEditor.ShowModdedUI);
 
-            var activeModifiers = ObjEditor.inst.ObjectView.transform.Find("active").gameObject;
+            var activeModifiers = ObjectModifiersEditor.inst.activeToggle;
 
             if (!RTEditor.ShowModdedUI)
-                activeModifiers.GetComponent<Toggle>().isOn = false;
+                activeModifiers.isOn = false;
 
-            activeModifiers.SetActive(RTEditor.ShowModdedUI);
+            activeModifiers.gameObject.SetActive(RTEditor.ShowModdedUI);
 
             if (active && !shapeTFPActive)
             {
