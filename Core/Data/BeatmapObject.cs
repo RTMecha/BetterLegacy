@@ -114,6 +114,11 @@ namespace BetterLegacy.Core.Data
         public bool ignoreLifespan = false;
 
         /// <summary>
+        /// If the new modifiers method should be used instead of the original.
+        /// </summary>
+        public bool newModifiersMethod = false;
+
+        /// <summary>
         /// If the object should stop following the parent chain after spawn.
         /// </summary>
         public bool desync = false;

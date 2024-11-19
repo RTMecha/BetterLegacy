@@ -58,6 +58,12 @@ namespace BetterLegacy.Core.Managers
                 if (beatmapObject.modifiers.Count <= 0 || ldm && beatmapObject.LDM)
                     continue;
 
+                if (beatmapObject.newModifiersMethod)
+                {
+                    ModifiersHelper.RunModifiers(beatmapObject.modifiers, beatmapObject.ignoreLifespan || beatmapObject.Alive);
+                    continue;
+                }
+
                 //if (beatmapObject.modifiers.TryFindAll(x => x.Action == null && x.type == ModifierBase.Type.Action || x.Trigger == null && x.type == ModifierBase.Type.Trigger || x.Inactive == null, out List<Modifier<BeatmapObject>> nullActionModifiers))
                 //    nullActionModifiers.ForEach(AssignModifierActions);
 

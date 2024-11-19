@@ -53,6 +53,100 @@ namespace BetterLegacy.Core.Helpers
             return result;
         }
 
+        public static void RunModifiers<T>(List<Modifier<T>> modifiers, bool active)
+        {
+            if (active)
+            {
+                bool result = true;
+                for (int i = 0; i < modifiers.Count; i++)
+                {
+                    var modifier = modifiers[i];
+
+                    if (!result)
+                    {
+                        if (!modifier.active && !modifier.running)
+                            continue;
+
+                        modifier.active = false;
+                        modifier.running = false;
+                        modifier.Inactive?.Invoke(modifier);
+                    }
+
+                    if (modifier.active)
+                        continue;
+
+                    if (!modifier.constant)
+                        modifier.active = true;
+
+                    modifier.running = true;
+
+                    switch (modifier.type)
+                    {
+                        case ModifierBase.Type.Action:
+                            {
+                                if (modifier.Action == null || modifier.Inactive == null)
+                                {
+                                    if (modifier is Modifier<BeatmapObject> objectModifier)
+                                        ModifiersManager.AssignModifierActions(objectModifier);
+                                    if (modifier is Modifier<BackgroundObject> bgModifier)
+                                    {
+                                        bgModifier.Action = BGAction;
+                                        bgModifier.Inactive = BGInactive;
+                                    }
+                                    if (modifier is Modifier<CustomPlayer> playerModifier)
+                                    {
+                                        playerModifier.Action = PlayerAction;
+                                        playerModifier.Inactive = PlayerInactive;
+                                    }
+                                }
+
+                                if (result)
+                                    modifier.Action?.Invoke(modifier);
+
+                                break;
+                            }
+                        case ModifierBase.Type.Trigger:
+                            {
+                                if (modifier.Trigger == null || modifier.Inactive == null)
+                                {
+                                    if (modifier is Modifier<BeatmapObject> objectModifier)
+                                        ModifiersManager.AssignModifierActions(objectModifier);
+                                    if (modifier is Modifier<BackgroundObject> bgModifier)
+                                    {
+                                        bgModifier.Trigger = BGTrigger;
+                                        bgModifier.Inactive = BGInactive;
+                                    }
+                                    if (modifier is Modifier<CustomPlayer> playerModifier)
+                                    {
+                                        playerModifier.Trigger = PlayerTrigger;
+                                        playerModifier.Inactive = PlayerInactive;
+                                    }
+                                }
+
+                                var innerResult = !modifier.active && (modifier.not ? !modifier.Trigger(modifier) : modifier.Trigger(modifier));
+
+                                if (modifier.elseIf && !result && innerResult)
+                                    result = true;
+
+                                if (!modifier.elseIf && !innerResult)
+                                    result = false;
+
+                                break;
+                            }
+                    }
+                }
+            }
+            else if (modifiers.TryFindAll(x => x.active || x.running, out List<Modifier<T>> findAll))
+            {
+                foreach (var act in findAll)
+                {
+                    act.active = false;
+                    act.running = false;
+                    act.Inactive?.Invoke(act);
+                }
+            }
+        }
+
         public static bool Trigger(Modifier<BeatmapObject> modifier)
         {
             if (!modifier.verified)
