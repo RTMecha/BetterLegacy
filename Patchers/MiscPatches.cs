@@ -9,6 +9,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -373,6 +374,38 @@ namespace BetterLegacy.Patchers
             {
                 pos = __instance.text.Length;
             }
+        }
+    }
+
+    [HarmonyPatch(typeof(DiscordRpc.RichPresence))]
+    public class DiscordRichPresencePatch
+    {
+        [HarmonyPatch(nameof(DiscordRpc.RichPresence.StrClampBytes))]
+        [HarmonyPrefix]
+        static bool StrClampBytesPrefix(ref string __result, string __0, int __1)
+        {
+            string text = DiscordRpc.RichPresence.StrToUtf8NullTerm(__0);
+            __result = text;
+            return false;
+        }
+        [HarmonyPatch(nameof(DiscordRpc.RichPresence.FreeMem))]
+        [HarmonyPrefix]
+        static bool FreeMemPrefix(DiscordRpc.RichPresence __instance)
+        {
+            try
+            {
+                if (__instance._buffers.Count > 0)
+                    for (int i = __instance._buffers.Count - 1; i >= 0; i--)
+                    {
+                        Marshal.FreeHGlobal(__instance._buffers[i]);
+                        __instance._buffers.RemoveAt(i);
+                    }
+            }
+            catch
+            {
+
+            }
+            return false;
         }
     }
 }
