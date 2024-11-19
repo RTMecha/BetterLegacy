@@ -30,7 +30,6 @@
 - Collab sharing via server?
 - Editor online backups?
 - Multiplayer editor, possibly. (everyone has their own perspective of the hosts' editor but have limited functionality compared to the host)
-- Modifier trigger else toggle. > 1.8.0
 - Transition time for applyAnimation modifiers.
 - New modifiers
 > prizeObject
@@ -54,6 +53,7 @@
 - Ignore start time object spawn?
 - Optimize timeline objects by replacing TextMeshPro with UnityEngine.UI.Text. See if it could be optional?
 - MetaData settings that can be adjusted in the Play Level (Settings) menu and can be read using modifiers probably.
+- Modifier blocks have something that tell the user that the modifier is running.
 - Figure out how player shooting fits in-game.
 - Update dev+ player to have current properties.
 - Documentation & tooltips.
