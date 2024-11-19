@@ -449,10 +449,8 @@ namespace BetterLegacy.Editor.Managers
                     });
                 }
 
-                // Allow Custom Player Models
+                CoreHelper.For(name =>
                 {
-                    var name = "Allow Custom Player Models";
-
                     var gameObject = Creator.NewUIObject(name, content);
                     gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 42f);
 
@@ -475,7 +473,65 @@ namespace BetterLegacy.Editor.Managers
                         ValueType = ValueType.Bool,
                         Index = -1,
                     });
-                }
+                },
+                "Allow Custom Player Models",
+                "Limit Player"
+                );
+
+                // Vector2
+                CoreHelper.For(name =>
+                {
+                    var gameObject = Creator.NewUIObject(name, content);
+                    gameObject.transform.AsRT().sizeDelta = new Vector2(750f, 42f);
+
+                    var label = labelPrefab.Duplicate(gameObject.transform, "label");
+                    var labelText = label.GetComponent<Text>();
+                    labelText.text = name;
+                    EditorThemeManager.AddLightText(labelText);
+                    UIManager.SetRectTransform(label.transform.AsRT(), new Vector2(32f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(762f, 32f));
+
+                    var inputX = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "x");
+                    UIManager.SetRectTransform(inputX.transform.AsRT(), new Vector2(-52f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+
+                    var inputXStorage = inputX.GetComponent<InputFieldStorage>();
+
+                    Destroy(inputXStorage.middleButton.gameObject);
+                    EditorThemeManager.AddInputField(inputXStorage.inputField);
+                    EditorThemeManager.AddSelectable(inputXStorage.leftButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputXStorage.rightButton, ThemeGroup.Function_2, false);
+
+                    Destroy(inputXStorage.leftGreaterButton.gameObject);
+                    Destroy(inputXStorage.rightGreaterButton.gameObject);
+
+                    var inputY = EditorPrefabHolder.Instance.NumberInputField.Duplicate(gameObject.transform, "y");
+                    UIManager.SetRectTransform(inputY.transform.AsRT(), new Vector2(162f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 32f));
+
+                    var inputYStorage = inputY.GetComponent<InputFieldStorage>();
+
+                    Destroy(inputYStorage.middleButton.gameObject);
+                    EditorThemeManager.AddInputField(inputYStorage.inputField);
+                    EditorThemeManager.AddSelectable(inputYStorage.leftButton, ThemeGroup.Function_2, false);
+                    EditorThemeManager.AddSelectable(inputYStorage.rightButton, ThemeGroup.Function_2, false);
+
+                    Destroy(inputYStorage.leftGreaterButton.gameObject);
+                    Destroy(inputYStorage.rightGreaterButton.gameObject);
+
+                    editorUIs.Add(new PlayerEditorUI
+                    {
+                        Name = name,
+                        GameObject = gameObject,
+                        Tab = Tab.Global,
+                        ValueType = ValueType.Bool,
+                        Index = -1,
+                    });
+                },
+                "Limit Move Speed",
+                "Limit Boost Speed",
+                "Limit Boost Cooldown",
+                "Limit Boost Min Time",
+                "Limit Boost Max Time",
+                "Limit Hit Cooldown"
+                );
 
                 // Update Properties
                 {
@@ -1358,6 +1414,193 @@ namespace BetterLegacy.Editor.Managers
                                     GameData.Current.beatmapData.ModLevelData.allowCustomPlayerModels = _val;
                                     RTPlayer.SetGameDataProperties();
                                 });
+
+                                break;
+                            }
+                        case "Limit Player":
+                            {
+                                var toggle = ui.GameObject.transform.Find("toggle").GetComponent<Toggle>();
+                                toggle.onValueChanged.ClearAll();
+                                toggle.isOn = GameData.Current.beatmapData.ModLevelData.limitPlayer;
+                                toggle.onValueChanged.AddListener(_val =>
+                                {
+                                    GameData.Current.beatmapData.ModLevelData.limitPlayer = _val;
+                                    RTPlayer.SetGameDataProperties();
+                                });
+
+                                break;
+                            }
+                        case "Limit Move Speed":
+                            {
+                                var inputXStorage = ui.GameObject.transform.Find("x").GetComponent<InputFieldStorage>();
+                                var inputYStorage = ui.GameObject.transform.Find("y").GetComponent<InputFieldStorage>();
+
+                                inputXStorage.inputField.onValueChanged.ClearAll();
+                                inputXStorage.inputField.text = GameData.Current.beatmapData.ModLevelData.limitMoveSpeed.x.ToString();
+                                inputXStorage.inputField.onValueChanged.AddListener(_val =>
+                                {
+                                    GameData.Current.beatmapData.ModLevelData.limitMoveSpeed.x = Parser.TryParse(_val, 0f);
+                                    RTPlayer.SetGameDataProperties();
+                                });
+
+                                inputYStorage.inputField.onValueChanged.ClearAll();
+                                inputYStorage.inputField.text = GameData.Current.beatmapData.ModLevelData.limitMoveSpeed.y.ToString();
+                                inputYStorage.inputField.onValueChanged.AddListener(_val =>
+                                {
+                                    GameData.Current.beatmapData.ModLevelData.limitMoveSpeed.y = Parser.TryParse(_val, 0f);
+                                    RTPlayer.SetGameDataProperties();
+                                });
+
+                                TriggerHelper.AddEventTriggers(inputXStorage.gameObject, TriggerHelper.ScrollDelta(inputXStorage.inputField));
+                                TriggerHelper.AddEventTriggers(inputYStorage.gameObject, TriggerHelper.ScrollDelta(inputYStorage.inputField));
+                                TriggerHelper.IncreaseDecreaseButtons(inputXStorage);
+                                TriggerHelper.IncreaseDecreaseButtons(inputYStorage);
+
+
+                                break;
+                            }
+                        case "Limit Boost Speed":
+                            {
+                                var inputXStorage = ui.GameObject.transform.Find("x").GetComponent<InputFieldStorage>();
+                                var inputYStorage = ui.GameObject.transform.Find("y").GetComponent<InputFieldStorage>();
+
+                                inputXStorage.inputField.onValueChanged.ClearAll();
+                                inputXStorage.inputField.text = GameData.Current.beatmapData.ModLevelData.limitBoostSpeed.x.ToString();
+                                inputXStorage.inputField.onValueChanged.AddListener(_val =>
+                                {
+                                    GameData.Current.beatmapData.ModLevelData.limitBoostSpeed.x = Parser.TryParse(_val, 0f);
+                                    RTPlayer.SetGameDataProperties();
+                                });
+
+                                inputYStorage.inputField.onValueChanged.ClearAll();
+                                inputYStorage.inputField.text = GameData.Current.beatmapData.ModLevelData.limitBoostSpeed.y.ToString();
+                                inputYStorage.inputField.onValueChanged.AddListener(_val =>
+                                {
+                                    GameData.Current.beatmapData.ModLevelData.limitBoostSpeed.y = Parser.TryParse(_val, 0f);
+                                    RTPlayer.SetGameDataProperties();
+                                });
+
+                                TriggerHelper.AddEventTriggers(inputXStorage.gameObject, TriggerHelper.ScrollDelta(inputXStorage.inputField));
+                                TriggerHelper.AddEventTriggers(inputYStorage.gameObject, TriggerHelper.ScrollDelta(inputYStorage.inputField));
+                                TriggerHelper.IncreaseDecreaseButtons(inputXStorage);
+                                TriggerHelper.IncreaseDecreaseButtons(inputYStorage);
+
+
+                                break;
+                            }
+                        case "Limit Boost Cooldown":
+                            {
+                                var inputXStorage = ui.GameObject.transform.Find("x").GetComponent<InputFieldStorage>();
+                                var inputYStorage = ui.GameObject.transform.Find("y").GetComponent<InputFieldStorage>();
+
+                                inputXStorage.inputField.onValueChanged.ClearAll();
+                                inputXStorage.inputField.text = GameData.Current.beatmapData.ModLevelData.limitBoostCooldown.x.ToString();
+                                inputXStorage.inputField.onValueChanged.AddListener(_val =>
+                                {
+                                    GameData.Current.beatmapData.ModLevelData.limitBoostCooldown.x = Parser.TryParse(_val, 0f);
+                                    RTPlayer.SetGameDataProperties();
+                                });
+
+                                inputYStorage.inputField.onValueChanged.ClearAll();
+                                inputYStorage.inputField.text = GameData.Current.beatmapData.ModLevelData.limitBoostCooldown.y.ToString();
+                                inputYStorage.inputField.onValueChanged.AddListener(_val =>
+                                {
+                                    GameData.Current.beatmapData.ModLevelData.limitBoostCooldown.y = Parser.TryParse(_val, 0f);
+                                    RTPlayer.SetGameDataProperties();
+                                });
+
+                                TriggerHelper.AddEventTriggers(inputXStorage.gameObject, TriggerHelper.ScrollDelta(inputXStorage.inputField));
+                                TriggerHelper.AddEventTriggers(inputYStorage.gameObject, TriggerHelper.ScrollDelta(inputYStorage.inputField));
+                                TriggerHelper.IncreaseDecreaseButtons(inputXStorage);
+                                TriggerHelper.IncreaseDecreaseButtons(inputYStorage);
+
+
+                                break;
+                            }
+                        case "Limit Boost Min Time":
+                            {
+                                var inputXStorage = ui.GameObject.transform.Find("x").GetComponent<InputFieldStorage>();
+                                var inputYStorage = ui.GameObject.transform.Find("y").GetComponent<InputFieldStorage>();
+
+                                inputXStorage.inputField.onValueChanged.ClearAll();
+                                inputXStorage.inputField.text = GameData.Current.beatmapData.ModLevelData.limitBoostMinTime.x.ToString();
+                                inputXStorage.inputField.onValueChanged.AddListener(_val =>
+                                {
+                                    GameData.Current.beatmapData.ModLevelData.limitBoostMinTime.x = Parser.TryParse(_val, 0f);
+                                    RTPlayer.SetGameDataProperties();
+                                });
+
+                                inputYStorage.inputField.onValueChanged.ClearAll();
+                                inputYStorage.inputField.text = GameData.Current.beatmapData.ModLevelData.limitBoostMinTime.y.ToString();
+                                inputYStorage.inputField.onValueChanged.AddListener(_val =>
+                                {
+                                    GameData.Current.beatmapData.ModLevelData.limitBoostMinTime.y = Parser.TryParse(_val, 0f);
+                                    RTPlayer.SetGameDataProperties();
+                                });
+
+                                TriggerHelper.AddEventTriggers(inputXStorage.gameObject, TriggerHelper.ScrollDelta(inputXStorage.inputField));
+                                TriggerHelper.AddEventTriggers(inputYStorage.gameObject, TriggerHelper.ScrollDelta(inputYStorage.inputField));
+                                TriggerHelper.IncreaseDecreaseButtons(inputXStorage);
+                                TriggerHelper.IncreaseDecreaseButtons(inputYStorage);
+
+
+                                break;
+                            }
+                        case "Limit Boost Max Time":
+                            {
+                                var inputXStorage = ui.GameObject.transform.Find("x").GetComponent<InputFieldStorage>();
+                                var inputYStorage = ui.GameObject.transform.Find("y").GetComponent<InputFieldStorage>();
+
+                                inputXStorage.inputField.onValueChanged.ClearAll();
+                                inputXStorage.inputField.text = GameData.Current.beatmapData.ModLevelData.limitBoostMaxTime.x.ToString();
+                                inputXStorage.inputField.onValueChanged.AddListener(_val =>
+                                {
+                                    GameData.Current.beatmapData.ModLevelData.limitBoostMaxTime.x = Parser.TryParse(_val, 0f);
+                                    RTPlayer.SetGameDataProperties();
+                                });
+
+                                inputYStorage.inputField.onValueChanged.ClearAll();
+                                inputYStorage.inputField.text = GameData.Current.beatmapData.ModLevelData.limitBoostMaxTime.y.ToString();
+                                inputYStorage.inputField.onValueChanged.AddListener(_val =>
+                                {
+                                    GameData.Current.beatmapData.ModLevelData.limitBoostMaxTime.y = Parser.TryParse(_val, 0f);
+                                    RTPlayer.SetGameDataProperties();
+                                });
+
+                                TriggerHelper.AddEventTriggers(inputXStorage.gameObject, TriggerHelper.ScrollDelta(inputXStorage.inputField));
+                                TriggerHelper.AddEventTriggers(inputYStorage.gameObject, TriggerHelper.ScrollDelta(inputYStorage.inputField));
+                                TriggerHelper.IncreaseDecreaseButtons(inputXStorage);
+                                TriggerHelper.IncreaseDecreaseButtons(inputYStorage);
+
+
+                                break;
+                            }
+                        case "Limit Hit Cooldown":
+                            {
+                                var inputXStorage = ui.GameObject.transform.Find("x").GetComponent<InputFieldStorage>();
+                                var inputYStorage = ui.GameObject.transform.Find("y").GetComponent<InputFieldStorage>();
+
+                                inputXStorage.inputField.onValueChanged.ClearAll();
+                                inputXStorage.inputField.text = GameData.Current.beatmapData.ModLevelData.limitHitCooldown.x.ToString();
+                                inputXStorage.inputField.onValueChanged.AddListener(_val =>
+                                {
+                                    GameData.Current.beatmapData.ModLevelData.limitHitCooldown.x = Parser.TryParse(_val, 0f);
+                                    RTPlayer.SetGameDataProperties();
+                                });
+
+                                inputYStorage.inputField.onValueChanged.ClearAll();
+                                inputYStorage.inputField.text = GameData.Current.beatmapData.ModLevelData.limitHitCooldown.y.ToString();
+                                inputYStorage.inputField.onValueChanged.AddListener(_val =>
+                                {
+                                    GameData.Current.beatmapData.ModLevelData.limitHitCooldown.y = Parser.TryParse(_val, 0f);
+                                    RTPlayer.SetGameDataProperties();
+                                });
+
+                                TriggerHelper.AddEventTriggers(inputXStorage.gameObject, TriggerHelper.ScrollDelta(inputXStorage.inputField));
+                                TriggerHelper.AddEventTriggers(inputYStorage.gameObject, TriggerHelper.ScrollDelta(inputYStorage.inputField));
+                                TriggerHelper.IncreaseDecreaseButtons(inputXStorage);
+                                TriggerHelper.IncreaseDecreaseButtons(inputYStorage);
+
 
                                 break;
                             }

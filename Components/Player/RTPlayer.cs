@@ -1067,25 +1067,37 @@ namespace BetterLegacy.Components.Player
             if (!PlayerModel)
                 return;
 
+            var idleSpeed = PlayerModel.basePart.moveSpeed;
+            var boostSpeed = PlayerModel.basePart.boostSpeed;
+            var boostCooldown = PlayerModel.basePart.boostCooldown;
+            var minBoostTime = PlayerModel.basePart.minBoostTime;
+            var maxBoostTime = PlayerModel.basePart.maxBoostTime;
+            var hitCooldown = PlayerModel.basePart.hitCooldown;
+
+            if (GameData.IsValid && GameData.Current.beatmapData != null && GameData.Current.beatmapData.levelData is LevelData levelData && levelData.limitPlayer)
+            {
+                idleSpeed = Mathf.Clamp(idleSpeed, levelData.limitMoveSpeed.x, levelData.limitMoveSpeed.y);
+                boostSpeed = Mathf.Clamp(boostSpeed, levelData.limitBoostSpeed.x, levelData.limitBoostSpeed.y);
+                boostCooldown = Mathf.Clamp(boostCooldown, levelData.limitBoostCooldown.x, levelData.limitBoostCooldown.y);
+                minBoostTime = Mathf.Clamp(minBoostTime, levelData.limitBoostMinTime.x, levelData.limitBoostMinTime.y);
+                maxBoostTime = Mathf.Clamp(maxBoostTime, levelData.limitBoostMaxTime.x, levelData.limitBoostMaxTime.y);
+                hitCooldown = Mathf.Clamp(hitCooldown, levelData.limitHitCooldown.x, levelData.limitHitCooldown.y);
+            }
+
             timeHitOffset = Time.time - timeHit;
-            if (timeHitOffset > PlayerModel.basePart.hitCooldown && isTakingHit)
+
+            if (timeHitOffset > hitCooldown && isTakingHit)
             {
                 isTakingHit = false;
                 CanTakeDamage = true;
             }
 
-            var idl = PlayerModel.basePart.moveSpeed;
-            var bst = PlayerModel.basePart.boostSpeed;
-            var bstcldwn = PlayerModel.basePart.boostCooldown;
-            var bstmin = PlayerModel.basePart.minBoostTime;
-            var bstmax = PlayerModel.basePart.maxBoostTime;
+            this.idleSpeed = idleSpeed;
+            this.boostSpeed = boostSpeed;
 
-            idleSpeed = idl;
-            boostSpeed = bst;
-
-            boostCooldown = bstcldwn / pitch;
-            minBoostTime = bstmin / pitch;
-            maxBoostTime = bstmax / pitch;
+            this.boostCooldown = boostCooldown / pitch;
+            this.minBoostTime = minBoostTime / pitch;
+            this.maxBoostTime = maxBoostTime / pitch;
         }
 
         void UpdateTailDistance()

@@ -1,4 +1,5 @@
 ﻿using SimpleJSON;
+using UnityEngine;
 using BaseLevelData = DataManager.GameData.BeatmapData.LevelData;
 
 namespace BetterLegacy.Core.Data
@@ -20,6 +21,14 @@ namespace BetterLegacy.Core.Data
         public int maxJumpBoostCount = 1;
         public int maxHealth = 3;
         public bool allowCustomPlayerModels = true;
+
+        public bool limitPlayer = true;
+        public Vector2 limitMoveSpeed = new Vector2(20f, 20f);
+        public Vector2 limitBoostSpeed = new Vector2(85f, 85f);
+        public Vector2 limitBoostCooldown = new Vector2(0.1f, 0.1f);
+        public Vector2 limitBoostMinTime = new Vector2(0.07f, 0.07f);
+        public Vector2 limitBoostMaxTime = new Vector2(0.18f, 0.18f);
+        public Vector2 limitHitCooldown = new Vector2(2.5f, 2.5f);
 
         public static LevelData Parse(JSONNode jn)
         {
@@ -61,6 +70,22 @@ namespace BetterLegacy.Core.Data
 
             if (!string.IsNullOrEmpty(jn["allow_custom_player_models"]))
                 levelData.allowCustomPlayerModels = jn["allow_custom_player_models"].AsBool;
+            
+            if (!string.IsNullOrEmpty(jn["limit_player"]))
+                levelData.limitPlayer = jn["limit_player"].AsBool;
+            
+            if (jn["limit_move_speed"] != null)
+                levelData.limitMoveSpeed = Parser.TryParse(jn["limit_move_speed"], new Vector2(20f, 20f));
+            if (jn["limit_boost_speed"] != null)
+                levelData.limitBoostSpeed = Parser.TryParse(jn["limit_boost_speed"], new Vector2(85f, 85f));
+            if (jn["limit_boost_cooldown"] != null)
+                levelData.limitBoostCooldown = Parser.TryParse(jn["limit_boost_cooldown"], new Vector2(0.1f, 0.1f));
+            if (jn["limit_boost_min_time"] != null)
+                levelData.limitBoostMinTime = Parser.TryParse(jn["limit_boost_min_time"], new Vector2(0.07f, 0.07f));
+            if (jn["limit_boost_max_time"] != null)
+                levelData.limitBoostMaxTime = Parser.TryParse(jn["limit_boost_max_time"], new Vector2(0.18f, 0.18f));
+            if (jn["limit_hit_cooldown"] != null)
+                levelData.limitHitCooldown = Parser.TryParse(jn["limit_hit_cooldown"], new Vector2(2.5f, 2.5f));
 
             return levelData;
         }
@@ -99,6 +124,22 @@ namespace BetterLegacy.Core.Data
 
             if (!allowCustomPlayerModels)
                 jn["allow_custom_player_models"] = allowCustomPlayerModels.ToString();
+
+            if (!limitPlayer)
+                jn["limit_player"] = limitPlayer.ToString();
+            
+            if (limitMoveSpeed.x != 20f || limitMoveSpeed.y != 20f)
+                jn["limit_move_speed"] = limitMoveSpeed.ToJSON();
+            if (limitBoostSpeed.x != 85f || limitBoostSpeed.y != 85f)
+                jn["limit_boost_speed"] = limitBoostSpeed.ToJSON();
+            if (limitBoostCooldown.x != 0.1f || limitBoostCooldown.y != 0.1f)
+                jn["limit_boost_cooldown"] = limitBoostCooldown.ToJSON();
+            if (limitBoostMinTime.x != 0.07f || limitBoostMinTime.y != 0.07f)
+                jn["limit_boost_min_time"] = limitBoostMinTime.ToJSON();
+            if (limitBoostMaxTime.x != 0.18f || limitBoostMaxTime.y != 0.18f)
+                jn["limit_boost_max_time"] = limitBoostMaxTime.ToJSON();
+            if (limitHitCooldown.x != 2.5f || limitHitCooldown.y != 2.5f)
+                jn["limit_hit_cooldown"] = limitHitCooldown.ToJSON();
 
             return jn;
         }
