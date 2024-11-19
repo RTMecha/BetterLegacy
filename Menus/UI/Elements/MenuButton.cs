@@ -225,6 +225,8 @@ namespace BetterLegacy.Menus.UI.Elements
             exitFunc = orig.exitFunc,
             enterFuncJSON = orig.enterFuncJSON,
             exitFuncJSON = orig.exitFuncJSON,
+            onScrollUpFuncJSON = orig.onScrollUpFuncJSON,
+            onScrollDownFuncJSON = orig.onScrollDownFuncJSON,
             allowOriginalHoverMethods = orig.allowOriginalHoverMethods,
 
             #endregion
@@ -383,6 +385,10 @@ namespace BetterLegacy.Menus.UI.Elements
                 enterFuncJSON = jnElement["enter_func"]; // function to run when the element is hovered over.
             if (jnElement["exit_func"] != null)
                 exitFuncJSON = jnElement["exit_func"]; // function to run when the element is hovered over.
+            if (jnElement["on_scroll_up_func"] != null)
+                onScrollUpFuncJSON = jnElement["on_scroll_up_func"]; // function to run when the element is scrolled on.
+            if (jnElement["on_scroll_down_func"] != null)
+                onScrollDownFuncJSON = jnElement["on_scroll_down_func"]; // function to run when the element is scrolled on.
             if (jnElement["allow_original_hover_func"] != null)
                 allowOriginalHoverMethods = jnElement["allow_original_hover_func"].AsBool;
             else if (!parsed)

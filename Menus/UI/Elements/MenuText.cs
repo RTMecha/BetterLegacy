@@ -385,6 +385,10 @@ namespace BetterLegacy.Menus.UI.Elements
                 playBlipSound = jnElement["play_blip_sound"].AsBool;
             if (jnElement["func"] != null)
                 funcJSON = jnElement["func"]; // function to run when the element is clicked.
+            if (jnElement["on_scroll_up_func"] != null)
+                onScrollUpFuncJSON = jnElement["on_scroll_up_func"]; // function to run when the element is scrolled on.
+            if (jnElement["on_scroll_down_func"] != null)
+                onScrollDownFuncJSON = jnElement["on_scroll_down_func"]; // function to run when the element is scrolled on.
             if (jnElement["spawn_func"] != null)
                 spawnFuncJSON = jnElement["spawn_func"]; // function to run when the element spawns.
 
@@ -457,7 +461,6 @@ namespace BetterLegacy.Menus.UI.Elements
             textInterpolation?.animationHandlers[0]?.SetKeyframeTime(1, length * (textWithoutFormatting.Length / TEXT_LENGTH_DIVISION) * InterfaceManager.InterfaceSpeed * currentSpeed);
         }
 
-        // todo: acceptable text ranges for speaking sounds?
         /// <summary>
         /// Sets <see cref="TMP_Text.maxVisibleCharacters"/> so we can have a typewriter effect. Also plays a sound every time a character is placed.
         /// </summary>

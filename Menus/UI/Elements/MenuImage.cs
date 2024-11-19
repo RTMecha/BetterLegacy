@@ -92,6 +92,12 @@ namespace BetterLegacy.Menus.UI.Elements
         /// </summary>
         public Action func;
 
+        public JSONNode onScrollUpFuncJSON;
+        public JSONNode onScrollDownFuncJSON;
+
+        public Action onScrollUpFunc;
+        public Action onScrollDownFunc;
+
         /// <summary>
         /// Function JSON to parse when the element spawns.
         /// </summary>
@@ -569,7 +575,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
                         var isArray = parameters.IsArray;
 
-                        var value = menuLayout.content.childCount == (isArray ? parameters[0].AsInt : parameters["count"].AsInt);
+                        var value = menuLayout.content.childCount == (isArray ? parameters[1].AsInt : parameters["count"].AsInt);
                         return !not ? value : !value;
                     }
                 case "LayoutChildCountLesserEquals":
@@ -579,7 +585,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
                         var isArray = parameters.IsArray;
 
-                        var value = menuLayout.content.childCount <= (isArray ? parameters[0].AsInt : parameters["count"].AsInt);
+                        var value = menuLayout.content.childCount <= (isArray ? parameters[1].AsInt : parameters["count"].AsInt);
                         return !not ? value : !value;
                     }
                 case "LayoutChildCountGreaterEquals":
@@ -589,7 +595,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
                         var isArray = parameters.IsArray;
 
-                        var value = menuLayout.content.childCount >= (isArray ? parameters[0].AsInt : parameters["count"].AsInt);
+                        var value = menuLayout.content.childCount >= (isArray ? parameters[1].AsInt : parameters["count"].AsInt);
                         return !not ? value : !value;
                     }
                 case "LayoutChildCountLesser":
@@ -599,7 +605,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
                         var isArray = parameters.IsArray;
 
-                        var value = menuLayout.content.childCount < (isArray ? parameters[0].AsInt : parameters["count"].AsInt);
+                        var value = menuLayout.content.childCount < (isArray ? parameters[1].AsInt : parameters["count"].AsInt);
                         return !not ? value : !value;
                     }
                 case "LayoutChildCountGreater":
@@ -609,7 +615,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
                         var isArray = parameters.IsArray;
 
-                        var value = menuLayout.content.childCount > (isArray ? parameters[0].AsInt : parameters["count"].AsInt);
+                        var value = menuLayout.content.childCount > (isArray ? parameters[1].AsInt : parameters["count"].AsInt);
                         return !not ? value : !value;
                     }
 
@@ -620,7 +626,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
                         var isArray = parameters.IsArray;
 
-                        var value = menuLayout.content.anchoredPosition.x == (isArray ? parameters[0].AsFloat : parameters["count"].AsFloat);
+                        var value = menuLayout.content.anchoredPosition.x == (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
                         return !not ? value : !value;
                     }
                 case "LayoutScrollXLesserEquals":
@@ -630,7 +636,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
                         var isArray = parameters.IsArray;
 
-                        var value = menuLayout.content.anchoredPosition.x <= (isArray ? parameters[0].AsFloat : parameters["count"].AsFloat);
+                        var value = menuLayout.content.anchoredPosition.x <= (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
                         return !not ? value : !value;
                     }
                 case "LayoutScrollXGreaterEquals":
@@ -640,7 +646,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
                         var isArray = parameters.IsArray;
 
-                        var value = menuLayout.content.anchoredPosition.x >= (isArray ? parameters[0].AsFloat : parameters["count"].AsFloat);
+                        var value = menuLayout.content.anchoredPosition.x >= (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
                         return !not ? value : !value;
                     }
                 case "LayoutScrollXLesser":
@@ -650,7 +656,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
                         var isArray = parameters.IsArray;
 
-                        var value = menuLayout.content.anchoredPosition.x < (isArray ? parameters[0].AsFloat : parameters["count"].AsFloat);
+                        var value = menuLayout.content.anchoredPosition.x < (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
                         return !not ? value : !value;
                     }
                 case "LayoutScrollXGreater":
@@ -660,7 +666,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
                         var isArray = parameters.IsArray;
 
-                        var value = menuLayout.content.anchoredPosition.x > (isArray ? parameters[0].AsFloat : parameters["count"].AsFloat);
+                        var value = menuLayout.content.anchoredPosition.x > (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
                         return !not ? value : !value;
                     }
                     
@@ -671,7 +677,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
                         var isArray = parameters.IsArray;
 
-                        var value = menuLayout.content.anchoredPosition.y == (isArray ? parameters[0].AsFloat : parameters["count"].AsFloat);
+                        var value = menuLayout.content.anchoredPosition.y == (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
                         return !not ? value : !value;
                     }
                 case "LayoutScrollYLesserEquals":
@@ -681,7 +687,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
                         var isArray = parameters.IsArray;
 
-                        var value = menuLayout.content.anchoredPosition.y <= (isArray ? parameters[0].AsFloat : parameters["count"].AsFloat);
+                        var value = menuLayout.content.anchoredPosition.y <= (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
                         return !not ? value : !value;
                     }
                 case "LayoutScrollYGreaterEquals":
@@ -691,7 +697,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
                         var isArray = parameters.IsArray;
 
-                        var value = menuLayout.content.anchoredPosition.y >= (isArray ? parameters[0].AsFloat : parameters["count"].AsFloat);
+                        var value = menuLayout.content.anchoredPosition.y >= (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
                         return !not ? value : !value;
                     }
                 case "LayoutScrollYLesser":
@@ -701,7 +707,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
                         var isArray = parameters.IsArray;
 
-                        var value = menuLayout.content.anchoredPosition.y < (isArray ? parameters[0].AsFloat : parameters["count"].AsFloat);
+                        var value = menuLayout.content.anchoredPosition.y < (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
                         return !not ? value : !value;
                     }
                 case "LayoutScrollYGreater":
@@ -711,7 +717,7 @@ namespace BetterLegacy.Menus.UI.Elements
 
                         var isArray = parameters.IsArray;
 
-                        var value = menuLayout.content.anchoredPosition.y > (isArray ? parameters[0].AsFloat : parameters["count"].AsFloat);
+                        var value = menuLayout.content.anchoredPosition.y > (isArray ? parameters[1].AsFloat : parameters["count"].AsFloat);
                         return !not ? value : !value;
                     }
 
@@ -3296,6 +3302,10 @@ namespace BetterLegacy.Menus.UI.Elements
                 playBlipSound = jnElement["play_blip_sound"].AsBool;
             if (jnElement["func"] != null)
                 funcJSON = jnElement["func"]; // function to run when the element is clicked.
+            if (jnElement["on_scroll_up_func"] != null)
+                onScrollUpFuncJSON = jnElement["on_scroll_up_func"]; // function to run when the element is scrolled on.
+            if (jnElement["on_scroll_down_func"] != null)
+                onScrollDownFuncJSON = jnElement["on_scroll_down_func"]; // function to run when the element is scrolled on.
             if (jnElement["spawn_func"] != null)
                 spawnFuncJSON = jnElement["spawn_func"]; // function to run when the element spawns.
 

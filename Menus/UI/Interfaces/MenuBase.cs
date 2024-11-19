@@ -519,6 +519,27 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             menuButton.func?.Invoke();
                         };
 
+                    if (menuButton.onScrollUpFuncJSON != null || menuButton.onScrollDownFuncJSON != null || menuButton.onScrollUpFunc != null || menuButton.onScrollDownFunc != null)
+                    {
+                        var eventTrigger = menuButton.gameObject.AddComponent<EventTrigger>();
+                        eventTrigger.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.Scroll, eventData =>
+                        {
+                            var pointerData = (PointerEventData)eventData;
+                            if (pointerData.scrollDelta.y > 0f)
+                            {
+                                if (menuButton.onScrollUpFuncJSON != null)
+                                    menuButton.ParseFunction(menuButton.onScrollUpFuncJSON);
+                                menuButton.onScrollUpFunc?.Invoke();
+                            }
+                            if (pointerData.scrollDelta.y < 0f)
+                            {
+                                if (menuButton.onScrollDownFuncJSON != null)
+                                    menuButton.ParseFunction(menuButton.onScrollDownFuncJSON);
+                                menuButton.onScrollDownFunc?.Invoke();
+                            }
+                        }));
+                    }
+
                     num++;
                     continue;
                 }
@@ -575,6 +596,27 @@ namespace BetterLegacy.Menus.UI.Interfaces
                             element.ParseFunction(element.funcJSON);
                         element.func?.Invoke();
                     };
+
+                if (element.onScrollUpFuncJSON != null || element.onScrollDownFuncJSON != null || element.onScrollUpFunc != null || element.onScrollDownFunc != null)
+                {
+                    var eventTrigger = element.gameObject.AddComponent<EventTrigger>();
+                    eventTrigger.triggers.Add(TriggerHelper.CreateEntry(EventTriggerType.Scroll, eventData =>
+                    {
+                        var pointerData = (PointerEventData)eventData;
+                        if (pointerData.scrollDelta.y > 0f)
+                        {
+                            if (element.onScrollUpFuncJSON != null)
+                                element.ParseFunction(element.onScrollUpFuncJSON);
+                            element.onScrollUpFunc?.Invoke();
+                        }
+                        if (pointerData.scrollDelta.y < 0f)
+                        {
+                            if (element.onScrollDownFuncJSON != null)
+                                element.ParseFunction(element.onScrollDownFuncJSON);
+                            element.onScrollDownFunc?.Invoke();
+                        }
+                    }));
+                }
             }
 
             onGenerateUIFinish?.Invoke();
