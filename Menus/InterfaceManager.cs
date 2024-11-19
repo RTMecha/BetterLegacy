@@ -53,7 +53,7 @@ namespace BetterLegacy.Menus
         /// </summary>
         public string MainDirectory { get; set; }
 
-        public static float InterfaceSpeed => InputDataManager.inst.menuActions.Submit.IsPressed ? MenuConfig.Instance.SpeedUpSpeedMultiplier.Value : MenuConfig.Instance.RegularSpeedMultiplier.Value;
+        public static float InterfaceSpeed => InputDataManager.inst.menuActions.Submit.IsPressed || Input.GetMouseButton(0) ? MenuConfig.Instance.SpeedUpSpeedMultiplier.Value : MenuConfig.Instance.RegularSpeedMultiplier.Value;
 
         void Awake()
         {
