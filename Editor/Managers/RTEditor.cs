@@ -10685,7 +10685,10 @@ namespace BetterLegacy.Editor.Managers
         {
             var gameData = new GameData();
             gameData.beatmapData = new LevelBeatmapData();
-            gameData.beatmapData.levelData = new LevelData();
+            gameData.beatmapData.levelData = new LevelData()
+            {
+                limitPlayer = false,
+            };
             gameData.beatmapData.editorData = new LevelEditorData();
             gameData.beatmapData.checkpoints.Add(new DataManager.GameData.BeatmapData.Checkpoint(false, BASE_CHECKPOINT_NAME, 0f, Vector2.zero));
 
@@ -10741,7 +10744,7 @@ namespace BetterLegacy.Editor.Managers
             var beatmapObject = ObjectEditor.CreateNewBeatmapObject(0.5f, false);
             beatmapObject.events[0].Add(new EventKeyframe(4f, new float[3] { 10f, 0f, 0f }, new float[3]));
             if (CoreHelper.AprilFools)
-                beatmapObject.events[2].Add(new EventKeyframe(999f, new float[1] { 360000f }, new float[3]));
+                beatmapObject.events[2].Add(new EventKeyframe(12f, new float[1] { 360000f }, new float[3]));
 
             beatmapObject.name = CoreHelper.AprilFools ? "trololololo" : DEFAULT_OBJECT_NAME;
             beatmapObject.autoKillType = AutoKillType.LastKeyframeOffset;

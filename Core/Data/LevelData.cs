@@ -70,9 +70,11 @@ namespace BetterLegacy.Core.Data
 
             if (!string.IsNullOrEmpty(jn["allow_custom_player_models"]))
                 levelData.allowCustomPlayerModels = jn["allow_custom_player_models"].AsBool;
-            
+
             if (!string.IsNullOrEmpty(jn["limit_player"]))
                 levelData.limitPlayer = jn["limit_player"].AsBool;
+            else if (jn["mod_version"] != null)
+                levelData.limitPlayer = false;
             
             if (jn["limit_move_speed"] != null)
                 levelData.limitMoveSpeed = Parser.TryParse(jn["limit_move_speed"], new Vector2(20f, 20f));
