@@ -1,4 +1,5 @@
-﻿using BetterLegacy.Core;
+﻿using BetterLegacy.Configs;
+using BetterLegacy.Core;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Core.Managers;
 using SimpleJSON;
@@ -25,8 +26,13 @@ namespace BetterLegacy.Story
         /// </summary>
         public static void Init()
         {
+            if (CoreHelper.InStory)
+                return;
+
             CoreHelper.Log($"Init {nameof(StoryMode)}");
-            Instance = Parse(JSON.Parse(RTFile.ReadFromFile($"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Story/story.json")));
+            var path = $"{RTFile.ApplicationDirectory}{RTFile.BepInExAssetsPath}Story/{CoreConfig.Instance.StoryFile.Value}";
+            if (RTFile.FileExists(path))
+                Instance = Parse(JSON.Parse(RTFile.ReadFromFile(path)));
         }
 
         /// <summary>

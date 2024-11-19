@@ -280,6 +280,11 @@ namespace BetterLegacy.Configs
         /// </summary>
         public Setting<KeyCode> OpenPAPersistentFolder { get; set; }
 
+        /// <summary>
+        /// Where the story mode JSON file is located. Only change this if you know what you're doing.
+        /// </summary>
+        public Setting<string> StoryFile { get; set; }
+
         #endregion
 
         #region Level
@@ -424,6 +429,7 @@ namespace BetterLegacy.Configs
             ScreenshotKey = BindEnum(this, "File", "Screenshot Key", KeyCode.F2, "The key to press to take a screenshot.");
             OpenPAFolder = BindEnum(this, "File", "Open Project Arrhythmia Folder", KeyCode.F4, "Opens the folder containing the Project Arrhythmia application and all files related to it.");
             OpenPAPersistentFolder = BindEnum(this, "File", "Open LocalLow Folder", KeyCode.F5, "Opens the data folder all instances of PA share containing the log files and global editor data.");
+            StoryFile = Bind(this, "File", "Story File", "story.json", "Where the story mode JSON file is located. Only change this if you know what you're doing.");
 
             #endregion
 
@@ -483,6 +489,8 @@ namespace BetterLegacy.Configs
 
             VSync.SettingChanged += FPSChanged;
             FPSLimit.SettingChanged += FPSChanged;
+
+            StoryFile.SettingChanged += Story.StoryMode.Init;
         }
 
         void FPSChanged()
