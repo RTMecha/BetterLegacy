@@ -127,9 +127,8 @@ namespace BetterLegacy.Core.Data
             if (!allowCustomPlayerModels)
                 jn["allow_custom_player_models"] = allowCustomPlayerModels.ToString();
 
-            if (!limitPlayer)
-                jn["limit_player"] = limitPlayer.ToString();
-            
+            jn["limit_player"] = limitPlayer.ToString();
+
             if (limitMoveSpeed.x != 20f || limitMoveSpeed.y != 20f)
                 jn["limit_move_speed"] = limitMoveSpeed.ToJSON();
             if (limitBoostSpeed.x != 85f || limitBoostSpeed.y != 85f)
