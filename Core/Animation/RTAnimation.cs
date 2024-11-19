@@ -114,6 +114,13 @@ namespace BetterLegacy.Core.Animation
 
     public class AnimationHandler<T> : AnimationHandlerBase
     {
+        public AnimationHandler(Sequence<T> sequence, Action<T> interpolation, Action onComplete = null) : base(onComplete)
+        {
+            keyframes = sequence.keyframes.ToList();
+            this.sequence = sequence;
+            this.interpolation = interpolation;
+        }
+
         public AnimationHandler(List<IKeyframe<T>> keyframes, Action<T> interpolation, Action onComplete = null) : base(onComplete)
         {
             this.keyframes = keyframes;

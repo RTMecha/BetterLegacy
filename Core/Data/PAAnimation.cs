@@ -9,10 +9,16 @@ using LSFunctions;
 
 using SimpleJSON;
 
-using BaseMarker = DataManager.GameData.BeatmapData.Marker;
+using BetterLegacy.Editor.Managers;
+using BetterLegacy.Core.Animation;
+using BetterLegacy.Core.Animation.Keyframe;
+using BetterLegacy.Core.Optimization.Objects;
+using BetterLegacy.Core.Optimization;
+using BetterLegacy.Core.Data.Player;
 
 namespace BetterLegacy.Core.Data
 {
+    // TODO: figure out how to get this working properly
     public class PAAnimation : Exists
     {
         public PAAnimation()
@@ -22,7 +28,7 @@ namespace BetterLegacy.Core.Data
             markers = new List<Marker>();
         }
 
-        public PAAnimation(string name, string desc, float startTime, List<AnimationObject> objects, List<Marker> markers)
+        public PAAnimation(string name, string desc, float startTime, List<AnimationObject> objects, List<Marker> markers, AnimationReferenceType animationReferenceType = AnimationReferenceType.Player)
         {
             id = LSText.randomNumString(16);
             this.name = name;
@@ -30,14 +36,43 @@ namespace BetterLegacy.Core.Data
             StartTime = startTime;
             this.objects = objects;
             this.markers = markers;
+            this.animationReferenceType = animationReferenceType;
         }
 
+        #region Fields
+
+        /// <summary>
+        /// ID of the animation.
+        /// </summary>
         public string id;
+        /// <summary>
+        /// Name of the animation.
+        /// </summary>
         public string name = "Anim";
+        /// <summary>
+        /// Description of the animation.
+        /// </summary>
         public string desc = "This is the default description!";
         float startTime;
+        /// <summary>
+        /// Time the animation starts at.
+        /// </summary>
         public float StartTime { get => Mathf.Clamp(startTime, 0f, float.MaxValue); set => startTime = Mathf.Clamp(value, 0f, float.MaxValue); }
+        /// <summary>
+        /// Markers to render in the <see cref="AnimationEditor"/>
+        /// </summary>
         public List<Marker> markers;
+
+        public List<AnimationObject> objects;
+
+        /// <summary>
+        /// What type of object should the animation be applied to.
+        /// </summary>
+        public AnimationReferenceType animationReferenceType;
+
+        #endregion
+
+        #region Methods
 
         public float GetLength(int current)
         {
@@ -49,8 +84,6 @@ namespace BetterLegacy.Core.Data
 
             return objectsLength > markersLength ? objectsLength : markersLength;
         }
-
-        public List<AnimationObject> objects;
 
         public static PAAnimation Parse(JSONNode jn)
         {
@@ -67,6 +100,7 @@ namespace BetterLegacy.Core.Data
                 {
                     var animationBin = new AnimationBin();
                     animationBin.name = jn["objs"][i]["bins"][j]["name"];
+                    animationBin.transformType = Parser.TryParse(jn["objs"][i]["bins"][j]["type"], AnimationBin.TransformType.Null);
                     var defaultValueCount = jn["objs"][i]["bins"][j]["defval"].AsInt;
                     for (int k = 0; k < jn["objs"][i]["bins"][j]["kf"].Count; k++)
                         animationBin.events.Add(EventKeyframe.Parse(jn["objs"][i]["bins"][j]["kf"][k], 0, defaultValueCount));
@@ -75,7 +109,7 @@ namespace BetterLegacy.Core.Data
                 list.Add(animationObject);
             }
 
-            return new PAAnimation(jn["name"], jn["desc"], jn["st"].AsFloat, list, markers)
+            return new PAAnimation(jn["name"], jn["desc"], jn["st"].AsFloat, list, markers, Parser.TryParse(jn["ref_type"], AnimationReferenceType.Player))
             {
                 id = jn["id"] ?? LSText.randomNumString(16),
             };
@@ -87,6 +121,7 @@ namespace BetterLegacy.Core.Data
             jn["id"] = id;
             jn["name"] = name;
             jn["st"] = StartTime.ToString();
+            jn["ref_type"] = animationReferenceType.ToString();
             for (int i = 0; i < markers.Count; i++)
                 jn["markers"][i] = markers[i].ToJSON();
 
@@ -95,6 +130,7 @@ namespace BetterLegacy.Core.Data
                 for (int j = 0; j < objects[i].animationBins.Count; j++)
                 {
                     jn["objs"][i]["bins"][j]["name"] = objects[i].animationBins[j].name;
+                    jn["objs"][i]["bins"][j]["type"] = objects[i].animationBins[j].transformType.ToString();
                     jn["objs"][i]["bins"][j]["defval"] = objects[i].animationBins[j].events[0].eventValues.Length;
 
                     for (int k = 0; k < objects[i].animationBins[j].events.Count; k++)
@@ -104,6 +140,70 @@ namespace BetterLegacy.Core.Data
 
             return jn;
         }
+
+        public RTAnimation ToRTAnimation(object reference)
+        {
+            switch (animationReferenceType)
+            {
+                case AnimationReferenceType.Player:
+                    {
+                        if (reference is not CustomPlayer customPlayer || !customPlayer.Player)
+                            break;
+
+                        var animation = new RTAnimation($"PA Animation [ {name} ]");
+                        animation.animationHandlers = new List<AnimationHandlerBase>();
+                        for (int i = 0; i < objects.Count; i++)
+                        {
+                            var animationObject = objects[i];
+                            switch (animationObject.ReferenceID)
+                            {
+                                case "HEAD":
+                                    {
+                                        for (int j = 0; j < animationObject.animationBins.Count; j++)
+                                        {
+                                            var animationBin = animationObject.animationBins[j];
+
+                                            switch (animationBin.transformType)
+                                            {
+                                                case AnimationBin.TransformType.Position:
+                                                    {
+                                                        var sequence = Updater.levelProcessor.converter.GetVector3Sequence(animationBin.events.Select(x => x as DataManager.GameData.EventKeyframe).ToList(), new Vector3Keyframe(0f, Vector3.zero, Ease.Linear));
+                                                        animation.animationHandlers.Add(new AnimationHandler<Vector3>(sequence, vector3 => customPlayer.Player.head.Transform.localPosition = vector3));
+
+                                                        break;
+                                                    }
+                                                case AnimationBin.TransformType.Scale:
+                                                    {
+                                                        var sequence = Updater.levelProcessor.converter.GetVector2Sequence(animationBin.events.Select(x => x as DataManager.GameData.EventKeyframe).ToList(), new Vector2Keyframe(0f, Vector2.one, Ease.Linear));
+                                                        animation.animationHandlers.Add(new AnimationHandler<Vector2>(sequence, vector2 => customPlayer.Player.head.Transform.localScale = new Vector3(vector2.x, vector2.y, 1f)));
+
+                                                        break;
+                                                    }
+                                                case AnimationBin.TransformType.Rotation:
+                                                    {
+                                                        var sequence = Updater.levelProcessor.converter.GetFloatSequence(animationBin.events.Select(x => x as DataManager.GameData.EventKeyframe).ToList(), 0, new FloatKeyframe(0f, 0f, Ease.Linear), null, false);
+                                                        animation.animationHandlers.Add(new AnimationHandler<float>(sequence, x => customPlayer.Player.head.Transform.localRotation = Quaternion.Euler(0f, 0f, x)));
+
+                                                        break;
+                                                    }
+                                            }
+                                        }
+
+                                        break;
+                                    }
+                            }
+                        }
+
+                        return animation;
+                    }
+            }
+
+            return null;
+        }
+
+        #endregion
+
+        #region Sub Types
 
         public class AnimationObject
         {
@@ -118,7 +218,42 @@ namespace BetterLegacy.Core.Data
         {
             public string name;
             public List<EventKeyframe> events = new List<EventKeyframe>();
+            public TransformType transformType;
+
+            public enum TransformType
+            {
+                Null,
+                Position,
+                Scale,
+                Rotation,
+                Color
+            }
         }
+
+        /// <summary>
+        /// What type of object should the animation be applied to.
+        /// </summary>
+        public enum AnimationReferenceType
+        {
+            /// <summary>
+            /// Applies animation to players.
+            /// </summary>
+            Player,
+            /// <summary>
+            /// Applies animation to <see cref="BeatmapObject"/>.
+            /// </summary>
+            BeatmapObject,
+            /// <summary>
+            /// Applies animation to <see cref="BackgroundObject"/>.
+            /// </summary>
+            BackgroundObject,
+            /// <summary>
+            /// Applies animation to the game timeline.
+            /// </summary>
+            Timeline,
+        }
+
+        #endregion
 
         public static Dictionary<string, string[]> DefaultBinNames { get; set; } = new Dictionary<string, string[]>
         {
