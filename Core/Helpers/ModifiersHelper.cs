@@ -62,18 +62,13 @@ namespace BetterLegacy.Core.Helpers
                 {
                     var modifier = modifiers[i];
 
-                    if (!result)
+                    if (!result || modifier.active)
                     {
-                        if (!modifier.active && !modifier.running)
-                            continue;
-
                         modifier.active = false;
                         modifier.running = false;
                         modifier.Inactive?.Invoke(modifier);
-                    }
-
-                    if (modifier.active)
                         continue;
+                    }
 
                     if (!modifier.constant)
                         modifier.active = true;
