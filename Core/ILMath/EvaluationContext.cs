@@ -122,6 +122,12 @@ namespace ILMath
                 {
                     case "findAxis":
                         {
+                            if (!CoreHelper.InGame)
+                            {
+                                result = 0;
+                                return false;
+                            }
+
                             var tag = split[1];
 
                             var bm = CoreHelper.FindObjectWithTag(tag);
@@ -160,6 +166,12 @@ namespace ILMath
                         }
                     case "findOffset":
                         {
+                            if (!CoreHelper.InGame)
+                            {
+                                result = 0;
+                                return false;
+                            }
+
                             var tag = split[1];
 
                             var bm = CoreHelper.FindObjectWithTag(tag);
@@ -190,6 +202,12 @@ namespace ILMath
                         }
                     case "findObject":
                         {
+                            if (!CoreHelper.InGame)
+                            {
+                                result = 0;
+                                return false;
+                            }
+
                             var tag = split[1];
 
                             var bm = CoreHelper.FindObjectWithTag(tag);
@@ -212,6 +230,12 @@ namespace ILMath
                         }
                     case "findInterpolateChain":
                         {
+                            if (!CoreHelper.InGame)
+                            {
+                                result = 0;
+                                return false;
+                            }
+
                             var tag = split[1];
 
                             var bm = CoreHelper.FindObjectWithTag(tag);

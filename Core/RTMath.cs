@@ -69,47 +69,53 @@ namespace BetterLegacy.Core
                 input = input.Replace(";", ""); // replaces ; due to really old math evaluator
                 var context = EvaluationContext.CreateDefault();
 
-                //context.RegisterFunction("myFunction", parameters => parameters[0] + parameters[1]);
-
                 if (variables != null)
                     foreach (var variable in variables)
                         context.RegisterVariable(variable.Key, variable.Value);
 
-                context.RegisterVariable("deathCount", GameManager.inst.deaths.Count);
-                context.RegisterVariable("hitCount", GameManager.inst.hits.Count);
-                context.RegisterVariable("boostCount", LevelManager.BoostCount);
+                // In-game only variables and functions
+                if (CoreHelper.InGame)
+                {
+                    context.RegisterVariable("deathCount", GameManager.inst.deaths.Count);
+                    context.RegisterVariable("hitCount", GameManager.inst.hits.Count);
+                    context.RegisterVariable("boostCount", LevelManager.BoostCount);
+                    context.RegisterVariable("smoothedTime", RTEventManager.inst.currentTime);
+                    context.RegisterVariable("playerHealthTotal", PlayerManager.Players.Sum(x => x.Health));
+                    context.RegisterVariable("camPosX", EventManager.inst.cam.transform.position.x);
+                    context.RegisterVariable("camPosY", EventManager.inst.cam.transform.position.y);
+                    context.RegisterVariable("camZoom", EventManager.inst.cam.orthographicSize);
+                    context.RegisterVariable("camRot", EventManager.inst.cam.transform.localEulerAngles.z);
+
+                    var players = PlayerManager.Players;
+                    for (int i = 0; i < players.Count; i++)
+                    {
+                        var player = players[i];
+                        var isNull = !player.Player || !player.Player.rb;
+                        float posX = isNull ? 0f : player.Player.rb.position.x;
+                        float posY = isNull ? 0f : player.Player.rb.position.y;
+                        float rot = isNull ? 0f : player.Player.rb.rotation;
+                        context.RegisterVariable($"player{i}PosX", posX);
+                        context.RegisterVariable($"player{i}PosY", posY);
+                        context.RegisterVariable($"player{i}Rot", rot);
+                        context.RegisterVariable($"player{i}Health", player.Health);
+                    }
+
+                    context.RegisterFunction("sampleAudio", parameters => Updater.GetSample((int)parameters[0], (float)parameters[1]));
+                    context.RegisterFunction("copyEvent", parameters => RTEventManager.inst.Interpolate((int)parameters[0], (int)parameters[1], (float)parameters[2]));
+                }
+
                 context.RegisterVariable("actionMoveX", InputDataManager.inst.menuActions.Move.X);
                 context.RegisterVariable("actionMoveY", InputDataManager.inst.menuActions.Move.Y);
                 context.RegisterVariable("time", Time.time);
                 context.RegisterVariable("deltaTime", Time.deltaTime);
                 context.RegisterVariable("audioTime", AudioManager.inst.CurrentAudioSource.time);
-                context.RegisterVariable("smoothedTime", RTEventManager.inst.currentTime);
                 context.RegisterVariable("volume", AudioManager.inst.musicVol);
                 context.RegisterVariable("pitch", AudioManager.inst.pitch);
                 context.RegisterVariable("forwardPitch", CoreHelper.ForwardPitch);
-                context.RegisterVariable("playerHealthTotal", PlayerManager.Players.Sum(x => x.Health));
-                context.RegisterVariable("camPosX", EventManager.inst.cam.transform.position.x);
-                context.RegisterVariable("camPosY", EventManager.inst.cam.transform.position.y);
-                context.RegisterVariable("camZoom", EventManager.inst.cam.orthographicSize);
-                context.RegisterVariable("camRot", EventManager.inst.cam.transform.localEulerAngles.z);
                 context.RegisterVariable("mousePosX", Input.mousePosition.x);
                 context.RegisterVariable("mousePosY", Input.mousePosition.y);
                 context.RegisterVariable("screenHeight", Screen.height);
                 context.RegisterVariable("screenWidth", Screen.width);
-
-                var players = PlayerManager.Players;
-                for (int i = 0; i < players.Count; i++)
-                {
-                    var player = players[i];
-                    var isNull = !player.Player || !player.Player.rb;
-                    float posX = isNull ? 0f : player.Player.rb.position.x;
-                    float posY = isNull ? 0f : player.Player.rb.position.y;
-                    float rot = isNull ? 0f : player.Player.rb.rotation;
-                    context.RegisterVariable($"player{i}PosX", posX);
-                    context.RegisterVariable($"player{i}PosY", posY);
-                    context.RegisterVariable($"player{i}Rot", rot);
-                    context.RegisterVariable($"player{i}Health", player.Health);
-                }
 
                 context.RegisterFunction("clampZero", parameters => ClampZero(parameters[0], parameters[1], parameters[2]));
                 context.RegisterFunction("lerpAngle", parameters => Mathf.LerpAngle((float)parameters[0], (float)parameters[1], (float)parameters[2]));
@@ -155,18 +161,13 @@ namespace BetterLegacy.Core
                 context.RegisterFunction("lesser", parameters => parameters[0] < parameters[1] ? parameters[2] : parameters[3]);
                 context.RegisterFunction("greater", parameters => parameters[0] > parameters[1] ? parameters[2] : parameters[3]);
                 context.RegisterFunction("int", parameters => (int)parameters[0]);
-                context.RegisterFunction("sampleAudio", parameters => Updater.GetSample((int)parameters[0], (float)parameters[1]));
-                context.RegisterFunction("copyEvent", parameters => RTEventManager.inst.Interpolate((int)parameters[0], (int)parameters[1], (float)parameters[2]));
                 context.RegisterFunction("vectorAngle", parameters => VectorAngle(new Vector3((float)parameters[0], (float)parameters[1], (float)parameters[2]), new Vector3((float)parameters[3], (float)parameters[4], (float)parameters[5])));
-                context.RegisterFunction("distance", parameters =>
+                context.RegisterFunction("distance", parameters => parameters.Length switch
                 {
-                    switch (parameters.Length)
-                    {
-                        case 2: return Distance((float)parameters[0], (float)parameters[1]);
-                        case 4: return Vector2.Distance(new Vector2((float)parameters[0], (float)parameters[1]), new Vector2((float)parameters[2], (float)parameters[3]));
-                        case 6: return Vector3.Distance(new Vector3((float)parameters[0], (float)parameters[1], (float)parameters[2]), new Vector3((float)parameters[3], (float)parameters[4], (float)parameters[5]));
-                        default: return 0;
-                    }
+                    2 => Distance((float)parameters[0], (float)parameters[1]),
+                    4 => Vector2.Distance(new Vector2((float)parameters[0], (float)parameters[1]), new Vector2((float)parameters[2], (float)parameters[3])),
+                    6 => Vector3.Distance(new Vector3((float)parameters[0], (float)parameters[1], (float)parameters[2]), new Vector3((float)parameters[3], (float)parameters[4], (float)parameters[5])),
+                    _ => 0
                 });
 
                 if (functions != null)
