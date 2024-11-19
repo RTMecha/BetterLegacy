@@ -925,6 +925,12 @@ namespace BetterLegacy.Core.Helpers
 
         #region Misc
 
+        public static void For<T>(Action<T> action, params T[] array)
+        {
+            for (int i = 0; i < array.Length; i++)
+                action?.Invoke(array[i]);
+        }
+
         /// <summary>
         /// Compares given values and invokes a method if they are not the same.
         /// </summary>
