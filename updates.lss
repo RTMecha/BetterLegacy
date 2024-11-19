@@ -1,3 +1,9 @@
+snapshot-2024.11.17 - (pre-1.7.0) > [Nov 19, 2024]
+- Added staff logs.
+- Fixed Main Menu having the wrong name.
+- Fixed checkpoint dragging not working.
+- You can now hold down the left mouse button to speed up the interface.
+- Fully implemented modifier trigger / action ordering and else if toggles for triggers.
 snapshot-2024.11.16 - (pre-1.7.0) > [Nov 17, 2024]
 - Added example_speak to default sounds.
 - You now immediately boot into the story tutorial level when you're playing a new save slot.
