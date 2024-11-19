@@ -8283,14 +8283,32 @@ namespace BetterLegacy.Editor.Managers
                 //new EditorDocument.Element("<b>playSoundOnline</b> - Same as above except plays from a link. The global toggle does nothing here.", EditorDocument.Element.Type.Text),
                 //new EditorDocument.Element("<b>loadLevel</b> - Loads a level from the current level folder path.", EditorDocument.Element.Type.Text),
                 //new EditorDocument.Element("<b>loadLevelInternal</b> - Same as above, except it always loads from the current levels own path.", EditorDocument.Element.Type.Text),
-                new EditorDocument.Element("Some objects in BetterLegacy have a list of \"modifiers\" that can be used to affect that object in a lot of different ways.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("Some objects in BetterLegacy have a list of \"modifiers\" that can be used to affect that object in a lot of different ways. This documentation only documents Beatmap Object Modifiers, but some other objects have them too.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<b>TRIGGERS</b>\n" +
                                         "These types of modifiers will check if something is happening and if it is, will allow other modifiers in the list to run.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<b>ACTIONS</b>\n" +
                                         "Action modifiers modify the level or object if it runs.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("If an object is active or \"Ignore Lifespan\" is turned on, the modifier loop will run.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("With \"Order Matters\" off, it requires all trigger modifiers to be active to run the action modifiers, regardless of order.\n" +
+                                "With it on, it considers the order of the modifiers. It'll check triggers up until it hits an action and if all " +
+                                "(or some, depends on the else if toggle) triggers are active, then it'll run the next set of action modifiers. Below is an example:", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element(
+                                "- Action 1 (runs regardless of triggers since there are no triggers before it)\n\n" +
+                                "- Trigger 1\n" +
+                                "- Trigger 2\n" +
+                                "- Action 2 (runs only if Triggers 1 and 2 are triggered)\n\n" +
+                                "- Trigger 3\n" +
+                                "- Action 3 (runs only if Trigger 3 is triggered. Doesn't care about Triggers 1 and 2)\n\n" +
+                                "- Trigger 4\n" +
+                                "- Trigger 5 (else if)\n" +
+                                "- Action 4 (runs only if Trigger 4 or 5 are triggered. Doesn't care about triggers before Action 3)\n" +
+                                "- Action 5 (same as Action 4, this just shows you can have multiple actions after a set of triggers)"
+                                , EditorDocument.Element.Type.Text, 370f),
                 new EditorDocument.Element("Modifiers can be told to only run once whenever it runs by turning \"Constant\" off. Some modifiers have specific behavior with it on / off.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("Triggers can be turned into a \"Not Gate\" by turning \"Not\" on. This will require the triggers' check to be the opposite of what it would normally be.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("Triggers also have an \"else if\" toggle that will optionally be checked if the previous triggers were not triggered.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("Some modifiers support affecting a group of Beatmap Objects if they're being used for such. You can customize if the group should only be within the Prefab the object spawned from by turning \"Prefab Group Only\" on.", EditorDocument.Element.Type.Text),
+                new EditorDocument.Element("You can organize modifiers in the editor by right clicking them and using the \"Move\" functions.", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("Below is a list of a few modifier groups and what they generally do. Does not include every modifier as there's far too many to count (300+).", EditorDocument.Element.Type.Text),
                 new EditorDocument.Element("<b>AUDIO MODIFIERS</b>\n" +
                                         "These all have some relevance to the current audio, or its own audio.\n" +
@@ -8319,6 +8337,7 @@ namespace BetterLegacy.Editor.Managers
                                         "These act as a component that directly modifies how the object looks / works.\n" +
                                         "- blur (Action)\n" +
                                         "- blurColored (Action)\n" +
+                                        "- doubleSided (Action)\n" +
                                         "- particleSystem (Action)\n" +
                                         "- trailRenderer (Action)\n" +
                                         "- rigidbody (Action) < Required for objectCollide triggers to work.\n" +
