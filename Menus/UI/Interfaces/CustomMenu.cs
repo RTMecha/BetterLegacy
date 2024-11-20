@@ -312,6 +312,31 @@ namespace BetterLegacy.Menus.UI.Interfaces
 
                                             break;
                                         }
+                                    case "story_json":
+                                        {
+                                            var elements = ParseElements(jnElement["element_prefabs"], prefabs, spriteAssets);
+
+                                            var storyJN = Story.StoryManager.inst.LoadJSON(jnElement["to"]);
+                                            for (int k = 0; k < storyJN["to"].Count; k++)
+                                            {
+                                                foreach (var toElement in storyJN["to"][k])
+                                                {
+                                                    foreach (var element in elements)
+                                                    {
+                                                        if (element.id != toElement.Key)
+                                                            continue;
+
+                                                        if (toElement.Value["spawn_if_func"] != null && !element.ParseIfFunction(toElement.Value["spawn_if_func"]))
+                                                            continue;
+
+                                                        element.Read(toElement.Value, j, loop, spriteAssets);
+                                                        yield return element;
+                                                    }
+                                                }
+                                            }
+
+                                            break;
+                                        }
                                 }
 
                                 break;

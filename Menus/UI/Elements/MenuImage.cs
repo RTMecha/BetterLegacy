@@ -339,7 +339,51 @@ namespace BetterLegacy.Menus.UI.Elements
             animations.Clear();
         }
 
-        public string ParseText(string input) => MenuBase.ParseText(input);
+        public string ParseText(string input)
+        {
+            RTString.RegexMatches(input, new Regex(@"{{LevelRank=([0-9]+)}}"), match =>
+            {
+                DataManager.LevelRank levelRank =
+                    LevelManager.Levels.TryFind(x => x.id == match.Groups[1].ToString(), out Level level) ? LevelManager.GetLevelRank(level) :
+                    CoreHelper.InEditor ?
+                        LevelManager.EditorRank :
+                        DataManager.inst.levelRanks[0];
+
+                input = input.Replace(match.Groups[0].ToString(), RTString.FormatLevelRank(levelRank));
+            });
+
+            RTString.RegexMatches(input, new Regex(@"{{StoryLevelRank=([0-9]+)}}"), match =>
+            {
+                DataManager.LevelRank levelRank =
+                    StoryManager.inst.Saves.TryFind(x => x.ID == match.Groups[1].ToString(), out LevelManager.PlayerData playerData) ? LevelManager.GetLevelRank(playerData) :
+                    CoreHelper.InEditor ?
+                        LevelManager.EditorRank :
+                        DataManager.inst.levelRanks[0];
+
+                input = input.Replace(match.Groups[0].ToString(), RTString.FormatLevelRank(levelRank));
+            });
+
+            RTString.RegexMatches(input, new Regex(@"{{LoadStoryString=(.*?),(.*?)}}"), match =>
+            {
+                input = input.Replace(match.Groups[0].ToString(), StoryManager.inst.LoadString(match.Groups[1].ToString(), match.Groups[2].ToString()));
+            });
+
+            RTString.RegexMatches(input, new Regex(@"{{RandomNumber=([0-9]+)}}"), match =>
+            {
+                input = input.Replace(match.Groups[0].ToString(), LSText.randomNumString(Parser.TryParse(match.Groups[1].ToString(), 0)));
+            });
+
+            RTString.RegexMatches(input, new Regex(@"{{RandomText=([0-9]+)}}"), match =>
+            {
+                input = input.Replace(match.Groups[0].ToString(), LSText.randomString(Parser.TryParse(match.Groups[1].ToString(), 0)));
+            });
+
+            return input
+                .Replace("{{CurrentPlayingChapterNumber}}", (StoryManager.inst.currentPlayingChapterIndex + 1).ToString("00"))
+                .Replace("{{CurrentPlayingLevelNumber}}", (StoryManager.inst.currentPlayingLevelSequenceIndex + 1).ToString("00"))
+                .Replace("{{SaveSlotNumber}}", (StoryManager.inst.SaveSlot + 1).ToString("00"))
+                ;
+        }
 
         #region Functions
 
@@ -1220,7 +1264,7 @@ namespace BetterLegacy.Menus.UI.Elements
                             break;
 
                         if (parameters.IsArray && parameters.Count > 2 || parameters.IsObject && parameters["path"] != null)
-                            InterfaceManager.inst.MainDirectory = ParseText(RTFile.ParsePaths(parameters.IsArray ? parameters[2] : parameters["path"]));
+                            InterfaceManager.inst.MainDirectory = MenuBase.ParseText(RTFile.ParsePaths(parameters.IsArray ? parameters[2] : parameters["path"]));
 
                         if (!InterfaceManager.inst.MainDirectory.Contains(RTFile.ApplicationDirectory))
                             InterfaceManager.inst.MainDirectory = RTFile.CombinePaths(RTFile.ApplicationDirectory, InterfaceManager.inst.MainDirectory);
@@ -3142,7 +3186,7 @@ namespace BetterLegacy.Menus.UI.Elements
                 case "StorySaveBool":
                     {
                         if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["name"] == null || parameters["value"] == null))
-                            return;
+                            break;
 
                         var isArray = parameters.IsArray;
                         string saveName = isArray ? parameters[0] : parameters["name"];
@@ -3162,7 +3206,7 @@ namespace BetterLegacy.Menus.UI.Elements
                 case "StorySaveInt":
                     {
                         if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["name"] == null || parameters["value"] == null))
-                            return;
+                            break;
 
                         var isArray = parameters.IsArray;
                         string saveName = isArray ? parameters[0] : parameters["name"];
@@ -3182,7 +3226,7 @@ namespace BetterLegacy.Menus.UI.Elements
                 case "StorySaveFloat":
                     {
                         if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["name"] == null || parameters["value"] == null))
-                            return;
+                            break;
 
                         var isArray = parameters.IsArray;
                         string saveName = isArray ? parameters[0] : parameters["name"];
@@ -3202,7 +3246,7 @@ namespace BetterLegacy.Menus.UI.Elements
                 case "StorySaveString":
                     {
                         if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["name"] == null || parameters["value"] == null))
-                            return;
+                            break;
 
                         var isArray = parameters.IsArray;
                         string saveName = isArray ? parameters[0] : parameters["name"];
@@ -3211,6 +3255,44 @@ namespace BetterLegacy.Menus.UI.Elements
                             value += StoryManager.inst.LoadString(saveName, value);
 
                         StoryManager.inst.SaveString(saveName, value);
+
+                        break;
+                    }
+
+                #endregion
+
+                #region StorySaveJSON
+
+                case "StorySaveJSON":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["name"] == null || parameters["value"] == null))
+                            break;
+
+                        var isArray = parameters.IsArray;
+                        string saveName = isArray ? parameters[0] : parameters["name"];
+                        var value = isArray ? parameters[1] : parameters["value"];
+
+                        StoryManager.inst.SaveNode(saveName, value);
+
+                        break;
+                    }
+
+                #endregion
+
+                #region LoadStorySaveJSONText
+
+                case "LoadStorySaveStringText":
+                    {
+                        if (parameters == null || parameters.IsArray && parameters.Count < 2 || parameters.IsObject && (parameters["name"] == null || parameters["value"] == null))
+                            break;
+
+                        var isArray = parameters.IsArray;
+                        string saveName = isArray ? parameters[0] : parameters["name"];
+
+                        var text = StoryManager.inst.LoadString(saveName, "");
+
+                        if (this is MenuText menuText)
+                            menuText.text = text;
 
                         break;
                     }
