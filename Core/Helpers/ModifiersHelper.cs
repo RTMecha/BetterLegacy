@@ -7541,10 +7541,8 @@ namespace BetterLegacy.Core.Helpers
                     {
                         var s = modifier.commands[1];
 
-                        if (modifier.reference.Player && modifier.reference.Player.customObjects.TryGetValue(s, out RTPlayer.CustomGameObject customGameObject) &&
-                            customGameObject.values.TryGetValue("Renderer", out object obj) &&
-                            obj is Renderer renderer)
-                            renderer.enabled = Parser.TryParse(modifier.value, false);
+                        if (modifier.reference.Player && modifier.reference.Player.customObjects.TryGetValue(s, out RTPlayer.CustomGameObject customGameObject))
+                            customGameObject.active = Parser.TryParse(modifier.value, false);
 
                         break;
                     }
@@ -7592,10 +7590,8 @@ namespace BetterLegacy.Core.Helpers
                     {
                         var s = modifier.commands[1];
 
-                        if (Parser.TryParse(modifier.commands[2], true) && modifier.reference.Player.customObjects.TryGetValue(s, out RTPlayer.CustomGameObject customGameObject) &&
-                            customGameObject.values.TryGetValue("Renderer", out object obj) &&
-                            obj is Renderer renderer)
-                            renderer.enabled = !Parser.TryParse(modifier.value, false);
+                        if (Parser.TryParse(modifier.commands[2], true) && modifier.reference.Player.customObjects.TryGetValue(s, out RTPlayer.CustomGameObject customGameObject))
+                            customGameObject.active = !Parser.TryParse(modifier.value, false);
 
                         break;
                     }

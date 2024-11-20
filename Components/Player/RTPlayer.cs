@@ -2854,9 +2854,9 @@ namespace BetterLegacy.Components.Player
                     x.command == "isPressingKey" && (!x.not && Input.GetKey(GetKeyCode((int)x.value)) || x.not && !Input.GetKey(GetKeyCode((int)x.value)));
                 });
 
-                customGameObject.gameObject.SetActive(customGameObject.customObject.visibilitySettings.Count < 1 && customGameObject.customObject.active || customGameObject.customObject.visibilitySettings.Count > 0 &&
+                customGameObject.gameObject.SetActive(customGameObject.active && (customGameObject.customObject.visibilitySettings.Count < 1 && customGameObject.customObject.active || customGameObject.customObject.visibilitySettings.Count > 0 &&
                     (!customGameObject.customObject.requireAll && customGameObject.customObject.visibilitySettings.Any(visibilityFunc) ||
-                customGameObject.customObject.visibilitySettings.All(visibilityFunc)));
+                customGameObject.customObject.visibilitySettings.All(visibilityFunc))));
             }
         }
 
@@ -3369,6 +3369,7 @@ namespace BetterLegacy.Components.Player
 
             public string name;
             public GameObject gameObject;
+            public bool active = true;
 
             public Dictionary<string, object> values;
         }
