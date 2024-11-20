@@ -213,11 +213,12 @@ namespace BetterLegacy.Editor.Managers
             GenerateToggle(content, creatorLinkTitle, "unlock complete", "Unlock Completed", 6);
 
             GenerateDropdown(content, creatorLinkTitle, "preferred player count", "Preferred Players", 7);
+            GenerateToggle(content, creatorLinkTitle, "show intro", "Show Intro", 8);
 
-            var serverID = content.Find("id").gameObject.Duplicate(content, "server id", 12);
+            var serverID = content.Find("id").gameObject.Duplicate(content, "server id", 13);
             Destroy(serverID.transform.GetChild(1).gameObject);
 
-            var uploadInfo = content.Find("creator").gameObject.Duplicate(content, "upload", 8);
+            var uploadInfo = content.Find("creator").gameObject.Duplicate(content, "upload", 9);
 
             try
             {
@@ -716,6 +717,15 @@ namespace BetterLegacy.Editor.Managers
             unlockComplete.onValueChanged.ClearAll();
             unlockComplete.isOn = metadata.unlockAfterCompletion;
             unlockComplete.onValueChanged.AddListener(_val => { metadata.unlockAfterCompletion = _val; });
+            
+            var showIntro = content.Find("show intro/toggle").GetComponent<Toggle>();
+            showIntro.onValueChanged.ClearAll();
+            showIntro.isOn = GameData.IsValid && GameData.Current.beatmapData != null && GameData.Current.beatmapData.levelData is LevelData levelData && !levelData.showIntro;
+            showIntro.onValueChanged.AddListener(_val =>
+            {
+                if (GameData.IsValid && GameData.Current.beatmapData != null && GameData.Current.beatmapData.levelData is LevelData levelData)
+                    levelData.showIntro = !_val;
+            });
 
             var preferredPlayerCount = content.Find("preferred player count/dropdown").GetComponent<Dropdown>();
             preferredPlayerCount.options = CoreHelper.StringToOptionData("Any", "One", "Two", "Three", "Four", "More than four");

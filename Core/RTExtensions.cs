@@ -234,6 +234,20 @@ namespace BetterLegacy.Core
             transform.localRotation = Quaternion.Euler(rot);
         }
 
+        public static void SetAnchoredPositionX(this RectTransform transform, float x)
+        {
+            var pos = transform.anchoredPosition;
+            pos.x = x;
+            transform.anchoredPosition = pos;
+        }
+
+        public static void SetAnchoredPositionY(this RectTransform transform, float y)
+        {
+            var pos = transform.anchoredPosition;
+            pos.y = y;
+            transform.anchoredPosition = pos;
+        }
+
         /// <summary>
         /// Gets a <see cref="RectValues"/> from a <see cref="RectTransform"/>.
         /// </summary>

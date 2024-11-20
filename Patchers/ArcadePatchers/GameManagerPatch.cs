@@ -302,9 +302,12 @@ namespace BetterLegacy.Patchers
 
             if (!CoreHelper.InEditor && AudioManager.inst.CurrentAudioSource.time < 15f)
             {
-                if (__instance.introTitle.color != timelineColorToLerp)
+                bool introActive = GameData.IsValid && GameData.Current.beatmapData != null && GameData.Current.beatmapData.levelData is LevelData levelData && !levelData.showIntro;
+
+                __instance.introMain.SetActive(introActive);
+                if (introActive && __instance.introTitle.color != timelineColorToLerp)
                     __instance.introTitle.color = timelineColorToLerp;
-                if (__instance.introArtist.color != timelineColorToLerp)
+                if (introActive && __instance.introArtist.color != timelineColorToLerp)
                     __instance.introArtist.color = timelineColorToLerp;
             }
             if (__instance.guiImages.Length > 0)

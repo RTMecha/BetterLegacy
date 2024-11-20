@@ -1,9 +1,13 @@
-﻿using BetterLegacy.Components.Editor;
+﻿using BetterLegacy.Components;
+using BetterLegacy.Components.Editor;
 using BetterLegacy.Configs;
+using BetterLegacy.Core.Animation;
+using BetterLegacy.Core.Animation.Keyframe;
 using BetterLegacy.Core.Data;
 using BetterLegacy.Core.Helpers;
 using BetterLegacy.Editor;
 using BetterLegacy.Editor.Managers;
+using LSFunctions;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -29,6 +33,8 @@ namespace BetterLegacy.Core.Managers
             timelineLeftCap = GameManager.inst.timeline.transform.Find("Base/Image").GetComponent<Image>();
             timelineRightCap = GameManager.inst.timeline.transform.Find("Base/Image 1").GetComponent<Image>();
             timelineLine = GameManager.inst.timeline.transform.Find("Base").GetComponent<Image>();
+
+            levelAnimationController = gameObject.AddComponent<AnimationController>();
 
             if (!CoreHelper.InEditor)
                 return;
@@ -103,5 +109,100 @@ namespace BetterLegacy.Core.Managers
         public Transform video;
 
         public Dictionary<string, object> assets = new Dictionary<string, object>();
+
+        /// <summary>
+        /// The main animation controller for the level.
+        /// </summary>
+        public AnimationController levelAnimationController;
+
+        static RTAnimation introAnimation;
+
+        public void PlayIntro()
+        {
+            GameManager.inst.introAnimator.enabled = false;
+            levelAnimationController.Play(IntroAnimation);
+        }
+
+        const float INTRO_SPEED = 0.3f;
+
+        public static void SetIntroBGOpacity(float x)
+        {
+            if (GameManager.inst && GameManager.inst.introBG)
+                GameManager.inst.introBG.color = LSColors.fadeColor(GameManager.inst.introBG.color, x);
+        }
+
+        public static void SetIntroBlurActive(float x)
+        {
+            if (GameManager.inst && GameManager.inst.introMain && GameManager.inst.introMain.transform.TryFind("blur", out Transform blur))
+                blur.gameObject.SetActive(x != 0f);
+        }
+
+        public static void SetIntroTitlePosition(Vector2 pos)
+        {
+            if (GameManager.inst && GameManager.inst.introTitle && GameManager.inst.introTitle.rectTransform)
+                GameManager.inst.introTitle.rectTransform.anchoredPosition = pos;
+        }
+
+        public static void SetIntroArtistPosition(Vector2 pos)
+        {
+            if (GameManager.inst && GameManager.inst.introArtist && GameManager.inst.introArtist.rectTransform)
+                GameManager.inst.introArtist.rectTransform.anchoredPosition = pos;
+        }
+
+        /// <summary>
+        /// Mod version of the level intro.
+        /// </summary>
+        public static RTAnimation IntroAnimation
+        {
+            get
+            {
+                if (introAnimation == null)
+                {
+                    introAnimation = new RTAnimation("INTRO ANIMATION")
+                    {
+                        animationHandlers = new List<AnimationHandlerBase>
+                        {
+                            new AnimationHandler<float>(new List<IKeyframe<float>>
+                            {
+                                // Fade In
+                                new FloatKeyframe(0f, 1f, Ease.Linear),
+                                new FloatKeyframe(0.41666666f * INTRO_SPEED, 1f, Ease.Linear),
+                                new FloatKeyframe(1.5f * INTRO_SPEED, 0f, Ease.SineIn),
+                            }, SetIntroBGOpacity),
+                            new AnimationHandler<float>(new List<IKeyframe<float>>
+                            {
+                                // Fade In
+                                new FloatKeyframe(0f, 1f, Ease.Linear),
+                                new FloatKeyframe(0.29166666f * INTRO_SPEED, 0f, Ease.Instant),
+                                new FloatKeyframe(0.3f * INTRO_SPEED, 0f, Ease.Linear),
+                            }, SetIntroBlurActive),
+
+                            new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                            {
+                                // Fade In
+                                new Vector2Keyframe(0f, new Vector2(-1000f, 80f), Ease.Linear),
+                                new Vector2Keyframe(1.5f * INTRO_SPEED, new Vector2(36f, 80f), Ease.BackOut),
+                                // Fade Out
+                                new Vector2Keyframe(15f * INTRO_SPEED, new Vector2(36f, 80f), Ease.Linear),
+                                new Vector2Keyframe(15.6666667f * INTRO_SPEED, new Vector2(-1000f, 80f), Ease.BackIn),
+                            }, SetIntroTitlePosition),
+                            new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
+                            {
+                                // Fade In
+                                new Vector2Keyframe(0f, new Vector2(-1000f, 32f), Ease.Linear),
+                                new Vector2Keyframe(0.8333333f * INTRO_SPEED, new Vector2(-1000f, 32f), Ease.Linear),
+                                new Vector2Keyframe(1.5f * INTRO_SPEED, new Vector2(36f, 32f), Ease.BackOut),
+                                // Fade Out
+                                new Vector2Keyframe(15f * INTRO_SPEED, new Vector2(36f, 32f), Ease.Linear),
+                                new Vector2Keyframe(15.6666667f * INTRO_SPEED, new Vector2(-1000f, 32f), Ease.BackIn),
+                            }, SetIntroArtistPosition),
+                        }
+                    };
+                    introAnimation.onComplete = () => AnimationManager.inst.Remove(introAnimation.id);
+                }
+                return introAnimation;
+
+            }
+        }
     }
 }

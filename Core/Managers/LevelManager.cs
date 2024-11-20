@@ -316,7 +316,8 @@ namespace BetterLegacy.Core.Managers
 
             RTPlayer.GameMode = GameMode.Regular;
 
-            GameManager.inst.introAnimator.SetTrigger("play");
+            //GameManager.inst.introAnimator.SetTrigger("play");
+            GameStorageManager.inst.PlayIntro();
             GameManager.inst.SpawnPlayers(GameData.Current.beatmapData.checkpoints[0].pos);
 
             RTPlayer.SetGameDataProperties();

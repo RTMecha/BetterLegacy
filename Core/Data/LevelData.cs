@@ -44,6 +44,9 @@ namespace BetterLegacy.Core.Data
             else
                 levelData.modVersion = LegacyPlugin.ModVersion.ToString();
 
+            if (jn["show_intro"] != null)
+                levelData.showIntro = jn["show_intro"].AsBool;
+
             if (!string.IsNullOrEmpty(jn["lock_boost"]))
                 levelData.lockBoost = jn["lock_boost"].AsBool;
             
@@ -98,6 +101,9 @@ namespace BetterLegacy.Core.Data
             jn["level_version"] = "4.1.16";
             jn["mod_version"] = modVersion;
 
+            if (showIntro)
+                jn["show_intro"] = showIntro.ToString(); // this will be reversed since the default unmodded value is false
+
             if (lockBoost)
                 jn["lock_boost"] = lockBoost.ToString();
 
@@ -112,9 +118,6 @@ namespace BetterLegacy.Core.Data
 
             if (jumpIntensity != 1f)
                 jn["jump_intensity"] = jumpIntensity.ToString();
-
-            if (showIntro)
-                jn["show_intro"] = showIntro.ToString(); // this will be reversed since the default unmodded value is false
 
             if (maxJumpCount != 10)
                 jn["max_jump"] = maxJumpCount.ToString();
