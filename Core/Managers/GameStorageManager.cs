@@ -63,6 +63,9 @@ namespace BetterLegacy.Core.Managers
 
         void Update()
         {
+            if (GameManager.inst && GameManager.inst.introMain && GameManager.inst.introMain.transform.TryFind("blur", out Transform blur))
+                blur.gameObject.SetActive(false);
+
             if (!CoreHelper.InEditor)
                 return;
 
@@ -91,6 +94,8 @@ namespace BetterLegacy.Core.Managers
             return s;
         }
 
+        #region Scene Assets
+
         public SelectObjectRotator objectRotator;
         public SelectObjectScaler objectScalerTop;
         public SelectObjectScaler objectScalerLeft;
@@ -109,6 +114,10 @@ namespace BetterLegacy.Core.Managers
         public Transform video;
 
         public Dictionary<string, object> assets = new Dictionary<string, object>();
+
+        #endregion
+
+        #region Level Animations
 
         /// <summary>
         /// The main animation controller for the level.
@@ -129,12 +138,6 @@ namespace BetterLegacy.Core.Managers
         {
             if (GameManager.inst && GameManager.inst.introBG)
                 GameManager.inst.introBG.color = LSColors.fadeColor(GameManager.inst.introBG.color, x);
-        }
-
-        public static void SetIntroBlurActive(float x)
-        {
-            if (GameManager.inst && GameManager.inst.introMain && GameManager.inst.introMain.transform.TryFind("blur", out Transform blur))
-                blur.gameObject.SetActive(x != 0f);
         }
 
         public static void SetIntroTitlePosition(Vector2 pos)
@@ -169,13 +172,6 @@ namespace BetterLegacy.Core.Managers
                                 new FloatKeyframe(0.41666666f * INTRO_SPEED, 1f, Ease.Linear),
                                 new FloatKeyframe(1.5f * INTRO_SPEED, 0f, Ease.SineIn),
                             }, SetIntroBGOpacity),
-                            new AnimationHandler<float>(new List<IKeyframe<float>>
-                            {
-                                // Fade In
-                                new FloatKeyframe(0f, 1f, Ease.Linear),
-                                new FloatKeyframe(0.29166666f * INTRO_SPEED, 0f, Ease.Instant),
-                                new FloatKeyframe(0.3f * INTRO_SPEED, 0f, Ease.Linear),
-                            }, SetIntroBlurActive),
 
                             new AnimationHandler<Vector2>(new List<IKeyframe<Vector2>>
                             {
@@ -204,5 +200,7 @@ namespace BetterLegacy.Core.Managers
 
             }
         }
+
+        #endregion
     }
 }
