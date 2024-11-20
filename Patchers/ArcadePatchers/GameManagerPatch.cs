@@ -304,7 +304,8 @@ namespace BetterLegacy.Patchers
             {
                 bool introActive = GameData.IsValid && GameData.Current.beatmapData != null && GameData.Current.beatmapData.levelData is LevelData levelData && !levelData.showIntro;
 
-                __instance.introMain.SetActive(introActive);
+                __instance.introTitle.gameObject.SetActive(introActive);
+                __instance.introArtist.gameObject.SetActive(introActive);
                 if (introActive && __instance.introTitle.color != timelineColorToLerp)
                     __instance.introTitle.color = timelineColorToLerp;
                 if (introActive && __instance.introArtist.color != timelineColorToLerp)
